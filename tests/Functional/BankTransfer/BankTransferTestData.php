@@ -1098,9 +1098,9 @@ return [
             'url'     => '/ecollect/validate/file',
             'method'  => 'post',
             'content' => [
-                'sender' => 'harshil@razorpay.com',
+                'sender' => 'qa.testing+sender@razorpay.com',
                 'subject' => 'This is a test',
-                'recipient' => 'shk@razorpay.com',
+                'recipient' => 'qa.testing+recipient@razorpay.com',
                 'timestamp' => '1583501748',
                 'stripped-html' => '',
             ],

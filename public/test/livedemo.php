@@ -63,8 +63,8 @@ require('vars.php');
                 description: 'Fine tshirt',
                 image: 'https://i.imgur.com/3g7nmJC.png',
                 prefill: {
-                  name: 'Harshil Mathur',
-                  email: 'harshil@razorpay.com',
+                  name: 'QA Razorpay',
+                  email: 'qa.testing@razorpay.com',
                   contact: '9999999999'
                 },
                 handler: function (transaction){

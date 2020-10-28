@@ -85,8 +85,8 @@ var key = test_key;</div>
   amount: 600000,
   handler: resp => alert(resp.razorpay_payment_id),
   prefill: {
-    name: 'HarshilMathur',
-    email: 'harshil@razorpay.com',
+    name: 'QARazorpay',
+    email: 'qa.testing@razorpay.com',
     contact: '+918888888888',
     'card[number]': '4111111111111111',
     'card[expiry]': '1123',

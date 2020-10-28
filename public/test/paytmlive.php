@@ -71,7 +71,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         </tr>
         <tr>
             <td colspan='40'>Email:</td>
-            <td><input type="text" name="email" size="25" value="shk@gmail.com"></td>
+            <td><input type="text" name="email" size="25" value="qa.testing@razorpay.com"></td>
         </tr>
         <tr>
             <td colspan='40'>Contact:</td>

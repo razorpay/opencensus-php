@@ -21,8 +21,8 @@ require('vars.php');
         data-description="Tron Legacy"
         data-protocol="<?= $protocol ?>"
         data-hostname="<?= $hostname ?>"
-        data-prefill.name="Harshil Mathur"
-        data-prefill.email="harshil@razorpay.com"
+        data-prefill.name="QA Razorpay"
+        data-prefill.email="qa.testing@razorpay.com"
         data-prefill.contact="9999999999">
       </script>
     </form>
