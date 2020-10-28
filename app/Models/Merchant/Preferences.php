@@ -139,6 +139,7 @@ class Preferences
     const MID_STASHFIN              = 'Ao42qLIgNsuREt';
     const MID_VOCATIONAL_EDU        = 'F5NF8QNN7XAJ2w';
     const MID_BSE                   = 'FlaHVYQCGKbK2t';
+    const MID_ASHISH                = 'E7qAq7CV6MQSkx'; // Test
 
     const MID_CLIX_CAPITAL            = 'AxEq4Z2U8Gd8vH';
     const MID_CLIX_CAPITAL_SERVICES   = 'Bkeuzp5jlMNhzD';
@@ -343,6 +344,7 @@ class Preferences
 
     const TRANSFER_PROCESSED_SETTLED_WEBHOOK_MIDS = [
         self::MID_BSE,
+        self::MID_ASHISH,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [
