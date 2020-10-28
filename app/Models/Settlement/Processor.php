@@ -62,7 +62,7 @@ class Processor extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->debug = false;
+        $this->debug = true;
     }
 
     /**
@@ -863,7 +863,7 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
-        RuntimeManager::setMemoryLimit('5120M');
+        RuntimeManager::setMemoryLimit('10240M');
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 

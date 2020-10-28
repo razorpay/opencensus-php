@@ -1009,7 +1009,7 @@ trait SettlementTrait
                             $merchant,
                             $channel,
                             $this->repo,
-                            true,
+                            $this->debug,
                             $merchantSettleToPartner,
                             $isAggregateSettlement);
 
