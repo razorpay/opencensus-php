@@ -12,33 +12,33 @@ class ReasonCode
     const REASON_CODE_MAP = [
         Subcategory::DISPUTE_A_PAYMENT => [
             'goods_service_not_provided' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP01',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP01',
                 DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
             'unauthorized_transaction' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP02',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP02',
                 DisputeEntity::PHASE => Phase::FRAUD
             ],
             'potential_fraud' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP03',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP03',
                 DisputeEntity::PHASE => Phase::FRAUD
             ],
             'refund_not_processed' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP04',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP04',
                 DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
             'account_debited_but_confirmation_not_received' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP05',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP05',
                 DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
             'not_available' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP06',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP00',
                 DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
         ],
         Subcategory::REPORT_FRAUD => [
             'potential_fraud' => [
-                DisputeReasonEntity::GATEWAY_CODE => 'RZP-RZP03',
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP03',
                 DisputeEntity::PHASE => Phase::FRAUD
             ],
         ],
