@@ -708,11 +708,6 @@ class Selector extends Base\Core
             return false;
         }
 
-        if ($this->isTestMode() === true)
-        {
-            return false;
-        }
-
         if ($paymentId === null)
         {
             $this->trace->info(TraceCode::PAYMENT_ID_NULL);
