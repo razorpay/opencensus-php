@@ -3159,8 +3159,6 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
     {
-        $this->markTestSkipped();
-
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
@@ -3171,6 +3169,38 @@ class MerchantTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testPreferenceforTpvMerchantWithOrder()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'bank' => 'ICIC', 'account_number' => '0040304030403040', 'amount' => '100']);
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testPreferenceforForcedOfferWithMethod()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'phonepe');
+
+        $this->fixtures->create('terminal:shared_phonepe_terminal');
+
+        $offer = $this->fixtures->create('offer', ['payment_method'   => 'wallet']);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesWithAmountGreater()

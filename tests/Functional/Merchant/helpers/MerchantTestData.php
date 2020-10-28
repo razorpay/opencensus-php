@@ -2263,6 +2263,51 @@ return [
         ],
     ],
 
+    'testPreferenceforTpvMerchantWithOrder' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '100'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'netbanking' => [
+                    'ICIC' => "ICICI Bank"
+        ],
+        'upi' => false
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferenceforForcedOfferWithMethod' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '100'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'entity' => "methods",
+                    'wallet' =>  [
+                        'phonepe' => true,
+                    ],
+                    'emi_options' => [],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAmountGreater' => [
         'request'  => [
             'url'    => '/preferences',

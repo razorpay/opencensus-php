@@ -86,6 +86,8 @@ class Checkout
 
         $data[Entity::METHODS] = (new Methods\Core)->addUpiType($merchant, $data[Entity::METHODS]);
 
+        $this->filterMethodsBasedOnAmount($data, $input);
+
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
@@ -115,8 +117,6 @@ class Checkout
         {
             $this->fillPreferredMethods($merchant, $input, $data);
         }
-
-        //$this->filterMethodsBasedOnAmount($data, $input);
 
         return $data;
     }
@@ -157,10 +157,15 @@ class Checkout
 
         foreach (Payment\Gateway::$minAmountForMethodAndGateway as $method => $gatewaysWithMinimumAmount)
         {
+            if (isset($data[Entity::METHODS][$method]) === false)
+            {
+                continue;
+            }
+
             foreach ($gatewaysWithMinimumAmount as $gatewayKey => $minAmount)
             {
 
-                if (in_array($gatewayKey, $data[Entity::METHODS][$method]) and ($input['amount'] <= $minAmount))
+                if (in_array($gatewayKey, $data[Entity::METHODS][$method]) and ($input['amount'] < $minAmount))
                 {
                     unset($data[Entity::METHODS][$method][$gatewayKey]);
                 }
