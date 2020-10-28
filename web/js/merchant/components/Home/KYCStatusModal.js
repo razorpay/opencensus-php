@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
-import { activationDuration } from 'merchant/helpers/data';
+import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 
 function getKycActivationSubmitBody(args) {
   if (args.isWhitelistFlow || args.isUnregisteredBusiness) {
@@ -39,7 +39,7 @@ const MODAL_CONTENT = {
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
         <p>
-          We’ll review the form and get back to you in {activationDuration}.{' '}
+          We’ll review the form and get back to you in {args.activationDuration || predefinedActivationDuration}.{' '}
           {args.isWhitelistFlow ? 'Meanwhile, you can continue accepting payments.' : ''}
         </p>
       </div>
@@ -90,7 +90,7 @@ const ModalButtons = ({ args, modalType }) => {
   );
 };
 
-const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
+const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType , activationDuration}) => {
   const content = MODAL_CONTENT[modalType];
   let defaultSubtitle = 'Ready to accept domestic payments';
 
@@ -102,6 +102,7 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
     onGoToDashboard: onGoToDashboard,
+    activationDuration: activationDuration,
   };
 
   return (

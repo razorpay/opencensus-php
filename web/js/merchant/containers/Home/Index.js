@@ -90,6 +90,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showPANStatus: state.home.instantActivations.showPANStatus,
       showKYCStatus: state.home.instantActivations.showKYCStatus,
       kycStatusModalType: state.home.kycStatusModalType,
+      kycStatusActivationDuration: state.home.kycStatusActivationDuration,
       settlement_amount: state.home.settlement_amount,
       virtualAccounts: state.virtualaccounts,
       lateAuthConfig: state.config.lateAuthConfig,
@@ -714,6 +715,7 @@ export default class HomeContainer extends Component {
       merchantBalanceConfigs,
       lateAuthConfig,
       support_detail,
+      kycStatusActivationDuration,
     } = this.props;
 
     const { activation_flow } = user;
@@ -948,6 +950,7 @@ export default class HomeContainer extends Component {
             }}
             user={user}
             modalType={kycStatusModalType}
+            activationDuration={kycStatusActivationDuration}
           />
         )}
         {showPANStatus && (

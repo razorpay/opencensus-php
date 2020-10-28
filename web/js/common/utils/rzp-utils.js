@@ -1078,3 +1078,17 @@ export function handleNegativeBalanceLimit(balanceConfig, balance) {
   if (balance > maxLimit) return false;
   else return true;
 }
+
+/**
+ * function will return true if
+ * object is empty
+ * and object has empty string in the value
+ */
+
+export function checkIsObjectEmpty(obj) {
+  for(var key in obj) {
+      if(obj.hasOwnProperty(key) && obj[key] !== '')
+          return false;
+  }
+  return true;
+}

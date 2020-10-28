@@ -6,7 +6,7 @@ import Button from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { autoPrefixUrls, isPresent, prevent, classList } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, isPresent, prevent, classList, checkIsObjectEmpty } from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -65,6 +65,7 @@ import {
   hasAPIL1Error,
   displayCompanyPAN,
 } from './ActivationUtils';
+
 import {
   fireL1FormSuccessEvents,
   fireL1FormErrorEvents,
@@ -136,6 +137,7 @@ export default class ActivationWizard extends React.Component {
     address_proof: 'aadhar',
     needsClarification: {},
     additional_doc: '',
+    commentlist: {}
   };
 
   constructor(props) {
@@ -292,6 +294,25 @@ export default class ActivationWizard extends React.Component {
     NEEDS_CLARIFICATION_STEP &&
       FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
+
+  handleComment = (e , key, removecomment)=> {
+    prevent(e)
+
+    const prevCommentFromState = this.state.commentlist
+
+    const removeCommentFromList = Object.assign({}, prevCommentFromState)
+    delete removeCommentFromList[key]
+
+    const addCommentToList = Object.assign({}, prevCommentFromState, {
+      [key]: e.target.value || ''
+    });
+    
+    const comments = removecomment ?  removeCommentFromList : addCommentToList
+    
+    this.setState({
+      commentlist: comments 
+    })
+  };
 
   componentDidUpdate() {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
@@ -784,7 +805,7 @@ export default class ActivationWizard extends React.Component {
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
         }
-        return Boolean(state.dirty[field]);
+        return this.canSubmitL1Form && Boolean(state.dirty[field] || ( this.state.commentlist.hasOwnProperty(field)) && this.state.commentlist[field] !== '' );
       });
 
       return hasFilledEverything;
@@ -1098,6 +1119,24 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
+    if (!checkIsObjectEmpty(this.state.commentlist)){
+      reqData.kyc_clarification_reasons = {
+        "clarification_reasons": {}
+      }
+    }
+
+    for(var prop in this.state.commentlist) {
+      if(this.state.commentlist.hasOwnProperty(prop) && this.state.commentlist[prop] !== '') {
+        { reqData.kyc_clarification_reasons.clarification_reasons[prop] = [
+          {
+            "reason_type": "custom",
+            "reason_code": this.state.commentlist[prop],
+          }
+        ]}
+      }
+    }
+    
+
     // State will contain file fields which have already been uploaded
     // Delete file field from request data
     Object.keys(reqData).forEach((key) => {
@@ -1129,6 +1168,7 @@ export default class ActivationWizard extends React.Component {
       } else if(response.success) {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+          activationDuration: '4-5 days'
         });
         this.props.history.replace('/');
       }
@@ -1854,10 +1894,32 @@ function ActivationField(field) {
       {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
         <div className="ndc-reasons">
           {rest.reasons.map((r, i) => (
-            <div key={i}>
-              <i className="i i-info-circle" />
-              <div>{r}</div>
-            </div>
+            <>
+              <div class="reason-container">
+                <div key={i} class="reason-wrapper">
+                  <i className="i i-info-circle" />
+                  <div>{r}</div>
+                </div>
+              <button class="add-comment" onClick={(e) => this.handleComment(e , key)}>Add Comment</button>
+              </div>
+                {
+                  this.state.commentlist.hasOwnProperty(key) && (
+                    <div class="comment-box">
+                      <input
+                          type="text"
+                          className="form-control input-elm"
+                          value={this.state.commentlist[key]}
+                          placeholder="Enter your comment"
+                          onChange={(e) => this.handleComment(e, key)}
+                          maxlength="200"
+                      />
+                      <button class="delete-button" onClick={(e) => this.handleComment(e, key, true)}>
+                        <i className="i i-delete" />   
+                      </button>
+                    </div>
+                  )
+                }
+              </>
           ))}
         </div>
       )}

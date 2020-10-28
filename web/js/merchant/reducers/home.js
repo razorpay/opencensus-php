@@ -67,6 +67,7 @@ let initialState = {
     showKYCStatus: false,
   },
   kycStatusModalType: '',
+  kycStatusActivationDuration: '1-2 working days',
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -144,10 +145,10 @@ export const showInstantActivationSuccessModal = () => {
   };
 };
 
-export const showKYCStatusModal = ({ modalType = '' }) => {
+export const showKYCStatusModal = ({ modalType = '', activationDuration='1-2 working days' }) => {
   return {
     type: SHOW_KYC_STATUS_MODAL,
-    payload: { modalType },
+    payload: { modalType, activationDuration },
   };
 };
 
@@ -336,6 +337,7 @@ export default function (state = initialState, action) {
           showKYCStatus: true,
         },
         kycStatusModalType: action.payload.modalType,
+        kycStatusActivationDuration: action.payload.activationDuration,
       };
 
     case `HIDE_KYC_STATUS_MODAL`:

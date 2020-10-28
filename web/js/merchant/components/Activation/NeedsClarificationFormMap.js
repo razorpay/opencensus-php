@@ -26,51 +26,58 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
 
   const prepareField = (field, clarificationDetails, forceMap) => {
     let reasons = [];
-    let commentFromAdmin = [];
+    const latestNc = needsKyc.nc_count // latest needs clarrification
 
     const origKey = field;
     if (!allFieldsHash[field] || Boolean(forceMap)) {
       field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
     if (allFieldsHash[field]) {
-      if (clarificationDetails[origKey].length > 1 ){
-        clarificationDetails[origKey].map((key) => {
-          if (key.from === "admin") {
-            commentFromAdmin.push(key)
-          }
-        })
-        const sortedComments = commentFromAdmin.sort(function(a, b){ 
-          return new Date(a.created_at) - new Date(b.created_at); 
-        }); 
-        try {
-          reasons.push(
-            sortedComments[sortedComments.length - 1].reason_code
-          );
-        } catch (error) {
-          console.log(error);
-        }
-      }else{
-        // support for old nc
-        for (let r of clarificationDetails[origKey]) {
-          if (r.reason_type === 'predefined'){
-            try {
-              reasons.push(
-                predefinedReasons[origKey].reasons[r.reason_code].description
-              );
-            } catch (error) {
-              console.log(error);
+        if(latestNc){
+          clarificationDetails[origKey].map((key) => {
+            if (key.from === 'admin' && key.nc_count === latestNc){
+              if (key.reason_type === 'predefined' ) {
+                try {
+                  reasons.push(
+                    predefinedReasons[origKey].reasons[key.reason_code].description
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              } else if (key.reason_type === 'custom') {
+                try {
+                  reasons.push(
+                    key.reason_code
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              }
             }
-          } else if (r.reason_type === 'custom') {
-            try {
-              reasons.push(
-                r.reason_code
-              );
-            } catch (error) {
-              console.log(error);
-            }
-          }
+          })
+        } else { 
+           // support for the additional_details
+            for (let r of clarificationDetails[origKey]) {
+              if (r.reason_type === 'predefined'){
+                try {
+                  reasons.push(
+                    predefinedReasons[origKey].reasons[r.reason_code].description
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              } else if (r.reason_type === 'custom') {
+                try {
+                  reasons.push(
+                    r.reason_code
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              }
+            } 
         }
-      }
+
 
       if (
         typeof allFieldsHash[field].linkedfields !== 'undefined' &&
@@ -82,13 +89,17 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
           if (i === 0) {
             allFieldsHash[dField].reasons = reasons;
           }
-          addToKYCTab(dField);
+          if(reasons.length > 0) {
+            addToKYCTab(dField);
+          }
         });
       } else {
         //Add reasons to main field if there are no dependent fields
         allFieldsHash[field].reasons = reasons;
       }
-      addToKYCTab(field);
+      if(reasons.length > 0) {
+        addToKYCTab(field);
+      }
     }
   };
 
@@ -124,8 +135,22 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     scanFields(allFieldsMap);
     scanFields(ndcFields);
 
-    for (let field in needsKyc.clarification_reasons) {
-      prepareField(field, needsKyc.clarification_reasons);
+    const bankDetailsforNC = {};
+    let removedBankDetailsFromNC = needsKyc.clarification_reasons
+    
+    for (const [key, value] of Object.entries(needsKyc.clarification_reasons)) {
+      if (key === 'bank_account_name' || key === 'bank_branch_ifsc' || key === 'bank_account_number'){
+        bankDetailsforNC[key] = value;
+        removedBankDetailsFromNC = Object.assign({}, removedBankDetailsFromNC)
+        delete removedBankDetailsFromNC[key]
+
+      } 
+    }
+
+    const newClarificationDetails = {...removedBankDetailsFromNC, ...bankDetailsforNC}
+
+    for (let field in newClarificationDetails) {
+      prepareField(field, newClarificationDetails);
     }
     for (let field in needsKyc.additional_details) {
       // const newFieldName = generateNewField(field, needsKyc.additional_details[field]);

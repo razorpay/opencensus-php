@@ -641,15 +641,50 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   background-color: #F6F6F6
   padding:12px
   border: solid 1px rgba(0, 0, 0, 0.05)
-  i
-    color: $warningFill
-    line-height: 0.3
-    font-size: 22px
-    position: relative
-    top:5px
-    margin-right:10px
-  > div
-    display: flex;
+  position: relative
+  .reason-container
+    display: flex
+    align-items: baseline;
+    margin-bottom: 10px;
+    .reason-wrapper
+      width:80%
+      display: flex
+      align-items: baseline;
+      i
+        color: $warningFill
+        line-height: 0.3
+        font-size: 22px
+        position: relative
+        top:5px
+        margin-right:10px
+    .add-comment
+      color: #2B83EA
+      border: none
+      background: none
+      padding: 0
+      margin: 0
+      font-size: 12px
+      line-height: 18px
+      width:20%
+      cursor: pointer
+      &:before
+        content: ''
+        width: 8px
+        height: 8px
+        border-radius: 50%
+        background-color: rgba(22, 47, 86, 0.54)
+        display: inline-block
+        margin: 0 10px 
+  .comment-box
+    margin-left: 30px
+    display: flex
+    align-items: end
+    input 
+      margin-right: 8px
+    .delete-button
+      border: none;
+      background: none;
+      cursor: pointer
 .Activation--wizard
   .Form--tabular:nth-last-child(2)
     margin-bottom:180px
