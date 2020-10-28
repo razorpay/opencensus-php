@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         Entity::APP         => 'sometimes|string',
         Entity::ORIGIN      => 'sometimes|string',
         Entity::FLAG        => 'sometimes|string',
+        Entity::MODE        => 'sometimes|string',
     ];
 
     protected static $editRules = [

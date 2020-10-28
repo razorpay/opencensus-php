@@ -154,6 +154,23 @@ trait UpiTrait
         {
             $input[Payment\Method::UPI][Entity::PROVIDER] = $input[Payment\Entity::UPI_PROVIDER];
         }
+
+        //Currently getting passed as _.app. Should be under upi.app.
+        if ((isset($input['_'][Entity::APP] ) === true))
+        {
+            $input[Payment\Method::UPI][Entity::APP] = $input['_'][Entity::APP];
+        }
+
+        //Currently getting passed as _.upiqr . Should be under upi.mode.
+        if ((isset($input[Payment\Method::UPI][Entity::MODE]) === true)
+            and ($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::UPI_QR))
+        {
+            $input['_']['upiqr'] = true;
+        }
+        else if ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr']))
+        {
+            $input[Payment\Method::UPI][Entity::MODE] = Payment\UpiMetadata\Mode::UPI_QR;
+        }
     }
 
     /**

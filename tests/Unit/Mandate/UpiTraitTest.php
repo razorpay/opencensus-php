@@ -118,13 +118,17 @@ class UpiTraitTest extends TestCase
                     '0' => 5,
                     'flow' => 'collect',
                     'type' => 'default',
-                    'vpa'  => 'aa@asd'
+                    'vpa'  => 'aa@asd',
+                    'app'=> 'some.app.com',
+                    'mode'=> 'upi_qr'
                 ],
             ]],
             [
                 'flow' => 'collect',
                 'type' => 'default',
-                'vpa'  => 'aa@asd'
+                'vpa'  => 'aa@asd',
+                'app'=> 'some.app.com',
+                'mode'=> 'upi_qr'
             ],
             null,
         ];
@@ -136,13 +140,17 @@ class UpiTraitTest extends TestCase
                     'flow' => 'collect',
                     'type' => 'default',
                     'vpa'  => 'aa@asd',
-                    '1'    => 3
+                    '1'    => 3,
+                    'app'=> 'some.app.com',
+                    'mode'=> 'upi_qr'
                 ],
             ]],
             [
                 'flow' => 'collect',
                 'type' => 'default',
-                'vpa'  => 'aa@asd'
+                'vpa'  => 'aa@asd',
+                'app'=> 'some.app.com',
+                'mode'=> 'upi_qr'
             ],
             null,
         ];
@@ -184,6 +192,142 @@ class UpiTraitTest extends TestCase
             }
         });
     }
+
+    public function functionPreProcessForUpiIfApplicable()
+    {
+        $cases['only_upi_param'] = [
+            [
+                // Expected future flow for creating payment with mode and app
+                [
+                    'method' => 'upi',
+                    'upi' => [
+                        'vpa'   => 'abc@xyz',
+                        'flow'  => 'intent',
+                        'mode'  => 'upi_qr',
+                        'app'   => 'some.app.com',
+                    ],
+                ],
+            ],
+            [
+                'method' => 'upi',
+                'upi' => [
+                    'vpa'       => 'abc@xyz',
+                    'flow'      => 'intent',
+                    'mode'      => 'upi_qr',
+                    'app'       => 'some.app.com',
+                    'type'      => 'default',
+                ],
+                'vpa' => "abc@xyz",
+                '_' => [
+                    'flow' => 'intent',
+                    'upiqr' => true,
+                ],
+            ],
+        ];
+
+        $cases['upi_param_with_different_mode'] = [
+            [
+                [
+                    'method' => 'upi',
+                    'upi' => [
+                        'vpa'   => 'abc@xyz',
+                        'flow'  => 'intent',
+                        'mode'  => 'initial',
+                    ],
+                ],
+            ],
+            [
+                'method' => 'upi',
+                'upi' => [
+                    'vpa'       => 'abc@xyz',
+                    'flow'      => 'intent',
+                    'mode'      => 'initial',
+                    'type'      => 'default'
+                ],
+                'vpa' => "abc@xyz",
+                '_' => [
+                    'flow' => 'intent'
+                ],
+            ],
+        ];
+
+        $cases['only_underscore_param'] = [
+            [
+                [
+                    'method' => 'upi',
+                    '_' => [
+                        'flow' => 'intent',
+                        'app' => 'some.app.com',
+                        'upiqr' => true,
+                    ],
+                    'vpa' => "abc@xyz",
+                ],
+            ],
+            [
+                'method' => 'upi',
+                '_' => [
+                    'flow' => 'intent',
+                    'app' => 'some.app.com',
+                    'upiqr' => true,
+                ],
+                'vpa' => "abc@xyz",
+                'upi' => [
+                    'vpa'   => "abc@xyz",
+                    'flow'  => 'intent',
+                    'type'  => 'default',
+                    'app'   => 'some.app.com',
+                    'mode'  => 'upi_qr',
+                ],
+            ],
+        ];
+
+        $cases['mixed_param'] = [
+            [
+                [
+                    'method' => 'upi',
+                    '_' => [
+                        'app'   => 'some.app.com',
+                        'upiqr' => true
+                    ],
+                    'upi_provider' => 'some_provider',
+                ],
+            ],
+            [
+                'method' => 'upi',
+                '_' => [
+                    'app'   => 'some.app.com',
+                    'upiqr' => true
+                ],
+                'upi_provider' => 'some_provider',
+                'upi' => [
+                    'flow'      => 'collect',
+                    'type'      => 'default',
+                    'provider'  => 'some_provider',
+                    'app'       => 'some.app.com',
+                    'mode'      => 'upi_qr',
+                ],
+            ],
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider functionPreProcessForUpiIfApplicable
+     */
+    public function testFunctionPreProcessForUpiIfApplicable($params, $expected, $throwable = null)
+    {
+        $this->goWithTheFlow(
+            $params,
+            $throwable,
+            function ($input) use ($expected)
+            {
+                $this->preProcessForUpiIfApplicable($input);
+
+                $this->assertSame($expected, $input);
+            });
+    }
+
 
     /**
      * @param array $params

@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::APP,
         self::ORIGIN,
         self::FLAG,
+        self::MODE,
     ];
 
     protected $visible = [
