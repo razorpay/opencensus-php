@@ -48,13 +48,7 @@ class Refund extends Base
             // In that scenario to cover all cases default pricing plan will be invoked only
             // if merchant rules are not enough
             //
-            // And this default pricing only applies to RZP Org merchants.
-            // Instant Refunds is restricted to only these merchants.
-            // This check has been kept at Payment/Processor/Refund.php : isInvalidInstantRefundsRequest()
-            // https://github.com/razorpay/api/blob/faa1c6291b8e594d86785da15ad552cd8c2f9833/app/Models/Payment/Processor/Refund.php#L128
-            //
-            if (($rule === null) and
-                ($this->entity->merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+            if ($rule === null)
             {
                 $rules = (new Pricing\Fee)->getInstantRefundsDefaultPricingPlanForMethod($this->entity);
 

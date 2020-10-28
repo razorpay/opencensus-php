@@ -4477,7 +4477,7 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
-    public function testInstantRefundsNotSupportedOnNonRZPOrg()
+    public function testInstantRefundsSupportedOnNonRZPOrg()
     {
         $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
 
@@ -4486,16 +4486,43 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlanOnOrg($dummyOrg['id']);
 
         $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(1031, $refund['fee']);
+        $this->assertEquals(158, $refund['tax']);
+        $this->assertEquals(873, $refund['fee']-$refund['tax']);
     }
 
-    public function testInstantRefundsNotSupportedForFeatureNotEnabledMerchants()
+    public function testInstantRefundsSupportedOnNonRZPOrgWithDefaultPricing()
     {
         $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
 
         $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        // No custom pricing defined
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(943, $refund['fee']);
+        $this->assertEquals(144, $refund['tax']);
+        $this->assertEquals(799, $refund['fee']-$refund['tax']);
+    }
+
+    public function testInstantRefundsNotSupportedForFeatureNotEnabledMerchants()
+    {
+        $this->fixtures->merchant->addFeatures(['disable_instant_refunds']);
 
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);

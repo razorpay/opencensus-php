@@ -98,7 +98,6 @@ class Fee extends Base\Core
         return $this->repo->getInstantRefundsDefaultPricingPlanForMethod(
             $feature,
             $method,
-            $entity->merchant,
             Product::PRIMARY,
             $planId
         );

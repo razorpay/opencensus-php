@@ -2095,7 +2095,6 @@ class Service extends Base\Service
             $instantRefundsDefaultPricingRules = $this->repo->pricing->getInstantRefundsDefaultPricingPlanForMethod(
                 PricingFeature::REFUND,
                 $pricingMethod,
-                $this->merchant,
                 Product::PRIMARY,
                 $planId
             );

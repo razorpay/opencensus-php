@@ -1037,7 +1037,7 @@ return [
         ]
     ],
 
-    'testInstantRefundsNotSupportedOnNonRZPOrg' => [
+    'testInstantRefundsSupportedOnNonRZPOrg' => [
         'request'   => [
             'content' => [
                 'speed' => 'optimum',
@@ -1045,17 +1045,46 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Instant refund not supported for the payment',
+                'entity'          => 'refund',
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'notes'           => [],
+                'receipt'         => null,
+                'acquirer_data'   => [
+                    'arn' => null
                 ],
+                'batch_id'        => null,
+                'status'          => 'pending',
+                'speed_processed' => 'instant',
+                'speed_requested' => 'optimum'
             ],
-            'status_code' => 400,
+            'status_code' => 200,
         ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED
-        ]
+    ],
+
+    'testInstantRefundsSupportedOnNonRZPOrgWithDefaultPricing' => [
+        'request'   => [
+            'content' => [
+                'speed' => 'optimum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'refund',
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'notes'           => [],
+                'receipt'         => null,
+                'acquirer_data'   => [
+                    'arn' => null
+                ],
+                'batch_id'        => null,
+                'status'          => 'pending',
+                'speed_processed' => 'instant',
+                'speed_requested' => 'optimum'
+            ],
+            'status_code' => 200,
+        ],
     ],
 
     'testInstantRefundsNotSupportedForFeatureNotEnabledMerchants' => [

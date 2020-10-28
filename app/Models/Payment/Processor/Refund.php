@@ -166,14 +166,9 @@ trait Refund
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
-        //
-        // Pricing is defined only for merchants of RZP Org - please refer calculator/refund.php : getPricingRule()
-        // before removing org checks
-        //
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_MERCHANT_ALLOWED_INSTANT_SPEEDS) === true) and
-                (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
-                 ($payment->merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)));
+                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
     }
 
     protected function pushMetrics()

@@ -1182,6 +1182,52 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createInstantRefundsPricingPlanOnOrg($orgId)
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbyaE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'fixed_rate'          => 873,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => $orgId,
+            ],
+            [
+                'id'                  => '1zE3CYqf1zbyAC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'fixed_rate'          => 873,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => $orgId,
+            ],
+            [
+                'id'                  => '1zE3CYqf1zbyCC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
+                'fixed_rate'          => 873,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => $orgId,
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createInstantRefundsModeLevelPricingPlan()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
