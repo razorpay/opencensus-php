@@ -663,12 +663,16 @@ class Gateway extends Mindgate\Gateway
             $result[$key] = $values[$index];
         }
 
+        $scrubbedResult = array($result);
+
+        Utility::scrubCardDetails($scrubbedResult, $this->app);
+
         $this->trace->info(
             $traceCode,
             [
                 'body'      => $responseBody,
                 'decrypted' => $scrubbedResponse,
-                'parsed'    => $result,
+                'parsed'    => $scrubbedResult,
                 'gateway'   => $this->gateway,
                 'type'      => $type
             ]);

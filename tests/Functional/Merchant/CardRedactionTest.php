@@ -126,6 +126,7 @@ class CardRedactionTest extends TestCase
         $record = [
             'context' => [
                 'cc_number' => '4012888888881881',
+                'payee_vpa' => 'ccpay.4315810629729001@icici',
             ]
         ];
 
@@ -133,7 +134,8 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'cc_number' => "CARD_NUMBER_SCRUBBED(16)"
+                'cc_number' => "CARD_NUMBER_SCRUBBED(16)",
+                'payee_vpa' => 'ccpay.CARD_NUMBER_SCRUBBED(16)@icici',
             ]
         ];
 
