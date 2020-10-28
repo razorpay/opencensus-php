@@ -575,7 +575,8 @@ class Core extends Base\Core
             }
             else
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OWNER_ALREADY_ASSIGNED);
+                throw new Exception\BadRequestValidationFailureException(
+                    Entity::OWNER_ID. ' already present.');
             }
         }
 

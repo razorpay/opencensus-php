@@ -217,7 +217,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CURRENT_LEVEL, $level);
     }
 
-    public function getOwnerId() : string
+    public function getOwnerId()
     {
         return $this->getAttribute(self::OWNER_ID);
     }
