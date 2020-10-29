@@ -5,16 +5,16 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
   const kycFieldsMap = {};
   const kycTabContent = [];
 
-  const addField = f => {
+  const addField = (f) => {
     allFieldsHash[f.name || f._name] = f;
   };
-  const addToKYCTab = field => {
+  const addToKYCTab = (field) => {
     if (!kycFieldsMap[field]) {
       kycTabContent.push(allFieldsHash[field]);
       kycFieldsMap[field] = true;
     }
   };
-  const scanFields = fields => {
+  const scanFields = (fields) => {
     for (let f of fields) {
       if (Array.isArray(f)) {
         scanFields(f);
@@ -26,58 +26,49 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
 
   const prepareField = (field, clarificationDetails, forceMap) => {
     let reasons = [];
-    const latestNc = needsKyc.nc_count // latest needs clarrification
+    const latestNc = needsKyc.nc_count; // latest needs clarrification
 
     const origKey = field;
     if (!allFieldsHash[field] || Boolean(forceMap)) {
       field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
     if (allFieldsHash[field]) {
-        if(latestNc){
-          clarificationDetails[origKey].map((key) => {
-            if (key.from === 'admin' && key.nc_count === latestNc){
-              if (key.reason_type === 'predefined' ) {
-                try {
-                  reasons.push(
-                    predefinedReasons[origKey].reasons[key.reason_code].description
-                  );
-                } catch (error) {
-                  console.log(error);
-                }
-              } else if (key.reason_type === 'custom') {
-                try {
-                  reasons.push(
-                    key.reason_code
-                  );
-                } catch (error) {
-                  console.log(error);
-                }
+      if (latestNc) {
+        clarificationDetails[origKey].map((key) => {
+          if (key.from === 'admin' && key.nc_count === latestNc) {
+            if (key.reason_type === 'predefined') {
+              try {
+                reasons.push(predefinedReasons[origKey].reasons[key.reason_code].description);
+              } catch (error) {
+                console.log(error);
+              }
+            } else if (key.reason_type === 'custom') {
+              try {
+                reasons.push(key.reason_code);
+              } catch (error) {
+                console.log(error);
               }
             }
-          })
-        } else { 
-           // support for the additional_details
-            for (let r of clarificationDetails[origKey]) {
-              if (r.reason_type === 'predefined'){
-                try {
-                  reasons.push(
-                    predefinedReasons[origKey].reasons[r.reason_code].description
-                  );
-                } catch (error) {
-                  console.log(error);
-                }
-              } else if (r.reason_type === 'custom') {
-                try {
-                  reasons.push(
-                    r.reason_code
-                  );
-                } catch (error) {
-                  console.log(error);
-                }
-              }
-            } 
+          }
+        });
+      } else {
+        // support for the additional_details
+        for (let r of clarificationDetails[origKey]) {
+          if (r.reason_type === 'predefined') {
+            try {
+              reasons.push(predefinedReasons[origKey].reasons[r.reason_code].description);
+            } catch (error) {
+              console.log(error);
+            }
+          } else if (r.reason_type === 'custom') {
+            try {
+              reasons.push(r.reason_code);
+            } catch (error) {
+              console.log(error);
+            }
+          }
         }
-
+      }
 
       if (
         typeof allFieldsHash[field].linkedfields !== 'undefined' &&
@@ -89,7 +80,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
           if (i === 0) {
             allFieldsHash[dField].reasons = reasons;
           }
-          if(reasons.length > 0) {
+          if (reasons.length > 0) {
             addToKYCTab(dField);
           }
         });
@@ -97,7 +88,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
         //Add reasons to main field if there are no dependent fields
         allFieldsHash[field].reasons = reasons;
       }
-      if(reasons.length > 0) {
+      if (reasons.length > 0) {
         addToKYCTab(field);
       }
     }
@@ -122,10 +113,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       driver_license_back: 'address_proof_back',
     };
 
-    if (
-      Boolean(mappedFields[key]) ||
-      (Boolean(forceMap) && allFieldsHash[mappedFields[key]])
-    ) {
+    if (Boolean(mappedFields[key]) || (Boolean(forceMap) && allFieldsHash[mappedFields[key]])) {
       return mappedFields[key];
     }
     //Implement functionality for custom fields here
@@ -136,18 +124,22 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     scanFields(ndcFields);
 
     const bankDetailsforNC = {};
-    let removedBankDetailsFromNC = needsKyc.clarification_reasons
-    
-    for (const [key, value] of Object.entries(needsKyc.clarification_reasons)) {
-      if (key === 'bank_account_name' || key === 'bank_branch_ifsc' || key === 'bank_account_number'){
-        bankDetailsforNC[key] = value;
-        removedBankDetailsFromNC = Object.assign({}, removedBankDetailsFromNC)
-        delete removedBankDetailsFromNC[key]
-
-      } 
+    let removedBankDetailsFromNC = needsKyc.clarification_reasons;
+    if (needsKyc.clarification_reasons) {
+      for (const [key, value] of Object.entries(needsKyc.clarification_reasons)) {
+        if (
+          key === 'bank_account_name' ||
+          key === 'bank_branch_ifsc' ||
+          key === 'bank_account_number'
+        ) {
+          bankDetailsforNC[key] = value;
+          removedBankDetailsFromNC = Object.assign({}, removedBankDetailsFromNC);
+          delete removedBankDetailsFromNC[key];
+        }
+      }
     }
 
-    const newClarificationDetails = {...removedBankDetailsFromNC, ...bankDetailsforNC}
+    const newClarificationDetails = { ...removedBankDetailsFromNC, ...bankDetailsforNC };
 
     for (let field in newClarificationDetails) {
       prepareField(field, newClarificationDetails);
@@ -201,8 +193,7 @@ const predefinedReasons = {
   business_website: {
     reasons: {
       website_not_live: {
-        description:
-          'Your website/app is currently not live. When will your website go live?',
+        description: 'Your website/app is currently not live. When will your website go live?',
       },
     },
   },
@@ -253,16 +244,13 @@ const predefinedReasons = {
         description: 'Please submit the Certificate of Incorporation',
       },
       submit_complete_partnership_deed: {
-        description:
-          'Please submit all the pages of the Partnership Deed merged as one document.',
+        description: 'Please submit all the pages of the Partnership Deed merged as one document.',
       },
       submit_gstin_msme_shops_estab_certificate: {
-        description:
-          'Please submit the GSTIN/MSME/Shops and Establishment Certificate',
+        description: 'Please submit the GSTIN/MSME/Shops and Establishment Certificate',
       },
       submit_complete_trust_deed: {
-        description:
-          'Please submit all the pages of the Trust Deed merged as one document',
+        description: 'Please submit all the pages of the Trust Deed merged as one document',
       },
       submit_society_reg_certificate: {
         description: 'Please submit the Society registration certificate',
@@ -272,12 +260,10 @@ const predefinedReasons = {
           'The validity of the business proof attached has elapsed. Please submit the updated registration certificate',
       },
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
       submit_reg_business_pan_card: {
-        description:
-          'Please submit a copy of the PAN Card[in the name of registered business]',
+        description: 'Please submit a copy of the PAN Card[in the name of registered business]',
       },
     },
   },
@@ -332,72 +318,63 @@ const predefinedReasons = {
   aadhar_back: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   aadhar_front: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   voter_id_front: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   voter_id_back: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   driver_license_front: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   driver_license_back: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   passport_front: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   passport_back: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },
   cancelled_cheque: {
     reasons: {
       illegible_doc: {
-        description:
-          'The document attached is not legible. Please resubmit a clearer copy',
+        description: 'The document attached is not legible. Please resubmit a clearer copy',
       },
       unable_to_validate_acc_number: {
         description:
