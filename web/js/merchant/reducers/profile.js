@@ -69,11 +69,21 @@ export const updatePassword = (data) => {
   };
 };
 
-export const updateDisplayName = (data) => {
+export const updateMerchantConfig = (data) => {
   return () => {
     return merchantFetch({
       url: 'account/config',
       method: 'put',
+      data,
+    });
+  };
+};
+
+export const updateBillingLabel = (data) => {
+  return () => {
+    return merchantFetch({
+      url: 'merchants/billing_label/update',
+      method: 'patch',
       data,
     });
   };
@@ -99,6 +109,13 @@ export const saveGST = (data) => {
       data,
     }),
   };
+};
+
+export const fetchBillingLabelSuggestions = () => {
+  return merchantFetch({
+    url: 'merchants/billing_label/suggestions',
+    method: 'get',
+  });
 };
 
 export const fetchBankAccountChangeStatus = (merchantId) => {

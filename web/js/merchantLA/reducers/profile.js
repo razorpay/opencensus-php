@@ -1,7 +1,7 @@
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
 import { set } from 'common/utils/immutable';
 
-export const updatePassword = data => {
+export const updatePassword = (data) => {
   return ajax({
     url: '/password',
     method: 'post',
@@ -10,7 +10,7 @@ export const updatePassword = data => {
   });
 };
 
-export const updateDisplayName = data => {
+export const updateMerchantConfig = (data) => {
   return () => {
     return merchantFetch({
       url: 'account/config',

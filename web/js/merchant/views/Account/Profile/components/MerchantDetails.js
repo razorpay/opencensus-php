@@ -11,23 +11,12 @@ import { titleCase, isPresent } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { BUSINESS_TYPE_MAP, ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
 import UserContactMobile from './UserContactMobile';
-
-const businessTypeMap = {
-  1: 'Proprietorship',
-  2: 'Individual',
-  3: 'Partnership',
-  4: 'Private',
-  5: 'Public',
-  6: 'LLP',
-  7: 'NGO',
-  9: 'Trust',
-  10: 'Society',
-};
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
@@ -72,6 +61,7 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
 const MerchantDetails = ({
   user,
   changeDisplayName,
+  changeBillingLabel,
   openModal,
   closeModal,
   tracking,
@@ -115,10 +105,7 @@ const MerchantDetails = ({
                 <i class="i i-info-outline" />
                 <Popover align="top" theme="dark">
                   <PopoverBody>
-                    <div>
-                      This is the display name that you and your team will see on the Razorpay
-                      dashboard.
-                    </div>
+                    <div>{ATTR_DETAILS.display_name.desc}</div>
                   </PopoverBody>
                 </Popover>
               </small>
@@ -129,11 +116,11 @@ const MerchantDetails = ({
               <span>
                 {user.display_name}
                 <a class="p-l" onClick={changeDisplayName} title="Edit Display Name">
-                  <i class="i i-edit" />
+                  <i className="i i-edit" />
                 </a>
               </span>
             ) : (
-              <a class="p-l" onClick={changeDisplayName} title="Set Display Name">
+              <a className="p-l" onClick={changeDisplayName} title="Set Display Name">
                 Set Display Name
               </a>
             )
@@ -150,7 +137,7 @@ const MerchantDetails = ({
 
       <DetailRow label="Business Name" value={titleCase(user.business_name)} />
 
-      <DetailRow label="Business Type" value={titleCase(businessTypeMap[user.business_type])} />
+      <DetailRow label="Business Type" value={titleCase(BUSINESS_TYPE_MAP[user.business_type])} />
 
       <DetailRow
         label="Registration Date"
@@ -258,6 +245,51 @@ const MerchantDetails = ({
           />
         </React.Fragment>
       )}
+
+      {changeBillingLabel &&
+        user.activation_status == 'activated' &&
+        user.business_type != 2 &&
+        user.business_type != 11 && (
+          <DetailRow
+            label={() => (
+              <div>
+                <span>Brand Name</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        <div>Brand Name changes would be reflected in the following places,</div>
+                        <div>- Transaction Confirmation Email</div>
+                        <div>- Refund Email</div>
+                        <div>- Payment Pages</div>
+                        <div>- Payment link</div>
+                        <div>- Checkout</div>
+                        <div>- Smart Collect</div>
+                        <div>- Route</div>
+                        <div>- Subscriptions</div>
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
+            value={() =>
+              user.billing_label ? (
+                <span>
+                  {user.billing_label}
+                  <a class="p-l" onClick={changeBillingLabel} title="Edit Billing Label">
+                    <i class="i i-edit" />
+                  </a>
+                </span>
+              ) : (
+                <a className="p-l" onClick={changeBillingLabel} title="Set Billing Label">
+                  Set Billing Label
+                </a>
+              )
+            }
+          />
+        )}
     </div>
   );
 };

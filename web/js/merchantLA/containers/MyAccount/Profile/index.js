@@ -12,13 +12,14 @@ import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDet
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
 import { fetchUser } from 'merchantLA/reducers/session';
 import PasswordForm from './PasswordForm';
-import DisplayNameForm from 'merchant/views/Account/Profile/components/DisplayNameForm';
-
-import { updateDisplayName } from 'merchantLA/reducers/profile';
+import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { updateMerchantConfig } from 'merchantLA/reducers/profile';
 import { updateSession } from 'merchantLA/reducers/session';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
     };
@@ -27,15 +28,15 @@ import { updateSession } from 'merchantLA/reducers/session';
     ...ModalActions,
     showNotification,
     fetchUser,
-    updateDisplayName,
+    updateMerchantConfig,
     updateSession,
-  }
+  },
 )
 export default class Profile extends Component {
   state = {};
 
   componentDidMount() {
-    this.props.fetchUser().then(reponse => {
+    this.props.fetchUser().then((reponse) => {
       let user = reponse.data;
       if (!user.current) {
         this.setState({
@@ -57,10 +58,10 @@ export default class Profile extends Component {
     });
   };
 
-  updateDisplayName = props => {
+  updateMerchantConfig = (props) => {
     return this.props
-      .updateDisplayName(props)
-      .then(resp => {
+      .updateMerchantConfig(props)
+      .then((resp) => {
         if (resp.success) {
           this.props.showNotification({
             type: 'success',
@@ -79,7 +80,7 @@ export default class Profile extends Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -91,9 +92,12 @@ export default class Profile extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <DisplayNameForm
-          displayName={this.props.user.display_name}
-          updateDisplayName={this.updateDisplayName}
+        <MerchantConfigForm
+          attribute="display_name"
+          label={ATTR_DETAILS.display_name.label}
+          desc={ATTR_DETAILS.display_name.desc}
+          value={this.props.user.display_name}
+          updateMerchantConfig={this.updateMerchantConfig}
         />
       ),
     });
@@ -133,9 +137,7 @@ export default class Profile extends Component {
             {user && user.current ? (
               <MerchantDetails
                 user={user}
-                changeDisplayName={
-                  !!this.isLinkedAccountOwner() && this.openChangeDisplayName
-                }
+                changeDisplayName={!!this.isLinkedAccountOwner() && this.openChangeDisplayName}
               />
             ) : null}
           </div>

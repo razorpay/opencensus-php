@@ -1,3 +1,8 @@
+$white-color = rgb(255, 255, 255);
+$label-suggestions-border-color = #E8EAEE;
+$selected-label-bg-color = #dbe9ff;
+$light-blue-color = #2B83EA;
+
 .profile-container {
   .panel-heading {
     padding-top: 10px;
@@ -55,4 +60,73 @@
 .profile-container .help-content i {
   font-size: 130%;
   margin-left: 4px;
+}
+
+.billing-label-info {
+  position: relative;
+  top: -2px;
+  left: 7px;
+}
+
+.help-curr-billing-div {
+  color: rgba(22, 47, 86, 0.38);
+  margin-top: 16px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  cursor: default;
+}
+
+.curr-billing-label-input {
+  background-color: $white-color !important;
+  cursor: default;
+  border-right: 0;
+}
+.curr-billing-label-input + .input-group-addon {
+  background-color: $white-color;
+}
+
+.billing-label-suggestions {
+  padding: 10px 12px;
+  border: 1px solid $label-suggestions-border-color;
+  border-bottom: none;
+  cursor: pointer;
+}
+.billing-label-suggestions-border-bottom {
+  border-bottom: 1px solid $label-suggestions-border-color;
+}
+
+.modal-white-background {
+  background-color: $white-color;
+}
+
+.billing-label-popover.show {
+  top: 60px !important;
+  left: 24px !important;
+  width: 380px;
+  z-index: 3;
+}
+.billing-label-popover.rzp-popover.rzp-tooltip.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow, .billing-label-popover.rzp-popover.rzp-tooltip.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
+  left: 30%;
+}
+
+.add-cutom-label-header {
+  font-size: 13px;
+  line-height: 20px;
+  color: $light-blue-color;
+  margin-top: 20px;
+}
+.add-cutom-label-header>span {
+  cursor: pointer;
+}
+.hide-element {
+  display: none;
+}
+
+.suggested-label-selected {
+  background-color: $selected-label-bg-color;
+}
+.suggested-label-selected-tick {
+  float: right;
+  height: 12px;
+  margin-top: 5px;
 }

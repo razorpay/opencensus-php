@@ -18,15 +18,17 @@ import Invitations from 'merchant/views/Account/Profile/components/Invitations';
 import BankAccountDetailsChange from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
 import { fetchUser } from 'merchant/reducers/session';
 import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
-import DisplayNameForm from 'merchant/views/Account/Profile/components/DisplayNameForm';
+import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
 import UpgradeMerchantForm from 'merchant/views/Account/Profile/components/UpgradeMerchantForm';
 import SettlementDetails from 'merchant/views/Account/Profile/components/SettlementDetails';
-import { updateDisplayName } from 'merchant/reducers/profile';
+import { updateMerchantConfig, updateBillingLabel } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
 
 import User2FASettings from './components/User2FASettings';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import UpdateBillingLabel from './components/UpdateBillingLabel';
 
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
@@ -43,7 +45,8 @@ import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFac
     ...ModalActions,
     showNotification,
     fetchUser,
-    updateDisplayName,
+    updateMerchantConfig,
+    updateBillingLabel,
     updateSession,
   },
 )
@@ -182,9 +185,9 @@ export default class Profile extends Component {
     });
   };
 
-  updateDisplayName = (props) => {
+  updateMerchantConfig = (props) => {
     return this.props
-      .updateDisplayName(props)
+      .updateMerchantConfig(props)
       .then((resp) => {
         if (resp.success) {
           this.props.showNotification({
@@ -213,12 +216,81 @@ export default class Profile extends Component {
   };
 
   openChangeDisplayName = () => {
+    this.openAttrSaveModal('display_name');
+  };
+
+  updateBillingLabel = (data) => {
+    return this.props
+      .updateBillingLabel(data)
+      .then((resp) => {
+        if (resp.success) {
+          window.rzpAnalytics({
+            eventCategory: 'Brand Name',
+            eventAction: 'Save brand name success',
+            eventLabel: `${this.props.user.id}`,
+          });
+
+          this.props.showNotification({
+            type: 'success',
+            message: 'Brand name updated successfully.',
+          });
+
+          this.props.closeModal();
+
+          const newUser = new User({
+            ...this.props.user,
+            billing_label: resp.data.billing_label,
+          });
+
+          this.props.updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch((err) => {
+        window.rzpAnalytics({
+          eventCategory: 'Brand Name',
+          eventAction: 'Save brand name failure',
+          eventLabel: `${this.props.user.id}`,
+        });
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors[0],
+        });
+      });
+  };
+
+  openChangeBillingLabel = () => {
+    const { user } = this.props;
+    window.rzpAnalytics({
+      eventCategory: 'Brand Name',
+      eventAction: 'Edit brand name clicked',
+      eventLabel: `${user.id}`,
+    });
+
+    this.props.openModal({
+      size: 'med-large',
+      component: (
+        <UpdateBillingLabel
+          attribute="billing_label"
+          value={this.props.user['billing_label']}
+          updateMerchantConfig={this.updateBillingLabel}
+        />
+      ),
+      className: 'modal-white-background',
+    });
+  };
+
+  openAttrSaveModal = (attr) => {
     this.props.openModal({
       size: 'small',
       component: (
-        <DisplayNameForm
-          displayName={this.props.user.display_name}
-          updateDisplayName={this.updateDisplayName}
+        <MerchantConfigForm
+          attribute={attr}
+          label={ATTR_DETAILS[attr].label}
+          desc={ATTR_DETAILS[attr].desc}
+          value={this.props.user[attr]}
+          updateMerchantConfig={this.updateMerchantConfig}
         />
       ),
     });
@@ -352,6 +424,7 @@ export default class Profile extends Component {
               <MerchantDetails
                 user={user}
                 changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
+                changeBillingLabel={!!this.isAdminOrOwner() && this.openChangeBillingLabel}
                 isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
                 onWebsiteAdd={this.onWebsiteAdd}
               />

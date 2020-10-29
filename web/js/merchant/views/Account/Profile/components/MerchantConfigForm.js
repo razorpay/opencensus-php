@@ -11,56 +11,46 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 @connect(null, { closeModal, showNotification })
 @reduxForm({
-  form: 'updateDisplayNameForm',
+  form: 'updateMerchantConfigForm',
 })
-export default class DisplayNameForm extends PureComponent {
+export default class MerchantConfigForm extends PureComponent {
   constructor(props) {
     super(props);
 
     this.props.initialize({
-      display_name: props.displayName,
+      [props.attribute]: props.value,
     });
   }
 
-  setDisplayName = this.setDisplayName.bind(this);
+  resetValue = this.resetValue.bind(this);
 
-  setDisplayName(props) {
-    this.props.change('display_name', this.props.displayName);
+  resetValue() {
+    this.props.change(this.props.attribute, this.props.value);
   }
 
   render() {
     const { handleSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit(this.props.updateDisplayName)}>
-        <ModalHeader
-          title="Edit Display Name"
-          onCloseClick={this.props.closeModal}
-        />
+      <form onSubmit={handleSubmit(this.props.updateMerchantConfig)}>
+        <ModalHeader title={'Edit ' + this.props.label} onCloseClick={this.props.closeModal} />
         <div class="modal-body">
           <div class="form-group">
-            <label class="label-required">Display Name</label>
+            <label class="label-required">{this.props.label}</label>
             <div class="pull-right">
-              <button
-                type="button"
-                class="btn btn-link no-padding"
-                onClick={this.setDisplayName}
-              >
+              <button type="button" class="btn btn-link no-padding" onClick={this.resetValue}>
                 Reset
               </button>
             </div>
             <Field
-              label="Display Name"
+              label={this.props.label}
               component={InputField}
-              placeholder="Display Name"
-              name="display_name"
+              placeholder={this.props.label}
+              name={this.props.attribute}
               class="form-control"
               validate={required()}
               autoFocus={true}
             />
-            <small class="help-block">
-              This is the display name that you and your team will see on the
-              Razorpay dashboard.
-            </small>
+            <small class="help-block">{this.props.desc}</small>
           </div>
 
           <div class="Modal__actions">
@@ -69,7 +59,7 @@ export default class DisplayNameForm extends PureComponent {
               class="btn btn-primary btn-block"
               text="Update"
               pendingText="Updating..."
-              onClick={handleSubmit(this.props.updateDisplayName)}
+              onClick={handleSubmit(this.props.updateMerchantConfig)}
             />
           </div>
         </div>
