@@ -947,10 +947,6 @@ app
             });
           } else {
             hideSpinner();
-            window.grecaptcha && grecaptcha.reset();
-            $scope.signup.submissionDisabled = isProd;
-            $scope.checkboxCaptcha = '';
-
             var signupError = 'Something went wrong. Please try again.';
             if (data.errors && data.errors.length) {
               signupError = data.errors[0].includes('Internal Server Error')
