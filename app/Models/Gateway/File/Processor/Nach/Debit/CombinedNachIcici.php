@@ -308,7 +308,7 @@ class CombinedNachIcici extends Debit\Base
         $accountName = $this->getPaddedValue($accountName, $fieldLength, ' ', STR_PAD_RIGHT);
 
         $label = $token->merchant->getBillingLabel();
-        $filteredLabel = preg_replace('/[^a-zA-Z0-9]+/', '', $label);
+        $filteredLabel = preg_replace('/[^a-zA-Z]+/', '', $label);
         $userName = self::USER_NAME . $filteredLabel;
         $fieldLength = FieldsLength::USER_NAME;
         $userName = $this->getPaddedValue($userName, $fieldLength, ' ', STR_PAD_RIGHT);

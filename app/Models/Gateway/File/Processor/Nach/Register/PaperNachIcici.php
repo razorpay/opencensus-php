@@ -371,7 +371,9 @@ class PaperNachIcici extends Base
         $startDate = $token->getStartTime();
         $firstCollectionDate = Carbon::createFromTimestamp($startDate, Timezone::IST)->format('Y-m-d');
 
-        $creditorName = $merchant->getFilteredDba();
+        $label         = $merchant->getBillingLabel();
+        $filteredLabel = preg_replace('/[^a-zA-Z]+/', '', $label);
+        $creditorName  = str_limit($filteredLabel, 20, '');
 
         $maxAmount = $this->getFormattedAmount($token->getMaxAmount());
 

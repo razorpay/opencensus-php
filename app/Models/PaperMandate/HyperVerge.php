@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 
 class HyperVerge extends Base\Core
 {
@@ -197,14 +198,32 @@ class HyperVerge extends Base\Core
 
     public function getCompanyName(Entity $paperMandate): string
     {
-        $merchant = $paperMandate->terminal->merchant;
+        $terminal = $paperMandate->terminal;
 
-        if ($merchant->getId() === Constants::SHARED_TERMINAL_MERCHANT_ID)
+        // ICICI and CITI seem to have different requirements for name
+        if ($terminal->getGatewayAcquirer() === Gateway::ACQUIRER_ICIC)
         {
-            return Constants::SHARED_TERMINAL_MERCHANT_NAME;
+            $merchant = $paperMandate->merchant;
+
+            $label = $merchant->getBillingLabel();
+
+            $filteredLabel = preg_replace('/[^a-zA-Z]+/', '', $label);
+
+            $name = str_limit($filteredLabel, 20, '');
+        }
+        else
+        {
+            $merchant = $terminal->merchant;
+
+            if ($merchant->getId() === Constants::SHARED_TERMINAL_MERCHANT_ID)
+            {
+                return Constants::SHARED_TERMINAL_MERCHANT_NAME;
+            }
+
+            $name = $merchant->getName();
         }
 
-        return $merchant->getName();
+        return $name;
     }
 
     protected function getFormattedContactNumber($number)
