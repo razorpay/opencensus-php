@@ -1,15 +1,17 @@
 import { isPresent, isValidGSTIN } from './rzp-utils';
 
-export const isEmail = email => {
+const rzp_gst = '29AAGCR4375J1ZU';
+
+export const isEmail = (email) => {
   email = email || '';
   let emailRegExp = new RegExp(
-    /^$|[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/
+    /^$|[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/,
   );
   return emailRegExp.test(email);
 };
 
 //- validates url without http/https/www
-export const isUrlLenient = url => {
+export const isUrlLenient = (url) => {
   url = url || '';
 
   let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
@@ -20,7 +22,7 @@ export const isUrlLenient = url => {
  * Regex to allow development urls like localhost:8000, localhost, anything that user can put in url.
  * It doesn't allow strange urls like ...., etc. which are not allowed in url in general
  * */
-export const flexibleDevUrl = url => {
+export const flexibleDevUrl = (url) => {
   url = url || '';
 
   let urlRegExp = /^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/;
@@ -28,7 +30,7 @@ export const flexibleDevUrl = url => {
   return urlRegExp.test(url);
 };
 
-export const isDeepLink = url => {
+export const isDeepLink = (url) => {
   url = url || '';
 
   let urlRegExp = /[A-Za-z]+:\/\/.*/;
@@ -36,40 +38,38 @@ export const isDeepLink = url => {
 };
 
 // Note: Fallacy in this method is, the 3rd party urls can keep modifying / may add new url shortner. So this would have to be updated.
-export const validateEmbeddedVideoUrl = url => {
+export const validateEmbeddedVideoUrl = (url) => {
   url = url || '';
   const urlRegExp = /^(http(s)?:\/\/)((w){3}.)?(vimeo\.com|youtu\.be|youtube\.com)\/([\w-_\/]+)([\?].*)?$/i;
 
   return urlRegExp.test(url);
 };
 
-export const isAmount = amount => {
+export const isAmount = (amount) => {
   amount = amount || '';
   let amountRexExp = /^\d+(\.\d{1,2})?$/;
   return amountRexExp.test(amount);
 };
 
-export const isPhone = phone => {
+export const isPhone = (phone) => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
   return phoneRegExp.test(phone);
 };
 
-export const isMobile = mobile => {
+export const isMobile = (mobile) => {
   mobile = mobile || '';
-  let mobileRegExp = new RegExp(
-    /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$/
-  );
+  let mobileRegExp = new RegExp(/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$/);
   return mobileRegExp.test(mobile);
 };
 
-export const isValidPinCode = pinCode => {
+export const isValidPinCode = (pinCode) => {
   pinCode = pinCode || '';
   let pinCodeRegExp = new RegExp(/^[1-9][0-9]{5}$/);
   return pinCodeRegExp.test(pinCode);
 };
 
-export const isValidName = name => {
+export const isValidName = (name) => {
   name = name || '';
   let nameRegExp = new RegExp(/^[a-zA-Z ]+$/);
   return nameRegExp.test(name);
@@ -81,18 +81,16 @@ export const isInteger = (value = '') => {
   return integerRegExp.test(value);
 };
 
-export const isIpAddress = ipAddress => {
+export const isIpAddress = (ipAddress) => {
   const ipRegExp = new RegExp(
-    /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/
+    /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/,
   );
   return ipRegExp.test(ipAddress);
 };
 
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validatePincodeLength(value) {
-  return !value || /^[0-9]{6}$/.test(value)
-    ? undefined
-    : 'Pin Code must be 6 digits';
+  return !value || /^[0-9]{6}$/.test(value) ? undefined : 'Pin Code must be 6 digits';
 }
 
 // TODO: Convert to return true/false and make it consumable
@@ -135,11 +133,7 @@ export function validateCompanyPAN(value) {
   const panValidationError = validatePANCard(value);
   if (panValidationError) {
     return panValidationError;
-  } else if (
-    ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(
-      value[3].toUpperCase()
-    ) === -1
-  ) {
+  } else if (['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3].toUpperCase()) === -1) {
     return 'Invalid PAN format';
   }
 }
@@ -150,9 +144,7 @@ export function validateCIN(value, type = 'CIN') {
   if (value) {
     if (value.length != 21 && type === 'CIN') {
       return 'CIN length must be 21 characters';
-    } else if (
-      !/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)
-    ) {
+    } else if (!/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)) {
       return `Please Provide Valid ${type}`;
     }
   }
@@ -169,11 +161,11 @@ export function validateMultipleEmails(emails) {
     return false;
   }
 
-  return emails.every(email => !!email && isEmail(email));
+  return emails.every((email) => !!email && isEmail(email));
 }
 
 // Parse Object recursively and trims off extra spaces in strings
-export const trimDeep = params => {
+export const trimDeep = (params) => {
   let temp = Object.assign({}, params);
 
   for (let key in temp) {
@@ -205,9 +197,8 @@ export const maxLength = (length, message = '') => {
   };
 };
 
-const makeValidator = (truthyFn, defaultMessage) => (
-  message = defaultMessage
-) => value => (truthyFn(value) ? undefined : message);
+const makeValidator = (truthyFn, defaultMessage) => (message = defaultMessage) => (value) =>
+  truthyFn(value) ? undefined : message;
 
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
@@ -227,6 +218,8 @@ export const name = makeValidator(isValidName, 'Invalid name');
 export function validateGSTIN(gstin) {
   // No error if field is empty.
   if (!gstin) return undefined;
+
+  if (gstin === rzp_gst) return `This is Razorpay's GSTIN number. Please enter your GSTIN number`;
 
   // Return error message if invalid.
   if (!isValidGSTIN(gstin)) {
@@ -271,11 +264,7 @@ export function validateAlphanumeric(value) {
   return regex.test(value);
 }
 
-export function validateAlphanumericWithMinAndMaxLength(
-  value,
-  minLength,
-  maxLength
-) {
+export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLength) {
   if (value.length < minLength) return false;
 
   return validateAlphanumericWithMaxLength(value, maxLength);
