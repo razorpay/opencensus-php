@@ -572,7 +572,7 @@ export default class User {
   }
 
   get isSubscriptionButtonEnabledByRazorX() {
-    return this.getExpStatus('enable_subscription_buttons');
+    return this.isSubscriptionsEnabled && this.getExpStatus('enable_subscription_buttons');
   }
 
   get isInstantBatchRefundsEnabled() {
