@@ -1855,7 +1855,7 @@ class Route
         'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
 
         'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
-
+        'banking_accounts_auditor_daily_updates'  => ['post',     'banking_accounts/activation/{auditorType}/daily-updates',   'BankingAccountController@sendDailyUpdatesToAuditors'        ],
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
@@ -2710,6 +2710,7 @@ class Route
         'payment_get_authenticate_url',
         'payment_get_authentication_entity',
         'payment_get_authorization_entity',
+        'banking_accounts_auditor_daily_updates',
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
         'fd_customer_dispute',
@@ -5255,6 +5256,7 @@ class Route
             'bulk_create_fund_accounts',
             'add_ondemand_pricing_if_absent',
             'gateway_downtimes_archive',
+            'banking_accounts_auditor_daily_updates',
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
         ],

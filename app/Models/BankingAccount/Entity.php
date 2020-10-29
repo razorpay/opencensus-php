@@ -389,9 +389,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getStatusForExternalDisplay()
+    {
+        return Status::transformFromInternalToExternal($this->getStatus());
+    }
+
     public function getSubStatus()
     {
         return $this->getAttribute(self::SUB_STATUS);
+    }
+
+    public function getSubStatusForExternalDisplay()
+    {
+        return Status::transformSubStatusFromInternalToExternal($this->getSubStatus());
     }
 
     public function getBankReferenceNumber()
@@ -597,7 +607,7 @@ class Entity extends Base\PublicEntity
 
     public function activationComments()
     {
-        return $this->hasMany(Comment\Entity::class);
+        return $this->hasMany(Activation\Comment\Entity::class);
 
     }
 

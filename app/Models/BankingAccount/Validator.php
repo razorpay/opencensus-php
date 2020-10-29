@@ -303,6 +303,15 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAuditorTypeForDailyUpdates(string $auditorType)
+    {
+        if (in_array($auditorType, ['spoc']) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Daily Updates not supported for '. $auditorType);
+        }
+    }
+
     public function validateUpdatePermissions(Entity $bankingAccount, $admin)
     {
         // Admin auth or Batch auth with $admin entity passed

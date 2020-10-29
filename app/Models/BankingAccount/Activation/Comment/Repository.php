@@ -3,11 +3,10 @@
 
 namespace RZP\Models\BankingAccount\Activation\Comment;
 
-use Illuminate\Support\Facades\DB;
-use RZP\Constants\Table;
-use RZP\Mail\Merchant\Activation;
+
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\Base;
+use Illuminate\Database\Query\JoinClause;
 
 class Repository extends Base\Repository
 {
@@ -39,6 +38,26 @@ class Repository extends Base\Repository
                     ->where($baCommentsType, '=', 'external')
                     ->orderBy($baCommentsCreatedAt, 'asc')
                     ->get();
+    }
 
+    public function fetchCommentsMadeBetweenForSpoc(int $fromTs, int $toTs)
+    {
+        $baCommentsCreatedAt = $this->repo->banking_account_comment->dbColumn(Entity::CREATED_AT);
+
+        $data = $this->newQuery()
+                    ->select($this->getTableName() . '.*')
+                    ->with(['bankingAccount', 'bankingAccount.merchant.merchantDetail', 'bankingAccount.spocs'])
+                    ->where($baCommentsCreatedAt, '>', $fromTs)
+                    ->where($baCommentsCreatedAt, '<', $toTs)
+                    ->get();
+
+        $spocGroupedData = $data->groupBy(
+            function ($item, $key)
+            {
+                return $item->bankingAccount->spocs()->first()['email'] ?? null;
+            }
+        );
+
+        return $spocGroupedData;
     }
 }

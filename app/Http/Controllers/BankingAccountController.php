@@ -147,4 +147,11 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendDailyUpdatesToAuditors(string $auditorType)
+    {
+        $response = $this->service()->sendDailyUpdatesToAuditors($auditorType);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -1480,5 +1480,20 @@ return [
             'content' => [
             ]
         ],
+    ],
+
+    'testSpocDailyUpdates' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url'     => '/banking_accounts/activation/spoc/daily-updates',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ],
     ]
 ];

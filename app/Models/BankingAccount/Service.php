@@ -2,15 +2,22 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Carbon\Carbon;
+use Mail;
+
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
@@ -398,6 +405,102 @@ class Service extends Base\Service
         $misProcessor = Activation\MIS\Factory::getProcessor($misType, $input);
 
         return $misProcessor->generate();
+    }
+
+    /*
+     * This is a cron route which is to be called every day at 9 am.
+     * This will send updates(maily comments made against BankingAccount)
+     * in the last day to Spocs
+     */
+    public function sendDailyUpdatesToAuditors(string $auditorType)
+    {
+        // getting timestamps
+        $today = Carbon::today(Timezone::IST)->hour(9)->getTimestamp();
+        $yesterday = Carbon::yesterday(Timezone::IST)->hour(9)->getTimestamp();
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_AUDITOR_SEND_UPDATES_REQUEST,
+            [
+                'auditor_type' => $auditorType
+            ]);
+
+        try
+        {
+            $requiredUpdates = $this->getRequiredUpdatesForAuditors($auditorType, $yesterday, $today);
+
+            foreach ($requiredUpdates as $auditorEmail => $requiredAuditorUpdates)
+            {
+                $auditorName = array_pull($requiredAuditorUpdates, 'name');
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_AUDITOR_UPDATES,
+                    [
+                        'auditor_email'     => $auditorEmail,
+                        'auditor_name'      => $auditorName,
+                        'updates'           => $requiredAuditorUpdates
+                    ]);
+
+                $mailable = new UpdatesForAuditor($auditorEmail, $auditorName, $requiredAuditorUpdates);
+
+                Mail::queue($mailable);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_AUDITOR_SEND_UPDATES_FAILED,
+                [
+                    'auditor_type' => $auditorType
+                ]);
+        }
+        return [];
+    }
+
+    public function getRequiredUpdatesForAuditors(string $auditorType, int $fromTs, int $toTs)
+    {
+        $requiredUpdates = [];
+
+        (new Validator)->validateAuditorTypeForDailyUpdates($auditorType);
+
+        // for spoc
+        $spocGroupedComments = $this->repo->banking_account_comment->fetchCommentsMadeBetweenForSpoc($fromTs, $toTs);
+
+        foreach($spocGroupedComments as $spocEmail => $spocEmailComments)
+        {
+            if (empty($spocEmail) === false)
+            {
+                $commentsInfo = [];
+
+                foreach($spocEmailComments as $comment)
+                {
+                    $commentsInfo[] = $this->getCommentInfo($comment);
+                }
+
+                $requiredUpdates[$spocEmail] =
+                    [
+                        // all will have same name since it's in the same group. Using first as reference.
+                        'name'     => $spocEmailComments->first()->bankingAccount->spocs()->first()['name'],
+                        'comments' => $commentsInfo
+                    ];
+            }
+        }
+
+        return $requiredUpdates;
+    }
+
+    protected function getCommentInfo(Comment\Entity $comment)
+    {
+        $commentInfo = $comment->toArrayPublic();
+        $commentInfo['comment'] = strip_tags($commentInfo['comment']);
+        $commentInfo['bank_reference_number'] = $comment->bankingAccount->getBankReferenceNumber();
+        $commentInfo['merchant_id'] = $comment->bankingAccount->getMerchantId();
+        $commentInfo['status'] = $comment->bankingAccount->getStatusForExternalDisplay();
+        $commentInfo['sub_status'] = $comment->bankingAccount->getSubStatusForExternalDisplay();
+
+        $commentInfo['business_name'] = $comment->bankingAccount->merchant->merchantDetail->getBusinessName();
+        $commentInfo['admin_dashboard_link'] = $comment->bankingAccount->getDashboardEntityLink();
+        $commentInfo['created_at'] = Carbon::createFromTimestamp($commentInfo['created_at'], Timezone::IST)->format('d-M-y H:i');
+        return $commentInfo;
     }
 
     public function getBankingAccountSalesPOCs()

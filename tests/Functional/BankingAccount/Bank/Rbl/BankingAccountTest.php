@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
@@ -11,6 +13,7 @@ use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -2599,5 +2602,36 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testSpocDailyUpdates()
+    {
+        Mail::fake();
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'],
+            [
+                'status' => 'initiated',
+                'sub_status' => 'merchant_not_available'
+            ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount->toArrayPublic());
+
+        $baComment = $this->getDbLastEntity('banking_account_comment');
+
+        $yesterday9pm = Carbon::yesterday(Timezone::IST)->hour(21)->getTimestamp();
+
+        $this->fixtures->edit('banking_account_comment', $baComment->getId(), [
+            'created_at' => $yesterday9pm
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(UpdatesForAuditor::class);
     }
 }

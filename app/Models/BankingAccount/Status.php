@@ -332,6 +332,11 @@ class Status
 
     public static function validateSubStatus(string $subStatus = null)
     {
+        if ($subStatus === null)
+        {
+            return;
+        }
+
         if (self::isValidSubStatus($subStatus) === false)
         {
             throw new BadRequestValidationFailureException(
@@ -421,6 +426,21 @@ class Status
         self::validateExternalSubStatus($subStatus);
 
         return self::$externalToInternalSubStatusMap[$subStatus];
+    }
+
+    public static function transformSubStatusFromInternalToExternal($subStatus)
+    {
+        self::validateSubStatus($subStatus);
+
+        // php array_flip() can only flip string and integer
+        if ($subStatus === null)
+        {
+            return 'NULL';
+        }
+
+        $externalToInternalMap = array_diff_assoc(self::$externalToInternalSubStatusMap, ['null' => null]);
+
+        return array_flip($externalToInternalMap)[$subStatus];
     }
 
     public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
