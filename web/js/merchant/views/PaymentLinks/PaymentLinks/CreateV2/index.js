@@ -11,6 +11,9 @@ import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
 import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
+import { saveOnboarding } from 'merchant/reducers/onboarding';
+import { updateFeatures } from 'merchant/reducers/config';
+import { updateUserFeatures } from 'merchant/reducers/session';
 import { fetchPaymentLinkV2Details } from 'merchant/reducers/paymentlinks/details';
 import { luminateRow } from 'merchant/reducers/app';
 import { createPaymentLinkV2 } from '../model';
@@ -27,6 +30,7 @@ const PAYMENT_LINK_FORMS = {
 @withRouter
 @connect(
   (state) => ({
+    user: state.session.user,
     isTestMode: state.session.mode === 'test',
     reminders: state.reminders,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
@@ -35,6 +39,8 @@ const PAYMENT_LINK_FORMS = {
     luminateRow,
     updatePLInReduxList,
     showNotification,
+    saveOnboarding,
+    updateFeatures,
     fetchReminders,
     fetchRemindersMerchantConfigs,
   },
@@ -99,6 +105,10 @@ export default class PaymentLinkCreateV2 extends React.Component {
   prepareDataForPaymentLinkCreation() {
     const promiseList = [];
 
+    if (!this.props.user.isVirtualAccountsEnabled) {
+      this.enableVAFeature();
+    }
+
     const searchQuery = getURLQueryParams(this.props.location.search);
     if (searchQuery.duplicate_id) {
       promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
@@ -114,6 +124,34 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
     return Promise.all(promiseList);
   }
+
+  enableVAFeature = () => {
+    // To Use UPI BE internally uses the VA
+    const FEATURE = 'virtual_accounts';
+
+    if (this.props.isTestMode) {
+      return this.props
+        .updateFeatures(
+          {
+            features: {
+              [FEATURE]: 1,
+            },
+          },
+          this.props.user.current,
+        )
+        .then(() => {
+          updateUserFeatures(FEATURE, true);
+        });
+    }
+
+    return this.props
+      .saveOnboarding(FEATURE, {
+        business_model: this.props.user.business_model,
+      })
+      .then(() => {
+        updateUserFeatures(FEATURE, true);
+      });
+  };
 
   // Duplicate Payment Link
   fetchIfIntentDuplicate = (duplicatePLId) => {

@@ -12,7 +12,7 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 
-export const updateSession = payload => {
+export const updateSession = (payload) => {
   return {
     type: UPDATE_SESSION,
     payload,
@@ -28,6 +28,29 @@ export const fetchUser = () => {
   };
 };
 
+export const updateUserFeatures = (FEATURE, enable) => {
+  updateUser({
+    ...this.props.user,
+    features: this.props.user.features.map((featureData) => {
+      if (featureData.feature === FEATURE) {
+        return {
+          ...featureData,
+          value: enable,
+        };
+      }
+
+      return featureData;
+    }),
+  });
+};
+
+export const updateUser = (data) => {
+  return {
+    type: UPDATE_USER,
+    data,
+  };
+};
+
 export const fetchOrg = () => {
   return {
     type: ORG_FETCH,
@@ -38,7 +61,7 @@ export const fetchOrg = () => {
   };
 };
 
-export const switchMerchant = merchantId => {
+export const switchMerchant = (merchantId) => {
   return () => {
     return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
@@ -57,13 +80,13 @@ export const logout = () => {
   };
 };
 
-export const fetchUserDetailsById = userId => {
+export const fetchUserDetailsById = (userId) => {
   return merchantFetch({
     url: `users/fetch_for_merchant/${userId}`,
   });
 };
 
-export const showOrHideTour = toShowTour => {
+export const showOrHideTour = (toShowTour) => {
   return {
     type: SHOW_HIDE_TOUR,
     toShowTour,
@@ -78,7 +101,7 @@ let initialState = {
   isTourVisible: false,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case UPDATE_SESSION:
       return merge(state, {
