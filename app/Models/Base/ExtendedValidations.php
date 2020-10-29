@@ -317,7 +317,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             {
                 $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY;
             }
-            else if (strlen($note) > 256)
+            else if (strlen($note) > 512)
             {
                 $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE;
             }

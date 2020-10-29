@@ -417,7 +417,7 @@ class AuthorizeTest extends TestCase
     {
         $testData = & $this->testData[__FUNCTION__];
 
-        $largeValue = implode(',', range(1,100,1));
+        $largeValue = implode(',', range(1,200,1));
         $testData['request']['content']['notes']['key'] = $largeValue;
 
         $this->startTest();
