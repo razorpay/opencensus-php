@@ -23,12 +23,10 @@ return [
                         ]
                     ],
                     [
-                        'type'          => 'mutual_fund',
+                        'type'          => 'loan',
+                        'loan_number'   => '1234556',
+                        'amount'        => '6789',
                         'receipt'       => 'dummy_receipt2',
-                        'plan'          => 'dummy_plan2',
-                        'scheme'        => 'dummy_scheme2',
-                        'option'        => 'dummy_option2',
-                        'amount'        => '6789', // not sending folio+notes keys(as its optional)
                     ],
                 ],
             ],
@@ -54,12 +52,10 @@ return [
                         ]
                     ],
                     [
-                        'type'          => 'mutual_fund',
-                        'receipt'       => 'dummy_receipt2',
-                        'plan'          => 'dummy_plan2',
-                        'scheme'        => 'dummy_scheme2',
-                        'option'        => 'dummy_option2',
+                        'type'          => 'loan',
+                        'loan_number'   => '1234556',
                         'amount'        => '6789',
+                        'receipt'       => 'dummy_receipt2',
                     ],
                 ],
             ],

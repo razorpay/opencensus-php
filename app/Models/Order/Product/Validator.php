@@ -12,6 +12,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const MUTUAL_FUND = 'mutual_fund';
+    const LOAN        = 'loan';
 
     protected static $createRules = [
         Entity::ORDER_ID         => 'required|string|size:14',
@@ -31,8 +32,16 @@ class Validator extends Base\Validator
         Constants::NOTES     => 'sometimes|array',
     ];
 
+    protected static $createLoanProductRules = [
+        Entity::TYPE             => 'required|in:loan',
+        Constants::LOAN_NUMBER   => 'sometimes|string',
+        Constants::AMOUNT        => 'sometimes|string',
+        Constants::RECEIPT       => 'sometimes|string',
+    ];
+
     protected static $validProductTypes = [
         self::MUTUAL_FUND,
+        self::LOAN,
     ];
 
     public function validateCreateProduct(array $input)

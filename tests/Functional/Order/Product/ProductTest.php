@@ -39,8 +39,6 @@ class ProductTest extends TestCase
 
         foreach ($this->getEntities('product', [], true)['items'] as $productEntity)
         {
-            $this->assertEquals('mutual_fund', $productEntity['product_type']);
-
             $this->assertArrayNotHasKey('type', $productEntity['product']); // assert that while its stored, `product` column doesnt store `type`
         }
     }
