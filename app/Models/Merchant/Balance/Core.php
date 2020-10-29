@@ -323,9 +323,10 @@ class Core extends Base\Core
 
     /**
      * @param Merchant\Entity $merchant
-     * @param int             $amount
-     * @param string          $txnType
-     * @param string          $balanceType
+     * @param int $amount
+     * @param string $txnType
+     * @param bool $negativeBalanceEnabled
+     * @param string $balanceType
      * @return bool
      * @throws BadRequestException
      */

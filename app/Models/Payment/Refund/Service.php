@@ -27,6 +27,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -719,6 +720,15 @@ class Service extends Base\Service
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
         return $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
+    }
+
+    public function fetchRefundCreationData(array $input)
+    {
+        (new Validator)->validateInput('fetch_refund_creation_data', $input);
+
+        $payment = (new PaymentService)->fetchPaymentEntity($input[Entity::PAYMENT_ID]);
+
+        return $this->getNewProcessor($this->merchant)->fetchRefundCreationData($payment, $input);
     }
 
     public function verifyMultiple($ids)

@@ -87,6 +87,11 @@ class Validator extends Base\Validator
         'refund_ids.*'  => 'required|filled',
     ];
 
+    protected static $fetchRefundCreationDataRules = [
+        'payment_id' => 'required|public_id',
+        'amount'     => 'required|integer|min:0',
+    ];
+
     protected static $markProcessedBulkRules = [
         'refund_ids'       => 'required|sequential_array|max:1000',
         'refund_ids.*'     => 'required|public_id',

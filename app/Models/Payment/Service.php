@@ -2972,6 +2972,23 @@ class Service extends Base\Service
                                                                      $input[PaymentMeta\Entity::REFERENCE_ID]);
     }
 
+    public function fetchPaymentEntity(string $id)
+    {
+        Entity::stripSignWithoutValidation($id);
+
+        $payment = $this->repo->payment->findOrFailPublic($id);
+
+        $paymentMerchantId = $payment->getMerchantId();
+
+        if ($this->merchant->getId() !== $paymentMerchantId) {
+            // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
+        }
+
+        return $payment;
+    }
+
     public function getAuthenticationEntity($id)
     {
         $paymentId = Payment\Entity::verifyIdAndStripSign($id);
