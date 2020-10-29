@@ -47,16 +47,17 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     public function getServerData()
     {
         $serverData = [
-            'request_id'    => $this->request->getId(),
-            'uri'           => $this->request->path(),
-            'url'           => $this->request->fullUrl(),
-            'method'        => $this->request->method(),
-            'ajax'          => $this->request->ajax(),
-            'origin'        => $this->request->header('origin'),
-            'client_ip'     => $this->getClientIp(),
-            'server_ip'     => $this->request->server('SERVER_ADDR'),
-            'env'           => $this->env,
-            'user_agent'    => $this->request->header('User-Agent')
+            'request_id'        => $this->request->getId(),
+            'uri'               => $this->request->path(),
+            'url'               => $this->request->fullUrl(),
+            'method'            => $this->request->method(),
+            'ajax'              => $this->request->ajax(),
+            'origin'            => $this->request->header('origin'),
+            'client_ip'         => $this->getClientIp(),
+            'server_ip'         => $this->request->server('SERVER_ADDR'),
+            'env'               => $this->env,
+            'user_agent'        => $this->request->header('User-Agent'),
+            'x_amzn_trace_id'   => $this->request->header('X-Amzn-Trace-Id')
         ];
 
         return $serverData;
