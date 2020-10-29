@@ -6034,3 +6034,6 @@ ALTER TABLE
 ALTER TABLE disputes
     ADD COLUMN email_notification_status varchar(50) DEFAULT NULL,
     ADD INDEX disputes_expires_on_email_notification_index (expires_on,email_notification_status);
+
+ALTER TABLE p2p_bank_accounts
+    ADD COLUMN type VARCHAR(50) DEFAULT NULL;

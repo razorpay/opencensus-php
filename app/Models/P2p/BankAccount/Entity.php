@@ -27,6 +27,7 @@ class Entity extends Base\Entity
     const MASKED_ACCOUNT_NUMBER    = 'masked_account_number';
     const BENEFICIARY_NAME         = 'beneficiary_name';
     const CREDS                    = 'creds';
+    const TYPE                     = 'type';
 
     /****************** Input Keys ***************/
     const BANK                     = 'bank';

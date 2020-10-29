@@ -46,6 +46,9 @@ class CreateP2pBankAccountTable extends Migration
 
             $table->text(Entity::CREDS);
 
+            $table->string(Entity::TYPE, 50)
+                  ->nullable();
+
             $table->integer(Entity::REFRESHED_AT);
 
             $table->integer(Entity::DELETED_AT)
