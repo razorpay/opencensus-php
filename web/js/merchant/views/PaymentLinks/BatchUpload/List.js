@@ -17,13 +17,13 @@ import SendAllLinks from './components/SendAllLinks';
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       issuableIdList: state.paymentBatchIds.issuableIdList,
     };
   },
-  { fetchAll, createBatch, validateBatch, openModal }
+  { fetchAll, createBatch, validateBatch, openModal },
 )
 export default class BatchListContainer extends Component {
   constructor(props) {
@@ -37,7 +37,7 @@ export default class BatchListContainer extends Component {
     this.state = {
       sms_notify: 0,
       email_notify: 0,
-      reminder_enable: props.user.isDefaultPLBatchRemindersEnabled ? '1' : '0',
+      reminder_enable: 1,
     };
   }
 
@@ -57,7 +57,7 @@ export default class BatchListContainer extends Component {
     });
   };
 
-  sendAll = item => {
+  sendAll = (item) => {
     this.props.openModal({
       size: 'small',
       component: (
@@ -70,7 +70,7 @@ export default class BatchListContainer extends Component {
     });
   };
 
-  sendAllLinks = item => {
+  sendAllLinks = (item) => {
     if (['created', 'failure'].indexOf(item.status) < 0) {
       const allowSendAll = allowSendAllLinks(item);
       return (
@@ -103,11 +103,7 @@ export default class BatchListContainer extends Component {
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
-        batchType={
-          this.props.user.isPaymentlinksV2Enabled
-            ? 'payment_link_v2'
-            : 'payment_link'
-        }
+        batchType={this.props.user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link'}
         maxRows={50000}
         maxFileSize={60457280} // 60MB
         gaEvents={gaEvents}
@@ -133,11 +129,7 @@ export default class BatchListContainer extends Component {
         form="batchListFilter"
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
         sampleUrl={this.sampleUrl}
-        batchType={
-          this.props.user.isPaymentlinksV2Enabled
-            ? 'payment_link_v2'
-            : 'payment_link'
-        }
+        batchType={this.props.user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link'}
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
         gaEvents={gaEvents}
@@ -151,10 +143,7 @@ function allowSendAllLinks(batch) {
   // config object will not be available for older batches
   // duplicate batches will have no success count
   if (batch.config && Object.keys(batch.config).length) {
-    if (
-      parseInt(batch.config.sms_notify) > 0 ||
-      parseInt(batch.config.email_notify) > 0
-    ) {
+    if (parseInt(batch.config.sms_notify) > 0 || parseInt(batch.config.email_notify) > 0) {
       //if more than 0 payment link(s) has been sent, disable the btn
       return false;
     } else {
