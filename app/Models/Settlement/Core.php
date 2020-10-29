@@ -510,6 +510,23 @@ class Core extends Base\Core
         {
             $merchant = $settlement->merchant;
 
+            $merchantId = $merchant->getId();
+
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $merchantId = $merchant->getParentId();
+            }
+
+            $variant = $this->app->razorx->getTreatment($merchantId,
+                MerchantModel\RazorxTreatment::SETTLEMENT_NOTIFICATION_OPT_OUT,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return;
+            }
+
             $bankAccountNumber = ($settlement->bankAccount !== null) ?
                 $settlement->bankAccount->getRedactedAccountNumber() : 'XXXX-XXXX-XXXX';
 

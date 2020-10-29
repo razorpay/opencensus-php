@@ -173,6 +173,9 @@ final class RazorxTreatment
     // experiment to ramping pg persistent invoice
     const PG_PERSISTENT_INVOICE = 'pg_persistent_invoice';
 
+    // experiment for opting out of settlement notification
+    const SETTLEMENT_NOTIFICATION_OPT_OUT = 'settlement_notification_opt_out';
+
     const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
