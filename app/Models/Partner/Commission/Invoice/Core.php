@@ -171,6 +171,10 @@ class Core extends Base\Core
             {
                 $pan = $companyPan;
             }
+            else {
+                // use whatever pan is present in gstin
+                $pan = substr($gstin, 2, 10);
+            }
         }
         else if (empty($companyPan) === false)
         {

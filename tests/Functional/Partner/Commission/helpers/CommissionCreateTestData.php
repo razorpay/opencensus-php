@@ -18,6 +18,19 @@ return [
         ],
     ],
 
+    'testImplicitVariableOnHoldClearForHighTdsPercentage' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testInvoiceAction' => [
         'request'  => [
             'method'  => 'PUT',

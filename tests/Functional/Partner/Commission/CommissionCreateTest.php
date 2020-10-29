@@ -44,6 +44,11 @@ class CommissionCreateTest extends TestCase
     {
         $testData = $this->setUpCommissionCreate();
 
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_PLATFORM_APP_ID,
             null,
@@ -55,7 +60,27 @@ class CommissionCreateTest extends TestCase
 
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
 
-        $this->checkClearOnHoldAndSettlement($commission);
+        $this->checkClearOnHoldAndSettlement($commission, Config\Entity::DEFAULT_TDS_PERCENTAGE/100);
+    }
+
+    public function testImplicitVariableOnHoldClearForHighTdsPercentage()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $this->checkClearOnHoldAndSettlement($commission, Config\Entity::TDS_PERCENTAGE_FOR_MISSING_DETAILS/100);
     }
 
     public function testInvoiceGenerate()
@@ -834,7 +859,7 @@ class CommissionCreateTest extends TestCase
         $this->assertFalse($commission['record_only']);
     }
 
-    protected function checkClearOnHoldAndSettlement($commission)
+    protected function checkClearOnHoldAndSettlement($commission, $tdsPercentage)
     {
         $testData = $this->testData['testClearOnHoldForCommission'];
 
@@ -847,7 +872,7 @@ class CommissionCreateTest extends TestCase
 
         $baseCommission = $commission['credit'] - $commission['tax'];
 
-        $tds = $this->getFeeWithoutTax($baseCommission, Config\Entity::DEFAULT_TDS_PERCENTAGE/100);
+        $tds = $this->getFeeWithoutTax($baseCommission, $tdsPercentage);
 
         $this->assertEquals(-1 * $tds, $tdsAdjustment['amount']);
         $this->assertEquals(Channel::YESBANK, $tdsAdjustment['channel']);

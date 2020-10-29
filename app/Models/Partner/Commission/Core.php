@@ -10,7 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
-use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
@@ -166,6 +166,21 @@ class Core extends Base\Core
         if ($configs->isEmpty() === true)
         {
             return 0;
+        }
+
+        $merchantDetail = (new Detail\Core)->getMerchantDetails($partner);
+
+        $gstin = $merchantDetail->getGstin();
+        $gstin = (empty($gstin) === true) ? null : $gstin;
+
+        $promotorPan   = $merchantDetail->getPromoterPan();
+        $companyPan    = $merchantDetail->getPan();
+
+        // if company pan, promoter pan and gstin are empty, charge 20% as tds by default.
+        // https://jira.corp.razorpay.com/browse/ME-4988
+        if (empty($gstin) === true and empty($promotorPan) === true and empty($companyPan) === true)
+        {
+            return PartnerConfig\Entity::TDS_PERCENTAGE_FOR_MISSING_DETAILS;
         }
 
         return $configs->first()->getTdsPercentage();
