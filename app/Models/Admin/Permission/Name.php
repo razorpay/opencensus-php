@@ -338,6 +338,8 @@ class Name
     // Permission to access capital-los service
     const LOANS_EDIT                          = 'loans_edit';
 
+    const LOS_CARDS                           = 'los_cards';
+
     // Permission to access capital-cards service
     const CAPITAL_CARDS                       = 'capital_cards';
 

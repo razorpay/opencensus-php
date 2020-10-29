@@ -936,6 +936,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::LOS_CARDS => [
+                'description' => 'Allow access to los for cards',
+                'assignable'  => true,
+            ],
+
             Permission::CAPITAL_CARDS => [
                 'description' => 'Allow access to capital-cards service from dashboard',
                 'assignable'  => true,
