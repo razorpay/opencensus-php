@@ -148,6 +148,18 @@ class Constants
             'value' => ProviderCode::YBL,
         ],
         [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            "method" => Method::UPI,
+            'key' => DowntimeDetection::PROVIDER,
+            'value' => ProviderCode::PAYTM,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            "method" => Method::UPI,
+            'key' => DowntimeDetection::PROVIDER,
+            'value' => ProviderCode::APL,
+        ],
+        [
             'type' => DowntimeDetection::SUCCESS_RATE,
             'method' => Method::UPI,
             'key' => DowntimeDetection::PROVIDER,
@@ -182,6 +194,18 @@ class Constants
             'method' => Method::UPI,
             'key' => DowntimeDetection::PROVIDER,
             'value' => ProviderCode::YBL,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::UPI,
+            'key' => DowntimeDetection::PROVIDER,
+            'value' => ProviderCode::PAYTM,
+        ],
+        [
+            'type' => DowntimeDetection::SUCCESS_RATE,
+            'method' => Method::UPI,
+            'key' => DowntimeDetection::PROVIDER,
+            'value' => ProviderCode::APL,
         ],
         [
             'type' => DowntimeDetection::PAYMENT_INTERVAL,

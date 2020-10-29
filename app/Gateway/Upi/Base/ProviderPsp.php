@@ -9,4 +9,5 @@ class ProviderPsp
     const PAYTM         = 'paytm';
     const PHONEPE       = 'phonepe';
     const WHATSAPP      = 'whatsapp';
+    const AMAZON_PAY    = 'amazon_pay';
 }

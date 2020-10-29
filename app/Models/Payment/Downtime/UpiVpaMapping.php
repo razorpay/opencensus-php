@@ -10,6 +10,7 @@ class UpiVpaMapping
         Base\ProviderCode::UPI           => Base\ProviderPsp::BHIM,
         Base\ProviderCode::PAYTM         => Base\ProviderPsp::PAYTM,
         Base\ProviderCode::YBL           => Base\ProviderPsp::PHONEPE,
+        Base\ProviderCode::APL           => Base\ProviderPsp::AMAZON_PAY,
     ];
 
     protected static $multiplePspVpaMapping = [
