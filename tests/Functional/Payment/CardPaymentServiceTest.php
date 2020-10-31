@@ -7,6 +7,7 @@ use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use Requests_Response;
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
@@ -19,6 +20,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Services\CardPaymentService;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -29,6 +31,7 @@ use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+
 
 class CardPaymentServiceTest extends TestCase
 {
@@ -365,6 +368,64 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals("Y", $payment['two_factor_auth']);
 
         $this->disbaleCpsConfig();
+    }
+
+    public function testVerifyError()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'headless_fatal_mock');
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment['internal_error_code']);
+
+        $this->mockCpsErrorVerify($terminal, 'verify_error');
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            },
+            \RZP\Exception\PaymentVerificationException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
     }
 
     public function testAuthorizeViaCpsCapturePayment()
@@ -1496,6 +1557,31 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+    protected function mockCpsErrorVerify($terminal, $responder)
+    {
+        $cardService = $this->getMockBuilder(CardPaymentService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRawRequest'])
+            ->getMock();
+        $this->app->instance('card.payments', $cardService);
+        $response = new Requests_Response();
+        $response->status_code = 400;
+        $response->headers = ['Content-Type' => 'application/json'];
+        $body = '{
+                  "data": {
+                    "some_data": "no_data"
+                  },
+                  "payment": [],
+                  "error": {
+                    "internal_error_code": "BAD_REQUEST_PAYMENT_FAILED",
+                    "gateway_error_code": "BAD_REQUEST_PAYMENT_FAILED",
+                    "description": "BAD_REQUEST_PAYMENT_FAILED",
+                    "gateway_error_description": "BAD_REQUEST_PAYMENT_FAILED"
+                  }
+                }';
+        $response->body = $body;
+        $this->app['card.payments']->method('sendRawRequest')->willReturn($response);
+    }
 
     protected function mockCps($terminal, $responder)
     {
@@ -1634,4 +1720,3 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 }
-

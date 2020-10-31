@@ -597,14 +597,14 @@ class CardPaymentService
         $responseBody = $this->jsonToArray($response->body);
         $responseBody['success'] = false;
         $responseBody['status_code'] = $code;
+        if ($this->action === Action::VERIFY)
+        {
+            return $this->processVerifyResponse($responseBody);
+        }
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
             $responseBody['success'] = true;
-            if ($this->action === Action::VERIFY)
-            {
-                return $this->processVerifyResponse($responseBody);
-            }
         }
 
         return $responseBody;
@@ -709,6 +709,22 @@ class CardPaymentService
     {
         $verify = $this->verifyPayment($response);
 
+        if (($verify->match === true) and
+            ($verify->apiSuccess === false))
+        {
+            try
+            {
+                $this->checkForErrors($response);
+            }
+            catch (\Throwable $exc)
+            {
+                $verify->error = $exc->getError()->getAttributes();
+                throw new Exception\PaymentVerificationException(
+                    $verify->getDataToTrace(),
+                    $verify);
+            }
+        }
+
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -776,7 +792,15 @@ class CardPaymentService
 
     protected function checkGatewaySuccess(Verify &$verify)
     {
-        $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
+        if (array_key_exists('gateway_success', $verify->verifyResponseContent) === true)
+        {
+            $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
+        }
+
+        if (empty($verify->gatewaySuccess) === true or $verify->gatewaySuccess === null)
+        {
+            $verify->gatewaySuccess = false;
+        }
     }
 
     protected function checkAmountMismatch(Verify &$verify)

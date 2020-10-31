@@ -58,7 +58,7 @@ trait CardPaymentService
             'merchant_id'    => $payment->getMerchantId(),
             'razorx_variant' => $variant,
         ]);
-        
+
         if (strtolower($variant) !== 'on')
         {
             return false;
@@ -92,7 +92,6 @@ trait CardPaymentService
             $this->handleDisableIIN($payment, $response);
 
             $this->handleCpsResponse($payment, $response);
-
             // If action is verify we get verify trace data
             if ($action === Action::VERIFY)
             {
