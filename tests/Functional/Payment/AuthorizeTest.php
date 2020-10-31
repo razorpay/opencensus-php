@@ -476,6 +476,23 @@ class AuthorizeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testTimeoutAuthenticatedPayment()
+    {
+        $payment = $this->fixtures->create('payment:status_authenticated', ['authenticated_at' => time() - (60 * 100)]);
+
+        $content = $this->timeoutAuthenticatedPayment();
+
+        $this->assertEquals($content['count'], 1);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testTimeoutOldEmandatePayments()
     {
         // Should timeout

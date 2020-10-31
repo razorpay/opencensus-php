@@ -1370,6 +1370,20 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function timeoutAuthenticatedPayment()
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/payments/auth/timeout',
+            'content' => [
+                'limit' => 10,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = [])
     {
         $testData['request']['url'] = '/payments/'.$id;

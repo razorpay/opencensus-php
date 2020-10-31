@@ -185,6 +185,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_PROCESSED_TO_CREATED                           = 'REFUND_PROCESSED_TO_CREATED';
     const RESET_SCHEDULES_SUMMARY                               = 'RESET_SCHEDULES_SUMMARY';
     const PAYMENT_TIMED_OUT                                     = 'PAYMENT_TIMED_OUT';
+    const PAYMENT_AUTH_TIMED_OUT                                = 'PAYMENT_AUTH_TIMED_OUT';
     const PAYMENT_SHOULD_HAVE_TIMED_OUT                         = 'PAYMENT_SHOULD_HAVE_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                                 = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                                        = 'PAYMENT_FAILED';

@@ -51,6 +51,13 @@ class Payment extends Base
         return $this->fixtures->create('payment', $attributes);
     }
 
+    public function createStatusAuthenticated(array $attributes = array())
+    {
+        $attributes['status'] = 'authenticated';
+
+        return $this->fixtures->create('payment', $attributes);
+    }
+
     public function createEmandateRegistrationCaptured(array $attributes = array())
     {
         $defaultValues = [

@@ -257,6 +257,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postAuthTimeout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->timeoutAuthenticatedPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCard($id)
     {
         $data = $this->service(E::CARD)->fetchById($id);

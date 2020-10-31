@@ -787,6 +787,20 @@ return [
         ],
     ],
 
+    'testTimeoutAuthenticatedPayment' => [
+        'request' => [
+            'content' => [],
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'error_code' => ErrorCode::BAD_REQUEST_ERROR,
+                'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+            ],
+        ],
+    ],
+
     'testTimeoutOldPaymentWithErrorRetention' => [
         'request' => [
             'content' => [],

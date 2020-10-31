@@ -315,6 +315,27 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetches old payments which can be timed-out at method level with respective
+     * merchant relation.
+     * @param int $fromTimestamp
+     * @param int $toTimestamp
+     * @param int $limit
+     * @param string $method
+     */
+    public function fetchOldAuthenticatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
+    {
+        return $this->newQuery()
+            ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+            ->status(Payment\Status::AUTHENTICATED)
+            ->where(Payment\Entity::AUTHENTICATED_AT, '>=', $fromTimestamp)
+            ->where(Payment\Entity::AUTHENTICATED_AT, '<=', $toTimestamp)
+            ->where(Payment\Entity::METHOD, '=', $method)
+            ->with(['merchant', 'merchant.features'])
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
      * Fetches min created_at for particular method in created state.
      * @param string $method
      * @return int
@@ -326,6 +347,20 @@ class Repository extends Base\Repository
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::METHOD, '=', $method)
                     ->min(Entity::CREATED_AT);
+    }
+
+    /**
+     * Fetches min authenticated_at for particular method in authenticated state.
+     * @param string $method
+     * @return int
+     */
+    public function fetchOldPaymentsMinAuthenticatedForMethodForTimeout(string $method)
+    {
+        return  $this->newQueryWithConnection($this->getSlaveConnection())
+            ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+            ->status(Payment\Status::AUTHENTICATED)
+            ->where(Payment\Entity::METHOD, '=', $method)
+            ->min(Entity::AUTHENTICATED_AT);
     }
 
     /**

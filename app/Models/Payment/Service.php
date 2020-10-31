@@ -1896,6 +1896,85 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
+    public function timeoutAuthenticatedPayments(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $limit = $input['limit'] ?? 1000;
+
+        // Only card methods have authenticated status.
+        $method = Payment\Method::CARD;
+
+        $count = $this->timeoutAuthenticatedPaymentsForMethod($limit, $method);
+
+        return ['count' => $count];
+    }
+
+    public function timeoutAuthenticatedPaymentsForMethod($limit, $method)
+    {
+        $count = 0;
+
+        $error = 0;
+
+        $startTime = microtime(true);
+
+        $now = time();
+
+        $toTimestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
+
+        $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinAuthenticatedForMethodForTimeout($method);
+
+        if (isset($fromTimestamp) === false)
+        {
+            return 0;
+        }
+
+        $payments = $this->repo->payment->fetchOldAuthenticatedPaymentsForMethodForTimeout($fromTimestamp, $toTimestamp, $limit, $method);
+
+        $total = count($payments);
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->shouldTimeoutAuthenticatedPayment($now) === true)
+            {
+                $this->repo->transaction(function () use ($payment, & $count, & $error)
+                {
+                    $this->repo->payment->lockForUpdateAndReload($payment);
+
+                    try
+                    {
+                        $this->getNewProcessor($payment->merchant)
+                            ->setPayment($payment)
+                            ->timeoutPayment();
+
+                        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+
+                        $count++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException($e);
+
+                        $error++;
+                    }
+                });
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTH_TIMED_OUT,
+            [
+                'method'     => $method,
+                'total'      => $total,
+                'count'      => $count,
+                'error'      => $error,
+                'timestamp'  => time(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
+
+        return $count;
+    }
+
     public function timeoutOldPaymentsForMethod($limit, $method)
     {
         $count = 0;

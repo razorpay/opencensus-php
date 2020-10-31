@@ -1809,6 +1809,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::ON_HOLD_UNTIL);
     }
 
+    public function getAuthenticatedAt()
+    {
+        return $this->getAttribute(self::AUTHENTICATED_AT);
+    }
+
     public function getCapturedAt()
     {
         return $this->getAttribute(self::CAPTURED_AT);
@@ -3769,6 +3774,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $timeoutPeriod = $this->getTimeoutWindow();
 
         $diff = $now - $this->getCreatedAt();
+
+        return ($diff >= $timeoutPeriod);
+    }
+
+    public function shouldTimeoutAuthenticatedPayment(int $now)
+    {
+        $timeoutPeriod = $this->getTimeoutWindow();
+
+        $diff = $now - $this->getAuthenticatedAt();
 
         return ($diff >= $timeoutPeriod);
     }
