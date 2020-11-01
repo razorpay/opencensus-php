@@ -25,6 +25,8 @@ class PennyTesting extends Base\Core
 
     protected $mutex;
 
+    protected $bankAccount;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +34,13 @@ class PennyTesting extends Base\Core
         $this->cache = $this->app['cache'];
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    public function setBankAccount($bankAccount)
+    {
+        $this->bankAccount = $bankAccount;
+
+        return $this;
     }
 
     /**
@@ -45,7 +54,9 @@ class PennyTesting extends Base\Core
      */
     public function attempt(Entity $merchantDetails, Merchant\Entity $fromMerchant, $reason = Constants::PENNY_TESTING_REASON_ONBOARDING)
     {
-        $input = $this->getFundAccountPayload($merchantDetails, $reason);
+        $getFundAccountPayloadFunction = 'getFundAccountPayloadFor' . studly_case($reason);
+
+        $input = $this->$getFundAccountPayloadFunction($merchantDetails);
 
         $fundAccountValidation = (new FundAccountValidationCore())->create($input, $fromMerchant);
 
@@ -61,7 +72,7 @@ class PennyTesting extends Base\Core
      *
      * @return array
      */
-    private function getFundAccountPayload(Entity $merchantDetails, $reason = Constants::PENNY_TESTING_REASON_ONBOARDING): array
+    private function getFundAccountPayloadForOnboarding(Entity $merchantDetails): array
     {
         $ifsc = $merchantDetails->getIfsc();
 
@@ -81,7 +92,34 @@ class PennyTesting extends Base\Core
             FundAccountValidation::CURRENCY     => 'INR',
             FundAccountValidation::NOTES        => [
                 Entity::MERCHANT_ID                 => $merchantDetails->getMerchantId(),
-                Constants::PENNY_TESTING_REASON     => $reason,
+                Constants::PENNY_TESTING_REASON     => Constants::PENNY_TESTING_REASON_ONBOARDING,
+            ],
+        ];
+
+        return $input;
+    }
+
+    protected function getFundAccountPayloadForBankAccountUpdate(Entity $merchantDetails)
+    {
+        $ifsc = $this->bankAccount->getIfscCode();
+
+        $bankAccountNumber = $this->bankAccount->getAccountNumber();
+
+        $bankAccountName = $this->bankAccount->getBeneficiaryName();
+
+        $input = [
+            FundAccountValidation::FUND_ACCOUNT => [
+                FundAccountEntity::ACCOUNT_TYPE => FundAccountEntity::BANK_ACCOUNT,
+                FundAccountEntity::DETAILS      => [
+                    BankAccountEntity::ACCOUNT_NUMBER => $bankAccountNumber,
+                    BankAccountEntity::NAME           => $bankAccountName,
+                    BankAccountEntity::IFSC           => $ifsc,
+                ],
+            ],
+            FundAccountValidation::CURRENCY     => 'INR',
+            FundAccountValidation::NOTES        => [
+                Entity::MERCHANT_ID                 => $merchantDetails->getMerchantId(),
+                Constants::PENNY_TESTING_REASON     => Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE,
             ],
         ];
 
@@ -110,7 +148,7 @@ class PennyTesting extends Base\Core
             function() use ($input, $merchant, $merchantDetails) {
                 $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $input) {
 
-                    $reason =studly_case($input[Constants::PENNY_TESTING_REASON]);
+                    $reason = studly_case($input[Constants::PENNY_TESTING_REASON]);
 
                     $handler = 'handlePennyTestingEventFor' . $reason;
 
@@ -482,7 +520,7 @@ class PennyTesting extends Base\Core
 
         $this->increasePennyTestingAttempt($merchantDetails);
 
-        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant, $reason);
+        $fundAccountValidation = $this->attempt($merchantDetails, $fromMerchant, $reason);
 
         $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }

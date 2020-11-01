@@ -2065,6 +2065,9 @@ class MerchantTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
+        $fundAccount = $this->getEntityById('fund_account', $fav['fund_account_id'], true);
+        $fundAccountBankAccount = $fundAccount['bank_account'];
+
         $this->assertNotNull($fav);
 
         $this->assertEquals('bank_account_update', $fav['notes']['penny_testing_reason']);
@@ -2072,6 +2075,11 @@ class MerchantTest extends TestCase
         $this->assertNull($fav['results']['account_status']);
 
         $this->assertNull($fav['results']['registered_name']);
+
+
+        $this->assertEquals('0000009999999999999', $fundAccountBankAccount['account_number']);
+        $this->assertEquals('ICIC0001206', $fundAccountBankAccount['ifsc']);
+        $this->assertEquals('Test R4zorpay:', $fundAccountBankAccount['name']);
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
@@ -2091,7 +2099,7 @@ class MerchantTest extends TestCase
 
         $afterCount = $this->getBankAccountsCount($merchantId);
 
-        $this->assertEquals($beforeCount + 1, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
@@ -2180,7 +2188,6 @@ class MerchantTest extends TestCase
 
         ]);
 
-        $newBankAcccount =  $this->getDbEntity('bank_account', ['merchant_id' => $merchantId], 'test')->toArrayAdmin();
 
 
         FundAccountValidation::dispatch('test', $fav['id']);
@@ -2208,9 +2215,9 @@ class MerchantTest extends TestCase
         $this->assertEquals('open', $action['state']);
         $this->assertEquals( 'POST', $action['method']);
         $this->assertEquals('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow', $action['controller']);
-        $this->assertEquals('merchant_bank_account_create', $action['route']);
+        $this->assertEquals('merchant_bank_account_update', $action['route']);
         $this->assertEquals('edit_merchant_bank_detail', $action['permission']);
-        $this->assertEquals( [
+        $this->assertArraySelectiveEquals( [
             'input'        => [
                 'ifsc_code'         => 'ICIC0001206',
                 'account_number'    => '0000009999999999999',
@@ -2219,7 +2226,6 @@ class MerchantTest extends TestCase
             ],
             'merchant_id'           => $merchantId,
             'new_bank_account_array'=> [
-                'id'               => $newBankAcccount['id'],
                 'entity'           => 'bank_account',
                 'ifsc'             => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
@@ -2244,7 +2250,7 @@ class MerchantTest extends TestCase
         $this->assertEquals([], $action['route_params']);
 
 
-        $this->assertEquals( [
+        $this->assertArraySelectiveEquals( [
             'old' => [
                 'id'                    => $oldBankAccount['id'],
                 'ifsc'                  => 'RZPB0000000',
@@ -2254,7 +2260,6 @@ class MerchantTest extends TestCase
                 'address_proof_url'     => 'old_address_proof_file_url',
             ],
             'new' => [
-                'id'               => $newBankAcccount['id'],
                 'ifsc'             => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
                 'name'             => 'Test R4zorpay:',
@@ -2263,7 +2268,6 @@ class MerchantTest extends TestCase
             ],
         ], $action['diff']);
 
-        $this->assertEquals('merchant_bank_account_create', $action['route']);
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
 

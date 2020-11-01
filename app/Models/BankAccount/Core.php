@@ -548,9 +548,16 @@ class Core extends Base\Core
         // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
         (new Service)->getOwnBankAccount();
 
-        $newBankAccount = $this->createBankAccount($input, $merchant, $this->mode);
+        // here we are rolling back the transaction as there is no need to save the new bank account
+        // if penny testing suceeds, we will create it at that time
+        // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
+        $newBankAccount = $this->repo->beginTransactionAndRollback(function() use ($input, $merchant) {
+            return $this->createBankAccount($input, $merchant, $this->mode);
+        });
 
-        (new Detail\PennyTesting())->triggerPennyTesting($merchant->merchantDetail, Detail\Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE);
+        (new Detail\PennyTesting())
+            ->setBankAccount($newBankAccount)
+            ->triggerPennyTesting($merchant->merchantDetail, Detail\Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE);
 
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
 
@@ -569,14 +576,6 @@ class Core extends Base\Core
     {
         $data = $this->getBankAccountUpdatePennyTestingData($merchant);
 
-        $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
-
-        $newBankAccountId = Entity::stripDefaultSign($data['new_bank_account_array']['id']);
-
-        $newBankAccount = $this->repo->bank_account->findOrFail($newBankAccountId);
-
-        $this->repo->bank_account->deleteOrFail($newBankAccount);
-
         $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
 
         $this->app['cache']->delete($cacheKey);
@@ -586,25 +585,35 @@ class Core extends Base\Core
         {
             case Detail\BankDetailsVerificationStatus::VERIFIED:
             {
-                $this->createOrChangeBankAccount($data['input'], $merchant, false);
+                $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
 
                 break;
             }
             default:
             {
-                $newBankAccountArray = $data['new_bank_account_array'];
-                $oldBankAccountArray = $data['old_bank_account_array'];
+                $newBankAccountArray = $data[Constants::NEW_BANK_ACCOUNT_ARRAY];
+                $oldBankAccountArray = $data[Constants::OLD_BANK_ACCOUNT_ARRAY];
+
+
+                // here we are rolling back the transaction as there is no need to save the new bank account
+                // if penny testing suceeds, we will create it at that time
+                // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
+                $newBankAccount = $this->repo->beginTransactionAndRollback(function () use ($data, $merchant) {
+                    return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
+                });
 
                 $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL);
 
                 try
                 {
+                    $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
+
                     $this->app['workflow']
                         ->setPermission(Permission\Name::EDIT_MERCHANT_BANK_DETAIL)
-                        ->setRouteName('merchant_bank_account_create')
+                        ->setRouteName(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_ROUTE_NAME)
                         ->setRouteParams([])
                         ->setInput($data)
-                        ->setController('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow')
+                        ->setController(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_CONTROLLER)
                         ->setMethod('POST')
                         ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
                         ->handle($oldBankAccountArray, $newBankAccountArray);
@@ -627,7 +636,7 @@ class Core extends Base\Core
 
     public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)
     {
-        return $this->createOrChangeBankAccount($input['input'], $merchant, false);
+        return $this->createOrChangeBankAccount($input[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
     }
 
     public function isBankAccountUpdatePennyTestingInProgress(MerchantEntity $merchant)
@@ -708,10 +717,10 @@ class Core extends Base\Core
         $this->fillAddressProofUrl($input, $this->merchant, $newBankAccountArray, $oldBankAccountArray);
 
         $data = [
-            'input'                     => $input,
-            'merchant_id'               => $newBankAccount->merchant->getId(),
-            'old_bank_account_array'    => $oldBankAccountArray,
-            'new_bank_account_array'    => $newBankAccountArray,
+            Constants::BANK_ACCOUNT_UPDATE_INPUT => $input,
+            Merchant\Entity::MERCHANT_ID         => $newBankAccount->merchant->getId(),
+            Constants::OLD_BANK_ACCOUNT_ARRAY    => $oldBankAccountArray,
+            Constants::NEW_BANK_ACCOUNT_ARRAY    => $newBankAccountArray,
         ];
 
         return $data;
