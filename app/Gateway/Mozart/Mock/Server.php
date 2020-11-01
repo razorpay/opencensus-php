@@ -844,7 +844,7 @@ class Server extends Base\Mock\Server
                 '3dsCryptogram' => 'AAAAAA...',
                 'authMethod' => 'CRYPTOGRAM_3DS',
                 'pan' => '4444333322221111',
-                'expirationYear' => 2020,
+                'expirationYear' => 2120,
             ]
         ];
 
@@ -860,7 +860,7 @@ class Server extends Base\Mock\Server
                 '3dsCryptogram' => 'AAAAAA...',
                 'authMethod' => 'CRYPTOGRAM_3DS',
                 'pan' => '4532948024710971',
-                'expirationYear' => 2020,
+                'expirationYear' => 2120,
             ]
         ];
 
