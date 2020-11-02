@@ -1568,9 +1568,6 @@ class CardPaymentServiceTest extends TestCase
         $response->status_code = 400;
         $response->headers = ['Content-Type' => 'application/json'];
         $body = '{
-                  "data": {
-                    "some_data": "no_data"
-                  },
                   "payment": [],
                   "error": {
                     "internal_error_code": "BAD_REQUEST_PAYMENT_FAILED",

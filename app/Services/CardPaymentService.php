@@ -751,9 +751,13 @@ class CardPaymentService
     protected function verifyPayment($response)
     {
         $verify = new Verify($this->gateway, []);
-
-        $verify->verifyResponseContent = $response[self::DATA];
-
+        if (array_key_exists(self::DATA, $response) === true)
+        {
+            $verify->verifyResponseContent = $response[self::DATA];
+        }
+        else {
+            $verify->verifyResponseContent = null;
+        }
         $verify->status = VerifyResult::STATUS_MATCH;
 
         $this->checkGatewaySuccess($verify);
@@ -792,14 +796,13 @@ class CardPaymentService
 
     protected function checkGatewaySuccess(Verify &$verify)
     {
-        if (array_key_exists('gateway_success', $verify->verifyResponseContent) === true)
-        {
-            $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
-        }
 
-        if (empty($verify->gatewaySuccess) === true or $verify->gatewaySuccess === null)
+        if (isset($verify->verifyResponseContent) === false)
         {
             $verify->gatewaySuccess = false;
+        }
+        else {
+            $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
         }
     }
 
