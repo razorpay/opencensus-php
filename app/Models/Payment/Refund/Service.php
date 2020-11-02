@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
@@ -1348,6 +1349,8 @@ class Service extends Base\Service
 
     public function retryBulk(array $input)
     {
+        RuntimeManager::setTimeLimit(300);
+
         (new Validator)->validateInput('retry_bulk', $input);
 
         $refundIds = $input['refund_ids'];

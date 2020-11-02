@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -69,6 +70,8 @@ class Service extends Base\Service
     public function bulkCreateCredits(array $input)
     {
         $this->trace->info(TraceCode::MERCHANT_CREDITS_BULK_REQUEST, $input);
+
+        RuntimeManager::setTimeLimit(300);
 
         $failedIds = [];
 

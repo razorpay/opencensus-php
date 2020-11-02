@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Dispute\File;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Dispute\Reason;
 use RZP\Models\{Base, Payment};
 use RZP\Error\PublicErrorDescription;
@@ -177,6 +178,8 @@ class Service extends Base\Service
             [
                 'input'      => $input,
             ]);
+
+        RuntimeManager::setTimeLimit(300);
 
         $data = $this->validateAndGetFileData($input, self::BULK_CREATE_ACTION);
 

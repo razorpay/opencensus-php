@@ -815,6 +815,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
 
+        $this->increaseAllowedSystemLimits();
+
         (new Validator)->validateInput('bulk_assign_schedule', $input);
 
         $merchantIds = $input['merchant_ids'];
@@ -856,6 +858,8 @@ class Service extends Base\Service
     public function bulkAssignPricing(array $input): array
     {
         $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
+
+        $this->increaseAllowedSystemLimits();
 
         (new Validator)->validateInput('bulk_assign_pricing', $input);
 
@@ -1653,6 +1657,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::MERCHANT_METHODS_BULK_UPDATE,
             $input);
+
+        $this->increaseAllowedSystemLimits();
 
         (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
 
@@ -5053,7 +5059,6 @@ class Service extends Base\Service
         return $core->$function($partner, $subMerchant);
     }
 
-
     protected function getBankAccountChangeViaWorkflowStatus($id): bool
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -5085,5 +5090,10 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($id);
 
         return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($merchant);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(300);
     }
 }
