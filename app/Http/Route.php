@@ -405,6 +405,7 @@ class Route
         'fts_dashboard_bulk_status_get'            => ['post',     'fts/dashboard/fund_transfer_status/bulk_get',    'FTSController@getBulkStatus'                                       ],
         'fts_dashboard_channel_health_create'      => ['post',     'fts/dashboard/channel_health_events',            'FTSController@createChannelHealth'                                 ],
         'fts_dashboard_channel_health_delete'      => ['delete',   'fts/dashboard/channel_health_events',            'FTSController@deleteChannelHealth'                                 ],
+        'fts_dashboard_test_transactions_trigger'  => ['post',     'fts/dashboard/channel_health_events/trigger_test_transactions','FTSController@triggerTestTransactions'               ],
         'fts_dashboard_sa_mappings_create'         => ['post',     'fts/dashboard/source_account_mappings',          'FTSController@createSourceAccountMappings'                         ],
         'fts_dashboard_sa_mappings_delete'         => ['delete',   'fts/dashboard/source_account_mappings',          'FTSController@deleteSourceAccountMappings'                         ],
         'fts_bulk_attempts_initiate'               => ['post',     'fts/initiate/attempts',                          'FTSController@initiateBulkFtsAttempts'                             ],
@@ -3763,6 +3764,7 @@ class Route
         'read_merchant_options_admin',
         'update_merchant_options_admin',
         'delete_merchant_options_admin',
+        'fts_dashboard_test_transactions_trigger',
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
@@ -4542,6 +4544,7 @@ class Route
         'fts_dashboard_raw_bank_status'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_bulk_status_get'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_test_transactions_trigger'   => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_channel_health_create'       => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_delete'       => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_sa_mappings_create'          => Permission::FTS_ROUTING_RULES_UPDATE,
