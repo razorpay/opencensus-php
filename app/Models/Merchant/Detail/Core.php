@@ -185,6 +185,7 @@ class Core extends Base\Core
             ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
             ->setController(DetailConstants::ACTIVATION_CONTROLLER)
             ->setWorkflowMaker($maker)
+            ->setMakerFromAuth(false)
             ->setTags($tags)
             ->setRouteParams([Entity::ID => $merchant->getId()])
             ->setInput($input);

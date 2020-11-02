@@ -58,6 +58,13 @@ class Service
     private $workflowMakerType;
 
     /**
+     * @var bool This variable decides from where to fetch workflow maker
+     * i.e from auth context or from the instance variable $workflowMaker;
+     * check method initWorkflowMaker
+     */
+    private $makerFromAuth = true;
+
+    /**
      * @var bool
      */
     protected $skipWorkflow = false;
@@ -561,6 +568,13 @@ class Service
         return $action->toArrayPublic();
     }
 
+    public function setMakerFromAuth(bool $val)
+    {
+        $this->makerFromAuth = $val;
+
+        return $this;
+    }
+
     public function initWorkflowMaker()
     {
         // If admin auth then return Admin
@@ -580,7 +594,7 @@ class Service
 
     public function getWorkflowMaker()
     {
-        if(empty($this->workflowMaker) === true)
+        if($this->makerFromAuth or empty($this->workflowMaker) === true)
         {
             $this->initWorkflowMaker();
         }
@@ -596,7 +610,7 @@ class Service
 
     public function getWorkflowMakerType()
     {
-        if (empty($this->workflowMakerType) === true)
+        if ($this->makerFromAuth or empty($this->workflowMakerType) === true)
         {
             $this->initWorkflowMaker();
         }

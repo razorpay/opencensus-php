@@ -2212,6 +2212,10 @@ class MerchantTest extends TestCase
 
 
 
+        // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
+        $this->assertEquals($merchantId, $action['maker_id']);
+        $this->assertEquals('merchant', $action['maker_type']);
+
         $this->assertEquals('open', $action['state']);
         $this->assertEquals( 'POST', $action['method']);
         $this->assertEquals('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow', $action['controller']);
@@ -9001,6 +9005,14 @@ class MerchantTest extends TestCase
                 ],
             ],
         ]);
+
+        // as this workflow is created in a worker context, we want to assert that the workflow maker is set correctly
+        // to simulate this, we will initialize the worker maker to someother merchant(eg: 10000000000000).
+        // then after the workflow is created in the test, we will assert that the maker changed from 10000000000000 to
+        // the correct merchant id
+        $this->app['basicauth']->setMerchant(((new Merchant\Repository())->findOrFail('10000000000000')));
+
+        $this->app['workflow']->initWorkflowMaker();
     }
 
     private function getBankAccountsCount($merchantId)
