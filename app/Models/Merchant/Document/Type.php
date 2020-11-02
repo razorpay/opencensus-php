@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Merchant\Document;
 
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-
 class Type
 {
     const SEBI_REGISTRATION_CERTIFICATE  = 'sebi_registration_certificate';
@@ -54,6 +52,11 @@ class Type
     const VOTERS_ID                      = 'voters_id';
     const DRIVERS_LICENSE                = 'drivers_license';
 
+    const SHOP_ESTABLISHMENT_CERTIFICATE = "shop_establishment_certificate";
+    const GST_CERTIFICATE                = "gst_certificate";
+    const MSME_CERTIFICATE               = "msme_certificate";
+    const BANK_STATEMENT                 = "bank_statement";
+
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
         self::IRDAI_REGISTRATION_CERTIFICATE,
@@ -93,7 +96,12 @@ class Type
         self::MEMORANDUM_OF_ASSOCIATION,
         self::ARTICLE_OF_ASSOCIATION,
         self::BOARD_RESOLUTION,
-        self::PERSONAL_PAN
+        self::PERSONAL_PAN,
+
+        self::SHOP_ESTABLISHMENT_CERTIFICATE,
+        self::GST_CERTIFICATE,
+        self::MSME_CERTIFICATE,
+        self::BANK_STATEMENT,
     ];
 
     /**

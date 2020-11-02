@@ -148,6 +148,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const AUTHORIZED_SIGNATORY_DOB                 = 'authorized_signatory_dob';
     const PLATFORM                                 = 'platform';
     const PENNY_TESTING_UPDATED_AT                 = 'penny_testing_updated_at';
+    const SHOP_ESTABLISHMENT_NUMBER                = "shop_establishment_number";
+    const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = "shop_establishment_verification_status";
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -273,6 +275,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
         self::DATE_OF_ESTABLISHMENT,
+        self::SHOP_ESTABLISHMENT_NUMBER,
     ];
 
     protected $public = [
@@ -375,6 +378,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::COMPANY_PAN_DOC_VERIFICATION_STATUS,
         self::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
         self::BANK_DETAILS_DOC_VERIFICATION_STATUS,
+        self::SHOP_ESTABLISHMENT_NUMBER,
+        self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
     ];
 
     protected $defaults = [

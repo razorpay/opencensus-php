@@ -360,6 +360,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
                   ->nullable();
 
+            $table->string(MerchantDetail::SHOP_ESTABLISHMENT_NUMBER, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

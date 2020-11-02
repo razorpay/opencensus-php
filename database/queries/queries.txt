@@ -6037,3 +6037,9 @@ ALTER TABLE disputes
 
 ALTER TABLE p2p_bank_accounts
     ADD COLUMN type VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN shop_establishment_number varchar(30) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN shop_establishment_verification_status varchar(30) DEFAULT NULL;
