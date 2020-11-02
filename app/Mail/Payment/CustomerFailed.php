@@ -2,13 +2,13 @@
 
 namespace RZP\Mail\Payment;
 
-class Failed extends Base
+class CustomerFailed extends Base
 {
     protected function addSubject()
     {
         $label = $this->data['merchant']['billing_label'] ?? $this->data['payment']['amount'];
 
-        $subject = "Razorpay | Payment failed for $label";
+        $subject = "Payment failed for $label";
 
         $this->subject($subject);
 
@@ -17,7 +17,7 @@ class Failed extends Base
 
     protected function addHtmlView()
     {
-        $this->view('emails.payment.merchant_failure');
+        $this->view('emails.mjml.customer.failure');
 
         return $this;
     }

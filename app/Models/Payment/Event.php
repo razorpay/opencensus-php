@@ -15,6 +15,7 @@ class Event
     const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
     const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
     const REFUND_RRN_UPDATED         = 'refund_rrn_updated';
+    const CUSTOMER_FAILED            = 'customer_failed';
 
     const CUSTOMER_EVENTS = [
         self::AUTHORIZED,
@@ -23,8 +24,8 @@ class Event
         self::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED,
         self::INVOICE_PAYMENT_AUTHORIZED,
-        self::FAILED,
         self::REFUND_RRN_UPDATED,
+        self::CUSTOMER_FAILED,
     ];
 
     protected static $customerEventBitPosition = [
@@ -35,7 +36,7 @@ class Event
         self::CARD_SAVED                 => 5,
         self::INVOICE_PAYMENT_AUTHORIZED => 6,
         self::REFUND_RRN_UPDATED         => 7,
-        self::FAILED                     => 8,
+        self::CUSTOMER_FAILED            => 8,
     ];
 
     const MERCHANT_EVENTS = [

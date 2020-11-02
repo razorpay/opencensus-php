@@ -2466,7 +2466,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getFormattedCard()
     {
-        return $this->card->getFormatted();
+        return ($this->card !== null) ? $this->card->getFormatted() : null;
     }
 
     public function getEmail()
