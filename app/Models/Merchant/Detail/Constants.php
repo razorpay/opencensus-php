@@ -65,7 +65,7 @@ class Constants
     const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
     const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
-    const IS_VALID_NAME                                 = 'is_valid_name';
+    const IS_NAME_MATCHED                               = 'is_name_matched';
     const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'penny_testing_attempt_count';
     const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN        = 180;
     const PENNY_TESTING_MAX_ATTEMPT                     = 2;

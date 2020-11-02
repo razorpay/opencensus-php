@@ -2181,6 +2181,25 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('favid123456789', $merchantDetail->getFundAccountValidationId());
     }
 
+    public function testPennyTestingFailedStatusAfterRetryAttemptCompletion()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  [
+                                                      'bank_details_verification_status' => 'initiated',
+                                                      'penny_testing_updated_at'         => time() - 7300]);
+        $this->ba->appAuthTest();
+
+        $this->updateRetryCountInRedis($merchantDetail, 2);
+
+        $testData = $this->testData['testPennyTestingRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
+
+        $this->assertEquals('failed', $merchantDetail->getBankDetailsVerificationStatus());
+    }
+
     /**
      * @param array  $customFavAttributes
      * @param array  $customMerchantAttributes
@@ -2279,7 +2298,7 @@ class ActivationTest extends OAuthTestCase
 
         $attribute = $this->getFavAttributes($merchantDetail, "pankaj kumar", "invalid");
 
-        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail, 'incorrect_details');
 
         $this->assertPennyTestingAttemptCount($merchantDetail->getId(), 2);
     }
@@ -2383,7 +2402,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
 
-        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'needs_clarification', 'failed');
+        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'needs_clarification', 'not_matched');
 
         $this->assertEquals($merchantDetail->getKycClarificationReasons(), $this->getClarificationReasonsForPennyTestingFailure());
 
@@ -2447,14 +2466,15 @@ class ActivationTest extends OAuthTestCase
 
         $attribute = $this->getFavAttributes($merchantDetail, "random name", "active");
 
-        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail, 'not_matched');
     }
 
     /**
-     * @param $attribute
-     * @param $merchantDetail
+     * @param array  $attribute
+     * @param        $merchantDetail
+     * @param string $verificationStatus
      */
-    protected function validateBankDetailFailureCase($attribute, $merchantDetail): void
+    protected function validateBankDetailFailureCase(array $attribute, $merchantDetail, string $verificationStatus): void
     {
         Mail::fake();
 
@@ -2470,7 +2490,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $merchant->merchantDetail;
 
-        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'failed');
+        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), $verificationStatus);
 
         $this->assertEquals($merchantDetail->getActivationStatus(), 'needs_clarification');
 
