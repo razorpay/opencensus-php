@@ -1694,23 +1694,27 @@ trait Refund
         ];
     }
 
+    // Fetches refund creation related data of the payment for FE apps
+    //
+    // Reference : https://docs.google.com/document/d/134CGvpRknoACraReuAVB7EAtUCmYRA4GYfu_cLhnm5w/edit?usp=sharing
     public function fetchRefundCreationData(Payment\Entity $payment, $input)
     {
+        // Set defaults
         $data = [
-            'amount' => [
-                'value'    => strval($input[RefundEntity::AMOUNT]),
-                'currency' => $payment->getCurrency()
+            RefundEntity::AMOUNT => [
+                RefundConstants::VALUE => strval($input[RefundEntity::AMOUNT]),
+                RefundEntity::CURRENCY => $payment->getCurrency()
             ],
-            'instant_refund' => [
-                'option' => 'disabled',
-                'fees' => [
-                    'fee' => null,
-                    'tax' => null,
+            RefundConstants::INSTANT_REFUND => [
+                RefundConstants::IR_OPTION => RefundConstants::IR_OPTION_DISABLED,
+                RefundConstants::FEES => [
+                    RefundEntity::FEE => null,
+                    RefundEntity::TAX => null,
                 ]
             ],
-            'is_refund_allowed' => true,
-            'is_transfers_reversal_allowed' => false,
-            'messages' => []
+            RefundConstants::IS_REFUND_ALLOWED => true,
+            RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED => false,
+            RefundConstants::MESSAGES => []
         ];
 
         $buildInput = [
@@ -1718,6 +1722,7 @@ trait Refund
             RefundConstants::SPEED => RefundSpeed::OPTIMUM
         ];
 
+        // Errorcodes thrown on balance validation failure
         $balanceErrorCodes = [
             ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
             ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE,
@@ -1732,27 +1737,29 @@ trait Refund
 
             if ($refund->isRefundSpeedInstant() === true)
             {
-                $data['instant_refund']['option'] = 'enabled';
+                $data[RefundConstants::INSTANT_REFUND][RefundConstants::IR_OPTION] = RefundConstants::IR_OPTION_ENABLED;
 
-                $data['instant_refund']['fees']['fee'] = $refund->getFee();
+                $data[RefundConstants::INSTANT_REFUND][RefundConstants::FEES][RefundEntity::FEE] = $refund->getFee();
 
-                $data['instant_refund']['fees']['tax'] = $refund->getTax();
+                $data[RefundConstants::INSTANT_REFUND][RefundConstants::FEES][RefundEntity::TAX] = $refund->getTax();
 
-                // 6 month cases
+                // refunds on aged payments, only instant refund is supported. use onlyOptimum option
                 if ($refund->getSpeedDecisioned() === RefundSpeed::INSTANT)
                 {
-                    $data['instant_refund']['option'] = 'onlyOptimum';
+                    $data[RefundConstants::INSTANT_REFUND][RefundConstants::IR_OPTION] = RefundConstants::IR_OPTION_ONLY_OPTIMUM;
 
-                    // Message only instant supported
-                    $data['messages']['REFUNDS_ON_AGED_PAYMENTS']['reason'] = 'Payment is more than 6 months old, only instant refund is supported';
+                    // Message : only instant refund supported
+                    $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS][RefundConstants::MESSAGE_REASON] = RefundConstants::getBlockRefundsMessage(1);
                 }
+                // If merchants default refund is optimum, use defaultOptimum option
                 else if ($payment->merchant->getDefaultRefundSpeed() === RefundSpeed::OPTIMUM)
                 {
-                    $data['instant_refund']['option'] = 'defaultOptimum';
+                    $data[RefundConstants::INSTANT_REFUND][RefundConstants::IR_OPTION] = RefundConstants::IR_OPTION_DEFAULT_OPTIMUM;
                 }
             }
-            else {
-                $data['messages']['IR_SUPPORTED_INSTRUMENTS']['reason'] = 'Currently, Instant Refunds are available on TPV, netbanking, UPI and select credit cards and debit cards.';
+            else
+            {
+                $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_IR_SUPPORTED_INSTRUMENTS][RefundConstants::MESSAGE_REASON] = RefundConstants::MESSAGE_REASON_IR_SUPPORTED_INSTRUMENTS;
             }
         }
         catch (\Throwable $ex)
@@ -1761,19 +1768,19 @@ trait Refund
             {
                 $lowBalance = true;
 
-                $data['messages']['INSUFFICIENT_FUNDS']['reason'] = 'Your account does not have sufficient balance to instantly refund this payment.';
+                $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_INSUFFICIENT_FUNDS][RefundConstants::MESSAGE_REASON] = RefundConstants::MESSAGE_REASON_IR_INSUFFICIENT_FUNDS;
             }
 
             if ($ex->getCode() === ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK)
             {
-                $data['is_refund_allowed'] = false;
+                $data[RefundConstants::IS_REFUND_ALLOWED] = false;
 
-                $data['messages']['REFUNDS_ON_AGED_PAYMENTS']['reason'] = $ex->getMessage();
+                $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS][RefundConstants::MESSAGE_REASON] = $ex->getMessage();
             }
         }
 
         // validating Balance for normal refund if there is not enough balance for instant refund
-        if (($data['is_refund_allowed'] === true) and ($lowBalance === true))
+        if (($data[RefundConstants::IS_REFUND_ALLOWED] === true) and ($lowBalance === true))
         {
             $buildInput[RefundConstants::SPEED] = RefundSpeed::NORMAL;
 
@@ -1790,39 +1797,40 @@ trait Refund
                 $refund->setGatewayAmountCurrency();
 
                 $refund->setSpeedRequested(RefundSpeed::NORMAL);
+
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
                 $this->refundBalanceChecks($refund);
             }
             catch (\Throwable $ex)
             {
-                $data['is_refund_allowed'] = false;
+                $data[RefundConstants::IS_REFUND_ALLOWED] = false;
 
-                $data['messages']['INSUFFICIENT_FUNDS']['reason'] = 'Your account does not have sufficient balance to refund this payment.';
+                $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_INSUFFICIENT_FUNDS][RefundConstants::MESSAGE_REASON] = RefundConstants::MESSAGE_REASON_INSUFFICIENT_FUNDS;
             }
         }
 
-        if ($data['is_refund_allowed'] === true)
+        if ($data[RefundConstants::IS_REFUND_ALLOWED] === true)
         {
             try
             {
-                $transferInput['amount'] = $input['amount'];
+                $transferInput[RefundEntity::AMOUNT] = $input[RefundEntity::AMOUNT];
 
-                $transferInput['reverse_all'] = true;
+                $transferInput[RefundConstants::REVERSE_ALL] = true;
 
-                $data['is_transfers_reversal_allowed'] = $this->shouldProcessReversals($payment, $transferInput);
+                $data[RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED] = $this->shouldProcessReversals($payment, $transferInput);
             }
             catch (\Throwable $ex)
             {
-                // Do nothing in case of exceptions, default value for transfers reversal is false
-                $data['is_transfers_reversal_allowed'] = false;
+                // Do nothing in case of exceptions, default value for transfers reversal option is false
+                $data[RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED] = false;
             }
         }
 
-        if (empty($data['messages']) === true)
+        if (empty($data[RefundConstants::MESSAGES]) === true)
         {
             // By casting the array into an object, json_encode will always use braces instead of brackets for the value (even when empty).
-            $data['messages'] = (object) array();
+            $data[RefundConstants::MESSAGES] = (object) array();
         }
 
         return $data;

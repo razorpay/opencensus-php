@@ -194,9 +194,12 @@ trait Reversal
      * Documented here:
      * https://docs.google.com/document/d/1Tz_apm6NU0SJPl6z4ctZ9PRfvmf-nliT1Xz1rhJfoPA/edit#heading=h.tu2zrnpp106m
      *
-     * @param  Payment\Entity   $payment
-     * @param  array            $input
+     * @param  Payment\Entity $payment
+     * @param  array          $input
      * @return bool
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function shouldProcessReversals(Payment\Entity $payment, array & $input) : bool
     {

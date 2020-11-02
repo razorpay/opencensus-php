@@ -19,7 +19,6 @@ class Constants
     const DIRECT_SETTLEMENT_REFUND             = 'direct_settlement_refund';
     const MAX_REFUND_RETRY_ATTEMPTS            = 3;
     const MAX_REFUND_VERIFY_REQUESTS           = 100;
-    const SCROOGE_TAGGING_LIVE_TIMESTAMP       = 1552646209;
     const PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND = 'payment_age_limit_for_gateway_refund';
     /**
      * We get the last 10 days refunds created of a gateway.
@@ -29,10 +28,8 @@ class Constants
     /**
      * Refund public status related constants
      */
-    const DISPLAY_REFUND_PUBLIC_STATUS                     = 'display_refund_public_status';
     const REFUND_PUBLIC_STATUS_FEATURE_ENABLED             = 'refund_public_status_feature_enabled';
     const REFUND_PENDING_STATUS_FEATURE_ENABLED            = 'refund_pending_status_feature_enabled';
-    const DISABLE_INSTANT_REFUNDS_FEATURE_ENABLED_MERCHANT = 'disable_instant_refunds_feature_enabled_merchant';
     /**
      * Transaction tracker related constants
      */
@@ -130,6 +127,29 @@ class Constants
     const ERROR_DESCRIPTION     = 'error_description';
     const FAILURE               = 'failure';
     const SPEED                 = 'speed';
+
+    // FE refund creation data
+    const FEES                          = 'fees';
+    const VALUE                         = 'value';
+    const IR_OPTION                     = 'option';
+    const MESSAGE_REASON                = 'reason';
+    const MESSAGES                      = 'messages';
+    const IR_OPTION_ENABLED             = 'enabled';
+    const IR_OPTION_DISABLED            = 'disabled';
+    const REVERSE_ALL                   = 'reverse_all';
+    const IR_OPTION_ONLY_OPTIMUM        = 'onlyOptimum';
+    const IR_OPTION_DEFAULT_OPTIMUM     = 'defaultOptimum';
+    const INSTANT_REFUND                = 'instant_refund';
+    const IS_REFUND_ALLOWED             = 'is_refund_allowed';
+    const IS_TRANSFERS_REVERSAL_ALLOWED = 'is_transfers_reversal_allowed';
+
+    const MESSAGE_KEY_INSUFFICIENT_FUNDS       = 'INSUFFICIENT_FUNDS';
+    const MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS = 'REFUNDS_ON_AGED_PAYMENTS';
+    const MESSAGE_KEY_IR_SUPPORTED_INSTRUMENTS = 'IR_SUPPORTED_INSTRUMENTS';
+
+    const MESSAGE_REASON_INSUFFICIENT_FUNDS       = 'Your account does not have sufficient balance to refund this payment.';
+    const MESSAGE_REASON_IR_INSUFFICIENT_FUNDS    = 'Your account does not have sufficient balance to instantly refund this payment.';
+    const MESSAGE_REASON_IR_SUPPORTED_INSTRUMENTS = 'Currently, Instant Refunds are available on TPV, netbanking, UPI and select credit cards and debit cards.';
 
     // For flipkart like cases we show refunds as processed after 48 hours
     // even if it is not actually processed and config is stored in scrooge
