@@ -59,6 +59,7 @@ class ViewSerializer extends Base\Core
             E::MERCHANT      => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
             'base_url'       => $this->config['app']['url'],
+            E::ORG           => $this->serializeOrgPropertiesForHosted(),
         ];
     }
 
@@ -220,6 +221,26 @@ class ViewSerializer extends Base\Core
 
             $serialized[$key . '_formatted'] = $formatted;
         }
+    }
+
+    protected function serializeOrgPropertiesForHosted()
+    {
+        $org = $this->merchant->org;
+
+        $showRzpLogo = true;
+
+        switch ($org->getCustomCode())
+        {
+            case 'axis':
+                $showRzpLogo = false;
+                break;
+        }
+
+        return [
+            'branding'  => [
+                'show_rzp_logo'  => $showRzpLogo,
+            ]
+        ];
     }
 
     protected function addSettingsOfPaymentLink(array & $serialized)
