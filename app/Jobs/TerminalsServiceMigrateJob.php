@@ -61,7 +61,6 @@ class TerminalsServiceMigrateJob extends Job
 
             $repo->saveOrFail($terminal, ['shouldSync' => false]);
 
-
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);
         }
     }

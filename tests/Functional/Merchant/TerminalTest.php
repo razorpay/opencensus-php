@@ -15,14 +15,22 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 
 class TerminalTest extends TestCase
 {
     use PaymentTrait;
 
     use PartnerTrait;
+
+    use TerminalTrait;
+
+    protected $razorxValue = RazorXClient::DEFAULT_CASE;
+
+    protected $terminalsServiceMock;
 
     public function setUp()
     {
@@ -31,6 +39,21 @@ class TerminalTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    return $this->razorxValue;
+
+                }) );
     }
 
     public function testProxyFetchMerchantTerminals()
@@ -1188,6 +1211,7 @@ class TerminalTest extends TestCase
 
     public function testTerminalCheckAutoDisable()
     {
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $terminal = $this->fixtures->create(
@@ -1204,6 +1228,83 @@ class TerminalTest extends TestCase
                 $content['result'] = 'GW00154';
             }
         }, 'hdfc');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->defaultAuthPayment();
+        });
+
+        $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    // this test fetchTerminalForPayment method with razorx enabled for terminal service call with 200 response
+    public function testTerminalCheckAutoDisableWithTerminalServiceProxy()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal',
+            [
+                'id'          => '12HDFCTerminal',
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                $content['result'] = 'GW00154';
+            }
+        }, 'hdfc');
+
+        $this->razorxValue = 'proxy';
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->defaultAuthPayment();
+        });
+
+        $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    // this test fetchTerminalForPayment method with razorx enabled for terminal service call with 500 response
+    public function testTerminalCheckAutoDisableWithTerminalServiceProxyServerError()
+    {
+        //12HDFCTerminal
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal',
+            [
+                'id'          => '12HDFCTerminal',
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                $content['result'] = 'GW00154';
+            }
+        }, 'hdfc');
+
+        $this->razorxValue = 'proxy';
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getServerErrorTerminalServiceResponse();
+        });
 
         $testData = $this->testData[__FUNCTION__];
 

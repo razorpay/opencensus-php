@@ -695,7 +695,6 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getById($terminalId);
 
-
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
             $this->repo->terminal->lockForUpdateAndReload($terminal);
@@ -935,7 +934,7 @@ class Service extends Base\Service
 
     // existing means those which were already stored without tokenization
     public function tokenizeExistingMpans($input)
-    { 
+    {
         $this->trace->info(
             TraceCode::TERMINAL_TOKENIZE_EXISTING_MPANS_REQUEST,
             $input
@@ -963,14 +962,14 @@ class Service extends Base\Service
             try
             {
                 foreach([Entity::MC_MPAN, Entity::VISA_MPAN, Entity::RUPAY_MPAN] as $network)
-                {                    
-                    // adding same mpans as input params, actual tokenization will happen in core edit function       
+                {
+                    // adding same mpans as input params, actual tokenization will happen in core edit function
                     $editInput[$network] = isset($terminal[$network]) ? $terminal[$network] : '';
                 }
 
-                (new Core)->edit($terminal, $editInput);    
+                (new Core)->edit($terminal, $editInput);
 
-                $response[MpanConstants::TOKENIZATION_SUCCESS_COUNT]++;    
+                $response[MpanConstants::TOKENIZATION_SUCCESS_COUNT]++;
                 $response[MpanConstants::TOKENIZATION_SUCCESS_TERMINAL_IDS][] = $terminal->getId();
             }
             catch(\Throwable $ex)

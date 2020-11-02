@@ -467,6 +467,82 @@ trait Migrate
         return true;
     }
 
+    public static function compareTerminalEntity(Entity $apiEntity, Entity $terminalEntity)
+    {
+        $mismatchData = [];
 
+        // not comparing orgId
+        $methods = ["getId", "getMerchantId", "getCategory", "getGateway", "getGatewayAcquirer", "getGatewayMerchantId",
+                    "getGatewayMerchantId2", "getGatewayTerminalId", "getGatewayAccessCode", "getProcurer", "getVpa",
+                    "getAccountType", "getMCMpan", "getRupayMpan", "getVisaMpan", "isEnabled", "getEnabledBanks","getTpv",
+                    "isCardEnabled", "isNetbankingEnabled", "isEmiEnabled", "isUpiEnabled", "isOmnichannelEnabled", "isBankTransferEnabled",
+                    "isAepsEnabled", "isEmandateEnabled", "isNachEnabled", "isCardlessEmiEnabled", "isCredEnabled", "isPayLaterEnabled",
+                    "isExpected", "isBankingTypeBoth","getType", "isInternational", "getAccountNumber", "getIfscCode",
+                    "getVirtualUpiRoot", "getVirtualUpiMerchantPrefix", "getVirtualUpiHandle", "getCapability", "getCurrency",
+                    "getNetworkCategory", "isExpected", "getCapability", "getMode", "getEmiDuration"];
+
+        foreach (array_values($methods) as $methodName)
+        {
+            if ($apiEntity->$methodName() != $terminalEntity->$methodName())
+            {
+                $data = ["method" => $methodName, "api" => $apiEntity->$methodName(), "terminals" => $terminalEntity->$methodName()];
+
+                $mismatchData[] = $data;
+            }
+        }
+        if (count($mismatchData) > 0)
+        {
+            $app = App::getFacadeRoot();
+
+            $data = ["attribute" => "id", "api" => $apiEntity->getId(), "terminals" => $terminalEntity->getId()];
+
+            $mismatchData[] = $data;
+
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH, $mismatchData);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function getEntityFromTerminalServiceResponse(array $t)
+    {
+        $finalArray = [];
+
+        $ignoreAttributes = ["id", "updated_at", "created_at"];
+
+        foreach (array_keys($t) as $attribute)
+        {
+            if (array_search($attribute, $ignoreAttributes) !== false)
+            {
+                continue;
+            }
+
+            if (($t[$attribute] === null) or ($t[$attribute] === ""))
+            {
+                continue;
+            }
+
+            $finalArray[$attribute] = $t[$attribute];
+        }
+
+        if (empty($finalArray["type"]) === false)
+        {
+            foreach (array_values($finalArray["type"]) as $value)
+            {
+                $formattedType[$value] = "1";
+            }
+
+            $finalArray["type"] = $formattedType;
+        }
+        $terminal = (new Entity)->buildFromTerminalServiceResponse($finalArray);
+
+        $terminal->setId($t["id"]);
+
+        $terminal->setMerchantId($t["merchant_id"]);
+
+        return $terminal;
+    }
 }
 

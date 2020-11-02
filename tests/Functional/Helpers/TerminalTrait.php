@@ -59,6 +59,11 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getServerErrorTerminalServiceResponse()
+    {
+        $this->throwTerminalsServiceIntegrationException();
+    }
+
     protected function getHitachiOnboardResponse($id) : \Requests_Response
     {
         $data = [];

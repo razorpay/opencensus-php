@@ -529,6 +529,8 @@ class Entity extends Base\PublicEntity
         }
     }
 
+
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -711,6 +713,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NETWORK_CATEGORY, $category);
     }
 
+    public function setEmiDuration($duration)
+    {
+        $this->setAttribute(self::EMI_DURATION, $duration);
+    }
+
     public function setEnabled($status)
     {
         $this->setAttribute(self::ENABLED, $status);
@@ -873,7 +880,7 @@ class Entity extends Base\PublicEntity
 
     protected function getEmiDurationAttribute()
     {
-        $emiDuration = $this->attributes[self::EMI_DURATION];
+        $emiDuration = $this->attributes[self::EMI_DURATION] ?? null;
 
         if ($emiDuration !== null)
         {
@@ -1113,6 +1120,16 @@ class Entity extends Base\PublicEntity
         return $terminal;
     }
 
+    public function buildFromTerminalServiceResponse(array $input = array())
+    {
+        $this->modify($input);
+
+        $this->fill($input);
+
+        $this->generateDefaultAttributes($input);
+
+        return $this;
+    }
     /**
      * Used to query by type, which is a bitwise column.
      *

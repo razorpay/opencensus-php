@@ -185,6 +185,19 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalCompareFunction()
+    {
+        $terminal = $this->fixtures->create('terminal:direct_hitachi_terminal', ["international"=> false]);
+
+        $terminalArray = $terminal->toArray();
+
+        $newTerminaEntity = Terminal\Service::getEntityFromTerminalServiceResponse($terminalArray);
+
+        $isEqual = Terminal\Service::compareTerminalEntity($terminal->reload(), $newTerminaEntity);
+
+        $this->assertTrue($isEqual);
+    }
+
     public function testAssignTerminalInternalAuthExistingId()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');

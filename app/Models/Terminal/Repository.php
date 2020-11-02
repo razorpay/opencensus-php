@@ -7,10 +7,12 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
@@ -104,14 +106,47 @@ class Repository extends Base\Repository
 
     public function fetchForPayment(Payment\Entity $payment)
     {
+        $terminal = null;
+
         if ($payment->hasRelation('terminal'))
         {
-            return $payment->terminal;
+            $terminal = $payment->terminal;
         }
 
-        $terminal = $this->getById($payment->getTerminalId());
+        if (empty($terminal) === true)
+        {
+            $terminal = $this->getById($payment->getTerminalId());
 
-        $payment->setRelation('terminal', $terminal);
+            $payment->setRelation('terminal', $terminal);
+        }
+
+        $variantFlag = $this->app->razorx->getTreatment($payment->getMerchantId(), "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
+
+        if ($variantFlag === 'proxy')
+        {
+            try
+            {
+                $path = "v1/terminals/" . $payment->getTerminalId();
+
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                {
+                    $data = ["function" => "fetchForPayment", "terminal_id" => $payment->getTerminalId()];
+
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $data['message'] = $ex->getMessage();
+                $data["function"] = "fetchForPayment";
+
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
 
         return $terminal;
     }
@@ -707,7 +742,7 @@ class Repository extends Base\Repository
         {
             $query = $query->whereIn(Entity::ID, $terminalIds);
         }
-        
+
         return $query->get();
     }
 
