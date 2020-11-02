@@ -1629,7 +1629,8 @@ class Service extends Base\Service
 
                                 $refund->setGatewayRefunded(true);
 
-                                if ($refund->getSpeedProcessed($refund) !== RefundSpeed::NORMAL)
+                                if (($refund->merchant->isFeatureRefundPublicStatusOrPendingStatusEnabled() === true) or
+                                    ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
                                 {
                                     $processor->eventRefundProcessed($refund);
                                 }
@@ -1691,7 +1692,10 @@ class Service extends Base\Service
 
                                 $processor->eventRefundSpeedChanged($refund);
 
-                                $processor->eventRefundProcessed($refund);
+                                if ($refund->merchant->isFeatureRefundPublicStatusOrPendingStatusEnabled() === false)
+                                {
+                                    $processor->eventRefundProcessed($refund);
+                                }
 
                                 break;
 

@@ -100,12 +100,24 @@ trait Refund
 
         $this->eventRefundCreated($this->refund);
 
-        if ($this->refund->isRefundSpeedInstant() === false)
+        if ($this->isRefundStatusProcessedForMerchant() === true)
         {
             $this->eventRefundProcessed($this->refund);
         }
 
         return $refund;
+    }
+
+    // returns true if the status of the refund is shown as processed to the merchant
+    public function isRefundStatusProcessedForMerchant() :bool
+    {
+        if (($this->merchant->isFeatureRefundPublicStatusOrPendingStatusEnabled() === true) or
+            ($this->refund->isRefundSpeedInstant() === true))
+        {
+            return ($this->refund->isProcessed() === true);
+        }
+
+        return true;
     }
 
     public function isInstantRefundSupportedOnPayment(Payment\Entity $payment)

@@ -2708,4 +2708,16 @@ class Entity extends Base\PublicEntity
     {
         return in_array($this->getOrgId(), self::INSTANT_ACTIVATION_BLOCKED_ORG_MAPPING, true);
     }
+
+    // returns true if the 'show_refund_public_status' or 'refund_pending_status' feature is enabled
+    public function isFeatureRefundPublicStatusOrPendingStatusEnabled(): bool
+    {
+        if (($this->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS) === true) or
+            ($this->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

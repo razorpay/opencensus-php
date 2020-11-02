@@ -524,6 +524,49 @@ return [
         ],
     ],
 
+    'refundSpeedChangedWebhookEventDataForPublicStatusFeatureEnabled' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.speed_changed',
+            'contains' => ['refund', 'payment'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 3470,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'status'          => 'pending',
+                        'speed_requested' => 'optimum',
+                        'speed_processed' => 'normal',
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 3470,
+                        'refund_status' => 'partial',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testRefundFailedWebhookEventData' => [
         'mode' => 'test',
         'event' => [
@@ -637,6 +680,49 @@ return [
                         'status' => 'refunded',
                         'amount_refunded' => 50000,
                         'refund_status' => 'full',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testRefundProcessedWebhookOnSpeedChangeFromOptimumToNormal' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.processed',
+            'contains' => ['refund', 'payment'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 3470,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'status'          => 'processed',
+                        'speed_requested' => 'optimum',
+                        'speed_processed' => 'normal',
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 3470,
+                        'refund_status' => 'partial',
                         'captured' => true,
                         'description' => 'random description',
                         'email' => 'a@b.com',

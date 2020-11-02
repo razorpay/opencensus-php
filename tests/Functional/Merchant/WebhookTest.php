@@ -612,6 +612,174 @@ class WebhookTest extends TestCase
         $this->refundPayment($payment['id']);
     }
 
+    // tests the processed webhook for instant refunds of merchants having show_refund_public_status
+    // or pending_status feature enabled
+    public function testRefundProcessedInstantWebhookEventDataForPublicStatusFeatureMerchants()
+    {
+        $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $expectedEvent = $this->testData['testRefundProcessedInstantWebhookEventData']['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
+
+        // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
+        $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+    }
+
+    // tests the scenario when instant refund fails and refund gets processed via normal
+    public function testRefundProcessedWebhookOnSpeedChangeFromOptimumToNormal()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
+        $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+    }
+
+    // tests the scenario when instant refund fails and refund gets processed via normal for
+    // show_refund_public_status or pending status  feature enabled merchants
+    public function testRefundProcessedWebhookOnSpeedChangeFromOptimumToNormal2()
+    {
+        $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $expectedEvent = $this->testData['refundSpeedChangedWebhookEventDataForPublicStatusFeatureEnabled']['event'];
+        $this->expectWebhookEventWithContents('refund.speed_changed', $expectedEvent);
+        $this->dontExpectWebhookEvent('refund.processed');
+
+        $refund =  $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('created', $refund['status']);
+
+        $expectedEvent = $this->testData['testRefundProcessedWebhookOnSpeedChangeFromOptimumToNormal']['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('processed', $refund['status']);
+    }
+
+    public function testRefundProcessedNormalWebhookWithPublicStatusFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $expectedEvent = $this->testData['testRefundProcessedNormalWebhookEventData']['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('processed', $refund['status']);
+    }
+
     public function testRefundCreatedWebhookEventData()
     {
         $payment = $this->defaultAuthPayment();
