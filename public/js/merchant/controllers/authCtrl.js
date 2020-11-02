@@ -1818,7 +1818,7 @@ app
              * - For users where captcha script didnt load, we'll wait for 3sec for the
              * script to load else call login with `Faked`.
              * - For whitelisted merchants, the captcha script will be blocked on there end
-             * and login will happen with `Faked` value after 3 sec timeout.
+             * and login will happen with `Faked` value after 5 sec timeout.
              * - For non-whitelisted merchants, if script loads between 3 sec else
              * `Faked` val to Login api.
              */
@@ -1829,7 +1829,7 @@ app
                 login('Faked');
               }
               hideSpinner();
-            }, 3000);
+            }, 5000);
           }
         }
       };
