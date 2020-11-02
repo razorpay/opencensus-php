@@ -302,7 +302,7 @@ export default class User {
   }
 
   get isProjectNitroEnabled() {
-    return this.getExpStatus('project_nitro');
+    return this.getExpStatus('project_nitro') || this.getExpStatus('project_nitro_1');
   }
 
   get isChargeAtWillEnabled() {

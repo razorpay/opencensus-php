@@ -1353,6 +1353,7 @@ class Service extends Base\Service
             'upi_subscription',
             'rx_bulk_approvals',
             'project_nitro',
+            'project_nitro_1',
             'rx_payout_links_onboarding_revamp',
             'rx_tax_payments_payout',
             'rx_payout_links_new_information_flow',

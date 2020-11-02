@@ -41,7 +41,7 @@ class Constants
             'start_ts'    => 1597390475,
             'end_ts'      => 1601445430,
             'filters'     => [
-                'experiments'         => ['project_nitro'],
+                'experiments'         => ['project_nitro', 'project_nitro_1'],
             ],
         ],
         [
