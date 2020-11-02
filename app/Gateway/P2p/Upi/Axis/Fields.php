@@ -117,6 +117,12 @@ class Fields
     const SCAN_PAY                      = 'SCAN_PAY';
     const INTENT_PAY                    = 'INTENT_PAY';
 
+    // ------------------- BANK ACCOUNT TYPES ------------- //
+    const SAVINGS                       = 'SAVINGS';
+    const CURRENT                       = 'CURRENT';
+    const SOD                           = 'SOD';
+    const UOD                           = 'UOD';
+
     // ------------------- CALLBACK FIELDS ------------- //
     const HEADERS                       = 'headers';
     const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';

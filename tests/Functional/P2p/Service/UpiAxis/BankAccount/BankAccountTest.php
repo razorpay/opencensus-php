@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\BankAccount;
 
+use RZP\Models\BankAccount\Type;
 use RZP\Tests\P2p\Service\Base;
-use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 
@@ -63,10 +64,12 @@ class BankAccountTest extends TestCase
         $this->assertUpiPinSet(true, $bankAccounts['items'][0]);
 
         $bankAccount = $this->getDbBankAccountById($bankAccounts['items'][0]['id']);
-
         $this->assertSame('UpadatingThis', $bankAccount->getGatewayData()['referenceId']);
         $this->assertSame($uniqueId, $bankAccount->getGatewayData()['id']);
         $this->assertSame($uniqueId, $bankAccount->getGatewayData()['bankAccountUniqueId']);
+
+        $this->assertArrayHasKey('type', $bankAccount);
+        $this->assertSame(BankAccount\Type::SAVINGS, $bankAccount->getType());
     }
 
     public function testFetchAll()

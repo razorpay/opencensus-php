@@ -34,6 +34,9 @@
         "creds": {
             "$ref" : "definitions.json#/bank_account/properties/creds"
         },
+        "type": {
+            "$ref" : "definitions.json#/bank_account/properties/type"
+        },
         "bank": {
             "$ref" : "definitions.json#/bank_account/properties/bank"
         },

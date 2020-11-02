@@ -71,6 +71,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
+        Entity::TYPE,
     ];
 
     protected $visible = [
@@ -84,6 +85,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
+        Entity::TYPE,
         Entity::BANK,
         Entity::ADDRESS,
         Entity::REFRESHED_AT,
@@ -98,6 +100,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
+        Entity::TYPE,
         Entity::BANK,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
@@ -108,6 +111,7 @@ class Entity extends Base\Entity
         Entity::ACCOUNT_NUMBER           => null,
         Entity::MASKED_ACCOUNT_NUMBER    => '',
         Entity::CREDS                    => [],
+        Entity::TYPE                     => '',
     ];
 
     protected $casts = [
@@ -121,6 +125,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER => 'string',
         Entity::BENEFICIARY_NAME      => 'string',
         Entity::CREDS                 => 'array',
+        Entity::TYPE                  => 'string',
         Entity::REFRESHED_AT          => 'int',
         Entity::DELETED_AT            => 'int',
         Entity::CREATED_AT            => 'int',
@@ -207,6 +212,14 @@ class Entity extends Base\Entity
     public function setCreds(array $creds)
     {
         return $this->setAttribute(self::CREDS, $creds);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setType(string $type)
+    {
+        return $this->setAttribute(self::TYPE, $type);
     }
 
     public function setCredsUpiPin(bool $set)
@@ -300,6 +313,14 @@ class Entity extends Base\Entity
     public function getCreds()
     {
         return $this->getAttribute(self::CREDS);
+    }
+
+    /**
+     * @return string self::TYPE
+     */
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     /***************** Accessors *****************/

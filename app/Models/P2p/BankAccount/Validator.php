@@ -38,6 +38,7 @@ class Validator extends Base\Validator
             Entity::MASKED_ACCOUNT_NUMBER => 'string',
             Entity::BENEFICIARY_NAME      => 'string',
             Entity::CREDS                 => 'array',
+            Entity::TYPE                  => 'string',
         ];
 
         return $rules;
@@ -78,6 +79,7 @@ class Validator extends Base\Validator
             Entity::MASKED_ACCOUNT_NUMBER    => 'required',
             Entity::BENEFICIARY_NAME         => 'sometimes',
             Entity::CREDS                    => 'required',
+            Entity::TYPE                     => 'sometimes',
         ]);
 
         $rules->merge($this->makeGatewayDataRules());

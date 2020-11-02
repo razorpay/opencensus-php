@@ -54,6 +54,10 @@
             "$id": "#/properties/creds",
             "type": "object"
         },
+        "type": {
+            "$id": "#/properties/type",
+            "type": "string"
+        },
         "refreshed_at": {
             "$id": "#/properties/refreshed_at",
             "type": "integer",

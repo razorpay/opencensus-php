@@ -4,6 +4,7 @@ use Faker\Generator as Faker;
 use RZP\Models\Merchant\Account;
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Models\P2p\BankAccount\Credentials;
+use RZP\Models\P2p\BankAccount\Type;
 
 $factory->define(Entity::class, function (Faker $faker) {
     return [
@@ -25,6 +26,7 @@ $factory->define(Entity::class, function (Faker $faker) {
                 Credentials::LENGTH         => $faker->randomElement([4, 6])
             ],
         ],
+        Entity::TYPE                    => $faker->randomElement(Type::BANK_ACCOUNT_TYPES),
         Entity::REFRESHED_AT            => $faker->numerify('154222####'),
     ];
 });

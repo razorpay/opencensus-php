@@ -4,6 +4,7 @@ namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\BankAccount\Bank;
+use RZP\Models\P2p\BankAccount\Type;
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Models\P2p\BankAccount\Credentials;
 
@@ -17,6 +18,7 @@ class BankAccountTransformer extends Transformer
             Entity::MASKED_ACCOUNT_NUMBER   => $this->input[Fields::MASKED_ACCOUNT_NUMBER],
             Entity::GATEWAY_DATA            => $this->transformGatewayData(),
             Entity::CREDS                   => $this->transformCreds(),
+            Entity::TYPE                    => $this->transformType(),
         ];
 
         return $output;
@@ -64,5 +66,24 @@ class BankAccountTransformer extends Transformer
         ];
 
         return $creds;
+    }
+
+    public function transformType()
+    {
+        $map = [
+            Fields::SAVINGS            => Type::SAVINGS,
+            Fields::CURRENT            => Type::CURRENT,
+            Fields::SOD                => Type::SOD,
+            Fields::UOD                => Type::UOD
+        ];
+
+        if (isset($map[$this->input[Fields::TYPE]]) === true)
+        {
+            return $map[$this->input[Fields::TYPE]];
+        }
+        else
+        {
+            return $this->input[Fields::TYPE];
+        }
     }
 }
