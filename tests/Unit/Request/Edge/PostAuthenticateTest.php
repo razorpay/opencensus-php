@@ -11,6 +11,8 @@ use RZP\Tests\Unit\Request\Traits\HasRequestCases;
 
 class PostAuthenticateTest extends TestCase
 {
+    use HasRequestCases;
+
     /**
      * @param  Passport\Passport|null $passport
      * @param  boolean|null           $expectedAuthenticated
@@ -45,8 +47,9 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
 
+        $request = $this->mockPrivateRoute();
         // Asserts that no exceptions are thrown.
-        (new PostAuthenticate)->handle($expectedAuthenticated);
+        (new PostAuthenticate)->handle($expectedAuthenticated, $request);
         // Asserts request.ctx.v2.
         $reqCtx = app('request.ctx.v2');
         $this->assertSame($reqCtx->authType, $expectedAuth);

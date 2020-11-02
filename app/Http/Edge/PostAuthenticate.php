@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Edge;
 
+use Illuminate\Http\Request;
 use Throwable;
 use Razorpay\Trace\Logger;
 use Razorpay\Edge\Passport;
@@ -51,13 +52,15 @@ final class PostAuthenticate
      * Responsibilities of this method are described in-line implementation below.
      *
      * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param Request  $request Current request object
      *
      * @return void
      */
-    public function handle(bool $authenticated)
+    public function handle(bool $authenticated, Request $request)
     {
         $this->ensureRequestContextPassport($authenticated);
         $this->ensureRequestContextAdditionalAttrs();
+        $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
     }
 
     /**
@@ -114,6 +117,41 @@ final class PostAuthenticate
     {
         $this->reqCtx->authType = $this->ba->getAuthType();
         $this->reqCtx->proxy    = $this->ba->isProxyAuth();
+    }
+
+    /**
+     * Reports any mismatches in AuthZ enforcement result between Edge & API middleware.
+     *
+     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param Request $request Current request object
+     */
+    private function reportAuthorizationEnforcementMismatches(bool $authenticated, Request $request)
+    {
+        $authzEnforcementResult = $request->headers->get(Constant::AUTHZ_RESULT_HEADER);
+        // Enforcer not configured for this request. No need to emit any metrics.
+        if ($authzEnforcementResult === NULL) {
+            return;
+        }
+
+        // API & Enforcer allowed. No mismatch.
+        if ($authzEnforcementResult === Constant::AUTHZ_RESULT_ALLOWED and $authenticated === TRUE) {
+            return;
+        }
+
+        // API & Enforcer denied. No mismatch.
+        if ($authzEnforcementResult === Constant::AUTHZ_RESULT_DENIED and $authenticated === FALSE) {
+            return;
+        }
+
+        $dimensions                            = $this->ba->getRequestMetricDimensions();
+        $dimensions['is_api_authenticated']    = $authenticated;
+        $dimensions['edge_enforcement_result'] = $authzEnforcementResult;
+        $this->trace->count(Metric::AUTHZ_ENFORCEMENT_MISMATCH_TOTAL, $dimensions);
+        // For logs, add merchant_id & key_id as well.
+        // Not adding these for prom metrics since that'll increase the cardinality of the metric unnecessarily.
+        $dimensions['key_id'] = $this->ba->getPublicKey();
+        $dimensions['merchant_id'] = $this->ba->getMerchantId();
+        $this->trace->warning(TraceCode::EDGE_AUTHORIZATION_MISMATCH, $dimensions);
     }
 }
 
