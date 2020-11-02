@@ -4048,7 +4048,7 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($paymentMeta['id'], $response['id']);
+        $this->assertEquals($paymentMeta['id'], $response[0]['id']);
      }
 
     public function testCreateVisaSafeClickCardS2SPaymentMerchantFeature()

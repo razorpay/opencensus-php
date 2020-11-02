@@ -20,8 +20,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $referenceIdRules = [
-        Entity::ACTION               => 'required|string',
-        Entity::REFERENCE_ID         => 'required|string'
+        Entity::ACTION               => 'sometimes|string',
+        Entity::REFERENCE_ID         => 'sometimes|string',
+        Entity::PAYMENT_ID           => 'sometimes|string',
     ];
 
     protected function validateGatewayCurrency($input)

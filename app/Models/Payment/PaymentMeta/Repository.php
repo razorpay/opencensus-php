@@ -8,11 +8,15 @@ class Repository extends Base\Repository
 {
     protected $entity = 'payment_meta';
 
-    public function findByActionAndReferenceID($action, $referenceId)
+    public function fetchByParams($params)
     {
-        return $this->newQuery()
-                    ->where(Entity::REFERENCE_ID, $referenceId)
-                    ->where(Entity::ACTION      , $action)
-                    ->first();
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query->where($key, $value);
+        }
+
+        return $query->get();
     }
 }

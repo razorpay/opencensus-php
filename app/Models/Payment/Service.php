@@ -3047,8 +3047,7 @@ class Service extends Base\Service
     {
         (new PaymentMeta\Validator)->validateInput('reference_id',$input);
 
-        return $this->repo->payment_meta->findByActionAndReferenceID($input[PaymentMeta\Entity::ACTION],
-                                                                     $input[PaymentMeta\Entity::REFERENCE_ID]);
+        return $this->repo->payment_meta->fetchByParams($input);
     }
 
     public function fetchPaymentEntity(string $id)

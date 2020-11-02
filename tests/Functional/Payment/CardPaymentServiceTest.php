@@ -755,6 +755,8 @@ class CardPaymentServiceTest extends TestCase
 
     public function testPaymentAuthorized()
     {
+        $this->markTestSkipped();
+
         $this->razorxValue = "cardps";
 
         $this->enableCpsConfig();
