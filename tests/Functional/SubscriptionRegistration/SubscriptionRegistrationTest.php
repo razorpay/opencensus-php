@@ -12,6 +12,7 @@ use RZP\Constants\Entity as E;
 use RZP\Services\BatchMicroService;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\TokenRegistrationAutoCharge;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
@@ -340,6 +341,53 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
 
         $this->assertEquals($payment->getAmount(), 3000);
+    }
+
+    public function testAutoChargeEmandateToken()
+    {
+        $beforeMidDay = Carbon::now(Timezone::IST)->midDay()->subHour(1)->getTimestamp();
+        $afterMidDay = Carbon::now(Timezone::IST)->midDay()->addHour(1)->getTimestamp();
+
+        $tokenAttributes = [
+            'id'            => 'FwDj8vdozfJouZ',
+            'method'        => 'emandate',
+            'token'         => 'aamVRCBCAC122F',
+            'created_at'    => $beforeMidDay,
+            'confirmed_at'  => $beforeMidDay,
+        ];
+
+        $this->fixtures->create('token', $tokenAttributes);     // to be picked
+
+        $tokenAttributes['id'] = 'FwDj8oK33K5Xvl';
+        $tokenAttributes['token'] = 'namVRCBCAC122F';
+        $tokenAttributes['confirmed_at'] = $afterMidDay;
+        $this->fixtures->create('token', $tokenAttributes);    // not to be picked
+
+        $subrAttributes = [
+            'token_id'             => 'FwDj8vdozfJouZ',
+            'first_payment_amount' => 1100,
+            'max_amount'           => 10000,
+            'notes'                => [ 'address' => 'sometext' ],
+            'method'               => 'emandate',
+            'auth_type'            => 'netbanking',
+            'status'               => 'authenticated'
+        ];
+
+        $this->fixtures->create('subscription_registration', $subrAttributes);   // to be picked
+
+        $subrAttributes['token_id'] = 'FwDj8oK33K5Xvl';
+        $this->fixtures->create('subscription_registration', $subrAttributes);   // not to be picked
+
+        Queue::fake();
+
+        // simulate test run at 4:00 PM
+        Carbon::setTestNow(Carbon::now(Timezone::IST)->setTime(16, 0));
+
+        $result = $this->startTest();
+
+        Queue::assertPushed(TokenRegistrationAutoCharge::class);
+
+        $this->assertEquals(1, count($result));
     }
 
     public function testPayAuthLinkAndCopyNotes()

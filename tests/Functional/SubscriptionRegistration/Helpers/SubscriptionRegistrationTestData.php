@@ -390,6 +390,20 @@ return [
         ],
     ],
 
+    'testAutoChargeEmandateToken' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auto_charge',
+            'method'  => 'post',
+            'content' => [
+                ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testPayAuthLinkAndCopyNotes' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',

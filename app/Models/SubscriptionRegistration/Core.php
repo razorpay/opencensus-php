@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
@@ -645,7 +646,13 @@ class Core extends Base\Core
 
         $noAttempts  = ($tokenRegistration->getAttempts() === 0 );
 
-        return ($firstChargeNeeded and $authenticatedStatus and $noAttempts);
+        $tokenConfirmedAt = $tokenRegistration->token->getConfirmedAt();
+
+        $midDay = Carbon::now(Timezone::IST)->midDay()->getTimestamp();
+
+        $confirmedBeforeCutoff = $tokenConfirmedAt < $midDay ? true : false;
+
+        return ($firstChargeNeeded and $authenticatedStatus and $noAttempts and $confirmedBeforeCutoff);
 
     }
 

@@ -2,7 +2,11 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token\Entity as TokenEntity;
 
 class Repository extends Base\Repository
 {
@@ -29,6 +33,16 @@ class Repository extends Base\Repository
         $query = $this->newQueryWithoutTimestamps()
             ->where(Entity::STATUS, '=', Status::AUTHENTICATED)
             ->where(Entity::ATTEMPTS, '=', 0);
+
+        $midDay = Carbon::now(Timezone::IST)->midDay()->getTimestamp();
+
+        $tokenIdCol = $this->repo->token->dbColumn(TokenEntity::ID);
+        $query->where(Entity::TOKEN_ID, function($subQuery) use($tokenIdCol, $midDay, $query) {
+            $subQuery->select($tokenIdCol)
+                     ->from($this->repo->token->getTableName())
+                     ->whereColumn(TokenEntity::ID, $query->getModel()->getTable() . '.' . Entity::TOKEN_ID)
+                     ->where(TokenEntity::CONFIRMED_AT, '<', $midDay);
+        });
 
         if (empty($merchantIds) === false)
         {

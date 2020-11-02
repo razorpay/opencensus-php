@@ -393,6 +393,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRED_AT);
     }
 
+    public function getConfirmedAt()
+    {
+        return $this->getAttribute(self::CONFIRMED_AT);
+    }
+
     public function getStartTime()
     {
         return $this->getAttribute(self::START_TIME);
