@@ -15,11 +15,11 @@ class MerchantInvoice extends Job
 
     protected $year;
 
-    public $timeout = 2700;
+    public $timeout = 5400;
 
     const MERCHANT_INVOICE_MUTEX_RESOURCE = 'MERCHANT_INVOICE_CREATE_%s_%s_%s';
 
-    const MUTEX_LOCK_TIMEOUT = 2700;
+    const MUTEX_LOCK_TIMEOUT = 5400;
 
     public function __construct(
         string $merchantId,
