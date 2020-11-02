@@ -13,7 +13,7 @@ class PayuGatewayTest extends NbPlusPaymentServiceTest
 
         $this->gateway = 'payu';
 
-        $this->bank = IFSC::MSNU;
+        $this->bank = IFSC::BBKM;
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
