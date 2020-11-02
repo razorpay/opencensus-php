@@ -3648,7 +3648,7 @@ class Service extends Base\Service
             return;
         }
 
-        $app = $this->core()->fetchDefaultPartnerApplication($merchant);
+        $app = $this->core()->fetchPartnerApplication($merchant);
 
         $appId = $app->getId();
 

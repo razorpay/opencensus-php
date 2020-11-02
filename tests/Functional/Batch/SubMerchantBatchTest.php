@@ -60,6 +60,8 @@ class SubMerchantBatchTest extends TestCase
 
         $entries = $this->setUpForProcessing(__FUNCTION__);
 
+        //$this->createMerchantApplication('10000000000000', 'aggregator', 'FuMnzvfS6wsB5h');
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
@@ -521,10 +523,10 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals('processed', $batch['status']);
     }
 
-    protected function markPartnerAndCreateApplication(): void
+    protected function markPartnerAndCreateApplication()
     {
         $this->fixtures->merchant->markPartner();
 
-        $this->createPartnerApplicationAndGetClientByEnv('dev');
+        return $this->createPartnerApplicationAndGetClientByEnv('dev', ['partner_type'=>'fully_managed']);
     }
 }

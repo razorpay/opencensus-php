@@ -90,4 +90,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_OWNER_ID);
     }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
 }

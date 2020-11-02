@@ -387,7 +387,7 @@ class CouponsTest extends TestCase
 
         $this->fixtures->merchant->markPartner();
 
-        $this->createPartnerApplicationAndGetClientByEnv('dev');
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev');
 
         $merchant = $this->fixtures->create('merchant');
 
@@ -397,6 +397,8 @@ class CouponsTest extends TestCase
             'merchant_id' => $merchant['id'],
             'code'        => 'RANDOM-123',
         ];
+
+        $this->createMerchantApplication('10000000000000', 'fully_managed', $client->application_id);
 
         $response = $this->applyCouponOnMerchant($content);
 

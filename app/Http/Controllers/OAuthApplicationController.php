@@ -11,9 +11,11 @@ use Razorpay\OAuth\Client\Environment as ClientEnv;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\Validator as MerchantValidator;
-use RZP\Models\Merchant\Core as MerchantCore;
 
 class OAuthApplicationController extends Controller
 {
@@ -115,8 +117,8 @@ class OAuthApplicationController extends Controller
      * any other params as only one partner app is expected.
      *
      * @return mixed
-     * @throws \RZP\Exception\BadRequestException
-     * @throws \RZP\Exception\LogicException
+     * @throws BadRequestException
+     * @throws LogicException
      */
     public function getPartner()
     {
@@ -124,7 +126,7 @@ class OAuthApplicationController extends Controller
 
         $this->merchantValidator->validatePartnerWithSettingsAccess($merchant);
 
-        $application = (new MerchantCore)->fetchDefaultPartnerApplication($merchant);
+        $application = (new MerchantCore)->fetchPartnerApplication($merchant);
 
         $data = $this->authservice->getApplication($application->getId(), $merchant->getId());
 

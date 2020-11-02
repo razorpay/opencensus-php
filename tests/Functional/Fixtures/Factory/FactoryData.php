@@ -1541,7 +1541,7 @@ final class FactoryData
             'id'             => $faker->uniqueid,
             'merchant_id'    => '10000000000000',
             'type'           => 'managed',
-            'application_id' => '10000000000App',
+            'application_id' => $faker->uniqueid,
             'created_at'     => $faker->timestamp,
             'updated_at'     => $faker->timestamp,
             'deleted_at'     => null,

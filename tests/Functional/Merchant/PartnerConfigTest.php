@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Http\OAuth;
 use RZP\Models\Merchant;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
@@ -156,6 +157,8 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
+
         $this->startTest();
     }
 
@@ -198,6 +201,8 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
+
         $this->fixtures->create(
             'partner_config',
             [
@@ -238,12 +243,16 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
+
         $this->startTest();
     }
 
     public function testAddingSubmerchantConfigWhenAppConfigAlreadyPresent()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
 
         $this->fixtures->create(
             'partner_config',
@@ -260,6 +269,8 @@ class PartnerConfigTest extends OAuthTestCase
     public function testAddingConfigForSubMerchantNotMappedToApp()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
 
         $this->startTest();
     }

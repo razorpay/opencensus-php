@@ -29,13 +29,14 @@ class Service extends Base\Service
      *
      * @return array
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function create(array $input) : array
     {
         $application = $this->getApplicationFromInput($input);
         $subMerchant = $this->getSubMerchantFromInput($input);
 
-        $config      = (new Core)->create($application, $input, $subMerchant);
+        $config = (new Core)->create($application, $input, $subMerchant);
 
         return $config->toArrayPublic();
     }
@@ -45,6 +46,7 @@ class Service extends Base\Service
      *
      * @return OAuthApp\Entity
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     protected function getApplicationFromInput(array $input) : OAuthApp\Entity
     {
@@ -79,11 +81,7 @@ class Service extends Base\Service
                     ]);
             }
 
-            $application = $this->applicationRepo
-                                ->findActiveApplicationsByMerchantIdAndType(
-                                    $partnerMerchant->getId(),
-                                    OAuthApp\Type::PARTNER)
-                                ->first();
+            $application = (new Merchant\Core())->fetchPartnerApplication($partnerMerchant);
         }
 
         return $application;

@@ -13,12 +13,14 @@ use Carbon\Carbon;
 use RZP\Services\Stork;
 use RZP\Constants\Timezone;
 use RZP\Services\AuthService;
+use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 trait OAuthTrait
 {
-    public function createOAuthApplication(array $attributes = [])
+    public function createOAuthApplication(array $attributes = [], bool $createMerchantApplication = true)
     {
-        $partnerType = 'null';
+        $partnerType = null;
 
         $deletedAt = null;
 
@@ -38,7 +40,10 @@ trait OAuthTrait
         $application = factory(Application\Entity::class)
                         ->create($attributes);
 
-        $this->createMerchantApplication($application->merchant_id, $partnerType, $application->getId(), $deletedAt);
+        if ($createMerchantApplication === true)
+        {
+            $this->createMerchantApplication($application->merchant_id, $partnerType, $application->getId(), $deletedAt);
+        }
 
         $clientAttributes = [
             Client\Entity::APPLICATION_ID => $application->id,
@@ -68,22 +73,22 @@ trait OAuthTrait
         return $this->getAppClientByEnv($application, $env);
     }
 
-    public function createMerchantApplication(string $merchantId, string $type, string $appId, $deletedAt = null)
+    public function createMerchantApplication(string $merchantId, $type, string $appId, $deletedAt = null)
     {
-        if ($type === 'reseller')
+        switch ($type)
         {
-            $appType = 'referred';
+            case null:
+                return;
+            case MerchantConstants::RESELLER:
+                $appType = Entity::REFERRED;
+                break;
+            case MerchantConstants::PURE_PLATFORM:
+                $appType = Entity::OAUTH;
+                break;
+            default:
+                $appType = Entity::MANAGED;
+                break;
         }
-        else if ($type === 'pure_platform')
-        {
-            $appType = 'oauth';
-        }
-        else
-        {
-            $appType = 'managed';
-        }
-
-        //var_dump($deletedAt);
 
         return $this->fixtures->create(
             'merchant_application',
@@ -199,11 +204,15 @@ trait OAuthTrait
         int    $times = 1,
         array  $response = [])
     {
-        $this->authServiceMock
+        $res = $this->authServiceMock
              ->expects($this->exactly($times))
              ->method('sendRequest')
              ->with($route, $method, $requestParams)
              ->willReturn($response);
+
+        //var_dump($res);
+
+        return $res;
     }
 
     protected function getDefaultParamsForAuthServiceRequest()

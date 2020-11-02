@@ -232,6 +232,8 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
 
+    const REFERRED_APPLICATION      = 'Referred application';
+
     // Extra constants for Batch
     const AUTO_SUBMIT               = 'auto_submit';
     const AUTOFILL_DETAILS          = 'autofill_details';

@@ -426,6 +426,8 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
 
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
         $this->fixtures->create(
             'merchant_access_map',
             [

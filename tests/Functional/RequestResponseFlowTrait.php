@@ -14,6 +14,9 @@ trait RequestResponseFlowTrait
 
     /**
      * Auths a payment & tests it is correctly done
+     * @param $data
+     * @param Closure|null $closure
+     * @return mixed
      */
     public function runRequestResponseFlow($data, Closure $closure = null)
     {

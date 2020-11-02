@@ -305,7 +305,7 @@ class Core extends Base\Core
         elseif ($merchant->isPartner() === true)
         {
             // for partner, assign based on config defined on partner, if available
-            $application = $this->fetchDefaultPartnerApplication($merchant);
+            $application = $this->fetchPartnerApplication($merchant);
 
             $config      = (new PartnerConfig\Core)->fetch($application);
 
@@ -1104,7 +1104,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $application = $this->fetchDefaultPartnerApplication($partner);
+        $application = $this->fetchPartnerApplication($partner);
 
         $config      = (new PartnerConfig\Core)->fetch($application, $submerchant);
 
@@ -1660,6 +1660,12 @@ class Core extends Base\Core
                 $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
 
                 $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
+
+                if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
+                {
+                    // create referred app for aggregator/fully_managed partners to give them reseller functionality
+                    $this->createReferredAppForManaged($merchant);
+                }
             }
         });
 
@@ -1685,6 +1691,17 @@ class Core extends Base\Core
         ];
 
         (new MerchantApplications\Core)->create($merchant, $appConfig);
+    }
+
+    public function createReferredAppForManaged(Entity $merchant)
+    {
+        $appInput = [
+            OAuthApp\Entity::NAME => Entity::REFERRED_APPLICATION,
+        ];
+
+        $app = $this->createPartnerApp($merchant, $appInput);
+
+        $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], MerchantApplications\Entity::REFERRED);
     }
 
     protected function setDefaultFeatureForPartner(Entity $partner)
@@ -1757,7 +1774,7 @@ class Core extends Base\Core
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
-            $application = $this->fetchDefaultPartnerApplication($merchant);
+            $application = $this->fetchPartnerApplication($merchant);
 
             $config = [
                 PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
@@ -1767,6 +1784,14 @@ class Core extends Base\Core
             ];
 
             (new PartnerConfig\Core)->create($application, $config);
+
+            // create new partner config for referred app for aggregator/full_managed partners
+            if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
+            {
+                $referredApp = $this->fetchPartnerApplication($merchant, MerchantApplications\Entity::REFERRED);
+
+                (new PartnerConfig\Core)->create($referredApp, $config);
+            }
 
             return $partner;
         });
@@ -1861,7 +1886,7 @@ class Core extends Base\Core
 
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
 
-            $partnerApp = $this->fetchDefaultPartnerApplication($partner);
+            $partnerApp = $this->fetchPartnerApplication($partner);
 
             $config = (new PartnerConfig\Core)->fetch($partnerApp);
 
@@ -1929,8 +1954,9 @@ class Core extends Base\Core
 
     /**
      * @param Entity $merchant
+     * @param array  $appInput
      */
-    public function createPartnerApp(Entity $merchant)
+    public function createPartnerApp(Entity $merchant, array $appInput = [])
     {
         if ($merchant->isPurePlatformPartner() === true)
         {
@@ -1943,7 +1969,7 @@ class Core extends Base\Core
         // Default value is required because website is a required field to create oauth applications
         $website = $merchant->getWebsite() ?: 'https://www.razorpay.com';
 
-        $appInput = [
+        $defaultAppInput = [
             'name'     => $name,
             'website'  => $website,
         ];
@@ -1953,8 +1979,10 @@ class Core extends Base\Core
         // Do not send the logo_url parameter if it is null. Auth service will reject it.
         if ($logoUrl !== null)
         {
-            $appInput['logo_url'] = $logoUrl;
+            $defaultAppInput['logo_url'] = $logoUrl;
         }
+
+        $appInput = array_merge($defaultAppInput, $appInput);
 
         $app = app('authservice')->createApplication($appInput, $merchant->getId(), OAuthApp\Type::PARTNER);
 
@@ -2203,9 +2231,7 @@ class Core extends Base\Core
         // the partner manually creates and deletes the oauth applications.
         // If the partner tries to access the submerchant detail api without creating an app, throw an error.
         //
-        $appId = current($partnerAppIds);
-
-        if ($appId === false)
+        if (empty($partnerAppIds) === true)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
@@ -2240,6 +2266,14 @@ class Core extends Base\Core
             (new Validator)->validatePartnerApplicationId($inputAppId, $partnerAppIds);
 
             $appId = $inputAppId;
+        }
+        else
+        {
+            $accessMaps = $this->repo
+                               ->merchant_access_map
+                               ->fetchAccessMapForMerchantIdAndOwnerId($submerchantId, $partner->getId());
+
+            $appId = $accessMaps->first()->getEntityId();
         }
 
         $merchant = $this->repo
@@ -2308,15 +2342,19 @@ class Core extends Base\Core
     /**
      * @param Entity $merchant
      *
+     * @param null $appType
      * @return OAuthApp\Entity
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    public function fetchDefaultPartnerApplication(Entity $merchant)
+    public function fetchPartnerApplication(Entity $merchant, $appType = null)
     {
         (new Validator)->validateIsNonPurePlatformPartner($merchant);
 
-        $appType = (new MerchantApplications\Core)->getDefaultAppTypeForPartner($merchant);
+        if ($appType === null)
+        {
+            $appType = (new MerchantApplications\Core)->getDefaultAppTypeForPartner($merchant);
+        }
 
         $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationsByAppType($merchant->getId(), $appType);
 

@@ -324,7 +324,8 @@ class UpiIciciGatewayTest extends TestCase
             'dev',
             [
                 'type' => 'partner',
-                'id'   => 'AwtIC8XQqM0Wet'
+                'id'   => 'AwtIC8XQqM0Wet',
+                'partner_type'=>'aggregator',
             ]);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);

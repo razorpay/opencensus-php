@@ -1354,6 +1354,10 @@ class PartnerTest extends OAuthTestCase
         // cleanup assertion - verify that the ref tags have been deleted
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
         $this->assertEquals(null, $submerchant->getReferrer());
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $this->assertEquals(0, count($merchantApplications));
     }
 
     public function testAddPartnerAccessMapForLinkedAccountSubmerchant()
@@ -1612,11 +1616,36 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $app = ['id'=>'FoFp09FkqO5tqc'];
+        $requestParams1 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite() ?: 'https://www.razorpay.com',
+            'type'     => self::PARTNER,
+        ];
 
-        $this->mockAuthServiceCreateApplication($merchant, $app);
+        $requestParams2 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => Merchant\Entity::REFERRED_APPLICATION,
+            'website'  => $merchant->getWebsite() ?: 'https://www.razorpay.com',
+            'type'     => self::PARTNER,
+        ];
 
-        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
+        $this->authServiceMock
+            ->expects($this->exactly(2))
+            ->method('sendRequest')
+            ->with('applications', 'POST', $this->logicalOr($requestParams1, $requestParams2))
+            ->will($this->returnCallback(
+                function($route, $method, $params) {
+                    if($params['name'] === Merchant\Entity::REFERRED_APPLICATION) {
+                        return ['id'=>'8ckeirnw84ifkf'];
+                    }
+                    return ['id'=>'8ckeirnw84ifke'];
+                }
+            ));
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], false);
+
+        $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], false);
 
         $this->ba->proxyAuth();
 
@@ -1628,9 +1657,9 @@ class PartnerTest extends OAuthTestCase
 
         $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
 
-        $applicationType = $applicationTypes[0];
+        $expectedAppTypes = ['managed', 'referred'];
 
-        $this->assertEquals($applicationType, MerchantApplications\Entity::MANAGED);
+        $this->assertArraySelectiveEqualsWithCount($expectedAppTypes, $applicationTypes);
 
         $this->assertTrue($expectedPartner->isAggregatorPartner());
 
@@ -1700,7 +1729,7 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
     }
 
-    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [])
+    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [], $times = 1)
     {
         // Mock create application call to auth service
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
@@ -1713,7 +1742,7 @@ class PartnerTest extends OAuthTestCase
 
         $requestParams = array_merge($requestParams, $createParams);
 
-        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams, 1, $response);
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams, $times, $response);
     }
 
     protected function createMerchantUser($merchantId)
@@ -1795,5 +1824,11 @@ class PartnerTest extends OAuthTestCase
                 'merchant_id'     => $merchantId,
                 'entity_owner_id' => $entityOwnerId,
             ];
+    }
+
+    protected function assertArraySelectiveEqualsWithCount(array $expected, array $actual)
+    {
+        $this->assertArraySelectiveEquals($expected, $actual);
+        $this->assertCount(count($expected), $actual);
     }
 }

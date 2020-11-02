@@ -910,7 +910,7 @@ class Merchant extends Base
         $this->createMerchantsAndSyncToEs();
     }
 
-    public function createDummyPartnerApp(array $attributes = [])
+    public function createDummyPartnerApp(array $attributes = [], $createMerchantApplication = true)
     {
         $defaults = [
             'id'          => '8ckeirnw84ifke',
@@ -924,7 +924,24 @@ class Merchant extends Base
 
         $attributes = array_merge($defaults, $attributes);
 
-        return $this->createOAuthApplication($attributes);
+        return $this->createOAuthApplication($attributes, $createMerchantApplication);
+    }
+
+    public function createDummyReferredAppForManaged(array $attributes = [], $createMerchantApplication = true)
+    {
+        $defaults = [
+            'id'          => '8ckeirnw84ifkf',
+            'merchant_id' => '10000000000000',
+            'name'        => MerchantEntity::REFERRED_APPLICATION,
+            'website'     => 'https://www.razorpay.com',
+            'logo_url'    => '/logo/app_logo.png',
+            'category'    => null,
+            'type'        => 'partner',
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->createOAuthApplication($attributes, $createMerchantApplication);
     }
 
     private function createGroups()
