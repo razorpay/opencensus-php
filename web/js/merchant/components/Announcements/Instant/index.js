@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import LocalStorageService from 'common/utils/localStorage';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
@@ -155,8 +156,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. For quick resolution, update required details
-              &nbsp;
+              Your KYC details require further clarifications. For quick resolution, update required
+              details &nbsp;
               <Link to="/activation" style={{ 'font-weight': 'bold' }}>
                 here
               </Link>
@@ -165,15 +166,23 @@ export default class InstantActivationAnnouncements extends Component {
           );
         }
       } else {
+        let activation_tat = '1-2 days';
+        const clarification_submitted = LocalStorageService.getItem(
+          `rzp_onboarding--${user.current}--clarification_submitted`,
+        );
+        if (clarification_submitted) {
+          activation_tat = '4-5 days';
+        }
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
             content = (
               <>
                 We will be reviewing your KYC details after your first transaction. Review process
-                usually takes 1-2 days <strong>from the date of the first transaction</strong>, we
-                will reach out to you on your registered email ID if we need any clarifications.
-                Your settlements will be enabled after your KYC is reviewed and approved.
+                usually takes {activation_tat}{' '}
+                <strong>from the date of the first transaction</strong>, we will reach out to you on
+                your registered email ID if we need any clarifications. Your settlements will be
+                enabled after your KYC is reviewed and approved.
               </>
             );
           } else {
@@ -182,8 +191,9 @@ export default class InstantActivationAnnouncements extends Component {
               <React.Fragment>
                 You can start using our products to accept payments right away, however your
                 settlements will be enabled after your KYC is reviewed. KYC Review process usually
-                takes 1-2 days <strong>from the date of the first transaction</strong>, we will
-                reach out to you on your registered email ID if we need any clarifications. &nbsp;
+                takes {activation_tat} <strong>from the date of the first transaction</strong>, we
+                will reach out to you on your registered email ID if we need any clarifications.
+                &nbsp;
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
                   target="_blank"

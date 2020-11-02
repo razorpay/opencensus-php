@@ -6,10 +6,16 @@ import Button from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { autoPrefixUrls, isPresent, prevent, classList, checkIsObjectEmpty } from 'common/utils/rzp-utils';
+import {
+  autoPrefixUrls,
+  isPresent,
+  prevent,
+  classList,
+  checkIsObjectEmpty,
+} from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-
+import LocalStorageService from 'common/utils/localStorage';
 import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics'; // fb, bing, linkedin, twitter
 import * as trackers from 'merchant/containers/Activation/ga_new';
@@ -33,7 +39,12 @@ import accountFormTabsContent, {
 import BingDataObj from 'common/utils/bingDataObj';
 import RTracking from 'react-tracking';
 import { updateSession } from 'merchant/reducers/session';
-import { rxCaSelectedFlag, caReqEventType, rxCaExp, rxKYCvisitedFlag } from 'merchant/containers/Home/OnboardingCard/data';
+import {
+  rxCaSelectedFlag,
+  caReqEventType,
+  rxCaExp,
+  rxKYCvisitedFlag,
+} from 'merchant/containers/Home/OnboardingCard/data';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -126,7 +137,7 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-        this.props.data.business_operation_pin == this.props.data.business_registered_pin
+      this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
     has_url: this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
@@ -137,7 +148,7 @@ export default class ActivationWizard extends React.Component {
     address_proof: 'aadhar',
     needsClarification: {},
     additional_doc: '',
-    commentlist: {}
+    commentlist: {},
   };
 
   constructor(props) {
@@ -163,7 +174,6 @@ export default class ActivationWizard extends React.Component {
       this.formDescription = 'Complete and submit the form to enable settlements.';
       this.trackingType = 'kyc';
     }
-
   }
   isNeedsClarificationMode() {
     return this.props.data.activation_status === 'needs_clarification';
@@ -295,23 +305,23 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
 
-  handleComment = (e , key, removecomment)=> {
-    prevent(e)
+  handleComment = (e, key, removecomment) => {
+    prevent(e);
 
-    const prevCommentFromState = this.state.commentlist
+    const prevCommentFromState = this.state.commentlist;
 
-    const removeCommentFromList = Object.assign({}, prevCommentFromState)
-    delete removeCommentFromList[key]
+    const removeCommentFromList = Object.assign({}, prevCommentFromState);
+    delete removeCommentFromList[key];
 
     const addCommentToList = Object.assign({}, prevCommentFromState, {
-      [key]: e.target.value || ''
+      [key]: e.target.value || '',
     });
-    
-    const comments = removecomment ?  removeCommentFromList : addCommentToList
-    
+
+    const comments = removecomment ? removeCommentFromList : addCommentToList;
+
     this.setState({
-      commentlist: comments 
-    })
+      commentlist: comments,
+    });
   };
 
   componentDidUpdate() {
@@ -337,7 +347,7 @@ export default class ActivationWizard extends React.Component {
 
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
-    this.addVisitedFlag()
+    this.addVisitedFlag();
   }
 
   addVisitedFlag = () => {
@@ -345,7 +355,8 @@ export default class ActivationWizard extends React.Component {
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab;
     const { user } = this.props;
     const { settings } = user.user;
-    if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) { // condition to show RX-Ca interest card
+    if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
+      // condition to show RX-Ca interest card
       if (!settings[rxKYCvisitedFlag] || settings[rxKYCvisitedFlag] === '0') {
         const _settings = { ...settings };
         _settings[rxKYCvisitedFlag] = '1';
@@ -354,18 +365,14 @@ export default class ActivationWizard extends React.Component {
           mode: 'live',
           method: 'patch',
           data: { settings: _settings },
-        })
-          .then(() => {
-            this.props.updateUser({ settings: _settings });
-          });
+        }).then(() => {
+          this.props.updateUser({ settings: _settings });
+        });
 
-        this.props.tracking.trackEvent(
-          window.rzpQ.onbr().initiated('rx_KYC_ca_visited'),
-        );
-
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('rx_KYC_ca_visited'));
       }
     }
-  }
+  };
 
   handleActionBasedOnQuery = (query) => {
     if (query['auto-submit'] == 'l1-form') {
@@ -451,7 +458,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(null, callBack);
@@ -477,7 +484,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab + 1, callBack);
@@ -497,7 +504,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab - 1, callBack);
@@ -527,7 +534,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(tabId, callBack);
@@ -546,7 +553,7 @@ export default class ActivationWizard extends React.Component {
           }),
         ),
       );
-    } catch (err) { }
+    } catch (err) {}
   };
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
@@ -805,7 +812,14 @@ export default class ActivationWizard extends React.Component {
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
         }
-        return this.canSubmitL1Form && Boolean(state.dirty[field] || ( this.state.commentlist.hasOwnProperty(field)) && this.state.commentlist[field] !== '' );
+        return (
+          this.canSubmitL1Form &&
+          Boolean(
+            state.dirty[field] ||
+              (this.state.commentlist.hasOwnProperty(field) &&
+                this.state.commentlist[field] !== ''),
+          )
+        );
       });
 
       return hasFilledEverything;
@@ -934,7 +948,7 @@ export default class ActivationWizard extends React.Component {
           ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-    } catch (e) { }
+    } catch (e) {}
   };
 
   submitL1 = async (currenActiveTab) => {
@@ -1119,23 +1133,24 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
-    if (!checkIsObjectEmpty(this.state.commentlist)){
+    if (!checkIsObjectEmpty(this.state.commentlist)) {
       reqData.kyc_clarification_reasons = {
-        "clarification_reasons": {}
-      }
+        clarification_reasons: {},
+      };
     }
 
-    for(var prop in this.state.commentlist) {
-      if(this.state.commentlist.hasOwnProperty(prop) && this.state.commentlist[prop] !== '') {
-        { reqData.kyc_clarification_reasons.clarification_reasons[prop] = [
-          {
-            "reason_type": "custom",
-            "reason_code": this.state.commentlist[prop],
-          }
-        ]}
+    for (var prop in this.state.commentlist) {
+      if (this.state.commentlist.hasOwnProperty(prop) && this.state.commentlist[prop] !== '') {
+        {
+          reqData.kyc_clarification_reasons.clarification_reasons[prop] = [
+            {
+              reason_type: 'custom',
+              reason_code: this.state.commentlist[prop],
+            },
+          ];
+        }
       }
     }
-    
 
     // State will contain file fields which have already been uploaded
     // Delete file field from request data
@@ -1149,27 +1164,39 @@ export default class ActivationWizard extends React.Component {
       this.setState({ callingAPI: true });
       const response = await this.props.save(reqData);
 
-      if(response.data.activation_status === "needs_clarification" ) {
-        const poi_verification_status = response.data.poi_verification_status
-        const company_pan_verification_status = response.data.company_pan_verification_status
+      if (response.data.activation_status === 'needs_clarification') {
+        const poi_verification_status = response.data.poi_verification_status;
+        const company_pan_verification_status = response.data.company_pan_verification_status;
         // remove errored field from state dirty to show API error
-        const newStateDirty = Object.assign({}, this.state.dirty)
-        if ( (poi_verification_status === 'incorrect_details' || poi_verification_status === 'not_matched')  && newStateDirty.hasOwnProperty('promoter_pan')){
-          delete newStateDirty.promoter_pan
+        const newStateDirty = Object.assign({}, this.state.dirty);
+        if (
+          (poi_verification_status === 'incorrect_details' ||
+            poi_verification_status === 'not_matched') &&
+          newStateDirty.hasOwnProperty('promoter_pan')
+        ) {
+          delete newStateDirty.promoter_pan;
         }
 
-        if ( (company_pan_verification_status === 'incorrect_details' || company_pan_verification_status === 'not_matched') && newStateDirty.hasOwnProperty('company_pan')){
-          delete newStateDirty.company_pan
+        if (
+          (company_pan_verification_status === 'incorrect_details' ||
+            company_pan_verification_status === 'not_matched') &&
+          newStateDirty.hasOwnProperty('company_pan')
+        ) {
+          delete newStateDirty.company_pan;
         }
-         
+
         this.setState({
           dirty: newStateDirty,
         });
-      } else if(response.success) {
+      } else if (response.success) {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
-          activationDuration: '4-5 days'
+          activationDuration: '4-5 days',
         });
+        LocalStorageService.setItem(
+          `rzp_onboarding--${this.props.user.current}--clarification_submitted`,
+          true,
+        );
         this.props.history.replace('/');
       }
       return response;
@@ -1590,11 +1617,12 @@ export default class ActivationWizard extends React.Component {
 
             <span className="device--desktop">{FORM_TABS[activeTab]}</span>
           </main-title>
-          {
-            FORM_TABS[activeTab] === 'Needs Clarification' && (
-              <span className="sub-text-nc">You can add comments in case you have any doubts or questions regarding any issue (max 200 chars)</span>
-            )
-          }
+          {FORM_TABS[activeTab] === 'Needs Clarification' && (
+            <span className="sub-text-nc">
+              You can add comments in case you have any doubts or questions regarding any issue (max
+              200 chars)
+            </span>
+          )}
 
           {/* Alert: For linked account if activated */}
           {this.isLinkedAccountForm && isFormActivated && (
@@ -1606,7 +1634,7 @@ export default class ActivationWizard extends React.Component {
             const showFormDisabledAlert =
               !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
-            const {data} = this.props;
+            const { data } = this.props;
             let Component = Alert.Info;
             let icon, msg;
 
@@ -1615,55 +1643,55 @@ export default class ActivationWizard extends React.Component {
 
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
-            // **1. Alert: Account Activated
+                // **1. Alert: Account Activated
 
-            icon = 'i-done-all';
+                icon = 'i-done-all';
                 msg = 'Your account is activated.';
                 secondaryMsg = (
                   <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
                 );
               } else if (this.isNeedsClarificationMode()) {
-            // **2. Alert: Need clarification
-            icon = 'i-warning';
+                // **2. Alert: Need clarification
+                icon = 'i-warning';
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
-            // **3. Alert: Form Rejected
+                // **3. Alert: Form Rejected
 
-            icon = 'i-close';
+                icon = 'i-close';
                 Component = Alert.Error;
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
               } else if (isFormLocked && isFormSubmitted) {
-            // **4. Alert: Form is Locked (for reasons other than above)
-            // 'locked' status has more priority than 'submitted'
-            // If admins locked form before submiddion, then this alert is not shown
+                // **4. Alert: Form is Locked (for reasons other than above)
+                // 'locked' status has more priority than 'submitted'
+                // If admins locked form before submiddion, then this alert is not shown
 
-            icon = 'i-outline-lock';
+                icon = 'i-outline-lock';
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (isFormSubmitted) {
-            // **5. Alert: Form is Submitted
+                // **5. Alert: Form is Submitted
 
-            icon = 'i-check';
+                icon = 'i-check';
                 msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
               {
-            msg && (
-              <Component iconBefore={icon}>
-                {msg}
-                <div className="side-description">{secondaryMsg}</div>
-              </Component>
-            );
+                msg && (
+                  <Component iconBefore={icon}>
+                    {msg}
+                    <div className="side-description">{secondaryMsg}</div>
+                  </Component>
+                );
               }
             }
           }}
@@ -1675,9 +1703,13 @@ export default class ActivationWizard extends React.Component {
 
             {/* Document content is always in DOM */}
             <div style={{ display: content ? 'none' : 'inherit' }}>{documentContent}</div>
-            {
-              showRxCA && (<RxCaInterest disabled={isFormSubmitted} value={this.props.rxCaCheckboxSelect} onChange={this.props.handleRxCaCheckboxChange} />)
-            }
+            {showRxCA && (
+              <RxCaInterest
+                disabled={isFormSubmitted}
+                value={this.props.rxCaCheckboxSelect}
+                onChange={this.props.handleRxCaCheckboxChange}
+              />
+            )}
           </Form>
           <ShowWhen
             additionalCondition={(user) =>
@@ -1900,26 +1932,26 @@ function ActivationField(field) {
                   <i className="i i-info-circle" />
                   <div>{r}</div>
                 </div>
-              <button class="add-comment" onClick={(e) => this.handleComment(e , key)}>Add Comment</button>
+                <button class="add-comment" onClick={(e) => this.handleComment(e, key)}>
+                  Add Comment
+                </button>
               </div>
-                {
-                  this.state.commentlist.hasOwnProperty(key) && (
-                    <div class="comment-box">
-                      <input
-                          type="text"
-                          className="form-control input-elm"
-                          value={this.state.commentlist[key]}
-                          placeholder="Enter your comment"
-                          onChange={(e) => this.handleComment(e, key)}
-                          maxlength="200"
-                      />
-                      <button class="delete-button" onClick={(e) => this.handleComment(e, key, true)}>
-                        <i className="i i-delete" />   
-                      </button>
-                    </div>
-                  )
-                }
-              </>
+              {this.state.commentlist.hasOwnProperty(key) && (
+                <div class="comment-box">
+                  <input
+                    type="text"
+                    className="form-control input-elm"
+                    value={this.state.commentlist[key]}
+                    placeholder="Enter your comment"
+                    onChange={(e) => this.handleComment(e, key)}
+                    maxlength="200"
+                  />
+                  <button class="delete-button" onClick={(e) => this.handleComment(e, key, true)}>
+                    <i className="i i-delete" />
+                  </button>
+                </div>
+              )}
+            </>
           ))}
         </div>
       )}
