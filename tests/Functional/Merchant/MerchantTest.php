@@ -3910,7 +3910,12 @@ class MerchantTest extends TestCase
         $this->assertNotNull($response['features']['google_pay_omnichannel']);
 
         $this->assertNotNull($response['features']['phonepe_intent']);
+
+        $this->assertNotNull($response['features']['dcc']);
+
+        $this->assertTrue($response['features']['dcc'] === true);
     }
+
 
     public function testGetCheckoutPreferencesForCredSubtext()
     {
@@ -8439,7 +8444,7 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('upi_otm', $response['methods']);
         $this->assertSame(true, $response['methods']['upi_otm']);
-        $this->assertArrayKeysExist($response['features'], ['upi_otm']);
+        $this->assertContains(['upi_otm'], $response['features']);
         $this->assertSame(true, $response['features']['upi_otm']);
     }
 

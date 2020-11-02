@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -23,8 +25,6 @@ class PaymentCreateDCCTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures(['dcc']);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -148,7 +148,7 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentFlowsDccDisabledMerchants()
     {
-        $this->fixtures->merchant->removeFeatures(['dcc']);
+        $this->fixtures->merchant->addFeatures([Constants::DISABLE_NATIVE_CURRENCY]);
 
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
         $responseContent = json_decode($response->getContent(), true);

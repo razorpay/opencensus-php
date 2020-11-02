@@ -150,7 +150,7 @@ class Constants
 
     const OFFLINE_PAYMENTS                = 'offline_payments';
 
-    const DCC                             = 'dcc';
+    const DISABLE_NATIVE_CURRENCY         = 'disable_native_currency';
 
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
@@ -503,7 +503,7 @@ class Constants
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
-        self::DCC,
+        self::DISABLE_NATIVE_CURRENCY,
         self::UPI_OTM,
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
@@ -694,7 +694,7 @@ class Constants
         self::SKIP_WF_AT_PAYOUTS              => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
-        self::DCC                             => true,
+        self::DISABLE_NATIVE_CURRENCY         => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::PAYMENT_CONFIG_ENABLED          => false,
         self::CYBERSOURCE_VAS                 => true,

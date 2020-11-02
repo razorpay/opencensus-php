@@ -961,7 +961,14 @@ class Checkout
     {
         foreach (Feature\Constants::CHECKOUT_FEATURES as $feature)
         {
-            if ($merchant->isFeatureEnabled($feature) === true)
+            // checkout feature changed to dcc in case DISABLE_NATIVE_CURRENCY is false
+            if($feature === Feature\Constants::DISABLE_NATIVE_CURRENCY){
+                if($merchant->isFeatureEnabled($feature) === false) {
+                    $data['features']['dcc'] = true;
+                }
+            }
+
+            else if ($merchant->isFeatureEnabled($feature) === true)
             {
                 $data['features'][$feature] = true;
             }

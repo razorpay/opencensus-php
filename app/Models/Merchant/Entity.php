@@ -860,7 +860,7 @@ class Entity extends Base\PublicEntity
 
     public function isDCCEnabled(): bool
     {
-        return ($this->isFeatureEnabled(Feature\Constants::DCC) === true);
+        return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);
     }
 
     /**
