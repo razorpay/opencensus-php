@@ -2290,6 +2290,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_STATUS_FAILED_MERCHANT_ERROR                      = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
     const FTA_BATCH_FUND_TRANSFER_ABSENT                        = 'FTA_BATCH_FUND_TRANSFER_ABSENT';
 
+    //temporary log added to find beneficiary issue root cause
+    const BENEFICIARY_NAME_BANK_ACCOUNT                         = 'BENEFICIARY_NAME_BANK_ACCOUNT';
+
     const APSPDCL_REQUEST                                       = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                                 = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                                      = 'APSPDCL_RESPONSE';

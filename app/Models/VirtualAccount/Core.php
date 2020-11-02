@@ -134,6 +134,14 @@ class Core extends Base\Core
             $input[Entity::NAME] = $data[Entity::NAME];
         }
 
+        //added temporary log to check for beneficiary issue
+        $this->trace->info(
+            TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
+            [
+                'input' => $input,
+            ]
+        );
+
         return $this->create($input, $merchant, null, null, $balance);
     }
 
@@ -206,6 +214,14 @@ class Core extends Base\Core
             $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
 
             $virtualAccount->balance()->associate($balance);
+
+            //added temporary log to check for beneficiary issue
+            $this->trace->info(
+                TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
+                [
+                    'virtualAccount' => $virtualAccount,
+                ]
+            );
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
