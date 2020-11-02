@@ -100,23 +100,34 @@ class TerminalController extends Controller
 
         $mode  = $this->ba->getMode();
 
-        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BANK_FETCH", $mode);
+        try
+        {
+            $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BANK_FETCH", $mode);
 
-        if ($variantFlag === 'proxy'){
+            if ($variantFlag === 'proxy') {
 
-            $path = "v1/terminals/" . $id . "/banks";
+                $path = "v1/terminals/" . $id . "/banks";
 
-            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
-            if ($response != $data)
-            {
-                $traceData = ["api" => $data, "terminals" => $response,];
+                if ($response != $data) {
+                    $traceData = ["api" => $data, "terminals" => $response,];
 
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_BANK_FETCH_COMPARISON_FAILED, $traceData);
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_BANK_FETCH_COMPARISON_FAILED, $traceData);
 
-                // once comparison has run for sometime, next line will be uncommented
-                // return ApiResponse::json($response);
+                    // once comparison has run for sometime, next line will be uncommented
+                    // return ApiResponse::json($response);
+                }
             }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_SERVICE_PROXY_TS_BANK_FETCH_FAILED,
+                [
+                    'message'             => 'exception',
+                    'error'               => $exception->getMessage(),
+                ]);
         }
 
         return ApiResponse::json($data);
