@@ -115,6 +115,7 @@ class Preferences
     const MID_RBL_RETAIL_ASSETS     = 'AtgdEIzM6qtWmS';
     const MID_RBL_RETAIL_CUSTOMER   = 'FG2fcantbZvOhI';
     const MID_RBL_RETAIL_PRODUCT    = 'FG3C2VzQpgMxb2';
+    const MID_RBL_LENDING           = 'FpHNbOB8YmlzWy';
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
     const MID_BOB                   = 'CxOgfvYhxGztjJ';
