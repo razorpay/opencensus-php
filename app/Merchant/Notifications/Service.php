@@ -175,6 +175,37 @@ class Service extends Base\Service
                     $isUserEligible = in_array($businessType, $value, true);
 
                     break;
+
+                case 'experiments_with_variant':
+
+                    if (isset($user['experiments']) === false)
+                    {
+                        return false;
+                    }
+
+                    $userFilterValue = $user['experiments'];
+
+                    foreach ($userFilterValue as $key => $subValue)
+                    {
+                        $userFilterValue[strtolower($key)] = strtolower($userFilterValue[$key]['result']);
+                        if (strtolower($key) !== $key)
+                        {
+                            unset($userFilterValue[$key]);
+                        }
+                    }
+                    
+                    foreach ($value as $key => $subValue)
+                    {
+                        $value[strtolower($key)] = strtolower($value[$key]);
+                        if (strtolower($key) !== $key)
+                        {
+                            unset($value[$key]);
+                        }
+                    }
+                    
+                    $isUserEligible = (empty(array_intersect_assoc($userFilterValue, $value)) === false);
+
+                    break;
             }
 
             if ($isUserEligible === false)
