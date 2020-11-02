@@ -57,7 +57,7 @@ class SyncOrderPgRouter extends Job
 
         try
         {
-            $this->trace->count(Metric::PG_ROUTER_ORDER_SYNC_QUEUE_PUSH_COUNT, [$this->data['id']]);
+            $this->trace->count(Metric::PG_ROUTER_ORDER_SYNC_QUEUE_PUSH_COUNT);
 
             App::getFacadeRoot()['pg_router']->syncOrderToPgRouter($this->data, true);
 
@@ -67,7 +67,7 @@ class SyncOrderPgRouter extends Job
                 ]
             );
 
-            $this->trace->count(Metric::PG_ROUTER_ORDER_SYNC_QUEUE_CONSUME_COUNT, [$this->data['id']]);
+            $this->trace->count(Metric::PG_ROUTER_ORDER_SYNC_QUEUE_CONSUME_COUNT);
 
             $this->delete();
         }
