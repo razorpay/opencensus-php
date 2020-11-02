@@ -915,7 +915,6 @@ return [
                     'dummy',
                     'webhooks',
                     'aggregator',
-                    'tokens',
                     's2swallet',
                     's2supi',
                     's2saeps',

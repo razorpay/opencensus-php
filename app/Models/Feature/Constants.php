@@ -12,7 +12,6 @@ class Constants
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
     const TERMINAL_ONBOARDING             = 'terminal_onboarding';
-    const TOKENS                          = 'tokens';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
     const S2SAEPS                         = 's2saeps';
@@ -525,7 +524,6 @@ class Constants
         self::DUMMY                           => true,
         self::WEBHOOKS                        => true,
         self::AGGREGATOR                      => true,
-        self::TOKENS                          => true,
         self::S2SWALLET                       => true,
         self::S2SUPI                          => true,
         self::S2SAEPS                         => true,

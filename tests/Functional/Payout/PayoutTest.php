@@ -748,7 +748,6 @@ class PayoutTest extends TestCase
 
     public function createCustomerWalletPayout()
     {
-        $this->fixtures->merchant->addFeatures(['tokens']);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 

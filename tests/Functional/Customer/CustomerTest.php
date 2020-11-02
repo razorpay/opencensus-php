@@ -23,8 +23,6 @@ class CustomerTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/CustomerTestData.php';
 
         parent::setUp();
-
-        $this->fixtures->merchant->addFeatures(['tokens']);
     }
 
     public function testCreateCustomer()

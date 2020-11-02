@@ -26,7 +26,7 @@ class SavedVpaCustomerTokenTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
-        $this->fixtures->merchant->addFeatures(['tokens', 'cardsaving', 'save_vpa']);
+        $this->fixtures->merchant->addFeatures(['cardsaving', 'save_vpa']);
 
         $this->fixtures->create('customer:upi_payments_local_customer_token');
 
