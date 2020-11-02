@@ -336,6 +336,21 @@ return [
         ],
     ],
 
+    'testDefaultInstrumentRequestOnMerchantActivation' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'activated',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'activated',
+            ],
+        ],
+    ],
+
+
     'testMerchantDetailsPatch' => [
         'request'  => [
             'content' => [

@@ -1473,6 +1473,10 @@ class Core extends Base\Core
                      ->setDirty($newMerchantDetails);
 
                 (new Merchant\Activate)->activate($merchant);
+
+                // request for default instruments when merchant is activated
+
+                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)

@@ -19,6 +19,8 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -33,6 +35,7 @@ class MerchantDetailTest extends OAuthTestCase
 {
     use RazorxTrait;
     use PaymentTrait;
+    use TerminalTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -345,6 +348,92 @@ class MerchantDetailTest extends OAuthTestCase
             return true;
         });
 
+
+    }
+
+    public function testDefaultInstrumentRequestOnMerchantActivation(){
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website', 'submitted'=>true]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'instrument_request_merchant_dashboard')
+                    {
+                        return 'on';
+                    }
+                    else
+                    {
+                        return 'control';
+                    }
+
+                }) );
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $expectedResponse = [
+            'methods' => 'POST',
+            'content' => '{"merchant_id":"1cXSLlUU8V9sXl"}',
+            'path'    => 'v2/default_merchant_instrument_requests',
+        ];
+
+        $receivedMethod = '';
+
+        $receivedContent = '';
+
+        $receivedPath = '';
+
+        // cannot assert within mock as exception failures thrown are handled in code somewhere else, leading to silent failure of assertions failures
+        $this->mockTerminalsServiceSendRequest(function($path, $content, $method) use (&$receivedPath, &$receivedContent, &$receivedMethod) {
+
+            $receivedMethod = $method;
+
+            $receivedContent = $content;
+
+            $receivedPath = $path;
+
+        }, 1);
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->startTest();
+
+
+        $this->assertEquals($expectedResponse['methods'], $receivedMethod);
+
+        $this->assertEquals($expectedResponse['path'], $receivedPath);
+
+        $this->assertEquals($expectedResponse['content'], $receivedContent);
+
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isActivated());
 
     }
 
