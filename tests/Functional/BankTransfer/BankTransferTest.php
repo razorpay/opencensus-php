@@ -1911,6 +1911,38 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
+    /**
+     * Account number is less than 16 characters in length for some RBL VAs.
+     */
+    public function testRblBankTransferWithShortPayeeAccount()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '222333004335048';
+
+        $this->startTest($testData);
+    }
+
+    public function testRblBankTransferWithAlphanumericPayeeAccount()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '222333AB43350485';
+
+        $this->startTest($testData);
+    }
+
+    public function testRblBankTransferWithEmptyPayeeAccount()
+    {
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testRblBankTransferWithNonAlphanumericPayeeAccount()
+    {
+        $testData = $this->testData['testRblBankTransferWithEmptyPayeeAccount'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '2223330_43350485';
+
+        $this->startTest($testData);
+    }
+
     public function testIciciBankTransferCallback()
     {
         $testData = $this->testData[__FUNCTION__];

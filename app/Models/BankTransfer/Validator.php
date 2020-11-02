@@ -39,16 +39,17 @@ class Validator extends Base\Validator
     ];
 
     public static $rblRules = [
-        'ServiceName'                   => 'required|in:VirtualAccount',
-        'Action'                        => 'required|in:VirtualAccountTransaction',
-        'Data'                          => 'required|array',
-        'Data.0.messageType'            => 'required|string',
-        'Data.0.amount'                 => 'required|string',
-        'Data.0.UTRNumber'              => 'required|string',
-        'Data.0.senderIFSC'             => 'nullable|string',
-        'Data.0.senderAccountNumber'    => 'nullable|string',
-        'Data.0.senderName'             => 'required|string',
-        'Data.0.creditAccountNumber'    => 'required|string',
+        'ServiceName'                       => 'required|in:VirtualAccount',
+        'Action'                            => 'required|in:VirtualAccountTransaction',
+        'Data'                              => 'required|array',
+        'Data.0.messageType'                => 'required|string',
+        'Data.0.amount'                     => 'required|string',
+        'Data.0.UTRNumber'                  => 'required|string',
+        'Data.0.beneficiaryAccountNumber'   => 'required|string|max:16|regex:"^([0-9A-Za-z])+$"',
+        'Data.0.senderIFSC'                 => 'nullable|string',
+        'Data.0.senderAccountNumber'        => 'nullable|string',
+        'Data.0.senderName'                 => 'required|string',
+        'Data.0.creditAccountNumber'        => 'required|string',
     ];
 
     public static $iciciRules = [
