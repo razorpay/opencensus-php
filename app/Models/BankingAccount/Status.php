@@ -153,6 +153,9 @@ class Status
             self::PICKED,
         ],
         self::REJECTED  => [
+            // Temporarily allowing this transition because of
+            // https://razorpay.slack.com/archives/CRA6TGU8H/p1603954629097600?thread_ts=1603779164.072600&cid=CRA6TGU8H
+            self::PROCESSED
         ],
         self::ARCHIVED  => [
             self::PICKED,

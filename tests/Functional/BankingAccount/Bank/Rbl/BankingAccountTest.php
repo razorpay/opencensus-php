@@ -873,14 +873,14 @@ class BankingAccountTest extends TestCase
             \RZP\Models\BankingAccount\Status::PROCESSED);
     }
 
-    public function testUpdateBankingAccountStatusUnservicableToProcessed()
+    public function testUpdateBankingAccountStatusUnservicableToPicked()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::UNSERVICEABLE,
             \RZP\Models\BankingAccount\Status::PICKED);
     }
 
-    public function testUpdateBankingAccountStatusCancelledToProcessed()
+    public function testUpdateBankingAccountStatusCancelledToPicked()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::CANCELLED,
@@ -891,6 +891,13 @@ class BankingAccountTest extends TestCase
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             \RZP\Models\BankingAccount\Status::ARCHIVED,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusRejectedToProcessed()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            \RZP\Models\BankingAccount\Status::REJECTED,
             \RZP\Models\BankingAccount\Status::PROCESSED);
     }
 
