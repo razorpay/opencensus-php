@@ -191,6 +191,15 @@ class VirtualAccountController extends Controller
             }
         }
 
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_RESPONSE,
+            [
+                'vpa'      => $vpa,
+                'data'     => $data,
+                'response' => $response,
+            ]
+        );
+
         return $response;
     }
 
