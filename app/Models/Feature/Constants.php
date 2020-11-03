@@ -485,6 +485,8 @@ class Constants
 
     const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
 
+    const PL_BATCH_UPLOAD_FEATURE = 'pl_batch_upload_feature';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -742,6 +744,7 @@ class Constants
         self::RX_SHOW_PAYOUT_SOURCE           => true,
         self::PAYOUT_CREDITS_NEW_FLOW         => true,
         self::REFUND_AGED_PAYMENTS            => true,
+        self::PL_BATCH_UPLOAD_FEATURE         => true,
     ];
 
     // Entity type constants
@@ -1024,6 +1027,11 @@ class Constants
         self::RX_SHOW_PAYOUT_SOURCE => [
             'feature'       => self::RX_SHOW_PAYOUT_SOURCE,
             'display_name'  => 'Show payout source for RazorpayX dashboard',
+            'documentation' => '',
+        ],
+        self::PL_BATCH_UPLOAD_FEATURE => [
+            'feature'       => self::PL_BATCH_UPLOAD_FEATURE,
+            'display_name'  => 'Enable batch upload for payment links on dashboard',
             'documentation' => '',
         ]
     ];
