@@ -143,8 +143,10 @@ class Core extends Base\Core
         $month = $invoice->getMonth();
         $year  = $invoice->getYear();
 
-        $fromTimestamp = Carbon::createFromDate($year, $month, 1, Timezone::IST)->startOfMonth()->getTimestamp();
-        $endTimestamp  = Carbon::createFromDate($year, $month, 1, Timezone::IST)->endOfMonth()->getTimestamp();
+        $timestamps = $this->convertMonthAndYearToTimeStamp($month, $year);
+
+        $fromTimestamp = $timestamps[Commission\Constants::FROM];
+        $endTimestamp  = $timestamps[Commission\Constants::TO];
 
         $relations = ['lineItems', 'lineItems.taxes'];
         $invoice->load($relations);
@@ -444,8 +446,8 @@ class Core extends Base\Core
 
     public function convertMonthAndYearToTimeStamp(int $month, int $year)
     {
-        $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
-        $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
+        $fromTimestamp = Carbon::createFromDate($year, $month, 1, Timezone::IST)->startOfMonth()->getTimestamp();
+        $endTimestamp  = Carbon::createFromDate($year, $month, 1, Timezone::IST)->endOfMonth()->getTimestamp();
 
         return [
             Commission\Constants::FROM => $fromTimestamp,
@@ -455,8 +457,10 @@ class Core extends Base\Core
 
     protected function createLineItemsForInvoice(Merchant\Entity $partner, Entity $invoice, int $month, int $year): bool
     {
-        $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
-        $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
+        $timestamps = $this->convertMonthAndYearToTimeStamp($month, $year);
+
+        $fromTimestamp = $timestamps[Commission\Constants::FROM];
+        $endTimestamp  = $timestamps[Commission\Constants::TO];
 
         $aggregateSumComponents = $this->repo->commission->fetchAggregateFeesAndTaxForInvoice($partner->getId(), $fromTimestamp, $endTimestamp);
 
