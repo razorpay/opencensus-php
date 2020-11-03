@@ -230,6 +230,7 @@ class Validator extends Base\Validator
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
+        Entity::FORCE_REJECT        => 'filled|boolean',
         ActionChecker::USER_COMMENT => 'sometimes|nullable|string|max:255',
     ];
 

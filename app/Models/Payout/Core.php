@@ -951,7 +951,7 @@ class Core extends Base\Core
         // else process via api workflow system
         if ($this->shouldCallWorkflowService($payout) === true)
         {
-            $this->rejectWorkflowViaWorkflowService($payout, []);
+            $this->rejectWorkflowViaWorkflowService($payout, [Entity::FORCE_REJECT => true]);
 
             return $payout;
         }
@@ -2602,6 +2602,11 @@ class Core extends Base\Core
             if (($auth->isAdminAuth() === true) ||
                 ($auth->isCron() === true))
             {
+                if ($input[Entity::FORCE_REJECT] === true)
+                {
+                    $this->processRejectPayout($payout);
+                }
+
                 return $this->workflowService->createDirectAction($payout, $input);
             }
 

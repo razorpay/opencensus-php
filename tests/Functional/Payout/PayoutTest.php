@@ -2054,16 +2054,19 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetPayoutsForPendingOnRolesNWFS() {
+    public function testGetPayoutsForPendingOnRolesNWFS()
+    {
+        $this->testGetPayoutsForPendingOnRoles();
+        $oldPayout = $this->getDbLastEntity('payout', 'live');
+        // setting time lower thn current time fto verify sorting order
+        $this->fixtures->on('live')->edit('payout', $oldPayout['id'], [
+            'created_at' => (Carbon::now(Timezone::IST)->getTimestamp() - 100)
+        ]);
         //Given
 
         //1. I have a Workflow
         // Sets up Fund Account and Merchant User mapping that may be needed to setup on live
-        $this->liveSetUp();
-
         $this->setUpExperimentForNWFS();
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         $this->fixtures->on('live')->create(
             'workflow_config',
@@ -2082,8 +2085,7 @@ class PayoutTest extends TestCase
                 'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
-        $this->fixtures->on('live')->create(
-            'workflow_state_map');
+        $this->fixtures->on('live')->create('workflow_state_map', ['actor_type_value' => 'finance_l3']);
 
         //Then
         //When I filter on pending on pending on L2 Role, I shouldn't get anything
@@ -2114,18 +2116,19 @@ class PayoutTest extends TestCase
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
-                'pending_on_roles' => ['owner']
+                'pending_on_roles' => ['finance_l3']
             ],
             'url'     => '/payouts',
         ];
 
         $response = $this->sendRequest($request);
         $payout = json_decode($response->getContent(), false);
-
+        $this->assertEquals(2, count($payout->items));
+        $this->assertTrue($payout->items[0]->created_at >= $payout->items[1]->created_at);
         $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
 
         //2. I approve with the owner of workflow
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
 
         $request = [
             'method'  => 'POST',
@@ -2151,7 +2154,7 @@ class PayoutTest extends TestCase
             'content' => [
                 'product'          => 'banking',
                 'expand'           => ['user'],
-                'pending_on_roles' => ['owner']
+                'pending_on_roles' => ['finance_l3']
             ],
             'url'     => '/payouts',
         ];
@@ -2159,7 +2162,7 @@ class PayoutTest extends TestCase
         $response = $this->sendRequest($request);
         $payout = json_decode($response->getContent(), false);
 
-        $this->assertEmpty($payout->items);
+        $this->assertEquals(1, count($payout->items));
     }
 
     private function setUpExperimentForNWFS()

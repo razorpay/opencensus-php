@@ -351,9 +351,15 @@ class Repository extends Base\Repository
 
         $pendingPayoutsViaWorkflowService = $queryForPendingPayoutsViaWorkflowService->get();
 
+        $uniquePayouts = [];
         foreach ($pendingPayoutsViaWorkflowService as $pendingPayout)
         {
-            $payouts->add($pendingPayout);
+            if (in_array($pendingPayout->getId(), $uniquePayouts, true) === false)
+            {
+                $uniquePayouts[] = $pendingPayout->getId();
+
+                $payouts->add($pendingPayout);
+            }
         }
 
         return $payouts;
@@ -720,6 +726,7 @@ class Repository extends Base\Repository
     {
         $pendingOnRoles = $params[Entity::PENDING_ON_ROLES_VIA_WFS];
 
+        $query->select($this->getTableName() . '.*');
         $this->joinQueryWorkflowServiceEntities($query, $pendingOnRoles);
 
         $statusColumn = $this->dbColumn(Entity::STATUS);

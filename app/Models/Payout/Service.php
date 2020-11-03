@@ -256,12 +256,15 @@ class Service extends Base\Service
         }
 
         $failedIds = [];
+        $processedIds = [];
 
         foreach ($payouts as $payout)
         {
             try
             {
                 $payout = (new Core)->rejectPayout($payout, $input);
+
+                $processedIds[] = $payout->getId();
             }
             catch (\Throwable $e)
             {
@@ -279,8 +282,9 @@ class Service extends Base\Service
         }
 
         return [
-            'total_count' => count($input[Entity::PAYOUT_IDS]),
-            'failed_ids'  => $failedIds,
+            'total_count'   => count($payouts),
+            'processed_ids' => $processedIds,
+            'failed_ids'    => $failedIds,
         ];
     }
 
@@ -304,6 +308,7 @@ class Service extends Base\Service
         $payouts = $this->repo->payout->findManyByPublicIds($input[Entity::PAYOUT_IDS]);
 
         $failedIds = [];
+        $processedIds = [];
 
         foreach ($payouts as $payout)
         {
@@ -312,6 +317,8 @@ class Service extends Base\Service
                 $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
                 (new Core)->retryPayoutWorkflow($payout, $input);
+
+                $processedIds[] = $payout->getId();
             }
             catch (\Throwable $e)
             {
@@ -321,13 +328,14 @@ class Service extends Base\Service
                     TraceCode::PAYOUT_WORKFLOW_SERVICE_WORKFLOW_CREATE_RETRY_FAILED,
                     ['payout_id' => $payout->getId()]);
 
-                $failedIds[] = [$payout->getPublicId() . ' -> ' . $e->getMessage()];
+                $failedIds[] = [$payout->getId() . ' -> ' . $e->getMessage()];
             }
         }
 
         return [
-            'total_count' => count($input[Entity::PAYOUT_IDS]),
-            'failed_ids'  => $failedIds,
+            'total_count'   => count($payouts),
+            'processed_ids' => $processedIds,
+            'failed_ids'    => $failedIds,
         ];
     }
 
@@ -425,9 +433,7 @@ class Service extends Base\Service
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
-        $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
-
-        return $payouts->toArrayPublic();
+        return $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
     }
 
     public function processReversedPayout(string $id)
@@ -1520,12 +1526,27 @@ class Service extends Base\Service
             $pendingPayoutsViaWfs = $this->repo->payout->fetch($input, $this->merchant->getId());
         }
 
-        if (empty($pendingPayoutsViaWfs) === false)
+        $uniquePayouts = [];
+        foreach ($pendingPayoutsViaWfs as $pendingPayout)
         {
-            foreach ($pendingPayoutsViaWfs as $payout)
+            if (in_array($pendingPayout->getId(), $uniquePayouts, true) === false)
             {
-                $payouts->add($payout);
+                $uniquePayouts[] = $pendingPayout->getId();
+
+                $payouts->add($pendingPayout);
             }
         }
+
+        $payoutsArr = $payouts->toArrayPublic();
+
+        $payoutItems = & $payoutsArr['items'];
+
+        // Sort payouts by created_at desc
+        usort($payoutItems, function($a, $b)
+        {
+            return $b[Entity::CREATED_AT] - $a[Entity::CREATED_AT];
+        });
+
+        return $payoutsArr;
     }
 }

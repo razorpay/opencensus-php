@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
     const PAYOUT_IDS           = 'payout_ids';
     const SKIP_WORKFLOW        = 'skip_workflow';
+    const FORCE_REJECT         = 'force_reject';
 
     // Output keys
     const WORKFLOW_HISTORY   = 'workflow_history';
