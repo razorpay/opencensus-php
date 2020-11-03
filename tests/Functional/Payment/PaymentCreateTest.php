@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
@@ -2465,6 +2466,66 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
 
         $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    public function testPaymentS2SRedirectCardAuthenticatedPayment()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $paymentId = $content['razorpay_payment_id'];
+
+        $this->repo = (new Payment\Repository());
+
+        $id = Payment\Entity::stripDefaultSign($paymentId);
+
+        $payment = Payment\Entity::findOrFail($id);
+
+        $payment->setStatus('authenticated');
+
+        $payment->setAuthenticatedTimestamp();
+
+        $this->repo->saveOrFail($payment);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => $this->getPaymentRedirectToAuthorizrUrl($id),
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetRawContent($request);
+
+        $this->repo->reload($payment);
+
+        $this->assertEquals($payment->getStatus(), 'authenticated');
     }
 
     public function testPaymentS2SJsonPrivateAuthUPIIntent()

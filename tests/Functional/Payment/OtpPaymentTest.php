@@ -1598,7 +1598,7 @@ class OtpPaymentTest extends TestCase
 
         $response = $this->makeRedirectToAuthorize($targetUrl);
 
-        $content = $this->getJsonContentFromResponse($response, null);
+        $content = $response->original;
 
         self::assertNotNull($content['razorpay_payment_id']);
 
@@ -1607,12 +1607,6 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('authorized', $payment['status']);
         assertTrue($this->otpFlow);
-
-        $response = $this->makeRedirectToAuthorize($targetUrl);
-
-        $content = $this->getJsonContentFromResponse($response, null);
-
-        self::assertNotNull($content['razorpay_payment_id']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SDoubleRedirectOtp()

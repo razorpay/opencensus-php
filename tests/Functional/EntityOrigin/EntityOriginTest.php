@@ -138,9 +138,9 @@ class EntityOriginTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
-        $response = $this->doS2SPrivateAuthPayment($payment);
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
         $origin = $this->getDbLastEntity('entity_origin');
 

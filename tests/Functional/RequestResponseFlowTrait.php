@@ -352,6 +352,15 @@ trait RequestResponseFlowTrait
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
+    protected function makeRequestAndGetRawContent($request, &$callback = null)
+    {
+        $this->resetSingletons();
+
+        $response = $this->sendRequest($request, $callback);
+
+        return $response;
+    }
+
     protected function makeRequestAndCatchException(
         Closure $closure,
         string $exceptionClass = \Exception::class,

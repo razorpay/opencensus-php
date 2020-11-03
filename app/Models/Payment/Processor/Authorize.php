@@ -7644,6 +7644,12 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
+        if (($this->payment->hasBeenAuthenticated() === true) and
+            ($this->payment->hasNotBeenAuthorized() === true))
+        {
+            return $this->processAuthenticateResponse($this->payment);
+        }
+
         if ($payment->hasBeenAuthorized() === true)
         {
             return $this->processPaymentCallbackSecondTime($payment);
