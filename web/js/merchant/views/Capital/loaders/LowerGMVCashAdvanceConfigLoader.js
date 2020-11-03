@@ -59,6 +59,10 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
             number of times.
           </div>
         ),
+        applicationFinalCTA: {
+          text: 'Start Withdrawing Now',
+          destination: '/capital/cash-advance/',
+        },
       },
     };
   }

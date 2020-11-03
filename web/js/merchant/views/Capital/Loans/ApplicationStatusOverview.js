@@ -2,14 +2,12 @@ import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import {
-  ERROR_STATES,
-  PENDING_APPLICATION_STATES,
-  HOTJAR_TRIGGERS,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
-} from './constants';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { withRouter } from 'react-router-dom';
+import Button from 'common/new-ui/Button';
+import { ERROR_STATES, PENDING_APPLICATION_STATES, HOTJAR_TRIGGERS } from './constants';
 
+@withRouter
 @connect(
   (state) => ({
     loanApplicationDetails: state.loanApplicationDetails,
@@ -85,6 +83,13 @@ class ApplicationStatusOverview extends Component {
     }
   }
 
+  handleFinalCTAAction = () => {
+    const {
+      destination,
+    } = this.props.loanApplicationDetails.meta.configuration.ui.product.applicationFinalCTA;
+    this.props.history.push(destination);
+  };
+
   getStep = (step) => {
     const { meta } = this.props.loanApplicationDetails;
     const applicationStatus = meta.loading ? 'PROMOTER_INFO_PENDING' : meta.data.application.status;
@@ -135,6 +140,7 @@ class ApplicationStatusOverview extends Component {
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
       : this.getStepTobeShown(classList, step);
 
+    console.log('-> meta.configuration', meta.configuration);
     return (
       <MultiLevelStepper.ParentStep
         status={classList.join(' ')}
@@ -144,13 +150,22 @@ class ApplicationStatusOverview extends Component {
         action={
           <div>
             {classList.includes('completed') ? (
-              <a
-                onClick={() => this.viewCompletedStateGroup(step, descriptiveStep.title)}
-                className="link"
-              >
-                View application steps
-                <i className="i i-chevron-right" />
-              </a>
+              <div class="flex">
+                {isFinalState && meta.configuration.ui.product.applicationFinalCTA && (
+                  <button
+                    className="btn btn-primary multilevel-step__step-action m-r"
+                    onClick={this.handleFinalCTAAction}
+                  >
+                    {meta.configuration.ui.product.applicationFinalCTA.text}
+                  </button>
+                )}
+                <Button.Transparent
+                  onClick={() => this.viewCompletedStateGroup(step, descriptiveStep.title)}
+                >
+                  View application steps
+                  <i className="i i-chevron-right" />
+                </Button.Transparent>
+              </div>
             ) : classList.includes('active') ? (
               classList.includes('error') || classList.includes('pending') ? (
                 <a

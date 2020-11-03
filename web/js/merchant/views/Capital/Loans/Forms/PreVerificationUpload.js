@@ -14,7 +14,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FormSectionLoadingSkeleton from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
+import { APPLICATION_STATES, CAPITAL_PRODUCT_NAME_CODE_MAP, HOTJAR_TRIGGERS } from '../constants';
 import { withRouter } from 'react-router-dom';
 import { isPreceedingState, postToUrl } from '../../utils';
 
@@ -591,7 +591,7 @@ class PreVerificationUpload extends Component {
   };
 
   getPerfiosRedirectLink = () => {
-    const { user, match } = this.props;
+    const { user, match, product } = this.props;
 
     const { meta, promoter_details } = this.props.loanApplicationDetails;
 
@@ -610,10 +610,13 @@ class PreVerificationUpload extends Component {
       success: '%s',
     });
 
+    const productCode = Object.keys(CAPITAL_PRODUCT_NAME_CODE_MAP).find(
+      (key) => CAPITAL_PRODUCT_NAME_CODE_MAP[key] === product,
+    );
     const returnUrl = new URL(
-      `${window.location.protocol}//${window.location.host}/app/capital/${
-        match.params.product
-      }/apply?${returnUrlParams.toString()}`,
+      `${window.location.protocol}//${
+        window.location.host
+      }/app/capital/${productCode}/apply?${returnUrlParams.toString()}`,
     );
     return getNetBankingLink({
       entity_id: applicantId,

@@ -629,6 +629,7 @@ class FormSectionRenderer extends Component {
         navigation={this.getNavigationActions(activeState)}
         nextState={this.getNextState(activeState)}
         previousState={this.getPreviousState(activeState)}
+        product={meta.product}
       />
     );
   };

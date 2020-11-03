@@ -112,11 +112,9 @@ class WithdrawalsRoot extends Component {
       withdrawalConfigurationDetails: { loading: configLoading },
       list,
     } = this.props;
-    const { leadGenerated } = this.state;
 
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
 
-    const hasLOCStage1Feature = user.isCashAdvanceStage1Enabled;
     const hasLOCStage2Feature = user.isCashAdvanceStage2Enabled;
     const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
     const isLOSEnabled = user.isLOSEnabled;

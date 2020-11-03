@@ -13,7 +13,7 @@ function WithdrawnAmountSummary({ principle, interest, repaymentDate, roi, diffD
         <div className="withdrawals__credit-meta__list-item">
           <div className="description__wrapper">
             <div className="description">
-              <p>Principle Repayable</p>
+              <p>Principal Repayable</p>
             </div>
             <Amount value={parseFloat(principle * 100).toFixed(2)} className="pull-right" />
           </div>

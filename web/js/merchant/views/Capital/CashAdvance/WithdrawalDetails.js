@@ -18,7 +18,7 @@ import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     withdrawalDetails: state.withdrawals.withdrawalDetails,
@@ -30,7 +30,7 @@ import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
     fetchWithdrawalConfigurationByMerchantID,
     closeModal,
     openModal,
-  }
+  },
 )
 class WithdrawalDetails extends Component {
   state = {
@@ -38,7 +38,7 @@ class WithdrawalDetails extends Component {
     showPartialRepaymentBreakdown: false,
   };
 
-  gaEventDispatcher = eventObject => {
+  gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard CA - Withdraw';
     window.rzpAnalytics(eventObject);
   };
@@ -76,15 +76,8 @@ class WithdrawalDetails extends Component {
     }
   }
 
-  showRepayTicketCreated = (
-    ticketNumber,
-    withdrawalDetails,
-    withdrawalConfigurationDetails
-  ) => {
-    const dueAmount = this.getDueAmount(
-      withdrawalDetails,
-      withdrawalConfigurationDetails
-    );
+  showRepayTicketCreated = (ticketNumber, withdrawalDetails, withdrawalConfigurationDetails) => {
+    const dueAmount = this.getDueAmount(withdrawalDetails, withdrawalConfigurationDetails);
     this.props.openModal({
       size: 'small',
       component: (
@@ -105,11 +98,11 @@ class WithdrawalDetails extends Component {
   };
 
   repay = (withdrawalDetails, withdrawalConfigurationDetails) => {
-    return this.createRepayTicket().then(res => {
+    return this.createRepayTicket().then((res) => {
       this.showRepayTicketCreated(
         res.data.ticketNo,
         withdrawalDetails,
-        withdrawalConfigurationDetails
+        withdrawalConfigurationDetails,
       );
     });
   };
@@ -121,12 +114,12 @@ class WithdrawalDetails extends Component {
         : 'Details | Show Breakup',
     });
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       showBreakdown: !prevState.showBreakdown,
     }));
   };
 
-  getRepaidAmount = withdrawalDetails => {
+  getRepaidAmount = (withdrawalDetails) => {
     if (!withdrawalDetails.repayments) {
       return {
         total: 0,
@@ -134,19 +127,16 @@ class WithdrawalDetails extends Component {
         interest: 0,
       };
     }
-    const totalAmount = withdrawalDetails.repayments.reduce(
-      (acc, curr) => acc + curr.amount,
-      0
-    );
+    const totalAmount = withdrawalDetails.repayments.reduce((acc, curr) => acc + curr.amount, 0);
 
     const totalPrincipal = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter(repayment => repayment.category === 'PRINCIPAL')
+      .filter((repayment) => repayment.category === 'PRINCIPAL')
       .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
 
     const totalInterest = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter(repayment => repayment.category === 'INTEREST')
+      .filter((repayment) => repayment.category === 'INTEREST')
       .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
 
     return {
@@ -159,18 +149,13 @@ class WithdrawalDetails extends Component {
   getDueAmount = (withdrawalDetails, withdrawalConfigurationDetails) => {
     const { configuration } = withdrawalConfigurationDetails;
     const principal = parseInt(withdrawalDetails.amount);
-    const principalRepaidSoFar = this.getRepaidAmount(withdrawalDetails)
-      .principal;
-    const interestRepaidSoFar = this.getRepaidAmount(withdrawalDetails)
-      .interest;
+    const { principal: principalRepaidSoFar, interest: interestRepaidSoFar } = this.getRepaidAmount(
+      withdrawalDetails,
+    );
 
     const lastRepaid =
       withdrawalDetails.repayments && withdrawalDetails.repayments.length > 0
-        ? moment(
-            withdrawalDetails.repayments[
-              withdrawalDetails.repayments.length - 1
-            ].created_at
-          )
+        ? moment(withdrawalDetails.repayments[withdrawalDetails.repayments.length - 1].created_at)
         : withdrawalDetails.drawn_at;
 
     const diffDays =
@@ -195,17 +180,10 @@ class WithdrawalDetails extends Component {
 
     const lastRepaid =
       withdrawalDetails.repayments && withdrawalDetails.repayments.length > 0
-        ? moment(
-            withdrawalDetails.repayments[
-              withdrawalDetails.repayments.length - 1
-            ].created_at
-          )
+        ? moment(withdrawalDetails.repayments[withdrawalDetails.repayments.length - 1].created_at)
         : withdrawalDetails.due_date;
 
-    const diffDays = moment(lastRepaid).diff(
-      withdrawalDetails.drawn_at,
-      'days'
-    );
+    const diffDays = moment(lastRepaid).diff(withdrawalDetails.drawn_at, 'days');
 
     const roi = parseInt(configuration.interest) / 100;
 
@@ -218,7 +196,7 @@ class WithdrawalDetails extends Component {
   };
 
   toggleRepaidBreakdownVisibility = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       showPartialRepaymentBreakdown: !prevState.showPartialRepaymentBreakdown,
     }));
   };
@@ -241,7 +219,7 @@ class WithdrawalDetails extends Component {
 
     const repaymentDates = data.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .map(repayment => moment(repayment.created_at));
+      .map((repayment) => moment(repayment.created_at));
     return moment.max(repaymentDates);
   };
 
@@ -252,13 +230,22 @@ class WithdrawalDetails extends Component {
     } = this.props;
 
     const { showBreakdown, showPartialRepaymentBreakdown } = this.state;
-    const withdrawalConfigurationDetails = this.props
-      .withdrawalConfigurationDetails.data;
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const loading =
       !withdrawalConfigurationDetails ||
       withdrawalDetailsLoading ||
       this.props.withdrawalConfigurationDetails.loading;
 
+    const { interest: interestAmount, principal: principalAmount } = this.getDueAmount(
+      data,
+      withdrawalConfigurationDetails,
+    );
+
+    const {
+      principal: principalRepaidSoFar,
+      interest: interestRepaidSoFar,
+      total: totalRepaidSoFar,
+    } = this.getRepaidAmount(data);
     return (
       <div className="content-wrapper content-sm txn-details Withdrawal--Details">
         {loading ? (
@@ -276,9 +263,7 @@ class WithdrawalDetails extends Component {
                   data.status === STATUSES.PARTIALLY_REPAID) && (
                   <AsyncBtn.Primary
                     class="pull-right"
-                    onClick={() =>
-                      this.repay(data, withdrawalConfigurationDetails)
-                    }
+                    onClick={() => this.repay(data, withdrawalConfigurationDetails)}
                   >
                     Repay
                   </AsyncBtn.Primary>
@@ -288,10 +273,7 @@ class WithdrawalDetails extends Component {
             <div className="SliderPanel__Body">
               <div className="">
                 <div className="list-group details-row-container">
-                  <WithdrawalStatus
-                    status={data.status}
-                    withdrawalDetails={data}
-                  />
+                  <WithdrawalStatus status={data.status} withdrawalDetails={data} />
                   <div class="m-all p-all">
                     <div className="block-note purple m-b">
                       <strong>Withdrawal Details</strong>
@@ -319,15 +301,11 @@ class WithdrawalDetails extends Component {
                         data.status === STATUSES.REPAID ? (
                           <React.Fragment>
                             <EntityDetailRow label="Amount Repaid">
-                              <Amount
-                                value={this.getRepaidAmount(data).total}
-                              />
+                              <Amount value={totalRepaidSoFar} />
                               {!showPartialRepaymentBreakdown && (
                                 <div>
                                   <Button.Transparent
-                                    onClick={
-                                      this.toggleRepaidBreakdownVisibility
-                                    }
+                                    onClick={this.toggleRepaidBreakdownVisibility}
                                   >
                                     Show Breakdown
                                     <i className="i i-chevron-down" />
@@ -338,25 +316,15 @@ class WithdrawalDetails extends Component {
                             {showPartialRepaymentBreakdown && (
                               <div>
                                 <div className="block-note purple m-b">
-                                  <EntityDetailRow label="Principle Amount">
-                                    <Amount
-                                      value={
-                                        this.getRepaidAmount(data).principal
-                                      }
-                                    />
+                                  <EntityDetailRow label="Principal Amount">
+                                    <Amount value={principalRepaidSoFar} />
                                   </EntityDetailRow>
                                   <EntityDetailRow label="Interest">
                                     <div>
-                                      <Amount
-                                        value={
-                                          this.getRepaidAmount(data).interest
-                                        }
-                                      />
+                                      <Amount value={interestRepaidSoFar} />
                                     </div>
                                     <Button.Transparent
-                                      onClick={
-                                        this.toggleRepaidBreakdownVisibility
-                                      }
+                                      onClick={this.toggleRepaidBreakdownVisibility}
                                     >
                                       Hide Breakdown
                                       <i className="i i-chevron-up" />
@@ -367,23 +335,10 @@ class WithdrawalDetails extends Component {
                             )}
                             {data.status === STATUSES.PARTIALLY_REPAID && (
                               <EntityDetailRow label="Amount to be Repaid">
-                                <Amount
-                                  value={
-                                    this.getDueAmount(
-                                      data,
-                                      withdrawalConfigurationDetails
-                                    ).interest +
-                                    this.getDueAmount(
-                                      data,
-                                      withdrawalConfigurationDetails
-                                    ).principal
-                                  }
-                                />
+                                <Amount value={parseFloat(interestAmount + principalAmount)} />
                                 {!showBreakdown && (
                                   <div>
-                                    <Button.Transparent
-                                      onClick={this.toggleBreakdownVisibility}
-                                    >
+                                    <Button.Transparent onClick={this.toggleBreakdownVisibility}>
                                       Show Breakdown
                                       <i className="i i-chevron-down" />
                                     </Button.Transparent>
@@ -394,23 +349,10 @@ class WithdrawalDetails extends Component {
                           </React.Fragment>
                         ) : (
                           <EntityDetailRow label="Amount to be Repaid">
-                            <Amount
-                              value={parseFloat(
-                                this.getDueAmount(
-                                  data,
-                                  withdrawalConfigurationDetails
-                                ).interest +
-                                  this.getDueAmount(
-                                    data,
-                                    withdrawalConfigurationDetails
-                                  ).principal
-                              )}
-                            />
+                            <Amount value={parseFloat(interestAmount + principalAmount)} />
                             {!showBreakdown && (
                               <div>
-                                <Button.Transparent
-                                  onClick={this.toggleBreakdownVisibility}
-                                >
+                                <Button.Transparent onClick={this.toggleBreakdownVisibility}>
                                   Show Breakdown
                                   <i className="i i-chevron-down" />
                                 </Button.Transparent>
@@ -421,30 +363,14 @@ class WithdrawalDetails extends Component {
                         {showBreakdown && (
                           <div>
                             <div className="block-note purple m-b">
-                              <EntityDetailRow label="Principle Amount">
-                                <Amount
-                                  value={
-                                    this.getDueAmount(
-                                      data,
-                                      withdrawalConfigurationDetails
-                                    ).principal
-                                  }
-                                />
+                              <EntityDetailRow label="Principal Amount">
+                                <Amount value={principalAmount} />
                               </EntityDetailRow>
                               <EntityDetailRow label="Interest">
                                 <div>
-                                  <Amount
-                                    value={
-                                      this.getDueAmount(
-                                        data,
-                                        withdrawalConfigurationDetails
-                                      ).interest
-                                    }
-                                  />
+                                  <Amount value={interestAmount} />
                                 </div>
-                                <Button.Transparent
-                                  onClick={this.toggleBreakdownVisibility}
-                                >
+                                <Button.Transparent onClick={this.toggleBreakdownVisibility}>
                                   Hide Breakdown
                                   <i className="i i-chevron-up" />
                                 </Button.Transparent>
@@ -458,22 +384,16 @@ class WithdrawalDetails extends Component {
                           </EntityDetailRow>
                         ) : (
                           <EntityDetailRow label="To be Repaid at">
-                            {moment(data.due_date)
-                              .utc()
-                              .format('LL')}
+                            {moment(data.due_date).utc().format('LL')}
                           </EntityDetailRow>
                         )}
                         <EntityDetailRow label="Rate of Interest">
-                          {parseInt(
-                            withdrawalConfigurationDetails.configuration
-                              .interest
-                          ) / 100}
-                          % per day
+                          {parseInt(withdrawalConfigurationDetails.configuration.interest) / 100}%
+                          per day
                         </EntityDetailRow>
                         <EntityDetailRow label="Repayment Method">
                           <p className="no-margin text--secondary KeyboardShortcutRow_action">
-                            Repayment amount will be deducted from your
-                            settlement Balance
+                            Repayment amount will be deducted from your settlement Balance
                           </p>
                         </EntityDetailRow>
                       </React.Fragment>

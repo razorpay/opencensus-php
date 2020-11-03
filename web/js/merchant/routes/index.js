@@ -117,7 +117,7 @@ const entityDetailsMap = {
 
   '/capital/cash-advance/withdrawals/:id': {
     component: WithdrawalDetails,
-    additionalCondition: (user) => user.isFlashCreditStage2Enabled,
+    additionalCondition: (user) => user.isLOCEnabled,
   },
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,

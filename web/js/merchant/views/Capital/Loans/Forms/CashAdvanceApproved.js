@@ -14,6 +14,7 @@ import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { withRouter } from 'react-router-dom';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 const trackMouseOver = () => {
   window.rzpAnalytics({
@@ -36,6 +37,7 @@ const TABS = {
   }),
   {
     fetchLoanApplicationMeta,
+    closeModal,
   },
 )
 class CashAdvanceApproved extends Component {
@@ -53,6 +55,13 @@ class CashAdvanceApproved extends Component {
     this.setState((prevState) => ({
       activeTab: prevState.activeTab === tab ? null : tab,
     }));
+  };
+
+  redirectToWithdrawals = () => {
+    const { closeModal, history } = this.props;
+
+    closeModal();
+    history.push('/capital/cash-advance/');
   };
 
   render() {
@@ -231,11 +240,7 @@ class CashAdvanceApproved extends Component {
               <i className="i i-chevron-left" />
               Back
             </Button.Transparent>
-            <Button.Primary
-              onClick={() => {
-                this.props.history.push('/capital/cash-advance/');
-              }}
-            >
+            <Button.Primary onClick={this.redirectToWithdrawals}>
               Continue Withdrawing
               <i className="i i-chevron-right" />
             </Button.Primary>
