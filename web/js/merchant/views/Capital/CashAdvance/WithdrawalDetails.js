@@ -215,12 +215,12 @@ class WithdrawalDetails extends Component {
       id,
     } = this.props;
 
-    if (!data.repayments) return '--';
+    if (!data.repayments || (data.repayments && data.repayments.length === 0)) return '--';
 
     const repaymentDates = data.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
       .map((repayment) => moment(repayment.created_at));
-    return moment.max(repaymentDates);
+    return moment.max(repaymentDates).format('LL');
   };
 
   render() {
@@ -380,7 +380,7 @@ class WithdrawalDetails extends Component {
                         )}
                         {data.status === STATUSES.REPAID ? (
                           <EntityDetailRow label="Repaid at">
-                            {this.getLastRepaidDate().format('LL')}
+                            {this.getLastRepaidDate()}
                           </EntityDetailRow>
                         ) : (
                           <EntityDetailRow label="To be Repaid at">

@@ -17,9 +17,7 @@ const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
         <Amount value={withdrawal.amount} />
       </td>
       <td>
-        <span
-          class={`status-label label ${StatusPillClasses[withdrawal.status]}`}
-        >
+        <span class={`status-label label ${StatusPillClasses[withdrawal.status]}`}>
           {STATUS_LABELS[withdrawal.status]}
         </span>
       </td>
@@ -29,7 +27,7 @@ const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
           ? moment(withdrawal.processed_at).format('LLL')
           : '--'}
       </td>
-      <td>{moment(withdrawal.due_date).format('LL')}</td>
+      <td>{withdrawal.due_date ? moment(withdrawal.due_date).format('LL') : '--'}</td>
       <td class="row-action">
         <div className="btn-group">
           {withdrawal.status === STATUSES.PROCESSED ||
@@ -47,9 +45,7 @@ const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
                 trackGA({
                   eventAction: 'List View | Specific Withdrawal',
                 });
-                history.push(
-                  `/capital/cash-advance/withdrawals/${withdrawal.id}`
-                );
+                history.push(`/capital/cash-advance/withdrawals/${withdrawal.id}`);
               }}
             >
               <span>view</span>
@@ -84,25 +80,20 @@ export default ({ withdrawals, loading, viewWithdrawal, repay, trackGA }) => {
           emptyTableMsg={
             <div class="no-results-container flex">
               <div class="m-r">
-                <img
-                  src="/dist/css/assets/capital/no_results.svg"
-                  height={240}
-                  width={240}
-                />
+                <img src="/dist/css/assets/capital/no_results.svg" height={240} width={240} />
               </div>
               <div class="content">
                 <p class="m-b">
                   <strong>Unlock your Withdrawals View</strong>
                 </p>
                 <small class="text-faded">
-                  Make your first withdrawal to unlock the List and details view
-                  of Withdrawals.
+                  Make your first withdrawal to unlock the List and details view of Withdrawals.
                 </small>
               </div>
             </div>
           }
         >
-          {withdrawals.map(withdrawal => (
+          {withdrawals.map((withdrawal) => (
             <ListItemWrapper
               key={withdrawal.id}
               withdrawal={withdrawal}
