@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "86481b1ec0aa071c42b206bf8a906c7d",
+    "content-hash": "920792e8cd738789626b955e30433b1d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -6709,7 +6709,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2020-04-04T18:44:38+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -7120,16 +7120,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.4.5",
+            "version": "2.4.6",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "b65f31d34a5f7d7dceb24caa323205cd39f8b3cd"
+                "reference": "13ee24bc624214a7de8d6be6fed0cef9e0dd7614"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/b65f31d34a5f7d7dceb24caa323205cd39f8b3cd",
-                "reference": "b65f31d34a5f7d7dceb24caa323205cd39f8b3cd",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/13ee24bc624214a7de8d6be6fed0cef9e0dd7614",
+                "reference": "13ee24bc624214a7de8d6be6fed0cef9e0dd7614",
                 "shasum": ""
             },
             "require": {
@@ -7190,10 +7190,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/master",
+                "source": "https://github.com/razorpay/trace/tree/2.4.6",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2020-09-08T11:12:39+00:00"
+            "time": "2020-10-16T06:55:46+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -11488,6 +11488,5 @@
         "php": ">=7.1",
         "ext-gmp": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "platform-dev": []
 }
