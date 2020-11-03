@@ -2672,14 +2672,6 @@ class Entity extends Base\PublicEntity
         $app['events']->fire($event, $eventPayload);
     }
 
-    public function getBankingOnboardingCategory(): string
-    {
-        $merchantAttribute = (new Attribute\Core)
-            ->fetchMerchantOnboardingCategoryAttribute($this, Product::BANKING);
-
-        return $merchantAttribute->getValue();
-    }
-
     public function isInternationalEnabledForProduct(string $product)
     {
         if (in_array($product,ProductInternational\ProductInternationalMapper::LIVE_PRODUCTS,  true) === true)

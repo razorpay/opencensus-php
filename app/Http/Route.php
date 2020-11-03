@@ -483,10 +483,8 @@ class Route
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
-        'merchants_update_onboarding_category_to_normal_cron'
-                                                   => ['post',     'merchants/onboarding_category/normal',           'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
-        'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences' ],
-        'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'],
+        'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
+        'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'                         ],
         'fix_merchant_data_cron'                   => ['patch',    'merchants/trim_space',                           'MerchantController@trimSpacesForMerchant'                          ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
@@ -2672,7 +2670,6 @@ class Route
         'fts_bulk_attempts_initiate',
         'fts_bulk_beneficiary_initiate',
         'fts_bulk_transfer_publish',
-        'merchants_update_onboarding_category_to_normal_cron',
         'entity_bulk_update',
         'merchants_access_map_create_bulk',
         'settings_fetch_internal',
@@ -4629,9 +4626,6 @@ class Route
         'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
         'wfs_config_get'                           => '*',
 
-        // Merchant Attribute
-        'merchants_update_onboarding_category_to_normal_cron'     => '*',
-
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
@@ -5241,7 +5235,6 @@ class Route
             'fts_bulk_attempts_initiate',
             'fts_bulk_beneficiary_initiate',
             'fts_bulk_transfer_publish',
-            'merchants_update_onboarding_category_to_normal_cron',
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
             'terminals_proxy_delete_submerchant',

@@ -107,9 +107,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    // allow Banking Merchant to self-serve in onboarding process
-    const X_MERCHANT_SELF_SERVE_ONBOARDING = 'x_merchant_self_serve_onboarding';
-
     // allow partner_type data push to salesforce
     const PARTNER_TYPE_TO_SALESFORCE = 'PARTNER_TYPE_TO_SALESFORCE';
 

@@ -1729,22 +1729,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    // Merchant Attribute
-    /**
-     * For banking merchants, after a certain number of days(passed in input) of belonging to
-     * "self_serve" onboarding category, they need to be moved to "normal" category in the
-     * situation that they have not completed onboarding (atleast 1 payout)
-     * @return mixed
-     */
-    public function postUpdateSelfServeBankingMerchantsToNormal()
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_ATTRIBUTE)->updateSelfServeBankingMerchantsToNormal($input);
-
-        return ApiResponse::json($response);
-    }
-
     /**
      * This API is to capture merchant preferences.
      * Preferences are organized as Group(module), Type(key) & Value.

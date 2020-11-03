@@ -27,9 +27,6 @@ class Entity extends Base\PublicEntity
     const BUSINESS_CATEGORY             = 'business_category';
     const TEAM_SIZE                     = 'team_size';
     const MONTHLY_PAYOUT_COUNT          = 'monthly_payout_count';
-    // MERCHANT_ONBOARDING_CATEGORY Values
-    const SELF_SERVE                    = 'self_serve';
-    const NORMAL                        = 'normal';
 
     const GROUP_TYPE_MAP = [
         Self::ONBOARDING => [

@@ -132,11 +132,6 @@ class Service extends Base\Service
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
-        if ($this->auth->isProductBanking())
-        {
-            $this->assignOnboardingCategoryForBankingMerchant($merchant);
-        }
-
         $this->setDefaultLateAuthConfigForMerchant($merchant);
 
         return $merchantData;
@@ -4326,8 +4321,6 @@ class Service extends Base\Service
 
             if ($wasBankingEnabledNow === true)
             {
-                $this->assignOnboardingCategoryForBankingMerchant($merchant);
-
                 $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
             }
 
@@ -4488,26 +4481,6 @@ class Service extends Base\Service
         );
 
         return $result;
-    }
-
-    protected function assignOnboardingCategoryForBankingMerchant(Entity $merchant)
-    {
-        // don't want to disrupt signup flow because of this.
-        try
-        {
-            (new Attribute\Core)->createMerchantOnboardingCategoryAttribute($merchant, Product::BANKING);
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::MERCHANT_ONBOARDING_CATEGORY_ASSIGN_FAILED,
-                [
-                    'message'      => $e->getMessage(),
-                    'merchant_id'  => $merchant->getId(),
-                ]);
-        }
     }
 
     protected function captureEventOfInterestOfPrimaryMerchantInBanking($merchant)

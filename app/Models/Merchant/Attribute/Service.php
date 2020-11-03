@@ -37,84 +37,6 @@ class Service extends Base\Service
 
     }
 
-    public function updateMerchantOnboardingCategoryAttributes(Base\PublicCollection $merchantAttributes, $newAttributeValue)
-    {
-        if ($merchantAttributes->isEmpty())
-        {
-            $this->trace->info(TraceCode::MERCHANT_ONBOARDING_CATEGORY_CRON_NOTHING_TO_UPDATE, []);
-
-            return;
-        }
-
-        $merchantAttributeIds = [];
-
-        /** @var $merchantAttribute Entity */
-        foreach ($merchantAttributes as $merchantAttribute)
-        {
-            array_push($merchantAttributeIds, $merchantAttribute->getId());
-        }
-
-        $this->core->bulkUpdateAttributeValuesByIds($merchantAttributeIds, $newAttributeValue);
-
-        // Tracking event of change in attribute
-        $merchantEntities = [];
-
-        /** @var $merchantAttribute Entity */
-        foreach ($merchantAttributes as $merchantAttribute)
-        {
-            array_push($merchantEntities, $merchantAttribute->merchant);
-
-            $eventCode = EventCode::MERCHANT_ONBOARDING_CATEGORY_UPDATE;
-
-            $eventProperties = [
-                'product' => $merchantAttribute->getProduct(),
-                'value'   => $newAttributeValue
-            ];
-
-            $this->diag->trackOnboardingEvent(
-                $eventCode,
-                $merchantAttribute->merchant,
-                null,
-                $eventProperties);
-        }
-
-        $this->salesforce->updateChangeInBankingMerchantOnboardingCategory($merchantEntities, $newAttributeValue);
-
-        $this->trace->info(TraceCode::MERCHANT_ONBOARDING_CATEGORY_CRON_UPDATE_SUCCESSFUL,
-            [
-                'value'         => $newAttributeValue,
-                'merchant_ids'  => $merchantAttributeIds
-            ]);
-    }
-
-    public function updateSelfServeBankingMerchantsToNormal(array $input)
-    {
-        $days = $input['days'];
-
-        $product = Product::BANKING;
-
-        $group = Entity::ONBOARDING;
-
-        $type = Entity::MERCHANT_ONBOARDING_CATEGORY;
-
-        $value = Entity::SELF_SERVE;
-
-        // get all the merchantattributeIds that belong to merchants who have been tagged
-        // as self-serve $days back, and who have not onboarded yet
-        $merchantAttributesToUpdate = $this->core->getAttributesSetBeforeDaysForMerchantsNotOnboarded(
-            $product,
-            $group,
-            $type,
-            $value,
-            $days
-        );
-
-        // Move them to the NORMAL merchant_onboarding_category
-        $this->updateMerchantOnboardingCategoryAttributes($merchantAttributesToUpdate, Entity::NORMAL);
-
-        return [];
-    }
-
     /**
      * Group & Types - follows flat structure
      * e.g. {"type":"business_category","value": "School"},
@@ -152,7 +74,7 @@ class Service extends Base\Service
         foreach ($input as $item){
             $item[Entity::PRODUCT] = $product;
             $item[Entity::GROUP] = $group;
-            
+
             if (in_array($item['type'], $existingKeys)){
                 $this->core->update($merchantAttributesByKeys[$item['type']] , $item);
             } else {

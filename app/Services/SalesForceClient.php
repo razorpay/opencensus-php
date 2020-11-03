@@ -161,11 +161,6 @@ class SalesForceClient
             'business_banking' => (int)$merchant->isBusinessBankingEnabled()
         ];
 
-        if ($this->auth->isProductBanking())
-        {
-            $data['x_onboarding_category'] = $merchant->getBankingOnboardingCategory();
-        }
-
         $keyMap = [
             'business_name'      => 'business_name',
             'business_type'      => 'business_type',
@@ -234,7 +229,6 @@ class SalesForceClient
                 "business_name"          => $merchant->merchantDetail->getBusinessName(),
                 "contact_name"           => $merchant->merchantDetail->getContactName(),
                 "business_banking"       => (int)$merchant->isBusinessBankingEnabled(),
-                "x_onboarding_category"  => $merchant->getBankingOnboardingCategory(),
                 "submission_date"        => date(self::DATE_FORMAT),
                 "submitted"              => 1,
             ]
@@ -271,7 +265,7 @@ class SalesForceClient
         $merchantDetailQuery = "select Account.Merchant_ID__c,
                                     Opportunity.Type,
                                     Opportunity.StageName,
-                                    Opportunity.Loss_Reason__c,    
+                                    Opportunity.Loss_Reason__c,
                                     Opportunity.LastModifiedDate,
                                     Opportunity.Owner.name,
                                     Opportunity.Owner_Role__c
@@ -293,36 +287,6 @@ class SalesForceClient
         ];
 
         return $this->makeRequestAndGetResponse($request);
-    }
-
-    public function updateChangeInBankingMerchantOnboardingCategory(array $merchantEntities, string $newValue)
-    {
-        $url = $this->generateUrlForMerchantUpsert();
-
-        $payload = [];
-
-        foreach($merchantEntities as $merchant)
-        {
-            $merchantPayload = [
-                [
-                    "merchant_id"            => $merchant->getId(),
-                    "name"                   => $merchant->getName(),
-                    "email"                  => $merchant->getEmail(),
-                    "activated"              => (int)$merchant->isActivated(),
-                    "business_name"          => $merchant->merchantDetail->getBusinessName(),
-                    "contact_name"           => $merchant->merchantDetail->getContactName(),
-                    "business_banking"       => (int)$merchant->isBusinessBankingEnabled(),
-                    "x_onboarding_category"  => $newValue
-                ]
-            ];
-            array_push($payload, $merchantPayload);
-        }
-
-        $this->dispatchRequestJob($url,
-            $payload,
-            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST,
-            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE,
-            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR);
     }
 
     protected function parseAccessToken($response)
