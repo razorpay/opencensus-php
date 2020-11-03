@@ -76,6 +76,7 @@ app
         SAFARI: 'Safari',
       };
       const isMerchantX = window.location.href.includes('merchant=x');
+      const eventTypes = { twitterAgency: 'twitterAgency' };
       $scope.data = {};
       $scope.alerts = alertsFactory.getHandler();
       $scope.rightLayout = false; // login layout ? right is true : right is false
@@ -1100,6 +1101,13 @@ app
           name: 'twitter',
           value: {
             txn_id: 'o1tr7',
+          },
+        });
+
+        window.rzpAnalytics({
+          name: eventTypes.twitterAgency,
+          value: {
+            txn_id: 'o4ux5',
           },
         });
 

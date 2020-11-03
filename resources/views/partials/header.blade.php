@@ -89,7 +89,7 @@
         window.rzpAnalytics = function (data) {
             // If there's no data, don't track anything
             if (!data) return;
-
+            const eventTypes = { twitterAgency: 'twitterAgency' };
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
                     if (!checkGa(data)) return;
@@ -114,6 +114,12 @@
                 case 'twitter': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('twitter', '', data.value);
+
+                    break;
+                }
+                case eventTypes.twitterAgency : {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track(eventTypes.twitterAgency, '', data.value);
 
                     break;
                 }
