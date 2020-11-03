@@ -227,19 +227,24 @@ class ViewSerializer extends Base\Core
     {
         $org = $this->merchant->org;
 
-        $showRzpLogo = true;
+        $branding = [
+            'show_rzp_logo' => true,
+            'branding_logo' => '',
+            ];
 
         switch ($org->getCustomCode())
         {
             case 'axis':
-                $showRzpLogo = false;
+
+                $branding['show_rzp_logo'] = false;
+
+                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+
                 break;
         }
 
         return [
-            'branding'  => [
-                'show_rzp_logo'  => $showRzpLogo,
-            ]
+            'branding'  => $branding
         ];
     }
 
