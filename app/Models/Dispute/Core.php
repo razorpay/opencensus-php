@@ -651,6 +651,7 @@ class Core extends Base\Core
 
         foreach ($merchantData as $merchantId => $data)
         {
+            $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::ID]    = $merchantId;
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
 
