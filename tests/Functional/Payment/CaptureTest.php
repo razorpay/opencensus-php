@@ -474,29 +474,6 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee_model'], 'prepaid');
     }
 
-    public function testCaptureWithLateAuthTrue()
-    {
-        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
-            'config'     => '{
-                "capture": "automatic",
-                "capture_options": {
-                    "manual_expiry_period": 10,
-                    "automatic_expiry_period": 5,
-                    "refund_speed": "normal"
-                }
-            }']);
-
-        $authorizedAt = Carbon::now()->addMinutes(100)->getTimestamp();
-
-        $payment = $this->fixtures->create('payment:authorized', [
-            'gateway_captured' => true, 'late_authorized' => true, 'authorized_at' => $authorizedAt
-        ]);
-
-        $this->payment = $payment->toArrayPublic();
-
-        $this->startTest();
-    }
-
     public function testCaptureWithDifferentAmount()
     {
         $amount = $this->payment['amount'] - 1000;
