@@ -2,14 +2,12 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use App;
 use Carbon\Carbon;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
@@ -221,17 +219,6 @@ class Entity extends Base\PublicEntity
                 }
             }
         }
-
-        //added temporary log to check for beneficiary issue
-        $app = App::getFacadeRoot();
-
-        $app['trace']->info(
-            TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
-            [
-                'input' => $input,
-            ]
-        );
-
     }
 
     // ----------------------- Checks ------------------------------------------

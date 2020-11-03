@@ -78,15 +78,6 @@ class Generator extends Base\Core
 
         $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount, $providerBank);
 
-        //added temporary log to check for beneficiary issue
-        $this->trace->info(
-            TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
-            [
-                'virtualAccount' => $virtualAccount,
-                'bankAccount'    => $bankAccount,
-            ]
-        );
-
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
         return $bankAccount;
@@ -117,15 +108,6 @@ class Generator extends Base\Core
         $this->options[self::BANKING] = $virtualAccount->isBalanceTypeBanking();
 
         $bankAccount = $this->buildBankAccountEntity($virtualAccount);
-
-        //added temporary log to check for beneficiary issue
-        $this->trace->info(
-            TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
-            [
-                'virtualAccount' => $virtualAccount,
-                'bankAccount'    => $bankAccount,
-            ]
-        );
 
         $terminal = $this->getTerminalForBankAccount($bankAccount);
 
@@ -228,16 +210,6 @@ class Generator extends Base\Core
             Entity::ACCOUNT_NUMBER     => $accountNumber,
             Entity::BENEFICIARY_NAME   => $this->options[Entity::NAME] ?? $virtualAccount->getName(),
         ];
-
-        //added temporary log to check for beneficiary issue
-        $this->trace->info(
-            TraceCode::BENEFICIARY_NAME_BANK_ACCOUNT,
-            [
-                'beneficiary_name' => $merchantDetails[Entity::BENEFICIARY_NAME],
-                'va_name'          => $virtualAccount->getName(),
-                'accountNumber'    => $accountNumber,
-            ]
-        );
 
         return array_merge($bankAccountInput, $merchantDetails);
     }
