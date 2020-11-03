@@ -2,12 +2,12 @@ import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 const SURVEY_LINKS = {
-  PL: 'https://razorpay.typeform.com/to/aKBsL8rs',
-  PP: 'https://razorpay.typeform.com/to/KZNhDUjO',
-  PG_1m: 'https://razorpay.typeform.com/to/BqfE2dnH',
-  PG_6m: 'https://razorpay.typeform.com/to/dk3voHzg',
-  PG_12m: 'https://razorpay.typeform.com/to/sVHQ6NKG',
-  other_products: 'https://razorpay.typeform.com/to/On9UZEl4',
+  PL: 'https://razorpay.typeform.com/to/CdVDgkfA',
+  PP: 'https://razorpay.typeform.com/to/ebwzvYC1',
+  PG_1m: 'https://razorpay.typeform.com/to/JZZhgPLq',
+  PG_6m: 'https://razorpay.typeform.com/to/RvgxGRGM',
+  PG_12m: 'https://razorpay.typeform.com/to/mZcTfb8R',
+  other_products: 'https://razorpay.typeform.com/to/suSnn21l',
 };
 
 const getLink = (user) => {
@@ -49,7 +49,7 @@ const NPSAnnouncement = ({ user }) => {
     <AnnouncementBanner
       title="Your Feedback Matters"
       theme="success"
-      bannerKey={`nps-banner-${survey.cohort}-${user.current}`}
+      bannerKey={`nps-banner-nov-20-${survey.cohort}-${user.current}`}
       canBeClosed={true}
     >
       Hello! Request you to fill in this quick feedback survey about your experience with Razorpay.
