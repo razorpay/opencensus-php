@@ -14,7 +14,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class BatchCancel extends Job
 {
-    const RETRY_DELAY           = 60;
+    const RETRY_DELAY           = 10;
 
     const MAX_RETRY_ATTEMPTS    = 5;
     /**
@@ -39,6 +39,8 @@ class BatchCancel extends Job
     protected $core;
 
     protected $merchant;
+
+    public $timeout = 900;
 
     const TOTAL_INVOICES_COUNT = 'total_invoices_count';
     const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
@@ -68,28 +70,21 @@ class BatchCancel extends Job
         // do this until there is no more invoices left to cancel
         // and fetched invoice count is less than total count of batch
         //
-        while ($this->successCount > $summary[self::TOTAL_INVOICES_COUNT])
+        $invoices = $this->repoManager->invoice->findIssuedByBatchIdWithLimit($this->batchId);
+
+        while (count($invoices) > 0)
         {
-            $invoices = $this->repoManager->invoice->findIssuedByBatchIdWithLimit($this->batchId);
-
-            if (count($invoices) === 0)
-            {
-                $this->trace->debug(TraceCode::INVOICE_BATCH_COUNT_ZERO, [$this->batchId]);
-
-                break;
-            }
-
             $summary[self::TOTAL_INVOICES_COUNT] += count($invoices);
 
             foreach ($invoices as $invoice)
             {
                 $this->cancel($invoice, $summary);
             }
+
+            $invoices = $this->repoManager->invoice->findIssuedByBatchIdWithLimit($this->batchId);
         }
 
-        $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
-
-        $this->delete();
+        $this->trace->info(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
     }
 
     protected function cancel(InvoiceModel\Entity $invoice, array & $summary)
