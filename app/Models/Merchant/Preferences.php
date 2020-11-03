@@ -172,6 +172,9 @@ class Preferences
     const MID_BULKBAZAR                = 'EHwQQQErNniPV6';
     const MID_AIRTEL_PAYMENTS_BANK     = 'Car8R5NEEKAwc5';
     const MID_DIGIPAY                  = 'EO3VAyOndYiQpQ';
+    const MID_MAHALAXMI_TRADERS        = 'FuedAHX6XiIEce';
+    const MID_RAJESH_TELECOM           = 'FrWPMIvlTuDhKe';
+
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
 
@@ -372,6 +375,8 @@ class Preferences
         self::MID_BULKBAZAR,
         self::MID_AIRTEL_PAYMENTS_BANK,
         self::MID_DIGIPAY,
+        self::MID_MAHALAXMI_TRADERS,
+        self::MID_RAJESH_TELECOM,
     ];
 
     // MSwipe Configurations
