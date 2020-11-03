@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Payment;
 
+use RZP\Constants\MailTags;
+
 class CustomerFailed extends Base
 {
     protected function addSubject()
@@ -27,5 +29,10 @@ class CustomerFailed extends Base
         $this->text('emails.payment.merchant_text');
 
         return $this;
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::PAYMENT_FAILED;
     }
 }

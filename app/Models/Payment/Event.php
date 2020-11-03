@@ -57,6 +57,7 @@ class Event
         self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
         self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
         self::FAILED                     => MailTags::PAYMENT_FAILED,
+        self::CUSTOMER_FAILED            => MailTags::PAYMENT_FAILED,
         self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
         self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
         self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
