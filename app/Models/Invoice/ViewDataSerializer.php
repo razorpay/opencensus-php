@@ -238,6 +238,13 @@ class ViewDataSerializer extends Base\Core
                 ];
                 break;
 
+            case Preferences::MID_RBL_BANK_2:
+                $customLabels = [
+                    'receipt_number'                    => 'Application Number',
+                    'rb_bank_additional_description'    => true,
+                ];
+                break;
+
         }
 
         return $customLabels;

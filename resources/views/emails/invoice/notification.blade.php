@@ -59,6 +59,14 @@
                     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                         <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #9B9B9B; font-weight: bold; text-transform: uppercase;">{{ $invoice['type_label'] === 'Invoice' ? 'INVOICE SUMMARY' : 'PAYMENT FOR'}}</label>
                         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">{{$invoice['description']}}</div>
+                        @if (isset($custom_labels['rb_bank_additional_description']) === true and $custom_labels['rb_bank_additional_description'] === true)
+                            <br/><br/>
+                            Assuring you of our best service, at all times.
+                            <br/><br/>
+                            Kind Regards,
+                            <br/>
+                            {{$merchant['name']}}
+                        @endif
                     </div>
                 </td>
 
