@@ -117,6 +117,13 @@ class Beneficiary extends FileProcessor
 
             $bankName =  $ba->getBankNameAttribute() ?? '';
 
+            $numLength = strlen((string)$ba->getAccountNumber());
+
+            if ($numLength > 26)
+            {
+                continue;
+            }
+
             $rows[] = [
                 Constants::PRIME_CORP_CODE,
                 Constants::CORP_CODE,
