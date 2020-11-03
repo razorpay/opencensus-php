@@ -305,6 +305,7 @@ class Base extends BaseModel\Core
 
             $this->app['workflow']->setEntityAndId('file_store', 'file_' . $fileId)
                  ->setPermission(BatchType::$workflowApplicableBatchTypes[$batchType])
+                 ->setMakerFromAuth(false)
                  ->handle([], ['status' => $signedUrl]);
         }
     }
