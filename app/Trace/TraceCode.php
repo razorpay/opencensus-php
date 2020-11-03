@@ -3192,6 +3192,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Trace Code for SalesForce POC updates
     const MERCHANT_POC_UPDATE_REQUEST                           = 'MERCHANT_POC_UPDATE_REQUEST';
+    const MERCHANT_POC_UPDATE_TIME_DURATION                     = 'MERCHANT_POC_UPDATE_TIME_DURATION';
     const MERCHANT_GROUP_DETACH_REQUEST                         = 'MERCHANT_GROUP_DETACH_REQUEST';
     const MERCHANT_GROUP_ATTACH_REQUEST                         = 'MERCHANT_GROUP_ATTACH_REQUEST';
     const MERCHANT_ADMIN_ATTACH_REQUEST                         = 'MERCHANT_ADMIN_ATTACH_REQUEST';

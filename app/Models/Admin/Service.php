@@ -1111,7 +1111,9 @@ class Service extends Base\Service
         RuntimeManager::setMemoryLimit('2048M');
 
         // As request time more than 60 second
-        RuntimeManager::setTimeLimit(20000);
+        RuntimeManager::setTimeLimit(180);
+
+        $startTime = millitime();
 
         $historicalSmeAdminsIds = \DB::connection($this->mode)->table('group_map')
                                      ->select('entity_id')
@@ -1123,6 +1125,13 @@ class Service extends Base\Service
         $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
 
         SFMerchantPocAsync::dispatch($this->mode, $input, $historicalSmeAdminsIds, $historicalClaimedMerchantIds);
+
+        $this->trace->info(TraceCode::MERCHANT_POC_UPDATE_TIME_DURATION,
+                           [
+                               'time_taken'                   => millitime() - $startTime,
+                               'historicalSmeAdminsIds'       => count($historicalSmeAdminsIds),
+                               'historicalClaimedMerchantIds' => count($historicalClaimedMerchantIds)
+                           ]);
     }
 
     public function unclaimedMerchantPoc(array $input = [])
