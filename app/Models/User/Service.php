@@ -27,6 +27,23 @@ use RZP\Models\Merchant\Account;
 
 class Service extends Base\Service
 {
+    protected $core;
+
+    protected $validator;
+
+    protected $merchantService;
+
+    public function __construct(Core $core = null, Validator $validator = null, Merchant\Service $merchantService = null)
+    {
+        parent::__construct();
+
+        $this->core = $core ?? new Core();
+
+        $this->validator = $validator ?? new Validator();
+
+        $this->merchantService = $merchantService ?? new Merchant\Service();
+    }
+
     public function register(array $input): array
     {
         $this->traceRegisterInput($input);
@@ -58,7 +75,7 @@ class Service extends Base\Service
         {
             $invitation = (new Invitation\Service)->fetchByToken($invitationToken);
 
-            $user = (new Core)->getUserFromEmail($invitation);
+            $user = $this->core->getUserFromEmail($invitation);
 
             // Since input would be lacking an email in case of registration via the invitation
             $input[Entity::EMAIL] = $invitation[Invitation\Entity::EMAIL];
@@ -133,7 +150,7 @@ class Service extends Base\Service
 
             $this->confirm($user[Entity::ID]);
 
-            (new Core)->subscribeToMailingList($user);
+            $this->core->subscribeToMailingList($user);
 
              $data['login'] = true;
         }
@@ -205,7 +222,7 @@ class Service extends Base\Service
      */
     protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false)
     {
-        $merchantData = (new Merchant\Service)->create($merchantInputData);
+        $merchantData = $this->merchantService->create($merchantInputData);
 
         if (empty($referrer) === false)
         {
@@ -213,7 +230,7 @@ class Service extends Base\Service
                 'tags' => ['ref-' . $referrer],
             ];
 
-            (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
+            $this->merchantService->addTags($merchantData['id'], $tagInputData);
         }
 
         $userMerchantMappingInputData = [
@@ -331,7 +348,7 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $user = (new Core)->create($input);
+        $user = $this->core->create($input);
 
         return $user->toArrayPublic();
     }
@@ -340,7 +357,7 @@ class Service extends Base\Service
     {
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $user = (new Core)->edit($user, $input);
+        $user = $this->core->edit($user, $input);
 
         return $user->toArrayPublic();
     }
@@ -362,7 +379,7 @@ class Service extends Base\Service
     {
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $user = (new Core)->confirm($user);
+        $user = $this->core->confirm($user);
 
         return $user->toArrayPublic();
     }
@@ -387,11 +404,11 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
         }
 
-        $user = (new Core)->confirm($user);
+        $user = $this->core->confirm($user);
 
         $data = $user->toArrayPublic();
 
-        (new Core)->subscribeToMailingList($data);
+        $this->core->subscribeToMailingList($data);
 
         return $data;
     }
@@ -402,7 +419,7 @@ class Service extends Base\Service
 
         $user->getValidator()->validateInput('changePassword', $input);
 
-        (new Core)->setNewPassword($user, $input);
+        $this->core->setNewPassword($user, $input);
 
         return $user->toArrayPublic();
     }
@@ -413,7 +430,7 @@ class Service extends Base\Service
 
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $user = (new Core)->updateUserMerchantMapping($user, $input);
+        $user = $this->core->updateUserMerchantMapping($user, $input);
 
         return $user->toArrayPublic();
     }
@@ -422,11 +439,11 @@ class Service extends Base\Service
     {
         try
         {
-            return (new Core)->login($input, $validate2fa);
+            return $this->core->login($input, $validate2fa);
         }
         catch (\Throwable $ex)
         {
-            (new Core)->trackOnboardingEvent($input[Entity::EMAIL] ?? '', EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE, $ex);
+            $this->core->trackOnboardingEvent($input[Entity::EMAIL] ?? '', EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE, $ex);
 
             throw $ex;
         }
@@ -453,33 +470,33 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
-        return (new Core)->setup2faContactMobile($user, $input);
+        return $this->core->setup2faContactMobile($user, $input);
     }
 
     public function resendOtp()
     {
         $user = $this->auth->getUser();
 
-        return (new Core)->resendOtp($user);
+        return $this->core->resendOtp($user);
     }
 
     public function send2faOtp()
     {
         $user = $this->auth->getUser();
 
-        return (new Core)->send2faOtp($user);
+        return $this->core->send2faOtp($user);
     }
 
     public function setup2faVerifyMobileOnLogin(array $input): array
     {
-        return (new Core)->setup2faVerifyMobileOnLogin($input);
+        return $this->core->setup2faVerifyMobileOnLogin($input);
     }
 
     public function verifyUserSecondFactorAuth(array $input): array
     {
         $user = $this->auth->getUser();
 
-        return (new Core)->verifyUserSecondFactorAuth($user, $input);
+        return $this->core->verifyUserSecondFactorAuth($user, $input);
     }
 
     public function get(string $id): array
@@ -494,7 +511,7 @@ class Service extends Base\Service
             $user = $this->auth->getUser();
         }
 
-        $response = (new Core)->get($user);
+        $response = $this->core->get($user);
 
         return $response;
     }
@@ -513,7 +530,7 @@ class Service extends Base\Service
             'user_id'     => $userId,
         ];
 
-        (new User\Validator)->validateInput('teamManagement', $teamData);
+        $this->validator->validateInput('teamManagement', $teamData);
 
         return $this->updateUserMerchantMapping($userId, $input);
     }
@@ -522,7 +539,7 @@ class Service extends Base\Service
     {
         foreach ($input as $row)
         {
-            (new User\Validator)->validateInput('bulk_user_mapping', $row);
+            $this->validator->validateInput('bulk_user_mapping', $row);
         }
 
         foreach ($input as $row)
@@ -579,7 +596,7 @@ class Service extends Base\Service
 
         $data = $this->sendConfirmationMail($user);
 
-        (new Core)->trackOnboardingEvent($user->getEmail(),
+        $this->core->trackOnboardingEvent($user->getEmail(),
                                          EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
 
         return $data;
@@ -618,7 +635,7 @@ class Service extends Base\Service
             return ['confirm' => true];
         }
 
-        (new Core)->trackOnboardingEvent($user->getEmail(),
+        $this->core->trackOnboardingEvent($user->getEmail(),
                                          EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_OTP_SUCCESS);
 
         return $data;
@@ -640,7 +657,7 @@ class Service extends Base\Service
                         'email' => $email
                     ]);
 
-                (new Core)->trackOnboardingEvent($email,
+                $this->core->trackOnboardingEvent($email,
                                                  EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,
                                                  new BaseException(Constants::USER_EMAIL_NOT_FOUND));
             }
@@ -659,7 +676,7 @@ class Service extends Base\Service
 
                 Mail::queue($passwordResetMail);
 
-                (new Core)->trackOnboardingEvent($user->getEmail(),
+                $this->core->trackOnboardingEvent($user->getEmail(),
                                                  EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_SUCCESS);
             }
         }
@@ -719,7 +736,7 @@ class Service extends Base\Service
 
     public function getTokenWithExpiry(string $userId, int $expiry): string
     {
-        $userCore = (new User\Core);
+        $userCore = $this->core;
 
         $expiryTime = Carbon::now()->timestamp + $expiry;
 
@@ -741,7 +758,7 @@ class Service extends Base\Service
      */
     public function changePasswordByToken(array $input)
     {
-        (new User\Validator)->validateInput('changePasswordToken', $input);
+        $this->validator->validateInput('changePasswordToken', $input);
 
         $email = mb_strtolower($input['email']);
 
@@ -766,12 +783,12 @@ class Service extends Base\Service
         }
         else
         {
-            (new Core)->setNewPassword($user, $input);
+            $this->core->setNewPassword($user, $input);
 
             // Password reset via mail essentially confirms the email.
             if ($user->getConfirmedAttribute() === false)
             {
-                (new Core)->confirm($user);
+                $this->core->confirm($user);
             }
         }
 
@@ -845,18 +862,23 @@ class Service extends Base\Service
                                                         Merchant\Entity $subMerchant,
                                                         bool $createdNew)
     {
+
+        $response = [];
+
         if (($createdNew === true) and ($subMerchant->isLinkedAccount() === true))
         {
-            $this->postLinkedAccountAccessEmail($subMerchantUser, $subMerchant);
+            $response = $this->postLinkedAccountAccessEmail($subMerchantUser, $subMerchant);
         }
         else if ($createdNew === true)
         {
-            $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+            $response = $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
         }
         else
         {
-            $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
+            $response = $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
+
+        return $response;
     }
 
     public function syncMerchantUserOnProducts(string $merchantId)
@@ -880,7 +902,7 @@ class Service extends Base\Service
 
             if (in_array($currentUserRole, Role::BANKING_ROLES, true) === true)
             {
-                (new Merchant\Service)->switchProductMerchant($product);
+                $this->merchantService->switchProductMerchant($product);
 
                 $userRole = $currentUserRole;
             }
@@ -938,7 +960,7 @@ class Service extends Base\Service
                 'product'     => $product,
             ];
 
-            $user = (new User\Core)->updateUserMerchantMapping($user, $userMerchantMappingInputData);
+            $user = $this->core->updateUserMerchantMapping($user, $userMerchantMappingInputData);
         }
 
         return $user;
@@ -1020,7 +1042,7 @@ class Service extends Base\Service
 
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $userValidator = (new Validator);
+        $userValidator = $this->validator;
 
         // TODO: Remove this after handling properly in AdminAccess middleware
         // It does not handle org id as of now, also need to test admin-
@@ -1047,7 +1069,7 @@ class Service extends Base\Service
      */
     public function editContactMobile(array $input)
     {
-        (new Validator)->validateInput('edit_contact_mobile', $input);
+        $this->validator->validateInput('edit_contact_mobile', $input);
 
         $token = $input[Entity::OTP_AUTH_TOKEN];
 
@@ -1059,7 +1081,7 @@ class Service extends Base\Service
 
     public function updateContactMobile(array $input)
     {
-        (new Validator)->validateInput('update_contact_mobile', $input);
+        $this->validator->validateInput('update_contact_mobile', $input);
 
         $user = $this->repo->user->findOrFailPublic($input[Entity::USER_ID]);
 
@@ -1073,7 +1095,7 @@ class Service extends Base\Service
             Entity::ACTION  => $action,
         ];
 
-        (new Validator)->validateInput('user_account_lock_unlock', $accountLockData);
+        $this->validator->validateInput('user_account_lock_unlock', $accountLockData);
 
         $user = $this->repo->user->findOrFailPublic($userId);
 
@@ -1093,16 +1115,16 @@ class Service extends Base\Service
     {
         $data = $this->register($input);
 
-        (new Core)->trackOnboardingEvent($input[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS_WITH_GOOGLE);
+        $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS_WITH_GOOGLE);
 
         return $data;
     }
 
     public function oAuthLogin($input,$validate2fa = true): array
     {
-        $data = (new Core)->login($input, $validate2fa);
+        $data = $this->core->login($input, $validate2fa);
 
-        (new Core)->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
+        $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
 
         return $data;
     }
@@ -1132,7 +1154,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_IN, ['input' => $input]);
 
-        (new Validator)->validateInput('opt_in_whatsapp', $input);
+        $this->validator->validateInput('opt_in_whatsapp', $input);
 
         $contact = $this->user->getContactMobile();
 

@@ -35,7 +35,7 @@ class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
-        $user = (new Entity)->build($input);
+        $user = $this->getUserEntity()->build($input);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
@@ -352,7 +352,7 @@ class Core extends Base\Core
 
     public function login(array $input, $validate2fa = true)
     {
-        (new Entity)->getValidator()->validateInput('login', $input);
+        $this->getUserEntity()->getValidator()->validateInput('login', $input);
 
         if (empty($input[Entity::OAUTH_PROVIDER]) === true)
         {
@@ -402,7 +402,7 @@ class Core extends Base\Core
 
     public function verifyUserSecondFactorAuth(Entity $user, array $input): array
     {
-        (new Entity)->getValidator()->validateInput('verify_user_second_factor', $input);
+        $this->getUserEntity()->getValidator()->validateInput('verify_user_second_factor', $input);
 
         $this->checkUserAccountNotLockedOrThrowException($user);
 
@@ -538,7 +538,7 @@ class Core extends Base\Core
      */
     public function setup2faContactMobile(Entity $user, array $input)
     {
-        (new Entity)->getValidator()->validateInput('setup2faMobile', $input);
+        $this->getUserEntity()->getValidator()->validateInput('setup2faMobile', $input);
 
         $this->checkIfUserCanHitSetup2faRoute($user);
 
@@ -564,7 +564,7 @@ class Core extends Base\Core
      */
     public function setup2faVerifyMobileOnLogin(array $input)
     {
-        (new Entity)->getValidator()->validateInput('setup2faVerifyMobile', $input);
+        $this->getUserEntity()->getValidator()->validateInput('setup2faVerifyMobile', $input);
 
         $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
@@ -1698,5 +1698,11 @@ class Core extends Base\Core
                                                           ->toArray();
 
         return $roleId;
+    }
+
+    // returns user entity required for unit testing to mock the entity
+    public function getUserEntity() : Entity
+    {
+        return new Entity();
     }
 }
