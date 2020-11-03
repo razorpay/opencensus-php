@@ -83,9 +83,10 @@ return [
 
     //check razorpay/business_verification_service
     'business_verification_service' => [
-        'mock'     => env('BVS_MOCK', false),
-        'host'     => env('BVS_HOST', 'https://bvs.razorpay.com'),
-        'user'     => env('BVS_USER'),
-        'password' => env('BVS_PASSWORD'),
+        'mock'         => env('BVS_MOCK', false),
+        'host'         => env('BVS_HOST', 'https://bvs.razorpay.com'),
+        'user'         => env('BVS_USER'),
+        'password'     => env('BVS_PASSWORD'),
+        'client_id'    => env('BVS_CLIENT_ID', 'API')
     ],
 ];

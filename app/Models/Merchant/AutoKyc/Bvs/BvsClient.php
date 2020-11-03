@@ -30,6 +30,12 @@ class BvsClient
 
     private $apiClientCtx;
 
+    const AUTHORIZATION_KEY = 'Authorization';
+
+    const REQUEST_ID_KEY = 'X-Request-ID';
+
+    const CLIENT_ID_KEY = 'X-Client-ID';
+
     /**
      * BvsClient constructor.
      */
@@ -51,7 +57,10 @@ class BvsClient
 
         $auth = 'Basic ' . base64_encode($this->bvsConfig['user'] . ':' . $this->bvsConfig['password']);
 
-        $headers = ['Authorization' => $auth, 'X-Request-ID' => Request::getTaskId()];
+        $headers = [
+            self::AUTHORIZATION_KEY => $auth,
+            self::REQUEST_ID_KEY    => Request::getTaskId(),
+            self::CLIENT_ID_KEY     => $this->bvsConfig['client_id']];
 
         $this->apiClientCtx = Context::withHttpRequestHeaders([], $headers);
     }
