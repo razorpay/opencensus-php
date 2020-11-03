@@ -94,6 +94,7 @@ class Event
     const PAYMENT_LINK_PARTIALLY_PAID       = 'payment_link.partially_paid';
     const PAYMENT_LINK_EXPIRED              = 'payment_link.expired';
     const PAYMENT_LINK_CANCELLED            = 'payment_link.cancelled';
+    const PAYMENT_PAGE_PAID                 = 'payment_page.paid';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -175,6 +176,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID,
         self::PAYMENT_LINK_EXPIRED,
         self::PAYMENT_LINK_CANCELLED,
+        self::PAYMENT_PAGE_PAID,
     ];
 
     /**
@@ -263,6 +265,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID,
         self::PAYMENT_LINK_EXPIRED,
         self::PAYMENT_LINK_CANCELLED,
+        self::PAYMENT_PAGE_PAID,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -351,6 +354,7 @@ class Event
         self::SUBSCRIPTION_RESUMED              => 15,
         self::FUND_ACCOUNT_VALIDATION_FAILED    => 16,
         self::TRANSFER_PROCESSED_SETTLED        => 17,
+        self::PAYMENT_PAGE_PAID                 => 18,
     ];
 
     /**
@@ -515,6 +519,7 @@ class Event
         self::PAYOUT_REJECTED                   => Entity::PAYOUT,
         self::PAYMENT_CREATED                   => Entity::PAYMENT,
         self::PAYOUT_PENDING                    => Entity::PAYOUT,
+        self::PAYMENT_PAGE_PAID                 => Entity::PAYMENT_PAGE,
     ];
 
     public static $eventsToFeatureMap = [
