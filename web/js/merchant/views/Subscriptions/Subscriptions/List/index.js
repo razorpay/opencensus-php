@@ -26,8 +26,15 @@ import {
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import ExpirySubscriptions from './ExpirySubscriptions';
 
-@connect(state => state.subscriptions, { fetchAll })
+@connect(
+  (state) => ({
+    ...state.subscriptions,
+    user: state.session.user,
+  }),
+  { fetchAll },
+)
 export default class SubscriptionsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -36,7 +43,7 @@ export default class SubscriptionsListContainer extends ListContainer {
     });
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
@@ -55,47 +62,45 @@ export default class SubscriptionsListContainer extends ListContainer {
   };
 
   render() {
+    const { user } = this.props;
     return (
-      <div class="content-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
+      <>
+        {user.isSubscriptionExpiryEnabled && <ExpirySubscriptions />}
 
-            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+        <div class="content-wrapper">
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <TakeATourButton feature={RZPFeatures.SUBSCRIPTIONS} />
 
-            <NavLink class="btn btn-primary" to="/subscriptions/new">
-              <i class="i i-plus" />
-              <span>Create New Subscription</span>
-            </NavLink>
-          </div>
-        </HeaderAction>
+              <DocsLink url="https://razorpay.com/docs/subscriptions/" />
 
-        <SubscriptionsListFilter
-          form="subscriptionsListFilter"
-          count={this.state.count}
-          onSubmit={this.search}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-        />
+              <NavLink class="btn btn-primary" to="/subscriptions/new">
+                <i class="i i-plus" />
+                <span>Create New Subscription</span>
+              </NavLink>
+            </div>
+          </HeaderAction>
 
-        <DataTable
-          title="Subscriptions"
-          columns={[
-            subscriptionId,
-            planId,
-            ...link,
-            customerId,
-            nextDueOn,
-            createdAt,
-            status,
-          ]}
-          count={this.state.count}
-          skip={this.state.skip}
-          paginate={this.paginate}
-          EmptyComponent={EmptyComponent}
-          {...this.props}
-        />
-      </div>
+          <SubscriptionsListFilter
+            form="subscriptionsListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+            onSearchAnalytics={this.onSearchAnalytics}
+            onClearAnalytics={this.onClearAnalytics}
+            showSubscriptionExpiryFilter={user.isSubscriptionExpiryEnabled}
+          />
+
+          <DataTable
+            title="Subscriptions"
+            columns={[subscriptionId, planId, ...link, customerId, nextDueOn, createdAt, status]}
+            count={this.state.count}
+            skip={this.state.skip}
+            paginate={this.paginate}
+            EmptyComponent={EmptyComponent}
+            {...this.props}
+          />
+        </div>
+      </>
     );
   }
 }
@@ -113,5 +118,5 @@ const EmptyComponent = () => (
 
 const link = {
   title: 'Subscription Link',
-  value: item => <CopyLink url={item.short_url} />,
+  value: (item) => <CopyLink url={item.short_url} />,
 };

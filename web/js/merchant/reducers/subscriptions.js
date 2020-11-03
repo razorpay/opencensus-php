@@ -63,6 +63,12 @@ export const fetchSubscription = (id) => {
   };
 };
 
+export const fetchSubscriptionsOverview = (before) => {
+  return merchantFetch({
+    url: `subscriptions/overview?before=${before}`,
+  });
+};
+
 export const fetchInvoices = (subs_id) => {
   let subscription = new Subscription();
   subs_id = subs_id.replace(/\/$/, '');

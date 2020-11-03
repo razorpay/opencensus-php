@@ -579,6 +579,10 @@ export default class User {
     return this.getExpStatus('batch_service_refund_migration');
   }
 
+  get isSubscriptionExpiryEnabled() {
+    return this.getExpStatus('subscription_expiry');
+  }
+
   get isPaymentLinkCreationV2Enabled() {
     return this.isPaymentlinksV2Enabled;
   }

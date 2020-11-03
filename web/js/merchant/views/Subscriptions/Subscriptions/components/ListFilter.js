@@ -14,9 +14,14 @@ const statusList = [
   'completed',
   'expired',
   'paused',
+  'failed',
 ];
 
-export default props => {
+const next7DaysEpoch = moment().add(7, 'days').unix();
+const next30DaysEpoch = moment().add(30, 'days').unix();
+const next60DaysEpoch = moment().add(60, 'days').unix();
+
+export default (props) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
@@ -31,26 +36,20 @@ export default props => {
 
       <div class="form-group list-filter-item">
         <label>Customer Email</label>
-        <Field
-          name="customer_email"
-          component="input"
-          class="form-control input-sm"
-        />
+        <Field name="customer_email" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
-          component={props => (
+          component={(props) => (
             <PowerSelect
               options={statusList}
               selected={props.input.value}
               showClear={false}
               class="custom-powerselect"
-              selectedOptionComponent={({ option }) => (
-                <div>{humanize(option)}</div>
-              )}
+              selectedOptionComponent={({ option }) => <div>{humanize(option)}</div>}
               optionComponent={({ option }) => (
                 <div class="custom-powerselect-options">{humanize(option)}</div>
               )}
@@ -74,6 +73,30 @@ export default props => {
           class="form-control input-sm"
         />
       </div>
+
+      {props.showSubscriptionExpiryFilter && (
+        <>
+          <div class="form-group list-filter-item">
+            <label>Subscriptions Completing In</label>
+            <Field name="complete_before" component="select" class="form-control input-sm">
+              <option value=""></option>
+              <option value={next7DaysEpoch}>Next 7 days</option>
+              <option value={next30DaysEpoch}>Next 30 days</option>
+              <option value={next60DaysEpoch}>Next 60 days</option>
+            </Field>
+          </div>
+
+          <div class="form-group list-filter-item">
+            <label>Cards Expiring In</label>
+            <Field name="token_expire_before" component="select" class="form-control input-sm">
+              <option value=""></option>
+              <option value={next7DaysEpoch}>Next 7 days</option>
+              <option value={next30DaysEpoch}>Next 30 days</option>
+              <option value={next60DaysEpoch}>Next 60 days</option>
+            </Field>
+          </div>
+        </>
+      )}
     </ListFilter>
   );
 };
