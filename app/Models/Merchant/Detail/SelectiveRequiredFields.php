@@ -6,13 +6,14 @@ use RZP\Models\Merchant\Document\Type;
 
 class SelectiveRequiredFields
 {
-    const POA_DOCUMENTS                         = 'poa_documents';
-    const PERSONAL_PAN_DOCUMENTS                = 'personal_pan_documents';
-    const SEBI_REGISTRATION_CERTIFICATE_OR_SLA  = 'sebi_registration_certificate_or_sla';
-    const IRDAI_REGISTRATION_CERTIFICATE_OR_SLA = 'irdai_registration_certificate_or_sla';
-    const FFMC_LICENSE_OR_SLA                   = 'ffmc_license_or_sla';
-    const NBFC_REGISTRATION_CERTIFICATE_OR_SLA  = 'nbfc_registration_certificate_or_sla';
-    const AMFI_CERTIFICATE_OR_SLA               = 'amfi_certificate_or_sla';
+    const POA_DOCUMENTS                           = 'poa_documents';
+    const PERSONAL_PAN_DOCUMENTS                  = 'personal_pan_documents';
+    const SEBI_REGISTRATION_CERTIFICATE_OR_SLA    = 'sebi_registration_certificate_or_sla';
+    const IRDAI_REGISTRATION_CERTIFICATE_OR_SLA   = 'irdai_registration_certificate_or_sla';
+    const FFMC_LICENSE_OR_SLA                     = 'ffmc_license_or_sla';
+    const NBFC_REGISTRATION_CERTIFICATE_OR_SLA    = 'nbfc_registration_certificate_or_sla';
+    const AMFI_CERTIFICATE_OR_SLA                 = 'amfi_certificate_or_sla';
+    const PROPRIETORSHIP_BUSINESS_PROOF_DOCUMENTS = 'proprietorship_business_proof_documents';
 
     /**
      * This contains documents required for unregistered business
@@ -40,6 +41,15 @@ class SelectiveRequiredFields
         self::PERSONAL_PAN_DOCUMENTS => [
             [Type::BUSINESS_PAN_URL],
             [Type::PERSONAL_PAN]
+        ]
+    ];
+
+    const PROPRIETORSHIP_BUSINESS_PROOFS = [
+        self::PROPRIETORSHIP_BUSINESS_PROOF_DOCUMENTS => [
+            [Type::BUSINESS_PROOF_URL],
+            [Type::SHOP_ESTABLISHMENT_CERTIFICATE],
+            [Type::GST_CERTIFICATE],
+            [Type::MSME_CERTIFICATE],
         ]
     ];
 
@@ -110,16 +120,18 @@ class SelectiveRequiredFields
      * list of all selective required fields
      */
     const ALL_SELECTIVE_FIELDS = [
-        SelectiveRequiredFields::MUTUAL_FUND,
-        SelectiveRequiredFields::LENDING,
-        SelectiveRequiredFields::INSURANCE,
-        SelectiveRequiredFields::NBFC,
-        SelectiveRequiredFields::FOREX,
-        SelectiveRequiredFields::SECURITIES,
-        SelectiveRequiredFields::COMMODITIES,
-        SelectiveRequiredFields::FINANCIAL_ADVISOR,
-        SelectiveRequiredFields::TRADING,
-        SelectiveRequiredFields::UNREGISTERED_POA_FIELDS,
-        SelectiveRequiredFields::REGISTERED_POA_FIELDS,
+        self::MUTUAL_FUND,
+        self::LENDING,
+        self::INSURANCE,
+        self::NBFC,
+        self::FOREX,
+        self::SECURITIES,
+        self::COMMODITIES,
+        self::FINANCIAL_ADVISOR,
+        self::TRADING,
+        self::UNREGISTERED_POA_FIELDS,
+        self::REGISTERED_POA_FIELDS,
+        self::PROPRIETORSHIP_BUSINESS_PROOFS,
+        self::PROPRIETORSHIP_PERSONAL_PAN_DOCUMENTS,
     ];
 }

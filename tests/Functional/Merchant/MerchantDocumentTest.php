@@ -31,7 +31,7 @@ class MerchantDocumentTest Extends TestCase
             'document_type' => 'business_proof_url',
         ]);
 
-        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+        $this->fixtures->create('merchant_detail:filled_entity',['merchant_id' => '10000000000000']);
 
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];
@@ -336,6 +336,71 @@ class MerchantDocumentTest Extends TestCase
         $this->mockRazorX('testDocumentUpload', 'bvs_cancelled_cheque_ocr', 'on');
 
         $this->uploadDocument('cancelled_cheque', 'bank_details_doc_verification_status');
+    }
+
+    public function testProprietorshipBusinessProofDocumentNotUploadedCanSubmitFlagFalse()
+    {
+        $this->checkCanSubmitForPropBusinessBusinessProofUpload("personal_pan", false);
+    }
+
+    public function testProprietorshipBusinessProofDocumentShopEstabCanSubmitFlagFalse()
+    {
+        $this->checkCanSubmitForPropBusinessBusinessProofUpload("shop_establishment_certificate");
+    }
+
+    public function testProprietorshipBusinessProofDocumentGSTCertCanSubmitFlagFalse()
+    {
+        $this->checkCanSubmitForPropBusinessBusinessProofUpload("gst_certificate");
+    }
+
+    public function testProprietorshipBusinessProofDocumentMsmeCertCanSubmitFlagFalse()
+    {
+        $this->checkCanSubmitForPropBusinessBusinessProofUpload("msme_certificate");
+    }
+
+    public function testProprietorshipBusinessProofDocumentBusinessProofUrlCanSubmitFlagFalse()
+    {
+        $this->checkCanSubmitForPropBusinessBusinessProofUpload("business_proof_url");
+    }
+
+    protected function checkCanSubmitForPropBusinessBusinessProofUpload(string $documentKey,
+                                                                        bool $expectedCanSubmitFlag = true)
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:filled_entity', ["business_type" => "1"]);
+
+        $this->createDocumentEntities($merchantDetail["merchant_id"],
+                                      [
+                                          'personal_pan',
+                                          'promoter_address_url',
+                                      ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->updateUploadDocumentData('testDocumentUpload');
+
+        $request = $this->testData['testDocumentUpload']['request'];
+
+        $request['content']['document_type'] = $documentKey;
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($expectedCanSubmitFlag, $content["can_submit"]);
+    }
+
+    private function createDocumentEntities(string $merchantId, array $documentTypes, array $attributes = [])
+    {
+        $data = [
+            'document_types' => $documentTypes,
+            'attributes'     => [
+                'merchant_id'   => $merchantId,
+                'file_store_id' => 'abcdefgh12345',]
+        ];
+
+        $data['attributes'] = array_merge($data['attributes'], $attributes);
+
+        $this->fixtures->create('merchant_document:multiple', $data);
     }
 
     protected function uploadDocument(string $documentKey, string $documentVerificationKey, $mid = '1cXSLlUU8V9sXl')

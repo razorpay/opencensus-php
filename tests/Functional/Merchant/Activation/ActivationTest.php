@@ -256,7 +256,7 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
-    }    
+    }
 
     // GreyList Activation flow
     public function testActivationDefaultMethodsBasedOnCategory6211MutualFunds()
@@ -390,7 +390,7 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
-    }    
+    }
 
     public function testActivationDefaultMethodsBasedOnCategoryBlacklisted()
     {

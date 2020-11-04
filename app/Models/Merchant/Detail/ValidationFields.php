@@ -162,7 +162,11 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::BUSINESS_PAN_FIELDS],
+            self::REQUIRED_FIELDS           => [
+                RequiredFields::REGISTERED_BUSINESS_FIELDS,
+                RequiredFields::BUSINESS_PAN_FIELDS,
+                RequiredFields::BUSINESS_PROOF_DOCUMENT,
+            ],
             self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
         ],
     ];
@@ -172,7 +176,12 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS, RequiredFields::BUSINESS_PAN_FIELDS],
+            self::REQUIRED_FIELDS           => [
+                RequiredFields::REGISTERED_BUSINESS_FIELDS,
+                RequiredFields::NGO_MERCHANT_FIELDS,
+                RequiredFields::BUSINESS_PAN_FIELDS,
+                RequiredFields::BUSINESS_PROOF_DOCUMENT,
+            ],
             self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
         ],
     ];
@@ -183,7 +192,11 @@ class ValidationFields
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
             self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
-            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS, SelectiveRequiredFields::PROPRIETORSHIP_PERSONAL_PAN_DOCUMENTS]
+            self::SELECTIVE_REQUIRED_FIELDS => [
+                SelectiveRequiredFields::REGISTERED_POA_FIELDS,
+                SelectiveRequiredFields::PROPRIETORSHIP_PERSONAL_PAN_DOCUMENTS,
+                SelectiveRequiredFields::PROPRIETORSHIP_BUSINESS_PROOFS,
+            ]
         ],
     ];
 

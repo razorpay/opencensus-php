@@ -24,14 +24,16 @@ class RequiredFields
         Entity::BUSINESS_PAN_URL,
     ];
 
+    const BUSINESS_PROOF_DOCUMENT = [
+        Type::BUSINESS_PROOF_URL,
+    ];
+
 
     //registered business default doc
     const REGISTERED_BUSINESS_FIELDS = [
         Entity::BUSINESS_DBA,
         Entity::BUSINESS_INTERNATIONAL,
         Entity::BUSINESS_NAME,
-
-        Entity::BUSINESS_PROOF_URL,
 
         //operational address related fields
         Entity::BUSINESS_OPERATION_ADDRESS,
