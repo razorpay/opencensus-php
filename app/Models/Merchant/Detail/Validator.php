@@ -524,7 +524,7 @@ class Validator extends Base\Validator
         Merchant\Constants::REASON_TYPE => "required|string|in:custom",
         Merchant\Constants::FIELD_VALUE => 'filled',
         Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
-        Merchant\Constants::REASON_CODE => 'required|string|max:200',
+        Merchant\Constants::REASON_CODE => 'required|string|max:500',
     ];
 
     protected static $predefinedClarificationReasonJsonValidationRules = [
