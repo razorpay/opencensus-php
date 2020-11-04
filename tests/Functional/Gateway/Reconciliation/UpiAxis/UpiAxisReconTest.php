@@ -91,6 +91,8 @@ class UpiAxisReconTest extends TestCase
 
         $upi = $this->getDbLastEntity('upi');
 
+        $this->assertNotNull($upi->getReconciledAt());
+
         $this->assertArraySubset([
             'merchant_reference'    => 'SomeUnexpectedOrderId',
             'npci_reference_id'     => '000100010001',
@@ -220,6 +222,8 @@ class UpiAxisReconTest extends TestCase
         $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
+
+        $this->assertNotNull($upiEntity['reconciled_at']);
 
         $updatedPayment = $this->getDbEntityById('payment', $upiEntity['payment_id']);
 

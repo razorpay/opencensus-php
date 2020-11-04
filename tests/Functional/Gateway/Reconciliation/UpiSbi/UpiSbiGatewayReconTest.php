@@ -72,6 +72,8 @@ class UpiSbiGatewayReconTest extends TestCase
 
             $this->assertNotNull($payment['reference16']);
 
+            $this->assertNotNull($upi->getReconciledAt());
+
             $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
         }
 

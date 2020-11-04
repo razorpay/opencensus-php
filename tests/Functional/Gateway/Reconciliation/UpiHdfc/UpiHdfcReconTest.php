@@ -83,6 +83,7 @@ class UpiHdfcReconTest extends TestCase
 
         $upiEntity2 = $this->getDbLastEntityToArray('upi');
 
+        $this->assertNotNull($upiEntity2['reconciled_at']);
         $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
     }
 
@@ -148,7 +149,11 @@ class UpiHdfcReconTest extends TestCase
         $this->assertNotNull($transactionEntity1['gateway_settled_at']);
         $this->assertNotNull($transactionEntity2['gateway_settled_at']);
 
-        $upiEntity2 = $this->getDbLastEntityToArray('upi');
+        $upiEntity1 = $this->getDbEntityById('upi', $upiEntity1['id']);
+        $this->assertNotNull($upiEntity1['reconciled_at']);
+
+        $upiEntity2 = $this->getDbEntityById('upi', $upiEntity2['id']);
+        $this->assertNotNull($upiEntity2['reconciled_at']);
 
         $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
     }

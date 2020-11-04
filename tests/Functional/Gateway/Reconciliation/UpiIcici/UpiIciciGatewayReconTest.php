@@ -226,6 +226,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
             $this->assertEquals($upi['npci_reference_id'], '734122607521');
 
+            $this->assertNotNull($upi->getReconciledAt());
+
             $this->assertNotNull($payment['reference16']);
 
             $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
@@ -309,6 +311,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->assertEquals($upi['npci_reference_id'], '734122607521');
 
+        $this->assertNotNull($upi->getReconciledAt());
+
         $this->assertNotNull($payment['reference16']);
 
         $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
@@ -362,6 +366,8 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertEquals($upi['npci_reference_id'], '000123456789');
 
         $this->assertNotNull($payment['reference16']);
+
+        $this->assertNotNull($upi->getReconciledAt());
 
         $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
     }

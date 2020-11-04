@@ -136,6 +136,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
+    public function setReconciledAt(int $value)
+    {
+        return $this->setAttribute(self::RECONCILED_AT, $value);
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -179,6 +184,11 @@ class Entity extends Base\Entity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getReconciledAt()
+    {
+        return $this->getAttribute(self::RECONCILED_AT);
     }
 
     public function setNpciReferenceId(string $value)

@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
+use RZP\Constants;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -1254,6 +1255,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistCustomerDetails($rowDetails, $gatewayPayment);
 
+        $this->persistGatewayReconciledAt($rowDetails, $gatewayPayment);
+
         $this->repo->saveOrFail($gatewayPayment);
     }
 
@@ -1367,6 +1370,30 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if (empty($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === false)
         {
             $this->persistCustomerName($customerDetails, $gatewayPayment);
+        }
+    }
+
+    /**
+     * Sets the Gateway Reconciled At with current time if applicable
+     * This field is required for UPI as we get multiple credits for same payment id
+     *
+     * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistGatewayReconciledAt(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        // If this is the UPI Entity, we can save reconciled at in the payment
+        if ($gatewayPayment->getEntity() === Constants\Entity::UPI)
+        {
+            $reconciledAt = $gatewayPayment->getReconciledAt();
+
+            // We do not need to update the reconciled at if it is already saved
+            if (empty($reconciledAt) === false)
+            {
+                return;
+            }
+
+            $gatewayPayment->setReconciledAt($gatewayPayment->freshTimestamp());
         }
     }
 
