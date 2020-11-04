@@ -79,4 +79,132 @@ return [
             'status_code'   => 200,
         ],
     ],
+
+    'testPostTicketMissingField' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+            ]
+
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The custom fields field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPostTicketPaymentId' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'custom_fields' => [
+                    'cf_transaction_id' => '',
+                    'cf_requester_category' => 'Customer'
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testPostTicketInvalidId' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'custom_fields' => [
+                    'cf_transaction_id' => '',
+                    'cf_requester_category' => 'Customer'
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+            ]
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'FRESHDESK_TICKET_INVALID_ID',
+        ],
+    ],
+
+    'testPostTicketCustomerNoTransactionId' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer'
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+            ]
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'FRESHDESK_TICKET_INVALID_ID',
+        ],
+    ],
+
+    'testPostTicketPartnerSuccess' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Partner'
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ]
+    ],
 ];

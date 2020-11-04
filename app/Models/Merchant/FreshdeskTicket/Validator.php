@@ -20,4 +20,16 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException('Invalid type name: ' . $type);
         }
     }
+
+    public function validateCustomerFreshDeskTicketIdFromMerchantNotes($id)
+    {
+        $idRegex = '/^.*[0-9]+.*$/';
+
+        $validId = (preg_match($idRegex, $id) === 1);
+
+        if ($validId === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('The id format is invalid.', 'id');
+        }
+    }
 }

@@ -55,6 +55,20 @@ class FreshdeskTicketController extends Controller
     }
 
     /**
+     * Create Freshdesk Ticket
+     *
+     * @return mixed
+     */
+    public function postTicket()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postTicket($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Get Freshdesk Ticket conversations for the given ticket id
      *
      * @return mixed

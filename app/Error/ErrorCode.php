@@ -1837,6 +1837,7 @@ class ErrorCode
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND';
 
     const FRESHDESK_TICKET_ALREADY_EXISTS                                             = 'FRESHDESK_TICKET_ALREADY_EXISTS';
+    const FRESHDESK_TICKET_INVALID_ID                                                 = 'FRESHDESK_TICKET_INVALID_ID';
     //IRCTC Error codes
     //IRCTC Error codes
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';

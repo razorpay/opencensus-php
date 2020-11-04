@@ -333,4 +333,47 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
 
         return $response;
     }
+
+    /**
+     * Create ticket
+     *
+     * @param array $queryParams
+     * @param string $urlKey
+     * @return array $response
+     */
+    public function postTicket(array $input, $urlKey = 'url') : array
+    {
+        $response = [
+            "cc_emails" => ["support@razorpay.com"],
+            "fwd_emails" => [],
+            "reply_cc_emails" => ["support@razorpay.com"],
+            "email_config_id" => null,
+            "group_id" => null,
+            "priority" => 1,
+            "requester_id" => 123,
+            "responder_id" => null,
+            "source" => 2,
+            "status" => 2,
+            "subject" => "Support needed..",
+            "company_id" => 1,
+            "id" => 1,
+            "type" => "Question",
+            "to_emails" => null,
+            "product_id" => null,
+            "fr_escalated" => false,
+            "spam" => false,
+            "urgent" => false,
+            "is_escalated" => false,
+            "created_at" => "2020-10-20T13:08:06Z",
+            "updated_at" => "2020-10-20T13:08:06Z",
+            "due_by" => "2020-10-25T13:08:06Z",
+            "fr_due_by" => "2020-10-25T13:08:06Z",
+            "description_text" => "Some details on the issue ...",
+            "description" => "<div>Some details on the issue ..</div>",
+            "tags" => [],
+            "attachments" => []
+        ];
+
+        return $response;
+    }
 }

@@ -425,6 +425,7 @@ class Response
             'payment_links_demo',
             'payment_links_demo_cors',
             'subscription_button_create_subscription',
+            'freshdesk_create_ticket'
         ];
 
         if (in_array($route, $routes, true) === true)

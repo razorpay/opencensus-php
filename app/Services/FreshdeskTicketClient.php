@@ -18,6 +18,7 @@ class FreshdeskTicketClient
     const HTTP_PUT     = 'PUT';
 
     // Freshdesk API Endpoints
+    const CREATE_TICKET       = 'tickets';
     const FETCH_TICKET        = 'tickets/%s';
     const FILTER_TICKETS      = 'search/tickets';
     const FETCH_CONVERSATIONS = 'tickets/%s/conversations';
@@ -112,6 +113,27 @@ class FreshdeskTicketClient
 
         return $response;
     }
+
+    /**
+     * Create ticket
+     *
+     * @param array $queryParams
+     * @param string $urlKey
+     * @return array $response
+     */
+    public function postTicket(array $input, $urlKey = 'url') : array
+    {
+        $authKey = $this->getAuthKey($urlKey);
+
+        $url = $this->getUrl(self::CREATE_TICKET, $urlKey);
+
+        $auth = $this->getAuth($authKey);
+
+        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
+
+        return $response ?? [];
+    }
+
 
     /**
      * Get tickets for the given $merchantID

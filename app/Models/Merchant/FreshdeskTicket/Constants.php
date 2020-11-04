@@ -10,6 +10,27 @@ class Constants
     const STATUS   = 'status';
     const PER_PAGE = 'per_page';
 
+    const CATEGORY                  = 'cf_requester_category';
+    const SUB_CATEGORY              = 'cf_requestor_subcategory';
+    const CUSTOM_FIELDS             = 'custom_fields';
+    const TRANSACTION_ID            = 'cf_transaction_id';
+    const PAYMENT_ID                = 'cf_razorpay_payment_id';
+    const REFUND_ID                 = 'cf_refund_id';
+    const ORDER_ID                  = 'cf_order_id';
+    const MERCHANT_ID               = 'cf_merchant_id';
+    const PAYMENT_CUSTOMER_EMAIL    = 'cf_payment_email';
+    const PAYMENT_CUSTOMER_PHONE    = 'cf_payment_phone';
+
+    //Flows
+    const CUSTOMER = 'Customer';
+    const PARTNER  = 'Partner';
+
+    // ID Types
+    const PAYMENT       = 'payment';
+    const REFUND        = 'refund';
+    const ORDER         = 'order';
+    const TRANSACTION   = 'transaction';
+
     // Results
     const TOTAL   = 'total';
     const RESULTS = 'results';

@@ -1973,6 +1973,7 @@ class Route
         'fd_fetch_converations'                   => ['get',       'fd/conversations',                                           'FreshdeskTicketController@getConversations'                  ],
         'fd_fetch_ticket'                         => ['get',       'fd/tickets/{ticket_id}',                                     'FreshdeskTicketController@getTicketWithStats'                ],
         'fd_post_ticket_reply'                    => ['post',      'fd/tickets/{ticket_id}/reply',                               'FreshdeskTicketController@postTicketReply'                   ],
+        'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
 
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
@@ -4974,6 +4975,8 @@ class Route
 
         // Razorflow
         'razorflow_post_slash_command',
+
+        'freshdesk_create_ticket',
     ];
 
     /**

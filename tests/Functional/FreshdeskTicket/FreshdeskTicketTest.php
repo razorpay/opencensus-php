@@ -46,4 +46,57 @@ class FreshdeskTicketTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testPostTicketMissingField()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostTicketPaymentId()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->publicAuth();
+
+        $testData = &$this->testData['testPostTicketPaymentId'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+
+        $this->startTest();
+    }
+
+    public function testPostTicketInvalidId()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->publicAuth();
+
+        $testData = &$this->testData['testPostTicketInvalidId'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . 'ABcYZ';
+
+        $this->startTest();
+    }
+
+    public function testPostTicketCustomerNoTransactionId()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostTicketPartnerSuccess()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
 }
