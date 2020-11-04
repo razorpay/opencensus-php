@@ -1365,7 +1365,7 @@ class Service extends Base\Service
             'enable_pl_batch_upload',
             'skip_workflow_payout_specific_feature',
             'low_balance_alert_frequency_30M',
-            'rx_home_v2',
+            'rx_home_v2_existing',
             'bank_account_update_merchant_dashboard',
             'app_switcher',
             'subscription_expiry'
