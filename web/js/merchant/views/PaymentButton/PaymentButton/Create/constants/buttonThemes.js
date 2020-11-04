@@ -20,6 +20,10 @@ export const buttonThemes = {
   },
 };
 
+export const orgButtonThemes = {
+  axis: '#97144C'
+};
+
 export const buttonThemesList = [
   buttonThemes.RZP_DARK_STANDARD,
   buttonThemes.RZP_LIGHT_STANDARD,

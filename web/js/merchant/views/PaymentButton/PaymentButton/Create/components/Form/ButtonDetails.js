@@ -7,7 +7,7 @@ import InputCurrencyAmount from './components/InputCurrencyAmount';
 import InputDropdown from './components/InputDropdown';
 import { PowerSelect } from 'react-power-select';
 
-import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+import { buttonThemesList, orgButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import META, {
@@ -22,7 +22,9 @@ import track from '../../track';
 
 export const maxLengthForButtonLabel = 20;
 
-@connect(null, {
+@connect(state => ({
+  user: state.session.user
+}), {
   updatePaymentButtonData,
   updateAmountField,
   updateStepReviewProgress,
@@ -47,15 +49,24 @@ export default class ButtonDetails extends React.Component {
 
   componentDidMount() {
     this.toggleDisableSubmit();
+
+    // Update default button theme in store if first-time creation mode
+    const { user, isEditExistingId } = this.props;
+    if(!isEditExistingId && user.isOrgAxis) {
+      this.updateButtonTheme(orgButtonThemes.axis);
+    }
   }
 
   handleSubmit = (formData) => {
-    const { title, button_text, button_theme, currency, amount } = formData;
+    const { title, button_text, currency, amount } = formData;
+
+    const { paymentButtonEntity } = this.props;
+    const buttonTheme = paymentButtonEntity.settings.payment_button_theme; // Reusing value from store as it was updated when button theme was changed
 
     const data = {
       title,
       settings: {
-        payment_button_theme: button_theme,
+        payment_button_theme: buttonTheme,
         payment_button_text: button_text,
       },
     };
@@ -143,20 +154,25 @@ export default class ButtonDetails extends React.Component {
     this.props.updatePaymentButtonData(data);
   };
 
+  // This is needed so that button preview can be in sync
   handleChangeButtonTheme = (option) => {
-    const data = {
-      settings: {
-        payment_button_theme: option.value,
-      },
-    };
-
-    // NOTE: This action fn. does deep merge. So, the new data won't replace the existing data in store
-    this.props.updatePaymentButtonData(data);
+    this.updateButtonTheme(option.value);
 
     this.markReviewDone(false);
 
     track.lj.trackButtonTheme(option);
   };
+
+  updateButtonTheme(themeValue) {
+    const data = {
+      settings: {
+        payment_button_theme: themeValue,
+      },
+    };
+
+    // NOTE: This action fn. does deep merge. So, the new data won't replace the existing data in store
+    this.props.updatePaymentButtonData(data);
+  }
 
   toggleDisableSubmit = (e) => {
     const isFormChanged = e && e.hasOwnProperty('type');
@@ -184,7 +200,7 @@ export default class ButtonDetails extends React.Component {
   setRefFormEl = (el) => (this.formEl = el);
 
   render() {
-    const { paymentButtonId, paymentButtonEntity, isEditExistingId } = this.props;
+    const { user, paymentButtonId, paymentButtonEntity, isEditExistingId } = this.props;
 
     const templateType = paymentButtonEntity.settings.payment_button_template_type,
       currency = paymentButtonEntity.currency;
@@ -267,18 +283,22 @@ export default class ButtonDetails extends React.Component {
             onBlur={track.lj.trackButtonLabel}
           />
 
-          <InputDropdown
-            label="Button Theme"
-            name="button_theme"
-            class="Input--vTop"
-            dropdownElementClass="Input-el-PaymentButtonForm"
-            placeholder="Select Button Theme"
-            options={buttonThemesList}
-            optionLabelPath="label"
-            optionValuePath="value"
-            defaultValue={paymentButtonEntity.settings.payment_button_theme}
-            onChange={this.handleChangeButtonTheme}
-          />
+          {
+            !user.isOrgAxis && (
+              <InputDropdown
+                label="Button Theme"
+                name="button_theme"
+                class="Input--vTop"
+                dropdownElementClass="Input-el-PaymentButtonForm"
+                placeholder="Select Button Theme"
+                options={buttonThemesList}
+                optionLabelPath="label"
+                optionValuePath="value"
+                defaultValue={paymentButtonEntity.settings.payment_button_theme}
+                onChange={this.handleChangeButtonTheme}
+              />
+            )
+          }
         </div>
 
         <div class="Form-controls">

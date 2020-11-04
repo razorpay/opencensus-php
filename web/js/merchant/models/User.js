@@ -668,7 +668,14 @@ export default class User {
   }
 
   get isAppSwitcherEnabled() {
-    return this.getExpStatus('app_switcher');
+
+  return this.getExpStatus('app_switcher');
+  }
+
+  get isOrgAxis() {
+    const currentOrg = getOrg().custom_code;
+
+    return currentOrg === 'axis';
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted
