@@ -1363,6 +1363,12 @@ export default class ActivationWizard extends React.Component {
       fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
+    // auto-populate billing label
+    if (fieldName === 'business_name' && dirty.business_name !== data.business_name) {
+      document.querySelector(`.form-container [name=business_dba]`).value = fieldValue;
+      sideEffectFieldsToUpdate.business_dba = fieldValue;
+    }
+
     /* Step Last: */
     if (stateName) {
       this.setState(
@@ -1872,7 +1878,6 @@ function ActivationField(field) {
     defaultValue = this.state[_name];
     key = _name;
   }
-
   const isFormLocked = this.isFormLocked || this.state.callingAPI;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.

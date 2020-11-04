@@ -126,14 +126,13 @@ const RegisteredBusinessTypeOptions = [
 
 const UnregisteredBusinessTypeOptions = [
   { label: '--Select--', name: '' },
-  { label: 'Not Registered', name: NOT_REGISTERED }
+  { label: 'Not Registered', name: NOT_REGISTERED },
 ];
 
-var DefaultBusinessTypeOptions = removeArrayDuplicatesByProp([
-  ...RegisteredBusinessTypeOptions,
-  ...UnregisteredBusinessTypeOptions,
-], "label");
-
+var DefaultBusinessTypeOptions = removeArrayDuplicatesByProp(
+  [...RegisteredBusinessTypeOptions, ...UnregisteredBusinessTypeOptions],
+  'label',
+);
 
 const BlacklistedErr = () => (
   <div class="warning-svg red">
@@ -241,17 +240,6 @@ const businessModel = [
       },
     },
   ],
-  {
-    label: 'Billing Label',
-    name: 'business_dba',
-    required: true,
-    info: getBillingLabelInfo,
-    validator: (val) => {
-      if (val && val.length < 3) {
-        return 'Please enter billing label with at least 3 characters.';
-      }
-    },
-  },
   [
     {
       label: 'Website/App URL',
@@ -362,9 +350,6 @@ const businessDetails = [
       validator: function (value) {
         const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
         const showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
-        if (!isValidName(value)) {
-          return 'Business Name should not have any numbers or special characters.';
-        }
         return isUnregisteredBusiness(this)
           ? false
           : validateCompanyAB(value, contactName, showCompanyName);
@@ -430,6 +415,18 @@ const businessDetails = [
       _disabledWhen: isPANVerified,
     },
   ],
+  {
+    label: 'Billing Label',
+    name: 'business_dba',
+    _autoRenderImpure: true,
+    required: true,
+    info: getBillingLabelInfo,
+    validator: (val) => {
+      if (val && val.length < 3) {
+        return 'Please enter billing label with at least 3 characters.';
+      }
+    },
+  },
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
   {
     label: 'CIN',
@@ -550,7 +547,6 @@ const bankAccountFields = [
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
       onBlur: function (e) {
-
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
 
