@@ -1,3 +1,5 @@
+import { getURLQueryParams } from '../common/utils/rzp-utils';
+
 __webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
@@ -14,6 +16,15 @@ import Button from '@commander/shield/src/shared/Button';
 import Link from '@commander/shield/src/shared/Link';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import View from '@razorpay/blade/src/atoms/View';
+
+let BANNER_TEXT_DESK = 'Complete signup today to unlock free credits worth ₹35 lakhs!';
+let BANNER_TEXT_MOB = 'Complete signup to unlock ₹35 lakhs free credits!';
+
+const { r } = getURLQueryParams(window.location.search);
+if (r === 'partner') {
+  BANNER_TEXT_DESK = 'Complete signup today to start earning ₹1000 / referral & 0.15% commission!';
+  BANNER_TEXT_MOB = 'Complete signup to start earning ₹1000 / referral!';
+}
 
 const Container = Styled(View)`
   overflow-y: auto;
@@ -178,34 +189,18 @@ const InlineText = Styled(Text)`
   display: inline;
 `;
 
-const StrikedInlineText = Styled(Text)`
-  display: inline;
-  text-decoration: line-through;
-`;
-
 const App = () => {
   const [showBanner, setShowBanner] = useState(false);
-  const [hasCouponCode, setHasCouponCode] = useState(false);
 
   useEffect(() => {
-    if (window.location.href.includes('coupon_code')) {
-      setHasCouponCode(true);
-    }
-  }, []);
-
-  let routesForBanner = ['business_type', 'monthly_revenue', 'contact_details'];
-
-  const handleRouteChange = (route) => {
-    if (routesForBanner.includes(route) && isCampaignLive() && !hasCouponCode) {
+    if (!window.location.href.includes('coupon_code') && isCampaignLive()) {
       setShowBanner(true);
-    } else {
-      setShowBanner(false);
     }
-  };
+  }, [showBanner]);
 
   const isCampaignLive = () => {
-    const startDate = new Date('September 09, 2020 00:00:01').getTime();
-    const endDate = new Date('September 30, 2020 00:00:59').getTime();
+    const startDate = new Date('October 15, 2020 00:00:01').getTime();
+    const endDate = new Date('November 17, 2020 00:00:01').getTime();
     const now = new Date().getTime();
     return now > startDate && now < endDate;
   };
@@ -239,13 +234,7 @@ const App = () => {
         <Space padding={[1.5, 4]}>
           <MobileBannerBg>
             <InlineText color="positive.900" size="small">
-              Complete the next steps now to unlock&nbsp;
-            </InlineText>
-            <StrikedInlineText color="positive.900" size="small">
-              2%
-            </StrikedInlineText>
-            <InlineText color="positive.900" size="small">
-              &nbsp;1.85% pricing & ₹1 lakh free credits!
+              {BANNER_TEXT_MOB}
             </InlineText>
           </MobileBannerBg>
         </Space>
@@ -257,15 +246,9 @@ const App = () => {
     return (
       <DesktopBannerView>
         <Flex justifyContent="center">
-          <Space padding={[2.25, 0, 1.75, 0]}>
+          <Space padding={[1.75, 0, 1.75, 0]}>
             <DesktopBannerBg>
-              <InlineText color="background.100">
-                Complete the next steps now to unlock&nbsp;
-              </InlineText>
-              <StrikedInlineText color="background.100">2%</StrikedInlineText>
-              <InlineText color="background.100">
-                &nbsp;1.85% pricing & ₹1 lakh free credits!
-              </InlineText>
+              <InlineText color="background.100">{BANNER_TEXT_DESK}</InlineText>
             </DesktopBannerBg>
           </Space>
         </Flex>
@@ -320,11 +303,7 @@ const App = () => {
 
                 <RelativeView>
                   <AbsoluteView>
-                    <SignUp
-                      appName="dashboard"
-                      header={showBanner && <MobileBanner />}
-                      onRouteChange={handleRouteChange}
-                    />
+                    <SignUp appName="dashboard" header={showBanner && <MobileBanner />} />
                   </AbsoluteView>
                   <DesktopOnlyView>
                     <Space padding={[8, 5.5, 4, 0]}>
