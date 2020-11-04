@@ -113,6 +113,8 @@ class GraphRequestAny
 
         $apolloClientVersion = Request::header('apollographql-client-version');
 
+        $appMode = Request::header('x-app-mode');
+
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
             'X-Org-Hostname'                        => $domain,
@@ -125,6 +127,7 @@ class GraphRequestAny
             'X-Org-Id'                              => $orgId,
             'apollographql-client-name'             => $apolloClientName,
             'apollographql-client-version'          => $apolloClientVersion,
+            'X-App-Mode'                            => $appMode,
         ];
 
         $this->headers = array_merge($defaultHeaders, $this->headers);
@@ -134,8 +137,6 @@ class GraphRequestAny
     {
         $user = Auth::guard('user')->user();
 
-        $appMode = Request::header('x-app-mode');
-
         if ($user)
         {
 
@@ -143,7 +144,6 @@ class GraphRequestAny
                 'X-Dashboard-User-Id'           => $user->id,
                 'X-Dashboard-User-Email'        => $user->email,
                 'X-Dashboard-User-Session-Id'   => Session::getId(),
-                'X-App-Mode'                    => $appMode,
             ];
 
             $currentMerchant = $user->currentMerchant();
