@@ -464,9 +464,7 @@ export default class User {
   }
 
   get isInttCurrenciesEnabled() {
-    return true;
-
-    return !!this.international && this.getExpStatus('international_currencies');
+    return !!this.international;
   }
 
   get getPaymentLinkCustomizedFormFields() {
