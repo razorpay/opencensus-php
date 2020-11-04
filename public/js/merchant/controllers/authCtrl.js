@@ -1811,6 +1811,7 @@ app
         } else if (isProd) {
           showSpinner();
           if (window.grecaptcha && window.grecaptcha.execute) {
+            grecaptcha.reset();
             grecaptcha.execute();
 
             /**
@@ -1832,6 +1833,7 @@ app
              */
             setTimeout(function () {
               if (window.grecaptcha && window.grecaptcha.execute) {
+                grecaptcha.reset();
                 grecaptcha.execute();
               } else {
                 login('Faked');
@@ -1926,17 +1928,26 @@ app
         login(val);
       };
 
+      /**
+       * Attempt captcha load once again if script fails
+       */
+      var isCaptchaReloadAttempted = false;
       onCaptchaError = function () {
-        window.rzpQ &&
-          window.rzpQ.push(
-            window.rzpQ.now().onbr().failed('recaptcha', {
-              error: 'Could not connect to captcha.',
-              sessionId: window.session_id,
-              emailId: $scope.login.data.email,
-              mode: $scope.eventsMode,
-              version: 1,
-            }),
-          );
+        if (!isCaptchaReloadAttempted) {
+          $scope.loadCaptcha();
+          isCaptchaReloadAttempted = true;
+        } else {
+          window.rzpQ &&
+            window.rzpQ.push(
+              window.rzpQ.now().onbr().failed('recaptcha', {
+                error: 'Could not connect to captcha.',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+                version: 1,
+              }),
+            );
+        }
       };
 
       /**
