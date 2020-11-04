@@ -998,6 +998,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ATTEMPTS, $value);
     }
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     // ----------------------- Mutator ---------------------------------------------
 
     protected function setReference1Attribute($reference1)
