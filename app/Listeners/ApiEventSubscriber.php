@@ -621,6 +621,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onRefundArnUpdated(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onPayoutProcessed(Payout\Entity $payout)
     {
         if ($payout->isOfMerchantTransaction() === true)

@@ -901,4 +901,41 @@ class WebhookTest extends TestCase
         $merchant->reTag(["oauth"]);
         $merchant->saveOrFail();
     }
+
+    public function testRefundArnUpdatedWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['refund_arn_webhook']);
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'upi_icici';
+
+        $this->fixtures->payment->edit($payment['id'], [ 'method' =>'upi', 'gateway' => 'upi_icici']);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $matcher = function (array $event) use ($expectedEvent)
+        {
+            $this->assertArraySelectiveEquals($expectedEvent, $event);
+            $this->assertNotNull($event['payload']['refund']['entity']['acquirer_data']['rrn']);
+        };
+
+        $this->expectWebhookEvent('refund.arn_updated', $matcher);
+
+        $this->refundPayment($payment['id']);
+    }
 }

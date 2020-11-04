@@ -924,4 +924,44 @@ return [
             ],
         ],
     ],
+
+    'testRefundArnUpdatedWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.arn_updated',
+            'contains' => ['refund', 'payment'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 50000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'status'          => 'processed',
+                        'speed_requested' => 'normal',
+                        'speed_processed' => 'normal',
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'refunded',
+                        'amount_refunded' => 50000,
+                        'refund_status' => 'full',
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

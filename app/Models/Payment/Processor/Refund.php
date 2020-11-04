@@ -2760,6 +2760,13 @@ trait Refund
         $notifier->addRefund($refund);
 
         $notifier->trigger(Payment\Event::REFUND_RRN_UPDATED);
+
+        // Triggering webhook
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.arn_updated', $eventPayload);
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array

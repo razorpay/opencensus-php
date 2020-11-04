@@ -485,6 +485,9 @@ class Constants
 
     const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
 
+    // feature for enabling refund arn webhook
+    const REFUND_ARN_WEBHOOK = 'refund_arn_webhook';
+
     const PL_BATCH_UPLOAD_FEATURE = 'pl_batch_upload_feature';
 
     public static $recurringFeatures = [
@@ -744,6 +747,7 @@ class Constants
         self::RX_SHOW_PAYOUT_SOURCE           => true,
         self::PAYOUT_CREDITS_NEW_FLOW         => true,
         self::REFUND_AGED_PAYMENTS            => true,
+        self::REFUND_ARN_WEBHOOK              => true,
         self::PL_BATCH_UPLOAD_FEATURE         => true,
     ];
 

@@ -67,6 +67,7 @@ class Event
     const REFUND_FAILED                     = 'refund.failed';
     const TRANSACTION_UPDATED               = 'transaction.updated';
     const REFUND_CREATED                    = 'refund.created';
+    const REFUND_ARN_UPDATED                = 'refund.arn_updated';
     const TRANSFER_PROCESSED                = 'transfer.processed';
     const TRANSFER_PROCESSED_SETTLED        = 'transfer.processed.settled';
     const TERMINAL_CREATED                  = 'terminal.created';
@@ -149,6 +150,7 @@ class Event
         self::REFUND_FAILED,
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
+        self::REFUND_ARN_UPDATED,
         self::TRANSFER_PROCESSED,
         self::TRANSFER_PROCESSED_SETTLED,
         self::TERMINAL_CREATED,
@@ -235,6 +237,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::REFUND_ARN_UPDATED,
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
@@ -355,6 +358,7 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_FAILED    => 16,
         self::TRANSFER_PROCESSED_SETTLED        => 17,
         self::PAYMENT_PAGE_PAID                 => 18,
+        self::REFUND_ARN_UPDATED                => 19,
     ];
 
     /**
@@ -407,6 +411,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => [Product::PRIMARY],
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
+        self::REFUND_ARN_UPDATED                => [Product::PRIMARY],
         self::TRANSACTION_UPDATED               => [Product::BANKING],
         self::REFUND_CREATED                    => [Product::PRIMARY],
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
@@ -491,6 +496,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Entity::REFUND,
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
+        self::REFUND_ARN_UPDATED                => Entity::REFUND,
         self::TRANSACTION_UPDATED               => Entity::TRANSACTION,
         self::REFUND_CREATED                    => Entity::REFUND,
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
@@ -577,6 +583,7 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_PROCESSING            => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
+        self::REFUND_ARN_UPDATED                => Feature\Constants::REFUND_ARN_WEBHOOK,
     ];
 
     public static function getLaunchedEventNames()
