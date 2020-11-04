@@ -1362,8 +1362,6 @@ class Service extends Base\Service
             'rx_view_only_update',
             'rx_accounting_payouts_active',
             'rx_accounting_payouts_ask_clientID',
-            'rx_ca_experiment_1',
-            'rx_ca_self_serve_flow',
             'enable_pl_batch_upload',
             'skip_workflow_payout_specific_feature',
             'low_balance_alert_frequency_30M',

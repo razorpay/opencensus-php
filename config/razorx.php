@@ -17,9 +17,9 @@ return [
             Constants::DEFAULT_RESULT        => ['result' => 'off']
         ],
         // Experiment 1 - which cross-sells CAs on PG sign up  and KYC
-        'rx_ca_experiment_1' => [
+        'rx_ca_experiment__1' => [
             Constants::REQUEST_ORIGIN        => 'primary',
-            Constants::TIMESTAMP_THRESHOLD   => 1602527400, // October 13, 2020 0:00:00 IST
+            Constants::TIMESTAMP_THRESHOLD   => 1604500200, // "4 Nov , 2020 20:00:00 IST"
             Constants::DEFAULT_RESULT        => ['result' => 'off']
         ]
     ]

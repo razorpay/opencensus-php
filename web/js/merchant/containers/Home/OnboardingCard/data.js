@@ -28,4 +28,4 @@ export const rxKYCvisitedFlag = 'rxKYCvisitedFlag';
 export const rxHomevisitedFlag = 'rxHomevisitedFlag';
 export const rxCaSelectedFlag = 'rxCaSelectedFlag';
 export const caReqEventType = 'CURRENT_ACCOUNT_INTEREST';
-export const rxCaExp = 'rx_ca_experiment_1';
+export const rxCaExp = 'rx_ca_experiment__1';
