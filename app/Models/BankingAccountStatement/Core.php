@@ -38,6 +38,12 @@ class Core extends Base\Core
 
     const DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS = 8;
 
+    const RBL_STATEMENT_FETCH_FORCE_FETCH_RULE  = "force_fetch_rule";
+
+    const RBL_STATEMENT_FETCH_MADE_PAYOUTS_RULE = "made_payouts_rule";
+
+    const RBL_STATEMENT_FETCH_OTHERS_RULE       = "others";
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -863,6 +869,7 @@ class Core extends Base\Core
             ]);
 
         $bankingAccountDetails = $this->repo->banking_account->fetchAccountNumbersByChannel($channel);
+
         $accountNumbersToDispatch = [];
         $accountsThatMadePayouts = [];
         $otherAccounts = [];
@@ -876,7 +883,8 @@ class Core extends Base\Core
 
             if ($bankingAccountDetail->getLastStatementAttemptAt() <= $currentTime - $forcedFetchTimeInSeconds)
             {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = $bankingAccountDetail->getAccountNumber();
+                $accountNumbersToDispatch[$numberOfAccountsSelected] = ['account_number' => $bankingAccountDetail->getAccountNumber(),
+                    'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_FORCE_FETCH_RULE];
 
                 $numberOfAccountsSelected++;
             }
@@ -890,11 +898,13 @@ class Core extends Base\Core
 
                     if ($count > 0)
                     {
-                        array_push($accountsThatMadePayouts, $bankingAccountDetail->getAccountNumber());
+                        array_push($accountsThatMadePayouts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
+                            'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_MADE_PAYOUTS_RULE]);
                     }
                     else
                     {
-                        array_push($otherAccounts, $bankingAccountDetail->getAccountNumber());
+                        array_push($otherAccounts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
+                            'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_OTHERS_RULE]);
                     }
                 }
             }
@@ -904,8 +914,6 @@ class Core extends Base\Core
                 break;
             }
         }
-
-        $accountNumbersToDispatchUnderForceFetchRule = $accountNumbersToDispatch;
 
         if ($numberOfAccountsSelected < $limit)
         {
@@ -937,22 +945,25 @@ class Core extends Base\Core
             }
         }
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
-            [
-                'currentTime'                                       => $currentTime,
-                'channel'                                           => $channel,
-                'account_numbers_under_force_fetch_rule'            => $accountNumbersToDispatchUnderForceFetchRule,
-                'account_numbers_to_be_dispatched_if_made_payouts'  => $accountsThatMadePayouts,
-                'account_numbers_to_be_dispatched'                  => $accountNumbersToDispatch,
-            ]);
+        $accountNumbersDispatched = [];
 
-        foreach ($accountNumbersToDispatch as $accountNumber)
+        foreach ($accountNumbersToDispatch as $accountNumberDetails)
         {
-            $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
+                [
+                    'currentTime'         => $currentTime,
+                    'channel'             => $channel,
+                    'balanceId'           => $accountNumberDetails['balance_id'],
+                    'rule'                => $accountNumberDetails['rule'],
+                ]);
+
+            array_push($accountNumbersDispatched, $accountNumberDetails['account_number']);
+
+            $this->dispatchBankingAccountStatementJob($channel, $accountNumberDetails['account_number']);
         }
 
-        return ['account_processed' => $accountNumbersToDispatch];
+        return ['accounts_processed' => $accountNumbersDispatched];
     }
 
     // Adding a delay in dispatch and default is 0 min delay.
