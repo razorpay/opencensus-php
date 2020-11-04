@@ -513,6 +513,7 @@ class Route
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
         'mdr_adjustment'                           => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                   ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
+        'setl_get_transaction_details'             => ['post',     'settlements/get_transaction_details',            'SettlementController@getSettlementSourceDetails'                   ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -2705,6 +2706,7 @@ class Route
         'payment_meta_search',
         'bulk_create_fund_accounts',
         'add_ondemand_pricing_if_absent',
+        'setl_get_transaction_details',
         'payment_authorize_post',
         'gateway_downtimes_archive',
         'payment_get_authenticate_url',
@@ -5521,6 +5523,7 @@ class Route
             'setl_execution_reminder',
             'setl_status_update',
             'setl_transactions_verify',
+            'setl_get_transaction_details',
         ],
 
         'terminals_service' => [

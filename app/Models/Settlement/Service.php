@@ -719,6 +719,151 @@ class Service extends Base\Service
         return $txns;
     }
 
+    public function getSettlementSourceDetails($input)
+    {
+        // Maps the transaction source to the entities to be fetched for it
+        $txnToRelationFetchMap = [
+            // Maps transaction source to entities that need to be fetched
+            E::PAYMENT => [
+                E::PAYMENT  => [
+                    E::ORDER,
+                    'paymentMeta'
+                ],
+            ],
+            E::REFUND => [
+                E::REFUND   => [],
+            ],
+            E::ADJUSTMENT => [
+                E::ADJUSTMENT   => [
+                    Adjustment\Entity::ENTITY,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . 'paymentMeta',
+                ],
+            ],
+            E::DISPUTE => [
+                E::ADJUSTMENT   => [
+                    Adjustment\Entity::ENTITY,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
+                    Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . 'paymentMeta',
+                ],
+            ],
+            E::REVERSAL => [
+                E::REVERSAL => [
+                    E::REVERSAL . '.' . E::REFUND,
+                ],
+            ]
+        ];
+
+        $start = microtime(true);
+
+        $transactions = $this->repo->transaction->findMany($input['ids']);
+
+        $source = $input['source_type'];
+
+        $txns = $this->repo->transaction
+                           ->fetchAssociatedRelationsWithLoadedEntities(
+                               $transactions,'source', $txnToRelationFetchMap[$source]);
+
+        $timeTaken = get_diff_in_millisecond($start);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_FETCH,
+            [
+                'txn_count'     => $txns->count(),
+                'time_taken'    => $timeTaken
+            ]);
+
+        $result = [];
+
+        foreach ($txns as $txn)
+        {
+            $response = [
+                'amount'      => $txn->getAmount(),
+                'fees'        => $txn->getFee(),
+                'tax'         => $txn->getTax(),
+                'currency'    => $txn->getCurrency(),
+                'source_type' => $source,
+                'source_id'   => $txn->source->getId(),
+            ];
+
+            switch ($source)
+            {
+                case E::PAYMENT:
+
+                    $paymentMeta = $txn->source->paymentMeta;
+
+                    $googleRequestId = null;
+
+                    if ($paymentMeta !== null)
+                    {
+                        $googleRequestId = $txn->source->paymentMeta->getReferenceId();
+                    }
+
+                    $response['external_id'] = $googleRequestId;
+
+                    $result[] = $response;
+
+                    break;
+
+                case E::REFUND:
+
+                    $response['external_id'] = $txn->source->getReceipt();
+
+                    $result[] = $response;
+
+                    break;
+
+                case E::REVERSAL:
+
+                    $response['external_id'] =  $txn->source->refund->getReceipt();
+
+                    $result[] = $response;
+
+                    break;
+
+                case E::ADJUSTMENT:
+
+                    $paymentMeta = $txn->source->entity->payment->paymentMeta;
+
+                    $googleRequestId = null;
+
+                    if ($paymentMeta != null)
+                    {
+                        $googleRequestId = $paymentMeta->getReferenceId();
+                    }
+
+                    $response['external_id'] = $googleRequestId;
+
+                    $result[] = $response;
+
+                    break;
+
+                case E::DISPUTE:
+
+                    $paymentMeta = $txn->source->entity->payment->paymentMeta;
+
+                    $googleRequestId = null;
+
+                    if ($paymentMeta != null)
+                    {
+                        $googleRequestId = $paymentMeta->getReferenceId();
+                    }
+
+                    $response['source_id'] = $txn->source->entity->getId();
+
+                    $response['external_id'] = $googleRequestId;
+
+                    $result[] = $response;
+
+                    break;
+            }
+        }
+
+        return $result;
+    }
+
     //********************* All proxy routes are Listed Here *********************//
 
     public function serviceFetch(array $input) : array
