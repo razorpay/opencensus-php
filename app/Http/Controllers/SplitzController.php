@@ -98,7 +98,7 @@ class SplitzController extends Controller
 
         unset($parameters['service_path']);
 
-        $parameters = json_encode($parameters, JSON_FORCE_OBJECT);
+        $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
 
