@@ -2,12 +2,37 @@
 
 namespace RZP\Models\Merchant\FreshdeskTicket;
 
+use Mail;
+use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Environment;
+use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Raven;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    protected $raven;
+
+    protected $redis;
+
+    const CUSTOMER_SUPPORT_OTP_TTL = 5; // 5 minutes
+
+    const MAX_OTP_ATTEMPTS = 3;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->raven = $this->app['raven'];
+
+        $this->redis = $this->app['cache'];
+    }
+
     public function create(array $input, string $merchantId): Entity
     {
         $params = ['type' => $input[Entity::TYPE]];
@@ -25,7 +50,7 @@ class Core extends Base\Core
                 ]
             );
         }
-        
+
         $ticketEntity = new Entity;
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -39,5 +64,151 @@ class Core extends Base\Core
         $this->repo->saveOrFail($ticketEntity);
 
         return $ticketEntity;
+    }
+
+    /**
+     * @param string $email
+     * @param string $return
+     * @throws BadRequestException
+     */
+    public function generateAndSendCustomerOtp($email)
+    {
+        $otpResponse = $this->generateOtp($email);
+
+        $this->sendOtp($otpResponse, $email);
+    }
+
+    /**
+     * @param string $email
+     * @param array $return
+     * @throws BadRequestException
+     */
+    protected function generateOtp($email): array
+    {
+        $context = Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $email;
+
+        $payload = [
+            Constants::OTP_RECEIVER => $email,
+            Constants::OTP_CONTEXT  => $context,
+            Constants::OTP_SOURCE   => Constants::OTP_CUSTOMER_SUPPORT_SOURCE
+        ];
+
+        $this->trace->info(
+            TraceCode::FRESHDESK_SUPPORT_CUSTOMER_OTP_REQUEST,
+            $payload
+        );
+
+        $response = $this->raven->generateOtp($payload);
+
+        if (key_exists(Constants::OTP, $response) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                null,
+                [
+                    'request'  => $payload,
+                    'response' => $response,
+                ]
+            );
+        }
+
+        $otp = array_pull($response, Constants::OTP);
+
+        $expires_at = Carbon::now()->addMinutes(self::CUSTOMER_SUPPORT_OTP_TTL)->timestamp;
+
+        $otpStore = [
+            'otp' => $otp,
+            'attempts' => 0,
+            'expires_at' => $expires_at,
+        ];
+
+        $this->redis->set($context, $otpStore, self::CUSTOMER_SUPPORT_OTP_TTL);
+
+        return $otpStore;
+    }
+
+    protected function sendOtp($otpResponse, $email)
+    {
+        $customerSupportTicketOtp = new CustomerSupportTicketOtp($email, $otpResponse['otp']);
+
+        try
+        {
+            Mail::queue($customerSupportTicketOtp);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::CRITICAL, TraceCode::FRESHDESK_SUPPORT_OTP_EMAIL_FAILED);
+        }
+    }
+
+    protected function getRedisKey($email): string
+    {
+        return Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $email;
+    }
+
+    /**
+     * @param string $email
+     * @param string $email
+     * @param void $return
+     * @throws BadRequestValidationFailureException
+     */
+    public function verifyOtp($email, $otp): bool
+    {
+        $otpResponse = $this->redis->get($this->getRedisKey($email));
+
+        $errorCode = '';
+
+        if (empty($otpResponse) === false)
+        {
+            if ($otpResponse['attempts'] > self::MAX_OTP_ATTEMPTS)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED;
+            }
+
+            if (Carbon::now()->getTimestamp() > $otpResponse['expires_at'])
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_OTP_EXPIRED;
+            }
+
+            if ($otp !== $otpResponse['otp'])
+            {
+                if ($this->isEnvironmentProduction() === false)
+                {
+                    if (in_array($otp, Raven::MOCK_VALID_OTPS) === false)
+                    {
+                        $errorCode = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+                    }
+                }
+                else
+                {
+                    $errorCode = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+                }
+            }
+
+            $otpResponse['attempts'] = $otpResponse['attempts'] + 1;
+
+            $this->redis->set($this->getRedisKey($email), $otpResponse, self::CUSTOMER_SUPPORT_OTP_TTL);
+        }
+        else
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+        }
+
+        if ($errorCode !== '')
+        {
+            throw new BadRequestValidationFailureException($errorCode,
+                Constants::OTP
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::FRESHDESK_SUPPORT_CUSTOMER_OTP_VALIDATED,
+                [
+                    'email' => $email
+                ]
+            );
+
+            return true;
+        }
     }
 }

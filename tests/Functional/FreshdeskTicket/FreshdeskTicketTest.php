@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\FreshdeskTicket;
 
+use Mail;
+use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -13,7 +15,7 @@ class FreshdeskTicketTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/FreshdeskTicketTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/FreshdeskTicketTestData.php';
 
         parent::setUp();
     }
@@ -47,6 +49,27 @@ class FreshdeskTicketTest extends TestCase
         $this->startTest();
     }
 
+    public function testOtpGenerateAndSend()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(True, $response['success']);
+
+        Mail::assertQueued(CustomerSupportTicketOtp::class, function ($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('otp', $viewData);
+
+            $this->assertEquals('emails.support.customer_otp', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPostTicketMissingField()
     {
         $this->ba->publicAuth();
@@ -64,9 +87,84 @@ class FreshdeskTicketTest extends TestCase
 
         $testData = &$this->testData['testPostTicketPaymentId'];
 
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+    }
+
+    public function testGetFreshdeskTicketsForCustomer()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testGetFreshdeskTicketsFailureIncorrectOtp()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testGetFreshdeskTicketsFailureTicketsNotFound()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testPostTicketPaymentIdInvalidOtp()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->publicAuth();
+
+        $testData = &$this->testData['testPostTicketPaymentIdInvalidOtp'];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
         $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
 
         $this->startTest();
+    }
+
+    protected function generateOtp($email)
+    {
+        $request = [
+            'url'       => '/freshdesk/tickets/otp',
+            'method'    => 'POST',
+            'content'   => [
+                'email' => $email,
+            ]
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->sendRequest($request);
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(True, $responseContent['success']);
     }
 
     public function testPostTicketInvalidId()
@@ -96,6 +194,28 @@ class FreshdeskTicketTest extends TestCase
         $this->app['config']->set('applications.freshdesk.mock', true);
 
         $this->ba->publicAuth();
+
+        $testData = &$this->testData['testPostTicketPartnerSuccess'];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testRaiseGrievanceAgainstTicket()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testRaiseGrievanceAgainstTicketFailure()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
 
         $this->startTest();
     }

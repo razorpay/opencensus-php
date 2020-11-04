@@ -90,8 +90,8 @@ return [
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
+                'otp'  => '0007',
             ]
-
         ],
         'response' => [
             'content' => [
@@ -118,6 +118,7 @@ return [
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
+                'otp'  => '0007',
                 'custom_fields' => [
                     'cf_transaction_id' => '',
                     'cf_requester_category' => 'Customer'
@@ -129,6 +130,50 @@ return [
             'content' => [
             ]
         ]
+    ],
+
+    'testPostTicketPaymentIdInvalidOtp' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'otp'  => '9999',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id' => ''
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+            ]
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'Verification failed because of incorrect OTP',
+        ],
+    ],
+
+    'testOtpGenerateAndSend' => [
+        'request' => [
+            'url' => '/freshdesk/tickets/otp',
+            'method' => 'POST',
+            'content' => [
+                'email' => 'test@gmail.com',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ],
     ],
 
     'testPostTicketInvalidId' => [
@@ -186,6 +231,141 @@ return [
         ],
     ],
 
+    'testGetFreshdeskTicketsForCustomer' => [
+        'request' => [
+            'url'     => '/freshdesk/tickets/customer',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'success@gmail.com',
+                'otp'   => '0007',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                [
+                    'number'            => 3358,
+                    'status'            => 'Closed',
+                    'subject'           => '',
+                    'source'            => 2,
+                    'type'              => null,
+                    'payment_id'        => 'FrTYsVAuCrW8Fm',
+                    'refund_id'         => null,
+                    'order_id'          => null,
+                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'        => '2020-10-28T11:02:50Z',
+                    'updated_at'        => '2020-10-28T11:02:51Z',
+                ],
+                [
+                    'number'            => 3328,
+                    'status'            => 'Closed',
+                    'subject'           => '',
+                    'source'            => 2,
+                    'type'              => null,
+                    'payment_id'        => 'FrTYsVAuCrW8Fm',
+                    'refund_id'         => null,
+                    'order_id'          => null,
+                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'        => '2020-10-28T11:02:50Z',
+                    'updated_at'        => '2020-10-28T11:02:51Z',
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testGetFreshdeskTicketsFailureIncorrectOtp' => [
+        'request' => [
+            'url'     => '/freshdesk/tickets/customer',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'success@gmail.com',
+                'otp'   => '0008',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'BAD_REQUEST_INCORRECT_OTP',
+        ],
+    ],
+
+    'testGetFreshdeskTicketsFailureTicketsNotFound' => [
+        'request' => [
+            'url'     => '/freshdesk/tickets/customer',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'failure@gmail.com',
+                'otp'   => '0007',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER,
+        ],
+    ],
+
+    'testRaiseGrievanceAgainstTicket' => [
+        'request' => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => 3328,
+                'description' => 'some description',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id' => ''
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'number'            => 3328,
+                'status'            => 'Processing',
+                'subject'           => '',
+                'source'            => 2,
+                'type'              => null,
+                'payment_id'        => 'FrTYsVAuCrW8Fm',
+                'refund_id'         => null,
+                'order_id'          => null,
+                'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                'created_at'        => '2020-10-28T11:02:50Z',
+                'updated_at'        => '2020-10-28T11:02:51Z',
+            ],
+        ],
+    ],
+
+    'testRaiseGrievanceAgainstTicketFailure' => [
+        'request' => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => 3329,
+                'description' => 'some description',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id' => ''
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED,
+        ],
+    ],
+
     'testPostTicketPartnerSuccess' => [
         'request' => [
             'url' => '/freshdesk/tickets',
@@ -196,6 +376,7 @@ return [
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
+                'otp'  => '0007',
                 'custom_fields' => [
                     'cf_requester_category' => 'Partner'
                 ]

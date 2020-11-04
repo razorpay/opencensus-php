@@ -11,15 +11,17 @@ use RZP\Models\Order;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
-
+use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
+use RZP\Models\Merchant\FreshdeskTicket\Validator as FreshdeskTicketValidator;
 
 class Service extends Base\Service
 {
     protected $createRules = [
         'email'                               => 'required|email',
+        'otp'                                 => 'required|string|min:4|max:6',
         'name'                                => 'required|string|max:100',
         'phone'                               => 'sometimes|contact_syntax',
         'description'                         => 'sometimes|string|max:1000',
@@ -28,6 +30,17 @@ class Service extends Base\Service
         'custom_fields'                       => 'required|array',
         'custom_fields.cf_requester_category' => 'required|string|max:50',
         'custom_fields.cf_transaction_id'     => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+    ];
+
+    protected $otpRules = [
+        'email'     =>     'required|email',
+    ];
+
+    protected $grievanceRules = [
+        'id'                                  => 'required',
+        'description'                         => 'required|string|max:1000',
+        'attachments'                         => 'sometimes',
+        'custom_fields'                       => 'sometimes|array',
     ];
 
     /*
@@ -182,6 +195,8 @@ class Service extends Base\Service
     {
         (new JitValidator)->setStrictFalse()->rules($this->createRules)->input($input)->validate();
 
+        (new Core)->verifyOtp($input['email'], $input['otp']);
+
         $idType = $this->preProcessInput($input);
 
         $this->populateCustomFields($input, $idType);
@@ -191,6 +206,8 @@ class Service extends Base\Service
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
         unset($input[Constants::FD_INSTANCE]);
+
+        unset($input[Constants::OTP]);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -256,6 +273,160 @@ class Service extends Base\Service
         $ticketReplyResponse[Constants::FD_INSTANCE] = $fdInstance;
 
         return $ticketReplyResponse;
+    }
+
+    /**
+     * @param array $input
+     * @param array $return
+     * @throws BadRequestException
+     */
+    public function postOtp(array $input): array
+    {
+        (new JitValidator)->rules($this->otpRules)->input($input)->validate();
+
+        (new Core)->generateAndSendCustomerOtp($input['email']);
+
+        return ['success' => true];
+    }
+
+    public function fetchCustomerTickets($input)
+    {
+        $freshdeskTicketValidator = new FreshdeskTicketValidator;
+
+        $freshdeskTicketValidator->validateInput('fetch_customer_tickets', $input);
+
+        $otp = $input['otp'];
+
+        $email = $input['email'];
+
+        (new Core)->verifyOtp($email, $otp);
+
+        $count = $input['count'] ?? 5;
+
+        $queryParams = 'email=' . urlencode($email) . '&' . 'order_by=status' . '&' . 'order_type=desc';
+
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $tickets = $this->app[Constants::FRESHDESK_CLIENT]->getCustomerTickets($queryParams, $url);
+
+        if (is_array($tickets) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED);
+        }
+
+        $response = [];
+
+        $counter = 1;
+
+        foreach ($tickets as $ticket)
+        {
+            if (isset($ticket['id']) === false)
+            {
+                continue;
+            }
+
+            $ticketResponse = [
+                'number'            => $ticket['id'],
+                'status'            => $this->getTicketStatus($ticket),
+                'subject'           => $ticket['subject'],
+                'source'            => $ticket['source'],
+                'type'              => $ticket['type'],
+                'payment_id'        => $ticket['custom_fields']['cf_razorpay_payment_id'],
+                'refund_id'         => $ticket['custom_fields']['cf_refund_id'],
+                'order_id'          => $ticket['custom_fields']['cf_order_id'],
+                'transaction_id'    => $ticket['custom_fields']['cf_transaction_id'],
+                'created_at'        => $ticket['created_at'],
+                'updated_at'        => $ticket['updated_at'],
+            ];
+
+            $response[] = $ticketResponse;
+
+            if ($counter >= $count)
+            {
+                break;
+            }
+
+            $counter++;
+        }
+
+        if (count($response) === 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER);
+        }
+
+        return $response;
+    }
+
+    public function raiseGrievance($input)
+    {
+        (new JitValidator)->setStrictFalse()->rules($this->grievanceRules)->input($input)->validate();
+
+        $ticketId = $input['id'];
+
+        $customerDescription = $input['description'];
+
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
+
+        if (isset($ticket['id']) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+        }
+
+        if ($this->getTicketStatus($ticket) === TicketStatus::CLOSED)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED);
+        }
+
+        $data = $input;
+
+        unset($data['id']);
+
+        $data['status'] = 2;
+
+        $data['priority'] = 4;
+
+        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketId, $data, $url);
+
+        $this->validateGrievanceResponse($ticket, $customerDescription);
+
+        return [
+            'number'            => $ticket['id'],
+            'status'            => $this->getTicketStatus($ticket),
+            'subject'           => $ticket['subject'],
+            'source'            => $ticket['source'],
+            'type'              => $ticket['type'],
+            'description'       => $ticket['description'],
+            'payment_id'        => $ticket['custom_fields']['cf_razorpay_payment_id'],
+            'refund_id'         => $ticket['custom_fields']['cf_refund_id'],
+            'order_id'          => $ticket['custom_fields']['cf_order_id'],
+            'transaction_id'    => $ticket['custom_fields']['cf_transaction_id'],
+            'created_at'        => $ticket['created_at'],
+            'updated_at'        => $ticket['updated_at'],
+        ];
+    }
+
+    protected function validateGrievanceResponse($response, $customerDescription)
+    {
+        if ((isset($response['status']) === false) or ($response['status'] !== 2))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+        }
+
+        if ((isset($response['priority']) === false) and ($response['priority'] !== 4))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+        }
+
+        if ((isset($response['description']) === false) or ($response['description'] !== $customerDescription))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+        }
     }
 
     protected function getQueryParamMerchantIdForSearchAPI(): string

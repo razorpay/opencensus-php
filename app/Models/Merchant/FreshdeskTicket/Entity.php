@@ -11,6 +11,12 @@ class Entity extends Base\PublicEntity
     const TICKET_ID         = 'ticket_id';
     const TYPE              = 'type';
     const TICKET_DETAILS    = 'ticket_details';
+    const CUSTOMER_EMAIL    = 'email';
+    const STATUS            = 'status';
+    const SUBJECT           = 'subject';
+    const DESCRIPTION       = 'description';
+    const CREATED_AT        = 'created_at';
+    const UPDATED_AT        = 'updated_at';
 
     protected $entity = 'merchant_freshdesk_tickets';
 

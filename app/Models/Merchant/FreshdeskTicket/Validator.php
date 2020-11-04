@@ -13,6 +13,12 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID     => 'required|string|alpha_num'
     ];
 
+    protected static $fetchCustomerTicketsRules = [
+        Entity::CUSTOMER_EMAIL  => 'required|email',
+        'otp'                   => 'required',
+        'count'                 => 'sometimes'
+    ];
+
     protected function validateType($attribute, $type)
     {
         if (Type::exists($type) === false)

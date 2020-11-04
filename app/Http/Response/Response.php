@@ -425,7 +425,10 @@ class Response
             'payment_links_demo',
             'payment_links_demo_cors',
             'subscription_button_create_subscription',
-            'freshdesk_create_ticket'
+            'freshdesk_create_ticket',
+            'freshdesk_otp_send',
+            'freshdesk_fetch_tickets',
+            'freshdesk_raise_grievance',
         ];
 
         if (in_array($route, $routes, true) === true)

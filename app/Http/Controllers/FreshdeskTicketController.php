@@ -110,6 +110,38 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * Post Freshdesk Otp Send
+     *
+     * @return mixed
+     */
+    public function postOtp()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postOtp($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchCustomerTickets()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->fetchCustomerTickets($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function raiseGrievance()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->raiseGrievance($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postCustomerDispute()
     {
         $input = Request::all();

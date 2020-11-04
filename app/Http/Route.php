@@ -1975,6 +1975,10 @@ class Route
         'fd_fetch_ticket'                         => ['get',       'fd/tickets/{ticket_id}',                                     'FreshdeskTicketController@getTicketWithStats'                ],
         'fd_post_ticket_reply'                    => ['post',      'fd/tickets/{ticket_id}/reply',                               'FreshdeskTicketController@postTicketReply'                   ],
         'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
+        'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
+
+        'freshdesk_fetch_tickets'                 => ['post',      'freshdesk/tickets/customer',                                 'FreshdeskTicketController@fetchCustomerTickets'              ],
+        'freshdesk_raise_grievance'               => ['post',      'freshdesk/grievance',                                        'FreshdeskTicketController@raiseGrievance'                    ],
 
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
@@ -4978,7 +4982,11 @@ class Route
         // Razorflow
         'razorflow_post_slash_command',
 
+        // Freshdesk
         'freshdesk_create_ticket',
+        'freshdesk_otp_send',
+        'freshdesk_fetch_tickets',
+        'freshdesk_raise_grievance',
     ];
 
     /**

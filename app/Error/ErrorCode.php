@@ -1308,6 +1308,7 @@ class ErrorCode
 
     const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                     = 'BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED';
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';
+    const BAD_REQUEST_OTP_EXPIRED                                                   = 'BAD_REQUEST_OTP_EXPIRED';
     const BAD_REQUEST_INCORRECT_OTP                                                 = 'BAD_REQUEST_INCORRECT_OTP';
     const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
     const BAD_REQUEST_SMS_OTP_FAILED                                                = 'BAD_REQUEST_SMS_OTP_FAILED';
@@ -1836,9 +1837,14 @@ class ErrorCode
     const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS';
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND';
 
-    const FRESHDESK_TICKET_ALREADY_EXISTS                                             = 'FRESHDESK_TICKET_ALREADY_EXISTS';
-    const FRESHDESK_TICKET_INVALID_ID                                                 = 'FRESHDESK_TICKET_INVALID_ID';
-    //IRCTC Error codes
+    const FRESHDESK_TICKET_ALREADY_EXISTS                                           = 'FRESHDESK_TICKET_ALREADY_EXISTS';
+    const FRESHDESK_TICKET_INVALID_ID                                               = 'SUPPORT_TICKET_INVALID_ID';
+    const BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND                                    = 'BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND';
+    const BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED                                  = 'BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED';
+    const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                 = 'BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER';
+    const BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED                                = 'BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED';
+    const BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED                               = 'BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED';
+
     //IRCTC Error codes
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 

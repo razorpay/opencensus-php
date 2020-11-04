@@ -1203,7 +1203,12 @@ class PublicErrorDescription
     const BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                      = 'Your Negative Balance Limit has reached its maximum. Please Add funds to your account.';
     const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'Reserve Balance creation is already in progress';
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'Reserve Balance creation ticket not found';
-    const FRESHDESK_TICKET_ALREADY_EXISTS                                             = 'Freshdesk ticket for Reserve Balance creation already exists';
+    const FRESHDESK_TICKET_ALREADY_EXISTS                                            = 'Freshdesk ticket for Reserve Balance creation already exists';
+    const BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND                                     = 'Freshdesk ticket not found';
+    const BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED                                   = 'Failed to fetch customer tickets';
+    const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                  = 'No ticket found for the given customer';
+    const BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED                                 = 'Failed to update freshdesk ticket';
+    const BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED                                = 'Bad request, the ticket is already closed';
     const BAD_REQUEST_BALANCE_CONFIG_ALREADY_EXISTS_FOR_BALANCE                      = 'Balance Config already exists for this Balance';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';

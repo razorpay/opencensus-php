@@ -31,6 +31,12 @@ class Constants
     const ORDER         = 'order';
     const TRANSACTION   = 'transaction';
 
+    const OTP                         = 'otp';
+    const OTP_SOURCE                  = 'source';
+    const OTP_CONTEXT                 = 'context';
+    const OTP_RECEIVER                = 'receiver';
+    const OTP_CUSTOMER_SUPPORT_SOURCE = 'customer_support';
+
     // Results
     const TOTAL   = 'total';
     const RESULTS = 'results';
