@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         'count'               => 'sometimes|integer|min:1|max:100',
         'expand'              => 'sometimes|nullable|array',
         'skip'                => 'sometimes|integer',
+        'status'              => 'sometimes|string|in:created,initiated,processed,partially_processed,reversed',
     ];
 
     public static $settlementOndemandFeesInputRules = [

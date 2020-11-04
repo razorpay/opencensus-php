@@ -193,6 +193,34 @@ return [
         ]
     ],
 
+    'testFetchApiWithStatus' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/?status=processed',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'                => 'settlement.ondemand',
+                        'amount_requested'      => 20030000,
+                        'amount_settled'        => 19557292,
+                        'fees'                  => 472708,
+                        'tax'                   => 72108,
+                        'amount_reversed'       => 0,
+                        'amount_pending'        => 0,
+                        'settle_full_balance'   => false,
+                        'currency'              => 'INR',
+                        'status'                => 'processed',
+                        'description'           => 'Demo Narration - optional',
+                        'notes'                 => [],
+                    ]
+                ]
+            ]
+        ]
+    ],
 
     'testNoMinLimitFornEsAutomaticMerchants' => [
         'request'  => [

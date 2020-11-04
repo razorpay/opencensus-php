@@ -268,6 +268,37 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchApiWithStatus()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create(['entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000000000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        $this->makeRequestAndGetContent($this->testData['testNonBankingHourOndemandCreationWithMockWebhook']['request']);
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', true);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', true);
+        $this->makeRequestAndGetContent($this->testData['testBankingHourOndemandCreationWithMockWebhook']['request']);
+
+        $key = $this->fixtures->create('key', ['merchant_id' => $this->merchantDetail['merchant_id']]);
+
+        $key = $key->getKey();
+
+        $this->ba->privateAuth('rzp_test_' . $key);
+
+        $this->startTest();
+    }
+
     //Test OndemandCreation on banking hours with mock webhook update status
     public function testBankingHourOndemandCreationWithMockWebhook()
     {
