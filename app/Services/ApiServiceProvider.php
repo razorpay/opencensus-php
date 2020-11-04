@@ -415,6 +415,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerPGRouter();
 
         $this->registerBvsHttpClients();
+
+        $this->registerFTSChannelNotification();
     }
 
     /**
@@ -1153,6 +1155,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $client          = new MultiCurl($responseFactory, $options);
 
             return $client;
+        });
+    }
+
+    protected function registerFTSChannelNotification()
+    {
+        $this->app->bind('fts_channel_notification', function($app)
+        {
+            return new FTS\ChannelNotification($app);
         });
     }
 }

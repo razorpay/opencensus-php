@@ -411,6 +411,7 @@ class Route
         'fts_bulk_attempts_initiate'               => ['post',     'fts/initiate/attempts',                          'FTSController@initiateBulkFtsAttempts'                             ],
         'fts_bulk_beneficiary_initiate'            => ['post',     'fts/initiate/beneficiary',                       'FTSController@initiateBulkBeneficiary'                             ],
         'fts_bulk_transfer_publish'                => ['post',     'fts/publish/transfer',                           'FTSController@publishBulkTransfers'                                ],
+        'fts_channel_notification'                 => ['post',     'fts/channel/notify',                             'FTSController@channelNotify'                                       ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -2717,6 +2718,7 @@ class Route
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
         'fd_customer_dispute',
+        'fts_channel_notification',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5448,6 +5450,7 @@ class Route
         'fts'  => [
             'update_fts_nodal_beneficiary',
             'update_fts_fund_transfer',
+            'fts_channel_notification',
         ],
 
         'reminders' => [

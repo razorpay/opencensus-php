@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\FundTransfer\FTS;
 
+use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
@@ -115,5 +116,24 @@ class FtsTest extends TestCase
         $this->assertEquals(Status::INITIATED, $attempt['status']);
 
         $this->assertNotEquals(0, $attempt['fts_transfer_id']);
+    }
+
+    public function testChannelNoftify()
+    {
+        Mail::fake();
+
+        $this->ba->ftsAuth(Mode::LIVE);
+
+        $request = [
+            'url'     => '/fts/channel/notify',
+            'method'  => 'post',
+            'content' => [
+                'mode' => 'IMPS',
+                'channel' => 'ICICI',
+                'type' => 'partner',
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

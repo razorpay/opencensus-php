@@ -125,4 +125,11 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function channelNotify()
+    {
+        $response = $this->app['fts_channel_notification']->channelNotify($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }
