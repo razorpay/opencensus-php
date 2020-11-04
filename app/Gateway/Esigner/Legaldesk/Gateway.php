@@ -289,6 +289,13 @@ class Gateway extends Base\Gateway
 
         $destinationBankIfsc = $input['token']->getIfsc();
 
+        $bank = $input['payment']['bank'];
+
+        if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
+        {
+            $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
+        }
+
         $mcc = $this->input['terminal']['category'];
 
         $content = [
@@ -305,7 +312,7 @@ class Gateway extends Base\Gateway
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => 'C001', // as of now Legaldesk is only accepting this.
-            RequestFields::INSTRUCTED_AGENT_CODE      => $input['payment']['bank'],
+            RequestFields::INSTRUCTED_AGENT_CODE      => $bank,
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
             RequestFields::AUTHENTICATION_MODE        => Constants::DEFAULT_AUTHENTICATION_MODE,
             RequestFields::IS_UNTIL_CANCELLED         => 'true',

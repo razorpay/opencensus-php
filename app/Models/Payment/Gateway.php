@@ -413,11 +413,13 @@ class Gateway
         IFSC::FDRL,
         IFSC::HDFC,
         IFSC::HSBC,
-        //IFSC::IBKL, // disabling IDBI for now as there is some issue from gateways end
+        IFSC::IBKL,
         IFSC::ICIC,
+        IFSC::IDIB,
         IFSC::IDFB,
         IFSC::INDB,
         IFSC::IOBA,
+        IFSC::JSFB,
         IFSC::KARB,
         IFSC::KKBK,
         IFSC::KVBL,
@@ -457,6 +459,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::IDFB,
         IFSC::INDB,
+        IFSC::JSFB,
         IFSC::KARB,
         IFSC::KKBK,
         IFSC::MAHB,
@@ -703,12 +706,10 @@ class Gateway
     ];
 
     const AADHAAR_EMANDATE_REGISTRATION_DISABLED_BANKS = [
-        IFSC::ABHY,
         IFSC::ACUX,
         IFSC::ADCC,
         IFSC::AGCX,
         IFSC::AJSX,
-        IFSC::AMAX,
         IFSC::AMRX,
         IFSC::ANDB,
         IFSC::APBL,
@@ -755,7 +756,6 @@ class Gateway
         IFSC::GSCB,
         IFSC::GSSX,
         IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IUCB,
         IFSC::JASB,
         IFSC::JHAX,
@@ -816,7 +816,6 @@ class Gateway
         IFSC::PUGX,
         IFSC::RAMX,
         IFSC::RCUX,
-        IFSC::REBX,
         IFSC::RGCX,
         IFSC::RNSX,
         IFSC::SAGX,
@@ -871,7 +870,6 @@ class Gateway
         IFSC::ZSGX,
         IFSC::ZSHX,
         Netbanking::BARB_R,
-        Netbanking::PUNB_R,
     ];
 
     // Esigner Digio is added here just for test cases
@@ -1746,6 +1744,7 @@ class Gateway
      */
     public static $zeroRupeeEmandateBanks = [
         IFSC::ABHY,
+        IFSC::AMAX,
         IFSC::ANDB,
         IFSC::UTIB,
         IFSC::BKID,
@@ -1760,11 +1759,13 @@ class Gateway
         IFSC::ICIC,
         IFSC::IBKL,
         IFSC::IDFB,
+        IFSC::IDIB,
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::ORBC,
         Netbanking::PUNB_R,
         IFSC::RATN,
+        IFSC::REBX,
         IFSC::SRCB,
         IFSC::SCBL,
         IFSC::SVCB,
@@ -1797,6 +1798,7 @@ class Gateway
         IFSC::CIUB,
         IFSC::DEUT,
         IFSC::IOBA,
+        IFSC::JSFB,
         IFSC::PYTM,
         IFSC::USFB,
         IFSC::DLXB,
