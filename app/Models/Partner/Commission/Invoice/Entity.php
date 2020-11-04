@@ -7,10 +7,12 @@ use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
     use HasBalance;
+    use HardDeletes;
 
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
@@ -30,6 +32,9 @@ class Entity extends Base\PublicEntity
 
     const LINE_ITEMS               = 'line_items';
     const PDF                      = 'pdf';
+
+    const REGENERATE_IF_EXISTS = 'regenerate_if_exists';
+    const FORCE_REGENERATE     = 'force_regenerate';
 
     protected $entity = 'commission_invoice';
 

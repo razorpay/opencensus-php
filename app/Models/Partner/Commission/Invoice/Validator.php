@@ -10,10 +10,12 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 2;
 
     protected static $invoiceGenerateRequestRules = [
-        Entity::MONTH               => 'required|integer|between:1,12',
-        Entity::YEAR                => 'required|digits:4',
-        'merchant_ids'              => 'sometimes|array',
-        'merchant_ids.*'            => 'sometimes|string|size:14',
+        Entity::MONTH                => 'required|integer|between:1,12',
+        Entity::YEAR                 => 'required|digits:4',
+        Entity::REGENERATE_IF_EXISTS => 'sometimes|boolean',
+        Entity::FORCE_REGENERATE     => 'sometimes|boolean',
+        'merchant_ids'               => 'sometimes|array',
+        'merchant_ids.*'             => 'sometimes|string|size:14',
     ];
 
     protected static $changeStatusRules = [

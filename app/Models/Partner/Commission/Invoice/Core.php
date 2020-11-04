@@ -41,8 +41,11 @@ class Core extends Base\Core
 
         $previousMonth = Carbon::now(Timezone::IST)->subMonth();
 
-        $input['year']  = $input['year'] ?? $previousMonth->year;
-        $input['month'] = $input['month'] ?? $previousMonth->month;
+        $input[Entity::YEAR]  = $input[Entity::YEAR] ?? $previousMonth->year;
+        $input[Entity::MONTH] = $input[Entity::MONTH] ?? $previousMonth->month;
+
+        $input[Entity::REGENERATE_IF_EXISTS] = $input[Entity::REGENERATE_IF_EXISTS] ?? false;
+        $input[Entity::FORCE_REGENERATE]     = $input[Entity::FORCE_REGENERATE] ?? false;
 
         (new Validator)->validateInput('invoice_generate_request', $input);
 
@@ -56,8 +59,10 @@ class Core extends Base\Core
         $afterId = null;
 
         $data = [
-            'month' => $input['month'],
-            'year'  => $input['year'],
+            Entity::MONTH                => $input[Entity::MONTH],
+            Entity::YEAR                 => $input[Entity::YEAR],
+            Entity::REGENERATE_IF_EXISTS => $input[Entity::REGENERATE_IF_EXISTS],
+            Entity::FORCE_REGENERATE     => $input[Entity::FORCE_REGENERATE],
         ];
 
         while (true)
@@ -296,8 +301,11 @@ class Core extends Base\Core
 
         $previousMonth = Carbon::now(Timezone::IST)->subMonth();
 
-        $year  = $input['year'] ?? $previousMonth->year;
-        $month = $input['month'] ?? $previousMonth->month;
+        $year  = $input[Entity::YEAR] ?? $previousMonth->year;
+        $month = $input[Entity::MONTH] ?? $previousMonth->month;
+
+        $regenerateIfExists = (bool) ($input[Entity::REGENERATE_IF_EXISTS] ?? false);
+        $forceRegenerate    = (bool) ($input[Entity::FORCE_REGENERATE] ?? false);
 
         $balance = $partner->commissionBalance;
 
@@ -314,7 +322,7 @@ class Core extends Base\Core
 
         $invoices = $this->repo->commission_invoice->fetchInvoices($partner->getId(), $month, $year);
 
-        if ($invoices->isEmpty() === false)
+        if (($invoices->isEmpty() === false) and ($regenerateIfExists === false))
         {
             $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_ALREADY_EXISTS,
                 [
@@ -323,6 +331,29 @@ class Core extends Base\Core
                 ]);
 
             return;
+        }
+
+        if ($invoices->isEmpty() === false)
+        {
+            // regenerate only if the existing invoice is in issued state or forceRegenerate is true
+            if (($regenerateIfExists === true) and (($forceRegenerate === true) or ($invoices->first()->isIssued() === true)))
+            {
+                foreach ($invoices as $invoice)
+                {
+                    // delete the existing invoices
+                    $this->repo->deleteOrFail($invoice);
+                }
+            }
+            else
+            {
+                $this->trace->info(TraceCode::COMMISSION_INVOICE_REGENERATE_SKIPPED,
+                   [
+                       'partner'     => $partner->getId(),
+                       'invoice_ids' => $invoices->getIds(),
+                   ]);
+
+                return;
+            }
         }
 
         $invoiceCreateInput = [
@@ -370,9 +401,11 @@ class Core extends Base\Core
     protected function dispatchCommissionInvoiceGenerateRequest(array $input): void
     {
         $data = [
-            'month'        => $input['month'],
-            'year'         => $input['year'],
-            'merchant_ids' => $input['merchant_ids'],
+            Entity::MONTH                => $input[Entity::MONTH],
+            Entity::YEAR                 => $input[Entity::YEAR],
+            'merchant_ids'               => $input['merchant_ids'],
+            Entity::REGENERATE_IF_EXISTS => $input[Entity::REGENERATE_IF_EXISTS],
+            Entity::FORCE_REGENERATE     => $input[Entity::FORCE_REGENERATE],
         ];
 
         CommissionInvoiceGenerate::dispatch($this->mode, $data);
