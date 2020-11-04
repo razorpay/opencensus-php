@@ -1290,6 +1290,8 @@ class Core extends Base\Core
 
         $preferences['merchant_brand_color'] = $merchantBrandColor;
 
+        $preferences += $this->serializeOrgPropertiesForPreferences($merchant);
+
         return [
             'is_test_mode'   => $this->isTestMode(),
             'preferences'    => $preferences,
@@ -1506,5 +1508,30 @@ class Core extends Base\Core
         $modifiedInput[Order\Entity::NOTES] = $input[Order\Entity::NOTES] ?? [];
 
         return $modifiedInput;
+    }
+
+    protected function serializeOrgPropertiesForPreferences(Merchant\Entity $merchant)
+    {
+        $org = $merchant->org;
+
+        $branding = [
+            'show_rzp_logo' => true,
+            'branding_logo' => '',
+        ];
+
+        switch ($org->getCustomCode())
+        {
+            case 'axis':
+
+                $branding['show_rzp_logo'] = false;
+
+                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+
+                break;
+        }
+
+        return [
+            'branding'  => $branding
+        ];
     }
 }
