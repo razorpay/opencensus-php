@@ -166,6 +166,9 @@ trait PartnerTrait
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
 
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
         $this->fixtures->merchant->edit(
             Constants::DEFAULT_PLATFORM_MERCHANT_ID,
             [

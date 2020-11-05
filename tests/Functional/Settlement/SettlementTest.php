@@ -413,6 +413,8 @@ class SettlementTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
+        $this->fixtures->merchant->activate('10000000000002');
+
         $dt = Carbon::create(2018, 8, 14, 6, 1, 0, Timezone::IST);
 
         Carbon::setTestNow($dt);
@@ -734,6 +736,8 @@ class SettlementTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::DAILY_SETTLEMENT]);
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $this->fixtures->merchant->activate();
 
         $today = Carbon::create(2018, 1, 26, 0, 0, 0, Timezone::IST);
 

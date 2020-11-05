@@ -47,8 +47,10 @@ class Service extends Base\Service
         $balance = $this->merchant->getBalanceByType($balanceType);
 
         $response = [
-            'balance'              => $balance->getBalance(),
+            'balance'              => (isset($balance) === true) ? $balance->getBalance() : 0,
+            'balance_currency'     => (isset($balance) === true) ? $balance->getCurrency() : 'INR',
             'settlement_amount'    => 0,
+            'settlement_currency'  => 'INR',
             'next_settlement_time' => null,
         ];
 

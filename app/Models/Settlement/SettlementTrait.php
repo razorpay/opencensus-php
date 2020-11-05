@@ -58,7 +58,7 @@ trait SettlementTrait
     public function isMerchantSettlementAllowed(Merchant\Entity $merchant, $forceFlag = false): array
     {
         // process settlement only for activated merchants
-        if ($merchant->isSuspended() === true)
+        if ($merchant->isSuspended() === true || $merchant->isActivated() === false)
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
