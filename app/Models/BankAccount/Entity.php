@@ -280,6 +280,11 @@ class Entity extends Base\PublicEntity
 
     protected function getNameAttribute()
     {
+        if (isset($this->attributes[self::BENEFICIARY_NAME]) === false)
+        {
+            return null;
+        }
+
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
