@@ -30,7 +30,9 @@ const renderBatchDetails = props => {
   const { batch, stats, paymentlinks } = props;
   const user = store.getState().session.user;
 
-  const statsTable = user.isPaymentlinksV2Enabled
+  const isBatchTypePaymentlinksV2 = (batch.type === 'payment_link_v2');
+
+  const statsTable = isBatchTypePaymentlinksV2
     ? getStatsTableForPLV2(stats, batch ? batch.processed_count : null)
     : getStatsTable(stats);
 
@@ -64,7 +66,7 @@ const renderBatchDetails = props => {
         totalItems={stats.issued_count}
         paymentlinks={paymentlinks}
         batchId={batch.id}
-        isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
+        isPaymentlinksV2Enabled={isBatchTypePaymentlinksV2}
       />
       <hr />
       {stats.batch_total > stats.issued_count &&
@@ -82,7 +84,6 @@ const renderBatchDetails = props => {
 @connect(
   state => ({
     isBatchCancelEnabled: state.session.user.isBatchCancelEnabled,
-    isPaymentlinksV2Enabled: state.session.user.isPaymentlinksV2Enabled,
   }),
   {
     cancelPaymentLinkBatch,

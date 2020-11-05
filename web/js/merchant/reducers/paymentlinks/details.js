@@ -51,6 +51,7 @@ export const fetchPaymentLinkDetails = (paymentLinkId) => {
   if (user.isPaymentlinksV2Enabled) {
     const reqPayload = {
       url: `payment_links/${paymentLinkId}`,
+      params: { expand: ['payments', 'user', 'reminder_status'] },
     };
 
     payload = merchantFetch(reqPayload).then((resp) => {

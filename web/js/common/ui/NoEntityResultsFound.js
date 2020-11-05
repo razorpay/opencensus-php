@@ -1,6 +1,4 @@
 export default ({ error }) => {
-  console.log(error);
-
   return (
     <div className="rzp-error-boundary">
       <div className="js-error-container">

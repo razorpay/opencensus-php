@@ -664,7 +664,7 @@ export default class User {
   }
 
   get isPLBatchUploadEnabled() {
-    return this.getExpStatus('enable_pl_batch_upload');
+    return this.isFeatureEnabled('pl_batch_upload_feature');
   }
 
   get isAppSwitcherEnabled() {

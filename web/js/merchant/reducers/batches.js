@@ -274,7 +274,13 @@ export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const fetchPaymentLinkBatches = (params) => {
   const user = store.getState().session.user;
 
-  const type = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
+  let type;
+
+  if (user.isPaymentlinksV2Enabled) {
+    type = ['payment_link', 'payment_link_v2'];
+  } else {
+    type = 'payment_link';
+  }
 
   //for new batches
   params.with_config = '1';
@@ -301,21 +307,36 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
   const user = store.getState().session.user;
   const id = params.id;
 
-  const promises = [fetchBatchAjax(id)];
+  const promise = new Promise((resolve, reject) => {
+    return fetchBatchAjax(id).then(batchData => {
+      if (batchData) {
+        const isBatchTypePaymentlinksV2 = (batchData.batch.type === 'payment_link_v2' )
 
-  if (user.isPaymentlinksV2Enabled) {
-    promises.push(fetchBatchStatsForPLV2(id));
-    promises.push(fetchBatchPaymentLinks(id));
-  } else {
-    promises.push(fetchBatchStats(id));
-    promises.push(fetchBatchInvoices(id, user.isPaymentlinksV2CompatEnabled));
-  }
+        let promises = [];
+
+        if (isBatchTypePaymentlinksV2) {
+          promises.push(fetchBatchStatsForPLV2(id));
+          promises.push(fetchBatchPaymentLinks(id));
+        } else {
+          promises.push(fetchBatchStats(id));
+          promises.push(fetchBatchInvoices(id, user.isPaymentlinksV2CompatEnabled));
+        }
+
+        return Promise.all(promises)
+          .then(data => {
+            const [ stats, paymentLinksList ] = data;
+
+            resolve([batchData, stats, paymentLinksList]);
+
+          });
+      }
+    });
+  });
 
   params.with_config = '1';
   return {
     type: PAYMENT_LINK_DETAILS,
-    payload: Promise.all(promises),
-    isPaymentlinksV2Enabled: user.isPaymentlinksV2Enabled,
+    payload: promise,
   };
 };
 
@@ -367,13 +388,19 @@ let paymentBatchIdsInitialState = {
   issuableIdList: [],
 };
 
-const onPaymentLinkDetails = (state, { payload, isPaymentlinksV2Enabled }) =>
+const onPaymentLinkDetails = (state, { payload }) =>
   merge(state, {
     loading: false,
     entity: {
       batch: payload[0].batch,
       stats: payload[1].data.stats,
-      paymentlinks: isPaymentlinksV2Enabled ? payload[2].data.payment_links : payload[2].data.items,
+      paymentlinks: (function() {
+        const batchData = payload[0].batch;
+
+        const isBatchTypePaymentlinksV2 = (batchData.type === 'payment_link_v2');
+
+        return isBatchTypePaymentlinksV2 ? payload[2].data.payment_links : payload[2].data.items
+      })(),
       invoices: payload[2].data.items,
     },
   });
