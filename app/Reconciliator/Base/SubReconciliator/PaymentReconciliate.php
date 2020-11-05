@@ -596,7 +596,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // vulnerability mentioned in SBB-330.
         if ((($this->allowForceAuthorization === true) or
              ($this->isforceAuthFlagSetInRow($row) === true)) and
-            ($this->source !== RequestProcessor\Base::MAILGUN))
+            ($this->source !== RequestProcessor\Base::MAILGUN) and
+            (in_array($this->payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true))
         {
             return $this->handleForceAuthorization($row);
         }

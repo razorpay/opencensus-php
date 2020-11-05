@@ -287,7 +287,7 @@ class SubReconciliate extends Base\Core
 
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
 
-                    if (empty($extraDetails[Batch\Processor\Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+                    if (empty($this->extraDetails[Batch\Processor\Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
                     {
                         throw $ex;
                     }

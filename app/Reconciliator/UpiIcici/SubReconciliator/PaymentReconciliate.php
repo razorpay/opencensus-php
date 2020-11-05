@@ -56,7 +56,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
+        if ((isset($row[self::SUB_MERCHANT_NAME]) === true) and (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false))
         {
             return $this->getPaymentIdFromBharatQrEntity($row);
         }
