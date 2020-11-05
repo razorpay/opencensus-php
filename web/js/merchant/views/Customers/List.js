@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
+import Loader from 'common/ui/Loader';
 import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CustomersList from 'merchant/views/Customers/components/CustomersList';
-import CustomerCreation from 'merchant/views/Customers/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -13,7 +13,13 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { luminateRow } from 'merchant/reducers/app';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 
-@connect(state => ({ ...state.customers, mode: state.session.mode }), {
+import lazy from 'merchant/routes/LazyLoader';
+
+const CustomerCreation = lazy(() =>
+  import(/* webpackChunkName: "CustomersNew" */ 'merchant/views/Customers/New'),
+);
+
+@connect((state) => ({ ...state.customers, mode: state.session.mode }), {
   ...CustomerActions,
   ...ModalActions,
   ...NotificationActions,
@@ -28,22 +34,24 @@ export default class CustomersListContainer extends ListContainer {
     this.props.openModal({
       size: 'small',
       component: (
-        <CustomerCreation
-          customer={customer}
-          onSave={this.highlightRowAndClose}
-          closeModal={this.props.closeModal}
-          askAddress={false}
-        />
+        <Suspense fallback={<Loader />}>
+          <CustomerCreation
+            customer={customer}
+            onSave={this.highlightRowAndClose}
+            closeModal={this.props.closeModal}
+            askAddress={false}
+          />
+        </Suspense>
       ),
     });
   };
 
-  highlightRowAndClose = customer => {
+  highlightRowAndClose = (customer) => {
     this.props.luminateRow(customer.id);
     this.props.closeModal();
   };
 
-  deleteCustomer = customer => {
+  deleteCustomer = (customer) => {
     this.context.confirm({
       message: 'Are you sure to delete the customer?',
       affirmativeLabel: 'Delete',
@@ -59,7 +67,7 @@ export default class CustomersListContainer extends ListContainer {
               },
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.setState({
               status: {
                 type: 'error',
@@ -80,16 +88,12 @@ export default class CustomersListContainer extends ListContainer {
 
         <HeaderAction>
           <ShowWhen
-            additionalCondition={user =>
-              (mode !== 'live' || !user.isRejected) &&
-              user.isAllowedEdit('customers')
+            additionalCondition={(user) =>
+              (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('customers')
             }
           >
             <div class="btn-toolbar">
-              <button
-                class="pull-right btn btn-primary"
-                onClick={() => this.showCustomerModal()}
-              >
+              <button class="pull-right btn btn-primary" onClick={() => this.showCustomerModal()}>
                 <i class="i i-plus" />
                 <span>New Customer</span>
               </button>

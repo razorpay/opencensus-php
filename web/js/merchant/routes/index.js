@@ -5,50 +5,182 @@ import {
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
 
-import SettlementDetails from 'merchant/views/Settlements/Details';
-import PaymentLinkDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details';
-import PaymentLinkCreate from 'merchant/views/PaymentLinks/PaymentLinks/New.js';
-import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
-import PaymentButtonCreate from 'merchant/views/PaymentButton/PaymentButton/Create';
-import SubscriptionButtonCreate from 'merchant/views/PaymentButton/SubscriptionButton/Create';
-import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
-import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
-import OrderDetails from 'merchant/views/Transactions/Orders/Details';
+import lazy from './LazyLoader';
 
-import VirtualAccountDetails from 'merchant/views/SmartCollect/VirtualAccounts/Details';
-import VirtualAccountCreate from 'merchant/views/SmartCollect/VirtualAccounts/Create/index';
+const SettlementDetails = lazy(() =>
+  import(/* webpackChunkName: "SettlementsDetails" */ 'merchant/views/Settlements/Details'),
+);
 
-import OffersNew from 'merchant/views/Offers/New';
-import OfferEntity from 'merchant/views/Offers/Entity';
-import PlanDetails from 'merchant/views/Subscriptions/Plans/Details';
-import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/Details';
-import TransferDetails from 'merchant/views/Marketplace/Transfers/Details';
-import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
-import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
-import SubmerchantDetails from 'merchant/views/PartnerDashboard/SubMerchant/Details';
-import EarningTransactionalDetails from 'merchant/views/PartnerDashboard/Earnings/Transactional/Details';
-import EarningDailyDetails from 'merchant/views/PartnerDashboard/Earnings/Daily/Details';
-import CommissionInvoiceDetails from 'merchant/views/PartnerDashboard/Earnings/Invoices/Details';
-import SubventionTransactionalDetails from 'merchant/views/PartnerDashboard/Subvention/Transactional/Details';
-import SubventionDailyDetails from 'merchant/views/PartnerDashboard/Subvention/Daily/Details';
-import RegistrationLinkDetails from 'merchant/views/Subscriptions/RegistrationLinks/Details';
-import UploadNACHForm from 'merchant/views/Subscriptions/components/UploadNACHForm';
-import AccountDetailsNew from 'merchant/views/Marketplace/Accounts/DetailsNew';
+const PaymentLinkDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentLinksDetails" */ 'merchant/views/PaymentLinks/PaymentLinks/Details'
+  ),
+);
 
-import TokenDetails from 'merchant/views/Subscriptions/Tokens/Details';
+const PaymentLinkCreate = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentLinkCreate" */ 'merchant/views/PaymentLinks/PaymentLinks/New.js'
+  ),
+);
 
-import PaymentLinkBatchUploadDetails from 'merchant/views/PaymentLinks/BatchUpload/Details';
-import SubscriptionBatchDetails from 'merchant/views/Subscriptions/Batch/Details';
+const PaymentPagesWysiwyg = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesWysiwyg" */ 'merchant/views/PaymentPages/PaymentPages/Wysiwyg'
+  ),
+);
+const PaymentButtonCreate = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentButtonCreate" */ 'merchant/views/PaymentButton/PaymentButton/Create'
+  ),
+);
+const SubscriptionButtonCreate = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionButtonCreate" */ 'merchant/views/PaymentButton/SubscriptionButton/Create'
+  ),
+);
+const PaymentsDetails = lazy(() =>
+  import(/* webpackChunkName: "PaymentsDetails" */ 'merchant/views/Transactions/Payments/Details'),
+);
+const RefundDetails = lazy(() =>
+  import(/* webpackChunkName: "RefundsDetails" */ 'merchant/views/Transactions/Refunds/Details'),
+);
+const OrderDetails = lazy(() =>
+  import(/* webpackChunkName: "OrdersDetails" */ 'merchant/views/Transactions/Orders/Details'),
+);
 
-import PlanNew from 'merchant/views/Subscriptions/Plans/New';
-import ActivationContainer from 'merchant/containers/Activation';
-import NewRegistrationLink from 'merchant/views/Subscriptions/RegistrationLinks/New';
-import NewSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/New';
-import UpdateSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/Update';
-import CreditSubDetails from 'merchant/views/Account/Credits/components/CreditSubDetails';
-import WebhookEntity from 'merchant/views/Settings/Webhooks/Entity';
-import WithdrawalDetails from '../views/Capital/CashAdvance/WithdrawalDetails';
-import RuleDetail from 'merchant/views/Navigator/components/RuleDetail';
+const VirtualAccountDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "VirtualAccountsDetails" */ 'merchant/views/SmartCollect/VirtualAccounts/Details'
+  ),
+);
+const VirtualAccountCreate = lazy(() =>
+  import(
+    /* webpackChunkName: "VirtualAccountsCreate" */ 'merchant/views/SmartCollect/VirtualAccounts/Create/index'
+  ),
+);
+const OffersNew = lazy(() =>
+  import(/* webpackChunkName: "OffersNew" */ 'merchant/views/Offers/New'),
+);
+const OfferEntity = lazy(() =>
+  import(/* webpackChunkName: "OffersEntity)," */ 'merchant/views/Offers/Entity'),
+);
+const PlanDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionsPlansDetails" */ 'merchant/views/Subscriptions/Plans/Details'
+  ),
+);
+const SubscriptionDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionsDetails" */ 'merchant/views/Subscriptions/Subscriptions/Details'
+  ),
+);
+const TransferDetails = lazy(() =>
+  import(/* webpackChunkName: "TransfersDetails" */ 'merchant/views/Marketplace/Transfers/Details'),
+);
+const ReversalDetails = lazy(() =>
+  import(/* webpackChunkName: "ReversalsDetails" */ 'merchant/views/Marketplace/Reversals/Details'),
+);
+const DisputeDetails = lazy(() =>
+  import(/* webpackChunkName: "DisputesDetails" */ 'merchant/views/Transactions/Disputes/Details'),
+);
+const SubmerchantDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "SubMerchantDetails" */ 'merchant/views/PartnerDashboard/SubMerchant/Details'
+  ),
+);
+const EarningTransactionalDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "EarningsTransactional" */ 'merchant/views/PartnerDashboard/Earnings/Transactional/Details'
+  ),
+);
+const EarningDailyDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "EarningsDaily" */ 'merchant/views/PartnerDashboard/Earnings/Daily/Details'
+  ),
+);
+const CommissionInvoiceDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "EarningsInvoices" */ 'merchant/views/PartnerDashboard/Earnings/Invoices/Details'
+  ),
+);
+const SubventionTransactionalDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "SubventionTransactional" */ 'merchant/views/PartnerDashboard/Subvention/Transactional/Details'
+  ),
+);
+const SubventionDailyDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "SubventionDaily" */ 'merchant/views/PartnerDashboard/Subvention/Daily/Details'
+  ),
+);
+const RegistrationLinkDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "RegistrationLinksDetails" */ 'merchant/views/Subscriptions/RegistrationLinks/Details'
+  ),
+);
+const UploadNACHForm = lazy(() =>
+  import(
+    /* webpackChunkName: "componentsUploadNACHForm" */ 'merchant/views/Subscriptions/components/UploadNACHForm'
+  ),
+);
+const AccountDetailsNew = lazy(() =>
+  import(
+    /* webpackChunkName: "AccountsDetailsNew" */ 'merchant/views/Marketplace/Accounts/DetailsNew'
+  ),
+);
+
+const TokenDetails = lazy(() =>
+  import(/* webpackChunkName: "TokensDetails" */ 'merchant/views/Subscriptions/Tokens/Details'),
+);
+
+const PaymentLinkBatchUploadDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "BatchUploadDetails" */ 'merchant/views/PaymentLinks/BatchUpload/Details'
+  ),
+);
+const SubscriptionBatchDetails = lazy(() =>
+  import(/* webpackChunkName: "BatchDetails" */ 'merchant/views/Subscriptions/Batch/Details'),
+);
+
+const PlanNew = lazy(() =>
+  import(/* webpackChunkName: "PlansNew" */ 'merchant/views/Subscriptions/Plans/New'),
+);
+const ActivationContainer = lazy(() =>
+  import(/* webpackChunkName: "MerchantActivation" */ 'merchant/containers/Activation'),
+);
+const NewRegistrationLink = lazy(() =>
+  import(
+    /* webpackChunkName: "RegistrationLinksNew" */ 'merchant/views/Subscriptions/RegistrationLinks/New'
+  ),
+);
+const NewSubscriptionLink = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionLinksNew" */ 'merchant/views/Subscriptions/SubscriptionLinks/New'
+  ),
+);
+const UpdateSubscriptionLink = lazy(() =>
+  import(
+    /* webpackChunkName: "SubscriptionLinksUpdate" */ 'merchant/views/Subscriptions/SubscriptionLinks/Update'
+  ),
+);
+const CreditSubDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "CreditsCreditSubDetails" */ 'merchant/views/Account/Credits/components/CreditSubDetails'
+  ),
+);
+const WebhookEntity = lazy(() =>
+  import(/* webpackChunkName: "WebhooksEntity" */ 'merchant/views/Settings/Webhooks/Entity'),
+);
+const WithdrawalDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/WithdrawalDetails'
+  ),
+);
+const RuleDetail = lazy(() =>
+  import(
+    /* webpackChunkName: "componentsRuleDetail" */ 'merchant/views/Navigator/components/RuleDetail'
+  ),
+);
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets

@@ -1,4 +1,4 @@
-import React, { Component, Suspense, lazy } from 'react';
+import React, { Component, Suspense } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -7,6 +7,10 @@ import Slider from 'common/ui/Slider';
 import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
+
+import lazy from './LazyLoader';
+import Loader from 'common/ui/Loader';
+
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
 );
@@ -70,17 +74,19 @@ const Navigator = lazy(() =>
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
 const PaypalOnboardRedirect = lazy(() =>
   import(
-    /* webpackChunkName: "Settings" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect'
+    /* webpackChunkName: "PaypalOnboardRedirect" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect'
   ),
 );
 const LoanDetails = lazy(() =>
-  import(/* webpackChunkName: "Capital" */ 'merchant/views/Capital/Loans'),
+  import(/* webpackChunkName: "CapitalLoans" */ 'merchant/views/Capital/Loans'),
 );
 const FlashCreditLandingPage = lazy(() =>
-  import(/* webpackChunkName: "Capital" */ 'merchant/views/Capital/CashAdvance/index'),
+  import(/* webpackChunkName: "CapitalCashAdvance" */ 'merchant/views/Capital/CashAdvance/index'),
 );
 const FlashCreditWithdrawals = lazy(() =>
-  import(/* webpackChunkName: "Capital" */ 'merchant/views/Capital/CashAdvance/withdrawals'),
+  import(
+    /* webpackChunkName: "CapitalWithdrawals" */ 'merchant/views/Capital/CashAdvance/withdrawals'
+  ),
 );
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -110,12 +116,6 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     </tabbed-container>
   );
 };
-
-const Loader = () => (
-  <div class="page-spinner-container">
-    <Spinner />
-  </div>
-);
 
 @withRouter
 @connect(
@@ -216,261 +216,255 @@ export default class Content extends Component {
     }
 
     return (
-      <ErrorBoundary resetOnProps location={this.baseLocation}>
-        <Suspense fallback={<Loader />}>
-          <Switch location={this.baseLocation}>
-            <Route path="/dashboard" component={Home} />
+      <Suspense fallback={<Loader />}>
+        <Switch location={this.baseLocation}>
+          <Route path="/dashboard" component={Home} />
 
-            <ShowWhenRoute
-              path="/partners"
-              component={PartnerDashboard}
-              additionalCondition={(user) => user.isPartner()}
-            />
+          <ShowWhenRoute
+            path="/partners"
+            component={PartnerDashboard}
+            additionalCondition={(user) => user.isPartner()}
+          />
 
-            <ShowWhenRoute
-              path="/payments"
-              component={Transactions}
-              additionalCondition={(user) => user.isAllowedView('payments')}
-            />
-            <ShowWhenRoute
-              path="/refunds"
-              component={Transactions}
-              additionalCondition={(user) => user.isAllowedView('refunds')}
-            />
-            <ShowWhenRoute
-              path="/orders"
-              component={Transactions}
-              additionalCondition={(user) => user.isAllowedView('orders')}
-            />
-            <Route path="/disputes" component={Transactions} />
+          <ShowWhenRoute
+            path="/payments"
+            component={Transactions}
+            additionalCondition={(user) => user.isAllowedView('payments')}
+          />
+          <ShowWhenRoute
+            path="/refunds"
+            component={Transactions}
+            additionalCondition={(user) => user.isAllowedView('refunds')}
+          />
+          <ShowWhenRoute
+            path="/orders"
+            component={Transactions}
+            additionalCondition={(user) => user.isAllowedView('orders')}
+          />
+          <Route path="/disputes" component={Transactions} />
 
-            <ShowWhenRoute
-              path="/settlements"
-              component={Settlements}
-              additionalCondition={(user) => user.isAllowedView('settlements')}
-            />
+          <ShowWhenRoute
+            path="/settlements"
+            component={Settlements}
+            additionalCondition={(user) => user.isAllowedView('settlements')}
+          />
 
-            <ShowWhenRoute
-              path="/invoices"
-              exact
-              component={InvoicesContainer}
-              additionalCondition={(user) => user.isAllowedView('invoices')}
-            />
-            <ShowWhenRoute
-              path="/invoices/:id(inv_.+)"
-              component={InvoicesNew}
-              additionalCondition={(user) => user.isAllowedView('invoices')}
-            />
-            <ShowWhenRoute
-              path="/invoices/new"
-              component={InvoicesNew}
-              additionalCondition={(user) => user.isAllowedEdit('invoices')}
-            />
-            <ShowWhenRoute
-              path="/items"
-              component={InvoicesContainer}
-              additionalCondition={(user) => user.isAllowedView('invoices')}
-            />
+          <ShowWhenRoute
+            path="/invoices"
+            exact
+            component={InvoicesContainer}
+            additionalCondition={(user) => user.isAllowedView('invoices')}
+          />
+          <ShowWhenRoute
+            path="/invoices/:id(inv_.+)"
+            component={InvoicesNew}
+            additionalCondition={(user) => user.isAllowedView('invoices')}
+          />
+          <ShowWhenRoute
+            path="/invoices/new"
+            component={InvoicesNew}
+            additionalCondition={(user) => user.isAllowedEdit('invoices')}
+          />
+          <ShowWhenRoute
+            path="/items"
+            component={InvoicesContainer}
+            additionalCondition={(user) => user.isAllowedView('invoices')}
+          />
 
-            <ShowWhenRoute
-              path="/paymentlinks"
-              component={PaymentLinks}
-              additionalCondition={(user) => user.isAllowedView('payment_links')}
-            />
+          <ShowWhenRoute
+            path="/paymentlinks"
+            component={PaymentLinks}
+            additionalCondition={(user) => user.isAllowedView('payment_links')}
+          />
 
-            <ShowWhenRoute
-              path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
-              component={PaymentPagesDetails}
-              additionalCondition={(user) => user.isAllowedView('payment_pages')}
-            />
+          <ShowWhenRoute
+            path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentPagesDetails}
+            additionalCondition={(user) => user.isAllowedView('payment_pages')}
+          />
 
-            <ShowWhenRoute
-              path="/paymentpages"
-              component={PaymentPages}
-              additionalCondition={(user) => user.isAllowedView('payment_pages')}
-            />
+          <ShowWhenRoute
+            path="/paymentpages"
+            component={PaymentPages}
+            additionalCondition={(user) => user.isAllowedView('payment_pages')}
+          />
 
-            <ShowWhenRoute
-              path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
-              component={PaymentButtonsDetails}
-              additionalCondition={(user) =>
-                user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
-              }
-            />
+          <ShowWhenRoute
+            path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentButtonsDetails}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
+            }
+          />
 
-            <ShowWhenRoute
-              path="/paymentbuttons"
-              component={PaymentButton}
-              additionalCondition={(user) =>
-                user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
-              }
-            />
-            <ShowWhenRoute
-              path="/subscription_buttons"
-              component={PaymentButton}
-              exact
-              additionalCondition={(user) =>
-                user.isAllowedView('subscription_buttons') &&
-                user.isSubscriptionButtonEnabledByRazorX
-              }
-            />
+          <ShowWhenRoute
+            path="/paymentbuttons"
+            component={PaymentButton}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
+            }
+          />
+          <ShowWhenRoute
+            path="/subscription_buttons"
+            component={PaymentButton}
+            exact
+            additionalCondition={(user) =>
+              user.isAllowedView('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX
+            }
+          />
 
-            <ShowWhenRoute
-              path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
-              exact
-              component={SubscriptionButtonDetails}
-              additionalCondition={(user) =>
-                user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabledByRazorX
-              }
-            />
+          <ShowWhenRoute
+            path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
+            exact
+            component={SubscriptionButtonDetails}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabledByRazorX
+            }
+          />
 
-            <ShowWhenRoute
-              path="/subscriptions"
-              component={Subscriptions}
-              additionalCondition={(user) => user.isAllowedView('subscriptions')}
-            />
-            <ShowWhenRoute
-              path="/plans"
-              component={Subscriptions}
-              additionalCondition={(user) =>
-                user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
-              }
-            />
+          <ShowWhenRoute
+            path="/subscriptions"
+            component={Subscriptions}
+            additionalCondition={(user) => user.isAllowedView('subscriptions')}
+          />
+          <ShowWhenRoute
+            path="/plans"
+            component={Subscriptions}
+            additionalCondition={(user) =>
+              user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
+            }
+          />
 
-            <ShowWhenRoute
-              path="/recurring_payments"
-              component={Subscriptions}
-              additionalCondition={(user) =>
-                user.isAllowedView('subscriptions') &&
-                user.isChargeAtWillEnabled &&
-                user.isRegistrationLinkTokenAndPaymentsEnabled
-              }
-            />
+          <ShowWhenRoute
+            path="/recurring_payments"
+            component={Subscriptions}
+            additionalCondition={(user) =>
+              user.isAllowedView('subscriptions') &&
+              user.isChargeAtWillEnabled &&
+              user.isRegistrationLinkTokenAndPaymentsEnabled
+            }
+          />
 
-            <ShowWhenRoute
-              path="/tokens"
-              component={Subscriptions}
-              additionalCondition={(user) =>
-                user.isAllowedView('subscriptions') &&
-                user.isChargeAtWillEnabled &&
-                user.isRegistrationLinkTokenAndPaymentsEnabled
-              }
-            />
-            <ShowWhenRoute
-              path="/registration_links"
-              component={Subscriptions}
-              additionalCondition={(user) =>
-                user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
-              }
-            />
+          <ShowWhenRoute
+            path="/tokens"
+            component={Subscriptions}
+            additionalCondition={(user) =>
+              user.isAllowedView('subscriptions') &&
+              user.isChargeAtWillEnabled &&
+              user.isRegistrationLinkTokenAndPaymentsEnabled
+            }
+          />
+          <ShowWhenRoute
+            path="/registration_links"
+            component={Subscriptions}
+            additionalCondition={(user) =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
+          />
 
-            <Route
-              path="/customers"
-              render={() => (
-                <TabbedContent
-                  headerId="invoicing-header"
-                  to="/customers"
-                  navLabel="Customers"
-                  component={Customers}
-                />
-              )}
-            />
+          <Route
+            path="/customers"
+            render={() => (
+              <TabbedContent
+                headerId="invoicing-header"
+                to="/customers"
+                navLabel="Customers"
+                component={Customers}
+              />
+            )}
+          />
 
-            <ShowWhenRoute
-              path="/route"
-              component={Marketplace}
-              additionalCondition={(user) => user.isAllowedView('marketplace')}
-            />
+          <ShowWhenRoute
+            path="/route"
+            component={Marketplace}
+            additionalCondition={(user) => user.isAllowedView('marketplace')}
+          />
 
-            <ShowWhenRoute
-              path={['/smartcollect', '/virtualaccounts']}
-              component={SmartCollect}
-              additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
-            />
+          <ShowWhenRoute
+            path={['/smartcollect', '/virtualaccounts']}
+            component={SmartCollect}
+            additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
+          />
 
-            <ShowWhenRoute
-              path="/reports"
-              component={ReportsAsync}
-              additionalCondition={(user) => user.isAllowedView('reports')}
-            />
+          <ShowWhenRoute
+            path="/reports"
+            component={ReportsAsync}
+            additionalCondition={(user) => user.isAllowedView('reports')}
+          />
 
-            <ShowWhenRoute
-              path="/profile"
-              component={MyAccount}
-              additionalCondition={(user) => user.isAllowedView('profile') || !user.userRole}
-            />
-            <ShowWhenRoute
-              path="/addfunds"
-              component={MyAccount}
-              additionalCondition={(user) => user.isAllowedView('add_funds')}
-            />
-            <ShowWhenRoute
-              path="/credits"
-              component={MyAccount}
-              additionalCondition={(user) => user.isAllowedView('credits')}
-            />
-            <ShowWhenRoute path="/ticket-support/tickets" component={MyAccount} />
-            <ShowWhenRoute
-              path="/ticket-support/:instance/:id/conversation"
-              component={MyAccount}
-            />
-            <ShowWhenRoute
-              path="/referrals"
-              component={MyAccount}
-              additionalCondition={(user) => user.isAllowedView('referrals')}
-            />
-            <ShowWhenRoute
-              path="/team"
-              component={MyAccount}
-              additionalCondition={(user) => user.isAllowedView('team')}
-            />
+          <ShowWhenRoute
+            path="/profile"
+            component={MyAccount}
+            additionalCondition={(user) => user.isAllowedView('profile') || !user.userRole}
+          />
+          <ShowWhenRoute
+            path="/addfunds"
+            component={MyAccount}
+            additionalCondition={(user) => user.isAllowedView('add_funds')}
+          />
+          <ShowWhenRoute
+            path="/credits"
+            component={MyAccount}
+            additionalCondition={(user) => user.isAllowedView('credits')}
+          />
+          <ShowWhenRoute path="/ticket-support/tickets" component={MyAccount} />
+          <ShowWhenRoute path="/ticket-support/:instance/:id/conversation" component={MyAccount} />
+          <ShowWhenRoute
+            path="/referrals"
+            component={MyAccount}
+            additionalCondition={(user) => user.isAllowedView('referrals')}
+          />
+          <ShowWhenRoute
+            path="/team"
+            component={MyAccount}
+            additionalCondition={(user) => user.isAllowedView('team')}
+          />
 
-            <ShowWhenRoute
-              path="/config"
-              component={Settings}
-              additionalCondition={(user) => user.isAllowedView('configuration')}
-            />
-            <ShowWhenRoute
-              path="/keys"
-              component={Settings}
-              additionalCondition={(user) => user.isAllowedView('api_keys')}
-            />
-            <ShowWhenRoute
-              path="/webhooks"
-              component={Settings}
-              additionalCondition={(user) => user.isAllowedView('webhooks')}
-            />
-            <ShowWhenRoute path="/reminders" component={Settings} />
-            <ShowWhenRoute
-              path="/applications"
-              component={Settings}
-              additionalCondition={(user) => user.isAllowedView('applications')}
-            />
-            <ShowWhenRoute
-              path="/payment-methods"
-              component={Settings}
-              additionalCondition={(user) =>
-                user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
-              }
-            />
-            <ShowWhenRoute
-              path="/offers"
-              component={Offers}
-              additionalCondition={(user) => user.isAllowedView('offers')}
-            />
-            <ShowWhenRoute path="/navigator" component={Navigator} />
-            <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
-            <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
-            <Redirect from="/capital/loans" to="/capital/loans/apply" />
-            <ShowWhenRoute
-              path="/capital/cash-advance/withdrawals"
-              component={FlashCreditWithdrawals}
-            />
-            <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
-            <Route exact path="/" component={HandleIndex} />
-          </Switch>
-        </Suspense>
-      </ErrorBoundary>
+          <ShowWhenRoute
+            path="/config"
+            component={Settings}
+            additionalCondition={(user) => user.isAllowedView('configuration')}
+          />
+          <ShowWhenRoute
+            path="/keys"
+            component={Settings}
+            additionalCondition={(user) => user.isAllowedView('api_keys')}
+          />
+          <ShowWhenRoute
+            path="/webhooks"
+            component={Settings}
+            additionalCondition={(user) => user.isAllowedView('webhooks')}
+          />
+          <ShowWhenRoute path="/reminders" component={Settings} />
+          <ShowWhenRoute
+            path="/applications"
+            component={Settings}
+            additionalCondition={(user) => user.isAllowedView('applications')}
+          />
+          <ShowWhenRoute
+            path="/payment-methods"
+            component={Settings}
+            additionalCondition={(user) =>
+              user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
+            }
+          />
+          <ShowWhenRoute
+            path="/offers"
+            component={Offers}
+            additionalCondition={(user) => user.isAllowedView('offers')}
+          />
+          <ShowWhenRoute path="/navigator" component={Navigator} />
+          <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
+          <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
+          <Redirect from="/capital/loans" to="/capital/loans/apply" />
+          <ShowWhenRoute
+            path="/capital/cash-advance/withdrawals"
+            component={FlashCreditWithdrawals}
+          />
+          <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
+          <Route exact path="/" component={HandleIndex} />
+        </Switch>
+      </Suspense>
     );
   };
 
@@ -510,15 +504,17 @@ export default class Content extends Component {
     if (DetailView) {
       DetailView = BaseView ? (
         <Slider closeUrl={this.baseLocation}>
-          <ErrorBoundary resetOnProps location={this.baseLocation}>
-            {' '}
-            <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />{' '}
+          {' '}
+          <ErrorBoundary resetOnProps>
+            <Suspense fallback={<Loader />}>
+              <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />{' '}
+            </Suspense>
           </ErrorBoundary>
         </Slider>
       ) : (
-        <ErrorBoundary resetOnProps location={this.baseLocation}>
+        <Suspense fallback={<Loader />}>
           <DetailView {...this.detailProps} />
-        </ErrorBoundary>
+        </Suspense>
       );
     } else if (ModalFormView) {
       ModalFormView = BaseView ? (
@@ -527,24 +523,30 @@ export default class Content extends Component {
           onClose={this.closeModalView}
           class={ModalFormView.MODAL_MASK_CLASS}
         >
-          <ModalFormView
-            {...this.detailProps}
-            onClose={this.closeModalView}
-            closeUrl={BaseView ? this.baseLocation.pathname : undefined}
-          />
+          <Suspense fallback={<Loader />}>
+            <ModalFormView
+              {...this.detailProps}
+              onClose={this.closeModalView}
+              closeUrl={BaseView ? this.baseLocation.pathname : undefined}
+            />
+          </Suspense>
         </ModalMask>
       ) : (
-        <ErrorBoundary>
+        <Suspense fallback={<Loader />}>
           <ModalFormView {...this.detailProps} />
-        </ErrorBoundary>
+        </Suspense>
       );
     }
     return (
       <main class={classList(!fullPageView && 'main-content')}>
-        {BaseView}
-        {DetailView}
-        {ModalFormView}
-        <Support user={user} />
+        <ErrorBoundary resetOnProps>
+          <Suspense fallback={<Loader />}>
+            {BaseView}
+            {DetailView}
+            {ModalFormView}
+            <Support user={user} />
+          </Suspense>
+        </ErrorBoundary>
       </main>
     );
   }

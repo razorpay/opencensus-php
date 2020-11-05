@@ -1,6 +1,7 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
-import { set as lodashset, cloneDeep } from 'lodash';
+import lodashset from 'lodash/set';
+import cloneDeep from 'lodash/cloneDeep';
 
 const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
 const SET_INTERMEDIATE_INSTRUMENT = 'SET_INTERMEDIATE_INSTRUMENT';

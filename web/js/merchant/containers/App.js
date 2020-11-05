@@ -1,6 +1,8 @@
-import { Component } from 'react';
+import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+
+import Loader from 'common/ui/Loader';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
@@ -520,7 +522,9 @@ export default class App extends Component {
 
       FPView = (
         <ErrorBoundary resetOnProps location={location}>
-          <FPComponent {...matchView.match.params} />
+          <Suspense fallback={<Loader />}>
+            <FPComponent {...matchView.match.params} />
+          </Suspense>
         </ErrorBoundary>
       );
     }
