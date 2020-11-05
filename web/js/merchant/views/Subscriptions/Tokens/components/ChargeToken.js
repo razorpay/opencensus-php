@@ -28,6 +28,7 @@ export default class ChargeToken extends Component {
         receipt: this.state.receipt,
         description: this.state.description,
         id: token.id,
+        currency: token.subscription_registration && token.subscription_registration.currency,
       })
       .then((response) => {
         if (response) {
