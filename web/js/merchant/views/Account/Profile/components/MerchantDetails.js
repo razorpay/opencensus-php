@@ -5,8 +5,9 @@ import RTracking from 'react-tracking';
 import Time from 'common/ui/Time';
 import ProgressBar from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Amount from 'common/ui/Amount';
 
-import { titleCase, isPresent } from 'common/utils/rzp-utils';
+import { titleCase, isPresent, getFormattedAmount } from 'common/utils/rzp-utils';
 
 import DetailRow from 'merchant/components/DetailRow';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
@@ -290,6 +291,25 @@ const MerchantDetails = ({
             }
           />
         )}
+
+      {user.merchant && (
+        <DetailRow
+          label="Limit per Transaction"
+          value={() => (
+            <div className="transaction-limit">
+              <Amount value={user.merchant.max_payment_amount} currency={'INR'} />
+              <small class="help-content">
+                <i class="i i-info-circle" />
+                <Popover align="right" theme="dark">
+                  <PopoverBody>
+                    <div>The maximum INR limit for only a single transaction.</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </div>
+          )}
+        />
+      )}
     </div>
   );
 };
