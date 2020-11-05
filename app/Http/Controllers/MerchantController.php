@@ -1629,6 +1629,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function deleteAdditionalWebsites(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->deleteAdditionalWebsites($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getInheritanceParent(string $merchantId)
     {
         $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->getInheritanceParent($merchantId);

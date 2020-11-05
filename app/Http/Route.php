@@ -1951,8 +1951,9 @@ class Route
         'admin_get_free_payouts_attributes'        => ['get',      'admin/payouts/{balance_id}/free_payout',                    'PayoutController@getFreePayoutsAttributes'               ],
 
 
-        //route to add additional website through admin dashboard
+        //route to add additional website and delete additional websites(plural) through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+        'delete_additional_websites'              => ['delete',    'merchant/{id}/websites',                                    'MerchantController@deleteAdditionalWebsites'               ],
 
         // merchant config inheritance
         'merchant_inheritance_parent_fetch'       => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                  ],
@@ -3247,6 +3248,7 @@ class Route
         'payout_links_settings_post',
         'payout_links_settings_get',
         'add_additional_website',
+        'delete_additional_websites',
         'reminder_admin',
         'merchant_document_admin_fetch',
         'org_get',
@@ -3935,6 +3937,7 @@ class Route
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => '*',
+        'delete_additional_websites'               => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
         'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
         'pricing_add_plan_rule_bulk'               => '*',

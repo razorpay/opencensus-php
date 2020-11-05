@@ -1793,6 +1793,38 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testDeleteAdditionalWebsites()
+    {
+        $merchantId = $this->fixtures->create('merchant')->getId();
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'         => $merchantId,
+                'additional_websites' => [
+                    'https://www.website1.com',
+                    'https://www.website2.com',
+                    'https://www.website3.com',
+                    'https://www.website4.com',
+                ],
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/merchant/$merchantId/websites";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $actualAdditionalWebsites = $this->getLastEntity('merchant_detail', true)['additional_websites'];
+
+        $expectedAdditionalWebsites = [
+            'https://www.website1.com',
+            'https://www.website3.com',
+        ];
+
+        $this->assertEquals($expectedAdditionalWebsites, $actualAdditionalWebsites);
+    }
+
     public function getCollectionOfWebsites(int $count): array
     {
         $websites = [];

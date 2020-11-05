@@ -328,6 +328,11 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
     ];
 
+    protected static $deleteAdditionalWebsitesRules = [
+        Entity::ADDITIONAL_WEBSITES             => 'required|array|min:0',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'string|active_url',
+    ];
+
     protected static $patchMerchantDetailsRules = [
         Entity::BUSINESS_OPERATION_ADDRESS               => 'filled|max:255',
         Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:255',

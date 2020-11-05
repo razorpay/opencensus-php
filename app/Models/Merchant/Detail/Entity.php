@@ -1163,4 +1163,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->setAttribute(self::GSTIN_VERIFICATION_STATUS, $gstinVerificationStatus);
     }
+
+    public function setAdditionalWebsites($additionalWebsites)
+    {
+        return $this->setAttribute(self::ADDITIONAL_WEBSITES, $additionalWebsites);
+    }
 }

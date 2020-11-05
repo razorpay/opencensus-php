@@ -1098,6 +1098,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function deleteAdditionalWebsites($merchantId, $input)
+    {
+        $core = new Core();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantDetails = $core->getMerchantDetails($merchant);
+
+        $response = $core->deleteAdditionalWebsites($merchantDetails, $input);
+
+        return $response;
+    }
+
     /**
      * Retuns file name to be used for storing files in file store
      *

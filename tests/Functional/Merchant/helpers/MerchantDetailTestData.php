@@ -1466,6 +1466,28 @@ return [
         ],
     ],
 
+    'testDeleteAdditionalWebsites' => [
+        'request'  => [
+            'content' => [
+                'additional_websites' => [
+                    'https://example.com',
+                    'https://www.website2.com',
+                    'https://www.website4.com',
+                ],
+            ],
+            'method'  => 'delete',
+        ],
+        'response' => [
+            'content'     => [
+                'additional_websites' => [
+                    'https://www.website1.com',
+                    'https://www.website3.com',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithReferralCode' => [
         'request' => [
             'content' => [

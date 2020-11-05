@@ -2251,6 +2251,27 @@ class Core extends Base\Core
         });
     }
 
+    public function deleteAdditionalWebsites(Entity $merchantDetails, array $input)
+    {
+        $merchantDetails->getValidator()->validateInput('deleteAdditionalWebsites', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DELETE_ADDITIONAL_WEBSITES,
+            [
+                'input' => $input,
+            ]);
+
+        $newAdditionalWebsites = array_values(array_diff($merchantDetails->getAdditionalWebsites(), $input[Entity::ADDITIONAL_WEBSITES]));
+
+        $merchantDetails->setAdditionalWebsites($newAdditionalWebsites);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+        $response[Entity::ADDITIONAL_WEBSITES] = $merchantDetails->getAdditionalWebsites();
+
+        return $response;
+    }
+
     /**
      * @param string $website
      * @param Entity $merchantDetails
