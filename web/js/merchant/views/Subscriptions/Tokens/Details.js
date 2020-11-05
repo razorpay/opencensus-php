@@ -206,6 +206,12 @@ export default class TokenDetailsContainer extends Component {
       !isCancelled &&
       ['rejected', 'initiated'].indexOf((entity.recurring_details || {}).status) === -1;
 
+    let expireAt = entity.subscription_registration && entity.subscription_registration.expire_at;
+
+    if (token.method === 'card') {
+      expireAt = entity.expired_at;
+    }
+
     return (
       <div class="content-wrapper content-sm txn-details Token--Details">
         {isLoading ? (
@@ -272,7 +278,7 @@ export default class TokenDetailsContainer extends Component {
                     </EntityDetailRow>
 
                     <EntityDetailRow label="Expires By">
-                      {entity.expire_at ? <Time value={entity.expire_at} /> : 'Until Cancelled'}
+                      {expireAt ? <Time value={expireAt} /> : 'Until Cancelled'}
                     </EntityDetailRow>
 
                     <NestedEntityDetailRow label="Notes" value={entity.notes} />
