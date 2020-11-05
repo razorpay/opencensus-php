@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\BvsValidation\Constants;
 
 class Constant
 {
@@ -38,11 +40,17 @@ class Constant
     const IFSC                 = 'ifsc';
     const ACCOUNT_HOLDER_NAMES = 'account_holder_names';
 
+    const SHOP_REGISTRATION_NUMBER = 'registration_number';
+    const SHOP_AREA_CODE           = 'area_code';
+    const SHOP_ENTITY_NAME         = 'entity_name';
+    const SHOP_OWNER_NAME          = 'owner_name';
+
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
     const BUSINESS_PAN_OCR           = 'business_pan_ocr';
     const CANCELLED_CHEQUE_OCR_REG   = 'cancelled_cheque_ocr_reg';
     const CANCELLED_CHEQUE_OCR_UNREG = 'cancelled_cheque_ocr_unreg';
+    const SHOP_ESTABLISHMENT_AUTH    = 'shop_establishment_auth';
 
     //
     // Response fields
@@ -54,14 +62,15 @@ class Constant
     //
     // Artefact types in BVS
     //
-    const PERSONAL_PAN = 'personal_pan';
-    const AADHAAR      = 'aadhaar';
-    const CIN          = 'cin';
-    const GSTIN        = 'gstin';
-    const VOTERS_ID    = 'voters_id';
-    const PASSPORT     = 'passport';
-    const LLP_DEED     = 'llp_deed';
-    const BUSINESS_PAN = 'business_pan';
+    const PERSONAL_PAN       = 'personal_pan';
+    const AADHAAR            = 'aadhaar';
+    const CIN                = 'cin';
+    const GSTIN              = 'gstin';
+    const VOTERS_ID          = 'voters_id';
+    const PASSPORT           = 'passport';
+    const LLP_DEED           = 'llp_deed';
+    const BUSINESS_PAN       = 'business_pan';
+    const SHOP_ESTABLISHMENT = 'shop_establishment';
 
     const PG       = 'pg';
     const MERCHANT = 'merchant';
@@ -73,30 +82,40 @@ class Constant
 
     const RAZORX_EXPERIMENT = 'razorx_experiment';
 
-    const DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP = [
-        Type::AADHAR_FRONT     => [
+    const FIELD_ARTEFACT_DETAILS_MAP = [
+        Type::AADHAR_FRONT                => [
             self::ARTEFACT_TYPE   => self::AADHAAR,
             self::PROOF_INDEX     => '3',
+            self::VALIDATION_UNIT => Constants::PROOF,
         ],
-        Type::VOTER_ID_FRONT   => [
+        Type::VOTER_ID_FRONT              => [
             self::ARTEFACT_TYPE   => self::VOTERS_ID,
             self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
         ],
-        Type::PASSPORT_FRONT   => [
+        Type::PASSPORT_FRONT              => [
             self::ARTEFACT_TYPE   => self::PASSPORT,
             self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
         ],
-        Type::PERSONAL_PAN     => [
+        Type::PERSONAL_PAN                => [
             self::ARTEFACT_TYPE   => self::PERSONAL_PAN,
             self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
         ],
-        Type::BUSINESS_PAN_URL => [
+        Type::BUSINESS_PAN_URL            => [
             self::ARTEFACT_TYPE   => self::BUSINESS_PAN,
             self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
         ],
-        Type::CANCELLED_CHEQUE => [
+        Type::CANCELLED_CHEQUE            => [
             self::ARTEFACT_TYPE   => self::BANK_ACCOUNT,
             self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
+        ],
+        Entity::SHOP_ESTABLISHMENT_NUMBER => [
+            self::ARTEFACT_TYPE   => self::SHOP_ESTABLISHMENT,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
     ];
 
@@ -109,6 +128,9 @@ class Constant
         ],
         Type::CANCELLED_CHEQUE => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR,
+        ],
+        Entity::SHOP_ESTABLISHMENT_NUMBER => [
+            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
         ],
     ];
 }

@@ -13,6 +13,7 @@ class Factory
             new CompanyPanOcr($merchant, $merchantDetails),
             new PersonalPanOcr($merchant, $merchantDetails),
             new CancelledChequeOcr($merchant, $merchantDetails),
+            new ShopEstablishmentAuth($merchant, $merchantDetails),
         ];
     }
 }

@@ -64,6 +64,13 @@ class Factory
 
                 return new POA($merchant, $artefactType);
 
+            case Constant::SHOP_ESTABLISHMENT :
+
+                return new DefaultStatusUpdater(
+                    $merchant,
+                    Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
+                    $artefactType);
+
             default :
 
                 throw new LogicException(

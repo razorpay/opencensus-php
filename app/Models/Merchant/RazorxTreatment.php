@@ -41,6 +41,7 @@ final class RazorxTreatment
     const BVS_PERSONAL_PAN_OCR     = 'bvs_personal_pan_ocr';
     const BVS_BUSINESS_PAN_OCR     = 'bvs_business_pan_ocr';
     const BVS_CANCELLED_CHEQUE_OCR = 'bvs_cancelled_cheque_ocr';
+    const BVS_SHOP_ESTB_AUTH       = 'bvs_shop_estb_auth';
 
     // this experiment is used to route merchant to BVS with new RuleDef
 

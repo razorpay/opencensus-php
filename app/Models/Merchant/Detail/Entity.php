@@ -1168,4 +1168,19 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->setAttribute(self::ADDITIONAL_WEBSITES, $additionalWebsites);
     }
+
+    public function getShopEstbNumber()
+    {
+        return $this->getAttribute(self::SHOP_ESTABLISHMENT_NUMBER);
+    }
+
+    public function getShopEstbVerificationStatus()
+    {
+        return $this->getAttribute(self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS);
+    }
+
+    public function setShopEstbVerificationStatus(string $shopEstabVerificationStatus = null)
+    {
+        return $this->setAttribute(self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, $shopEstabVerificationStatus);
+    }
 }

@@ -12,7 +12,6 @@ use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
@@ -133,7 +132,7 @@ class Core extends Base\Core
                 $document,
                 $merchant);
 
-            $this->updateDocumentVerificationStatus($merchant, $document);
+            (new Detail\Core())->updateDocumentVerificationStatus($merchant, $document->getDocumentType());
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -143,49 +142,6 @@ class Core extends Base\Core
         $this->pushEventsAndMetrics($merchant, $input);
 
         return $merchantDetailCore->createResponse($merchantDetails);
-    }
-
-    /**
-     * This function is to update Document verification status as pending
-     * so that verification can be triggered at Form Submission for all such document types.
-     *
-     * @param Merchant\Entity $merchant
-     * @param Entity          $document
-     *
-     * @throws \RZP\Exception\LogicException
-     */
-    public function updateDocumentVerificationStatus(Merchant\Entity $merchant, Entity $document)
-    {
-        $documentType = $document->getDocumentType();
-
-        $enabledVerificationDocumentTypes = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
-
-        if ((in_array($documentType, $enabledVerificationDocumentTypes, true) === true))
-        {
-            $documentTypeRazorxMap = Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION[$documentType];
-
-            $razorxExperiment = $documentTypeRazorxMap[Constant::RAZORX_EXPERIMENT] ?? '';
-
-            if ((empty($razorxExperiment) === false) and
-                (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $razorxExperiment) === false)
-            {
-                return;
-            }
-
-            $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$documentType];
-
-            $validation = new Merchant\BvsValidation\Entity();
-
-            $validation->setValidationUnit(BvsValidationConstants::PROOF);
-
-            $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
-
-            $statusUpdateFactory = new DocumentStatusUpdater\Factory();
-
-            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
-
-            $statusUpdater->updateStatusToPending();
-        }
     }
 
     /**
@@ -412,7 +368,7 @@ class Core extends Base\Core
      */
     public function performOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
     {
-        $artefactDetails = Constant::DOCUMENT_TYPE_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
+        $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
 
         $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
         $artefactProofIndex = $artefactDetails[Constant::PROOF_INDEX] ?? '1';

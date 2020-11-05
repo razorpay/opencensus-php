@@ -2324,11 +2324,10 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '1', 'gstin_verification_status' => '',]);
 
         $this->gstinVerification('gstinVerification', 'success', 'verified', [
-                                                        'promoter_pan_name' => 'Shashank Kumar',
-                                                        'business_name'     => 'RELIANCE INDUSTRIES LIMITED',
-                                                        'gstin'             => '07AADCB2230M1ZA',
-                                                    ]
-        );
+            'promoter_pan_name' => 'Shashank Kumar',
+            'business_name'     => 'RELIANCE INDUSTRIES LIMITED',
+            'gstin'             => '07AADCB2230M1ZA',
+        ]);
 
         $this->gstinVerification('gstinVerification', 'legal_name_as_signatory', 'verified', [
             'promoter_pan_name' => 'Shashank Kumar',
@@ -2536,7 +2535,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testGetMerchantDetailsShopEstbVerifiableZone()
     {
-        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000', 'business_type' => '1']);
 
 
         $this->verifyShopEstbVerifiableZone([
@@ -2608,5 +2607,60 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($status, $merchantDetail->getPoaVerificationStatus());
 
         return $testData;
+    }
+
+    public function testSaveShopEstbNumberStatusPending()
+    {
+        $this->verifyVerificationStatusOnSaveDetails(
+            ['shop_establishment_number' => 'shopEstbNum123'],
+            ['shop_establishment_verification_status' => 'pending'],
+            ['merchant_id' => '10000000000000', 'business_type' => '1']
+        );
+    }
+
+    public function testSaveShopEstbNumberStatusPendingToNull()
+    {
+        $this->verifyVerificationStatusOnSaveDetails(
+            ['shop_establishment_number' => ''],
+            ['shop_establishment_verification_status' => null],
+            [
+                'merchant_id'                            => '10000000000000',
+                'business_type'                          => '1',
+                'shop_establishment_number'              => 'shopEstbNum123',
+                'shop_establishment_verification_status' => 'pending'
+            ]
+        );
+    }
+
+    protected function verifyVerificationStatusOnSaveDetails(array $field,
+                                                             array $VerificationStatus,
+                                                             array $input = [])
+    {
+        $this->fixtures->create('merchant_detail', $input);
+
+        $this->ba->proxyAuth();
+
+        $this->mockRazorX('saveMerchantDetailsFields', 'bvs_shop_estb_auth', 'on', '10000000000000');
+
+        $request = $this->testData['saveMerchantDetailsFields']['request'];
+
+        foreach ($field as $fieldKey => $fieldValue)
+        {
+            $request['content'][$fieldKey] = $fieldValue;
+        }
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        foreach ($VerificationStatus as $VerificationStatusKey => $VerificationStatusValue)
+        {
+            $this->assertEquals($VerificationStatusValue, $content[$VerificationStatusKey] ?? '');
+        }
+
+        foreach ($field as $fieldKey => $fieldValue)
+        {
+            $this->assertEquals($fieldValue, $content[$fieldKey] ?? '');
+        }
     }
 }

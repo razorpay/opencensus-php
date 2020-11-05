@@ -49,6 +49,7 @@ use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -99,6 +100,8 @@ class Core extends Base\Core
         $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
         $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+
+        $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -2650,7 +2653,8 @@ class Core extends Base\Core
             $merchantDetails->getBusinessRegisteredState() ?? ''
         );
 
-        if (empty($shopEstablishmentAreaCode) === false)
+        if ((empty($shopEstablishmentAreaCode) === false) and
+            (BusinessType::isShopEstbVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === true))
         {
             $isShopEstablishmentVerifiableZone = true;
         }
@@ -3423,6 +3427,88 @@ class Core extends Base\Core
             {
                 $requestCreator->triggerBVSRequest();
             }
+        }
+    }
+
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @throws LogicException
+     */
+    public function verifyShopEstbNumberIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
+    {
+        if (((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) or
+            ((array_key_exists(Entity::SHOP_ESTABLISHMENT_NUMBER, $input) === true) and
+             (empty($input[Entity::SHOP_ESTABLISHMENT_NUMBER]) === true)))
+        {
+            $merchantDetails->setShopEstbVerificationStatus(null);
+
+            return;
+        }
+
+        // For handling business type switch
+        if (BusinessType::isShopEstbVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+        {
+            $merchantDetails->setShopEstbVerificationStatus(null);
+
+            return;
+        }
+
+        if (isset($input[Entity::SHOP_ESTABLISHMENT_NUMBER]) === false)
+        {
+            return;
+        }
+
+        $shouldVerifyShopEstab = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::BVS_SHOP_ESTB_AUTH);
+
+        if ($shouldVerifyShopEstab === true)
+        {
+            $this->updateDocumentVerificationStatus($merchant, Entity::SHOP_ESTABLISHMENT_NUMBER);
+        }
+    }
+
+    /**
+     * This function is to update Document verification status as pending
+     * so that verification can be triggered at Form Submission for all such document types.
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $field // this key can refer to both (proof as well as identifier)
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    public function updateDocumentVerificationStatus(Merchant\Entity $merchant, string $field)
+    {
+        $enabledVerificationDocuments = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
+
+        if ((in_array($field, $enabledVerificationDocuments, true) === true))
+        {
+            $documentTypeRazorxMap = Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION[$field];
+
+            $razorxExperiment = $documentTypeRazorxMap[Constant::RAZORX_EXPERIMENT] ?? '';
+
+            if ((empty($razorxExperiment) === false) and
+                (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $razorxExperiment) === false)
+            {
+                return;
+            }
+
+            $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
+
+            $validation = new Merchant\BvsValidation\Entity();
+
+            $validation->setValidationUnit($artefactDetails[Constant::VALIDATION_UNIT]);
+
+            $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
+
+            $statusUpdateFactory = new DocumentStatusUpdater\Factory();
+
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+
+            $statusUpdater->updateStatusToPending();
         }
     }
 }

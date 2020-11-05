@@ -1961,4 +1961,20 @@ return [
             ],
         ],
     ],
+
+    //
+    // content is being set dynamically in test cases itself
+    //
+    'saveMerchantDetailsFields' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
