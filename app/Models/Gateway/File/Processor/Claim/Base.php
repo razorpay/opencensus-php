@@ -40,6 +40,7 @@ class Base extends BaseProcessor
         Constants::FSB,
         Constants::IDBI,
         Constants::JKB,
+        Constants::FEDERAL,
     ];
 
     public function fetchEntities(): PublicCollection

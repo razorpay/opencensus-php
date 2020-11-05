@@ -36,6 +36,12 @@ class NetbankingFederalCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
+        $paymentEntity = $this->getDbLastEntityToArray(\RZP\Constants\Entity::PAYMENT);
+
+        $this->fixtures->edit('transaction', $paymentEntity['transaction_id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
         $refund = $this->refundPayment($payment['id']);
 
         $refundEntity = $this->getDbLastEntity('refund');
