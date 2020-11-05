@@ -920,14 +920,15 @@ class Route
         'subscription_item_update'                 => ['patch',    'subscriptions/items/{id}',                       'SubscriptionController@postUpdateItem'                             ],
         'subscription_item_delete'                 => ['delete',   'subscriptions/items/{id}',                       'SubscriptionController@postDeleteItem'                             ],
         'subscription_settings'                    => ['post',     'subscriptions/settings',                         'SubscriptionController@postSubscriptionSettings'                   ],
-        'subscription_settings_get'                => ['get',      'subscriptions/settings',                        'SubscriptionController@getSubscriptionSettings'                    ],
+        'subscription_settings_get'                => ['get',      'subscriptions/settings',                         'SubscriptionController@getSubscriptionSettings'                    ],
         'subscription_clear_feature'               => ['delete',   'invalidate/feature',                             'SubscriptionController@invalidateFeature'                          ],
-        'subscription_pause'                       => ['post',     'subscriptions/{id}/pause',                       'SubscriptionController@pauseSubscription'                           ],
-        'subscription_resume'                      => ['post',     'subscriptions/{id}/resume',                      'SubscriptionController@resumeSubscription'                          ],
+        'subscription_pause'                       => ['post',     'subscriptions/{id}/pause',                       'SubscriptionController@pauseSubscription'                          ],
+        'subscription_resume'                      => ['post',     'subscriptions/{id}/resume',                      'SubscriptionController@resumeSubscription'                         ],
+        'subscription_get_revenue_by_source'       => ['get',      'subscriptions/revenue_by_source/{sourceId}',     'SubscriptionController@getRevenueBySource'                         ],
 
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
-        'token_fetch_vpa'                          => ['get',      'tokens/{id}/vpa',                                'CustomerController@fetchTokenVpa'                                 ],
+        'token_fetch_vpa'                          => ['get',      'tokens/{id}/vpa',                                'CustomerController@fetchTokenVpa'                                  ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                             => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'subscription_update'                      => ['patch',    'subscriptions/{id}',                             'SubscriptionController@updateSubscription'                         ],
@@ -3203,6 +3204,7 @@ class Route
         'proxy_merchant_create_support_details',
         'proxy_merchant_edit_support_details',
         'virtual_account_create_for_internal',
+        'subscription_get_revenue_by_source',
     ];
 
     //
@@ -5856,6 +5858,7 @@ class Route
         'subscription_clear_feature',
         'subscription_pause',
         'subscription_resume',
+        'subscription_get_revenue_by_source',
     ];
 
     const EXCEL_STORE_PROXY_ROUTES = [
