@@ -2568,6 +2568,8 @@ class Core extends Base\Core
 
         $response['documents'] = $documentsResponse;
 
+        $this->setShopEstablishmentVerifiableZone($merchantDetails, $response);
+
         foreach ($validationFields as $key)
         {
             //
@@ -2616,6 +2618,23 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    private function setShopEstablishmentVerifiableZone(Entity $merchantDetails, array &$response)
+    {
+        $isShopEstablishmentVerifiableZone = false;
+
+        $shopEstablishmentAreaCode = (new ShopEstablishmentAreaCodeMapping())->getAreaCode(
+            $merchantDetails->getBusinessRegisteredCity() ?? '',
+            $merchantDetails->getBusinessRegisteredState() ?? ''
+        );
+
+        if (empty($shopEstablishmentAreaCode) === false)
+        {
+            $isShopEstablishmentVerifiableZone = true;
+        }
+
+        $response['shop_establishment_verifiable_zone'] = $isShopEstablishmentVerifiableZone;
     }
 
     protected function verifyGSTINIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)

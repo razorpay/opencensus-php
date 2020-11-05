@@ -16,7 +16,7 @@ class POA extends BaseStatusUpdater
      */
     public function updateValidationStatus(): void
     {
-        $validation = $this->fetchValidOcrDocumentValidation($this->merchantDetails->merchant);
+        $validation = $this->fetchValidOcrDocumentValidation($this->merchant);
 
         $documentValidationStatus = $this->getFailedStatus();
 

@@ -2502,6 +2502,54 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetMerchantDetailsShopEstbVerifiableZone()
+    {
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+
+
+        $this->verifyShopEstbVerifiableZone([
+                                                'business_registered_city'  => 'Bhilwara',
+                                                'business_registered_state' => 'RJ'
+                                            ],
+                                            false);
+        $this->verifyShopEstbVerifiableZone([
+                                                'business_registered_city'  => 'chandigarh',
+                                                'business_registered_state' => 'HA'
+                                            ],
+                                            true);
+        $this->verifyShopEstbVerifiableZone([
+                                                'business_registered_city'  => 'Bhopal',
+                                                'business_registered_state' => 'MP'
+                                            ],
+                                            true);
+
+        $this->verifyShopEstbVerifiableZone([
+                                                'business_registered_city'  => 'calcutta',
+                                                'business_registered_state' => 'XY'
+                                            ],
+                                            true);
+        $this->verifyShopEstbVerifiableZone([
+                                                'business_registered_city'  => 'gurgon',
+                                                'business_registered_state' => 'XY'
+                                            ],
+                                            true);
+    }
+
+
+    protected function verifyShopEstbVerifiableZone(array $input, bool $expectedFlag)
+    {
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $input);
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $input);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $test = $this->testData['testGetMerchantDetailsShopEstbVerifiableZone'];
+
+        $response = $this->startTest($test);
+
+        $this->assertEquals($expectedFlag, $response['shop_establishment_verifiable_zone']);
+    }
+
     /**
      * @param $status
      *

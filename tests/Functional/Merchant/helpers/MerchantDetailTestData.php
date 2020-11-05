@@ -1928,4 +1928,15 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetMerchantDetailsShopEstbVerifiableZone' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

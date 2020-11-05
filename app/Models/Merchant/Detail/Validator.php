@@ -123,6 +123,7 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes',
         Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:15',
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
+        Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|min:1',
     ];
 
     protected static $editRules = [
@@ -216,6 +217,7 @@ class Validator extends Base\Validator
         Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'sometimes|max:255',
         Entity::AUTHORIZED_SIGNATORY_DOB                 => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::PLATFORM                                 => 'sometimes|max:40',
+        Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|min:1',
     ];
 
     protected static $preSignupRules = [
