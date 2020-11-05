@@ -10,9 +10,7 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>
-          {bank_account &&
-            bank_account.bank_name &&
-            bank_account.bank_name + ' - '}
+          {bank_account && bank_account.bank_name && bank_account.bank_name + ' - '}
           Emandate
         </strong>
 
@@ -45,7 +43,7 @@ export default function MandatePaymentMethod({ mandate }) {
         <strong>Card</strong>
         <>
           {!!card.issuer && card.issuer + ', '}
-          {card.network} ending in {card.last4}}
+          {card.network} ending in {card.last4}
         </>
         <>Name on card - {card.name}</>
       </Definition>
@@ -58,8 +56,7 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>UPI</strong>
-        Payment Frequency: Monthly{' '}
-        {/* Frequency is hard coded to monthly now */}
+        Payment Frequency: Monthly {/* Frequency is hard coded to monthly now */}
       </Definition>
     );
   }
