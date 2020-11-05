@@ -8,14 +8,14 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       features: state.config.features,
       terminals: state.config.paypal_terminals,
     };
   },
-  { getOnboardingStatus, onboardTerminal, showNotification }
+  { getOnboardingStatus, onboardTerminal, showNotification },
 )
 export default class PaypalOnboarding extends Component {
   constructor(props) {
@@ -30,11 +30,11 @@ export default class PaypalOnboarding extends Component {
   getOnboardingStatus = () => {
     return this.props
       .getOnboardingStatus('wallet_paypal')
-      .then(res => {
+      .then((res) => {
         this.setState({ terminals: res.data.items });
         return Promise.resolve();
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -45,7 +45,7 @@ export default class PaypalOnboarding extends Component {
   verifyAccount = () => {
     this.setState({ loading: true });
     onboardTerminal('wallet_paypal')
-      .then(res => {
+      .then((res) => {
         const w = 520;
         const h = 570;
         var left = screen.width / 2 - w / 2;
@@ -54,9 +54,9 @@ export default class PaypalOnboarding extends Component {
         const win = window.open(
           res.data.links,
           null,
-          `location=yes,height=${h},width=${w},scrollbars=yes,status=yes,left=${left},top=${top}`
+          `location=yes,height=${h},width=${w},scrollbars=yes,status=yes,left=${left},top=${top}`,
         );
-        window.addEventListener('message', e => {
+        window.addEventListener('message', (e) => {
           if (e.data === 'paypal_onboard_redirect') {
             this.is_redirected = true;
             window.focus();
@@ -74,7 +74,7 @@ export default class PaypalOnboarding extends Component {
                 this.props
                   .getOnboardingStatus('wallet_paypal')
                   .then(() => this.props.getOnboardingStatus('wallet_paypal'))
-                  .then(res => {
+                  .then((res) => {
                     this.setState({
                       terminals: res.data.items,
                       loading: false,
@@ -89,7 +89,7 @@ export default class PaypalOnboarding extends Component {
           }
         }, 400);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({ loading: false });
         this.props.showNotification({
           type: 'error',
@@ -104,14 +104,10 @@ export default class PaypalOnboarding extends Component {
 
   render() {
     let status = this.props.terminals.length && this.props.terminals[0].status;
-    let showStatus =
-      ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
+    let showStatus = ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
     return (
       <React.Fragment>
-        <div
-          class="panel panel-default paypal-auto-onboarding"
-          id="paypal-auto-onboarding"
-        >
+        <div class="panel panel-default paypal-auto-onboarding" id="paypal-auto-onboarding">
           <div class="panel-heading">
             <span class="title">PayPal </span>{' '}
             <a
@@ -138,9 +134,7 @@ export default class PaypalOnboarding extends Component {
                   }
                 })()}`}
               >
-                <span class="status-text">
-                  {status == 'created' ? 'pending' : status}
-                </span>{' '}
+                <span class="status-text">{status == 'created' ? 'pending' : status}</span>{' '}
                 <span>
                   <i class="i i-info-circle" />
                   <Popover theme="dark" align="bottom">
@@ -169,10 +163,7 @@ export default class PaypalOnboarding extends Component {
           </div>
 
           <div class="panel-body">
-            <div
-              class="description"
-              style={{ marginTop: 0, marginBottom: '15px' }}
-            >
+            <div class="description" style={{ marginTop: 0, marginBottom: '15px' }}>
               Accept international payments using PayPal on Razorpay Checkout.
             </div>
             {status === 'requested' || this.props.terminals.length === 0 ? (
@@ -189,6 +180,16 @@ export default class PaypalOnboarding extends Component {
                 {this.state.loading ? 'Processing..' : 'Link Account'}
               </button>
             ) : null}
+
+            <div className="alert alert-info">
+              <h4>International Payments Only</h4>
+              <p>
+                Currently, you can only accept payments in international currencies using PayPal.
+              </p>
+              <p>
+                You <i>CANNOT</i> accept payments in <span class="inr">INR</span> using PayPal.
+              </p>
+            </div>
           </div>
         </div>
       </React.Fragment>

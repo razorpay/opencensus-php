@@ -396,6 +396,30 @@
     border-right: 1px solid #b1abab;
   }
 
+  .alert {
+    border: 0;
+    border-left: 4px solid rgb(115, 151, 255);
+    background: rgb(241, 244, 255);
+
+    h4 {
+      color: #000;
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    p {
+      color: rgb(48, 49, 51);
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .inr {
+      background: rgb(241, 241, 241);
+      padding: 0px 3px;
+      border-radius: 2px;
+    }
+  }
+
   .paypal-onboard-img {
     position: relative;
     width: 15px;
@@ -519,36 +543,39 @@ div.enable-instant-refund-modal, div.instant-refund-fee-modal {
   border-radius: 3px;
 }
 
-.block-refunds-note
-  display flex
-  flex-direction row
-  align-items center
-  height 60px
-  margin-bottom 10px
-  border-radius 2px
-  background #FEF6DD
+.block-refunds-note {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 60px;
+  margin-bottom: 10px;
+  border-radius: 2px;
+  background: #FEF6DD;
 
-  i{
-    padding-left 15px
-    font-size 25px
-    color #CD8214
+  i {
+    padding-left: 15px;
+    font-size: 25px;
+    color: #CD8214;
   }
 
-  p{
-    padding-left 15px
-    padding-right 6px
-    font-size 12px
-    color #515978
-    
-    a{
-      font-weight bold
-      padding-left 5px
+  p {
+    padding-left: 15px;
+    padding-right: 6px;
+    font-size: 12px;
+    color: #515978;
+
+    a {
+      font-weight: bold;
+      padding-left: 5px;
     }
   }
+}
 
-.highlight-block-refund-note
-  border 1px solid #CD8214
-  margin-left -1px
-  
-.make-opaque
-  opacity .5
+.highlight-block-refund-note {
+  border: 1px solid #CD8214;
+  margin-left: -1px;
+}
+
+.make-opaque {
+  opacity: 0.5;
+}
