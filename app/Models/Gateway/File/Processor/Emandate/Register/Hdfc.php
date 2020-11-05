@@ -85,7 +85,10 @@ class Hdfc extends Base
 
             $rows[] = $row;
 
-            $this->trace->info(TraceCode::EMANDATE_REGISTER_REQUEST_ROW, ['row' => $row]);
+            $rowToTrace = $row;
+            unset($rowToTrace[Headings::CUSTOMER_ACCOUNT_NUMBER]);
+
+            $this->trace->info(TraceCode::EMANDATE_REGISTER_REQUEST_ROW, ['row' => $rowToTrace]);
         }
 
         return $rows;

@@ -74,6 +74,7 @@ class Core extends Base\Core
     {
         $traceInput = $input;
         unset($traceInput[Entity::AADHAAR_NUMBER]);
+        unset($traceInput[Entity::ACCOUNT_NUMBER]);
 
         $this->trace->info(
             TraceCode::CUSTOMER_TOKEN_CREATE,

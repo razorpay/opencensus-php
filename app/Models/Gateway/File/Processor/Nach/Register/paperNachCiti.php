@@ -235,7 +235,10 @@ class PaperNachCiti extends Base
 
             $rows[$utilityCode][] = $row;
 
-            $this->trace->info(TraceCode::NACH_REGISTER_REQUEST_ROW, ['row' => $row]);
+            $rowToTrace = $row;
+            unset($rowToTrace[Headings::CUSTOMER_ACCOUNT_NUMBER]);
+
+            $this->trace->info(TraceCode::NACH_REGISTER_REQUEST_ROW, ['row' => $rowToTrace]);
         }
 
         return $rows;
