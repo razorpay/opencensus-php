@@ -183,6 +183,13 @@ class ViewDataSerializer extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_LENDING:
+                $customLabels = [
+                    'receipt_number' => 'LOAN ACCOUNT NUMBER',
+                ];
+
+                break;
+
             case Preferences::MID_SURYODAY_BANK:
                 $customLabels = [
                     'receipt_number' => 'ACCOUNT NO',
