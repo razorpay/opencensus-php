@@ -2448,4 +2448,15 @@ class UserTest extends TestCase
         });
     }
 
+    public function testOptOutForWhatsapp()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

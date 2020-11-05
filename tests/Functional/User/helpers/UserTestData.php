@@ -1813,4 +1813,18 @@ return [
             ],
         ],
     ],
+
+    'testOptOutForWhatsapp' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_out',
+            'method'  => 'POST',
+            'content' => [
+                'source'          => 'api.admin.test.sms',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
