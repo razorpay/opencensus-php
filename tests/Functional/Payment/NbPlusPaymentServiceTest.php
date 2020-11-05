@@ -8,6 +8,7 @@ use Mockery;
 
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -310,15 +311,31 @@ class NbPlusPaymentServiceTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content = [
-                NbPlusPaymentService\Response::RESPONSE  => null,
-                NbPlusPaymentService\Response::ERROR     => [
-                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                    NbPlusPaymentService\Error::CAUSE => [
-                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
-                    ]
-                ],
-            ];
+            if ($action === NbPlusPaymentService\Action::AUTHORIZE)
+            {
+                $content = [
+                    NbPlusPaymentService\Response::RESPONSE  => null,
+                    NbPlusPaymentService\Response::ERROR     => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                        ]
+                    ],
+                ];
+            }
+
+            if ($action === NbPlusPaymentService\Action::VERIFY)
+            {
+                $content = [
+                    NbPlusPaymentService\Response::RESPONSE  => null,
+                    NbPlusPaymentService\Response::ERROR     => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_CANCELLED_BY_USER'
+                        ]
+                    ],
+                ];
+            }
         });
 
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
@@ -332,6 +349,8 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
+
         $this->verifyPayment($payment[Payment\Entity::ID]);
 
         $payment = $this->getLastPayment(true);
@@ -339,6 +358,9 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+
+        // error code is updated on verify response
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
     public function testAuthorizeHandleErrorResponse()

@@ -43,6 +43,7 @@ class Service
     protected $gateway;
     protected $input;
     protected $app;
+    protected $exception;
 
     public function __construct()
     {
@@ -170,7 +171,21 @@ class Service
             $this->traceResponse($response);
         }
 
-        $this->checkForErrors($response, $code);
+        try
+        {
+            $this->checkForErrors($response, $code);
+        }
+        catch (\Exception $exc)
+        {
+            $this->exception = $exc;
+
+            // errors are handled in a different manner for verify related flows
+            if (($exc instanceof Exception\ServerErrorException) or
+                ($this->action !== Action::VERIFY and $this->action !== Action::AUTHORIZE_FAILED))
+            {
+                throw $exc;
+            }
+        }
 
         return $response[Response::RESPONSE];
     }
@@ -296,6 +311,8 @@ class Service
         if (($verify->match === true) and
             ($verify->apiSuccess === false))
         {
+            $verify->error = $this->exception->getError()->getAttributes();
+
             return $verify;
         }
 
@@ -331,12 +348,6 @@ class Service
         if ($error[Error::CODE] !== Error::GATEWAY)
         {
             $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
-        }
-
-        // Gateway errors are handled in a different manner for the below two flows
-        if ($this->action === Action::VERIFY or $this->action === Action::AUTHORIZE_FAILED)
-        {
-            return;
         }
 
         $errorCode = $error[Error::CAUSE][Error::MOZART_ERROR_CODE];
