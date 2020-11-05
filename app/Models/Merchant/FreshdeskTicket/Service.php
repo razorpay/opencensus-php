@@ -303,7 +303,7 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 5;
 
-        $queryParams = 'email=' . urlencode($email) . '&' . 'order_by=status' . '&' . 'order_type=desc';
+        $queryParams = 'email=' . urlencode($email);
 
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 

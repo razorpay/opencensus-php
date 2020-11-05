@@ -452,9 +452,9 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         ];
 
         switch ($queryString) {
-            case 'email=success%40gmail.com&order_by=status&order_type=desc':
+            case 'email=success%40gmail.com':
                 return $successResponse;
-            case 'email=failure%40gmail.com&order_by=status&order_type=desc':
+            case 'email=failure%40gmail.com':
                 return $failureResponse;
             default:
                 return $successResponse;
