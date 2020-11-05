@@ -14,7 +14,11 @@ import Button from 'common/new-ui/Button';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import { showKYCStatusModal } from 'merchant/reducers/home';
-import { rxCaSelectedFlag, caReqEventType, rxCaExp } from 'merchant/containers/Home/OnboardingCard/data';
+import {
+  rxCaSelectedFlag,
+  caReqEventType,
+  rxCaExp,
+} from 'merchant/containers/Home/OnboardingCard/data';
 
 import RTracking from 'react-tracking';
 import { withRouter } from 'react-router-dom';
@@ -36,7 +40,7 @@ const successImg = '/img/activation/submit-success.svg';
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     session: state.session,
     user: state.session.user,
   }),
@@ -44,7 +48,7 @@ const successImg = '/img/activation/submit-success.svg';
     showNotification,
     updateSession,
     showKYCStatusModal,
-  }
+  },
 )
 export default class ActivationContainer extends React.Component {
   constructor(props) {
@@ -68,30 +72,28 @@ export default class ActivationContainer extends React.Component {
 
     this.state = {
       isFormTouched: someDetailsFilled,
-      rxCaCheckboxSelect: false // local checkbox state
+      rxCaCheckboxSelect: false, // local checkbox state
     };
 
-    this.activationFormName = user.showInstantActivation
-      ? 'KYC Form'
-      : 'Activation Form';
+    this.activationFormName = user.showInstantActivation ? 'KYC Form' : 'Activation Form';
 
     if (props.rpc && props.rpc.notifyOnKYCSuccess) {
-      props.rpc.notifyOnKYCSuccess(reply => {
+      props.rpc.notifyOnKYCSuccess((reply) => {
         this.onKYCSuccess = reply;
       });
 
-      props.rpc.notifySupportPopupOpen(reply => {
+      props.rpc.notifySupportPopupOpen((reply) => {
         this.onSupportOpen = reply;
       });
 
-      props.rpc.notifySupportPopupClose(reply => {
+      props.rpc.notifySupportPopupClose((reply) => {
         this.onSupportClose = reply;
       });
     }
 
     const settings = props.user.user.settings;
     if (!!settings[rxCaSelectedFlag] && settings[rxCaSelectedFlag] === '1') {
-      this.state.rxCaCheckboxSelect = true // make it checked if the rxCaSelectedFlag exist in Settings (persists post refresh)
+      this.state.rxCaCheckboxSelect = true; // make it checked if the rxCaSelectedFlag exist in Settings (persists post refresh)
     }
 
     window.addEventListener('modal-open', this.handleSupportModalOpen);
@@ -133,7 +135,7 @@ export default class ActivationContainer extends React.Component {
           current_ca: null,
           use_case: null,
           product_name: 'Current_Account',
-          source: 'PG-KYC'
+          source: 'PG-KYC',
         },
       };
 
@@ -145,14 +147,11 @@ export default class ActivationContainer extends React.Component {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
-        .then(() => {
-          this.props.tracking.trackEvent(
-            window.rzpQ.onbr().initiated('rx_KYC_ca_requested'),
-          );
-        });
+      }).then(() => {
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('rx_KYC_ca_requested'));
+      });
     }
-  }
+  };
 
   updateSession(data) {
     const { session, accountId } = this.props;
@@ -171,12 +170,7 @@ export default class ActivationContainer extends React.Component {
       this.preloadSuccessAsset();
     }
 
-    const {
-      activation_progress,
-      activated,
-      activation_status,
-      submitted,
-    } = data;
+    const { activation_progress, activated, activation_status, submitted } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
     const user = new User({
@@ -193,7 +187,7 @@ export default class ActivationContainer extends React.Component {
     });
   }
 
-  submitForm = data => {
+  submitForm = (data) => {
     return merchantFetch({
       url: 'merchant/activation',
       method: 'post',
@@ -202,7 +196,7 @@ export default class ActivationContainer extends React.Component {
       data: { submit: 1 },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
     })
-      .then(response => {
+      .then((response) => {
         if (!response.data.can_submit) {
           throw { errors: ['Some mandatory fields are required'] };
         }
@@ -216,7 +210,7 @@ export default class ActivationContainer extends React.Component {
 
         return response;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -226,7 +220,7 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
-  saveStep = data => {
+  saveStep = (data) => {
     return merchantFetch({
       url: 'merchant/activation',
       // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
@@ -238,7 +232,7 @@ export default class ActivationContainer extends React.Component {
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
     })
-      .then(response => {
+      .then((response) => {
         if (!response.data) {
           this.props.showNotification({
             type: 'error',
@@ -250,20 +244,17 @@ export default class ActivationContainer extends React.Component {
 
         return response;
       })
-      .catch(err => {
+      .catch((err) => {
         let errors = [];
 
         if (err.errors) {
-          err.errors.forEach(er => {
+          err.errors.forEach((er) => {
             if (er.toLowerCase().indexOf('status code') === -1) {
               // TODO: BE treats LLPin as cin currently. So, gives error for cin, not LLPin. To revert when BE handles.
               if (er.indexOf('cin') !== -1) {
                 const businessType = this.props.data.business_type;
 
-                if (
-                  businessType &&
-                  LLPIN_BusinessTypes.indexOf(Number(businessType)) !== -1
-                ) {
+                if (businessType && LLPIN_BusinessTypes.indexOf(Number(businessType)) !== -1) {
                   er = er.replace('cin', 'llpin');
                 }
               }
@@ -289,7 +280,7 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
-  verifyData = payload => {
+  verifyData = (payload) => {
     let { type, ...data } = payload;
     merchantFetch({
       url: `merchant/verify/${type}`,
@@ -301,7 +292,7 @@ export default class ActivationContainer extends React.Component {
       },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
-    }).catch(() => { });
+    }).catch(() => {});
   };
 
   postSubmitStep(response) {
@@ -329,7 +320,7 @@ export default class ActivationContainer extends React.Component {
       accountId: this.props.accountId,
       onUploadProgress: progressTracker,
     })
-      .then(response => {
+      .then((response) => {
         if (response.data) {
           this.props.showNotification({
             type: 'success',
@@ -341,7 +332,7 @@ export default class ActivationContainer extends React.Component {
           return response;
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
             type: 'error',
@@ -368,7 +359,7 @@ export default class ActivationContainer extends React.Component {
         method: 'delete',
         mode: 'live',
       })
-        .then(res => {
+        .then((res) => {
           if (res.success && res.data) {
             this.props.updateActivationData(res.data);
             cb && cb();
@@ -378,7 +369,7 @@ export default class ActivationContainer extends React.Component {
             });
           }
         })
-        .catch(err => {
+        .catch((err) => {
           showNotification({
             type: 'error',
             message: 'File Not Found!',
@@ -390,7 +381,7 @@ export default class ActivationContainer extends React.Component {
   // Fetch state_code and city to auto populate business_*_state and business_*_city fields in form
   getPincodeDetails(pincode) {
     return merchantFetch(`pincodes/${pincode}`)
-      .then(response => {
+      .then((response) => {
         if (response.data) {
           return {
             city: response.data.city,
@@ -400,7 +391,7 @@ export default class ActivationContainer extends React.Component {
 
         return null;
       })
-      .catch(err => {
+      .catch((err) => {
         return null;
       });
   }
@@ -410,7 +401,7 @@ export default class ActivationContainer extends React.Component {
     this.setState({ openWizard: true });
   };
 
-  saveDirtyState = e => {
+  saveDirtyState = (e) => {
     this.wizard && this.wizard.goto(null); // To save existing tab in Activation Wizard
   };
 
@@ -428,34 +419,35 @@ export default class ActivationContainer extends React.Component {
     this.props.sendEventsForSubMerchantView(
       window.rzpQ
         .routeActions()
-        .initiated('route.linked_account.activate_account.bank_account_details')
+        .initiated('route.linked_account.activate_account.bank_account_details'),
     );
   }
 
   handleRxCaCheckboxChange = () => {
-    this.setState((state) => ({
-      rxCaCheckboxSelect: !state.rxCaCheckboxSelect // set local state
-    }), () => {
-      const _settings = { ...this.props.user.user.settings };
-      _settings[rxCaSelectedFlag] = '0';
+    this.setState(
+      (state) => ({
+        rxCaCheckboxSelect: !state.rxCaCheckboxSelect, // set local state
+      }),
+      () => {
+        const _settings = { ...this.props.user.user.settings };
+        _settings[rxCaSelectedFlag] = '0';
 
-      if (!!this.state.rxCaCheckboxSelect) {
-        _settings[rxCaSelectedFlag] = '1';
-      }
+        if (!!this.state.rxCaCheckboxSelect) {
+          _settings[rxCaSelectedFlag] = '1';
+        }
 
-      // update the status to settings table so that it persists post refresh
-      merchantFetch({
-        url: 'users',
-        mode: 'live',
-        method: 'patch',
-        data: { settings: _settings },
-      })
-        .then(res => {
+        // update the status to settings table so that it persists post refresh
+        merchantFetch({
+          url: 'users',
+          mode: 'live',
+          method: 'patch',
+          data: { settings: _settings },
+        }).then((res) => {
           this.props.updateUser({ settings: _settings });
         });
-
-    });
-  }
+      },
+    );
+  };
 
   componentWillUnmount() {
     this.handleSupportModalClose();
@@ -482,31 +474,21 @@ export default class ActivationContainer extends React.Component {
         this.props.history.replace(`/`);
         content = null;
       }
-    } else if (
-      !accountId &&
-      !this.state.isFormTouched &&
-      !this.state.openWizard
-    ) {
+    } else if (!accountId && !this.state.isFormTouched && !this.state.openWizard) {
       modalClass = 'Activation--welcome';
-      content = (
-        <WelcomeScreen
-          onClose={this.props.onClose}
-          openWizard={this.openWizard}
-        />
-      );
+      content = <WelcomeScreen onClose={this.props.onClose} openWizard={this.openWizard} />;
     } else {
       modalClass = 'Activation--wizard';
       const formData = {
         ...data,
-        business_category:
-          data.business_category || (data.business_model ? 'others' : null),
+        business_category: data.business_category || (data.business_model ? 'others' : null),
       };
 
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
           data={formData}
-          ref={refId => (this.wizard = refId)}
+          ref={(refId) => (this.wizard = refId)}
           categories={categories}
           isFormTouched={this.state.isFormTouched}
           save={this.saveStep}
@@ -550,8 +532,8 @@ const SuccessScreen = ({ formName = 'Activation Form' }) => {
       <div class="Activation-info">
         <i class="i i-check" /> {formName} Submitted
         <p class="desc">
-          Our team will review the form and submitted documents. We will reach
-          out on your contact email for all updates.
+          Our team will review the form and submitted documents. We will reach out on your contact
+          email for all updates.
         </p>
       </div>
 
@@ -559,9 +541,7 @@ const SuccessScreen = ({ formName = 'Activation Form' }) => {
         <side-title>What's Next?</side-title>
         <LinkCard
           title={'Personalise Your Account'}
-          description={
-            'Personalise your checkout form, emails and pages with your logo and brand.'
-          }
+          description={'Personalise your checkout form, emails and pages with your logo and brand.'}
           icon={'icon-done'}
           onClick={clickConfig}
           to="/config"
@@ -582,17 +562,12 @@ const WelcomeScreen = ({ openWizard }) => {
       <img src={welcomeImg} class="welcome-illustration" />
       <div class="short-content">
         <p>
-          Simply submit your business details and upload relevant proofs to
-          start accepting payments.
+          Simply submit your business details and upload relevant proofs to start accepting
+          payments.
         </p>
-        <p>
-          Once you submit the form, our team will review it to activate your
-          account.
-        </p>
+        <p>Once you submit the form, our team will review it to activate your account.</p>
 
-        <Button.Primary onClick={openWizard}>
-          Go to Activation Form
-        </Button.Primary>
+        <Button.Primary onClick={openWizard}>Go to Activation Form</Button.Primary>
       </div>
     </div>
   );
@@ -610,11 +585,8 @@ function isFormTouched(data) {
 
   let isDirty = false;
 
-  Object.keys(data).find(key => {
-    if (
-      defaultKeysInForm.indexOf(key) > -1 ||
-      excludedFieldsInForm.indexOf(key) > -1
-    ) {
+  Object.keys(data).find((key) => {
+    if (defaultKeysInForm.indexOf(key) > -1 || excludedFieldsInForm.indexOf(key) > -1) {
       return false;
     }
     if (data[key] != null) {

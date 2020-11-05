@@ -40,9 +40,12 @@ import {
   isRXV2Onboarding,
   showSubcategory,
   removeArrayDuplicatesByProp,
+  hasUploadedBusinessProofUrl,
+  hasUploadedBusinessProofTypeDoc,
+  isBusinessProofTypeDocFieldVisible,
 } from './ActivationUtils';
 
-import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
+import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -619,7 +622,7 @@ const uploadFields = [
     },
     getName: (activation) => activation.state.address_proof + '_' + 'front',
     _cmp: Input.File,
-    className: 'AddressProof-upload',
+    className: 'document-group',
     _type: 'address_proof_doc_upload',
     _when: (activation) => {
       return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
@@ -635,7 +638,7 @@ const uploadFields = [
     },
     getName: (activation) => activation.state.address_proof + '_' + 'back',
     _cmp: Input.File,
-    className: 'AddressProof-upload',
+    className: 'document-group',
     _type: 'address_proof_doc_upload',
     _when: (activation) => {
       return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
@@ -697,7 +700,45 @@ const uploadFields = [
 
       return description;
     },
-    _when: excludeFor_Indiv,
+    _when: (activation) => {
+      const currentBusinessType =
+        Number(activation.state.dirty.business_type) || Number(activation.props.data.business_type);
+      if (!isUnregisteredBusiness(activation)) {
+        if (currentBusinessType === PROPRIETORSHIP && hasUploadedBusinessProofTypeDoc(activation)) {
+          return false;
+        }
+        if (
+          currentBusinessType !== PROPRIETORSHIP ||
+          (hasUploadedBusinessProofUrl(activation) && activation.props.data.submitted)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    },
+  },
+  {
+    label: 'Business Registration Proof',
+    _name: 'business_proof_type',
+    _cmp: Input.Select,
+    options: Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((type) => ({
+      label: BUSINESS_PROOF_TYPE_DOCS[type],
+      name: type,
+    })),
+    _when: isBusinessProofTypeDocFieldVisible,
+  },
+  {
+    label: '',
+    name: 'business_proof_type_doc',
+    getLabel: (activation) => BUSINESS_PROOF_TYPE_DOCS[activation.state.business_proof_type],
+    getName: (activation) => activation.state.business_proof_type,
+    _cmp: Input.File,
+    description: (activation) => {
+      const businessProofType = activation.state.business_proof_type;
+      return `Upload the scan of ${BUSINESS_PROOF_TYPE_DOCS[businessProofType]}`;
+    },
+    _when: isBusinessProofTypeDocFieldVisible,
+    className: 'document-group',
   },
   {
     name: 'business_pan_url',
@@ -810,7 +851,7 @@ const uploadFields = [
     },
     getName: (activation) => activation.state.additional_doc,
     _cmp: Input.File,
-    className: 'AddressProof-upload',
+    className: 'document-group',
     _when: doesHaveAdditionalDocs,
     required: (activation) => isAdditonalDocRequired(activation.state, activation.props),
   },
@@ -825,7 +866,7 @@ export const ndcFields = [
     _autoRenderImpure: true,
     description: 'Please upload a copy of cancelled cheque.',
     _cmp: Input.File,
-    className: 'AddressProof-upload',
+    className: 'document-group',
     _when: (activation) => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },

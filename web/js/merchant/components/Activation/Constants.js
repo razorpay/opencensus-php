@@ -285,3 +285,10 @@ export const FOOTER_BUTTONS = {
   SUBMIT_L1_FORM,
   SUBMIT_KYC_FORM,
 };
+
+// Business Proof Docs (Only for Proprietorship business)
+export const BUSINESS_PROOF_TYPE_DOCS = {
+  gst_certificate: 'GST Certificate',
+  msme_certificate: 'MSME Certificate',
+  shop_establishment_certificate: 'Shop Establishment Act Certificate',
+};

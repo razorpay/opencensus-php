@@ -8,6 +8,7 @@ import {
   DEFAULT_ADDITIONAL_DOC_REG_BIZ,
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
+  BUSINESS_PROOF_TYPE_DOCS,
 } from './Constants';
 
 const NOT_REGISTERED = 11; // 'Unregistered Businesses
@@ -297,16 +298,64 @@ function showSubcategory(activation) {
 
 function removeArrayDuplicatesByProp(originalArray, prop) {
   var newArray = [];
-  var uniqueObject  = {};
+  var uniqueObject = {};
 
-  for(var i in originalArray) {
+  for (var i in originalArray) {
     uniqueObject[originalArray[i][prop]] = originalArray[i];
   }
 
-  for(i in uniqueObject) {
-      newArray.push(uniqueObject[i]);
+  for (i in uniqueObject) {
+    newArray.push(uniqueObject[i]);
   }
-   return newArray;
+  return newArray;
+}
+
+function doesHaveBusinessProofDocs(activation) {
+  const businessType =
+    Number(activation.state.dirty.business_type) || Number(activation.props.data.business_type);
+  return businessType === 1;
+}
+
+function getDefaultBusinessProofDoc(activation) {
+  let defaultBusinessProofDoc = '';
+  const documents = activation.props.data.documents;
+  if (documents.gst_certificate && documents.gst_certificate.length) {
+    defaultBusinessProofDoc = 'gst_certificate';
+  } else if (
+    documents.shop_establishment_certificate &&
+    documents.shop_establishment_certificate.length
+  ) {
+    defaultBusinessProofDoc = 'shop_establishment_certificate';
+  } else if (documents.msme_certificate && documents.msme_certificate.length) {
+    defaultBusinessProofDoc = 'msme_certificate';
+  } else {
+    defaultBusinessProofDoc = 'gst_certificate';
+  }
+  return defaultBusinessProofDoc;
+}
+
+function hasUploadedBusinessProofUrl(activation) {
+  const documents = activation.props.data.documents;
+  return !!(documents && documents.business_proof_url && documents.business_proof_url.length);
+}
+
+function hasUploadedBusinessProofTypeDoc(activation) {
+  const documents = activation.props.data.documents;
+  return Object.keys(BUSINESS_PROOF_TYPE_DOCS).some((key) => isPresent(documents[key]));
+}
+
+function isBusinessProofTypeDocFieldVisible(activation) {
+  const currentBusinessType =
+    Number(activation.state.dirty.business_type) || Number(activation.props.data.business_type);
+  if (currentBusinessType === PROPRIETORSHIP) {
+    if (
+      !(hasUploadedBusinessProofUrl(activation) && activation.props.data.submitted) ||
+      hasUploadedBusinessProofTypeDoc(activation)
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export {
@@ -338,4 +387,9 @@ export {
   isRXV2Onboarding,
   showSubcategory,
   removeArrayDuplicatesByProp,
+  doesHaveBusinessProofDocs,
+  getDefaultBusinessProofDoc,
+  hasUploadedBusinessProofUrl,
+  hasUploadedBusinessProofTypeDoc,
+  isBusinessProofTypeDocFieldVisible,
 };

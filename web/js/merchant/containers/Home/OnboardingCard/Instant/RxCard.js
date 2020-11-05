@@ -13,7 +13,7 @@ import RTracking from 'react-tracking';
   }),
   {
     updateUser,
-  }
+  },
 )
 class RxCard extends Component {
   constructor(props) {
@@ -41,15 +41,12 @@ class RxCard extends Component {
         mode: 'live',
         method: 'patch',
         data: { settings: _settings },
-      })
-        .then(() => {
-          this.props.updateUser({ settings: _settings });
-        });
-      this.props.tracking.trackEvent(
-        window.rzpQ.onbr().initiated('rx_home_ca_visited'),
-      );
+      }).then(() => {
+        this.props.updateUser({ settings: _settings });
+      });
+      this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('rx_home_ca_visited'));
     }
-  }
+  };
 
   applyForCa = () => {
     const { user } = this.props;
@@ -67,7 +64,7 @@ class RxCard extends Component {
         current_ca: null,
         use_case: null,
         product_name: 'Current_Account',
-        source: 'PG-HOME'
+        source: 'PG-HOME',
       },
     };
     this.props.updateUser({ settings: _settings });
@@ -79,28 +76,24 @@ class RxCard extends Component {
       headers: {
         'Content-Type': 'application/json',
       },
-    })
-      .then(res => {
-        merchantFetch({
-          url: 'users',
-          mode: 'live',
-          method: 'patch',
-          data: { settings: _settings },
-        })
-          .then(() => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.onbr().initiated('rx_home_ca_requested'),
-            );
-          });
+    }).then((res) => {
+      merchantFetch({
+        url: 'users',
+        mode: 'live',
+        method: 'patch',
+        data: { settings: _settings },
+      }).then(() => {
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('rx_home_ca_requested'));
       });
-  }
+    });
+  };
 
   handleClose = () => {
     LocalStorageService.setItem(this.props.lsKey, 1);
     this.setState({
       hidden: true,
     });
-  }
+  };
 
   get isRxCaExpEnabled() {
     const { experiments } = this.props.user;
@@ -121,69 +114,62 @@ class RxCard extends Component {
     }
 
     return (
-      <div className='rx-ca-onboarding-card'>
-        <div className='side' />
-        <img className='right-bottom-img' src='/dist/css/assets/onboarding/rx-bg-right.svg' />
-        <div
-          className='cross'
-          onClick={this.handleClose}
-        >
+      <div className="rx-ca-onboarding-card">
+        <div className="side" />
+        <img className="right-bottom-img" src="/dist/css/assets/onboarding/rx-bg-right.svg" />
+        <div className="cross" onClick={this.handleClose}>
           <i class="i i-close" />
         </div>
-        <div className='left-container'>
+        <div className="left-container">
           <div>
-            <img className='img-left' src="/dist/css/assets/onboarding/parliament.svg" />
+            <img className="img-left" src="/dist/css/assets/onboarding/parliament.svg" />
           </div>
-          <div className='left-info'>
-            <div className='title'>Receive your money in RazorpayX Current Account</div>
-            <div className='subtext'>For this you will get a new current account with various benefits</div>
-            {
-              !applied
-                ?
-                <>
-                  <Button.Primary
-                    type="button"
-                    onClick={this.applyForCa}
-                  >
-                    Apply for Current Account
+          <div className="left-info">
+            <div className="title">Receive your money in RazorpayX Current Account</div>
+            <div className="subtext">
+              For this you will get a new current account with various benefits
+            </div>
+            {!applied ? (
+              <>
+                <Button.Primary type="button" onClick={this.applyForCa}>
+                  Apply for Current Account
                 </Button.Primary>
-                  <a
-                    href="https://razorpay.com/x/current-accounts/"
-                    target="_blank"
-                    className='learn-more'
-                  >
-                    Learn more
-                    <i class="i i-external-link" />
-                  </a>
-                </>
-                :
-                <div className='req-success'>
-                  <div>
-                    <img className='req-submit' src='/dist/css/assets/onboarding/done.png' />
-                  </div>
-                  <div className='req-info'>Request submitted successfully. Our executive will call you for further process</div>
+                <a
+                  href="https://razorpay.com/x/current-accounts/"
+                  target="_blank"
+                  className="learn-more"
+                >
+                  Learn more
+                  <i class="i i-external-link" />
+                </a>
+              </>
+            ) : (
+              <div className="req-success">
+                <div>
+                  <img className="req-submit" src="/dist/css/assets/onboarding/done.png" />
                 </div>
-            }
+                <div className="req-info">
+                  Request submitted successfully. Our executive will call you for further process
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        <div className='right-container'>
-          {
-            rxBenefits.map((el, i) => {
-              let classes = 'single-container';
-              if (i < rxBenefits.length - 1) {
-                classes += ' right-info';
-              }
-              return (<div key={i} className={classes}>
+        <div className="right-container">
+          {rxBenefits.map((el, i) => {
+            let classes = 'single-container';
+            if (i < rxBenefits.length - 1) {
+              classes += ' right-info';
+            }
+            return (
+              <div key={i} className={classes}>
                 <div>
                   <img src="/dist/css/assets/onboarding/points.svg" />
                 </div>
-                <div>{el}
-                </div>
+                <div>{el}</div>
               </div>
-              )
-            }
-            )
-          }
+            );
+          })}
         </div>
       </div>
     );

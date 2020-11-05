@@ -39,7 +39,8 @@ const MODAL_CONTENT = {
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
         <p>
-          We’ll review the form and get back to you in {args.activationDuration || predefinedActivationDuration}.{' '}
+          We’ll review the form and get back to you in{' '}
+          {args.activationDuration || predefinedActivationDuration}.{' '}
           {args.isWhitelistFlow ? 'Meanwhile, you can continue accepting payments.' : ''}
         </p>
       </div>
@@ -90,7 +91,7 @@ const ModalButtons = ({ args, modalType }) => {
   );
 };
 
-const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType , activationDuration}) => {
+const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType, activationDuration }) => {
   const content = MODAL_CONTENT[modalType];
   let defaultSubtitle = 'Ready to accept domestic payments';
 

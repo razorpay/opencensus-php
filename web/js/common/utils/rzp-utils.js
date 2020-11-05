@@ -1086,9 +1086,8 @@ export function handleNegativeBalanceLimit(balanceConfig, balance) {
  */
 
 export function checkIsObjectEmpty(obj) {
-  for(var key in obj) {
-      if(obj.hasOwnProperty(key) && obj[key] !== '')
-          return false;
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key) && obj[key] !== '') return false;
   }
   return true;
 }

@@ -75,6 +75,8 @@ import {
   getAdditionalDocOptions,
   hasAPIL1Error,
   displayCompanyPAN,
+  doesHaveBusinessProofDocs,
+  getDefaultBusinessProofDoc,
 } from './ActivationUtils';
 
 import {
@@ -148,6 +150,7 @@ export default class ActivationWizard extends React.Component {
     address_proof: 'aadhar',
     needsClarification: {},
     additional_doc: '',
+    business_proof_type: 'gst_certificate',
     commentlist: {},
   };
 
@@ -257,6 +260,13 @@ export default class ActivationWizard extends React.Component {
         FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
           ADDITIONAL_DOC_SELECT_FIELD_INDEX
         ].options = getAdditionalDocOptions(this);
+      }
+
+      if (doesHaveBusinessProofDocs(this)) {
+        // Set default business proof doc if there can be multiple choices for business proof
+        // Only applicable for Proprietorship businesses currently
+        const defaultBusinessProofDoc = getDefaultBusinessProofDoc(this);
+        this.state.business_proof_type = defaultBusinessProofDoc;
       }
     }
 
@@ -806,6 +816,9 @@ export default class ActivationWizard extends React.Component {
         },
         address_proof_back: () => {
           return `${state.address_proof}_back`;
+        },
+        business_proof_type_doc: () => {
+          return state.business_proof_type;
         },
       };
       const hasFilledEverything = FORM_TABS_NAMES[NEEDS_CLARIFICATION_STEP].every((field) => {

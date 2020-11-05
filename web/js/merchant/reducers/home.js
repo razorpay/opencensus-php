@@ -145,7 +145,7 @@ export const showInstantActivationSuccessModal = () => {
   };
 };
 
-export const showKYCStatusModal = ({ modalType = '', activationDuration='1-2 working days' }) => {
+export const showKYCStatusModal = ({ modalType = '', activationDuration = '1-2 working days' }) => {
   return {
     type: SHOW_KYC_STATUS_MODAL,
     payload: { modalType, activationDuration },

@@ -90,23 +90,25 @@ ${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
   border-color: ${it.sidebarLinkActive || it.transparent} !important;
 }
 
-${it.sideBarIcon
+${
+  it.sideBarIcon
     ? `
 .sidebar .nav > a:focus,
 .sidebar .nav > a >i{
 color:${it.sideBarIcon};
 }`
     : ``
-  }
+}
 
-${it.sideBarIconActive
+${
+  it.sideBarIconActive
     ? `
 .sidebar .nav > a:focus,
 .sidebar .nav > a.active>i{
 color:${it.sideBarIconActive};
 }`
     : ``
-  }
+}
 
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {

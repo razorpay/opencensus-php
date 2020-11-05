@@ -18,9 +18,17 @@ export function onBoardingItems(user) {
 }
 
 export const rxBenefits = [
-  <span className='rx-benefits'><span className='highlight'>Pricing reduced to 1.85%</span> for all payment methods on payment gateway</span>,
-  <span className='rx-benefits'><span className='highlight'>Setup & maintenance costs</span> waived off</span>,
-  <span className='rx-benefits'><span className='highlight'>500 free payouts per month </span> and reduced pricing for payouts on RazorpayX</span>,
+  <span className="rx-benefits">
+    <span className="highlight">Pricing reduced to 1.85%</span> for all payment methods on payment
+    gateway
+  </span>,
+  <span className="rx-benefits">
+    <span className="highlight">Setup & maintenance costs</span> waived off
+  </span>,
+  <span className="rx-benefits">
+    <span className="highlight">500 free payouts per month </span> and reduced pricing for payouts
+    on RazorpayX
+  </span>,
 ];
 
 export const rxCaFlag = 'rxCaFlag';

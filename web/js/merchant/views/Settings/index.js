@@ -19,12 +19,12 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 @RTracking(() => window.rzpQ.component('Settings'))
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     mode: state.session.mode,
   }),
   {
     fetchAddWebsiteWorkflowStatus,
-  }
+  },
 )
 export default class Settings extends Component {
   state = {
@@ -49,7 +49,7 @@ export default class Settings extends Component {
     analyticsGoTo('Settings');
   }
 
-  isPaymentMethodEnabled = user => {
+  isPaymentMethodEnabled = (user) => {
     return (
       user.activation_status === 'activated' &&
       user.isOrgRZP === true &&
@@ -63,9 +63,7 @@ export default class Settings extends Component {
     return (
       <tabbed-container>
         <header id="settings-header">
-          <ShowWhen
-            additionalCondition={user => user.isAllowedView('configuration')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('configuration')}>
             <NavLink
               to="/config"
               onClick={() => {
@@ -73,7 +71,7 @@ export default class Settings extends Component {
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
                     action: 'View_Configurations',
-                  })
+                  }),
                 );
               }}
             >
@@ -81,9 +79,7 @@ export default class Settings extends Component {
             </NavLink>
           </ShowWhen>
 
-          <ShowWhen
-            additionalCondition={user => user.isAllowedView('webhooks')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('webhooks')}>
             <NavLink
               to="/webhooks"
               onClick={() => {
@@ -91,7 +87,7 @@ export default class Settings extends Component {
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
                     action: 'View_Webhook_Tab',
-                  })
+                  }),
                 );
               }}
             >
@@ -99,9 +95,7 @@ export default class Settings extends Component {
             </NavLink>
           </ShowWhen>
 
-          <ShowWhen
-            additionalCondition={user => user.isAllowedView('api_keys')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('api_keys')}>
             <NavLink
               to="/keys"
               onClick={() => {
@@ -109,7 +103,7 @@ export default class Settings extends Component {
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('dash.settings_action', {
                     action: 'View_API_Key_Tab',
-                  })
+                  }),
                 );
               }}
             >
@@ -123,17 +117,12 @@ export default class Settings extends Component {
 
           <ShowWhen
             featureEnabled="Oauth"
-            additionalCondition={user => user.isAllowedView('applications')}
+            additionalCondition={(user) => user.isAllowedView('applications')}
           >
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
-          <ShowWhen
-            additionalCondition={user => this.isPaymentMethodEnabled(user)}
-          >
-            <NavLink
-              to="/payment-methods"
-              onClick={() => analyticsGoTo('Payment Methods')}
-            >
+          <ShowWhen additionalCondition={(user) => this.isPaymentMethodEnabled(user)}>
+            <NavLink to="/payment-methods" onClick={() => analyticsGoTo('Payment Methods')}>
               Payment Methods
             </NavLink>
           </ShowWhen>
@@ -144,7 +133,7 @@ export default class Settings extends Component {
           <Route path="/webhooks" component={Webhooks} />
           <Route
             path="/keys"
-            component={props => (
+            component={(props) => (
               <ApiKeys
                 {...props}
                 onWebsiteAdd={this.onWebsiteAdd}
@@ -165,7 +154,7 @@ export default class Settings extends Component {
   }
 }
 
-const analyticsGoTo = name => {
+const analyticsGoTo = (name) => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Settings',
     eventAction: `Go To - ${name}`,

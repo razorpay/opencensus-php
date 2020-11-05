@@ -111,6 +111,9 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       voter_id_back: 'address_proof_back',
       driver_license_front: 'address_proof_front',
       driver_license_back: 'address_proof_back',
+      gst_certificate: 'business_proof_type_doc',
+      msme_certificate: 'business_proof_type_doc',
+      shop_establishment_certificate: 'business_proof_type_doc',
     };
 
     if (Boolean(mappedFields[key]) || (Boolean(forceMap) && allFieldsHash[mappedFields[key]])) {
@@ -119,6 +122,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     //Implement functionality for custom fields here
     //Push the field to allFieldsHash & return the name of field
   };
+
   try {
     scanFields(allFieldsMap);
     scanFields(ndcFields);

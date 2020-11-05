@@ -150,7 +150,7 @@ export default class OnboardingCardInstant extends Component {
         isAccepted,
         isWebsiteInWorkflow,
       };
-    
+
     return (
       <div className="onboarding-card-instant">
         <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
@@ -198,7 +198,7 @@ export default class OnboardingCardInstant extends Component {
             />
           ))}
         </div>
-        <RxCard lsKey={`rx-ca-${user.current}`}/>
+        <RxCard lsKey={`rx-ca-${user.current}`} />
       </div>
     );
   }
