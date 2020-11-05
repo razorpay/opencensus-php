@@ -56,6 +56,8 @@ class Error extends Support\Fluent
 
     const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
 
+    const ERROR_CODE_VERIFIABLE_FILE_PATH  = 'files/errorcodes/error_verifiable_%s.csv';
+
     protected $attributes = array();
 
     protected $app;
@@ -302,6 +304,44 @@ class Error extends Support\Fluent
     public function readMappingFromFile($method, & $errorCodeMap)
     {
         $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
+
+        if (file_exists($filePath) === false)
+        {
+            return;
+        }
+
+        $handle = fopen($filePath,"r");
+
+        if ($handle === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $header = fgetcsv($handle);
+
+            while ($row = fgetcsv($handle))
+            {
+                $key = array_shift($row);
+
+                $errorCodeMap[$key] = $row;
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
+                ['payment_method'  => $method]);
+        }
+        finally
+        {
+            fclose($handle);
+        }
+    }
+
+    public function readVerifiableErrorMappingFromFile(string $method, & $errorCodeMap)
+    {
+        $filePath = storage_path(sprintf(self::ERROR_CODE_VERIFIABLE_FILE_PATH, $method));
 
         if (file_exists($filePath) === false)
         {

@@ -5,18 +5,20 @@ namespace RZP\Models\Payment\Verify;
 use App;
 use Config;
 use Carbon\Carbon;
+use RZP\Exception;
 use RedisDualWrite;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Base;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Processor\Verify as VerifyTrait;
 
 class Verify extends Base\Core
 {
+    use VerifyTrait;
     // ================== Configurations ==================
 
     /**
@@ -319,6 +321,53 @@ class Verify extends Base\Core
         return $summary;
     }
 
+    public function verifyAllPaymentsNewRoute($timestamps, $gateway, $count, $bucket)
+    {
+        $verifyFetchStartTime = Carbon::now()->getTimestamp();
+
+        $disabledGateways = $this->getBlockedGateways();
+
+        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count, $disabledGateways, $bucket);
+
+        $payments = $this->filterPaymentsWithFinalErrorCode($payments);
+
+        $verifyFetchEndTime = Carbon::now()->getTimestamp();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        list($summary, $resultSet) = $this->verifyFilteredPaymentsNewRoute($payments);
+
+        $summary['fetch_time'] = $verifyFetchTime;
+
+        $summary = array_merge($summary, $resultSet);
+
+        $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
+
+        return $summary;
+    }
+
+    protected function filterPaymentsWithFinalErrorCode(Base\PublicCollection $payments) : Base\PublicCollection
+    {
+        $pays = $payments->filter(function (Payment\Entity $payment) {
+
+            $method = $payment->getMethod();
+            $internal_error_code = $payment->getInternalErrorCode()??'';
+
+            $isFinalErrorCode = $this->isFinal($method, $internal_error_code);
+
+            if ($isFinalErrorCode === true)
+            {
+                $payment->setNonVerifiable();
+
+                $this->repo->saveOrFail($payment);
+            }
+
+            return !$isFinalErrorCode;
+        });
+
+        return new Base\PublicCollection($pays);
+    }
+
     protected function verifyFilteredPayments($payments)
     {
         $resultSet = [
@@ -458,7 +507,159 @@ class Verify extends Base\Core
             'total_time'     => $totalVerifyTime,
             'authorize_time' => $avgAuthTime,
             'not_applicable' => $notApplicable,
-            'locked_count'   => $locked
+            'locked_count'   => $locked,
+        ];
+
+        return [$summary, $resultSet];
+    }
+
+    protected function verifyFilteredPaymentsNewRoute(Base\PublicCollection $payments)
+    {
+        $totalPaymentsCount = $payments->count();
+
+        $resultSet = [
+            Result::AUTHORIZED    => 0,
+            Result::SUCCESS       => 0,
+            Result::TIMEOUT       => 0,
+            Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
+        ];
+
+        $notApplicable = $locked = 0;
+
+        $totalAuthTimeDiff = $avgAuthTime = 0;
+
+        $verifyStart = Carbon::now(Timezone::IST)->timestamp;
+
+        $attemptedPayments = 0;
+
+        foreach ($payments as $payment)
+        {
+            $gateway = $payment->getGateway();
+
+            if ($this->isGatewayBlocked($gateway) === true)
+            {
+                $notApplicable++;
+
+                continue;
+            }
+
+            $lock = $this->lockPaymentForVerify($payment);
+
+            if ($lock === false)
+            {
+                $locked++;
+
+                continue;
+            }
+
+            $this->repo->reload($payment);
+
+            // We ignore all the payments which has been authorized
+            // but not captured
+            if (($payment->hasBeenAuthorized() === true) and
+                ($payment->hasBeenCaptured() === false))
+            {
+                $payment->setNonVerifiable();
+
+                $this->repo->saveOrFail($payment);
+
+                $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
+
+                continue;
+            }
+
+            // There could be case where payment is already verified by some other thread,
+            // hence check the verify_at after reload
+            if ($verifyStart < $payment->getVerifyAt())
+            {
+                $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
+
+                continue;
+            }
+
+            $verifyResult = null;
+
+            // For verification of captured payment
+            if ($payment->hasBeenCaptured() === true)
+            {
+                if ($this->isPaymentNotApplicableForCaptureVerify($payment) === true)
+                {
+                    $payment->setNonVerifiable();
+
+                    $this->repo->saveOrFail($payment);
+
+                    $notApplicable++;
+
+                    $this->releasePaymentAfterVerify($payment);
+
+                    continue;
+                }
+
+                $filter = Filter::PAYMENTS_CAPTURED;
+
+                $verifyResult = (new CaptureVerify())->verifyPayment($payment, $filter);
+
+                // On hold is removed once transaction is verified successfully
+                if ($verifyResult === Result::SUCCESS)
+                {
+                    $payment->setNonVerifiable();
+
+                    $this->repo->saveOrFail($payment);
+                }
+            }
+            // For verification of created and failed payments
+            else
+            {
+                $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+
+                $verifyResult = $this->verifyPaymentNewRoute($payment, $filter);
+            }
+
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
+
+                $attemptedPayments += $resultSet[$verifyResult];
+
+                if ($verifyResult === Result::AUTHORIZED)
+                {
+                    $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
+
+                    $avgAuthTime = $totalAuthTimeDiff/$resultSet[Result::AUTHORIZED];
+                }
+            }
+            else
+            {
+                $notApplicable++;
+            }
+
+            $this->releasePaymentAfterVerify($payment);
+        }
+
+        $verifyEnd = time();
+
+        $totalVerifyTime = $verifyEnd - $verifyStart;
+
+        $shouldBeAttempted = $totalPaymentsCount - $notApplicable;
+
+        $resultSet['attempted_payments'] = $attemptedPayments;
+        $resultSet['total_payments'] = $totalPaymentsCount;
+        $resultSet['must_attempt'] = $shouldBeAttempted;
+
+        $summary = [
+            'total_payments' => $totalPaymentsCount,
+            'total_time'     => $totalVerifyTime,
+            'authorize_time' => $avgAuthTime,
+            'not_applicable' => $notApplicable,
+            'locked_count'   => $locked,
+            'attempted_payments' => $attemptedPayments,
+            'must_attempt' => $shouldBeAttempted,
         ];
 
         return [$summary, $resultSet];
@@ -489,6 +690,34 @@ class Verify extends Base\Core
 
         return $this->verifyMultiplePayments($payments, '', [], $verifiableCount, $verifyFetchTime);
     }
+
+
+    public function verifyPaymentsWithIdsNewRoute(array $paymentIds)
+    {
+        $verifyFetchStartTime = time();
+
+        $disabledGateways = $this->getBlockedGateways();
+
+        // //
+        // // We Fetch Twice the number of required payments,
+        // // and filtering extra payments in later stage
+        // //
+        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerifyByIds(
+            $paymentIds,
+            self::ROWS_TO_FETCH * 2,
+            $disabledGateways);
+
+        $payments = $paymentsCollectionWithCount['payments'];
+
+        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
+
+        $verifyFetchEndTime = time();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        return $this->verifyMultiplePaymentsNewRoute($payments, '', [], $verifiableCount, $verifyFetchTime);
+    }
+
 
     /**
      * Get the boundaries for which paymnets dhould be fetched for running verify
@@ -634,6 +863,90 @@ class Verify extends Base\Core
 
         return $summary;
     }
+
+    /**
+     * @param Base\PublicCollection $payments
+     * @param string                $filter
+     * @param array                 $bucketFilter
+     * @param integer               $verifiableCount
+     * @param integer               $verifyFetchTime
+     * @return array with aggregated results
+     */
+    protected function verifyMultiplePaymentsNewRoute(
+        Base\PublicCollection $payments,
+        string $filter,
+        array $bucketFilter,
+        int $verifiableCount,
+        int $verifyFetchTime,
+        string $gateway = null)
+    {
+        $resultSet = [
+            Result::AUTHORIZED    => 0,
+            Result::SUCCESS       => 0,
+            Result::TIMEOUT       => 0,
+            Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
+        ];
+
+        $notApplicable = 0;
+
+        $lockedPayments = $this->lockPaymentsForVerify($payments, $filter);
+
+        $totalAuthTimeDiff = 0;
+
+        $verifyStart = time();
+
+        foreach ($lockedPayments as $payment)
+        {
+            if ($this->isGatewayBlocked($payment->getGateway()) === true)
+            {
+                $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
+
+                continue;
+            }
+
+            $verifyResult = $this->verifyPaymentNewRoute($payment, $filter);
+
+            if ($verifyResult === Result::AUTHORIZED)
+            {
+                $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
+            }
+
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
+            }
+            else
+            {
+                $notApplicable++;
+            }
+
+            $this->releasePaymentAfterVerify($payment);
+        }
+
+        $verifyEnd = time();
+
+        $times = [
+            'start'             => $verifyStart,
+            'end'               => $verifyEnd,
+            'authorize_time'    => $totalAuthTimeDiff,
+            'fetch_time'        => $verifyFetchTime
+        ];
+
+        $summary = $this->processResult($resultSet, $times, $filter, $bucketFilter, $verifiableCount);
+
+        $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
+
+        $this->trace->gauge(Metric::PAYMENTS_VERIFIABLE_COUNT, $verifiableCount, ['gateway' => $gateway]);
+
+        $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
+
+        return $summary;
+    }
+
 
     protected function addDataToVerifySummary(array & $summary, Base\PublicCollection $payments, int $notApplicable)
     {
@@ -864,6 +1177,157 @@ class Verify extends Base\Core
         return $result;
     }
 
+    public function verifyPaymentNewRoute(Payment\Entity $payment, string $filter = null, array $gatewayData = null)
+    {
+        $result = Result::SUCCESS;
+
+        $merchant = $payment->merchant;
+
+        //
+        // Exception is thrown when the there's a mismatch
+        // between payment status and status returned by gateway.
+        // Most cases, this would mean that the payment is in failed
+        // state and gateway returned back status authorized.
+        //
+        try
+        {
+            $this->processor($merchant)->verifyNewRoute($payment, $gatewayData);
+
+            $this->updateVerifyBucket($payment, $filter, self::NEXT);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            $result = $this->handlePaymentVerificationException($payment, $filter, $e);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $result = $this->handleGatewayRequestException($payment, $filter, $e);
+        }
+        catch (\Throwable $e)
+        {
+            $this->updateVerifyBucket($payment, $filter, self::NEXT);
+
+            // @note: If payment verification fails due to any reason
+            // other than expected ones, we should log it as an error
+            // exception.
+            $extraData = ['payment_id' => $payment->getId()];
+
+            $this->trace->traceException($e, null, null, $extraData);
+
+            // Just continue
+            $result = Result::ERROR;
+        }
+
+        return $result;
+    }
+
+    protected function handlePaymentVerificationException(Payment\Entity $payment, string $filter,
+                                                          Exception\PaymentVerificationException $e)
+    {
+        $merchant = $payment->merchant;
+
+        $action = $e->getAction();
+
+        $result = Result::ERROR;
+
+        $this->trace->info(
+            TraceCode::VERIFY_ACTION,
+            [
+                'action' => $action
+            ]
+        );
+
+        switch ($action)
+        {
+            case Action::BLOCK:
+                $this->blockGatewayForVerify($payment->getGateway());
+                $this->updateVerifyBucket($payment, $filter, self::CURR);
+
+                break;
+
+            case Action::RETRY:
+                $this->updateVerifyBucket($payment, $filter, self::CURR);
+
+                break;
+
+            case Action::FINISH:
+                $result = Result::UNKNOWN;
+
+                $this->updateVerifyBucket($payment, $filter, self::LAST);
+
+                break;
+
+            default:
+                $this->updateVerifyBucket($payment, $filter, self::NEXT);
+
+                try
+                {
+                    $result = $this->authorizePayment($merchant, $payment, $e);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::GATEWAY_VERIFY_ERROR,
+                        [
+                            'payment_id' => $payment->getId()
+                        ]);
+
+                    $result = Result::ERROR;
+                }
+
+                break;
+        }
+
+        return $result;
+    }
+
+    protected function handleGatewayRequestException(Payment\Entity $payment, string $filter,
+                                                     \Exception $e)
+    {
+        $result = Result::REQUEST_ERROR;
+
+        if ($e instanceof Exception\GatewayTimeoutException)
+        {
+            $result = Result::TIMEOUT;
+
+            $timeoutThreshold = $this->getTimeoutThresholdForBlock($payment);
+
+            $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                $timeoutThreshold,
+                self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
+
+            $this->trace->traceException($e,
+                Trace::WARNING,
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway()
+                ]);
+        }
+        else
+        {
+            $result = Result::REQUEST_ERROR;
+
+            $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                self::GATEWAY_REQUEST_ERROR_THRESHOLD,
+                self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
+
+            $this->trace->traceException($e,
+                Trace::WARNING,
+                TraceCode::GATEWAY_REQUEST_ERROR,
+                [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway()
+                ]);
+        }
+
+        $this->updateVerifyBucket($payment, $filter, self::NEXT);
+
+        return $result;
+    }
+
     protected function getTimeoutThresholdForBlock(Payment\Entity $payment)
     {
         $threshold = self::GATEWAY_TIMEOUT_THRESHOLD;
@@ -1024,7 +1488,7 @@ class Verify extends Base\Core
         // Don't update VERIFY_BUCKET, in that case
         //
         if (($cron === true) and
-            (in_array($this->route, ['payment_verify_multiple', 'payment_verify_all'], true) === true))
+            (in_array($this->route, ['payment_verify_multiple', 'payment_verify_all', 'payment_new_verify_all'], true) === true))
         {
             return true;
         }

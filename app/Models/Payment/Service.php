@@ -2159,6 +2159,28 @@ class Service extends Base\Service
         return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count, $bucket);
     }
 
+    public function verifyAllPaymentsNewRoute(array $input)
+    {
+        (new Payment\Validator)->validateInput('verify_all', $input);
+
+        $gateway = $input['gateway'] ?? null;
+
+        $delay = $input['delay'] ?? 0;
+
+        $count = $input['count'] ?? 200;
+
+        $bucket = $input['bucket'] ?? null;
+
+        $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+
+        $start = $this->getStartTimestamp($delay);
+
+        $startTime = Carbon::createFromTimestamp($start, Timezone::IST)->toTimeString();
+        $endTime = Carbon::createFromTimestamp($end, Timezone::IST)->toTimeString();
+
+        return (new Verify)->verifyAllPaymentsNewRoute([$start, $end], $gateway, $count, $bucket);
+    }
+
     public function verifyPaymentsInBulk(array $input)
     {
         (new Payment\Validator)->validateInput('bulk_verify', $input);
@@ -2166,6 +2188,15 @@ class Service extends Base\Service
         $paymentIds = Payment\Entity::verifyIdAndStripSignMultiple($input['payment_ids']);
 
         return (new Verify)->verifyPaymentsWithIds($paymentIds);
+    }
+
+    public function verifyPaymentsInBulkNewRoute(array $input)
+    {
+        (new Payment\Validator)->validateInput('bulk_verify', $input);
+
+        $paymentIds = Payment\Entity::verifyIdAndStripSignMultiple($input['payment_ids']);
+
+        return (new Verify)->verifyPaymentsWithIdsNewRoute($paymentIds);
     }
 
     public function verifyMultiplePayments(string $filter, array $input)

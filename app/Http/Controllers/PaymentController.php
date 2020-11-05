@@ -307,11 +307,29 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postVerifyAllPaymentsNewRoute()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyAllPaymentsNewRoute($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyPaymentsBulk()
     {
         $input = Request::all();
 
         $data = $this->service()->verifyPaymentsInBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postVerifyPaymentsBulkNewRoute()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyPaymentsInBulkNewRoute($input);
 
         return ApiResponse::json($data);
     }
