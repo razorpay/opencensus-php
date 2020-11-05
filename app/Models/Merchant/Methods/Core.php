@@ -728,6 +728,11 @@ class Core extends Base\Core
             }
         }
 
+        if ($authType === Payment\AuthType::AADHAAR)
+        {
+            $availableEmandateBanks = Payment\Gateway::removeAadhaarEmandateRegistrationDisabledBanks($availableEmandateBanks);
+        }
+
         return array_values(array_unique($availableEmandateBanks));
     }
 
