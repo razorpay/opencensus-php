@@ -1187,4 +1187,20 @@ class Service extends Base\Service
 
         return app('stork_service')->optOutForWhatsapp($this->mode, $contact, $input['source']);
     }
+
+    public function optInStatusForWhatsapp(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_IN_STATUS, ['input' => $input]);
+
+        (new Validator)->validateInput('opt_in_status_whatsapp', $input);
+
+        $contact = $this->user->getContactMobile();
+
+        if(empty($contact) === true)
+        {
+            throw new Exception\BadRequestException('User does not have a mobile number associated with the account');
+        }
+
+        return app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, $input['source']);
+    }
 }

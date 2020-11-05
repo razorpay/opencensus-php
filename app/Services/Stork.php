@@ -220,6 +220,18 @@ class Stork
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptInUser', $storkInput);
     }
 
+    public function optInStatusForWhatsapp(string $mode, string $number, string $source)
+    {
+        $this->init($mode);
+
+        $storkInput = [
+            'phone_number' => $number,
+            'source'       => $source,
+        ];
+
+        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus', $storkInput);
+    }
+
     /**
      * Identifies that the number has revoked the consent
      * to Razorpay for communication via WhatsApp.

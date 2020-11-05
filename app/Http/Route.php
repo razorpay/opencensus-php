@@ -1248,6 +1248,7 @@ class Route
         'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
         'user_trigger_2fa_otp'                     => ['post',     'users/2fa',                                      'UserController@send2faOtp'                                         ],
         'user_opt_in_whatsapp'                     => ['post',     'users/whatsapp/opt_in',                          'UserController@optInForWhatsapp'                                   ],
+        'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
 
         // mobile setup for 2fa
@@ -3078,6 +3079,7 @@ class Route
         'merchant_2fa_change_setting',
         'user_2fa_change_setting',
         'user_opt_in_whatsapp',
+        'user_opt_in_status_whatsapp',
         'user_opt_out_whatsapp',
         'user_update_contact',
         'user_verify_through_email',

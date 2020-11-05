@@ -762,6 +762,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_WHATSAPP_OPT_IN                              = 'MERCHANT_WHATSAPP_OPT_IN';
     const MERCHANT_WHATSAPP_OPT_OUT                             = 'MERCHANT_WHATSAPP_OPT_OUT';
+    const MERCHANT_WHATSAPP_OPT_IN_STATUS                       = 'MERCHANT_WHATSAPP_OPT_IN_STATUS';
 
     const COUPON_CREATE_REQUEST                                 = 'COUPON_CREATE_REQUEST';
     const COUPON_APPLY_REQUEST                                  = 'COUPON_APPLY_REQUEST';

@@ -139,6 +139,10 @@ class Validator extends Base\Validator
         'source' => 'required|string',
     ];
 
+    protected static $optInStatusWhatsappRules = [
+        'source' => 'required|string',
+    ];
+
     protected static $updateContactMobileRules = [
         Entity::USER_ID        => 'required|alpha_num|size:14',
         Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',

@@ -24,6 +24,7 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\User\AccountVerification;
+use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -36,6 +37,7 @@ class UserTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use TestsStorkServiceRequests;
 
     public function setUp()
     {
@@ -2456,6 +2458,20 @@ class UserTest extends TestCase
             ]);
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testOptInStatusForWhatsapp()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->expectStorkServiceRequestForAction('optInStatusForWhatsapp');
 
         $this->startTest();
     }

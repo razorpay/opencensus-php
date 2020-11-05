@@ -362,4 +362,11 @@ class UserController extends Controller
 
         return $this->service()->optOutForWhatsapp($input);
     }
+
+    public function optInStatusForWhatsapp()
+    {
+        $input = Request::all();
+
+        return $this->service()->optInStatusForWhatsapp($input);
+    }
 }

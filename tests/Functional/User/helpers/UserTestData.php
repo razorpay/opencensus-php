@@ -1823,7 +1823,40 @@ return [
             ],
         ],
         'response' => [
+            'content'       => [
+            ],
+        ],
+    ],
+
+    'testOptInStatusForWhatsapp' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in_status',
+            'method'  => 'GET',
             'content' => [
+                'source'          => 'api.admin.test.sms',
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'consent_status' => false,
+                'phone_number'   => '9999999999',
+            ],
+        ],
+    ],
+
+    'optInStatusForWhatsappStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus',
+            'payload' => [
+                'phone_number' => '9999999999',
+                'source'       => 'api.admin.test.sms',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'consent_status' => false,
+                'phone_number'   => '9999999999',
             ],
         ],
     ],
