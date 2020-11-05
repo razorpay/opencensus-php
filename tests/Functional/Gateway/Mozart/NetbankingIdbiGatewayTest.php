@@ -26,6 +26,8 @@ class NetbankingIdbiGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_idbi_terminal');
+
+        $this->markTestSkipped('no longer this flow is used for this gateway');
     }
 
     public function testPayment()
