@@ -1654,6 +1654,33 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $response[Constants::DIRECT_SETTLEMENT_REFUND]);
     }
 
+    public function testPaymentRefundCreateDataProxyAuthOnDeletedTerminal()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'operations');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment->getPublicId();
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals(true, $response[Constants::INSTANT_REFUND_SUPPORT]);
+        $this->assertEquals(true, $response[Constants::GATEWAY_REFUND_SUPPORT]);
+        $this->assertEquals(false, $response[Constants::DIRECT_SETTLEMENT_REFUND]);
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        DB::table('terminals')->delete();
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals(true, $response[Constants::INSTANT_REFUND_SUPPORT]);
+        $this->assertEquals(true, $response[Constants::GATEWAY_REFUND_SUPPORT]);
+        $this->assertEquals(false, $response[Constants::DIRECT_SETTLEMENT_REFUND]);
+    }
+
     public function testCreateRefundProxyAuthInvalidRole()
     {
         $payment = $this->fixtures->create('payment:captured');

@@ -4084,7 +4084,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isDirectSettlementRefund(): bool
     {
+        // If payment has terminal and is type direct settlement with refund
+        // is null check handles deleted terminal cases
         if (($this->hasTerminal() === true) and
+            (is_null($this->terminal) === false) and
             ($this->terminal->isDirectSettlementWithRefund() === true))
         {
             return true;

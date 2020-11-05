@@ -567,6 +567,21 @@ return [
         ],
     ],
 
+    'testPaymentRefundCreateDataProxyAuthOnDeletedTerminal' => [
+        'request'   => [
+            'method'  => 'get',
+            'url'     => '/payments',
+            'content' => [
+                'dashboard_flag' => [
+                    'refund_create_data',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateRefundProxyAuthInvalidRole' => [
         'request'   => [],
         'response'  => [
