@@ -207,7 +207,7 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $newSelectedTerminals;
                 }
-                else
+                else if ($this->shouldFallback())
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
@@ -684,6 +684,18 @@ class Selector extends Base\Core
         }
 
         return $response;
+    }
+
+    protected function shouldFallback()
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment[Entity::METHOD] === Method::EMANDATE)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function shouldHitRoutingService(string $paymentId = null)
