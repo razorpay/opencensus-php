@@ -211,8 +211,6 @@ class Generator extends Base\Core
 
     protected function setTerminalConfigsForVpa(Entity $vpa, VirtualAccount\Entity $virtualAccount): Terminal\Entity
     {
-        $isUpiIciciVpaEnabled = $this->isUpiIciciVpaEnabled();
-
         $virtualVpaPrefix = $this->repo
                                  ->virtual_vpa_prefix
                                  ->fetchEntityByMerchantId($this->merchant->getId());
@@ -228,7 +226,7 @@ class Generator extends Base\Core
             return $terminal;
         }
 
-        $gateway = ($isUpiIciciVpaEnabled === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
+        $gateway = Gateway::UPI_ICICI;
 
         $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
 
@@ -344,23 +342,5 @@ class Generator extends Base\Core
             'handle'              => $this->handle,
             'isDescriptorEnabled' => $this->isDescriptorEnabled,
         ];
-    }
-
-    private function isUpiIciciVpaEnabled()
-    {
-        $variant = 'off';
-        try
-        {
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_ICICI,
-                                                        $this->mode
-            );
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
-        }
-
-        return ($variant === 'on');
     }
 }

@@ -66,7 +66,7 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->on('test');
 
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -1704,15 +1704,6 @@ class VirtualAccountTest extends TestCase
         return $tlvArray;
     }
 
-    public function testCreateVirtualAccountWithVpa()
-    {
-        $response = $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
-
-        $expectedResponse = $this->testData[__FUNCTION__];
-
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
-    }
-
     public function testAddVpaToExistingVirtualAccount()
     {
         $virtualAccount = $this->createVirtualAccount();
@@ -1979,51 +1970,11 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithVpaForIcici()
     {
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
-
         $response = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
-    }
-
-    public function testCreateVirtualAccountWithVpaForIciciAndCustomPrefix()
-    {
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
-
-        $this->savePrefix('paytorazor');
-
-        $response = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
-
-        $expectedResponse = $this->testData[__FUNCTION__];
-
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
-    }
-
-    protected function enableRazorXTreatmentForRazorXVpaIcici()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === 'virtual_vpa_icici')
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
     }
 
     protected function enableRazorXTreatmentForTokenizeQrStringMpans()
@@ -2054,19 +2005,13 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualVpaWithTpv()
     {
-        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer'], false, null, null, true, 'virtualVpa');
+        $this->expectException(BadRequestException::class);
 
-        $expectedResponse = $this->testData[__FUNCTION__];
-
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $this->createVirtualAccount($this->testData['createVAWithAllowedPayer'], false, null, null, true, 'virtualVpa');
     }
 
     public function testCreateVirtualVpaForIciciWithTpv()
     {
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
-
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($expectedResponse, function()
@@ -2132,9 +2077,6 @@ class VirtualAccountTest extends TestCase
     {
         $response = $this->createVirtualAccount();
         $virtualAccountId = $response['id'];
-
-        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
 
         $response = $this->addReceiverToVirtualAccount($virtualAccountId, 'vpa');
 

@@ -125,8 +125,6 @@ final class RazorxTreatment
     // Check whether trimming is allowed for merchant or not.
     const BLOCKED_MERCHANT_FOR_TRIM_SPACE = 'blocked_merchant_for_trim_space';
 
-    const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
-
     const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';
 
     const EMANDATE_NONZERO_AMOUNT = 'emandate_nonzero_amount';

@@ -18,7 +18,7 @@ class VirtualVpaPrefixTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $this->fixtures->create('virtual_vpa_prefix', ['merchant_id' => '100000Razorpay', 'prefix' => 'payto00000']);
 
@@ -72,7 +72,7 @@ class VirtualVpaPrefixTest extends TestCase
         $virtualVpaPrefixArray = [
             'merchant_id'   => '10000000000000',
             'prefix'        => 'paytorzp',
-            'terminal_id'   => 'VirtVpaShrdTrm',
+            'terminal_id'   => 'VaVpaShrdicici',
         ];
 
         $virtualVpaPrefixHistoryArray = [
@@ -80,7 +80,7 @@ class VirtualVpaPrefixTest extends TestCase
             'merchant_id'           => '10000000000000',
             'current_prefix'        => 'paytorzp',
             'previous_prefix'       => null,
-            'terminal_id'           => 'VirtVpaShrdTrm',
+            'terminal_id'           => 'VaVpaShrdicici',
             'is_active'             => 1,
             'deactivated_at'        => null,
         ];
@@ -101,7 +101,7 @@ class VirtualVpaPrefixTest extends TestCase
         $virtualVpaPrefixArray = [
             'merchant_id'   => '10000000000000',
             'prefix'        => '12345',
-            'terminal_id'   => 'VirtVpaShrdTrm',
+            'terminal_id'   => 'VaVpaShrdicici',
         ];
 
         $virtualVpaPrefixHistoryArray = [
@@ -109,7 +109,7 @@ class VirtualVpaPrefixTest extends TestCase
             'merchant_id'           => '10000000000000',
             'current_prefix'        => '12345',
             'previous_prefix'       => null,
-            'terminal_id'           => 'VirtVpaShrdTrm',
+            'terminal_id'           => 'VaVpaShrdicici',
             'is_active'             => 1,
             'deactivated_at'        => null,
         ];
@@ -176,7 +176,7 @@ class VirtualVpaPrefixTest extends TestCase
             'merchant_id'           => '10000000000000',
             'current_prefix'        => 'paytorzp',
             'previous_prefix'       => null,
-            'terminal_id'           => 'VirtVpaShrdTrm',
+            'terminal_id'           => 'VaVpaShrdicici',
             'is_active'             => 0,
         ];
 
@@ -185,7 +185,7 @@ class VirtualVpaPrefixTest extends TestCase
             'merchant_id'           => '10000000000000',
             'current_prefix'        => 'acmecorp',
             'previous_prefix'       => 'paytorzp',
-            'terminal_id'           => 'VirtVpaShrdTrm',
+            'terminal_id'           => 'VaVpaShrdicici',
             'is_active'             => 1,
             'deactivated_at'        => null,
         ];

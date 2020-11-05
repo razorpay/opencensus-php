@@ -69,7 +69,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
-        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal_icici');
     }
 
     /**

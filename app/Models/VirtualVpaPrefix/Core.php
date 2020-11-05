@@ -33,7 +33,7 @@ class Core extends Base\Core
         // We are taking UPI ICICI for VPA live with razorx experiment.
         //This is to ensure correct terminal config is used to vpa custom prefix.
         // Once everything is moved to ICICI and mindgate terminals are disabled, this can be removed.
-        $gateway = ($this->isUpiIciciVpaEnabled() === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
+        $gateway = Gateway::UPI_ICICI;
 
         // ToDo: Pass merchant_id after terminals are migrated.
         $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
@@ -166,23 +166,5 @@ class Core extends Base\Core
         }
 
         return true;
-    }
-
-    private function isUpiIciciVpaEnabled()
-    {
-        $variant = 'off';
-        try
-        {
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_ICICI,
-                                                        $this->mode
-            );
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
-        }
-
-        return ($variant === 'on');
     }
 }

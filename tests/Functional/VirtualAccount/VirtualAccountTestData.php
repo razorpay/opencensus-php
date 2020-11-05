@@ -743,9 +743,9 @@ return [
         'receivers'   => [
             [
                 "entity"   => "vpa",
-                "username" => "rzpy.test000000virtualvpa",
-                "handle"   => "hdfcbank",
-                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
+                "username" => "rzr.payto00000virtualvpa",
+                "handle"   => "icici",
+                "address"  => "rzr.payto00000virtualvpa@icici"
             ],
         ],
     ],
@@ -763,9 +763,9 @@ return [
             ],
             [
                 "entity"   => "vpa",
-                "username" => "rzpy.test000000virtualvpa",
-                "handle"   => "hdfcbank",
-                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
+                "username" => "rzr.payto00000virtualvpa",
+                "handle"   => "icici",
+                "address"  => "rzr.payto00000virtualvpa@icici"
             ],
         ],
     ],
@@ -791,9 +791,9 @@ return [
                         'receivers'   => [
                             [
                                 "entity"   => "vpa",
-                                "username" => "rzpy.test000000virtualvpa",
-                                "handle"   => "hdfcbank",
-                                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
+                                "username" => "rzr.payto00000virtualvpa",
+                                "handle"   => "icici",
+                                "address"  => "rzr.payto00000virtualvpa@icici"
                             ],
                         ],
                         "close_by"    => null,
@@ -1167,9 +1167,9 @@ return [
         'receivers'   => [
             [
                 "entity"   => "vpa",
-                "username" => "rzpy.paytorazorvirtualvpa",
-                "handle"   => "hdfcbank",
-                "address"  => "rzpy.paytorazorvirtualvpa@hdfcbank"
+                "username" => "rzr.paytorazorvirtualvpa",
+                "handle"   => "icici",
+                "address"  => "rzr.paytorazorvirtualvpa@icici"
             ],
         ],
     ],

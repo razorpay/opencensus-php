@@ -353,7 +353,7 @@ class MindgateVirtualAccountTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         // For VPA type receiver as the shared sharp terminal is not seeded
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
 
         $response = $this->createVirtualAccount($this->input);
@@ -447,7 +447,7 @@ class MindgateVirtualAccountTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         // For VPA type receiver as the shared sharp terminal is not seeded
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
 
         $response = $this->createVirtualAccount($this->input);
@@ -542,7 +542,7 @@ class MindgateVirtualAccountTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         // For VPA type receiver as the shared sharp terminal is not seeded
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
 
         $response = $this->createVirtualAccount($this->input);
@@ -640,7 +640,7 @@ class MindgateVirtualAccountTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         // For VPA type receiver as the shared sharp terminal is not seeded
-        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
 
         $response = $this->createVirtualAccount($this->input);

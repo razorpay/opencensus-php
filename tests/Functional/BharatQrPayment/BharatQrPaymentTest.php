@@ -24,7 +24,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
-        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal_icici');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 

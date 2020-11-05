@@ -691,8 +691,6 @@ class UpiIciciGatewayReconTest extends TestCase
 
     public function testUpiIciciUpiTransferPaymentCreateViaRecon()
     {
-        $this->enableRazorXTreatmentForRazorXVpaIcici();
-
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
@@ -733,26 +731,5 @@ class UpiIciciGatewayReconTest extends TestCase
         $transaction   = $this->getDbEntityById('transaction', $transactionId);
 
         $this->assertNotNull($transaction['reconciled_at']);
-    }
-
-    protected function enableRazorXTreatmentForRazorXVpaIcici()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === 'virtual_vpa_icici')
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
     }
 }
