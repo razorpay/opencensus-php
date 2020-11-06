@@ -55,6 +55,7 @@ use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
+use RZP\Jobs\CallBackFillReferredApp;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
@@ -3852,6 +3853,17 @@ class Service extends Base\Service
         $afterId = $input['afterId'];
 
         return CallBackFillMerchantApps::dispatch($this->mode, $merchantIds, $limit, $afterId);
+    }
+
+    public function backFillReferredApplication(array $input)
+    {
+        $limit = $input['limit'];
+
+        $merchantIds = $input['merchant_ids'];
+
+        $afterId = $input['afterId'];
+
+        return CallBackFillReferredApp::dispatch($this->mode, $merchantIds, $limit, $afterId);
     }
 
     public function getSubmerchant(string $submerchantId, array $input): array

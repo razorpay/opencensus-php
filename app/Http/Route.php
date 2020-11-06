@@ -1612,7 +1612,7 @@ class Route
         'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
-
+        'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
@@ -2086,6 +2086,7 @@ class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'backfill_merchant_applications',
+        'backfill_referred_application',
         'merchant_checkout_preferences',
         'mock_acs',
         'mock_atom_payment',

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
@@ -15,7 +16,6 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\InheritanceMap;
-use RZP\Trace\TraceCode;
 
 class MerchantController extends Controller
 {
@@ -1416,6 +1416,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->backFillMerchantApplications($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function backFillReferredApplication()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->backFillReferredApplication($input);
 
         return ApiResponse::json($response);
     }

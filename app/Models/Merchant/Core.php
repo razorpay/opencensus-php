@@ -42,6 +42,7 @@ use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Balance\Type;
@@ -49,6 +50,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -1663,8 +1665,8 @@ class Core extends Base\Core
 
                 if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
                 {
-                    // create referred app for aggregator/fully_managed partners to give them reseller functionality
-                    $this->createReferredAppForManaged($merchant);
+                    // create referred app and partner config for aggregator/fully_managed partners to give them reseller functionality
+                    $this->createReferredAppAndPartnerConfigForManaged($merchant);
                 }
             }
         });
@@ -1682,6 +1684,7 @@ class Core extends Base\Core
      * @param Entity $merchant
      * @param string $applicationId
      * @param string $applicationType
+     * @return MerchantApplications\Entity
      */
     public function createMerchantApplication(Entity $merchant, string $applicationId, string $applicationType)
     {
@@ -1690,10 +1693,10 @@ class Core extends Base\Core
             MerchantApplications\Entity::APPLICATION_ID => $applicationId,
         ];
 
-        (new MerchantApplications\Core)->create($merchant, $appConfig);
+        return (new MerchantApplications\Core)->create($merchant, $appConfig);
     }
 
-    public function createReferredAppForManaged(Entity $merchant)
+    public function createReferredAppAndPartnerConfigForManaged(Entity $merchant)
     {
         $appInput = [
             OAuthApp\Entity::NAME => Entity::REFERRED_APPLICATION,
@@ -1702,6 +1705,18 @@ class Core extends Base\Core
         $app = $this->createPartnerApp($merchant, $appInput);
 
         $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], MerchantApplications\Entity::REFERRED);
+
+        $config = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
+            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+            PartnerConfig\Constants::PARTNER_ID         => $merchant->getId(),
+        ];
+
+        $referredApp = (new OAuthApp\Repository)->findOrFail($app[OAuthApp\Entity::ID]);
+
+        // create new partner config for referred app for aggregator/full_managed partners
+        (new PartnerConfig\Core)->create($referredApp, $config);
     }
 
     protected function setDefaultFeatureForPartner(Entity $partner)
@@ -1785,14 +1800,6 @@ class Core extends Base\Core
 
             (new PartnerConfig\Core)->create($application, $config);
 
-            // create new partner config for referred app for aggregator/full_managed partners
-            if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
-            {
-                $referredApp = $this->fetchPartnerApplication($merchant, MerchantApplications\Entity::REFERRED);
-
-                (new PartnerConfig\Core)->create($referredApp, $config);
-            }
-
             return $partner;
         });
 
@@ -1831,6 +1838,30 @@ class Core extends Base\Core
         }
 
         return [];
+    }
+
+    public function backFillReferredApplication(array $merchantIds = null, $limit = null, $afterId = null)
+    {
+        while (true)
+        {
+            $aggregatorAndFullyManagedPartners = $this->repo->merchant->fetchAggregatorAndFullManagedPartners($merchantIds, $limit, $afterId);
+
+            if ($aggregatorAndFullyManagedPartners->isEmpty() === true)
+            {
+                break;
+            }
+
+            $afterId = $aggregatorAndFullyManagedPartners->last()->getId();
+
+            $aggregatorAndFullyManagedPartners = $aggregatorAndFullyManagedPartners->getIds();
+
+            $merchantIdsChunks = array_chunk($aggregatorAndFullyManagedPartners, 500);
+
+            foreach ($merchantIdsChunks as $merchantBatch)
+            {
+                BackFillReferredApplication::dispatch($this->mode, $merchantBatch);
+            }
+        }
     }
 
     protected function sendPartnerOnBoardedEmail(Entity $partner)

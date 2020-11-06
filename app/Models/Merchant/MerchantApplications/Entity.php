@@ -66,4 +66,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::APPLICATION_ID);
     }
+
+    public function getApplicationType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
 }
