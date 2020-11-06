@@ -800,16 +800,16 @@ class FundTransfer extends Base
             $this->FTACore->updateFTA($this->fta, 0);
         }
 
-        $mode = $this->fta->getMode();
+        $merchantID = $this->fta->getMerchantId();
 
         $variant = $this->razorx->getTreatment(
-          $mode,
-          RazorxTreatment::ALLOWED_TRANSFER_MODES,
-          $this->mode);
+                $merchantID,
+                RazorxTreatment::ALLOWED_MERCHANTS,
+                $this->mode);
 
         if (strtolower($variant) === 'on')
         {
-            return [true, 'Razorx allowed mode'];
+            return [true, 'Razorx allowed merchant'];
         }
 
         $allowedModes = Mode::get24x7FtsTransferModes();

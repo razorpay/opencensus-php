@@ -160,8 +160,8 @@ final class RazorxTreatment
 
     const PAYOUT_TO_CARDS_VIA_RBL = 'payout_to_cards_via_rbl';
 
-    // Timings update changes
-    const ALLOWED_TRANSFER_MODES = 'allowed_transfer_modes';
+    // FTS-FTA Holiday Management changes
+    const ALLOWED_MERCHANTS = 'hm_merchant_api';
 
     // Ledger Async For payouts
     const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
