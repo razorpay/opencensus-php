@@ -1366,7 +1366,8 @@ class Service extends Base\Service
             'rx_home_v2_existing',
             'bank_account_update_merchant_dashboard',
             'app_switcher',
-            'subscription_expiry'
+            'subscription_expiry',
+            'caw_tpv'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

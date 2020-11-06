@@ -65,6 +65,7 @@ export default (props) => {
 
       {isUPIPayment && (
         <UPI
+          showTPV={props.showTPV}
           isTPVEnabled={props.isTPVEnabled}
           amount={amount}
           onBlurElement={onBlurElement}

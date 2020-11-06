@@ -15,27 +15,31 @@ export default function UPI(props) {
         amountValidator={props.amountValidator}
       />
 
-      <Input.Check
-        fieldLabel="Enable Third Party Validation"
-        class="Input--vTop"
-        onChange={props.handleTPV}
-        checked={props.isTPVEnabled}
-      />
+      {props.showTPV && (
+        <>
+          <Input.Check
+            fieldLabel="Enable Third Party Validation"
+            class="Input--vTop"
+            onChange={props.handleTPV}
+            checked={props.isTPVEnabled}
+          />
 
-      <BankDetails
-        hideBankName
-        disabled={!props.isTPVEnabled}
-        bankAccountIFSC={props.bankAccountIFSC}
-      />
+          <BankDetails
+            hideBankName
+            disabled={!props.isTPVEnabled}
+            bankAccountIFSC={props.bankAccountIFSC}
+          />
 
-      <Input
-        disabled={!props.isTPVEnabled}
-        placeholder="Account Number"
-        name="bankAccountNumber"
-        data-name="account_number"
-        value={props.bankAccountNumber}
-        description="Bank Account Number"
-      />
+          <Input
+            disabled={!props.isTPVEnabled}
+            placeholder="Account Number"
+            name="bankAccountNumber"
+            data-name="account_number"
+            value={props.bankAccountNumber}
+            description="Bank Account Number"
+          />
+        </>
+      )}
     </>
   );
 }

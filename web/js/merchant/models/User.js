@@ -577,6 +577,10 @@ export default class User {
     return this.getExpStatus('subscription_expiry');
   }
 
+  get isCAWTPVEnabled() {
+    return this.getExpStatus('caw_tpv');
+  }
+
   get isPaymentLinkCreationV2Enabled() {
     return this.isPaymentlinksV2Enabled;
   }

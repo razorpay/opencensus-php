@@ -573,6 +573,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             onBlurElement={this.onBlurElement}
             handlePaymentMethod={this.handlePaymentMethod}
             isTPVEnabled={this.state.isTPVEnabled}
+            showTPV={this.props.user.isCAWTPVEnabled}
             handleTPV={this.handleTPV}
           />
         );
