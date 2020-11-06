@@ -3,15 +3,22 @@
 namespace RZP\Services\FTS;
 
 use Mail;
+
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payout\DowntimeNotification;
 
 class ChannelNotification
 {
     protected $app;
 
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -39,6 +46,32 @@ class ChannelNotification
 
         $downtimeNotification = new DowntimeNotification($data);
 
-        Mail::queue($downtimeNotification);
+        try
+        {
+            $this->trace->info(
+                TraceCode::FTS_DOWNTIME_NOTIFY_EMAIL_INIT,
+                [
+                    'request' => $data,
+                ]);
+
+            Mail::send($downtimeNotification);
+
+            $this->trace->info(
+                TraceCode::FTS_DOWNTIME_NOTIFY_EMAIL_COMPLETE,
+                [
+                    'response' => $data,
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_DOWNTIME_NOTIFY_EMAIL_FAILURE,
+                [
+                    'data' => $data,
+                ]
+            );
+        }
     }
 }
