@@ -11,7 +11,7 @@ class Constants
             'title'       => '2 Step Verification',
             'description' => 'Enable 2 step verification with SMS based OTP along with user credentials to add additional security to your account.',
             'start_ts'    => 1588876200,
-            'end_ts'      => 1590172140,
+            'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/2fa.svg',
             'buttons'     => [
                 [
@@ -29,6 +29,8 @@ class Constants
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
             'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'start_ts'    => 1597390475,
+            'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'buttons'     => [
@@ -38,8 +40,6 @@ class Constants
                     'url'   => '',
                 ],
             ],
-            'start_ts'    => 1597390475,
-            'end_ts'      => 1601445430,
             'filters'     => [
                 'experiments'         => ['project_nitro', 'project_nitro_1'],
             ],
@@ -47,6 +47,8 @@ class Constants
         [
             'title'       => 'Introducing Payment Buttons',
             'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
+            'start_ts'    => 1598941800,
+            'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
             'track_event' => true,
             'id'          => 'paymentButton_GTM',
@@ -62,8 +64,6 @@ class Constants
                     'url'   => 'https://betasite.razorpay.com/docs/pb-index-true/payment-button',
                 ]
             ],
-            'start_ts'    => 1598941800,
-            'end_ts'      => 1601555400,
             'filters'     => [
                 'activated' => 1,
             ]
@@ -72,6 +72,7 @@ class Constants
             'title'       => 'Free Credit Score!',
             'description' => 'Click Here to get your credit score along with the credit report for FREE!',
             'start_ts'    => 1604320769,
+            'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/badge.svg',
             'buttons'     => [
                 [
