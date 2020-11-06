@@ -640,7 +640,7 @@ let initialState = {
     },
     {
       name: 'Wallet',
-      description: 'Phonepe, Amazon Pay, Freecharge',
+      description: 'Phonepe, Freecharge etc.',
       slug: 'wallet',
       icon: 'wallet',
       actionItems: {},
@@ -661,13 +661,6 @@ let initialState = {
               status: 'Request',
               slug: 'airtelmoney',
               icon: 'airtelmoney',
-            },
-            {
-              name: 'Amazon Pay',
-              description: '',
-              status: 'Request',
-              slug: 'amazonpay',
-              icon: 'amazonpay',
             },
             {
               name: 'Freecharge',
