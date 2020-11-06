@@ -26,6 +26,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
 use RZP\Exception\LogicException;
@@ -87,6 +88,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
+        $this->convertStatesToStatesCode($input);
 
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
@@ -591,6 +593,8 @@ class Core extends Base\Core
             ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $this->convertStatesToStatesCode($input);
 
         $merchantDetails->getValidator()->performInstantActivationValidations($input);
 
@@ -3509,6 +3513,32 @@ class Core extends Base\Core
             $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
 
             $statusUpdater->updateStatusToPending();
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    protected function convertStatesToStatesCode(array &$input)
+    {
+        $this->getStateCodeFromMapping($input, 'business_operation_state');
+        $this->getStateCodeFromMapping($input, 'business_registered_state');
+    }
+
+    /**
+     * @param array  $input
+     * @param string $field
+     */
+    protected function getStateCodeFromMapping(array &$input, string $field)
+    {
+        if (isset($input[$field]) === true)
+        {
+            $stateCode = IndianStates::getStateCode($input[$field]);
+
+            if ($stateCode !== null)
+            {
+                $input[$field] = $stateCode;
+            }
         }
     }
 }

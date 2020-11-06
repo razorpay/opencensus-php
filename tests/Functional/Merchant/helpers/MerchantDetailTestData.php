@@ -37,21 +37,23 @@ return [
     ],
 
     'testUpdateIfscCode' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'bank_branch_ifsc' => 'ICIC0000002'
+                'business_registered_state' => 'JAMMU AND KASHMIR',
+                'bank_branch_ifsc'          => 'ICIC0000002'
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'bank_branch_ifsc' => 'ICIC0000002',
-                'verification' => [
-                    'status' => 'disabled',
+                'bank_branch_ifsc'          => 'ICIC0000002',
+                'business_registered_state' => 'JK',
+                'verification'              => [
+                    'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
                 ],
-                'can_submit' => false,
+                'can_submit'                => false,
             ],
         ],
     ],
