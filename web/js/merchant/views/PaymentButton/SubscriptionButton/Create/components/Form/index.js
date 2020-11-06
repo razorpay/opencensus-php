@@ -14,7 +14,7 @@ const buttonDetailsTab = {
 
 const plansDetailsTab = {
   component: PlansDetails,
-  title: 'Recurring Plans',
+  title: 'Subscription Plans',
   description: 'Customers can select one of the plans from the list to subscribe',
 };
 

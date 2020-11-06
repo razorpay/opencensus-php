@@ -368,7 +368,7 @@ export default class subscriptionButtonEntity extends React.Component {
 
           <TabsContainer
             class="item-details"
-            tabNames={[<b>Recurring Payments</b>, <b>One-Time Payments</b>]}
+            tabNames={[<b>Subscription Payments</b>, <b>One-Time Payments</b>]}
           >
             <SubscriptionsList entity={subscriptionButtonEntity} />
 

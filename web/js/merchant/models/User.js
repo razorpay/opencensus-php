@@ -570,7 +570,7 @@ export default class User {
   }
 
   get isSubscriptionButtonEnabledByRazorX() {
-    return this.isSubscriptionsEnabled && this.getExpStatus('enable_subscription_buttons');
+    return this.isSubscriptionsEnabled;
   }
 
   get isSubscriptionExpiryEnabled() {

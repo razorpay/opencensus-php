@@ -88,7 +88,7 @@ export default class SideBar extends React.Component {
               />
 
               <Step
-                title="Add Recurring Plans"
+                title="Add Subscription Plans"
                 isDone={this.isPlansDetailsDone}
                 // onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
               />

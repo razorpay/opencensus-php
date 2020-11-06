@@ -33,7 +33,7 @@ export default class ItemDetails extends React.Component {
       <TabsContainer
         class="item-details"
         tabNames={[
-          <b>{`Recurring Plans (${recurringPaymentsItems.length})`}</b>,
+          <b>{`Subscription Plans (${recurringPaymentsItems.length})`}</b>,
           <b>{`One-Time Payments (${oneTimePaymentsItems.length})`}</b>,
         ]}
       >

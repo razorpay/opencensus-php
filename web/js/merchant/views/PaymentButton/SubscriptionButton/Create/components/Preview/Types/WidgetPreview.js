@@ -66,7 +66,7 @@ export default class WidgetPreview extends React.Component {
         {!!currentTabFields.length && !!otherTabFields.length && (
           <div class="billing-cycle-type-options">
             <label>
-              <div class={classList('option', !showOneTimePayments && 'highlight')}>Recurring</div>
+              <div class={classList('option', !showOneTimePayments && 'highlight')}>Subscription</div>
             </label>
             <label>
               <div class={classList('option', showOneTimePayments && 'highlight')}>OneTime</div>

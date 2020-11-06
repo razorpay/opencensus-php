@@ -1342,7 +1342,6 @@ class Service extends Base\Service
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',
             'enable_payment_buttons',
-            'enable_subscription_buttons',
             'pause_resume_enabled',
             'batch_scheduling_options',
             'upi_caw',
