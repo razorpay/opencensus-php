@@ -800,6 +800,8 @@ class FundTransfer extends Base
             $this->FTACore->updateFTA($this->fta, 0);
         }
 
+        $mode = $this->fta->getMode();
+
         $merchantID = $this->fta->getMerchantId();
 
         $variant = $this->razorx->getTreatment(
