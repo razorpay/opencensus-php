@@ -1896,10 +1896,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
 
     // Trace codes for Gateway Priorities
-    const ADD_GATEWAY_PRIORITY_REQUEST                          = 'ADD_GATEWAY_PRIORITY_REQUEST';
-    const FETCH_GATEWAY_PRIORITY_RESPONSE                       = 'FETCH_GATEWAY_PRIORITY_RESPONSE';
-    const UPDATE_GATEWAY_PRIORITY_REQUEST                       = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
-    const REMOVE_GATEWAY_PRIORITY_REQUEST                       = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const CARD_GATEWAY_PRIORITY                                 = 'CARD_GATEWAY_PRIORITY';
     const NETBANKING_GATEWAY_PRIORITY                           = 'NETBANKING_GATEWAY_PRIORITY';
 

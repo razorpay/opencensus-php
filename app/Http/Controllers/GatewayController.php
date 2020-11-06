@@ -1292,40 +1292,6 @@ class GatewayController extends Controller
         ]);
     }
 
-    public function createGatewayPriority(string $method)
-    {
-        $input = Request::all();
-
-        $data = (new GatewayPriority\Service)->createPriorityForMethod($method, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getGatewayPriority()
-    {
-        $data = (new GatewayPriority\Service)->fetchPriority();
-
-        return ApiResponse::json($data);
-    }
-
-    public function addOrUpdateGatewayPriority(string $method)
-    {
-        $input = Request::all();
-
-        $data = (new GatewayPriority\Service)->addOrUpdatePriorityForMethod($method, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function removeGatewayPriority(string $method)
-    {
-        $input = Request::all();
-
-        $data = (new GatewayPriority\Service)->removePriorityForMethod($method, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function createGatewayRule(Rule\Service $service)
     {
         $input = Request::all();
