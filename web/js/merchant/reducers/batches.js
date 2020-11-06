@@ -308,9 +308,9 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
   const id = params.id;
 
   const promise = new Promise((resolve, reject) => {
-    return fetchBatchAjax(id).then(batchData => {
+    return fetchBatchAjax(id).then((batchData) => {
       if (batchData) {
-        const isBatchTypePaymentlinksV2 = (batchData.batch.type === 'payment_link_v2' )
+        const isBatchTypePaymentlinksV2 = batchData.batch.type === 'payment_link_v2';
 
         let promises = [];
 
@@ -322,13 +322,11 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
           promises.push(fetchBatchInvoices(id, user.isPaymentlinksV2CompatEnabled));
         }
 
-        return Promise.all(promises)
-          .then(data => {
-            const [ stats, paymentLinksList ] = data;
+        return Promise.all(promises).then((data) => {
+          const [stats, paymentLinksList] = data;
 
-            resolve([batchData, stats, paymentLinksList]);
-
-          });
+          resolve([batchData, stats, paymentLinksList]);
+        });
       }
     });
   });
@@ -394,12 +392,12 @@ const onPaymentLinkDetails = (state, { payload }) =>
     entity: {
       batch: payload[0].batch,
       stats: payload[1].data.stats,
-      paymentlinks: (function() {
+      paymentlinks: (function () {
         const batchData = payload[0].batch;
 
-        const isBatchTypePaymentlinksV2 = (batchData.type === 'payment_link_v2');
+        const isBatchTypePaymentlinksV2 = batchData.type === 'payment_link_v2';
 
-        return isBatchTypePaymentlinksV2 ? payload[2].data.payment_links : payload[2].data.items
+        return isBatchTypePaymentlinksV2 ? payload[2].data.payment_links : payload[2].data.items;
       })(),
       invoices: payload[2].data.items,
     },

@@ -726,6 +726,24 @@ const uploadFields = [
       name: type,
     })),
     _when: isBusinessProofTypeDocFieldVisible,
+    className: 'Input--vTop',
+  },
+  {
+    name: 'shop_establishment_number',
+    placeholder: 'As mentioned in the certificate',
+    label: 'Shop Establishment Number',
+    required: false,
+    _autoRenderImpure: true,
+    info: () =>
+      'Your Shop establishment number is required to proceed with KYC. This will help us expedite the review of your KYC.',
+    _when: (activation) => {
+      return (
+        activation.props.data.shop_establishment_verifiable_zone &&
+        isBusinessProofTypeDocFieldVisible(activation) &&
+        activation.state.business_proof_type === 'shop_establishment_certificate'
+      );
+    },
+    className: 'Input--required Input--vTop document-group',
   },
   {
     label: '',

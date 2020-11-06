@@ -21,7 +21,7 @@ export const buttonThemes = {
 };
 
 export const orgButtonThemes = {
-  axis: '#97144C'
+  axis: '#97144C',
 };
 
 export const buttonThemesList = [

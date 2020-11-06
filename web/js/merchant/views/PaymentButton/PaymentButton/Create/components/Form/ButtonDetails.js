@@ -7,7 +7,10 @@ import InputCurrencyAmount from './components/InputCurrencyAmount';
 import InputDropdown from './components/InputDropdown';
 import { PowerSelect } from 'react-power-select';
 
-import { buttonThemesList, orgButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+import {
+  buttonThemesList,
+  orgButtonThemes,
+} from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import META, {
@@ -22,13 +25,16 @@ import track from '../../track';
 
 export const maxLengthForButtonLabel = 20;
 
-@connect(state => ({
-  user: state.session.user
-}), {
-  updatePaymentButtonData,
-  updateAmountField,
-  updateStepReviewProgress,
-})
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updatePaymentButtonData,
+    updateAmountField,
+    updateStepReviewProgress,
+  },
+)
 export default class ButtonDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -52,7 +58,7 @@ export default class ButtonDetails extends React.Component {
 
     // Update default button theme in store if first-time creation mode
     const { user, isEditExistingId } = this.props;
-    if(!isEditExistingId && user.isOrgAxis) {
+    if (!isEditExistingId && user.isOrgAxis) {
       this.updateButtonTheme(orgButtonThemes.axis);
     }
   }
@@ -283,22 +289,20 @@ export default class ButtonDetails extends React.Component {
             onBlur={track.lj.trackButtonLabel}
           />
 
-          {
-            !user.isOrgAxis && (
-              <InputDropdown
-                label="Button Theme"
-                name="button_theme"
-                class="Input--vTop"
-                dropdownElementClass="Input-el-PaymentButtonForm"
-                placeholder="Select Button Theme"
-                options={buttonThemesList}
-                optionLabelPath="label"
-                optionValuePath="value"
-                defaultValue={paymentButtonEntity.settings.payment_button_theme}
-                onChange={this.handleChangeButtonTheme}
-              />
-            )
-          }
+          {!user.isOrgAxis && (
+            <InputDropdown
+              label="Button Theme"
+              name="button_theme"
+              class="Input--vTop"
+              dropdownElementClass="Input-el-PaymentButtonForm"
+              placeholder="Select Button Theme"
+              options={buttonThemesList}
+              optionLabelPath="label"
+              optionValuePath="value"
+              defaultValue={paymentButtonEntity.settings.payment_button_theme}
+              onChange={this.handleChangeButtonTheme}
+            />
+          )}
         </div>
 
         <div class="Form-controls">

@@ -17,27 +17,23 @@ import DataTable from 'common/ui/Table/DataTable';
 import ListToggler from 'common/ui/Toggler/ListToggler';
 import Time from 'common/ui/Time';
 import { amount, status } from 'common/ui/item/pair';
-import {
-  BatchUploadStatusLabel,
-  InvoiceStatusLabel,
-} from 'merchant/components/StatusLabel';
+import { BatchUploadStatusLabel, InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 import store from 'merchant/store';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
-const renderBatchDetails = props => {
+const renderBatchDetails = (props) => {
   const { batch, stats, paymentlinks } = props;
   const user = store.getState().session.user;
 
-  const isBatchTypePaymentlinksV2 = (batch.type === 'payment_link_v2');
+  const isBatchTypePaymentlinksV2 = batch.type === 'payment_link_v2';
 
   const statsTable = isBatchTypePaymentlinksV2
     ? getStatsTableForPLV2(stats, batch ? batch.processed_count : null)
     : getStatsTable(stats);
 
-  const showCancelBtn =
-    batch.status === 'partially_processed' || batch.status === 'processed';
+  const showCancelBtn = batch.status === 'partially_processed' || batch.status === 'processed';
 
   return (
     <Fragment>
@@ -48,15 +44,11 @@ const renderBatchDetails = props => {
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
 
-          {showCancelBtn &&
-            props.isBatchCancelEnabled && (
-              <Button.Transparent
-                class="Button--Link cancel-batch"
-                onClick={props.onClickCancelBtn}
-              >
-                Cancel
-              </Button.Transparent>
-            )}
+          {showCancelBtn && props.isBatchCancelEnabled && (
+            <Button.Transparent class="Button--Link cancel-batch" onClick={props.onClickCancelBtn}>
+              Cancel
+            </Button.Transparent>
+          )}
         </EntityDetailRow>
         <EntityDetailRow label="Created At">
           <Time value={batch.created_at} />
@@ -69,27 +61,26 @@ const renderBatchDetails = props => {
         isPaymentlinksV2Enabled={isBatchTypePaymentlinksV2}
       />
       <hr />
-      {stats.batch_total > stats.issued_count &&
-        batch.status !== 'created' && (
-          <LinksErrMessage
-            issuedCount={stats.issued_count}
-            onDownload={props.onDownload}
-            batchId={batch.id}
-          />
-        )}
+      {stats.batch_total > stats.issued_count && batch.status !== 'created' && (
+        <LinksErrMessage
+          issuedCount={stats.issued_count}
+          onDownload={props.onDownload}
+          batchId={batch.id}
+        />
+      )}
     </Fragment>
   );
 };
 
 @connect(
-  state => ({
+  (state) => ({
     isBatchCancelEnabled: state.session.user.isBatchCancelEnabled,
   }),
   {
     cancelPaymentLinkBatch,
     showNotification,
     fetchBatchDetails,
-  }
+  },
 )
 export default class PaymentLinksBatchDetailsContainer extends Component {
   static contextTypes = {
@@ -113,7 +104,7 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
               message: 'This batch cancellation initiated.',
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.props.showNotification({
               type: 'error',
               message: err.errors[0],
@@ -137,22 +128,13 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
   }
 }
 
-function PaymentLinksTable({
-  isPaymentlinksV2Enabled,
-  paymentlinks,
-  batchId,
-  totalItems,
-}) {
+function PaymentLinksTable({ isPaymentlinksV2Enabled, paymentlinks, batchId, totalItems }) {
   const newStatus = { title: 'Status', value: InvoiceStatusLabel };
   const statusLabel = isPaymentlinksV2Enabled ? newStatus : status;
 
   return (
     <ListToggler
-      label={
-        paymentlinks.length
-          ? pluralize('Payment Link', paymentlinks.length)
-          : ''
-      }
+      label={paymentlinks.length ? pluralize('Payment Link', paymentlinks.length) : ''}
       subLabel={paymentlinks.length ? 'created from this batch' : ''}
       limit={4}
       limitUrl={`/paymentlinks?batch_id=${batchId}`}
@@ -174,23 +156,20 @@ function PaymentLinksTable({
 function LinksErrMessage({ issuedCount, onDownload, batchId }) {
   return (
     <small class="help-block m-l">
-      <i class="i i-info-circle" /> {issuedCount === 0 ? 'The payment' : 'Some'}{' '}
-      links related to this batch were not created due to errors. Please<span
-        class="btn-link"
-        onClick={onDownload.bind(this, batchId)}
-      >
+      <i class="i i-info-circle" /> {issuedCount === 0 ? 'The payment' : 'Some'} links related to
+      this batch were not created due to errors. Please
+      <span class="btn-link" onClick={onDownload.bind(this, batchId)}>
         {' '}
         download{' '}
-      </span>the report containing all Payment Links data
+      </span>
+      the report containing all Payment Links data
     </small>
   );
 }
 
 var paymentLinkEmail = {
-  value: paymentlink =>
-    paymentlink.customer_details
-      ? paymentlink.customer_details.email
-      : paymentlink.customer.email,
+  value: (paymentlink) =>
+    paymentlink.customer_details ? paymentlink.customer_details.email : paymentlink.customer.email,
 };
 
 function getStatsTable(stats) {

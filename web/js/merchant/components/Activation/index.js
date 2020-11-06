@@ -565,6 +565,7 @@ export default class ActivationWizard extends React.Component {
       );
     } catch (err) {}
   };
+
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
@@ -617,7 +618,7 @@ export default class ActivationWizard extends React.Component {
         reqData[name] = fieldVal;
 
         // For business website empty string => user don't have website. null => user didn't attempt the field.
-        const allowEmptyString = ['business_website', 'gstin'];
+        const allowEmptyString = ['business_website', 'gstin', 'shop_establishment_number'];
         if (allowEmptyString.indexOf(name) === -1) {
           reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
         }
@@ -1454,10 +1455,6 @@ export default class ActivationWizard extends React.Component {
 
       // Click on 'Submit Form' tab is tracked only when it's not current tab
       const currentActiveTab = this.state.activeTab;
-
-      if (currentActiveTab === DOCUMENT_UPLOAD_STEP) {
-        return; // There is nothing to auto save in Document Upload section
-      }
 
       const callBack =
         onAction &&
