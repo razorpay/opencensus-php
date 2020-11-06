@@ -573,10 +573,6 @@ export default class User {
     return this.isSubscriptionsEnabled && this.getExpStatus('enable_subscription_buttons');
   }
 
-  get isInstantBatchRefundsEnabled() {
-    return this.getExpStatus('batch_service_refund_migration');
-  }
-
   get isSubscriptionExpiryEnabled() {
     return this.getExpStatus('subscription_expiry');
   }
@@ -668,8 +664,7 @@ export default class User {
   }
 
   get isAppSwitcherEnabled() {
-
-  return this.getExpStatus('app_switcher');
+    return this.getExpStatus('app_switcher');
   }
 
   get isOrgAxis() {

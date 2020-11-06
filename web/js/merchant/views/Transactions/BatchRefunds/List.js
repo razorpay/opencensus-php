@@ -29,11 +29,7 @@ export default class BatchListContainer extends ListContainer {
         gaEvents={gaEvents}
         paginate={this.paginate}
         onSubmit={this.search}
-        sampleUrl={
-          this.props.user.isInstantBatchRefundsEnabled
-            ? SAMPLE_BATCH_REFUND_FILE_WITH_SPEED
-            : SAMPLE_BATCH_REFUND_FILE
-        }
+        sampleUrl={SAMPLE_BATCH_REFUND_FILE_WITH_SPEED}
         docUrl="https://razorpay.com/docs/refunds/batch-refunds/"
         uploadUrl="/refunds/batchupload"
         {...this.props}

@@ -51,29 +51,27 @@ function batchActions({
     title: 'Actions',
     value: (item) => (
       <div class="btn-toolbar">
-        {storeData.session.user.isInstantBatchRefundsEnabled
-          ? STATUS_VALUES.includes(item.status) && (
-              <button
-                class="btn btn-xs btn-default btn-outline cancel-batch-btn"
-                onClick={() => {
-                  window.rzpAnalytics({
-                    eventCategory: `Batch ${titleCase(batchType)}`,
-                    eventAction: 'Cancel - List view',
-                    eventLabel: `Click to upload file`,
-                  });
-                  cancelBatch({
-                    batch: item,
-                    openModal,
-                    batchType,
-                    closeModal,
-                    CancelBatchRefund,
-                  });
-                }}
-              >
-                Cancel
-              </button>
-            )
-          : null}
+        {STATUS_VALUES.includes(item.status) && (
+          <button
+            class="btn btn-xs btn-default btn-outline cancel-batch-btn"
+            onClick={() => {
+              window.rzpAnalytics({
+                eventCategory: `Batch ${titleCase(batchType)}`,
+                eventAction: 'Cancel - List view',
+                eventLabel: `Click to upload file`,
+              });
+              cancelBatch({
+                batch: item,
+                openModal,
+                batchType,
+                closeModal,
+                CancelBatchRefund,
+              });
+            }}
+          >
+            Cancel
+          </button>
+        )}
         <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
           Download
         </button>
@@ -224,15 +222,9 @@ export default class BatchList extends Component {
 
             {(session.mode !== 'live' || !user.isRejected) && (
               <Fragment>
-                {user.isInstantBatchRefundsEnabled ? (
-                  <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
-                    Click here to upload
-                  </button>
-                ) : (
-                  <Link class="btn btn-primary pull-right" to={uploadUrl}>
-                    Click here to upload
-                  </Link>
-                )}
+                <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+                  Click here to upload
+                </button>
               </Fragment>
             )}
           </div>
