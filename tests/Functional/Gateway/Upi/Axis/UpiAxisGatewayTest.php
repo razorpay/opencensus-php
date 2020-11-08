@@ -8,6 +8,7 @@ use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account;
+use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Jobs\CorePaymentServiceSync;
@@ -1077,6 +1078,28 @@ class UpiAxisGatewayTest extends TestCase
         $collection = $this->getDbEntities('upi');
 
         $this->assertNull($collection->first());
+    }
+
+    public function testInvalidGatewayResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'Invalid response from axis gateway which is usually html';
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('GATEWAY_ERROR_INVALID_RESPONSE', $payment->getInternalErrorCode());
     }
 
     protected function unexpectedPaymentContent(string $id, string $status = '00', string $result = 'Success')

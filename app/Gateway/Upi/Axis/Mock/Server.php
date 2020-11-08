@@ -56,6 +56,12 @@ class Server extends Base\Mock\Server
 
         $this->content($content, $this->action);
 
+        // Axis bank sometimes return HTML response, which is not json encoded
+        if (is_string($content) === true)
+        {
+            return parent::makeResponse($content);
+        }
+
         return $this->makeResponse($content);
     }
 

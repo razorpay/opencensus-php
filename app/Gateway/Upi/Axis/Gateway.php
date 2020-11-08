@@ -926,6 +926,9 @@ class Gateway extends Base\Gateway
 
     public function parseResponse($responseBody, array $trace)
     {
+        $trace['error']     = null;
+        $trace['action']    = $this->getAction();
+
         try
         {
             $content = $this->jsonToArray($responseBody);
@@ -938,11 +941,18 @@ class Gateway extends Base\Gateway
 
             return $content;
         }
-        catch (\Throwable $exception)
+        catch (Exception\RuntimeException $exception)
         {
+            $trace['error'] = $exception->getMessage();
+
             $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
 
-            throw $exception;
+            // We need to suppress the server error as it's the gateway sending wrong response
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                null,
+                $trace);
         }
     }
 
