@@ -115,6 +115,18 @@ const pincode = {
   },
 };
 
+const date = {
+  label: 'Date Picker',
+  icon: 'date-range',
+  schema: {
+    type: 'string',
+    pattern: 'date',
+    options: {
+      cmp: 'date' // Note: providing cmp is important, bcoz a simple input field's pattern can also be date. So, to render it as date picker custom component, cmp is required. Similarly, for other field types
+    },
+  },
+};
+
 const dropdown = {
   label: 'Dropdown',
   icon: 'arrow-down i-fix-arrow-down',
@@ -128,6 +140,7 @@ const dropdown = {
   },
 };
 
+// Note: If any new field is being added with new pattern, ensure that it's added in _isSupportedPattern, _isSupportedComponent and _isSupportedType. Check validateUISchema fn.
 export default {
   str,
   number,
@@ -140,4 +153,5 @@ export default {
   alphanumeric,
   pan,
   pincode,
+  date
 };

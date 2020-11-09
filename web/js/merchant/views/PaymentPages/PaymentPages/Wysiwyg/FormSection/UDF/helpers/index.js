@@ -21,6 +21,7 @@ export function getFieldTypes() {
     fUnits.textarea,
     fUnits.pan,
     fUnits.pincode,
+    fUnits.date,
     fUnits.dropdown,
   ];
 
@@ -254,13 +255,14 @@ export function _isSupportedPattern(pattern) {
     'alphanumeric',
     'alphabets',
     'pan',
+    'date',
   ];
 
   return supportedPatterns.indexOf(pattern) > -1;
 }
 
 export function _isSupportedComponent(cmp) {
-  const supportedCmp = ['select', 'textarea', 'input'];
+  const supportedCmp = ['select', 'textarea', 'input', 'date'];
 
   return supportedCmp.indexOf(cmp) > -1; // Case sensitive
 }

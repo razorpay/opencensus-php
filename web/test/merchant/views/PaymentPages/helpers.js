@@ -170,14 +170,14 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
   const invalidFieldSchemas = [
     constructFieldSchema({ title: 'Test title' }), // Missing field_type
     constructFieldSchema({ title: 'Test title', field_type: '-1' }), // Bad field_type
-    constructFieldSchema({ title: 'Test title', field_type: '11' }), // '11' is 12th field and total FIELD_TYPES is only 11.
+    constructFieldSchema({ title: 'Test title', field_type: '12' }), // '12' is 13th field and total FIELD_TYPES is only 12.
     constructFieldSchema({
       title: 'Test title',
       field_type: '06', // Doens't exist
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '16', // Doens't exist
+      field_type: '16', // Doesn't exist
       description: 'Test description',
     }),
     constructFieldSchema({
