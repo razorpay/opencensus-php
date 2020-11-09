@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\FundAccount;
 use App;
 use Queue;
 
+use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
@@ -79,7 +80,11 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidAccountNumber()
@@ -93,7 +98,11 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidIfsc()
@@ -1007,5 +1016,31 @@ class FundAccountsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithEmptyArrayNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidNameNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
 }

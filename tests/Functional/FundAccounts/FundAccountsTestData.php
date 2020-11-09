@@ -2542,5 +2542,61 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithEmptyArrayNewApiError' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The bank account field is required.',
+                    'reason'        => 'input_validation_failed',
+                    'source'        => 'business'
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
+    'testCreateFundAccountBankAccountWithInvalidNameNewApiError' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Ami',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The name must be between 4 and 120 characters.',
+                    'reason'        => 'input_validation_failed',
+                    'source'        => 'business'
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

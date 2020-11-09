@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Error\Error;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
@@ -329,7 +330,11 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutWithoutFundAccountIdAndFundAccount()
     {
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
 
         $payouts = $this->getDbEntities('payout');
 
@@ -507,5 +512,27 @@ class CompositePayoutTest extends TestCase
     public function testCreateCompositePayoutWithSourceDetailsField()
     {
         $this->startTest();
+    }
+
+    public function testCreateCompositePayoutWithoutFundAccountIdAndFundAccountNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $fundAccounts = $this->getDbEntities('fund_account');
+
+        $contacts = $this->getDbEntities('contact');
+
+        // Assert that none of contact, fund account or payout are created.
+        $this->assertEquals(count($payouts), 0);
+        $this->assertEquals(count($fundAccounts), 0);
+        $this->assertEquals(count($contacts), 0);
     }
 }

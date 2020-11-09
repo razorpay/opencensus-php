@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Constants;
+use RZP\Error\Error;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
@@ -1575,7 +1576,11 @@ class PayoutTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testApprovePayoutWithoutComment()
@@ -3757,7 +3762,11 @@ class PayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testCreatePayoutIMPSMoreThanMaxAmount()
@@ -5555,7 +5564,11 @@ class PayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testCreatePayoutWithIfQueueLowBalanceFalseWithCredits()
@@ -8798,5 +8811,200 @@ class PayoutTest extends TestCase
         ]);
 
         $this->startTest();
+    }
+
+    /**
+     * new_banking_error feature not enabled status_code will be populated
+     * but error obj will not be created
+     *
+     */
+    public function testPublicErrorCodeMappingAndStatusCodeButErrorObjectIsNotCreated()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'YB_NS_E1028'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+            'IMPS is not enabled on Beneficiary Account');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS_CODE], 'YB_NS_E1028');
+
+        $this->assertArrayNotHasKey(Payout\Entity::ERROR, $updatedPayout);
+    }
+
+    public function testNewErrorObjectInPayoutResponse()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFiringOfWebhookPayoutResponseForReversedPayout()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payloadReversed = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadReversed) {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(7);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
+        ]);
+
+        $payoutReversedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventData, $payloadReversed);
+    }
+
+    public function testCreatePayoutWithWrongFundAccountIdNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+    }
+
+    public function testCreatePayoutWithIfQueueLowBalanceFalseNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+    }
+
+    public function testPayoutRejectWhenWorkflowEditNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->setupRedisMock();
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+    }
+ 
+    public function testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObject()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payloadReversed = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadReversed) {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(7);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'NOT_REGISTERED_ERROR'
+        ]);
+
+        $payoutReversedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventData, $payloadReversed);
+    }
+
+    public function testFiringOfWebhookPayoutResponseForProcessedPayout()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payloadProcessed = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadProcessed) {
+                $this->assertContains($payload['event']['name'], ['payout.processed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_PROCESSED:
+                        $payloadProcessed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => null,
+            'bank_status_code' => null
+        ]);
+
+        $payoutProcessedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.processed', $payoutProcessedEventData, $payloadProcessed);
     }
 }

@@ -323,6 +323,11 @@ class Constants
     const SKIP_WF_AT_PAYOUTS            = 'skip_wf_at_payouts';
 
     /**
+     * new banking error response is enabled by the merchant.
+     */
+    const NEW_BANKING_ERROR             = 'new_banking_error';
+
+    /**
      * Aggregator Partner + OAuth Client access
      */
     const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
@@ -697,6 +702,7 @@ class Constants
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::SKIP_WF_AT_PAYOUTS              => true,
+        self::NEW_BANKING_ERROR               => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::DISABLE_NATIVE_CURRENCY         => true,
@@ -938,6 +944,11 @@ class Constants
             'display_name'  => 'Razorpay X - Skip workflows payout specific',
             'documentation' => '',
         ],
+        self::NEW_BANKING_ERROR              => [
+            'feature'       => self::NEW_BANKING_ERROR,
+            'display_name'  => 'New banking error response is enabled by the merchant.',
+            'documentation' => '',
+        ],
         self::DISABLE_INSTANT_REFUNDS     => [
             'feature'       => self::DISABLE_INSTANT_REFUNDS,
             'display_name'  => 'Disable Instant Refunds',
@@ -1069,6 +1080,7 @@ class Constants
         self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
         self::SKIP_WF_AT_PAYOUTS,
+        self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
     ];
 

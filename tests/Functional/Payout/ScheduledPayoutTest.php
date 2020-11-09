@@ -6,6 +6,8 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
@@ -764,12 +766,18 @@ class ScheduledPayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $result);
 
-        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'])->toArrayPublic();
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id']);
+
+        $updatedScheduledPayoutArray = $updatedScheduledPayout->toArray();
 
         // Assert that the scheduled payout has now gone to the processing state
-        $this->assertEquals(Status::FAILED, $updatedScheduledPayout['status']);
+        $this->assertEquals(Status::FAILED, $updatedScheduledPayoutArray['status']);
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING, $updatedScheduledPayoutArray['status_code']);
 
         Mail::assertQueued(FailedPayout::class);
+
+        return $updatedScheduledPayout;
     }
 
     public function testScheduledPayoutProcessingAutoReject()
@@ -1177,5 +1185,40 @@ class ScheduledPayoutTest extends TestCase
 
         // Assert that the free payout was consumed.
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+    }
+
+    /**
+     * Check for internal payout webhook error response processed in scheduled payout cron
+     * and fails due to low balance
+     *
+     */
+    public function testFailedWebhookPayoutResponseForNewBankingError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payoutFailedEventData = $this->testData[__FUNCTION__];
+        $payloadFailed = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($payoutFailedEventData, & $payloadFailed) {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(3);
+
+        $payout = $this->testScheduledPayoutProcessingLowBalance();
+
+        $this->app->events->fire('api.payout.failed', [$payout]);
+
+        $this->validateStorkWebhookFireEvent('payout.failed', $payoutFailedEventData, $payloadFailed);
     }
 }

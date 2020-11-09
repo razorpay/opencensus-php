@@ -1,0 +1,326 @@
+{
+  "INVALID_VPA": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_vpa_invalid",
+      "description": "Payout failed due to invalid beneficiary VPA/UPI address."
+    }
+  },
+  "TXN_REJECTED_BENE_BANK": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "INVALID_ACCOUNT_NUMBER": {
+    "failed": {
+      "source": "business",
+      "reason": "bank_account_invalid",
+      "description": "Payout failed due to invalid beneficiary account details."
+    }
+  },
+  "BBANK_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank systems are offline, please retry after 30 min."
+    }
+  },
+  "FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Payout failed at beneficiary bank due to technical issue. Please retry."
+    }
+  },
+  "FROZEN_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_frozen",
+      "description": "Payout failed as beneficiary account is frozen. Please contact the beneficiary bank."
+    }
+  },
+  "EXCEEDED_AMOUNT_LIMIT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "transaction_limit_excedded",
+      "description": "Payout amount greater than the limit supported by the beneficiary account."
+    }
+  },
+  "REQUEST_NOT_FOUND": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Payout timed out at partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_REJECTED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Payout failed at beneficiary bank due to technical issue. Please retry."
+    }
+  },
+  "BENE_PSP_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_psp_offline",
+      "description": "Beneficiary PSP systems are offline, please retry after 30 mins."
+    }
+  },
+  "Invalid_PSP": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_vpa_invalid",
+      "description": "Payout failed due to invalid beneficiary VPA/UPI address."
+    }
+  },
+  "AUTHORIZATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "CLOSED_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_closed",
+      "description": "Payout failed as the beneficiary account is closed. Please contact the beneficiary bank."
+    }
+  },
+  "TXN_TIMEOUT_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "MERCHANT_VALIDATION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "CAPPED_DEBIT": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_NOT_ALLOWED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "REASON_UNKNOWN": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "INVALID_IFSC": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "invalid_ifsc_code",
+      "description": "Payout failed as the IFSC code is invalid. Please change the IFSC code and retry."
+    }
+  },
+  "VERIFICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "INSUFFICIENT_FUND": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "TECHNICAL_ERROR_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_TIMEOUT_PENDING": {
+    "initiated": {
+      "source": "beneficiary_bank",
+      "reason": "deemed_success",
+      "description": "Payout confirmation is pending from beneficiary bank. Payout status will be updated after 48 working hours."
+    }
+  },
+  "BATCH_LIMIT_EXHAUSTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "BENE_AUTHENTICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "IMPS_NOT_ENABLED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "imps_not_allowed",
+      "description": "IMPS is not enabled on beneficiary account, please retry with different mode."
+    }
+  },
+  "TXN_ON_HOLD": {
+    "initiated": {
+      "source": "beneficiary_bank",
+      "reason": "deemed_success",
+      "description": "Payout confirmation is pending from beneficiary bank. Status will be updated after 48 working hours."
+    }
+  },
+  "TXN_DATE_EXPIRED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "NRE_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "TXN_LIMIT_EXCEEDED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "INVALID_AMOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "GATEWAY_504": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Payout timed out at partner bank. Please retry after 30 min."
+    }
+  },
+  "PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Payout timed out at partner bank. Please retry after 30 min."
+    }
+  },
+  "RETURNED": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Payout failed at beneficiary bank due to technical issue. Please retry."
+    }
+  },
+  "INVALID_BENEFICIARY_DETAILS": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Payout failed due to invalid beneficiary account details."
+    }
+  },
+  "FRAUD_DECLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "CARD_VALIDATION_FAILED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Payout failed due to invalid beneficiary account number."
+    }
+  },
+  "DUPLICATE_TXN": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    }
+  },
+  "TXN_TIMEOUT": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Payout timed out at partner bank. Please retry after 30 min."
+    }
+  },
+  "GATEWAY_ERROR_UNKNOWN_ERROR": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    }
+  },
+  "RZP_FAILURE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "DEFAULT": {
+    "source": "internal",
+    "reason": "server_error",
+    "description": "Payout failed. Contact support for help."
+  },
+  "internal_payout_error": {
+    "BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR": {
+      "description": "Payout failed. Contact support for help.",
+      "source": "internal",
+      "reason": "server_error"
+    },
+    "BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING": {
+      "description": "Your account does not have enough balance to carry out the payout operation.",
+      "source": "business",
+      "reason": "insufficient_funds"
+    }
+  }
+}

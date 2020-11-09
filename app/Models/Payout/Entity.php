@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Batch;
@@ -103,6 +104,12 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_FEATURE                      = 'workflow_feature';
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
+
+    // status code send from bank side
+    const STATUS_CODE            = 'status_code';
+
+    // error object key for payout
+    const ERROR                  = 'error';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT                          = 'scheduled_at';
@@ -393,6 +400,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
         self::SOURCE_DETAILS,
+        self::STATUS_CODE,
     ];
 
     protected $public = [
@@ -457,6 +465,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::FAILURE_REASON,
         self::CREATED_AT,
+        self::ERROR
     ];
 
     protected static $modifiers = [
@@ -518,6 +527,7 @@ class Entity extends Base\PublicEntity
         self::FEE_TYPE          => null,
         self::WORKFLOW_FEATURE  => null,
         self::ORIGIN            => self::API,
+        self::STATUS_CODE       => null,
     ];
 
     protected $amounts = [
@@ -1073,6 +1083,11 @@ class Entity extends Base\PublicEntity
         return $this->inputSourceDetails;
     }
 
+    public function getStatusCode()
+    {
+        return $this->getAttribute(self::STATUS_CODE);
+    }
+
     public function getQueuePayoutCreateRequest()
     {
         return $this->queuePayoutCreateRequest;
@@ -1352,6 +1367,11 @@ class Entity extends Base\PublicEntity
     public function setOrigin($origin)
     {
         $this->setAttribute(self::ORIGIN, $origin);
+    }
+
+    public function setStatusCode($statusCode)
+    {
+        $this->setAttribute(self::STATUS_CODE, $statusCode);
     }
 
     public function setQueuePayoutCreateRequest($queuePayoutCreateRequest)
@@ -1900,13 +1920,37 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * check is new error feature is enabled for payout merchant and
+     * gives payout error array using status code and payout status.
+     */
+    public function getErrorDetails()
+    {
+        if (($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === false))
+        {
+            return null;
+        }
+
+        return new PayoutError($this);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function toArrayPublic()
     {
         $this->removeRecursiveRelation();
 
-        return parent::toArrayPublic();
+        $payoutArray = parent::toArrayPublic();
+
+        $errorObj = $this->getErrorDetails();
+
+        if (is_null($errorObj) === false)
+        {
+            $payoutArray[self::ERROR] = $errorObj->toPublicErrorResponse();
+        }
+
+        return $payoutArray;
     }
 
     /**
@@ -1916,7 +1960,16 @@ class Entity extends Base\PublicEntity
     {
         $this->removeRecursiveRelation();
 
-        return parent::toArray();
+        $payoutArray = parent::toArray();
+
+        $errorObj = $this->getErrorDetails();
+
+        if (is_null($errorObj) === false)
+        {
+            $payoutArray[self::ERROR] = $errorObj->toPublicErrorResponse();
+        }
+
+        return $payoutArray;
     }
 
     public function scopeStatus(BuilderEx $query, string $status)

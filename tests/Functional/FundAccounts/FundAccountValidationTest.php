@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use Queue;
 use \RZP\Constants;
+use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
@@ -306,7 +307,11 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->editBalance('0');
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testWebhookFundAccountValidationCompleted()
@@ -835,5 +840,20 @@ class FundAccountValidationTest extends TestCase
         $fav = $this->getLastEntity('fund_account_validation', true);
         // Queue will be processed by now.
         $this->assertEquals('failed', $fav['status']);
+    }
+
+    public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->fixtures->merchant->editBalance('0');
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
 }

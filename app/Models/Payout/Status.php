@@ -62,6 +62,30 @@ class Status
     ];
 
     /**
+     * Map to deemed_success status initiated and failed status
+     * to get details while creating error object in payout response
+     *
+     * @var array
+     */
+    public static $statusMappingToErrorFailureStatuses = [
+        self::INITIATED =>[
+            self::PENDING,
+            self::CREATED,
+            self::INITIATED,
+            self::QUEUED,
+            self::BATCH_SUBMITTED,
+            self::CREATE_REQUEST_SUBMITTED,
+            self::SCHEDULED
+        ],
+        self::FAILED => [
+            self::REVERSED,
+            self::REJECTED,
+            self::CANCELLED,
+            self::FAILED
+        ]
+    ];
+
+    /**
      * This contains a status map that keeps mapping of a status
      * to next possible statuses. This is to ensure the status
      * change on Payout Entity happens in an order.
@@ -296,5 +320,20 @@ class Status
         return in_array($status,
                         self::$finalStates,
                         true);
+    }
+
+    public static function getErrorStatus($status)
+    {
+        $defaultStatus = self::FAILED;
+
+        foreach (self::$statusMappingToErrorFailureStatuses as $statusMappingToErrorFailureStatus => $statuses)
+        {
+            if (in_array($status, $statuses))
+            {
+                return $statusMappingToErrorFailureStatus;
+            }
+        }
+
+        return $defaultStatus;
     }
 }

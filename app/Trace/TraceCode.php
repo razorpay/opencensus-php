@@ -1418,6 +1418,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_STATUS_UPDATE_REQUEST                          = 'PAYOUT_STATUS_UPDATE_REQUEST';
     const PAYOUT_HAS_DIFFERENT_CHANNEL_AT_FTS                   = 'PAYOUT_HAS_DIFFERENT_CHANNEL_AT_FTS';
     const PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA                 = 'PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA';
+    const PAYOUT_STATUS_CODE_MAPPING_REQUIRED                   = 'PAYOUT_STATUS_CODE_MAPPING_REQUIRED';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -3330,6 +3331,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
     const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
+    const NEW_BANKING_ERROR_RESPONSE_DATA                       = 'NEW_BANKING_ERROR_RESPONSE_DATA';
+    const BANKING_ERROR_CODE_MAPPING_NOT_FOUND                  = 'BANKING_ERROR_CODE_MAPPING_NOT_FOUND';
 
     // Razorpayx onboarding
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';

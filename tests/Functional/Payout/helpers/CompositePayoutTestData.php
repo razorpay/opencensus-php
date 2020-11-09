@@ -1171,4 +1171,36 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateCompositePayoutWithoutFundAccountIdAndFundAccountNewApiError' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fund account id field is required when fund account is not present.',
+                    'reason'      => 'input_validation_failed',
+                    'source'      => 'business'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

@@ -1,0 +1,236 @@
+{
+  "BAD_REQUEST_VALIDATION_FAILURE": {
+    "description": "Validation Failure",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE": {
+    "description": "An error occurred while creating the payout. Payout workflow could not be initiated",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIMESTAMP": {
+    "description": "Payouts can only be scheduled upto 3 months in advance",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED": {
+    "description": "mode is not supported",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH": {
+    "description": "Given mode cannot be used for the amount given",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_NEGATIVE_BALANCE_BREACHED": {
+    "description": "Your Negative Balance Limit has reached its maximum. Please Add funds to your account.",
+    "source": "business",
+    "reason": "insufficient_funds"
+  },
+  "SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED": {
+    "description": "Error while recording fee breakup",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS": {
+    "description": "A source with same source_id and source_type already exists.",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY": {
+    "description": "A source with same priority already exists.",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_FORBIDDEN": {
+    "description": "Access forbidden for requested resource",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_AMOUNT_RULE_NOT_FOUND": {
+    "description": "Bad request",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_AMOUNT_RULE_CHANGED": {
+    "description": "Bad request",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS": {
+    "description": "Workflow edit on the same payout rule is active",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP": {
+    "description": "No action can be performed on scheduled payouts that are ready to be processed",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIME_SLOT": {
+    "description": "We currently only support scheduling payouts at certain time slots",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED": {
+    "description": "Scheduled Payouts can only be created via dashboard",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED": {
+    "description": "Cancelling a Fee Recovery Payout is not permitted",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED": {
+    "description": "The payout is already being processed.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED": {
+    "description": "An error occurred performing this action",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "SERVER_ERROR_TRANSACTION_WRONG_SOURCE": {
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "SERVER_ERROR_INCORRECT_ENTITY_DELETE": {
+    "description": "This function should be called to delete only external entity!",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS": {
+    "description": "Another payout operation for merchant is in progress. Please try again later.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED": {
+    "description": "Creating/Updating an internal Razorpay Contact is not permitted",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED": {
+    "description": "Creating a fund account for an Internal Razopay contact is not permitted",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED": {
+    "description": "Updating an internal Razorpay Fund Account is not permitted",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE": {
+    "description": "The fees calculated for fund account validation is greater than available fee credits or balance.",
+    "source": "business",
+    "reason": "insufficient_funds"
+  },
+  "BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY": {
+    "description": "Fund Account Validations are temporarily blocked. Please contact support.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_FUND_ACCOUNT_VALIDATION_BANK_NOT_ALLOWED": {
+    "description": "Sorry we do not support this bank right now for fund account validation.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "SERVER_ERROR_INVALID_ARGUMENT": {
+    "description": "",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYMENT_UPI_INVALID_VPA": {
+    "description": "Invalid VPA. Please enter a valid Virtual Payment Address",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS": {
+    "description": "The payout is not in queued status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID": {
+    "description": "Invalid balance id, no db records found.",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE": {
+    "description": "Only Banking type balance is allowed.",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "SERVER_ERROR_COUNTER_ABSENT": {
+    "description": "No counter found.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD": {
+    "description": "This operation is not allowed. Please contact Razorpay support for details.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY": {
+    "description": "Payouts are temporarily blocked. Please contact support.",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH": {
+    "description": "Given method / mode cannot be used for the payout amount specified",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED": {
+    "description": "Payout retry is allowed only for reversed payouts",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_SCHEDULED_STATUS": {
+    "description": "The payout is not in scheduled status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_BATCH_SUBMITTED_STATUS": {
+    "description": "The payout is not in batch_submitted status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_CREATE_REQUEST_SUBMITTED_STATUS": {
+    "description": "The payout is not in create_request_submitted status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS": {
+    "description": "The payout is not in pending status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS": {
+    "description": "The payout is not in queued or scheduled status",
+    "source": "internal",
+    "reason": "server_error"
+  },
+  "BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED": {
+    "description": "Scheduled Payouts can only be cancelled via dashboard",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_PAYOUT_INVALID_MODE": {
+    "description": "Payout mode is invalid",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "BAD_REQUEST_INVALID_ID": {
+    "description": "The id provided does not exist",
+    "source": "business",
+    "reason": "input_validation_failed"
+  },
+  "SERVER_ERROR_LOGICAL_ERROR": {
+    "description": "",
+    "source": "internal",
+    "reason": "server_error"
+  }
+}

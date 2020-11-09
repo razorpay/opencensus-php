@@ -331,6 +331,8 @@ class Base extends BaseCore
 
                             $payout->setFailureReason('Insufficient balance to process payout');
 
+                            $payout->setStatusCode($insufficientFundsErrorCode);
+
                             $this->repo->saveOrFail($payout);
 
                             $this->trace->info(
@@ -458,6 +460,8 @@ class Base extends BaseCore
             if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
             {
                 $payout->setFailureReason('Insufficient balance to process payout');
+
+                $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING);
             }
             else
             {
@@ -473,6 +477,8 @@ class Base extends BaseCore
                             'x-payouts-core-alerts');
 
                 $payout->setFailureReason('Payout failed. Contact support for help');
+
+                $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
             }
 
             $this->repo->saveOrFail($payout);
@@ -541,6 +547,8 @@ class Base extends BaseCore
                             $payout->setStatus(Status::FAILED);
 
                             $payout->setFailureReason('Insufficient balance to process payout');
+
+                            $payout->setStatusCode($insufficientFundsErrorCode);
 
                             $this->repo->saveOrFail($payout);
 

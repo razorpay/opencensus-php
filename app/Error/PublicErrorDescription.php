@@ -248,6 +248,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING                         = 'Your account does not have enough balance to carry out the payout operation.';
+    const BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR                               = 'Payout failed. Contact support for help.';
     const BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE            = 'Payout status update is allowed only in test mode';
     const BAD_REQUEST_FUND_ACCOUNT_ID_IS_REQUIRED                               = 'fund_account_id is required';
     const BAD_REQUEST_ONLY_INTERNAL_CONTACT_PERMITTED                           = 'Please send fund accounts of internal type contacts only';

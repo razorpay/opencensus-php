@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Error\Error;
+use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -123,7 +125,11 @@ class ContactsTest extends TestCase
 
     public function testCreateContactWithoutName()
     {
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testCreateContactInvalidName()
@@ -570,7 +576,11 @@ class ContactsTest extends TestCase
 
     public function testCreateRZPFeesTypeContact()
     {
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
     public function testUpdateRZPFeesContact()
@@ -810,5 +820,27 @@ class ContactsTest extends TestCase
 
         $this->assertNotNull($contact->getReferenceId());
         $this->assertNotNull($contact->getType());
+    }
+
+    public function testCreateContactWithoutNameNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+    }
+
+    public function testCreateRZPFeesTypeContactNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
+
+        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
 }

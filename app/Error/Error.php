@@ -7,10 +7,15 @@ use ArrayObject;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Services\DowntimeMetric;
 use RZP\Error\Twirp\ErrorCodeMap;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payout\PayoutError;
 use RZP\Models\Payment\DetailedError;
+use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Payout\Entity as PayoutEntity;
+
 
 class Error extends Support\Fluent
 {
@@ -54,7 +59,8 @@ class Error extends Support\Fluent
     const REASON_CODE           = 'reason_code';
     const ENGLISH_DESCRIPTION   = 'english_description';
 
-    const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
+    const ERROR_CODE_FILE_PATH          = 'files/errorcodes/error_reason_%s.csv';
+    const BANKING_ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.json';
 
     const ERROR_CODE_VERIFIABLE_FILE_PATH  = 'files/errorcodes/error_verifiable_%s.csv';
 
@@ -282,18 +288,30 @@ class Error extends Support\Fluent
         $this->setAttribute(self::PAYMENT_METHOD, $paymentMethod);
     }
 
+    /**
+     * Check if method is set in the error object.
+     * Method field is used to error_reason_{method}.csv files and
+     * is used by Payment side of api.
+     * If method is not set i.e for RaxorpayX product banking
+     * we use error_reason_{product}.json file to fill details in error object.
+     *
+     * @param $code
+     * @param $method
+     */
     public function setDetailedError($code, $method)
     {
-        if (isset($method) === false)
+        if (isset($method) === true)
         {
-            return;
+            $errorCodeMap = array();
+
+            $this->readMappingFromFile($method, $errorCodeMap);
+
+            $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
         }
-
-        $errorCodeMap = array();
-
-        $this->readMappingFromFile($method, $errorCodeMap);
-
-        $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
+        else if($this->shouldModifyForNewBankingErrorCode() === true)
+        {
+            $this->setBankingErrorDetails($code);
+        }
     }
 
     protected function setEnglishDescription($desc)
@@ -639,6 +657,19 @@ class Error extends Support\Fluent
             self::METADATA          => $metadata,
         );
 
+        if ($this->shouldModifyForNewBankingErrorCode() === true)
+        {
+            unset($error[self::STEP]);
+
+            unset($error[self::METADATA]);
+
+            $this->trace->info(TraceCode::NEW_BANKING_ERROR_RESPONSE_DATA,
+                [
+                    'new_error_response' => $error
+                ]
+            );
+        }
+
         $data = $this->getAttribute(self::DATA);
 
         if ($this->shouldExposeReasonCode($data) === true)
@@ -808,5 +839,80 @@ class Error extends Support\Fluent
         ];
 
         return in_array($code, $validationErrorCodes, true);
+    }
+
+    public function readMappingFromJsonFile($product)
+    {
+        $filePath = storage_path(sprintf(self::BANKING_ERROR_CODE_FILE_PATH, $product));
+
+        if (file_exists($filePath) === false)
+        {
+            return null;
+        }
+
+        $fileData = file_get_contents($filePath);
+
+        return json_decode($fileData, true);
+    }
+
+    /**
+     * Add details in fields reason and source using errro_reason_{banking/payout} file
+     * Here we check the main error_reason_banking file first to check if the
+     * code is in global error list. Else we will check with error_reason_payout file
+     * for internal_payout_error.
+     *
+     * @param $code
+     */
+    protected function setBankingErrorDetails($code)
+    {
+        $errorCodeMap = $this->readMappingFromJsonFile(Product::BANKING);
+
+        $errorCodeDetails = $errorCodeMap[$code] ?? null;
+
+        if (is_null($errorCodeDetails) === true)
+        {
+            $errorCodeMap = $this->readMappingFromJsonFile(PayoutEntity::PAYOUT);
+
+            $errorCodeDetails = $errorCodeMap[PayoutError::INTERNAL_PAYOUT_ERROR][$code] ?? null;
+        }
+
+        if (is_null($errorCodeDetails) === false)
+        {
+            $this->setReason($errorCodeDetails[self::REASON]);
+
+            $this->setSource($errorCodeDetails[self::SOURCE]);
+        }
+        else
+        {
+            $this->trace->error(TraceCode::BANKING_ERROR_CODE_MAPPING_NOT_FOUND,
+                [
+                    'internal_error_code'  => $code,
+                    'description'          => $this->getDescription()
+                ]
+            );
+        }
+    }
+
+    /**
+     * Will work only with auth having merchant details.
+     * With cron auth and worker this will always return false because
+     * getMerchant() will always return null.
+     *
+     * @return bool
+     */
+    public function shouldModifyForNewBankingErrorCode()
+    {
+        $product = $this->app['basicauth']->getProduct();
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if (($product === Product::BANKING) and
+            (is_null($merchant) === false) and
+            ($merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

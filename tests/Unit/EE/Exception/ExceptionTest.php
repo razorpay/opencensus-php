@@ -194,12 +194,16 @@ class ExceptionTest extends TestCase
                 })->mock();
 
         $handler->shouldReceive('getMerchant')
-                ->once()
                 ->andReturnUsing(function ()
                 {
                     return null;
                 })->mock();
 
+        $handler->shouldReceive('getProduct')
+                ->andReturnUsing(function ()
+                {
+                    return null;
+                })->mock();
 
         $this->app->instance('basicauth', $handler);
     }

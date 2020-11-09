@@ -6,7 +6,7 @@ use RZP\Trace\TraceCode;
 
 class ErrorCodeMapping
 {
-    protected static $failureReasonMapping = [
+    public static $failureReasonMapping = [
         'YB_NS_E400'                            => 'Payout failed. Contact support for help',
         'YB_NS_E402'                            => 'Payout failed. Contact support for help',
         'YB_NS_E405'                            => 'Payout failed. Contact support for help',
@@ -163,6 +163,8 @@ class ErrorCodeMapping
         'BBANK_GATEWAY_THROTTLED_FAILURE'       => 'Beneficiary bank is offline. Reinitiate transfer after 30 min.',
     ];
 
+    const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help';
+
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
     {
         $errorMessage = self::$failureReasonMapping[$bankStatusCode] ?? null;
@@ -175,7 +177,7 @@ class ErrorCodeMapping
                     'payout_id'         => $payout->getId(),
                 ]);
 
-            $errorMessage = 'Payout failed. Contact support for help';
+            return self::DEFAULT_FAILURE_REASON;
         }
 
         return $errorMessage;

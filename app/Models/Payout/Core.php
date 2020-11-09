@@ -446,6 +446,8 @@ class Core extends Base\Core
                 // For non-Yesbank, we will not get public_failure_reason
                 $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
+                $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
+
                 $initialChannel = $payout->getChannel();
 
                 $updatedChannel = $ftaData[Attempt\Constants::CHANNEL] ?? null;
@@ -483,6 +485,14 @@ class Core extends Base\Core
                 if (empty($ftaFailureReason) === false)
                 {
                     $payout->setFailureReason($ftaFailureReason);
+                }
+
+                //
+                // same reason as of failure reason
+                //
+                if (empty($ftaBankStatusCode) === false)
+                {
+                    $payout->setStatusCode($ftaBankStatusCode);
                 }
 
                 // we want to override return UTR only if there is no value for UTR before
@@ -1829,9 +1839,10 @@ class Core extends Base\Core
                                             string $ftaFailureReason = null,
                                             string $ftaBankStatusCode = null)
     {
+        // will be removed after new error object is released.
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
-        $this->reversePayout($payout, $ftaFailureReason);
+        $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
     }
@@ -1840,6 +1851,7 @@ class Core extends Base\Core
                                           string $ftaFailureReason = null,
                                           string $ftaBankStatusCode = null)
     {
+        // will be removed after new error object is released.
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
         $this->verifyPayoutFailedTransaction($payout);
@@ -1857,7 +1869,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'failure_payout_id_' . $payout->getId(),
-            function () use ($payout, $ftaFailureReason)
+            function () use ($payout, $ftaFailureReason, $ftaBankStatusCode)
             {
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
@@ -1865,13 +1877,15 @@ class Core extends Base\Core
                 $this->repo->reload($payout);
 
                 $this->repo->transaction(
-                    function() use ($payout, $ftaFailureReason) {
+                    function() use ($payout, $ftaFailureReason, $ftaBankStatusCode) {
 
                         $previousStatus = $payout->getStatus();
 
                         $payout->setStatus(Status::FAILED);
 
                         $payout->setFailureReason($ftaFailureReason);
+
+                        $payout->setStatusCode($ftaBankStatusCode);
 
                         if ($this->shouldHandleRewardForFailedPayout($payout) === true)
                         {
@@ -1963,7 +1977,7 @@ class Core extends Base\Core
         }
     }
 
-    public function reversePayout(Entity $payout, string $reverseReason = null)
+    public function reversePayout(Entity $payout, string $reverseReason = null, $ftaBankStatusCode = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -1981,7 +1995,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason)
+            function () use ($payout, $reverseReason, $ftaBankStatusCode)
             {
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
@@ -2001,10 +2015,12 @@ class Core extends Base\Core
                 }
 
                 $reversal = $this->repo->transaction(
-                    function() use ($payout, $reverseReason) {
+                    function() use ($payout, $reverseReason, $ftaBankStatusCode) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
                         $payout->setFailureReason($reverseReason);
+
+                        $payout->setStatusCode($ftaBankStatusCode);
 
                         if ($payout->isBalanceAccountTypeDirect() === true)
                         {
@@ -2079,6 +2095,7 @@ class Core extends Base\Core
         }
     }
 
+    // will be removed after new error object is released.
     protected function getPublicErrorMessage(
         Entity $payout,
         string $ftaFailureReason = null,
