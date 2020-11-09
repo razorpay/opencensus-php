@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function findByAddress($address, bool $withTrashed = false)
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQuery()
                       ->address($address);
 
         if ($withTrashed === true)
