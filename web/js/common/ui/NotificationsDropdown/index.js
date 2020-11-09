@@ -59,6 +59,11 @@ export default class NotificationsDropdown extends Component {
     const scriptJQ = document.createElement('script');
     scriptJQ.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
     document.body.appendChild(scriptJQ);
+
+    this.props.tracking.trackEvent(
+      window.rzpQ &&
+        window.rzpQ.merchantActions().success('merchant_dashboard.display_notification'),
+    );
   }
 
   setUnreadMsgs() {
