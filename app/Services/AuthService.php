@@ -11,6 +11,7 @@ use RZP\Http\OAuthCache;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\MerchantApplications;
 
@@ -19,6 +20,11 @@ class AuthService
     use OAuthCache;
     const REQUEST_TIMEOUT = 30; // In seconds
     const ID = 'id';
+
+    const APPLICATIONS   = 'applications';
+    const CLIENTS        = 'clients';
+    const TOKENS         = 'tokens';
+    const REFRESH_TOKENS = 'refresh_tokens';
 
     protected $baseUrl;
 
@@ -34,8 +40,13 @@ class AuthService
 
     protected $trace;
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
+        if (empty($app) === true)
+        {
+            $app = app();
+        }
+
         $this->key     = 'rzp';
         $this->trace   = $app['trace'];
         $this->config  = $app['config']->get('applications.auth_service');
@@ -62,6 +73,34 @@ class AuthService
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
         return $this->sendRequest('applications/' . $id, Requests::GET, $input);
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        switch ($entity)
+        {
+            case self::APPLICATIONS:
+            case self::CLIENTS:
+            case self::TOKENS:
+            case self::REFRESH_TOKENS:
+                return $this->sendRequest('admin/entities/'. $entity, Requests::GET, $input);
+        }
+
+        return null;
+    }
+
+    public function fetch(string $entity, string $id, array $input)
+    {
+        switch ($entity)
+        {
+            case self::APPLICATIONS:
+            case self::CLIENTS:
+            case self::TOKENS:
+            case self::REFRESH_TOKENS:
+                return $this->sendRequest('admin/entities/'. $entity. '/'. $id, Requests::GET);
+        }
+
+        return null;
     }
 
     public function getMultipleApplications(array $input, string $merchantId) : array

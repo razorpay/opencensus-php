@@ -16,7 +16,7 @@ class Repository extends Base\Repository
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|string|size:14',
-        Entity::TYPE            => 'sometimes|string|size:14',
+        Entity::TYPE            => 'sometimes|string',
         Entity::APPLICATION_ID  => 'sometimes|string|size:14'
     ];
 

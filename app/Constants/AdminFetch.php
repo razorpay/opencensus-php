@@ -97,6 +97,36 @@ class AdminFetch
                     Fetch::TYPE         => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::AUTH_SERVICE_APPLICATIONS => [
+                'merchant_id'           => Fetch::FIELD_MERCHANT_ID,
+                'type' => [
+                    Fetch::LABEL        => 'Type',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'partner',
+                    ],
+                ],
+            ],
+            Entity::AUTH_SERVICE_CLIENTS => [
+                'merchant_id'           => Fetch::FIELD_MERCHANT_ID,
+                'application_id'        => [
+                    Fetch::LABEL        => 'Application Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::AUTH_SERVICE_TOKENS => [
+                'merchant_id'           => Fetch::FIELD_MERCHANT_ID,
+                'client_id'        => [
+                    Fetch::LABEL        => 'Client Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::AUTH_SERVICE_REFRESH_TOKENS => [
+                'token_id'        => [
+                    Fetch::LABEL        => 'Token Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
             Entity::SHIELD_RULES => [
                 'is_active'         => [
                     Fetch::LABEL        => 'active',
@@ -2524,6 +2554,14 @@ class AdminFetch
                 'entity_owner_id' => [
                     Fetch::LABEL => 'Entity Owner Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::MERCHANT_APPLICATION => [
+                'merchant_id'     => FETCH::FIELD_MERCHANT_ID,
+                'application_id'  => [
+                    Fetch::LABEL  => 'Application Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
                 ],
             ],
 

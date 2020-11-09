@@ -338,6 +338,14 @@ class Entity
     const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
+
+
+    // Service: Auth Service
+    const AUTH_SERVICE_APPLICATIONS    = 'auth_service.applications';
+    const AUTH_SERVICE_CLIENTS         = 'auth_service.clients';
+    const AUTH_SERVICE_TOKENS          = 'auth_service.tokens';
+    const AUTH_SERVICE_REFRESH_TOKENS  = 'auth_service.refresh_tokens';
+
     // Service: Shield
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RISKS                 = 'shield.risks';
@@ -812,6 +820,10 @@ class Entity
         self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
         self::REPORTING_SCHEDULES           => \RZP\Services\Reporting::class,
         self::SHIELD_RULES                  => \RZP\Services\ShieldClient::class,
+        self::AUTH_SERVICE_APPLICATIONS     => \RZP\Services\AuthService::class,
+        self::AUTH_SERVICE_CLIENTS          => \RZP\Services\AuthService::class,
+        self::AUTH_SERVICE_TOKENS           => \RZP\Services\AuthService::class,
+        self::AUTH_SERVICE_REFRESH_TOKENS   => \RZP\Services\AuthService::class,
         self::SHIELD_RULE_ANALYTICS         => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISKS                  => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISK_LOGS              => \RZP\Services\ShieldClient::class,
