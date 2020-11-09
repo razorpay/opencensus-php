@@ -581,6 +581,7 @@ class Route
         'setl_transaction_release'                 => ['post',     'settlements/transaction/release',                'SettlementController@transactionRelease'                           ],
         'setl_execution_resume'                    => ['post',     'settlements/execution/resume',                   'SettlementController@executionResume'                              ],
         'setl_trigger_multiple'                    => ['post',     'settlements/trigger/multiple',                   'SettlementController@executionTriggerMultiple'                     ],
+        'setl_trigger_report'                      => ['post',     'settlements/report/trigger',                     'SettlementController@triggerReport'                                ],
         'setl_execution_register'                  => ['post',     'settlements/execution/register',                 'SettlementController@executionRegister'                            ],
         'setl_replay_status_update'                => ['post',     'settlements/status_update/replay',               'SettlementController@replaySettlementsStatusUpdate'                ],
 
@@ -3863,6 +3864,7 @@ class Route
         'setl_transaction_hold',
         'setl_channel_status_update',
         'setl_channel_state_get',
+        'setl_trigger_report',
         'setl_retry_new_service',
         'setl_schedule_rename',
         'setl_replay_status_update',
@@ -4103,6 +4105,7 @@ class Route
         'setl_transaction_hold'                    => Permission::TOGGLE_TRANSACTION_HOLD_STATUS,
         'setl_channel_status_update'               => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_channel_state_get'                   => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_trigger_report'                      => '*',
         'setl_retry_new_service'                   => Permission::RETRY_SETTLEMENT,
         'setl_schedule_rename'                     => Permission::SCHEDULE_UPDATE,
         'setl_replay_status_update'                => Permission::SETTLEMENT_BULK_UPDATE,

@@ -953,6 +953,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->executionTriggerMultiple($input);
     }
 
+    public function triggerReport(array $input) : array
+    {
+        return app('settlements_dashboard')->triggerReport($input);
+    }
+
     public function executionResume(array $input) : array
     {
         return app('settlements_dashboard')->executionResume($input);

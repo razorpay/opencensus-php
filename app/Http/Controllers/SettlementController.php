@@ -440,6 +440,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function triggerReport()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->triggerReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function scheduleGetIds()
     {
         $input = Request::all();

@@ -29,6 +29,8 @@ class Dashboard extends Base
 
     const SETTLEMENT_RETRY             = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
 
+    const REPORT_TRIGGER               = '/twirp/rzp.settlements.report.v1.ReportService/TriggerReport';
+
     const MERCHANT_CONFIG_GET                      = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
     const MERCHANT_CONFIG_EDIT_FEATURE             = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
     const MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/SchedulableEntities';
@@ -100,6 +102,19 @@ class Dashboard extends Base
     public function scheduleRename(array $input) : array
     {
         return $this->makeRequest(self::SCHEDULE_RENAME_URI, $input, self::SERVICE_DASHBOARD);
+    }
+
+
+    /**
+     * trigger report
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function triggerReport(array $input) : array
+    {
+        return $this->makeRequest(self::REPORT_TRIGGER, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
