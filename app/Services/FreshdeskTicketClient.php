@@ -320,9 +320,100 @@ class FreshdeskTicketClient
         return $response;
     }
 
+    protected function getCurlData($content, $mime_boundary)
+    {
+        $eol = "\r\n";
+
+        $data = '';
+
+        if (isset($content['attachments[]']) === true)
+        {
+            foreach ($content['attachments[]'] as $attachment)
+            {
+                $data .= "--" . $mime_boundary . $eol;
+                $data .= 'Content-Disposition: form-data; name="attachments[]"; filename="' . $attachment->getClientOriginalName() . '"' . $eol;
+                $data .= 'Content-Transfer-Encoding: binary'.$eol.$eol;
+                $data .= file_get_contents($attachment) . $eol;
+            }
+
+            unset($content['attachments[]']);
+        }
+
+        self::httpBuildQuery($content);
+
+        foreach ($content as $key => $value)
+        {
+            $data .= '--' . $mime_boundary . $eol;
+            $data .= 'Content-Disposition: form-data; name="' . $key . '"' . $eol . $eol;
+            $data .= $value . $eol;
+        }
+
+        $data .= '--' . $mime_boundary . '--';
+
+        return $data;
+    }
+
+    protected static function httpBuildQuery(array &$data, $key = '', $value = null)
+    {
+        foreach ($value ?? $data as $k => $v)
+        {
+            $cur_key = $key ? "{$key}[{$k}]" : "{$k}";
+
+            if (is_array($v))
+            {
+                self::httpBuildQuery($data, "{$cur_key}", $v);
+
+                unset($data[$k]);
+            }
+            else
+            {
+                $data[$cur_key] = $v;
+            }
+        }
+    }
+
+    protected function makeCurlRequest(array &$request)
+    {
+        $mime_boundary = md5(time());
+
+        $curl = curl_init();
+
+        $headers = array (
+            "authorization: " . $request['headers']['Authorization'],
+            "content-type: " . 'multipart/form-data; boundary=' . $mime_boundary
+        );
+
+        $content = $this->getCurlData($request['content'], $mime_boundary);
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $request['url'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $content,
+            CURLOPT_HTTPHEADER => $headers,
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+
+        return $response;
+    }
+
     protected function makeRequestAndGetFreshdeskResponse(string $method, string $url, string $auth, array $content)
     {
         $contentType = 'application/json';
+
+        if (isset($content['attachments']) === true)
+        {
+            $content['attachments[]'] = $content['attachments'];
+
+            unset($content['attachments']);
+        }
 
         if ((isset($content['attachments[]']) === true) and (is_null($content['attachments[]']) === false))
         {
@@ -331,11 +422,11 @@ class FreshdeskTicketClient
         else
         {
             unset($content['attachments[]']);
-        }
 
-        if (empty($content) === false)
-        {
-            $content = json_encode($content);
+            if (empty($content) === false)
+            {
+                $content = json_encode($content);
+            }
         }
 
         $request = [
@@ -359,15 +450,24 @@ class FreshdeskTicketClient
             ]
         );
 
-        $response = Requests::request(
-            $request['url'],
-            $request['headers'],
-            $request['content'],
-            $request['method'],
-            $request['options']
-        );
+        if ($contentType === 'multipart/form-data')
+        {
+            $response = $this->makeCurlRequest($request);
+        }
+        else
+        {
+            $response = Requests::request(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['method'],
+                $request['options']
+            );
 
-        $response = json_decode($response->body, true);
+            $response = $response->body;
+        }
+
+        $response = json_decode($response, true);
 
         if (is_array($response) === false)
         {

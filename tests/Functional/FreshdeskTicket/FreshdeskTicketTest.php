@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\FreshdeskTicket;
 
+use Illuminate\Http\UploadedFile;
 use Mail;
 use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Tests\Functional\TestCase;
@@ -90,6 +91,8 @@ class FreshdeskTicketTest extends TestCase
         $this->generateOtp($testData['request']['content']['email']);
 
         $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+
+        $this->startTest();
     }
 
     public function testGetFreshdeskTicketsForCustomer()
@@ -216,6 +219,41 @@ class FreshdeskTicketTest extends TestCase
         $this->app['config']->set('applications.freshdesk.mock', true);
 
         $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateTicketAttachments()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->publicAuth();
+
+        $testData = &$this->testData['testCreateTicketAttachments'];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+
+        $file1 = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+
+        $file2 = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+
+        $testData['request']['files']['attachments'] = [$file1];
 
         $this->startTest();
     }

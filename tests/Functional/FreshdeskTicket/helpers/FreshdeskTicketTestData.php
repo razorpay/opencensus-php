@@ -87,6 +87,7 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
@@ -115,6 +116,7 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
@@ -139,6 +141,7 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
@@ -183,6 +186,7 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
@@ -211,6 +215,7 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
@@ -373,12 +378,37 @@ return [
             'content' => [
                 'name' => 'Test',
                 'subject' => 'Subject',
+                'description' => 'Description',
                 'email' => 'test@gmail.com',
                 'abc' => 'strct',
                 'mode' => 'test',
                 'otp'  => '0007',
                 'custom_fields' => [
                     'cf_requester_category' => 'Partner'
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testCreateTicketAttachments' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'description' => 'Description',
+                'email' => 'test@gmail.com',
+                'mode' => 'test',
+                'otp'  => '0007',
+                'custom_fields' => [
+                    'cf_transaction_id' => '',
+                    'cf_requester_category' => 'Customer'
                 ]
             ]
         ],

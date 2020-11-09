@@ -24,7 +24,7 @@ class Service extends Base\Service
         'otp'                                 => 'required|string|min:4|max:6',
         'name'                                => 'required|string|max:100',
         'phone'                               => 'sometimes|contact_syntax',
-        'description'                         => 'sometimes|string|max:1000',
+        'description'                         => 'required|string|max:1000',
         'subject'                             => 'required|string|max:500',
         'attachments'                         => 'sometimes',
         'custom_fields'                       => 'required|array',
@@ -654,9 +654,13 @@ class Service extends Base\Service
 
         if (empty($payment) === false)
         {
-            $customFields[Constants::PAYMENT_ID] = $paymentId;
+            $customFields[Constants::PAYMENT_ID] = $payment->getPublicId();
             $customFields[Constants::MERCHANT_ID] = $payment->getMerchantId();
 
+            if($payment->getOrderId() !== false)
+            {
+                $customFields[Constants::ORDER_ID] = $payment->getOrderId();
+            }
             if ($payment->getEmail() !== null)
             {
                 $customFields[Constants::PAYMENT_CUSTOMER_EMAIL] = $payment->getEmail();
@@ -688,7 +692,7 @@ class Service extends Base\Service
         {
             $customFields = $this->getCustomFieldsFromPaymentId($refund->getPaymentId());
 
-            $customFields[Constants::REFUND_ID] = $refundId;
+            $customFields[Constants::REFUND_ID] = $refund->getPublicId();
         }
 
         return $customFields;
@@ -719,7 +723,7 @@ class Service extends Base\Service
                 $customFields = array_merge_recursive($customFields, $paymentCustomFields);
             }
 
-            $customFields[Constants::ORDER_ID] = $orderId;
+            $customFields[Constants::ORDER_ID] = $order->getPublicId();
         }
 
         return $customFields;
