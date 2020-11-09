@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\Functional\TaxPayments;
 
-use App;
 use Mockery;
+
+use App;
 use RZP\Models\Contact\Type;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;

@@ -5,8 +5,8 @@ namespace RZP\Jobs;
 use App;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Payout\SourceUpdater;
 use Jitendra\Lqext\TransactionAware;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 /***
  * NOTE: In case the Payout Status updates are out of order, the PayoutLink State Machine may fail.

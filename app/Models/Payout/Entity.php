@@ -36,6 +36,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 /**
  * @property Customer\Entity        $customer
@@ -1447,8 +1448,7 @@ class Entity extends Base\PublicEntity
 
         $sourceDetails = $this->payoutSources()->select($visibleKeys)
                                                ->orderBy(PayoutSource\Entity::PRIORITY)
-                                               ->get()
-                                               ->toArray();
+                                               ->get();
 
         return $sourceDetails;
     }

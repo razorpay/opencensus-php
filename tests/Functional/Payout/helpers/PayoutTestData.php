@@ -9511,12 +9511,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],
@@ -9541,12 +9541,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],
@@ -9577,12 +9577,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                         'abcd'        => 'efhg',
                     ],
@@ -9627,12 +9627,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 'abc',
                     ],
                 ],
@@ -9676,12 +9676,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                 ],
@@ -9720,12 +9720,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                 ],
@@ -9805,12 +9805,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2
                     ],
                 ],
@@ -9936,12 +9936,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],
@@ -9966,12 +9966,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],
@@ -10003,12 +10003,12 @@ return [
                 'source_details'       => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],
@@ -10033,12 +10033,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_link',
+                        'source_type' => 'payout_links',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payment',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 2,
                     ],
                 ],

@@ -52,7 +52,7 @@ class PayoutSourceTest extends TestCase
 
         $input = [
             Entity::SOURCE_ID   => 'ECDyjIKwCWEFmh',
-            Entity::SOURCE_TYPE => 'vendor_payment',
+            Entity::SOURCE_TYPE => 'vendor_payments',
             Entity::PRIORITY    => 1,
         ];
 
@@ -62,7 +62,7 @@ class PayoutSourceTest extends TestCase
         $payoutSource = $this->getDbLastEntity('payout_source');
 
         $this->assertEquals('ECDyjIKwCWEFmh', $payoutSource->getSourceId());
-        $this->assertEquals('vendor_payment', $payoutSource->getSourceType());
+        $this->assertEquals('vendor_payments', $payoutSource->getSourceType());
         $this->assertEquals(1, $payoutSource->getPriority());
         $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
     }

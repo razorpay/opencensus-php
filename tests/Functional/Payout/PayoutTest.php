@@ -8464,7 +8464,7 @@ class PayoutTest extends TestCase
         /** @var Payout\Entity $payout1 */
         $payout2 = $this->getDbLastEntity('payout');
 
-        $payoutSources = $payout2->getSourceDetails();
+        $payoutSources = $payout2->getSourceDetails()->toArray();
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -8518,7 +8518,7 @@ class PayoutTest extends TestCase
 
         $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
 
-        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout1->getSourceDetails()];
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout1->getSourceDetails()->toArray()];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
 
@@ -8698,7 +8698,7 @@ class PayoutTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
-        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()];
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
@@ -8715,9 +8715,76 @@ class PayoutTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()];
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
+    public function testPayoutSetStatusQueuePushSkippedWhenSourceDetailsAbsent()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created'
+        ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => 'vdpm_1',
+                                    'source_type' => 'vendor_payments',
+                                    'priority'    => 1
+                                ]);
+
+        $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
+    public function testPayoutSetStatusQueuePushWhenPayoutLinkIDIsSet()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $payoutLink = $this->fixtures->create('payout_link',
+            [
+                'contact_id' => $contact->getId(),
+                'balance_id' => $this->bankingBalance->getId()
+            ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created',
+            'payout_link_id' => $payoutLink->getId()
+        ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class,1);
+    }
+
+    public function testPayoutSetStatusQueuePushWhenPayoutCreated()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'initiated',
+        ]);
+
+        $payout->setStatus(Status::CREATED);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class,1);
     }
 
     public function testCreatePayoutViaUpi()

@@ -4,17 +4,23 @@ namespace RZP\Models\PayoutSource;
 
 use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 /**
  * @property Payout\Entity $payout
  */
 class Entity extends Base\PublicEntity
 {
-    const ID          = 'id';
-    const PAYOUT_ID   = 'payout_id';
-    const SOURCE_ID   = 'source_id';
-    const SOURCE_TYPE = 'source_type';
-    const PRIORITY    = 'priority';
+    const ID              = 'id';
+    const PAYOUT_ID       = 'payout_id';
+    const SOURCE_ID       = 'source_id';
+    const SOURCE_TYPE     = 'source_type';
+    const PRIORITY        = 'priority';
+
+    const PAYOUT_LINK     = 'payout_links';
+    const VENDOR_PAYMENTS = 'vendor_payments';
+    const TAX_PAYMENTS    = 'tax_payments';
 
     // Relations
     const PAYOUT = 'payout';
@@ -24,6 +30,12 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::ID;
 
     protected $entity = 'payout_source';
+
+    protected static $validSourceTypes = [
+        self::PAYOUT_LINK,
+        self::VENDOR_PAYMENTS,
+        self::TAX_PAYMENTS,
+    ];
 
     protected $fillable   = [
         self::PAYOUT_ID,
