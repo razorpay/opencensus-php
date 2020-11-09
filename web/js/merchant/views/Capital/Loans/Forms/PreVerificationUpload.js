@@ -188,7 +188,8 @@ class PreVerificationUpload extends Component {
     applicantId,
     success,
   }) => {
-    this.handleTabChange(2);
+    // set active tab to bank statement to show processing/failed feedback
+    this.handleTabChange(0);
     try {
       if (success) {
         this.showProcessingBankStatementFeedback();
