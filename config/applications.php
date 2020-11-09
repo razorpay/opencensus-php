@@ -447,11 +447,12 @@ return [
     ],
 
     'razorx' => [
-        'mock'            => env('RAZORX_MOCK', false),
-        'url'             => env('RAZORX_URL'),
-        'username'        => 'rzp_api',
-        'secret'          => env('RAZORX_SECRET'),
-        'request_timeout' => env('RAZORX_REQUEST_TIMEOUT', 0.1),
+        'mock'                 => env('RAZORX_MOCK', false),
+        'url'                  => env('RAZORX_URL'),
+        'username'             => 'rzp_api',
+        'secret'               => env('RAZORX_SECRET'),
+        'request_timeout'      => env('RAZORX_REQUEST_TIMEOUT', 0.1),
+        'request_timeout_bulk' => env('RAZORX_REQUEST_TIMEOUT_BULK', 1),
     ],
 
     'splitz' => [

@@ -7988,11 +7988,18 @@ class MerchantTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->setMethods(['getTreatmentBulk'])
             ->getMock();
 
-        $razorxMock->method('getTreatment')
-            ->will($this->onConsecutiveCalls('on', 'off'));
+        $response = [
+           ['result' => 'on',
+               'feature_flag' => 'feature1'],
+           ['result' => 'off',
+            'feature_flag' => 'feature2'],
+        ];
+
+        $razorxMock->method('getTreatmentBulk')
+            ->will($this->onConsecutiveCalls($response));
 
         $this->app->instance('razorx', $razorxMock);
     }

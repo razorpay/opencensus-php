@@ -4152,6 +4152,24 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * Takes Merchant from auth context and sends it to razorx in Bulk
+     *
+     * @param array $featureFlag
+     *
+     * @return array
+     */
+    public function getRazorxTreatmentUsingBulkEvaluate(array $featureFlag)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $mode = $this->mode ?? 'live';
+
+        $result = $this->app['razorx']->getTreatmentBulk($merchantId, $featureFlag, $mode);
+
+        return $result;
+    }
+
     public function getRazorxTreatmentInBulk(array $input)
     {
         $response = [];
@@ -4160,13 +4178,31 @@ class Service extends Base\Service
 
         if (empty($featureFlags) === false)
         {
+            $timeStarted = microtime(true);
+
             $featureFlagArray = explode(',', $featureFlags);
 
-            foreach ($featureFlagArray as $featureFlag)
+            $chunkFeatureArray = array_chunk($featureFlagArray, 10);
+
+            $resultArray = [];
+
+            foreach ($chunkFeatureArray as $batchFeatureArray)
             {
-                $featureFlag = trim($featureFlag);
-                $response[$featureFlag] = $this->getRazorxTreatment($featureFlag);
+                $trimmed_array = array_map('trim', $batchFeatureArray);
+
+                $result = $this->getRazorxTreatmentUsingBulkEvaluate($trimmed_array);
+
+                $resultArray = array_merge($resultArray, $result);
             }
+
+            foreach ($resultArray as $resultValue)
+            {
+                $response[$resultValue['feature_flag']] = ['result' => $resultValue['result']];
+            }
+
+            $timeTaken = get_diff_in_millisecond($timeStarted);
+
+            $this->trace->histogram(Merchant\Metric::RAZORX_BULK_EVALUATE_TIME_MS, $timeTaken);
         }
 
         return $response;

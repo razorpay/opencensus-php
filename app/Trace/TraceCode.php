@@ -2104,6 +2104,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const RAZORX_REQUEST                                        = 'RAZORX_REQUEST';
     const RAZORX_REQUEST_FAILED                                 = 'RAZORX_REQUEST_FAILED';
+    const RAZORX_BULK_REQUEST_FAILED                            = 'RAZORX_BULK_REQUEST_FAILED';
+    const RAZORX_BULK_REQUEST_EXCEPTION                         = 'RAZORX_BULK_REQUEST_EXCEPTION';
 
     const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
 

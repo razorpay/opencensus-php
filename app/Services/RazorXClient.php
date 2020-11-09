@@ -11,12 +11,15 @@ use RZP\Http\Request\Requests;
 class RazorXClient
 {
     const EVALUATE_URI      = 'evaluate';
+    const EVALUATE_URI_BULK = 'evaluateBulk';
 
     // Params required for evaluator API
     const ID                = 'id';
     const FEATURE_FLAG      = 'feature_flag';
     const ENVIRONMENT       = 'environment';
     const MODE              = 'mode';
+
+    const CONTENT_TYPE_JSON = 'application/json';
 
     /**
      * The cookie of razorx contains the variants that are fetched. Now, if we
@@ -57,6 +60,8 @@ class RazorXClient
 
     protected $requestTimeout;
 
+    protected $requestTimeoutBulk;
+
     public static $whiteListedCardPs = [
         'card_payments_gateway_routing_hdfc',
         'card_payments_gateway_routing_hitachi',
@@ -86,13 +91,14 @@ class RazorXClient
 
     public function __construct($app)
     {
-        $this->trace          = $app['trace'];
-        $this->config         = $app['config']->get('applications.razorx');
-        $this->baseUrl        = $this->config['url'];
-        $this->key            = $this->config['username'];
-        $this->secret         = $this->config['secret'];
-        $this->env            = $app['env'];
-        $this->requestTimeout = $this->config['request_timeout'];
+        $this->trace              = $app['trace'];
+        $this->config             = $app['config']->get('applications.razorx');
+        $this->baseUrl            = $this->config['url'];
+        $this->key                = $this->config['username'];
+        $this->secret             = $this->config['secret'];
+        $this->env                = $app['env'];
+        $this->requestTimeout     = $this->config['request_timeout'];
+        $this->requestTimeoutBulk = $this->config['request_timeout_bulk'];
     }
 
     /**
@@ -234,6 +240,57 @@ class RazorXClient
         return $variant;
     }
 
+    /**
+     *  Response from Razorx Bulk is in this format.
+     *   [
+            {
+                "id": "12345",
+                "feature_flag": "random_feature",
+                "environment": "beta",
+                "mode": "test",
+                "result": "on"
+              },
+            {
+                "id": "123435",
+                "feature_flag": "random_feature",
+                "environment": "prod",
+                "mode": "test",
+                "result": "control"
+            }
+        ]
+     *
+     * @param string $id
+     * @param array  $featureFlagBatch
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function getTreatmentBulk(string $id, array $featureFlagBatch, string $mode): array
+    {
+        $payload = $this->getPayloadForBulk($id, $featureFlagBatch, $mode);
+
+        return $this->sendRequestBulk(self::EVALUATE_URI_BULK, Requests::POST, $payload);
+    }
+
+    protected function getPayloadForBulk(string $id, array $featureFlagBatch, string $mode): array
+    {
+        $payload = [];
+
+        foreach ($featureFlagBatch as $feature)
+        {
+            $request = [
+                self::MODE         => $mode,
+                self::ID           => $id,
+                self::FEATURE_FLAG => $feature,
+                self::ENVIRONMENT  => $this->env,
+            ];
+
+            array_push($payload, $request);
+        }
+
+        return $payload;
+    }
+
     protected function setVariantFromCookie(string $id, string $featureFlag, string $mode)
     {
         $variant = Request::cookie(self::RAZORX_COOKIE_KEY);
@@ -250,6 +307,74 @@ class RazorXClient
                 $this->storeVariant($variantResult);
             }
         }
+    }
+
+    protected function sendRequestBulk(string $url, string $method, array $data): array
+    {
+        if ($this->config['mock'] === true)
+        {
+            return $this->defaultBulkResponse($data);
+        }
+
+        $request = $this->getRequestParams($url, $method, $data);
+
+        $request['options']['connect_timeout'] = $this->requestTimeoutBulk;
+        $request['options']['timeout']         = $this->requestTimeoutBulk;
+        $request['headers']['Content-Type']    = self::CONTENT_TYPE_JSON;
+        $request['content']                    = json_encode($request['content']);
+
+        try
+        {
+            $response = Requests::request($request['url'], $request['headers'], $request['content'], $request['method'], $request['options']);
+
+            $code = $response->status_code;
+
+            if ($code === 200)
+            {
+                $response = json_decode($response->body, true);
+
+                return $response;
+            }
+            else
+            {
+                unset($request['options']['auth']);
+
+                $this->trace->error(TraceCode::RAZORX_BULK_REQUEST_FAILED, [
+                    'request'  => $request,
+                    'response' => json_decode($response->body, true),
+                ]);
+
+                $this->trace->count(RazorXClientMetric::RAZORX_BULK_REQUEST_FAILED_TOTAL);
+
+                return $this->defaultBulkResponse($data);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            unset($request['options']['auth']);
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::RAZORX_BULK_REQUEST_EXCEPTION,
+                [
+                    'request' => $request,
+                ]);
+
+            $this->trace->count(RazorXClientMetric::RAZORX_BULK_REQUEST_EXCEPTION_TOTAL);
+
+            return $this->defaultBulkResponse($data);
+        }
+    }
+
+    protected function defaultBulkResponse(array $data): array
+    {
+        return array_map(function($row) {
+
+            $row ['result'] = self::DEFAULT_CASE;
+
+            return $row;
+        }, $data);
     }
 
     protected function sendRequest(
