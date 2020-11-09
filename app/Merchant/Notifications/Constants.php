@@ -8,6 +8,28 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
+            'title'       => 'Pay vendor invoices in seconds.',
+            'description' => 'Welcome to the easiest way to make vendor payments: End-to-end automation for adding, tracking, and clearing invoice & TDS payments.',
+            'start_ts'    => 1604904751,
+            'end_ts'      => 1612084863,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable Now',
+                    'url'   => 'https://x.razorpay.com/vendor-payments',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Schedule Demo',
+                    'url'   => 'https://calendly.com/payouts/vendor-payouts-demo-razorpayx',
+                ]
+            ],
+            'filters'     => [
+                'experiments'         => ['show_rx_vp_announcement'],
+            ],
+        ],
+        [
             'title'       => '2 Step Verification',
             'description' => 'Enable 2 step verification with SMS based OTP along with user credentials to add additional security to your account.',
             'start_ts'    => 1588876200,

@@ -1366,8 +1366,9 @@ class Service extends Base\Service
             'bank_account_update_merchant_dashboard',
             'app_switcher',
             'subscription_expiry',
-            'rx_opfin_announcement',
             'caw_tpv',
+            'show_rx_vp_announcement',
+            'rx_opfin_announcement',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
