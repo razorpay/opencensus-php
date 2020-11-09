@@ -451,8 +451,9 @@ class Core extends Base\Core
 
             if ($sendFailureSms === false)
             {
-                $request['template']      = self::SETTLEMENT_PROCESSED_SMS_TEMPLATE ;
-                $request['params']['utr'] = $settlement->getUtr();
+                $request['template']         = self::SETTLEMENT_PROCESSED_SMS_TEMPLATE ;
+                $request['params']['utr']    = $settlement->getUtr();
+                $request['params']['amount'] = 'Rs.'.$settlement->getAmount()/100;
             }
             else if ($sendFailureSms === true)
             {
