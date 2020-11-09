@@ -9,7 +9,6 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
-
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const RRN                     = 'rrn';

@@ -286,11 +286,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * @param $row
      * @return array|null
      * @throws ReconciliationException
-     *
+     * @throws \RZP\Exception\LogicException
      */
     protected function getRowDetailsStructured($row)
     {
         $rowDetails = parent::getRowDetailsStructured($row);
+
+        if (empty($rowDetails) === true)
+        {
+            return $this->handleUnprocessedRow($row);
+        }
 
         $rowDetails[self::REFUND_STATUS] = $this->getReconRefundStatus($row);
 
