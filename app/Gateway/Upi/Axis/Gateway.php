@@ -1050,15 +1050,29 @@ class Gateway extends Base\Gateway
                 'request'   => $request,
             ]);
 
-        $response = $this->sendGatewayRequest($request);
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body, $input, Action::REFUND);
+            $response = $this->parseGatewayResponse($response->body, $input, Action::REFUND);
 
-        $response[Entity::RECEIVED] = 1;
+            $response[Entity::RECEIVED] = 1;
 
-        $this->updateGatewayPaymentEntity($refund, $response);
+            $this->updateGatewayPaymentEntity($refund, $response);
 
-        $this->checkRefundStatus($response);
+            $this->checkRefundStatus($response);
+        }
+        catch(\Throwable $e)
+        {
+            if ($e->getCode() === Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR)
+            {
+                throw new Exception\RuntimeException(
+                    $e->getMessage(),
+                    $e->getData(), null, Error\ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+            }
+
+            throw $e;
+        }
 
         return [
             Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
