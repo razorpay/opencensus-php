@@ -3107,11 +3107,6 @@ class Route
         'fd_reserve_balance_ticket',
         'fd_reserve_balance_ticket_status',
 
-        'fd_fetch_tickets',
-        'fd_fetch_converations',
-        'fd_fetch_ticket',
-        'fd_post_ticket_reply',
-
         'entity_bulk_update',
         'user_resend_verification_otp',
 
