@@ -193,6 +193,11 @@ export default class NotificationsDropdown extends Component {
 
         break;
 
+      case 'NOV20-RZP-FESTIVEOFFER-BUTTON':
+        this.props.showAcceptPaymentsModal();
+
+        break;
+
       default:
         break;
     }
@@ -218,7 +223,6 @@ export default class NotificationsDropdown extends Component {
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
           trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
-          showAcceptPaymentsModal={this.props.showAcceptPaymentsModal}
           onCTAClick={this.handleCTA}
         />
       </div>
@@ -315,7 +319,6 @@ const NotificationCard = ({
   trackEvents,
   ga,
   id,
-  showAcceptPaymentsModal,
   onCTAClick,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -375,17 +378,16 @@ const NotificationCard = ({
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => {
-                  e.preventDefault();
                   trackAnnouncement(
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
                   );
                   trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
-                  if (btn.id === 'NOV20-RZP-FESTIVEOFFER-BUTTON') {
+                  // distinguish between links and buttons that open modals
+                  if (btn.id) {
                     e.preventDefault();
-                    showAcceptPaymentsModal();
+                    onCTAClick({ id: btn.id });
                   }
-                  onCTAClick({ id: btn.id });
                 }}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
