@@ -169,6 +169,7 @@ export default class SettlementsListContainer extends ListContainer {
           onUnmount={this.settlementBreakupOnUnmount}
         />
       ),
+      size: 'large',
     });
   };
 
