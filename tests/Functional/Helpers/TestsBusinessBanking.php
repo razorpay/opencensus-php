@@ -308,7 +308,8 @@ trait TestsBusinessBanking
                                            string $createPayoutWithoutTxn = 'off',
                                            string $razorpayXAclDenyUnauthorised = 'on',
                                            string $payoutToCardsViaRbl = 'on',
-                                           string $useWorkflowMicroService = 'off')
+                                           string $useWorkflowMicroService = 'off',
+                                           string $bulkPayoutsImprovementsRollout = 'on')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -330,7 +331,8 @@ trait TestsBusinessBanking
                     $payoutToCardsViaRbl,
                     $createPayoutWithoutTxn,
                     $razorpayXAclDenyUnauthorised,
-                    $useWorkflowMicroService
+                    $useWorkflowMicroService,
+                    $bulkPayoutsImprovementsRollout
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -377,6 +379,11 @@ trait TestsBusinessBanking
                     if ($feature === 'razorpay_x_acl_deny_unauthorised')
                     {
                         return strtolower($razorpayXAclDenyUnauthorised);
+                    }
+
+                    if ($feature === 'bulk_payouts_improvements_rollout')
+                    {
+                        return strtolower($bulkPayoutsImprovementsRollout);
                     }
 
                     return strtolower($defaultBehaviour);

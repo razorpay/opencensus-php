@@ -9004,6 +9004,61 @@ return [
         ],
     ],
 
+    'testBackFillDataForExistingBulkUsers' =>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000']
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testUpdateBulkPayoutAmountTypeByOwner' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testUpdateBulkPayoutAmountTypeByNonOwnerRole' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testSkipWorkflowForPayoutEnabledRequestValueTrue' => [
         'request' => [
             'method'  => 'POST',
@@ -10267,7 +10322,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS,
         ],
     ],
- 
+
     'testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObject' => [
         'entity'   => 'event',
         'event'    => 'payout.reversed',
@@ -10308,6 +10363,250 @@ return [
                         'description' => null
                     ]
                 ],
+            ],
+        ],
+    ],
+
+    'testUsersApiForExistingNonBulkUser' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/users',
+        ],
+        'response' => [
+            'content' => [
+                'id' => "MerchantUser01",
+            ],
+        ],
+    ],
+
+    'testUsersApiForNewBulkUser' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/users',
+        ],
+        'response' => [
+            'content' => [
+                'id' => "MerchantUser01",
+            ],
+        ],
+    ],
+
+    'testUsersApiForExistingBulkUserAmountTypePaise' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/users',
+        ],
+        'response' => [
+            'content' => [
+                'id' => "MerchantUser01",
+            ],
+        ],
+    ],
+
+    'testUsersApiForExistingBulkUserAmountTypeRupees' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/users',
+        ],
+        'response' => [
+            'content' => [
+                'id' => "MerchantUser01",
+            ],
+        ],
+    ],
+
+    'testCsvSampleFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'sample_file',
+                'file_extension'    => 'csv'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCsvTemplateFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'template_file',
+                'file_extension'    => 'csv'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testXlsxTemplateFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'template_file',
+                'file_extension'    => 'xlsx'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testXlsxSampleFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'sample_file',
+                'file_extension'    => 'xlsx'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateBulkPayoutWithAmountTypeRupees' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount_in_rupees'      => '10.23',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount_in_rupees'      => '1',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => 'Debojyoti Chak',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => '8861655100@ybl'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Debojyoti Chak',
+                        'email'                 => 'sampletwo@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc124'
+                ]
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 2,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 1023,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 1613,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 1613,
+                            'balance'               => 9998387
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'vpa',
+                            'vpa'                   => [
+                                'address'           => '8861655100@ybl'
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9997697
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'UPI',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc124'
+                    ]
+                ]
             ],
         ],
     ],

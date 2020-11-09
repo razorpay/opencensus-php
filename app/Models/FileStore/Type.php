@@ -206,6 +206,8 @@ class Type
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
 
+    const PAYOUT_SAMPLE                         = 'payout_sample';
+
     const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
     // File contants required for merchant feature onboarding
@@ -314,6 +316,7 @@ class Type
             self::ISG_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
             self::BULK_DISPUTES_FILE,
+            self::PAYOUT_SAMPLE,
         ],
 
         Constants\Entity::BATCH => [

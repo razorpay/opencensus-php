@@ -661,6 +661,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                        = 'Batch stats are not available for this batch type';
     const BAD_REQUEST_BATCH_FILE_INVALID_RZP_REF_NO                             = 'The file should not have empty or non-numeric RZP Reference numbers';
     const BAD_REQUEST_BATCH_FILE_INVALID_COMMENT                                = 'The file should not have empty comments';
+    const BAD_REQUEST_PAYOUT_BATCH_FILE_MISSING_MANDATORY_HEADERS               = 'The file you are trying to upload is missing one of the mandatory/conditionally mandatory header';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';
@@ -986,6 +987,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
     const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
     const BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE                   = 'Payout Link service is under maintainence';
+
+    const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

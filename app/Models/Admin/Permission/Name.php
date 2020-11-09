@@ -500,6 +500,11 @@ class Name
     // Permission for merchants to view free payouts attributes
     const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';
 
+    // To be used to hit any route that needs tech admin route access.
+    const RX_ADMIN_ACTION_PERMISSION          = 'rx_admin_action_permission';
+
+    const UPDATE_BULK_PAYOUT_AMOUNT_TYPE      = 'update_bulk_payout_amount_type';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

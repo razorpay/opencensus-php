@@ -10,6 +10,7 @@ class BatchHelper
 {
     const RAZORPAYX_ACCOUNT_NUMBER = 'razorpayx_account_number';
     const AMOUNT                   = 'amount';
+    const AMOUNT_IN_RUPEES         = 'amount_in_rupees';
     const CURRENCY                 = 'currency';
     const MODE                     = 'mode';
     const PURPOSE                  = 'purpose';
@@ -21,20 +22,23 @@ class BatchHelper
     const SCHEDULED_AT             = 'scheduled_at';
     const PAYOUT_UPDATE_ACTION     = 'payout_update_action';
 
+    // Different types of payout amounts used in bulk payouts
+    const PAISE                    = 'paise';
+    const RUPEES                   = 'rupees';
+
     public static function getPayoutInput(
         array $entry,
         array $fundAccount,
         Merchant\Entity $merchant): array
     {
         // Call to validateAndTranslateAccountNumberForBanking() expect the key in snake case.
-        $entry['account_number'] = $entry[self::RAZORPAYX_ACCOUNT_NUMBER];
+        $entry['account_number'] = trim($entry[self::RAZORPAYX_ACCOUNT_NUMBER]);
         // Optimization: Have a map of account number to balance id to avoid multiple read calls.
         $merchant->getValidator()->validateAndTranslateAccountNumberForBanking($entry);
 
         $input = [
             PayoutModel\Entity::PURPOSE         => $entry[self::PAYOUT][self::PURPOSE],
             PayoutModel\Entity::NARRATION       => $entry[self::PAYOUT][self::NARRATION],
-            PayoutModel\Entity::AMOUNT          => $entry[self::PAYOUT][self::AMOUNT],
             PayoutModel\Entity::CURRENCY        => $entry[self::PAYOUT][self::CURRENCY],
             // Key balance_id got appended in above validation call.
             PayoutModel\Entity::BALANCE_ID      => $entry[self::BALANCE_ID],
@@ -45,6 +49,15 @@ class BatchHelper
             PayoutModel\Entity::NOTES           => $entry[self::NOTES] ?? [],
             PayoutModel\Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
         ];
+
+        if (empty($entry[self::PAYOUT][self::AMOUNT]) === true)
+        {
+            $input[PayoutModel\Entity::AMOUNT] = $entry[self::PAYOUT][self::AMOUNT_IN_RUPEES] * 100;
+        }
+        else
+        {
+            $input[PayoutModel\Entity::AMOUNT] = $entry[self::PAYOUT][self::AMOUNT];
+        }
 
         if ((isset($entry[self::PAYOUT][self::SCHEDULED_AT]) === true) and
             (empty($entry[self::PAYOUT][self::SCHEDULED_AT]) === false))

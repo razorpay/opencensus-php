@@ -146,6 +146,8 @@ class Base extends BaseModel\Core
 
     protected $ignoreHeaders = false;
 
+    protected $amountType = null;
+
     public function __construct(Batch\Entity $batch = null)
     {
         parent::__construct();

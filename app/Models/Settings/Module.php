@@ -30,6 +30,7 @@ class Module
     const D2C_BUREAU_CAMPAIGN   = 'd2c_bureau_campaign';
     const BALANCE               = 'balance';
     const FREE_PAYOUT           = 'free_payout';
+    const PAYOUT_AMOUNT_TYPE    = 'payout_amount_type';
 
     /**
      * @param string $module

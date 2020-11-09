@@ -34,6 +34,9 @@ class Header
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
     const TERMINAL_CREATION_TYPE_REGEX           = '/^Type\[(.*)]$/';
 
+    const NOTES_PLACE       = 'notes[place]';
+    const NOTES_CODE        = 'notes[code]';
+
     //
     // Refund Headers
     //
@@ -763,6 +766,7 @@ class Header
     const PAYOUT_NARRATION         = 'Payout Narration';
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
+    const PAYOUT_AMOUNT_RUPEES     = 'Payout Amount (in Rupees)';
 
     // Linked Account Reversal Headers
     const TRANSFER_ID              = 'Transfer Id';
@@ -1004,6 +1008,22 @@ class Header
     const CAPTURE_SETTING_NAME              = 'Name';
     const CAPTURE_SETTING_CONFIG            = 'Config';
 
+    // Following is a list of columns that are mandatory headers in the payout batch file
+    const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_PAYOUTS = [
+        Header::RAZORPAYX_ACCOUNT_NUMBER,
+        Header::PAYOUT_AMOUNT,
+        Header::PAYOUT_AMOUNT_RUPEES,
+        Header::PAYOUT_CURRENCY,
+        Header::PAYOUT_MODE,
+        Header::PAYOUT_PURPOSE,
+        Header::FUND_ACCOUNT_ID,
+        Header::FUND_ACCOUNT_TYPE,
+        Header::FUND_ACCOUNT_NAME,
+        Header::FUND_ACCOUNT_IFSC,
+        Header::FUND_ACCOUNT_NUMBER,
+        Header::FUND_ACCOUNT_VPA,
+        Header::CONTACT_NAME_2,
+    ];
 
 
     /**
@@ -2635,19 +2655,21 @@ class Header
             self::INPUT => [
                 self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
+                // Payout amount in rupees
+                self::PAYOUT_AMOUNT_RUPEES,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
-                self::PAYOUT_NARRATION,
-                self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
                 self::FUND_ACCOUNT_NUMBER,
                 self::FUND_ACCOUNT_VPA,
-                self::CONTACT_TYPE,
                 self::CONTACT_NAME_2,
+                self::PAYOUT_NARRATION,
+                self::PAYOUT_REFERENCE_ID,
+                self::CONTACT_TYPE,
                 self::CONTACT_EMAIL_2,
                 self::CONTACT_MOBILE_2,
                 self::CONTACT_REFERENCE_ID,
@@ -2657,19 +2679,21 @@ class Header
             self::OUTPUT => [
                 self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
+                // Payout amount in rupees
+                self::PAYOUT_AMOUNT_RUPEES,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
-                self::PAYOUT_NARRATION,
-                self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
                 self::FUND_ACCOUNT_NUMBER,
                 self::FUND_ACCOUNT_VPA,
-                self::CONTACT_TYPE,
                 self::CONTACT_NAME_2,
+                self::PAYOUT_NARRATION,
+                self::PAYOUT_REFERENCE_ID,
+                self::CONTACT_TYPE,
                 self::CONTACT_EMAIL_2,
                 self::CONTACT_MOBILE_2,
                 self::CONTACT_REFERENCE_ID,
@@ -3325,7 +3349,6 @@ class Header
             $actualHeaders = array_filter($actualHeaders);
         }
 
-
         //
         // In case of subMerchant batch adding support of optional header merchant_id
         // With this data support team will be able to fix issue by their own and we can move this batch to new service .
@@ -3336,7 +3359,19 @@ class Header
             $expectedHeaders[] = self::MERCHANT_ID;
         }
 
-        $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
+        // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
+        // Since some headers can be skipped, we are also allowing for rearrangement of headers
+        // and hence there are no strict checks inside payout batch file header validations.
+        if ($type === Type::PAYOUT)
+        {
+            self::validatePayoutHeaders($expectedHeaders, $actualHeaders);
+
+            return;
+        }
+        else
+        {
+            $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
+        }
 
         // Todo: Fix this hack!
         if (($valid === false) and ($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2))
@@ -3448,5 +3483,54 @@ class Header
     {
         return ((count($headings1) === count($headings2)) and
                 (array_diff($headings1, $headings2) === array_diff($headings2, $headings1)));
+    }
+
+    public static function validatePayoutHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_PAYOUTS;
+
+        // We cannot do a strict check here as it will break existing validations.
+        // The sample files now have two versions, one before the bulk improvements project and the other after it.
+        // We need to support validations for both.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        // At this point, we should have exactly one header (payout amount or payout amount (in rupees))
+        // If count is anything else, we should throw an error.
+        if (count($mandatoryHeaders) > 1)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_BATCH_FILE_MISSING_MANDATORY_HEADERS,
+                null,
+                [
+                    'expected_headers' => $expectedHeaders,
+                    'input_headers'    => $actualHeaders,
+                ]);
+        }
+
+        if (count($mandatoryHeaders) === 0)
+        {
+            $message = 'You seem to have entered a wrong amount header. The amount has to be entered either in Rupees format or in Paise format';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+
+        // Now we shall make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                throw new BadRequestValidationFailureException('The uploaded file has invalid headers: ' . $actualHeader);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
     }
 }

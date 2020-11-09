@@ -11,6 +11,8 @@ use Illuminate\Hashing\BcryptHasher;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
+use RZP\Models\Payout;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -780,19 +782,23 @@ class Core extends Base\Core
 
                 $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
 
+                $bulkUserType = $this->getBulkPayoutsUserType($balance);
+
                 return $merchant +
                     [
                         // balance for business banking activated at should have account_type shared
                         // Relevant slack thread : https://razorpay.slack.com/archives/CE4DMABE3/p1574075046102400
 
-                        Merchant\Entity::BANKING_ACTIVATED_AT => $balance->getCreatedAt(),
-                        Merchant\Entity::BANKING_BALANCE      => $balance->only([Merchant\Balance\Entity::BALANCE,
-                                                                                 Merchant\Balance\Entity::CURRENCY]),
-                        Merchant\Entity::BANKING_ACCOUNT      => $bankingAccount->toArrayPublic(),
-                        Merchant\Entity::ACCOUNTS             => $this->fetchBankingAccountWithBalance($merchant['id']),
-                        Merchant\Entity::CREDIT_BALANCE       => $this->fetchBankingCreditBalances(
+                        Merchant\Entity::BANKING_ACTIVATED_AT   => $balance->getCreatedAt(),
+                        Merchant\Entity::BANKING_BALANCE        => $balance->only([Merchant\Balance\Entity::BALANCE,
+                                                                                   Merchant\Balance\Entity::CURRENCY]),
+                        Merchant\Entity::BANKING_ACCOUNT        => $bankingAccount->toArrayPublic(),
+                        Merchant\Entity::ACCOUNTS               => $this->fetchBankingAccountWithBalance(
+                                                                                    $merchant['id']),
+                        Merchant\Entity::CREDIT_BALANCE         => $this->fetchBankingCreditBalances(
                                                                                     $merchant['id'],
-                                                                                    Product::BANKING)
+                                                                                    Product::BANKING),
+                        Merchant\Entity::BULK_PAYOUTS_USER_TYPE => $bulkUserType,
                     ];
             },
             $merchants);
@@ -1704,5 +1710,35 @@ class Core extends Base\Core
     public function getUserEntity() : Entity
     {
         return new Entity();
+    }
+
+    protected function getBulkPayoutsUserType($balance)
+    {
+        $payoutAmountType = (new Payout\Service)->getAmountTypeForPayouts($balance->merchant);
+
+        if ($payoutAmountType === Payout\Entity::PAISE)
+        {
+            return Payout\Entity::EXISTING_BULK_USER_PAISE;
+        }
+        if ($payoutAmountType === Payout\Entity::RUPEES)
+        {
+            return Payout\Entity::EXISTING_BULK_USER_RUPEES;
+        }
+        else
+        {
+            $newUserCutoffTimeStamp = (new Admin\Service)->getConfigKey(
+                [
+                    'key' => Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP
+                ]);
+
+            if ($balance->getCreatedAt() > $newUserCutoffTimeStamp)
+            {
+                return Payout\Entity::NEW_USER;
+            }
+            else
+            {
+                return Payout\Entity::EXISTING_NON_BULK_USER;
+            }
+        }
     }
 }

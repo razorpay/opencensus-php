@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Card;
+use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
@@ -16,6 +17,7 @@ use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
@@ -718,6 +720,13 @@ class Service extends Base\Service
         // and unique create contact and fund account everytime
         $createDuplicate = $this->shouldCreateDuplicateForFundAccountAndContact();
 
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST_RAW,
+            [
+                Entity::BATCH_ID => $batchId,
+                'input'          => $input
+            ]);
+
         foreach ($input as $item)
         {
             try
@@ -1007,6 +1016,23 @@ class Service extends Base\Service
         $payout = $this->core->updateTestPayoutStatus($payout, $input);
 
         return $payout->toArrayPublic();
+    }
+
+    public function getSampleFileForBulkPayouts($input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_BULK_SAMPLE_FILE, $input);
+
+        $extension  = $input[Entity::FILE_EXTENSION];
+        $type       = $input[Entity::FILE_TYPE];
+
+        if ($type === Entity::SAMPLE_FILE)
+        {
+            return (new Bulk\SampleFile)->createAndSaveSampleFile($extension, $this->merchant);
+        }
+        else
+        {
+            return (new Bulk\TemplateFile)->createAndSaveSampleFile($extension, $this->merchant);
+        }
     }
 
     public function getScheduleSlotsForPayouts()
@@ -1548,5 +1574,65 @@ class Service extends Base\Service
         });
 
         return $payoutsArr;
+    }
+
+    public function postBulkPayoutsAmountType(array $input)
+    {
+        $merchantIds = $input[Entity::MERCHANT_IDS];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                // Find Or Fail automatically takes care of validation and this is the only validation we need.
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $this->setAmountTypeForPayouts($merchant, Entity::PAISE);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_BULK_AMOUNT_TYPE_UPDATE_SUCCESSFUL,
+                    [
+                        'merchant_id' => $merchantId
+                    ]);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->error(
+                    TraceCode::PAYOUT_BULK_AMOUNT_TYPE_UPDATE_FAILED,
+                    [
+                        'merchant_id'   => $merchantId,
+                        'error'         => $throwable->getMessage(),
+                    ]);
+            }
+        }
+
+        return ['success' => true];
+    }
+
+    protected function setAmountTypeForPayouts($merchant, $type)
+    {
+        $this->getSettingsAccessor($merchant)
+             ->upsert(Batch\Constants::TYPE, $type)
+             ->save();
+    }
+
+    public function getAmountTypeForPayouts($merchant)
+    {
+        return $this->getSettingsAccessor($merchant)
+                    ->get(Batch\Constants::TYPE);
+    }
+
+    public function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_AMOUNT_TYPE, Constants\Mode::LIVE);
+    }
+
+    // This function allows update from Paise to Rupees only. There is no way to go back.
+    public function updateBulkPayoutsAmountType()
+    {
+        // There is no input required. We just need the MID.
+        $this->setAmountTypeForPayouts($this->merchant, Entity::RUPEES);
+
+        return ['success' => true];
     }
 }

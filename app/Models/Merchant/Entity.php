@@ -47,6 +47,7 @@ use RZP\Models\Merchant\Methods\Core as MethodCore;
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $sharedBankingBalance
+ * @property Balance\Entity     $directBankingBalances
  * @property Balance\Entity     $primaryBalance
  * @property Balance\Entity     $reservePrimaryBalance
  * @property Balance\Entity     $reserveBankingBalance
@@ -250,6 +251,7 @@ class Entity extends Base\PublicEntity
     const BANKING_ACTIVATED_AT      = 'banking_activated_at';
     const PROMOTION                 = 'promotion';
     const CREDIT_BALANCE            = 'credit_balance';
+    const BULK_PAYOUTS_USER_TYPE    = 'bulk_payouts_user_type';
 
     protected $entity = 'merchant';
 

@@ -2073,6 +2073,8 @@ class UserTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->with('credit_balance')->andReturn($creditBalanceRepoMock);
 
+        $this->coreMock->shouldReceive('getBulkPayoutsUserType')->andReturn('existing_bulk_user_rupees');
+
         $balanceRepoMock->shouldReceive('getMerchantBalanceByTypeAndAccountType')->andReturn($balanceEntityMock);
 
         $bankingAccountRepoMock->shouldReceive('getBankingAccountsWithBalance')->andReturn([$bankingAccountEntityMock]);

@@ -64,6 +64,8 @@ class Validator extends Base\Validator
 
     const VALIDATE_PAYOUT_PURPOSE = 'validate_payout_purpose';
 
+    const PAYOUT_BULK_SAMPLE_FILE = 'payout_bulk_sample_file';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -268,6 +270,11 @@ class Validator extends Base\Validator
 
     protected static $validatePayoutPurposeRules = [
         Entity::PURPOSE         => 'required|string',
+    ];
+
+    protected static $payoutBulkSampleFileRules = [
+        Entity::FILE_TYPE       => 'required|string|in:sample_file,template_file',
+        Entity::FILE_EXTENSION  => 'required|string|in:csv,xlsx',
     ];
 
     protected function validateMethod($attribute, $method)

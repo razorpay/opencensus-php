@@ -245,6 +245,21 @@ class Entity extends Base\PublicEntity
 
     const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
 
+    // To be used for sample batch file download
+    const FILE_TYPE         = 'file_type';
+    const SAMPLE_FILE       = 'sample_file';
+    const TEMPLATE_FILE     = 'template_file';
+    const FILE_EXTENSION    = 'file_extension';
+
+    // To be used for bulk improvements project.
+    const RUPEES                    = 'rupees';
+    const PAISE                     = 'paise';
+    const NEW_USER                  = 'new_user';
+    const EXISTING_NON_BULK_USER    = 'existing_non_bulk_user';
+    const EXISTING_BULK_USER_PAISE  = 'existing_bulk_user_paise';
+    const EXISTING_BULK_USER_RUPEES = 'existing_bulk_user_rupees';
+    const MERCHANT_IDS              = 'merchant_ids';
+
     protected $queueFlag = false;
 
     protected $composite = false;

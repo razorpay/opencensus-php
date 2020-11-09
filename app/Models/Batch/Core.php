@@ -41,6 +41,7 @@ class Core extends Base\Core
                 "IIN Visa and MasterCard files are not be uploaded"
             );
         }
+
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $this->validateAdminRoleIfApplicable($input);

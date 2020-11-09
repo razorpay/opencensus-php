@@ -178,4 +178,6 @@ final class RazorxTreatment
     const ENABLE_WEBHOOKS = 'enable_webhooks';
 
     const PAYMENT_STATUS_PENDING_CALCULATION = 'payment_status_pending_calculation';
+
+    const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
 }

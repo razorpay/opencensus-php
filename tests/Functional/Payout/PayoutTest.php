@@ -10,16 +10,19 @@ use Redis;
 use Config;
 
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Admin;
+use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
+use RZP\Models\FileStore;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
@@ -8798,6 +8801,449 @@ class PayoutTest extends TestCase
         $payout->setStatus(Status::CREATED);
 
         Queue::assertPushed(PayoutSourceUpdaterJob::class,1);
+    }
+
+    public function testBackFillDataForExistingBulkUsers()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $payoutAmountType = (new Payout\Service)->getSettingsAccessor($merchant)->get(Batch\Constants::TYPE);
+
+        $this->assertEquals('paise', $payoutAmountType);
+    }
+
+    public function testUpdateBulkPayoutAmountTypeByOwner()
+    {
+        // Using below two to set up owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+
+        $payoutAmountType = (new Payout\Service)->getSettingsAccessor($merchant)->get(Batch\Constants::TYPE);
+
+        $this->assertEquals('rupees', $payoutAmountType);
+    }
+
+    public function testUpdateBulkPayoutAmountTypeByNonOwnerRole()
+    {
+        // Using below two to set up a non owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testUsersApiForExistingNonBulkUser()
+    {
+        // Using below two to set up owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        // Timestamp of 1 hour into the future, so that all merchants created before this become existing non-bulk
+        $futureTime = Carbon::now()->getTimestamp() + 3600;
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $futureTime]);
+
+        $user = $this->getDbLastEntity('user', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $this->ba->proxyAuthLive();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(Payout\Entity::EXISTING_NON_BULK_USER, $response['merchants'][0]['bulk_payouts_user_type']);
+    }
+
+    public function testUsersApiForNewBulkUser()
+    {
+        // Using below two to set up owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
+        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
+
+        $user = $this->getDbLastEntity('user', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $this->ba->proxyAuthLive();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(Payout\Entity::NEW_USER, $response['merchants'][0]['bulk_payouts_user_type']);
+    }
+
+    public function testUsersApiForExistingBulkUserAmountTypePaise()
+    {
+        // Using below two to set up owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        // Below request is to backfill paise as bulk amount type for existing bulk merchants
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000']
+            ]
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $this->makeRequestAndGetContent($request);
+
+        // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
+        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
+
+        $user = $this->getDbLastEntity('user', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $this->ba->proxyAuthLive();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(Payout\Entity::EXISTING_BULK_USER_PAISE, $response['merchants'][0]['bulk_payouts_user_type']);
+    }
+
+    public function testUsersApiForExistingBulkUserAmountTypeRupees()
+    {
+        // Using below two to set up owner role easily since the function already does that
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        // Below request is to backfill paise as bulk amount type for existing bulk merchants
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000']
+            ]
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $this->makeRequestAndGetContent($request);
+
+        // Below is the request from a merchant's owner user to shift from paise to rupees
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/bulk/amount_type',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->makeRequestAndGetContent($request);
+
+        // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
+        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
+
+        $user = $this->getDbLastEntity('user', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $this->ba->proxyAuthLive();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(Payout\Entity::EXISTING_BULK_USER_RUPEES, $response['merchants'][0]['bulk_payouts_user_type']);
+    }
+
+    public function testCsvSampleFileForBulkPayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        // Below function returns the file contents where every row is a string (all columns are comma separated)
+        $fileContent = file($res['signed_url']);
+
+        // Assert that there are only two rows. The first being the header and the second being the row with data.
+        $this->assertEquals(2, count($fileContent));
+
+        $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
+                          "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+                          "Fund Account Number,Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id," .
+                          "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+
+        $this->assertEquals($expectedRowOne, trim($fileContent[0]));
+
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowTwo = "7878780021057150,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
+                          "1234567890,,sample,Sample Narration,,vendor,sample@example.com,9988998899,,Bangalore," .
+                          "This is a sample note";
+
+        $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+    }
+
+    public function testCsvTemplateFileForBulkPayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        // Below function returns the file contents where every row is a string (all columns are comma separated)
+        $fileContent = file($res['signed_url']);
+
+        // Assert that there are only two rows. The first being the header and the second being the row with data.
+        $this->assertEquals(2, count($fileContent));
+
+        $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
+            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+            "Fund Account Number,Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id," .
+            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+
+        $this->assertEquals($expectedRowOne, trim($fileContent[0]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowTwo = "2224440041626905,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
+            "1234567890,,sample,Sample Narration,,vendor,sample@example.com,9988998899,,Bangalore," .
+            "This is a sample note";
+
+        $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+    }
+
+    public function testXlsxTemplateFileForBulkPayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        $spreadsheet = IOFactory::load($res['signed_url']);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $this->assertEquals(3, $activeSheet->getHighestRow());
+
+        $expectedData = [
+            [
+                // Since these are merged columns, the excel readers reads the value in the first column
+                // and reads the others as null
+                'Mandatory Fields',
+                null,
+                null,
+                null,
+                null,
+                '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'Optional Fields',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ],
+            [
+                'RazorpayX Account Number',
+                'Payout Amount (in Rupees)',
+                'Payout Currency',
+                'Payout Mode',
+                'Payout Purpose',
+                'Fund Account Id',
+                'Fund Account Type',
+                'Fund Account Name',
+                'Fund Account Ifsc',
+                'Fund Account Number',
+                'Fund Account Vpa',
+                'Contact Name',
+                'Payout Narration',
+                'Payout Reference Id',
+                'Contact Type',
+                'Contact Email',
+                'Contact Mobile',
+                'Contact Reference Id',
+                'notes[place]',
+                'notes[code]',
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                null,
+                'bank_account',
+                'sample',
+                'SBIN0007105',
+                1234567890,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                'vendor',
+                'sample@example.com',
+                9988998899,
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ]
+        ];
+
+        for ($row = 1; $row <= 3; $row++)
+        {
+            for ($col = 1; $col <= 20; $col++)
+            {
+                $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
+
+                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+            }
+        }
+    }
+
+    public function testXlsxSampleFileForBulkPayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        $spreadsheet = IOFactory::load($res['signed_url']);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $this->assertEquals(3, $activeSheet->getHighestRow());
+
+        $expectedData = [
+            [
+                // Since these are merged columns, the excel readers reads the value in the first column
+                // and reads the others as null
+                'Mandatory Fields',
+                null,
+                null,
+                null,
+                null,
+                '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'Optional Fields',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ],
+            [
+                'RazorpayX Account Number',
+                'Payout Amount (in Rupees)',
+                'Payout Currency',
+                'Payout Mode',
+                'Payout Purpose',
+                'Fund Account Id',
+                'Fund Account Type',
+                'Fund Account Name',
+                'Fund Account Ifsc',
+                'Fund Account Number',
+                'Fund Account Vpa',
+                'Contact Name',
+                'Payout Narration',
+                'Payout Reference Id',
+                'Contact Type',
+                'Contact Email',
+                'Contact Mobile',
+                'Contact Reference Id',
+                'notes[place]',
+                'notes[code]',
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                null,
+                'bank_account',
+                'sample',
+                'SBIN0007105',
+                1234567890,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                'vendor',
+                'sample@example.com',
+                9988998899,
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ]
+        ];
+
+        for ($row = 1; $row <= 3; $row++)
+        {
+            for ($col = 1; $col <= 20; $col++)
+            {
+                $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
+
+                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+            }
+        }
+    }
+
+    public function testCreateBulkPayoutWithAmountTypeRupees()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
     }
 
     public function testCreatePayoutViaUpi()

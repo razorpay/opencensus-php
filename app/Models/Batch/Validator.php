@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Invoice;
+use RZP\Constants\Mode;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -18,6 +20,7 @@ use RZP\Http\UserRolesScope;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payout\BatchHelper;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -73,6 +76,29 @@ class Validator extends Base\Validator
         // Allowed mimes/extensions.
         . '|mimes:'
         . 'csv,'
+        . 'txt,';
+
+    // Rule for allowing csv, xlsx or plain text file.
+    const CSV_EXCEL_MIME_RULE = ''
+        // Allowed mime types.
+        . '|mime_types:'
+        . 'application/zip,'
+        . 'application/vnd.ms-excel,'
+        . 'application/vnd.oasis.opendocument.spreadsheet,'
+        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+        . 'application/octet-stream,'
+        . 'application/xml,'
+        . 'text/csv,'
+        . 'text/plain,'
+        . 'application/cdfv2-unknown,'
+        . 'application/vnd.ms-office,'
+        . 'application/excel,'
+        . 'application/msexcel,'
+        // Allowed mimes/extensions.
+        . '|mimes:'
+        . 'csv,'
+        . 'zip,'
+        . 'xlsx,'
         . 'txt,';
 
     protected static $defaultCreateRules = [
@@ -369,11 +395,18 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
-    protected static $payoutCreateRules = [
-
+    protected static $payoutValidateRules = [
         Entity::TYPE        => 'required|in:payout',
         Entity::NAME        => 'filled|string|max:255',
-        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_EXCEL_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
+    ];
+
+    protected static $payoutCreateRules = [
+        Entity::TYPE        => 'required|in:payout',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_EXCEL_MIME_RULE,
         Entity::FILE_ID     => 'required_without:file|public_id',
         Entity::OTP         => 'required|filled|min:4',
         Entity::TOKEN       => 'required|unsigned_id',
@@ -397,15 +430,6 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
     ];
 
-
-    protected static $payoutValidateRules = [
-        Entity::TYPE        => 'required|in:payout',
-        Entity::NAME        => 'filled|string|max:255',
-        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
-        Entity::FILE_ID     => 'required_without:file|public_id',
-        Entity::SCHEDULE    => 'sometimes|numeric',
-    ];
-
     protected static $fundAccountTypeRowRules = [
         Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
@@ -423,7 +447,7 @@ class Validator extends Base\Validator
 
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
-        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_num|between:5,22',
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_space_num|between:5,22',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:10000000000',
@@ -434,12 +458,36 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
-        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|integer',
         Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
-        Header::CONTACT_TYPE                => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
         Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_TYPE                => 'sometimes|nullable|string',
         Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
-        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|contact_syntax',
+        Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
+        Header::NOTES                       => 'sometimes|nullable|notes',
+    ];
+
+    // Similar to the above rules but this one will contain headers for the rupees version.
+    // TODO: Update this as per the final template.
+    protected static $payoutRupeesTypeRowRules = [
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_space_num|between:5,22',
+        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
+        Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Header::PAYOUT_AMOUNT_RUPEES        => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
+        Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
+        Header::PAYOUT_MODE                 => 'required|string|custom',
+        Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
+        Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|integer',
+        Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_TYPE                => 'sometimes|nullable|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|contact_syntax',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
     ];
@@ -618,6 +666,27 @@ class Validator extends Base\Validator
     {
         PayoutMode::validateMode($value);
     }
+
+    protected static $payoutRupeesTypeRowValidators = [
+        'payout_amount_rupees',
+    ];
+
+    protected function validatePayoutAmountRupees($input)
+    {
+        $amountInRupees = $input[Header::PAYOUT_AMOUNT_RUPEES];
+
+        if ($amountInRupees < 1)
+        {
+            // The payout amount may not be less than 1.00.
+            throw new BadRequestValidationFailureException('The payout amount (in rupees) may not be less than 1.00');
+        }
+        if ($amountInRupees > 100000000)
+        {
+            // The payout amount may not be greater than 100000000.00.
+            throw new BadRequestValidationFailureException('The payout amount (in rupees) may not be greater than 100000000.00');
+        }
+    }
+
 
     /**
      * Throws error if batch is not in a state which can be processed
@@ -1046,10 +1115,55 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
         }
 
-        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        $expectedAmountType = $this->getAmountTypeForPayouts($merchant);
+
+        $app = App::getFacadeRoot();
+
+        $variant  = $app['razorx']->getTreatment($merchant->getId(),
+                                                 Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
+                                                 Mode::LIVE,
+                                                 3);
+
+        if (strtolower($variant) === 'control')
         {
-            $this->validateInput('payoutTypeRow', $entry);
-        });
+            $expectedAmountType = BatchHelper::PAISE;
+        }
+
+        $actualAmountType = $this->getActualAmountTypeBasedOnUploadedData($entries[0]);
+
+        if ($actualAmountType != $expectedAmountType)
+        {
+            $message = 'You seem to have entered a wrong amount header. The amount has to be entered in ' .
+                       ucfirst($expectedAmountType) . ' format instead of ' . ucfirst($actualAmountType) . ' format';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+
+        $this->getTrace()->info(TraceCode::BULK_PAYOUTS_VALIDATION_BEGINS, [
+            'count' => $countOfPayouts
+        ]);
+
+        // For existing merchants who use bulk, we will keep letting them upload their files with amount as paise
+        if ($expectedAmountType === BatchHelper::PAISE)
+        {
+            $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+            {
+                $this->validateInput('payoutTypeRow', $entry);
+            });
+        }
+        // For new merchants as well as existing merchants that have transferred over to amount type rupees,
+        // we will allow them to upload their file only in rupees.
+        else
+        {
+            $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+            {
+                $this->validateInput('payoutRupeesTypeRow', $entry);
+            });
+        }
+
+        $this->getTrace()->info(TraceCode::BULK_PAYOUTS_VALIDATION_ENDS, [
+            'count' => $countOfPayouts
+        ]);
 
         // Following are Payout Amount Validations.
         // Only to be done if merchant does not have CA. If the merchant has a current account,
@@ -1062,14 +1176,21 @@ class Validator extends Base\Validator
 
         // After validating contents per row only should do following aggregate validations.
 
-        $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        if ($expectedAmountType === BatchHelper::PAISE)
+        {
+            $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        }
+        else
+        {
+            $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT_RUPEES)) * 100;
+        }
 
         $bankingBalance = $merchant->sharedBankingBalance->getBalanceWithLockedBalance();
 
         if ($totalPayoutAmount > $bankingBalance)
         {
             throw new BadRequestValidationFailureException(
-                'Total payout amount in uploaded file exceeds available account balance',
+                'Total payout amount in uploaded file is more than the available account balance',
                 Entity::FILE,
                 compact('totalPayoutAmount', 'bankingBalance'));
         }
@@ -1428,6 +1549,44 @@ class Validator extends Base\Validator
                     'type'  => 'payout',
                     'total' => $total,
                 ]);
+        }
+    }
+
+    protected function getAmountTypeForPayouts(ME $merchant)
+    {
+        $expectedAmountType = $this->getSettingsAccessor($merchant)->get(Constants::TYPE);
+
+        // If merchant is not a existing bulk merchant, then the merchant has amount type rupees.
+        if ($expectedAmountType != BatchHelper::PAISE)
+        {
+            $expectedAmountType = BatchHelper::RUPEES;
+        }
+
+        return $expectedAmountType;
+    }
+
+
+    /**
+     * Doing this only for LIVE MODE so that we don't have to run migrations for both Live and test mode.
+     * This way the test mode validations etc will mimic a merchant's Live mode automatically.
+     *
+     * @param ME $merchant
+     * @return Settings\Accessor
+     */
+    protected function getSettingsAccessor(ME $merchant): Settings\Accessor
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_AMOUNT_TYPE, Mode::LIVE);
+    }
+
+    protected function getActualAmountTypeBasedOnUploadedData(array $sampleRow)
+    {
+        if (array_key_exists(Header::PAYOUT_AMOUNT_RUPEES, $sampleRow) === true)
+        {
+            return BatchHelper::RUPEES;
+        }
+        else
+        {
+            return BatchHelper::PAISE;
         }
     }
 }

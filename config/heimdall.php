@@ -920,6 +920,10 @@ return [
                 'description' => 'View free payout attributes',
                 'assignable'  => true,
             ],
+            Permission::RX_ADMIN_ACTION_PERMISSION => [
+                'description' => 'To be used to hit any route that needs tech admin route access.',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAYX_APPS => [
@@ -1015,7 +1019,10 @@ return [
             ],
             Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY => [
                 'assignable' => true,
-            ]
+            ],
+            Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE => [
+                'assignable' => true,
+            ],
         ],
 
         PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [

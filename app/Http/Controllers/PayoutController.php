@@ -360,4 +360,29 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getSampleFileForBulkPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getSampleFileForBulkPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postBulkPayoutsAmountType()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postBulkPayoutsAmountType($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateBulkPayoutsAmountType()
+    {
+        $response = $this->service()->updateBulkPayoutsAmountType();
+
+        return ApiResponse::json($response);
+    }
 }

@@ -1,8 +1,744 @@
 <?php
 
+use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testValidateBatchPayoutsCSV' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSX' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10.23,
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => null,
+                        Batch\Header::FUND_ACCOUNT_ID           => null,
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => null,
+                        Batch\Header::CONTACT_REFERENCE_ID      => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXOptionalHeaders' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::FUND_ACCOUNT_ID           => null,
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVOptionalHeaders' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXMissingMandatoryHeader' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The file you are trying to upload is missing one of the mandatory/conditionally mandatory header',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_BATCH_FILE_MISSING_MANDATORY_HEADERS,
+        ],
+    ],
+
+    'testCreateBatchPayoutsCSVMissingMandatoryHeader' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The file you are trying to upload is missing one of the mandatory/conditionally mandatory header',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_BATCH_FILE_MISSING_MANDATORY_HEADERS,
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInPaiseForNewUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Rupees format instead of Paise format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXAmountInPaiseForNewUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Rupees format instead of Paise format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXAmountInRupeesForExistingBulkPaiseUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Paise format instead of Rupees format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInPaiseForExistingBulkPaiseUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT             => '1000',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInPaiseForExistingBulkRupeesUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Rupees format instead of Paise format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXAmountInRupeesForExistingBulkRupeesUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => null,
+                        Batch\Header::FUND_ACCOUNT_ID           => null,
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => null,
+                        Batch\Header::CONTACT_REFERENCE_ID      => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInRupeesForExistingBulkRupeesUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXBothTypeOfAmountHeaders' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered either in Rupees format or in Paise format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVNewUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVExistingBulkPaiseUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVExistingBulkRupeesUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsXLSXNewUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsXLSXExistingBulkRupeesUser' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVRandomExtraHeader' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The uploaded file has invalid headers: feature',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVPayoutAmountRupeesFloatWithThreeDecimals' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInRupeesNewUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Paise format instead of Rupees format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInRupeesExistingBulkRupeesUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Paise format instead of Rupees format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInPaiseNewUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT             => '1000',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVAmountInPaiseExistingBulkRupeesUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT             => '1000',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVNewUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVExistingBulkPaiseUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVExistingBulkRupeesUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateErrorFileForBatchPayoutsCSVAmountInRupeesExistingBulkRupeesUserExperimentOff' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You seem to have entered a wrong amount header. The amount has to be entered in Paise format instead of Rupees format',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

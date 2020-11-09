@@ -1092,6 +1092,9 @@ class Route
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
+        'payouts_bulk_sample_file'                 => ['post',     'payouts/bulk/sample_file',                       'PayoutController@getSampleFileForBulkPayouts'                      ],
+        'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
+        'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                       ],
 
         // Payout Workflows
         'payout_workflow_retry_admin_bulk'         => ['post',     'admin/payouts/workflow_retry',                   'PayoutController@bulkRetryWorkflowOnPayout'                        ],
@@ -3196,6 +3199,7 @@ class Route
         'governor_delete_merchant_rule_group',
 
         'currency_fetch_rates_proxy',
+        'payouts_bulk_amount_type_update',
         'invoice_send_notification_proxy',
 
         'wfs_config_get',
@@ -3207,6 +3211,7 @@ class Route
         'proxy_merchant_edit_support_details',
         'virtual_account_create_for_internal',
         'subscription_get_revenue_by_source',
+        'payouts_bulk_sample_file',
     ];
 
     //
@@ -3888,6 +3893,8 @@ class Route
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
+
+        'payouts_bulk_amount_type',
         'tax_payments_admin_auth_api',
 
         // subscriptions admin route
@@ -4658,6 +4665,7 @@ class Route
 
         'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
+        'payouts_bulk_amount_type'                 => Permission::RX_ADMIN_ACTION_PERMISSION,
 
         'admin_key_migrate_to_credcase'            => '*',
 
@@ -4670,6 +4678,7 @@ class Route
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
 
         'setl_service_migration'                      => '*',
+
         'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'salesforce_event'                            => '*',
@@ -4881,6 +4890,8 @@ class Route
         'salesforce_opportunity_details'               => '*',
 
         'get_free_payouts_attributes'                  => Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
+        'payouts_bulk_sample_file'                     => '*',
+        'payouts_bulk_amount_type_update'              => Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
     ];
 
     public static $direct = [
