@@ -2239,7 +2239,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->mockRazorX('testSubmit', 'bvs_personal_pan_ocr', 'on');
 
-        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'personal_pan');
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'personal_pan',
+                                                      'validation_unit' => 'proof'
+                                                  ]);
     }
 
     public function testVerifyBvsTriggerPostFormSubmissionForBusinessPanOcr()
@@ -2254,7 +2259,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->mockRazorX('testSubmit', 'bvs_business_pan_ocr', 'on');
 
-        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'business_pan');
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'business_pan',
+                                                      'validation_unit' => 'proof'
+                                                  ]);
     }
 
     public function testVerifyBvsTriggerPostFormSubmissionForCancelledChequeOcr()
@@ -2268,15 +2278,41 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->mockRazorX('testSubmit', 'bvs_cancelled_cheque_ocr', 'on');
 
-        $this->submitL2FormAndVerifyBvsValidation($input, $mid, 'bank_account');
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'bank_account',
+                                                      'validation_unit' => 'proof'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForShopEstbNumber()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'shop_establishment_verification_status' => 'pending',
+            'merchant_id'                          => $mid,
+            'business_registered_state'            => "DL",
+            'shop_establishment_number'            => "shopNum1234",
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_shop_estb_auth', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'shop_establishment',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
     }
 
     /**
      * @param array  $input
      * @param string $mid
-     * @param string $artefctType
+     * @param array  $validationInput
      */
-    protected function submitL2FormAndVerifyBvsValidation(array $input, string $mid, string $artefctType)
+    protected function submitL2FormAndVerifyBvsValidation(array $input, string $mid, array $validationInput)
     {
         Config::set('services.bvs.mock', true);
 
@@ -2285,12 +2321,12 @@ class MerchantDetailTest extends OAuthTestCase
         $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
 
         $expectedValidationValues = [
-            'artefact_type'     => $artefctType,
+            'artefact_type'     => $validationInput['artefact_type'],
             'owner_id'          => $mid,
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
             'validation_status' => 'captured',
-            'validation_unit'   => 'proof',
+            'validation_unit'   => $validationInput['validation_unit'],
         ];
 
         (new BvsValidationTest())->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);

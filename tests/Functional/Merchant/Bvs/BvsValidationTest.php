@@ -320,16 +320,20 @@ class BvsValidationTest extends TestCase
 
     public function testUpdateBvsValidationStatusGstin()
     {
+        $this->verifyArtefactValidation('gstin', "gstin_verification_status");
+    }
+
+    public function verifyArtefactValidation(string $artefactType, string $documentTypeStatusKey)
+    {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $mid = $merchantDetail->getId();
 
         $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
             'owner_id'      => $mid,
-            'artefact_type' => 'gstin',
+            'artefact_type' => $artefactType,
         ]);
 
-        $documentTypeStatusKey = 'gstin_verification_status';
 
         $possibleScenarios = [
             [
@@ -478,6 +482,11 @@ class BvsValidationTest extends TestCase
         ];
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);
+    }
+
+    public function testUpdateBvsValidationStatusShopEstbNumber()
+    {
+        $this->verifyArtefactValidation('shop_establishment', 'shop_establishment_verification_status');
     }
 
     /**
