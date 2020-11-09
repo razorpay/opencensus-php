@@ -41,6 +41,12 @@ class NetbankingEquitasCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $paymentEntity = $this->getDbLastEntityToArray(\RZP\Constants\Entity::PAYMENT);
+
+        $this->fixtures->edit('transaction', $paymentEntity['transaction_id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
         $refundEntity = $this->getDbLastEntity('refund');
 
         // Netbanking Equitas refunds have moved to scrooge
