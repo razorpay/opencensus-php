@@ -3465,14 +3465,7 @@ class Core extends Base\Core
             return;
         }
 
-        $shouldVerifyShopEstab = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_SHOP_ESTB_AUTH);
-
-        if ($shouldVerifyShopEstab === true)
-        {
-            $this->updateDocumentVerificationStatus($merchant, Entity::SHOP_ESTABLISHMENT_NUMBER);
-        }
+        $this->updateDocumentVerificationStatus($merchant, Entity::SHOP_ESTABLISHMENT_NUMBER);
     }
 
     /**
@@ -3499,6 +3492,8 @@ class Core extends Base\Core
             {
                 return;
             }
+
+            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field]);
 
             $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
 

@@ -6043,3 +6043,6 @@ ALTER TABLE merchant_details
 
 ALTER TABLE merchant_details
     ADD COLUMN shop_establishment_verification_status varchar(30) DEFAULT NULL;
+
+ALTER TABLE `merchant_details`
+    MODIFY COLUMN shop_establishment_number varchar(100) DEFAULT NULL;

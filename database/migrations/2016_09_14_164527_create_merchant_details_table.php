@@ -360,7 +360,7 @@ class CreateMerchantDetailsTable extends Migration
             $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
                   ->nullable();
 
-            $table->string(MerchantDetail::SHOP_ESTABLISHMENT_NUMBER, 30)
+            $table->string(MerchantDetail::SHOP_ESTABLISHMENT_NUMBER, 100)
                   ->nullable();
 
             $table->string(MerchantDetail::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, 30)
