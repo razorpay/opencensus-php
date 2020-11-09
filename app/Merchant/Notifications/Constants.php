@@ -110,6 +110,31 @@ class Constants
             ],
         ],
         [
+            'title'       => 'You\'re all set to accept payments',
+            'description' => 'You\'ve successfully unlocked free payments for upto ₹2,00,000! To avail this offer, complete your first transaction before 16th of November',
+            'start_ts'    => 1604320769,
+            'end_ts'      => 1617167373,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/unlock.svg',
+            'track_event' => true,
+            'id'          => 'NOV20-RZP-FESTIVEOFFER',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Accept Payments',
+                    'url'   => '',
+                    'id'    => 'NOV20-RZP-FESTIVEOFFER-BUTTON'
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/links/festive-campaign-terms-conditions',
+                ]
+            ],
+            'filters'     => [
+                'campaigns' => ['UNLOCKFEST'],
+            ]
+        ],
+        [
             'title'       => 'Festive Special: Exclusive Offer For You',
             'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
             'icon'        => '/dist/css/assets/products/opfin.svg',

@@ -9,6 +9,7 @@ import { classList } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
 import HubspotCAForm from './HubspotCAForm';
+import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncement from './components/OpfinAnnouncement';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
@@ -26,6 +27,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
   {
     openModal,
     closeModal,
+    showAcceptPaymentsModal,
   },
 )
 @RTracking(() => window.rzpQ.component('NotificationsDropdown'))
@@ -205,6 +207,7 @@ export default class NotificationsDropdown extends Component {
       'projectNitro',
       'paymentButton_GTM',
       'IR_update_DC',
+      'NOV20-RZP-FESTIVEOFFER',
       'Nov20-Opfin-NitroV1',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
@@ -215,6 +218,7 @@ export default class NotificationsDropdown extends Component {
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
           trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
+          showAcceptPaymentsModal={this.props.showAcceptPaymentsModal}
           onCTAClick={this.handleCTA}
         />
       </div>
@@ -311,6 +315,7 @@ const NotificationCard = ({
   trackEvents,
   ga,
   id,
+  showAcceptPaymentsModal,
   onCTAClick,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -376,6 +381,10 @@ const NotificationCard = ({
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
                   );
                   trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
+                  if (btn.id === 'NOV20-RZP-FESTIVEOFFER-BUTTON') {
+                    e.preventDefault();
+                    showAcceptPaymentsModal();
+                  }
                   onCTAClick({ id: btn.id });
                 }}
                 href={urlPath}
