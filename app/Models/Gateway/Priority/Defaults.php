@@ -44,6 +44,7 @@ class Defaults
                 Gateway::ATOM,
                 Gateway::SHARP,
                 Gateway::PAYU,
+                Gateway::CASHFREE,
             ]
         ],
         Method::NETBANKING => [

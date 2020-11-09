@@ -339,6 +339,21 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCashfreeTerminal()
+    {
+        $attributes = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'cashfree',
+            'card'                  => 1,
+            'netbanking'            => 0,
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+            'gateway_secure_secret' => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createBilldeskTerminal(array $attributes = [])
     {
         $defaultValues = [

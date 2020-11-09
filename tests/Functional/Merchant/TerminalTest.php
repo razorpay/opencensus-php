@@ -1119,6 +1119,32 @@ class TerminalTest extends TestCase
         });
     }
 
+    public function testEditCashfreeTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'cashfree',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'mode' => "2",
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "2", $content['mode']);
+    }
+
     public function testTerminalModeDual()
     {
         $this->startTest();

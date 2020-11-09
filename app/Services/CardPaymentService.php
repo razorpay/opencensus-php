@@ -217,7 +217,9 @@ class CardPaymentService
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
 
-        if (($gateway === Payment\Gateway::PAYU) and ($action === Action::CALLBACK) )
+        if ((($gateway === Payment\Gateway::PAYU) or
+             ($gateway ===  Payment\Gateway::CASHFREE)) and
+             ($action === Action::CALLBACK))
         {
             $dynamicContent = $input['gateway'];
 

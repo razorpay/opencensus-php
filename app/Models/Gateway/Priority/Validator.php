@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Gateway::PAYTM       => 'sometimes|numeric|min:0|max:100',
         Gateway::ISG         => 'sometimes|numeric|min:0|max:100',
         Gateway::PAYU        => 'sometimes|numeric|min:0|max:100',
+        Gateway::CASHFREE    => 'sometimes|numeric|min:0|max:100',
     ];
 
     public function validateMethod(string $method)

@@ -132,6 +132,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
+        Payment\Gateway::CASHFREE,
     ];
 
     protected static $createValidators = [
@@ -216,6 +217,16 @@ class Validator extends Base\Validator
 
     protected static $payuTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:payu',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::MODE                                    => 'sometimes|in:2'
+    ];
+
+    protected static $cashfreeTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:cashfree',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
         Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
         Entity::TYPE                                    => 'required|array',
@@ -484,6 +495,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $payuEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+    ];
+
+    protected static $cashfreeEditTerminalRules = [
         Entity::MODE                       => 'sometimes|in:2',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::ENABLED                    => 'sometimes|in:0,1',
@@ -1656,6 +1673,7 @@ class Validator extends Base\Validator
         $PurchaseOnlyGateway = [
             Gateway::WALLET_PAYPAL,
             Gateway::PAYU,
+            Gateway::CASHFREE,
         ];
 
         //Migs now supports purchase mode as well

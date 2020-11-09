@@ -25,6 +25,7 @@ class Gateway
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
+    const CASHFREE               = 'cashfree';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -200,7 +201,7 @@ class Gateway
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
-        self::PAYU         => [self::PAYU],
+        self::PAYU         => [self::PAYU]
     ];
 
     const POWER_WALLETS = [
@@ -285,6 +286,7 @@ class Gateway
         self::WALLET_PAYZAPP        => self::WALLET_PAYZAPP,
         self::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING,
         self::PAYU                  => self::PAYU,
+        self::CASHFREE              => self::CASHFREE,
     ];
 
     /**
@@ -1069,6 +1071,7 @@ class Gateway
             self::MPGS,
             self::ISG,
             self::PAYU,
+            self::CASHFREE,
         ],
 
         Method::NETBANKING => [
@@ -1486,6 +1489,14 @@ class Gateway
             Network::DICL,
             Network::MAES,
             Network::RUPAY,
+        ],
+        self:: CASHFREE => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::RUPAY,
+            Network::DICL,
+            Network::DISC,
         ]
     ];
 
@@ -2228,6 +2239,7 @@ class Gateway
         Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
         Gateway::PAYU        => Gateway::PAYU,
+        Gateway::CASHFREE    => Gateway::CASHFREE
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -2991,6 +3003,7 @@ class Gateway
             self::PAYSECURE,
             self::FIRST_DATA,
             self::PAYU,
+            self::CASHFREE,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3023,6 +3036,7 @@ class Gateway
             self::PAYSECURE,
             self::ISG,
             self::PAYU,
+            self::CASHFREE,
         ];
 
         return (in_array($gateway, $gateways, true));

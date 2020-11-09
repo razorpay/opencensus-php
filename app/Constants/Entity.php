@@ -216,6 +216,7 @@ class Entity
     const HDFC                   = 'hdfc';
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
+    const CASHFREE               = 'cashfree';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
     const PAYTM                  = 'paytm';

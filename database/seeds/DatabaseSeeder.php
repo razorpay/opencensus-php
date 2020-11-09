@@ -1266,6 +1266,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFsbTerminal();
         $this->createPayuTerminal();
         $this->createNetbankingDcbTerminal();
+        $this->createCashfreeTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2814,6 +2815,23 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'netbanking_dcb_merchant_id',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createCashfreeTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id' => 'h1t3hfU4c2A48G',
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'gateway' => Gateway::CASHFREE,
+                'card' => '1',
+                'netbanking' => '0',
+                'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
+                'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
