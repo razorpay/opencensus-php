@@ -159,34 +159,7 @@ class Core extends Base\Core
 
         if (empty($otpResponse) === false)
         {
-            if ($otpResponse['attempts'] > self::MAX_OTP_ATTEMPTS)
-            {
-                $errorCode = ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED;
-            }
-
-            if (Carbon::now()->getTimestamp() > $otpResponse['expires_at'])
-            {
-                $errorCode = ErrorCode::BAD_REQUEST_OTP_EXPIRED;
-            }
-
-            if ($otp !== $otpResponse['otp'])
-            {
-                if ($this->isEnvironmentProduction() === false)
-                {
-                    if (in_array($otp, Raven::MOCK_VALID_OTPS) === false)
-                    {
-                        $errorCode = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
-                    }
-                }
-                else
-                {
-                    $errorCode = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
-                }
-            }
-
-            $otpResponse['attempts'] = $otpResponse['attempts'] + 1;
-
-            $this->redis->set($this->getRedisKey($email), $otpResponse, self::CUSTOMER_SUPPORT_OTP_TTL);
+            $errorCode = $this->getOtpErrorCode($email, $otp, $otpResponse);
         }
         else
         {
@@ -208,7 +181,43 @@ class Core extends Base\Core
                 ]
             );
 
+            $this->redis->delete($this->getRedisKey($email));
+
             return true;
         }
+    }
+
+    protected function getOtpErrorCode($email, $otp, $otpResponse)
+    {
+        if ($otpResponse['attempts'] > self::MAX_OTP_ATTEMPTS)
+        {
+            return ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED;
+        }
+
+        if (Carbon::now()->getTimestamp() > $otpResponse['expires_at'])
+        {
+            return ErrorCode::BAD_REQUEST_OTP_EXPIRED;
+        }
+
+        $otpResponse['attempts'] = $otpResponse['attempts'] + 1;
+
+        $this->redis->set($this->getRedisKey($email), $otpResponse, self::CUSTOMER_SUPPORT_OTP_TTL);
+
+        if ($otp !== $otpResponse['otp'])
+        {
+            if ($this->isEnvironmentProduction() === false)
+            {
+                if (in_array($otp, Raven::MOCK_VALID_OTPS) === false)
+                {
+                    return ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+                }
+            }
+            else
+            {
+                return ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+            }
+        }
+
+        return '';
     }
 }
