@@ -1,17 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import Modal from 'react-modal';
 import RTracking from 'react-tracking';
 import debounce from 'common/utils/debounce';
 import LocalStorageService from 'common/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { classList } from 'common/utils/rzp-utils';
-
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
 import HubspotCAForm from './HubspotCAForm';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
+import OpfinAnnouncement from './components/OpfinAnnouncement';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -102,22 +100,6 @@ export default class NotificationsDropdown extends Component {
     );
   };
 
-  handleHbForm = (e) => {
-    e.preventDefault();
-    this.setState({ shouldShowHubspotForm: true });
-    const tracking = this.props.tracking;
-    if (window.hbspt) {
-      window.hbspt.forms.create({
-        portalId: '5558946',
-        formId: 'd5f93905-4a4a-4d69-ba5f-d838ed1f5be4',
-        target: '#hubspotForm',
-        onFormSubmit: function () {
-          tracking.trackEvent(window.rzpQ.merchantActions().success('click.modal.cta'));
-        },
-      });
-    }
-  };
-
   onShow = () => {
     const tracking = this.props.tracking;
     tracking.trackEvent(
@@ -182,6 +164,33 @@ export default class NotificationsDropdown extends Component {
 
   handleContentScroll = debounce(::this.onScrollContent, 20);
 
+  showOpfinAnnouncement = (id) => {
+    const { closeModal, openModal } = this.props;
+
+    openModal({
+      component: <OpfinAnnouncement id={id} onClose={closeModal} />,
+      size: 'xlarge',
+      className: 'OpfinAnnouncement--Modal',
+    });
+  };
+
+  handleCTA = ({ id }) => {
+    switch (id) {
+      case 'announcement-projectNitro-cta1':
+        this.toggleHubSpotCAForm();
+
+        break;
+
+      case 'announcement-Nov20-Opfin-NitroV1-cta1':
+        this.showOpfinAnnouncement(id);
+
+        break;
+
+      default:
+        break;
+    }
+  };
+
   render() {
     let { user, showMobileNav, analytics = () => {} } = this.props;
     const { showHubSpotCAForm } = this.state;
@@ -191,24 +200,20 @@ export default class NotificationsDropdown extends Component {
       'projectNitro',
       'paymentButton_GTM',
       'IR_update_DC',
+      'Nov20-Opfin-NitroV1',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
-          openModal={this.props.openModal}
-          closeModal={this.props.closeModal}
           {...card}
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
           trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
-          handleHbForm={this.handleHbForm}
-          toggleHubSpotCAForm={this.toggleHubSpotCAForm}
+          onCTAClick={this.handleCTA}
         />
       </div>
     ));
-
-    const hubspotForm = <div id="hubspotForm" />;
 
     return (
       <Dropdown closeOnClick={false} onShow={this.onShow} onHide={this.onHide}>
@@ -256,27 +261,6 @@ export default class NotificationsDropdown extends Component {
             </div>
           </div>
         </DropdownContent>
-        <Modal
-          isOpen={this.state.shouldShowHubspotForm}
-          onRequestClose={() => this.setState({ shouldShowHubspotForm: false })}
-          ariaHideApp={false}
-          style={{
-            content: {
-              width: '400px',
-              padding: '20px',
-              backgroundColor: 'rgb(244, 248, 255)',
-            },
-          }}
-        >
-          <button
-            type="button"
-            class="close"
-            onClick={() => this.setState({ shouldShowHubspotForm: false })}
-          >
-            <i class="i i-close" />
-          </button>
-          {hubspotForm}
-        </Modal>
         <HubspotCAForm
           shouldShowModal={showHubSpotCAForm}
           hideModal={this.toggleHubSpotCAForm}
@@ -315,17 +299,14 @@ const NotificationCard = ({
   start_ts,
   end_ts,
   title,
-  openModal,
-  closeModal,
   description,
   buttons,
   lastReadTS,
   trackAnnouncement,
   trackEvents,
-  handleHbForm,
   ga,
   id,
-  toggleHubSpotCAForm,
+  onCTAClick,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   return (
@@ -384,32 +365,13 @@ const NotificationCard = ({
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => {
+                  e.preventDefault();
                   trackAnnouncement(
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
                   );
                   trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
-                  if (btn.label === 'Get Early Access') {
-                    handleHbForm(e);
-                  }
-                  if (btn.label === 'What’s Changing?') {
-                    e.preventDefault();
-                    openModal({
-                      component: (
-                        <DebitRefundAnnouncement
-                          onClose={closeModal}
-                          onSuccess={() => {
-                            closeModal();
-                          }}
-                        />
-                      ),
-                      size: 'large',
-                    });
-                  }
-                  if (btn.label === 'Learn More') {
-                    e.preventDefault();
-                    toggleHubSpotCAForm();
-                  }
+                  onCTAClick({ id: btn.id });
                 }}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}

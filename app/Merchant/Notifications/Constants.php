@@ -38,6 +38,7 @@ class Constants
                     'type'  => 'button',
                     'label' => 'Learn More',
                     'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
                 ],
             ],
             'filters'     => [
@@ -84,6 +85,25 @@ class Constants
             'filters'     => [
                 'features'  => ['show_credit_score'],
                 'role'  => ['owner'],
+            ],
+        ],
+        [
+            'title'       => 'Festive Special: Exclusive Offer For You',
+            'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
+            'icon'        => '/dist/css/assets/products/opfin.svg',
+            'id'          => 'Nov20-Opfin-NitroV1',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-Nov20-Opfin-NitroV1-cta1',
+                ],
+            ],
+            'start_ts'    => 1604925051,
+            'end_ts'      => 1617193851,
+            'filters'     => [
+                'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-1'],
             ],
         ]
     ];
