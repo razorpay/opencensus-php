@@ -912,7 +912,7 @@ class Gateway extends Base\Gateway
         if (empty($response) === false)
         {
             return [
-                Entity::REFID      => $response[Entity::REFID] ?? null,
+                Entity::GATEWAY_REFID => $response[Entity::GATEWAY_REFID] ?? null,
                 Entity::STATUS     => $response[Entity::STATUS] ?? null,
                 Entity::STATUSCODE => $response[Entity::STATUSCODE] ?? null,
             ];

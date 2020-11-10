@@ -111,6 +111,7 @@ class Gateway extends Base\Gateway
                 RefundFields::ERROR_CODE   => $refundFields[RefundFields::ERROR_CODE] ?? null,
                 RefundFields::MESSAGE_TEXT => $refundFields[RefundFields::MESSAGE_TEXT] ?? null,
                 RefundFields::CODE         => $refundFields[RefundFields::CODE] ?? null,
+                RefundFields::TRANSACTION_ID => $refundFields[RefundFields::TRANSACTION_ID] ?? null,
             ];
         }
 
