@@ -229,7 +229,7 @@ class Stork
             'source'       => $source,
         ];
 
-        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus', $storkInput);
+        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent', $storkInput);
     }
 
     /**

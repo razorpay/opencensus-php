@@ -1914,7 +1914,7 @@ return [
 
     'optInStatusForWhatsappStorkExpectations' => [
         'expected_request' => [
-            'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus',
+            'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent',
             'payload' => [
                 'phone_number' => '9999999999',
                 'source'       => 'api.admin.test.sms',
