@@ -1129,58 +1129,6 @@ class Service extends Base\Service
         }
     }
 
-    public function createBilldeskCancelledRefunds()
-    {
-        $cancelledBilldeskRefunds = $this->repo->billdesk->fetchMissingBilldeskCancelledRefunds();
-
-        $successes = $failures = 0;
-        $failureRefunds = [];
-
-        // We get all the Billdesk refunds. We return back data for applicable and if success.
-
-        foreach ($cancelledBilldeskRefunds as $cancelledBilldeskRefund)
-        {
-            $paymentId = $cancelledBilldeskRefund->getPaymentId();
-            $refundId = $cancelledBilldeskRefund->getRefundId();
-            $refundAmount = (int) ($cancelledBilldeskRefund->getRefundAmount() * 100);
-
-            $payment = $this->repo->payment->findOrFailPublic($paymentId);
-
-            $merchant = $payment->merchant;
-
-            try
-            {
-                $this->getNewProcessor($merchant)
-                     ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
-
-                $successes++;
-            }
-            catch (\Exception $ex)
-            {
-                $failures++;
-
-                $failureRefunds[] = $refundId;
-
-                $this->trace->traceException($ex);
-            }
-        }
-
-        $total = count($cancelledBilldeskRefunds);
-
-        $summary = [
-            'total'             => $total,
-            'success'           => $successes,
-            'failures'          => $failures,
-            'failed_refunds'    => $failureRefunds,
-        ];
-
-        $this->trace->info(
-            TraceCode::MISSING_BILLDESK_CANCELLED_REFUNDS,
-            $summary);
-
-        return $summary;
-    }
-
     protected function getNewProcessor($merchant)
     {
         $processor = new Payment\Processor\Processor($merchant);
