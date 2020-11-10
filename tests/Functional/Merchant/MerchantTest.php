@@ -5150,6 +5150,8 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData[$name];
 
+        $this->replaceValuesRecursively($testData, $testDataToReplace);
+
         return $this->runRequestResponseFlow($testData);
     }
 
@@ -6732,7 +6734,8 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff($expVal = 'off',
                                                                                                  $category2 = 'school',
-                                                                                                 $banking = true)
+                                                                                                 $banking = true,
+                                                                                                 array $testDataToReplace = [])
     {
         $this->enableRazorXTreatmentForXOnboarding($expVal);
 
@@ -6768,7 +6771,7 @@ class MerchantTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
-        $this->startTest();
+        $this->startTest($testDataToReplace);
 
         $liveBankingAccount = $this->getDbEntity('banking_account',
             [
@@ -6966,6 +6969,34 @@ class MerchantTest extends TestCase
 
     public function testMerchantProductSwitchDoesntFireIfBankingAlreadyEnabled() {
         $this->testMerchantProductSwitchFiresEvents(false, true);
+    }
+
+    public function testMerchantProductSwitchSavesSignupInfo()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                        'final_page' => 'razorpay.com/x/current-accounts/'
+                    ])
+                ]
+            ]
+        ];
+
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', false, $testDataToReplace);
+
+        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => 'ca_page_visited',
+                'value'   => '1'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
     }
 
     /**

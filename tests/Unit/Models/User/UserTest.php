@@ -98,7 +98,11 @@ class UserTest extends TestCase
 
         $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
 
+        $this->basicAuthMock->shouldReceive('isProductBanking')->andReturn(true);
+
         $this->merchantServiceMock->shouldReceive('create')->andReturn((new MerchantEntity())->build($content['merchantData'])->toArrayPublic());
+
+        $this->merchantServiceMock->shouldReceive('storeRelevantPreSignUpSourceInfoForBanking')->andReturn(null);
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
@@ -466,9 +470,13 @@ class UserTest extends TestCase
 
         $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
 
+        $this->basicAuthMock->shouldReceive('isProductBanking')->andReturn(true);
+
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userData'])));
 
         $this->merchantServiceMock->shouldReceive('create')->andReturn((new MerchantEntity())->build($content['merchantData'])->toArrayPublic());
+
+        $this->merchantServiceMock->shouldReceive('storeRelevantPreSignUpSourceInfoForBanking')->andReturn(null);
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
@@ -579,7 +587,11 @@ class UserTest extends TestCase
 
         $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
 
+        $this->basicAuthMock->shouldReceive('isProductBanking')->andReturn(true);
+
         $this->merchantServiceMock->shouldReceive('create')->andReturn((new MerchantEntity())->build($content['merchantData'])->toArrayPublic());
+
+        $this->merchantServiceMock->shouldReceive('storeRelevantPreSignUpSourceInfoForBanking')->andReturn(null);
 
         $this->coreMock->shouldReceive('attach')->andReturn(((new Core())->create($content['userData']))->toArrayPublic());
 
@@ -2053,6 +2065,12 @@ class UserTest extends TestCase
 
         $bankingAccountRepoMock = Mockery::mock('RZP\Models\BankingAccount\Repository');
 
+        $merchantAttributeRepoMock = Mockery::mock('RZP\Models\Merchant\Attribute\Repository');
+
+        $merchantAttributeEntityMock = Mockery::mock('RZP\Models\Merchant\Attribute\Entity');
+
+        $merchantAttributeEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['attr' => 'value']);
+
         $bankingAccountEntityMock = Mockery::mock('RZP\Models\BankingAccount\Entity')->makePartial();
 
         $creditBalanceRepoMock = Mockery::mock('RZP\Models\Merchant\Credits\Balance\Repository');
@@ -2071,6 +2089,8 @@ class UserTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->with('banking_account')->andReturn($bankingAccountRepoMock);
 
+        $this->repoMock->shouldReceive('driver')->with('merchant_attribute')->andReturn($merchantAttributeRepoMock);
+
         $this->repoMock->shouldReceive('driver')->with('credit_balance')->andReturn($creditBalanceRepoMock);
 
         $this->coreMock->shouldReceive('getBulkPayoutsUserType')->andReturn('existing_bulk_user_rupees');
@@ -2078,6 +2098,8 @@ class UserTest extends TestCase
         $balanceRepoMock->shouldReceive('getMerchantBalanceByTypeAndAccountType')->andReturn($balanceEntityMock);
 
         $bankingAccountRepoMock->shouldReceive('getBankingAccountsWithBalance')->andReturn([$bankingAccountEntityMock]);
+
+        $merchantAttributeRepoMock->shouldReceive('getKeyValues')->andReturn($merchantAttributeEntityMock);
 
         $creditBalanceRepoMock->shouldReceive('getMerchantCreditBalanceByProduct')->andReturn([$creditBalanceEntityMock]);
 

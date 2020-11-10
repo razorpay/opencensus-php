@@ -247,6 +247,15 @@ class Service extends Base\Service
 
         $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail);
 
+        if ($this->auth->isProductBanking())
+        {
+            $utmParams = [];
+            $this->addUtmParameters($utmParams);
+
+            // Storing presign up information for X.
+            $this->merchantService->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
+        }
+
         return $data;
     }
 

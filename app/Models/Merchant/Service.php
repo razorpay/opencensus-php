@@ -4414,15 +4414,58 @@ class Service extends Base\Service
             $diagClient = $this->app['diag'];
             $utmParams = [];
             (new User\Service)->addUtmParameters($utmParams);
+
             $diagClient->trackOnboardingEvent(EventCode::PRODUCT_SWITCH, $merchant, null, $utmParams);
+
+            // 2. store signup source information
+            $this->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
         }
 
-        //2. Send this Event to Hubspot
+        //3. Send this Event to Hubspot
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
         $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
             'product_switch' => true
         ]);
+    }
+
+    public function storeRelevantPreSignUpSourceInfoForBanking(array $utmParams, Merchant\Entity $merchant)
+    {
+        // if the merchant visited the CA static page (first or last) (razorpay.com/x/current-accounts/)
+        // we want to show the new CA self-serve flow on dashboard. Hence, saving this information
+        $attributeCore = new Attribute\Core;
+
+        $product = Product::BANKING;
+        $group = Attribute\Entity::X_SIGNUP;
+        $type = Attribute\Entity::CA_PAGE_VISITED;
+
+        $this->trace->info(TraceCode::UTM_PARAMS, [
+            'merchant' => $merchant->getId(),
+            'utm_params' => $utmParams
+        ]);
+
+        try {
+            $caPageVisitedAttr = $attributeCore->fetch($merchant, $product, $group, $type);
+        }
+        catch (\Throwable $e){
+            $caPageVisitedAttr = null;
+        }
+
+        // don't want to rewrite in case product switch happens again.
+        if ($caPageVisitedAttr === null)
+        {
+            $caPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CA_STATIC_PAGE))
+                                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CA_STATIC_PAGE)));
+            $attributeCore->create(
+                [
+                    Attribute\Entity::PRODUCT   => $product,
+                    Attribute\Entity::GROUP     => $group,
+                    Attribute\Entity::TYPE      => $type,
+                    Attribute\Entity::VALUE     => strval((int)($caPageVisited)) // saving as 1/0
+                ],
+                $merchant
+            );
+        }
     }
 
     public function migrationBankingVAs(array $input)

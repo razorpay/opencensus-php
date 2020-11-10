@@ -69,6 +69,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BLOCKING_RX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_RX_ACTIVATIONS_TEMPORARILY';
 
     const PRODUCT_SWITCH                                        = 'PRODUCT_SWITCH';
+    const UTM_PARAMS                                            = 'UTM_PARAMS';
 
     // payout links
     const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';

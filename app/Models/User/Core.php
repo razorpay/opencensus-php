@@ -767,6 +767,11 @@ class Core extends Base\Core
 
                 $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
 
+                // Attach merchant attributes of specific groups
+                $attributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Entity::X_SIGNUP);
+                $merchant['attributes'] = $attributes->toArrayPublic();
+
+
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
                     $merchant['id'],
