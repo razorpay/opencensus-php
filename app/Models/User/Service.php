@@ -652,11 +652,14 @@ class Service extends Base\Service
 
     public function postResetPassword(array $input)
     {
+        $this->trace->info(TraceCode::USER_PASSWORD_RESET_REQUEST, $input);
+
         if (isset($input['email']) === true)
         {
             $email = mb_strtolower($input['email']);
 
             //find or fail public by email.
+            /** @var User\Entity $user */
             $user = $this->repo->user->getUserFromEmail($email);
 
             if (empty($user) === true)
@@ -681,9 +684,9 @@ class Service extends Base\Service
 
                 $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-                $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
+                $passwordResetMail = new UserMail\PasswordReset($user->toArrayPublic(), $org, $requestOriginProduct);
 
-                Mail::queue($passwordResetMail);
+                Mail::send($passwordResetMail);
 
                 $this->core->trackOnboardingEvent($user->getEmail(),
                                                  EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_SUCCESS);
@@ -745,6 +748,13 @@ class Service extends Base\Service
 
     public function getTokenWithExpiry(string $userId, int $expiry): string
     {
+        $this->trace->info(
+            TraceCode::USER_PASSWORD_RESET_TOKEN_GENERATE,
+            [
+                'user_id' => $userId,
+                'expiry'  => $expiry,
+            ]);
+
         $userCore = $this->core;
 
         $expiryTime = Carbon::now()->timestamp + $expiry;

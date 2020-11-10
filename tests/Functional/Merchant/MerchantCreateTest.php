@@ -558,7 +558,7 @@ class MerchantCreateTest extends TestCase
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
-        Mail::assertNotQueued(PasswordResetMail::class);
+        Mail::assertNotSent(PasswordResetMail::class);
 
         $submerchant = $this->getLastEntity('merchant', true);
 

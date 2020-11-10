@@ -1583,7 +1583,7 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordReset::class, function ($mail)
+        Mail::assertSent(PasswordReset::class, function ($mail)
         {
             $viewData = $mail->viewData;
 

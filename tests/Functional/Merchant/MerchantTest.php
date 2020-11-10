@@ -5552,7 +5552,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5585,7 +5585,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5683,7 +5683,7 @@ class MerchantTest extends TestCase
             return true;
         });
 
-        Mail::assertNotQueued(PasswordResetMail::class);
+        Mail::assertNotSent(PasswordResetMail::class);
 
         $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user2['id']);
 
@@ -5736,7 +5736,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5773,7 +5773,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5886,7 +5886,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
