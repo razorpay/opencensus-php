@@ -34,6 +34,7 @@ import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
+import NCModal from 'merchant/components/Activation/NCModal';
 
 @withRouter
 @connect(
@@ -48,6 +49,9 @@ import Time from 'common/ui/Time';
   },
 )
 class AnalyticsDesktop extends Component {
+  state = {
+    showNcPopup: true
+  }
   constructor(props) {
     super(props);
 
@@ -101,6 +105,12 @@ class AnalyticsDesktop extends Component {
       } else return false;
     }
   };
+
+  onNcModalClose = () => {
+    this.setState({
+      showNcPopup: false
+    })
+  }
 
   render() {
     const {
@@ -182,6 +192,13 @@ class AnalyticsDesktop extends Component {
                 internationalProductsStatus={this.props.internationalProductsStatus}
               />
             )}
+
+          {/* needs clarification modal */}
+          {
+            this.state.showNcPopup && user.needsClarification && (
+              <NCModal onClose={this.onNcModalClose} />
+            )
+          }
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
