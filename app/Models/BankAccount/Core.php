@@ -590,6 +590,8 @@ class Core extends Base\Core
             {
                 $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
 
+                $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
+
                 break;
             }
             default:

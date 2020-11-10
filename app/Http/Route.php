@@ -6078,6 +6078,7 @@ class Route
         'merchant_replace_key'                  => [Mode::LIVE],
         'user_2fa_change_setting'               => [Mode::LIVE, Mode::TEST],
         'merchant_2fa_change_setting'           => [Mode::LIVE, Mode::TEST],
+        'merchant_bank_account_update'          => [Mode::LIVE, Mode::TEST],
     ];
 
     // Route specific config for running read queries on mysql db:
