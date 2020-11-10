@@ -132,7 +132,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $optInWhatsappRules = [
-        'source' => 'required|string',
+        'source'               => 'required|string',
+        'send_welcome_message' => 'sometimes|boolean',
     ];
 
     protected static $optOutWhatsappRules = [

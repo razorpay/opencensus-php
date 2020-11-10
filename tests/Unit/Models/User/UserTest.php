@@ -2586,7 +2586,7 @@ class UserTest extends TestCase
 
         $this->userValidator->shouldReceive('validateInput')->andReturn([]);
 
-        $this->userService->optInForWhatsapp(['source' => 'api.merchant.onboarding']);
+        $this->userService->optInForWhatsapp(['source' => 'api.merchant.onboarding', 'send_welcome_message' => true]);
     }
 
     public function testOptInForWhatsapp()
@@ -2595,7 +2595,7 @@ class UserTest extends TestCase
 
         $this->userValidator->shouldReceive('validateInput')->andReturn([]);
 
-        $response = $this->userService->optInForWhatsapp(['source' => 'api.merchant.onboarding']);
+        $response = $this->userService->optInForWhatsapp(['source' => 'api.merchant.onboarding', 'send_welcome_message' => true]);
 
         $this->assertNotNull($response);
     }

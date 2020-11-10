@@ -1172,7 +1172,7 @@ class Service extends Base\Service
             throw new Exception\LogicException('User does not have a mobile number associated with the account');
         }
 
-        return app('stork_service')->optInForWhatsapp($this->mode, $contact, $input['source']);
+        return app('stork_service')->optInForWhatsapp($this->mode, $contact, $input);
     }
 
     /**

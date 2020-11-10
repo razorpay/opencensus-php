@@ -202,19 +202,19 @@ class Stork
      *
      * @param string $mode
      * @param string $number
-     * @param string $source source is the identifier which is making the
-     *                       opt in request. For eg api.merchant.onboarding
+     * @param array $input
      * @return array
      * @throws ServerErrorException
      * @throws TwirpException
      */
-    public function optInForWhatsapp(string $mode, string $number, string $source)
+    public function optInForWhatsapp(string $mode, string $number, array $input)
     {
         $this->init($mode);
 
         $storkInput = [
-            'phone_number' => $number,
-            'source'       => $source,
+            'phone_number'         => $number,
+            'source'               => $input['source'],
+            'send_welcome_message' => $input['send_welcome_message'] ?? true,
         ];
 
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptInUser', $storkInput);
