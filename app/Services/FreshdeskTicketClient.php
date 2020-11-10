@@ -199,7 +199,7 @@ class FreshdeskTicketClient
     {
         $authKey = $this->getAuthKey($urlKey);
 
-        $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId), $urlKey);
+        $url = $this->getUrl(sprintf(self::FETCH_TICKET . '?' . 'include=requester', $ticketId), $urlKey);
 
         $auth = $this->getAuth($authKey);
 
@@ -469,22 +469,11 @@ class FreshdeskTicketClient
 
         $response = json_decode($response, true);
 
-        if (is_array($response) === false)
-        {
-            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
-                [
-                    'response' => $response,
-                ]
-            );
-        }
-        else
-        {
-            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
-                [
-                    'response' => $response['total'] ?? count($response) ?? 0
-                ]
-            );
-        }
+        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
+            [
+                'response' => $response['total'] ?? count($response) ?? 0
+            ]
+        );
 
         return $response;
     }

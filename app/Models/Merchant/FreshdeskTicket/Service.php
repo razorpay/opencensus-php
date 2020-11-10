@@ -38,6 +38,7 @@ class Service extends Base\Service
 
     protected $grievanceRules = [
         'id'                                  => 'required',
+        'email'                               => 'required|email',
         'description'                         => 'required|string|max:1000',
         'attachments'                         => 'sometimes',
         'custom_fields'                       => 'sometimes|array',
@@ -367,6 +368,8 @@ class Service extends Base\Service
 
         $customerDescription = $input['description'];
 
+        $email = $input['email'];
+
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
@@ -374,6 +377,11 @@ class Service extends Base\Service
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
 
         if (isset($ticket['id']) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+        }
+
+        if ($this->validateTicketBelongsToEmail($ticket, $email) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
         }
@@ -427,6 +435,18 @@ class Service extends Base\Service
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
         }
+    }
+
+    protected function validateTicketBelongsToEmail($ticket, $email)
+    {
+        if ((isset($ticket['requester']) === true) and
+            (isset($ticket['requester']['email']) === true) and
+            ($ticket['requester']['email'] === $email))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getQueryParamMerchantIdForSearchAPI(): string

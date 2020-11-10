@@ -324,6 +324,7 @@ return [
             'content' => [
                 'id'          => 3328,
                 'description' => 'some description',
+                'email'       => 'thatemail@razorpay.com',
                 'custom_fields' => [
                     'cf_requester_category' => 'Customer',
                     'cf_transaction_id' => ''
@@ -348,13 +349,14 @@ return [
         ],
     ],
 
-    'testRaiseGrievanceAgainstTicketFailure' => [
+    'testRaiseGrievanceAgainstTicketUpdateFailure' => [
         'request' => [
             'url'     => '/freshdesk/grievance',
             'method'  => 'POST',
             'content' => [
                 'id'          => 3329,
                 'description' => 'some description',
+                'email'       => 'thatemail@razorpay.com',
                 'custom_fields' => [
                     'cf_requester_category' => 'Customer',
                     'cf_transaction_id' => ''
@@ -368,6 +370,30 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED,
+        ],
+    ],
+
+    'testRaiseGrievanceAgainstTicketInvalidEmail' => [
+        'request' => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => 3330,
+                'description' => 'some description',
+                'email'       => 'thatemail@razorpay.com',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id' => ''
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND,
         ],
     ],
 

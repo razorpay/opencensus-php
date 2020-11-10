@@ -214,7 +214,16 @@ class FreshdeskTicketTest extends TestCase
         $this->startTest();
     }
 
-    public function testRaiseGrievanceAgainstTicketFailure()
+    public function testRaiseGrievanceAgainstTicketUpdateFailure()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testRaiseGrievanceAgainstTicketInvalidEmail()
     {
         $this->app['config']->set('applications.freshdesk.mock', true);
 
