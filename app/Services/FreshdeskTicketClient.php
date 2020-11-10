@@ -199,7 +199,7 @@ class FreshdeskTicketClient
     {
         $authKey = $this->getAuthKey($urlKey);
 
-        $url = $this->getUrl(sprintf(self::FETCH_TICKET . '?' . 'include=requester', $ticketId), $urlKey);
+        $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId) . '?include=requester', $urlKey);
 
         $auth = $this->getAuth($authKey);
 
