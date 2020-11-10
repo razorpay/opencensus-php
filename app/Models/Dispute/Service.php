@@ -334,6 +334,11 @@ class Service extends Base\Service
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($this->app['basicauth']->isExpress() === true)
+        {
+            return $dispute->toArrayAdmin();
+        }
+
         return $dispute->toArrayPublic();
     }
 
@@ -796,5 +801,12 @@ class Service extends Base\Service
     public function initiateMerchantEmails()
     {
         return $this->core()->initiateMerchantEmails();
+    }
+
+    public function fetchDisputeReasonInternal(string $id): array
+    {
+        $disputeReason = $this->repo->dispute_reason->findOrFail($id);
+
+        return $disputeReason->toArrayAdmin();
     }
 }

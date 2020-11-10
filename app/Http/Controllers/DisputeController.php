@@ -93,6 +93,13 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getReasonInternal(string $disputeReasonId)
+    {
+        $data = $this->service()->fetchDisputeReasonInternal($disputeReasonId);
+
+        return ApiResponse::json($data);
+    }
+
     public function initiateMerchantEmails()
     {
         return $this->service()->initiateMerchantEmails();

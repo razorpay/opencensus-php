@@ -547,4 +547,11 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getPaymentMetaByPaymentIdAction(string $paymentId, string $actionType)
+    {
+        $pm = $this->service()->getPaymentMetaByPaymentIdAction($paymentId, $actionType);
+
+        return ApiResponse::json($pm);
+    }
 }

@@ -12,6 +12,7 @@ use RZP\Models\Dispute\Repository;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Dispute\Reason\Network;
+use RZP\Models\Dispute\Reason\Entity as DisputeReasonEntity;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
@@ -1205,6 +1206,20 @@ class DisputeTest extends TestCase
         $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
 
         $this->startTest($testData);
+    }
+
+    public function testDisputeReasonFetch()
+    {
+        $this->ba->expressAuth();
+
+        $disputeReason = $this->fixtures->create('dispute_reason');
+
+        $testData = $this->updateFetchTestData();
+        $testData['request']['url'] .= '/' . $disputeReason->getId();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($disputeReason->getId(), $content['id']);
     }
 
     // ---------------------------- helper methods-------------------------------

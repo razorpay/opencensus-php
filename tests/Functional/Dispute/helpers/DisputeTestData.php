@@ -1457,4 +1457,20 @@ return [
             'content' => [],
         ],
     ],
+
+    'testDisputeReasonFetch' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/dispute_reasons_internal',
+        ],
+        'response'  => [
+            'content'       => [
+                'gateway_code'        => '8fjf',
+                'gateway_description' => 'Fraud on merchant side',
+                'code'                => 'KFRER_R',
+                'description'         => 'This is a serious fraud',
+                'network'             => 'Visa',
+            ],
+        ],
+    ],
 ];

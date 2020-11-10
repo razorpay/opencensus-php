@@ -19,4 +19,12 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function findByPaymentIdAction($paymentId, $actionType)
+    {
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_ID, $paymentId)
+            ->where(Entity::ACTION, $actionType)
+            ->first();
+    }
 }

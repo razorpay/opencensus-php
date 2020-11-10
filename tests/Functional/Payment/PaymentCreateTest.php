@@ -4143,4 +4143,52 @@ class PaymentCreateTest extends TestCase
             $this->doS2SPrivateAuthPayment($visaSafeClickPaymentCreateRequestData);
         });
     }
+
+    public function testPaymentCreateWithMetaInfoWithPaymentId()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $actionType = 'capture';
+
+        $payment['meta']  = [
+            'action_type'  => $actionType,
+            'reference_id' => '5081597022059105',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($actionType, $paymentMeta['action_type']);
+        $this->assertEquals('5081597022059105', $paymentMeta['reference_id']);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/meta/' . $paymentMeta['payment_id'] . '/' . $actionType,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+
+        $this->assertEquals($paymentMeta['id'], $response['id']);
+    }
 }

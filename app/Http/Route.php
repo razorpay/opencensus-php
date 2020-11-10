@@ -169,6 +169,7 @@ class Route
         'payment_validate_vpa'                     => ['post',     'payments/validate/vpa',                          'PaymentController@postPaymentValidateVpa'                          ],
         'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
         'payment_meta_search'                      => ['post',     'payments/meta/reference',                        'PaymentController@postPaymentMetaReference'                        ],
+        'payment_meta_fetch_by_payment_id_action'  => ['get',      'payments/meta/{payment_id}/{action_type}',       'PaymentController@getPaymentMetaByPaymentIdAction'                 ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -1442,6 +1443,7 @@ class Route
         'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
         'dispute_merchant_emails_initiate'         => ['post',     'disputes/merchant_emails/initiate',              'DisputeController@initiateMerchantEmails'                          ],
         'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
+        'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2730,6 +2732,8 @@ class Route
         'dispute_merchant_emails_initiate',
         'fd_customer_dispute',
         'fts_channel_notification',
+        'dispute_reason_fetch_internal',
+        'payment_meta_fetch_by_payment_id_action',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5138,6 +5142,9 @@ class Route
             'payment_get_authenticate_url',
             'payment_get_authentication_entity',
             'payment_get_authorization_entity',
+            'dispute_fetch',
+            'dispute_reason_fetch_internal',
+            'payment_meta_fetch_by_payment_id_action',
         ],
 
         'cron' => [
