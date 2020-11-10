@@ -45,6 +45,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_SVC,
         RequestProcessor\Base::NETBANKING_FSB,
         RequestProcessor\Base::NETBANKING_IOB,
+        RequestProcessor\Base::NETBANKING_DCB,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,

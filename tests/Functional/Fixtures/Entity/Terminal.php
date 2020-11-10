@@ -3753,6 +3753,23 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingDcbTerminal(array $attributes = [])
+    {
+        $merchantId = Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            TerminalEntity::ID                  => Shared::NETBANKING_DCB_TERMINAL,
+            TerminalEntity::MERCHANT_ID         => $merchantId,
+            TerminalEntity::GATEWAY             => Gateway::NETBANKING_DCB,
+            TerminalEntity::GATEWAY_MERCHANT_ID => 'netbanking_dcb_merchant_id',
+            TerminalEntity::NETBANKING          => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createUpiJuspayIntentTerminal(array $attributes = [])
     {
         $defaultValues  = [
