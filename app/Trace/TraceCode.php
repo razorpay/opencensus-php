@@ -2627,6 +2627,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_MIGRATION_RESPONSE                            = 'TOKENEX_MIGRATION_RESPONSE';
 
     // fund transfer service trace codes
+    const FTS_NOTIFY_TEMPLATE                                   = 'FTS_NOTIFY_TEMPLATE';
     const FTS_REQUEST                                           = 'FTS_REQUEST';
     const FTS_RESPONSE                                          = 'FTS_RESPONSE';
     const FTS_TRANSFER_INIT                                     = 'FTS_TRANSFER_INIT';
@@ -2675,6 +2676,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_DOWNTIME_NOTIFY_EMAIL_INIT                        = 'FTS_DOWNTIME_NOTIFY_EMAIL_INIT';
     const FTS_DOWNTIME_NOTIFY_EMAIL_COMPLETE                    = 'FTS_DOWNTIME_NOTIFY_EMAIL_COMPLETE';
     const RAZORX_SERVICE_RETRY                                  = 'RAZORX_SERVICE_RETRY';
+    const FTS_DOWNTIME_NOTIFY_SMS_INIT                          = 'FTS_DOWNTIME_NOTIFY_SMS_INIT';
+    const FTS_DOWNTIME_NOTIFY_SMS_COMPLETE                      = 'FTS_DOWNTIME_NOTIFY_SMS_COMPLETE';
+    const FTS_DOWNTIME_NOTIFY_SMS_FAILURE                       = 'FTS_DOWNTIME_NOTIFY_SMS_FAILURE';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
