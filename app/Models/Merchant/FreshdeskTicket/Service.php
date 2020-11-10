@@ -20,16 +20,17 @@ use RZP\Models\Merchant\FreshdeskTicket\Validator as FreshdeskTicketValidator;
 class Service extends Base\Service
 {
     protected $createRules = [
-        'email'                               => 'required|email',
-        'otp'                                 => 'required|string|min:4|max:6',
-        'name'                                => 'required|string|max:100',
-        'phone'                               => 'sometimes|contact_syntax',
-        'description'                         => 'required|string|max:1000',
-        'subject'                             => 'required|string|max:500',
-        'attachments'                         => 'sometimes',
-        'custom_fields'                       => 'required|array',
-        'custom_fields.cf_requester_category' => 'required|string|max:50',
-        'custom_fields.cf_transaction_id'     => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'email'                                => 'required|email',
+        'otp'                                  => 'required|string|min:4|max:6',
+        'name'                                 => 'required|string|max:100',
+        'phone'                                => 'sometimes|contact_syntax',
+        'description'                          => 'required|string|max:1000',
+        'subject'                              => 'required|string|max:500',
+        'attachments'                          => 'sometimes',
+        'custom_fields'                        => 'required|array',
+        'custom_fields.cf_requester_category'  => 'required|string|max:50',
+        'custom_fields.cf_transaction_id'      => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'custom_fields.cf_razorpay_payment_id' => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
     ];
 
     protected $otpRules = [
@@ -198,9 +199,9 @@ class Service extends Base\Service
 
         (new Core)->verifyOtp($input['email'], $input['otp']);
 
-        $idType = $this->preProcessInput($input);
+        $this->updateStatusFields($input);
 
-        $this->populateCustomFields($input, $idType);
+        $this->populateCustomFields($input);
 
         $fdInstance = $this->getFdInstance($input);
 
@@ -523,22 +524,6 @@ class Service extends Base\Service
         return $statusGroupedAndOrderedTickets;
     }
 
-    protected function preProcessInput(array &$input): string
-    {
-        $this->updateStatusFields($input);
-
-        $category = $input[Constants::CUSTOM_FIELDS][Constants::CATEGORY];
-
-        switch ($category)
-        {
-            case Constants::CUSTOMER:
-                return $this->preProcessInputCustomer($input);
-
-            default:
-                return '';
-        }
-    }
-
     protected function preProcessInputCustomer(array &$input): string
     {
         $transactionId = $input[Constants::CUSTOM_FIELDS][Constants::TRANSACTION_ID];
@@ -599,7 +584,7 @@ class Service extends Base\Service
      * @param void $return
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function populateCustomFields(array &$input, string $idType)
+    protected function populateCustomFields(array &$input)
     {
         $mode = $input['mode'] ?? Mode::LIVE;
 
@@ -607,55 +592,32 @@ class Service extends Base\Service
 
         unset($input['mode']);
 
-        if ($idType === '')
-        {
-            return;
-        }
+        $category = $input[Constants::CUSTOM_FIELDS][Constants::CATEGORY];
 
-        switch ($idType)
+        switch ($category)
         {
-            case Constants::PAYMENT:
+            case Constants::CUSTOMER:
 
                 $paymentId = $input[Constants::CUSTOM_FIELDS][Constants::PAYMENT_ID];
 
                 $customFields = $this->getCustomFieldsFromPaymentId($paymentId);
 
-                break;
+                if (empty($customFields) === true)
+                {
+                    throw new BadRequestValidationFailureException(ErrorCode::FRESHDESK_TICKET_INVALID_ID,
+                        Constants::TRANSACTION_ID,
+                        [Constants::TRANSACTION_ID => $input[Constants::CUSTOM_FIELDS][Constants::TRANSACTION_ID]]
+                    );
+                }
 
-            case Constants::REFUND:
-
-                $refundId = $input[Constants::CUSTOM_FIELDS][Constants::REFUND_ID];
-
-                $customFields = $this->getCustomFieldsFromRefundId($refundId);
-
-                break;
-
-            case Constants::ORDER:
-
-                $orderId = $input[Constants::CUSTOM_FIELDS][Constants::ORDER_ID];
-
-                $customFields = $this->getCustomFieldsFromOrderId($orderId);
+                $input[Constants::CUSTOM_FIELDS] = array_merge($input[Constants::CUSTOM_FIELDS], $customFields);
 
                 break;
 
             default:
-                // Given id could be RZP internal id, UPI RRN, Merchant reference number (from notes)
-                $id = $input[Constants::CUSTOM_FIELDS][Constants::TRANSACTION_ID];
-
-                $customFields = $this->getCustomFieldsFromId($id);
 
                 break;
         }
-
-        if (empty($customFields) === true)
-        {
-            throw new BadRequestValidationFailureException(ErrorCode::FRESHDESK_TICKET_INVALID_ID,
-                Constants::TRANSACTION_ID,
-                [Constants::TRANSACTION_ID => $input[Constants::CUSTOM_FIELDS][Constants::TRANSACTION_ID]]
-            );
-        }
-
-        $input[Constants::CUSTOM_FIELDS] = array_merge($input[Constants::CUSTOM_FIELDS], $customFields);
     }
 
     /**
@@ -677,9 +639,11 @@ class Service extends Base\Service
             $customFields[Constants::PAYMENT_ID] = $payment->getPublicId();
             $customFields[Constants::MERCHANT_ID] = $payment->getMerchantId();
 
-            if($payment->getOrderId() !== false)
+            $data = $payment->toArrayPublic();
+
+            if($data['order_id'] !== null)
             {
-                $customFields[Constants::ORDER_ID] = $payment->getOrderId();
+                $customFields[Constants::ORDER_ID] = $data['order_id'];
             }
             if ($payment->getEmail() !== null)
             {
@@ -689,116 +653,14 @@ class Service extends Base\Service
             {
                 $customFields[Constants::PAYMENT_CUSTOMER_PHONE] = $payment->getContact();
             }
-        }
 
-        return $customFields;
-    }
+            $refunds = $payment->refunds;
 
-    /**
-     * @param string $refundId
-     * @param array $return
-     */
-    protected function getCustomFieldsFromRefundId($refundId): array
-    {
-        $customFields = [];
+            $refundIds = isset($refunds) ? $refunds->getPublicIds() : [];
 
-        Refund\Entity::stripSignWithoutValidation($refundId);
-
-        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ID, ['refund_id' => $refundId]);
-
-        $refund = $this->repo->refund->find($refundId);
-
-        if (empty($refund) === false)
-        {
-            $customFields = $this->getCustomFieldsFromPaymentId($refund->getPaymentId());
-
-            $customFields[Constants::REFUND_ID] = $refund->getPublicId();
-        }
-
-        return $customFields;
-    }
-
-    /**
-     * @param string $orderId
-     * @param array $return
-     */
-    protected function getCustomFieldsFromOrderId($orderId): array
-    {
-        $customFields = [];
-
-        Order\Entity::stripSignWithoutValidation($orderId);
-
-        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ID, ['order_id' => $orderId]);
-
-        $order = $this->repo->order->find($orderId);
-
-        if (empty($order) === false)
-        {
-            $payments = $order->payments;
-
-            foreach ($payments as $payment)
+            if (empty($refundIds) === false)
             {
-                $paymentCustomFields = $this->getCustomFieldsFromPaymentId($payment->getPublicId());
-
-                $customFields = array_merge_recursive($customFields, $paymentCustomFields);
-            }
-
-            $customFields[Constants::ORDER_ID] = $order->getPublicId();
-        }
-
-        return $customFields;
-    }
-
-    /**
-     * @param string $id
-     * @param array $return
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    protected function getCustomFieldsFromId($id): array
-    {
-        // Since this is a direct auth route - and we do not have the merchant ID
-        // we need to allow multiple fetch without merchant ID
-        $merchantIdRequiredForMultipleFetch = false;
-
-        $this->repo->payment->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
-        $this->repo->refund->setMerchantIdRequiredForMultipleFetch($merchantIdRequiredForMultipleFetch);
-
-        $customFields = [];
-
-        // check if RRN
-        if (Refund\Service::verifyUpiRrn($id) === true)
-        {
-            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ID, ['upi_rrn' => $id]);
-
-            $actions = [Payment\Action::AUTHORIZE, Payment\Action::REFUND];
-
-            $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndActions($id, $actions);
-
-            if (empty($upiEntity) === false)
-            {
-                $paymentId = $upiEntity->getPaymentId();
-
-                return $this->getCustomFieldsFromPaymentId($paymentId);
-            }
-        }
-
-        (new Validator)->validateCustomerFreshDeskTicketIdFromMerchantNotes($id);
-
-        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ID, ['id' => $id]);
-
-        $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id]);
-
-        if (empty($payment->toArray()) === false)
-        {
-            return $this->getCustomFieldsFromPaymentId($payment->toArray()[0][Payment\Entity::ID]);
-        }
-        else
-        {
-            $refund = $this->repo->refund->fetch([Refund\Entity::NOTES => $id]);
-
-            if (empty($refund->toArray()) === false)
-            {
-                return $this->getCustomFieldsFromRefundId($refund->toArray()[0][Refund\Entity::ID]);
+                $customFields[Constants::REFUND_ID] = implode(', ', $refundIds);
             }
         }
 

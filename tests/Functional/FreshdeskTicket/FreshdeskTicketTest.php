@@ -90,7 +90,11 @@ class FreshdeskTicketTest extends TestCase
 
         $this->generateOtp($testData['request']['content']['email']);
 
-        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
 
         $this->startTest();
     }
@@ -146,7 +150,11 @@ class FreshdeskTicketTest extends TestCase
 
         $this->generateOtp($testData['request']['content']['email']);
 
-        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
 
         $this->startTest();
     }
@@ -178,7 +186,11 @@ class FreshdeskTicketTest extends TestCase
 
         $testData = &$this->testData['testPostTicketInvalidId'];
 
-        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . 'ABcYZ';
+        $id = 'pay_' . 'ABcYZ';
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
 
         $this->startTest();
     }
@@ -244,7 +256,11 @@ class FreshdeskTicketTest extends TestCase
 
         $this->generateOtp($testData['request']['content']['email']);
 
-        $testData['request']['content']['custom_fields']['cf_transaction_id'] = 'pay_' . $payment->toArray()['id'];
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
 
         $file1 = new UploadedFile(
             __DIR__ . '/../Storage/a.png',
