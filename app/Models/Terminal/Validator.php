@@ -442,6 +442,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
     ];
 
     protected static $amexEditTerminalRules = [
