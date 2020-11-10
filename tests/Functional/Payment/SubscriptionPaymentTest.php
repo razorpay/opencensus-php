@@ -546,7 +546,7 @@ class SubscriptionPaymentTest extends TestCase
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchSubscriptionInfo'])
+            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess'])
             ->getMock();
 
         $this->subscription = $this->createSubscriptionEntity();
@@ -556,6 +556,13 @@ class SubscriptionPaymentTest extends TestCase
                 function ()
                 {
                     return $this->subscription;
+                }));
+
+        $subscriptionMock->method('paymentProcess')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return null;
                 }));
 
         $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)

@@ -24,7 +24,6 @@ use RZP\Models\Order\ProductType;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
-use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
@@ -273,7 +272,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $this->app['module']->subscription->paymentProcess($paymentPayload);
         }
 
         $this->dispatchEventToStork($payload);
@@ -287,7 +286,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $this->app['module']->subscription->paymentProcess($paymentPayload);
         }
 
         $this->dispatchEventToStork($payload);
