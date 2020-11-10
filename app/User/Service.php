@@ -658,7 +658,7 @@ class Service extends Base\Service
             'user_id'       => $user->id,
             'user_email'    => $user->email,
             'merchant_id'   => $currentMerchant->id,
-            'role'          => $currentMerchant->role,
+            'role'          => $currentMerchant->role ?? $currentMerchant->banking_role,
             'query_params'  => $queryParams['query'] ?? []
         ];
 
@@ -671,7 +671,7 @@ class Service extends Base\Service
             'email'         => $user->email,
             'name'          => $user->name,
             'merchant_id'   => $currentMerchant->id,
-            'role'          => $currentMerchant->role,
+            'role'          => $currentMerchant->role ?? $currentMerchant->banking_role,
             'merchant_name' => $currentMerchant->name,
             'logo'          => $currentMerchant->logo_url
         ];
