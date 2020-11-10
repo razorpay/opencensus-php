@@ -1745,6 +1745,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_BULK_REQUEST                            = 'MERCHANT_TAGS_BULK_REQUEST';
     const MERCHANT_TAGS_BULK_EXCEPTION                          = 'MERCHANT_TAGS_BULK_EXCEPTION';
 
+    const BULK_ACTION_RESPONSE_TIME                             = 'BULK_ACTION_RESPONSE_TIME';
     const MERCHANT_METHODS_BULK_UPDATE                          = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_METHODS_BULK_EXCEPTION                       = 'MERCHANT_METHODS_BULK_EXCEPTION';
     const MERCHANT_CHANNEL_BULK_UPDATE_REQUEST                  = 'MERCHANT_CHANNEL_BULK_UPDATE_REQUEST';

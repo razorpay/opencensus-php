@@ -69,6 +69,8 @@ class Service extends Base\Service
 
     public function bulkCreateCredits(array $input)
     {
+        $startTime = millitime();
+
         $this->trace->info(TraceCode::MERCHANT_CREDITS_BULK_REQUEST, $input);
 
         RuntimeManager::setTimeLimit(300);
@@ -98,6 +100,15 @@ class Service extends Base\Service
                 $failedIds[] = $merchantId;
             }
         }
+
+        $timeTaken = millitime() - $startTime;
+        
+        $this->trace->info(
+            TraceCode::BULK_ACTION_RESPONSE_TIME,
+            [
+                'action'          => 'create_credits',
+                'time_taken'      => $timeTaken,
+            ]);
 
         return [
             'total_count'  => count($input),

@@ -809,6 +809,8 @@ class Service extends Base\Service
 
     public function bulkAssignSchedule(array $input): array
     {
+        $startTime = millitime();
+
         $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
 
         $this->increaseAllowedSystemLimits();
@@ -844,6 +846,15 @@ class Service extends Base\Service
             }
         }
 
+        $timeTaken = millitime() - $startTime;
+        
+        $this->trace->info(
+            TraceCode::BULK_ACTION_RESPONSE_TIME,
+            [
+                'action'          => 'assign_schedule',
+                'time_taken'      => $timeTaken,
+            ]);
+
         return [
             'total_count'  => count($merchantIds),
             'failed_count' => count($failedIds),
@@ -853,6 +864,8 @@ class Service extends Base\Service
 
     public function bulkAssignPricing(array $input): array
     {
+        $startTime = millitime();
+        
         $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
 
         $this->increaseAllowedSystemLimits();
@@ -892,6 +905,15 @@ class Service extends Base\Service
         // display is not that convenient and can be lost. Collecting from the previous logs of
         // individual failures is more time consuming.
         $this->trace->error(TraceCode::MERCHANT_PRICING_BULK_ALL_FAILED_IDS, [ 'failed_ids' => $failedIds]);
+
+        $timeTaken = millitime() - $startTime;
+        
+        $this->trace->info(
+            TraceCode::BULK_ACTION_RESPONSE_TIME,
+            [
+                'action'          => 'assign_pricing',
+                'time_taken'      => $timeTaken,
+            ]);
 
         return [
             'total_count'  => count($merchantIds),
@@ -1650,6 +1672,8 @@ class Service extends Base\Service
 
     public function updateMethodsForMultipleMerchants($input)
     {
+        $startTime = millitime();
+
         $this->trace->info(
             TraceCode::MERCHANT_METHODS_BULK_UPDATE,
             $input);
@@ -1691,6 +1715,15 @@ class Service extends Base\Service
                 $failedIds[] = $merchantId;
             }
         }
+
+        $timeTaken = millitime() - $startTime;
+        
+        $this->trace->info(
+            TraceCode::BULK_ACTION_RESPONSE_TIME,
+            [
+                'action'          => 'update_methods',
+                'time_taken'      => $timeTaken,
+            ]);
 
         $response['total']     = count($merchantIds);
         $response['success']   = $successCount;
