@@ -543,6 +543,9 @@ class Core extends Base\Core
 
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
+        // if funds are on hold, this will throw an exception -> doesnt allow bank account update if funds are on hold
+        $this->validateMerchantFundsAreNotOnHold($merchant);
+
         $this->validateBankAccountUpdatePennyTestingNotInProgress($merchant);
 
         // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
@@ -662,7 +665,17 @@ class Core extends Base\Core
         }
     }
 
-
+    protected function validateMerchantFundsAreNotOnHold(MerchantEntity $merchant)
+    {
+        if ($merchant->getHoldFunds() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+            null,
+            null,
+            "Bank account can not be updated due to funds are on hold");
+        }
+    }
 
     protected function getBankAccountUpdatePennyTestingData(MerchantEntity $merchant)
     {

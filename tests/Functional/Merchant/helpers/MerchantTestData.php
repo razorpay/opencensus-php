@@ -1767,6 +1767,31 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountViaPennyTestingFundsOnHoldFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'Bank account can not be updated due to funds are on hold',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
     'testUpdateBankAccountViaPennyTestingAlreadyInProgressFail' => [
         'request'  => [
             'content' => [

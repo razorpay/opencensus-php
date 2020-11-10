@@ -2117,6 +2117,21 @@ class MerchantTest extends TestCase
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
 
+    public function testUpdateBankAccountViaPennyTestingFundsOnHoldFail()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);
+
+        $this->fixtures->merchant->edit($merchantId, ['hold_funds' => 1]);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+            return true;
+        });
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
     public function testUpdateBankAccountViaPennyTestingAlreadyInProgressFail()
     {
         $this->testUpdateBankAccountViaPennyTesting(); // to trigger a bank account update request via penny testing
