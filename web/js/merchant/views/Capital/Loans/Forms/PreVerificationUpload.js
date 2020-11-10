@@ -468,12 +468,14 @@ class PreVerificationUpload extends Component {
     }
   };
 
-  getTabs = () => {
+  getConfiguration = () => {
     const { loanApplicationDetails } = this.props;
     if (!loanApplicationDetails.meta) return [];
 
-    return loanApplicationDetails.meta.configuration.getRequiredDocumentEntities();
+    return loanApplicationDetails.meta.configuration;
   };
+
+  getTabs = () => this.getConfiguration().getRequiredDocumentEntities();
 
   deriveFormData = () => {
     const { loanApplicationDetails } = this.props;
@@ -516,16 +518,37 @@ class PreVerificationUpload extends Component {
       }
       return acc;
     }, []);
-    this.setState({
+    this.setState((prevState) => ({
       documents,
       selectedUploadModes: documents.reduce((acc, curr) => {
         return {
           ...acc,
-          [curr.id]: curr.documentUploadOptions[0],
+          [curr.id]:
+            this.getBankStatementDetails().document_id === curr.id
+              ? this.getConfiguration().ui.product.allowPerfios
+                ? curr.documentUploadOptions[0]
+                : curr.documentUploadOptions[1]
+              : curr.documentUploadOptions[0],
         };
       }, {}),
       tabs: this.getTabs(),
-    });
+      uploadModesMeta: {
+        ...prevState.uploadModesMeta,
+        perfios: this.getConfiguration().ui.product.allowPerfios
+          ? {
+              title: 'Use Netbanking',
+              disabled: false,
+              hint: '(Recommended)',
+              description: 'We will be redirecting you to Netbanking',
+            }
+          : {
+              title: 'Use Netbanking',
+              disabled: true,
+              hint: '',
+              description: 'Currently Unserviceable',
+            },
+      },
+    }));
   };
 
   canUpload = () => {

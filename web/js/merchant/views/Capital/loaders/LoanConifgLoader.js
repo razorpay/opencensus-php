@@ -40,6 +40,7 @@ export default class LoansConfigLoader extends BaseConfigLoader {
             </div>
           </React.Fragment>
         ),
+        allowPerfios: false,
       },
     };
   }

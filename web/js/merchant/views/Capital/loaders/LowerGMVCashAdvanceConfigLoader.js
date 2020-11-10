@@ -63,6 +63,7 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
           text: 'Start Withdrawing Now',
           destination: '/capital/cash-advance/',
         },
+        allowPerfios: false,
       },
     };
   }
