@@ -606,6 +606,7 @@ class Entity
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
+        self::UPI_JUSPAY             => \RZP\Gateway\Upi\Juspay::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
@@ -680,7 +681,6 @@ class Entity
         self::WALLET_PHONEPESWITCH   => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
-        self::UPI_JUSPAY             => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
@@ -789,6 +789,7 @@ class Entity
         self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
         self::UPI_MOZART             => \RZP\Gateway\Upi\Base::class,
+        self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

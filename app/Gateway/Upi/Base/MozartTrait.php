@@ -21,6 +21,17 @@ trait MozartTrait
         return $mozart->callback($input);
     }
 
+    protected function verifyMozart($input)
+    {
+        $mozart = $this->getMozartGatewayWithModeSet();
+
+        return $mozart->verify($input);
+    }
+
+    /**
+     * Note : This is supposed to be sendVerifyRequestMozart
+     *
+     */
     protected function verifyRequest(Verify $input)
     {
         $mozart = $this->getMozartGatewayWithModeSet();
@@ -37,8 +48,25 @@ trait MozartTrait
         return $mozart->preProcessServerCallbackForUpiSbi($input, $gateway);
     }
 
+    protected function refundRequest(array $input)
+    {
+        $mozart = $this->getMozartGatewayWithModeSet();
+
+        $mozart->refund($input);
+    }
+
+    protected function getPaymentIdFromServerCallbackRequest(array $response, $gateway)
+    {
+        $mozart = $this->getMozartGatewayWithModeSet();
+
+        return $mozart->getPaymentIdFromServerCallback($response, $gateway);
+    }
+
     protected function getMozartGatewayWithModeSet()
     {
+        /**
+         * @var $gateway \RZP\Gateway\Mozart\Gateway
+         */
         $gateway = $this->app['gateway']->gateway('mozart');
 
         $gateway->setMode($this->getMode());

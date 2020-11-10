@@ -56,7 +56,7 @@ class UpiJuspayGatewayTest extends TestCase
             Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
-        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -96,7 +96,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertTrue($payment->isCreated());
 
-        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
         $this->makeRequestAndCatchException(
             function () use ($request) {
@@ -158,7 +158,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -206,7 +206,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -241,7 +241,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
