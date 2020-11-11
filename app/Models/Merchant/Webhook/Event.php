@@ -551,8 +551,6 @@ class Event
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
         self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
         self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
-        //self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
-        //self::FUND_ACCOUNT_VALIDATION_FAILED    => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
         self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
