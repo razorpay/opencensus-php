@@ -40,8 +40,6 @@ class FundAccountValidationTest extends TestCase
 
         parent::setUp();
 
-//        $this->fixtures->merchant->addFeatures(['fund_account_validations']);
-
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $this->ba->privateAuth();
