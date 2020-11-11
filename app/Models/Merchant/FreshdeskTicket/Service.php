@@ -580,7 +580,7 @@ class Service extends Base\Service
         $input = array_merge($input, self::STATUS_FIELDS);
     }
 
-    protected function getFdInstance(array $input): string
+    protected function getFdInstance(array &$input): string
     {
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
@@ -592,6 +592,8 @@ class Service extends Base\Service
             if (in_array($subCategory, self::TECH_SUBCATEGORIES) === true)
             {
                 $fdInstance = Constants::RZPSOL;
+
+                unset($input[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY]);
             }
         }
 
