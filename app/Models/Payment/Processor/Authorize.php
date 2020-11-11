@@ -2102,6 +2102,14 @@ trait Authorize
 
     protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)
     {
+        if (($payment->getMethod() === Method::EMANDATE) and
+            ($payment->isRecurringTypeInitial() === true) and
+            ($payment->getAmount() > 0) and
+            (Payment\Gateway::isDirectDebitEmandateBank($payment->getBank()) === true))
+        {
+            return;
+        }
+
         if (($token->getMaxAmount() !== null) and
             ($payment->getAmount() > $token->getMaxAmount()))
         {

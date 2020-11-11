@@ -122,6 +122,43 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertTestResponse($token, 'matchInitiatedToken');
     }
 
+    public function testInitialPaymentAmountGreaterThanTokenMaxAmount()
+    {
+        $orderInput = [
+            Order::AMOUNT          => 50000,
+            Order::METHOD          => Method::EMANDATE,
+            Order::PAYMENT_CAPTURE => true,
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $this->payment[Payment\Entity::ORDER_ID] = $order[Order::ID];
+
+        $this->payment[Payment\Entity::AMOUNT] = $orderInput[Order::AMOUNT];
+
+        $this->payment[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] = 20000;
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testDirectDebitFlowSuccess'];
+
+        $this->assertArraySelectiveEquals($data, $payment);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($payment[Payment\Entity::TOKEN_ID], $token[Token\Entity::ID]);
+
+        $this->assertEquals(Token\RecurringStatus::INITIATED, $token[Token\Entity::RECURRING_STATUS]);
+
+        $this->assertEquals($this->payment['bank_account']['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
+
+        $this->assertTestResponse($token, 'matchInitiatedToken');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->payment;

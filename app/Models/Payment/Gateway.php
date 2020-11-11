@@ -2793,9 +2793,9 @@ class Gateway
         return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_BANK, true) === true);
     }
 
-    public static function isDirectDebitEmandateGateway(string $bank): bool
+    public static function isDirectDebitEmandateGateway(string $gateway): bool
     {
-        return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_GATEWAY, true) === true);
+        return (in_array($gateway, self::EMANDATE_NB_DIRECT_DEBIT_GATEWAY, true) === true);
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)
