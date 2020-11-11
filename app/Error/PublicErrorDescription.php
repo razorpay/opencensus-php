@@ -72,6 +72,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                  = 'Payment processing cancelled by customer at wallet payment page';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE              = 'Payment processing cancelled by customer at netbanking payment page';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
+    const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                   = 'Duplicate request. This request has already been processed.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED                        = 'The payment has already been either captured or voided';

@@ -1721,7 +1721,7 @@ class PayoutTest extends TestCase
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         // Approve with Owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
@@ -1745,11 +1745,26 @@ class PayoutTest extends TestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        // Approve with Owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutCallbackFromNWFSTwice()
+    {
+        $this->testRejectPayoutCallbackFromNWFS();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/pout_' . $payout->getId() . '/reject';
 
         $this->startTest();
     }

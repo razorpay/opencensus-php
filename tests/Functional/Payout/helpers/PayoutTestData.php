@@ -1325,9 +1325,6 @@ return [
     'testRejectPayoutCallbackFromNWFS' => [
         'request'  => [
             'method'  => 'POST',
-            'server' => [
-                'HTTP_X-Razorpay-Account' => '10000000000000',
-            ],
             'url'     => '/payouts_internal/{id}/reject',
             'content' => [
                 'queue_if_low_balance'  => 0,
@@ -1507,6 +1504,29 @@ return [
                 "scheduled_at" => null,
                 "scheduled_on" => null
             ],
+        ],
+    ],
+
+    'testRejectPayoutCallbackFromNWFSTwice' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal/{id}/reject',
+            'content' => [
+                'queue_if_low_balance'  => 0,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS,
         ],
     ],
 

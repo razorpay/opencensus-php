@@ -321,11 +321,19 @@ abstract class Base
                 $actorType = Constants::USER;
                 $actorPropertyValue = $ba->getUserRole();
             }
-            else
+            elseif (empty($merchant) === false)
             {
                 $actorId = $merchant->getId();
                 $actorType = Constants::MERCHANT;
                 $actorPropertyValue = $ba->getInternalApp();
+            }
+            else
+            {
+                // this happens when the wfs sends a reject callback and payout->toArray() is invoked in the
+                // payout.rejected webhook trigger flow, on app auth without merchant context
+                $actorId = '';
+                $actorType = '';
+                $actorPropertyValue = '';
             }
         }
 

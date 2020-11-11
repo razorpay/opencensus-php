@@ -1568,7 +1568,11 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData($attributes);
+        // Since this is a network call for Workflow Service, fetch data only once
+        if (empty($attributes[self::WORKFLOW_HISTORY]) === true)
+        {
+            $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData($attributes);
+        }
     }
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
