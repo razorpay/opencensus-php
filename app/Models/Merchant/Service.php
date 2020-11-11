@@ -5189,8 +5189,16 @@ class Service extends Base\Service
         return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($merchant);
     }
 
+    public function triggerMerchantBankingAccountsWebhook($id)
+    {
+        $merchant = $this->repo->merchant->findOrFail($id);
+
+        return $this->core()->triggerMerchantBankingAccountsWebhook($merchant);
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
     }
+
 }

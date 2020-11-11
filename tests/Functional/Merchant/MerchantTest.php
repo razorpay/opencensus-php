@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -89,6 +90,7 @@ class MerchantTest extends TestCase
     use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
+    use TestsBusinessBanking;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -7396,6 +7398,44 @@ class MerchantTest extends TestCase
 
     public function testGetOrgDetails()
     {
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendBankingAccountsViaWebhook()
+    {
+        $attributes = [
+            'account_type' => 'nodal',
+            'channel'      => 'yesbank',
+        ];
+
+        $ba = $this->createBankingAccount($attributes);
+
+        $expectedEvent = [
+            'entity'   => 'event',
+            'event'    => 'banking_accounts.issued',
+            'contains' => ['accounts'],
+            'payload'  => [
+                'accounts' => [
+                    'virtual' => [
+                        [
+                            'account_number' => $ba->getAccountNumber(),
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        // This webhook will be called for banking_accounts.issued event.
+        $this->expectWebhookEvent(
+            'banking_accounts.issued',
+            function(array $event) use ($expectedEvent) {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('current', $event['payload']['accounts']);
+            }
+        );
+
         $this->ba->authServiceAuth();
 
         $this->startTest();

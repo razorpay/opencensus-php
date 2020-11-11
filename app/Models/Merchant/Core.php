@@ -7,6 +7,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Listeners\ApiEventSubscriber;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
@@ -4275,5 +4276,14 @@ class Core extends Base\Core
                                                     $this->mode);
 
         return ($variant === Constants::RAZORX_EXPERIMENT_ON);
+    }
+
+    public function triggerMerchantBankingAccountsWebhook(Entity $merchant)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $merchant,
+        ];
+
+        return $this->app['events']->fire('api.banking_accounts.issued', $eventPayload);
     }
 }

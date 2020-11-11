@@ -21,6 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
 use RZP\Models\Order\ProductType;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
@@ -714,6 +715,26 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getTerminalFailedPayload($terminal);
         $this->dispatchEventToStork($payload);
+    }
+
+    protected function onBankingAccountsIssued($merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $va = $this->repo->banking_account->fetchMerchantSharedBankingAccount($merchantId);
+
+        $vaPayload = [
+            [Entity::ACCOUNT_NUMBER => $va[Entity::ACCOUNT_NUMBER]]
+        ];
+
+        //currently supporting only for va.
+        $payload = [
+            'accounts' => [
+                'virtual' => $vaPayload,
+            ]
+        ];
+
+        return $this->dispatchEventToStork($payload);
     }
 
     protected function getP2pPayload($p2p)

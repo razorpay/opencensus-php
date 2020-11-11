@@ -422,4 +422,15 @@ class Repository extends Base\Repository
                     ->toArray();
 
     }
+
+    public function fetchMerchantSharedBankingAccount(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::ACCOUNT_TYPE, 'nodal')
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first()
+                    ->toArray();
+    }
+
 }

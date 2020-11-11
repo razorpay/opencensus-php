@@ -1827,4 +1827,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * This function is called from oauth service.
+     * It is responsible for sending banking accounts webhook to pure play partners.
+     */
+    public function sendBankingAccountsViaWebhook(string $id)
+    {
+        $response = $this->service()->triggerMerchantBankingAccountsWebhook($id);
+
+        return ApiResponse::json($response);
+    }
+
 }

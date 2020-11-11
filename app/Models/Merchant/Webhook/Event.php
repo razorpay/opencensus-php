@@ -95,7 +95,9 @@ class Event
     const PAYMENT_LINK_PARTIALLY_PAID       = 'payment_link.partially_paid';
     const PAYMENT_LINK_EXPIRED              = 'payment_link.expired';
     const PAYMENT_LINK_CANCELLED            = 'payment_link.cancelled';
+    const BANKING_ACCOUNTS_ISSUED           = 'banking_accounts.issued';
     const PAYMENT_PAGE_PAID                 = 'payment_page.paid';
+  
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -178,6 +180,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID,
         self::PAYMENT_LINK_EXPIRED,
         self::PAYMENT_LINK_CANCELLED,
+        self::BANKING_ACCOUNTS_ISSUED,
         self::PAYMENT_PAGE_PAID,
     ];
 
@@ -268,6 +271,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID,
         self::PAYMENT_LINK_EXPIRED,
         self::PAYMENT_LINK_CANCELLED,
+        self::BANKING_ACCOUNTS_ISSUED,
         self::PAYMENT_PAGE_PAID,
     ];
 
@@ -359,6 +363,7 @@ class Event
         self::TRANSFER_PROCESSED_SETTLED        => 17,
         self::PAYMENT_PAGE_PAID                 => 18,
         self::REFUND_ARN_UPDATED                => 19,
+        self::BANKING_ACCOUNTS_ISSUED           => 20,
     ];
 
     /**
@@ -444,6 +449,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID       => [Product::PRIMARY],
         self::PAYMENT_LINK_EXPIRED              => [Product::PRIMARY],
         self::PAYMENT_LINK_CANCELLED            => [Product::PRIMARY],
+        self::BANKING_ACCOUNTS_ISSUED           => [Product::PRIMARY],
     ];
 
     /**
@@ -525,6 +531,7 @@ class Event
         self::PAYOUT_REJECTED                   => Entity::PAYOUT,
         self::PAYMENT_CREATED                   => Entity::PAYMENT,
         self::PAYOUT_PENDING                    => Entity::PAYOUT,
+        self::BANKING_ACCOUNTS_ISSUED           => Entity::MERCHANT,
         self::PAYMENT_PAGE_PAID                 => Entity::PAYMENT_PAGE,
     ];
 
@@ -583,6 +590,7 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_PROCESSING            => Feature\Constants::PAYOUT,
         self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
+        self::BANKING_ACCOUNTS_ISSUED           => Feature\Constants::BANKING_ACCOUNTS_ISSUED,
         self::REFUND_ARN_UPDATED                => Feature\Constants::REFUND_ARN_WEBHOOK,
     ];
 

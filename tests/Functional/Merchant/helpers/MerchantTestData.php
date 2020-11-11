@@ -5740,6 +5740,18 @@ return [
         ],
     ],
 
+    'testSendBankingAccountsViaWebhook' => [
+        'request'  => [
+            'url'     => '/merchant/10000000000000/banking_accounts/',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testMerchantApplyRestrictionSettingsSuccess' => [
         'request'  => [
             'url'     => '/merchant/restrict',

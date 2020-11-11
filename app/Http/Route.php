@@ -2062,6 +2062,7 @@ class Route
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
+        'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
 
     ];
 
@@ -2629,6 +2630,7 @@ class Route
         'gateway_downtime_detection_purge_keys',
         'downtime_detection_cron',
         'merchant_get_org_details',
+        'merchant_banking_accounts_webhook',
         'banking_account_statement_process_cron',
         'banking_account_statement_channel_fetch',
         'subscription_registration_auto_charge',
@@ -5491,6 +5493,7 @@ class Route
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
             'merchant_get_org_details',
+            'merchant_banking_accounts_webhook',
         ],
 
         'reporting' => [
