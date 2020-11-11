@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Pnb;
 class Url
 {
 
-    const LIVE_DOMAIN = 'https://gateway.netpnb.com/Razorpay/';
+    const LIVE_DOMAIN = 'https://gateway.pnbibanking.in/Razorpay/';
     const TEST_DOMAIN = 'https://uatepay.netpnb.com/RazorPayTest/';
 
     const AUTHORIZE   = 'request.aspx';
