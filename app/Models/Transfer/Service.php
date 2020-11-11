@@ -66,9 +66,18 @@ class Service extends Base\Service
 
                 if ($merchant->isLinkedAccount() === true)
                 {
-                    $transferIds = $this->repo->transaction(function () use($settlementId, $transferIds)
+                    $transferIds = $this->repo->transaction(function () use($settlementId, $transferIds, $setl)
                     {
                         $transactions = $this->repo->transaction->fetchTransactionsForSettlementIdCount($settlementId);
+
+                        $this->trace->info(
+                            TraceCode::COUNT_TRANSACTIONS_FETCHED_FOR_SETTLEMENT_ID,
+                            [
+                                'settlement_id'     => $settlementId,
+                                'settlement_status' => $setl->getStatus(),
+                                'count'             => $transactions,
+                            ]
+                        );
 
                         $totalchunks = ceil($transactions / Constant::CHUNK);
 
@@ -83,6 +92,14 @@ class Service extends Base\Service
 
                         return $transferIds;
                     });
+
+                    $this->trace->info(
+                        TraceCode::TRANSFERS_UPDATED_WITH_RECIPIENT_SETTLEMENT_ID,
+                        [
+                            'settlement_id' => $settlementId,
+                            'transfers_ids' => $transferIds,
+                        ]
+                    );
 
                     $this->fireTransferProcessedSettledWebhookIfApplicable($transferIds, $setl);
                 }
@@ -116,6 +133,13 @@ class Service extends Base\Service
         {
             foreach ($transactions as $txn)
             {
+                $this->trace->info(
+                    TraceCode::TRANSACTION_FETCHED_FOR_SETTLEMENT_ID,
+                    [
+                        'txn_id' => $txn->getId(),
+                    ]
+                );
+
                 $settlementId = $txn->getSettlementId();
 
                 $transfer = $txn->source->transfer;
