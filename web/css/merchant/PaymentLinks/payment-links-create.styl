@@ -51,6 +51,34 @@
     font-size: 24px
     font-weight: bold
 
+  .upi-template
+    position relative
+    overflow visible
+    &::after
+      content: 'Save upto 1% on Transaction Charges!'
+      position: absolute
+      z-index: 1
+      right: -12px
+      padding: 4px 12px
+      background: #FFC848
+      font-size: 10px
+      line-height: 16px
+      text-transform: capitalize
+      color: #111B62
+      font-weight: bold
+      top: 8px
+    &::before
+      content: ''
+      position absolute
+      z-index: 1
+      right: -22px
+      top: 31px
+      width: 0
+      height: 0
+      border-bottom: 10px solid transparent
+      border-right: 10px solid transparent
+      border-left: 12px solid #e6a714
+
 .PaymentLinks--CreateV2 .StandAloneContainer
   .TemplateCard-list
     width: auto

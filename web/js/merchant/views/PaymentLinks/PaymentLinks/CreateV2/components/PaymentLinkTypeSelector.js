@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { classList } from 'common/utils/rzp-utils';
+
 import track from '../track';
 
 const PAYMENT_LINK_TYPES = [
@@ -16,6 +18,7 @@ const PAYMENT_LINK_TYPES = [
     title: 'UPI Payment Link',
     description: `Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.`,
     img: '/img/payment_links/upi.png',
+    className: 'upi-template',
   },
 ];
 
@@ -92,10 +95,10 @@ class TemplateCard extends React.PureComponent {
   }
 
   render() {
-    const { title, description, img, onClick, hoverText } = this.props;
+    const { title, description, img, onClick, hoverText, className } = this.props;
 
     return (
-      <div class={`TemplateCard ${!onClick && 'disabled'}`} onClick={onClick}>
+      <div class={classList('TemplateCard', onClick && 'disabled', className)} onClick={onClick}>
         <img src={this.state.isLoaded ? img : null} />
         <div class="TemplateCard-details">
           {title}
