@@ -2037,6 +2037,40 @@ class MerchantTest extends TestCase
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
 
+    public function testUpdateBankAccountAdminProxyAuth()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->makeRequestAndGetContent([
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account',
+            'method'  => 'POST'
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals('admin', $action['maker_type']);
+        $this->assertEquals($admin['id'], $action['maker_id']);
+        $this->assertEquals('test admin', $action['maker']);
+    }
+
     public function testUpdateBankAccountWithAddressProof()
     {
         $documentType = 'address_proof_url';
@@ -2188,13 +2222,15 @@ class MerchantTest extends TestCase
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
         $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
 
 
 
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fav = $this->getDbLastEntity('fund_account_validation', 'test');
 
         $this->fixtures->edit('fund_account_validation', $fav['id'], [
             'status'            => 'processed',
@@ -2230,6 +2266,7 @@ class MerchantTest extends TestCase
         // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
         $this->assertEquals($merchantId, $action['maker_id']);
         $this->assertEquals('merchant', $action['maker_type']);
+        $this->assertEquals($merchant->toArray()['name'], $action['maker']);
 
         $this->assertEquals('open', $action['state']);
         $this->assertEquals( 'POST', $action['method']);
