@@ -9427,7 +9427,7 @@ class PayoutTest extends TestCase
 
         $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
- 
+
     public function testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObject()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
@@ -9500,5 +9500,45 @@ class PayoutTest extends TestCase
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.processed', $payoutProcessedEventData, $payloadProcessed);
+    }
+
+    public function testFiringOfWebhookPayoutResponseForUpdatedPayout()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payloadUpdated = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(3);
+
+        $this->testCreateRblPayoutSuccessfully();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'channel'           => 'rbl',
+            'failure_reason'    => '',
+            'utr'               => 928337183,
+            'remarks'           => '',
+            'bank_status_code'  => 'SUCESS'
+        ]);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 }

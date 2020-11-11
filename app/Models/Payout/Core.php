@@ -489,10 +489,17 @@ class Core extends Base\Core
 
                 //
                 // same reason as of failure reason
+                // Only set if status is Failed or reversed
                 //
                 if (empty($ftaBankStatusCode) === false)
                 {
-                    $payout->setStatusCode($ftaBankStatusCode);
+                    $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null;
+
+                    if ((is_null($ftaStatus) === false) and
+                        (array_search($ftaStatus, [Status::FAILED, Status::REVERSED]) !== false))
+                    {
+                        $payout->setStatusCode($ftaBankStatusCode);
+                    }
                 }
 
                 // we want to override return UTR only if there is no value for UTR before

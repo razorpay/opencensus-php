@@ -10630,4 +10630,26 @@ return [
             ],
         ],
     ],
+
+    'testFiringOfWebhookPayoutResponseForUpdatedPayout' => [
+        'entity'   => 'event',
+        'event'    => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processing',
+                    'failure_reason' => null,
+                    'error'  => [
+                        'source'      => null,
+                        'reason'      => null,
+                        'description' => null
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
