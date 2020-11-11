@@ -8764,7 +8764,7 @@ class PayoutTest extends TestCase
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
-    public function testPayoutSetStatusQueuePushWhenPayoutLinkIDIsSet()
+    public function testPayoutSetStatusQueueNotPushedWhenPayoutLinkIDIsSet()
     {
         $this->app->instance('rzp.mode', "live");
 
@@ -8785,7 +8785,40 @@ class PayoutTest extends TestCase
 
         $payout->setStatus(Status::PROCESSING);
 
-        Queue::assertPushed(PayoutSourceUpdaterJob::class,1);
+        // not pushed to queue based on payout_link_id column in payouts table
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+    }
+
+    public function testPayoutSetStatusQueuePushWhenPayoutLinkSourceIsPresent()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $payoutLink = $this->fixtures->create('payout_link',
+            [
+                'contact_id' => $contact->getId(),
+                'balance_id' => $this->bankingBalance->getId()
+            ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created',
+            'payout_link_id' => $payoutLink->getId()
+        ]);
+
+        $this->fixtures->create('payout_source',
+            [
+                'payout_id'   => $payout->getId(),
+                'source_id'   => $payoutLink->getId(),
+                'source_type' => 'payout_links',
+                'priority'    => 1
+            ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
     public function testPayoutSetStatusQueuePushWhenPayoutCreated()

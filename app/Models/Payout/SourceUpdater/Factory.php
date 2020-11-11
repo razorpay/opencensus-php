@@ -28,15 +28,14 @@ class Factory
                     array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
 
                     break;
-                    // un-comment this code once payout link source migration happens
-//                    case PayoutSourceEntity::SOURCE_PAYOUT_LINK:
-//
-//                        array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)));
+
+                case PayoutSourceEntity::PAYOUT_LINK:
+
+                    array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)));
+
+                    break;
             }
         }
-
-        // this line to be removed and the above Switch statement to be used, once payout-link migration is done
-        array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)));
 
         return $subscriberList;
     }
