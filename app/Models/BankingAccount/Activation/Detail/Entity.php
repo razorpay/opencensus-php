@@ -84,6 +84,8 @@ class Entity extends Base\PublicEntity
     const RM_NAME = 'rm_name';
     const RM_PHONE_NUMBER = 'rm_phone_number';
     const ACCOUNT_OPEN_DATE = 'account_open_date';
+    // (RBL) Date at which RM logs the docs into the bank's system, and processing starts.
+    const ACCOUNT_LOGIN_DATE = 'account_login_date';
 
     // relations
     // admin_audit_map is used here
@@ -118,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
+        self::ACCOUNT_LOGIN_DATE,
     ];
 
     protected $visible = [
@@ -143,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
+        self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
     ];
 
@@ -169,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
+        self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
     ];
 

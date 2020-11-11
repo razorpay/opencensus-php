@@ -84,6 +84,9 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->integer(Entity::ACCOUNT_OPEN_DATE)
                   ->nullable();
 
+            $table->integer(Entity::ACCOUNT_LOGIN_DATE)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

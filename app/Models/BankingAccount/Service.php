@@ -260,6 +260,7 @@ class Service extends Base\Service
             ActivationDetail\Entity::RM_NAME,
             ActivationDetail\Entity::RM_PHONE_NUMBER,
             ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
+            ActivationDetail\Entity::ACCOUNT_LOGIN_DATE,
         ];
 
         $requiredKeysforCommentInput = [
@@ -326,6 +327,7 @@ class Service extends Base\Service
         // Convert date strings to epoch
         $dateFields = [
             ActivationDetail\Entity::ACCOUNT_OPEN_DATE,
+            ActivationDetail\Entity::ACCOUNT_LOGIN_DATE,
         ];
 
         foreach($dateFields as $dateField)

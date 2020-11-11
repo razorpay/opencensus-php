@@ -973,6 +973,7 @@ class Header
     const RM_NAME                   = 'RM Name';
     const RM_PHONE_NUMBER           = 'RM Phone Number';
     const ACCOUNT_OPEN_DATE         = 'Account Open Date';
+    const ACCOUNT_LOGIN_DATE        = 'Account Login Date';
 
 
     // Internal Instrument Request
@@ -3190,6 +3191,7 @@ class Header
                 self::RM_NAME,
                 self::RM_PHONE_NUMBER,
                 self::ACCOUNT_OPEN_DATE,
+                self::ACCOUNT_LOGIN_DATE,
             ],
         ],
 

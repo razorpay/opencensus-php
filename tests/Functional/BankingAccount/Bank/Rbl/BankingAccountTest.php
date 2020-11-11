@@ -2585,7 +2585,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($expectedFileInput, $fileInput);
     }
 
-    public function testUpdateAccountOpenDateViaBatch()
+    public function testUpdateAccountOpenDateAndLoginDateViaBatch()
     {
         $this->testCreateBankingAccountWithActivationDetail();
 
@@ -2598,7 +2598,8 @@ class BankingAccountTest extends TestCase
             'source_team_type' => 'external',
             'added_at' => 1594800229,
             'assignee_team' => 'sales',
-            'account_open_date' => '23-Jun-2020'
+            'account_open_date' => '23-Jun-2020',
+            'account_login_date' => '23-Jun-2020'
         ];
 
         $this->assertUpdateViaBatch($content);
