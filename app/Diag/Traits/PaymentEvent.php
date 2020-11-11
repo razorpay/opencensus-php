@@ -3,6 +3,9 @@
 namespace RZP\Diag\Traits;
 
 use RZP\Diag\Event\PaymentEvent as PE;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment;
 
 trait PaymentEvent
@@ -23,7 +26,8 @@ trait PaymentEvent
     public function trackVerifyPaymentEvent(
         array $event,
         Payment\Entity $payment = null,
-        \Throwable $ex = null)
+        \Throwable $ex = null,
+        array $customProperties = [])
     {
         $metaDetails = [
             'metadata' => [
@@ -37,9 +41,10 @@ trait PaymentEvent
             'write_key' => 'payment.id'
         ];
 
-        $customProperties = [
+        $customProperties +=[
             'status'    => $payment->getStatus(),
-            'bucket'    => $payment->getVerifyBucket()
+            'bucket'    => $payment->getVerifyBucket(),
+            'verify_at' => $payment->getVerifyAt(),
         ];
 
         $this->trackPaymentEventV2($event, $payment, $ex, $metaDetails, $customProperties);

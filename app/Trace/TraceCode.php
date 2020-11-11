@@ -192,6 +192,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_TIMED_OUT                                = 'PAYMENT_AUTH_TIMED_OUT';
     const PAYMENT_SHOULD_HAVE_TIMED_OUT                         = 'PAYMENT_SHOULD_HAVE_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                                 = 'PAYMENT_VERIFY_FAILED';
+    const PAYMENT_VERIFY_FILTER                                 = 'PAYMENT_VERIFY_FILTER';
     const PAYMENT_FAILED                                        = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                                     = 'PAYMENT_CANCELLED';
     const PAYMENT_CANCELLED_METADATA                            = 'PAYMENT_CANCELLED_METADATA';
@@ -885,6 +886,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_GATEWAY_BLOCK                                  = 'VERIFY_GATEWAY_BLOCK';
     const VERIFY_PROCESSED_SUMMARY                              = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                                 = 'PAYMENT_VERIFY_RESULT';
+    const PAYMENT_VERIFY_EVENT_DATA                             = 'PAYMENT_VERIFY_EVENT_DATA';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED                     = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                         = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
