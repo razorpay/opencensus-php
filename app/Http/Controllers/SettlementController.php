@@ -325,6 +325,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSettlementTransactionsSourceDetails($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getSettlementTransactionsSourceDetails($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function serviceFetch()
     {
         $input = Request::all();

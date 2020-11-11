@@ -521,6 +521,7 @@ class Route
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
+        'setl_fetch_source_details'                => ['post',     'settlements/{id}/transaction_source_details',    'SettlementController@getSettlementTransactionsSourceDetails'       ],
         'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
@@ -3236,6 +3237,8 @@ class Route
         'virtual_account_create_for_internal',
         'subscription_get_revenue_by_source',
         'payouts_bulk_sample_file',
+
+        'setl_fetch_source_details',
     ];
 
     //

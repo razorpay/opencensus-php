@@ -11,7 +11,6 @@ use phpseclib\Net\SFTP;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
@@ -20,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Feature\Constants;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
@@ -530,6 +530,79 @@ class Service extends Base\Service
         $entity = array_merge($entity, ['merchant_id' => $settlementMerchantId]);
 
         return $entity;
+    }
+
+    public function getSettlementTransactionsSourceDetails($id, $input)
+    {
+        $id = Entity::stripDefaultSign($id);
+
+        (new Validator())->validateInput('settlement_transaction_source_detail', $input);
+
+        $this->trace->info(
+            TraceCode::GET_SOURCE_TRANSACTION_DETAILS,
+            [
+               'settlement_id' => $id,
+               'input'         => $input,
+            ]);
+
+        $sourceId = null;
+
+        if(isset($input['source_id']) === true)
+        {
+            $sourceId = Entity::stripDefaultSign($input['source_id']);
+        }
+
+        $sourceType = $input['source_type'];
+
+        $skip = $input['skip'];
+
+        $limit = $input['limit'];
+
+        $startTime = microtime(true);
+
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+
+        $result = [];
+
+        foreach ($txns as $txn)
+        {
+            $res = [
+                'id'              => $txn->source->getPublicId(),
+                'amount'          => $txn->getAmount(),
+                'fee'             => $txn->getFee(),
+                'tax'             => $txn->getTax(),
+                'created_at'      => $txn->getCreatedAt(),
+                'international'   => false,
+            ];
+
+            if ($sourceType === E::REFUND)
+            {
+                $res['international'] = $txn->source->payment->isInternational();
+            }
+            else if (method_exists($txn->source, 'isInternational') === true)
+            {
+                $res['international'] = $txn->source->isInternational();
+            }
+
+            if(method_exists($txn->source, 'getStatus') === true)
+            {
+                $res['status'] = $txn->source->getStatus();
+            }
+
+            $result[] = $res;
+        }
+
+        $this->trace->info(
+            TraceCode::GET_SOURCE_TRANSACTION_DETAILS,
+            [
+                'settlement_id' => $id,
+                'input'         => $input,
+                'time_taken'    => get_diff_in_millisecond($startTime),
+            ]);
+
+        return $result;
     }
 
     /**
