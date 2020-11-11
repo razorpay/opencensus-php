@@ -2716,4 +2716,9 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function merchantNotificationConfigs()
+    {
+        return $this->hasMany(Merchant\MerchantNotificationConfig\Entity::class);
+    }
 }

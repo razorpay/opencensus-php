@@ -215,6 +215,12 @@ class UserRolesScope
             'delete_low_balance_config'   => [BankingRole::OWNER],
             'disable_low_balance_config'  => [BankingRole::OWNER],
             'enable_low_balance_config'   => [BankingRole::OWNER],
+
+            'create_merchant_notification_config'   => [BankingRole::OWNER],
+            'update_merchant_notification_config'   => [BankingRole::OWNER],
+            'delete_merchant_notification_config'   => [BankingRole::OWNER],
+            'disable_merchant_notification_config'  => [BankingRole::OWNER],
+            'enable_merchant_notification_config'   => [BankingRole::OWNER],
         ];
 
         /*

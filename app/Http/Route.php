@@ -2015,6 +2015,16 @@ class Route
         'enable_low_balance_config'               => ['post',       'low_balance_configs/{id}/enable',        'LowBalanceConfigController@enableConfig'],
         'low_balance_config_alert_cron'           => ['post',       'low_balance_configs/alert',              'LowBalanceConfigController@alert'],
 
+        // merchant notification config APIs
+        'create_merchant_notification_config'     => ['post',   'merchant_notification_configs',              'MerchantNotificationConfigController@create'],
+        'update_merchant_notification_config'     => ['patch',  'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@update'],
+        'fetch_merchant_notification_config'      => ['get',    'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@get'],
+        'list_merchant_notification_config'       => ['get',    'merchant_notification_configs',              'MerchantNotificationConfigController@list'],
+        'delete_merchant_notification_config'     => ['delete', 'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@delete'],
+        'disable_merchant_notification_config'    => ['post',   'merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfig'],
+        'enable_merchant_notification_config'     => ['post',   'merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfig'],
+        'merchant_notification_config_alert_cron' => ['post',   'merchant_notification_configs/alert',        'MerchantNotificationConfigController@alert'],
+
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
         'bulk_copy_internal_instrument_request'   => ['post',      'internal_instrument_request',                               'InstrumentRequestController@bulkCopyInternalInstrumentRequest' ],
@@ -2654,6 +2664,7 @@ class Route
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
+        'merchant_notification_config_alert_cron',
 
         // Razorpay Capital
         // Financial Data Service
@@ -3164,6 +3175,15 @@ class Route
         'delete_low_balance_config',
         'disable_low_balance_config',
         'enable_low_balance_config',
+
+        // merchant notification configs
+        'create_merchant_notification_config',
+        'update_merchant_notification_config',
+        'fetch_merchant_notification_config',
+        'list_merchant_notification_config',
+        'delete_merchant_notification_config',
+        'disable_merchant_notification_config',
+        'enable_merchant_notification_config',
 
         // Refunds
         'refund_cancel_batch',
@@ -4877,6 +4897,15 @@ class Route
         'disable_low_balance_config'                    => Permission::DISABLE_LOW_BALANCE_CONFIG,
         'enable_low_balance_config'                     => Permission::ENABLE_LOW_BALANCE_CONFIG,
 
+        // merchant notification configs
+        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
+        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
+        'fetch_merchant_notification_config'            => '*',
+        'list_merchant_notification_config'             => '*',
+        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
+        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
+        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
+
         // tax payment permission
         'tax_payments_pay'                             => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_bulk_pay'                        => Permission::PAY_TAX_PAYMENTS,
@@ -5269,6 +5298,7 @@ class Route
             'fts_bulk_transfer_publish',
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
+            'merchant_notification_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'terminals_proxy_update_recurring',

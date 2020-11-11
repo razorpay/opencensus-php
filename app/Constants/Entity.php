@@ -152,11 +152,12 @@ class Entity
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
 
-    const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
-    const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
-    const PAYMENT_META               = 'payment_meta';
-    const LOW_BALANCE_CONFIG         = 'low_balance_config';
-    const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
+    const MERCHANT_FRESHDESK_TICKETS   = 'merchant_freshdesk_tickets';
+    const MERCHANT_ATTRIBUTE           = 'merchant_attribute';
+    const PAYMENT_META                 = 'payment_meta';
+    const LOW_BALANCE_CONFIG           = 'low_balance_config';
+    const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
+    const VIRTUAL_ACCOUNT_PRODUCTS     = 'virtual_account_products';
 
     const WORKFLOW_CONFIG            = 'workflow_config';
     const WORKFLOW_ENTITY_MAP        = 'workflow_entity_map';
@@ -591,6 +592,8 @@ class Entity
         self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
         self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
         self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
+
+        self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

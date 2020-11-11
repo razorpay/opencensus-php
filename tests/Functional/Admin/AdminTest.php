@@ -963,10 +963,11 @@ class AdminTest extends TestCase
     public function testAdminAllEntitiesApi()
     {
         $result = $this->startTest();
+        s($result['entities']);
 
         $this->assertCount(11, $result['fields']);
 
-        $this->assertCount(302, $result['entities']);
+        $this->assertCount(303, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()

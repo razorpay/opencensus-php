@@ -105,6 +105,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PayoutSource\Repository                      $payout_source
  * @property Models\Promotion\Repository                         $promotion
  * @property Models\Merchant\MerchantApplications\Repository     $merchant_application
+ *
+ * @property Models\Merchant\MerchantNotificationConfig\Repository $merchant_notification_config
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

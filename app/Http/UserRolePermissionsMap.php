@@ -103,6 +103,12 @@ class UserRolePermissionsMap
                  Permission::DISABLE_LOW_BALANCE_CONFIG,
                  Permission::DELETE_LOW_BALANCE_CONFIG,
 
+                 Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
+                 Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
+                 Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
+                 Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
+                 Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
+
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,

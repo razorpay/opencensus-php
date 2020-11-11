@@ -477,6 +477,13 @@ class Name
     const DISABLE_LOW_BALANCE_CONFIG          = 'disable_low_balance_config';
     const DELETE_LOW_BALANCE_CONFIG           = 'delete_low_balance_config';
 
+    // Merchant Notification Config
+    const CREATE_MERCHANT_NOTIFICATION_CONFIG           = 'create_merchant_notification_config';
+    const UPDATE_MERCHANT_NOTIFICATION_CONFIG           = 'update_merchant_notification_config';
+    const ENABLE_MERCHANT_NOTIFICATION_CONFIG           = 'enable_merchant_notification_config';
+    const DISABLE_MERCHANT_NOTIFICATION_CONFIG          = 'disable_merchant_notification_config';
+    const DELETE_MERCHANT_NOTIFICATION_CONFIG           = 'delete_merchant_notification_config';
+
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 
     const TAX_PAYMENT_ADMIN_AUTH_EXECUTE      = 'tax_payment_admin_auth_execute';
