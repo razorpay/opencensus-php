@@ -402,6 +402,11 @@ class Service extends Base\Service
         $data['status'] = 2;
         $data['priority'] = 4;
 
+        if (isset($data['group_id']) === true)
+        {
+            $data['group_id'] = (int) $data['group_id'];
+        }
+
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketId, $data, $url);
 
         $this->validateGrievanceResponse($ticket);
