@@ -313,11 +313,7 @@ return [
         ],
         'response' => [
             'content'     => [],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER,
+            'status_code' => 200,
         ],
     ],
 

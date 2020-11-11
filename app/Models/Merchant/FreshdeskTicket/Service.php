@@ -356,7 +356,7 @@ class Service extends Base\Service
 
         if (count($response) === 0)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER);
+            return [];
         }
 
         return $response;
@@ -396,14 +396,24 @@ class Service extends Base\Service
         $data = $input;
 
         unset($data['id']);
+        unset($data['description']);
+        unset($data['email']);
 
         $data['status'] = 2;
-
         $data['priority'] = 4;
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketId, $data, $url);
 
-        $this->validateGrievanceResponse($ticket, $customerDescription);
+        $this->validateGrievanceResponse($ticket);
+
+        $noteData = [
+            'body'    => $customerDescription,
+            'private' => false,
+        ];
+
+        $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData, $url);
+
+        $this->validateNoteResponse($noteResponse, $customerDescription);
 
         return [
             'number'            => $ticket['id'],
@@ -421,7 +431,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function validateGrievanceResponse($response, $customerDescription)
+    protected function validateGrievanceResponse($response)
     {
         if ((isset($response['status']) === false) or ($response['status'] !== 2))
         {
@@ -432,10 +442,18 @@ class Service extends Base\Service
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
         }
+    }
 
-        if ((isset($response['description']) === false) or ($response['description'] !== $customerDescription))
+    protected function validateNoteResponse($response, $customerDescription)
+    {
+        if ((isset($response['body_text']) === false) or ($response['body_text'] !== $customerDescription))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ADD_NOTE_FAILED);
+        }
+
+        if ((isset($response['private']) === false) or ($response['private'] !== false))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ADD_NOTE_FAILED);
         }
     }
 

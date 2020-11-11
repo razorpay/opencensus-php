@@ -585,4 +585,22 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                 return [];
         }
     }
+
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    {
+        return [
+            'body' => '<div>some description</div>',
+            'body_text' => 'some description',
+            'id' => 42068693079,
+            'incoming' => false,
+            'private' => false,
+            'user_id' => 42005730186,
+            'support_email' => null,
+            'ticket_id' => 3731,
+            'to_emails' => [],
+            'created_at' => '2020-11-11T07 =>00 =>35Z',
+            'updated_at' => '2020-11-11T07 =>00 =>35Z',
+            'attachments' => []
+        ];
+    }
 }

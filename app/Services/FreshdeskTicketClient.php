@@ -25,6 +25,7 @@ class FreshdeskTicketClient
     const POST_TICKET_REPLY   = 'tickets/%s/reply';
     const LIST_TICKETS        = 'tickets';
     const UPDATE_TICKET       = 'tickets/%s';
+    const UPDATE_NOTE         = 'tickets/%s/notes';
 
     public function __construct(Application $app)
     {
@@ -217,6 +218,19 @@ class FreshdeskTicketClient
         $auth = $this->getAuth($authKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_PUT, $url, $auth, $input);
+
+        return $response ?? [];
+    }
+
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    {
+        $authKey = $this->getAuthKey($urlKey);
+
+        $url = $this->getUrl(sprintf(self::UPDATE_NOTE, $ticketId), $urlKey);
+
+        $auth = $this->getAuth($authKey);
+
+        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
         return $response ?? [];
     }
