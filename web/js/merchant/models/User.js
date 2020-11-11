@@ -705,6 +705,10 @@ export default class User {
   set secondFactorAuthOfUser(secondFactorAuth) {
     this.user.second_factor_auth = secondFactorAuth;
   }
+
+  get isVendorPaymentNotificationEnabled() {
+    return this.getExpStatus('show_rx_vp_announcement');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

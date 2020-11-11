@@ -13,11 +13,13 @@ class Constants
             'start_ts'    => 1604904751,
             'end_ts'      => 1612084863,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
+            'track_event' => true,
+            'id'          => 'NOV20-VP-C1',
             'buttons'     => [
                 [
                     'type'  => 'button',
                     'label' => 'Enable Now',
-                    'url'   => 'https://x.razorpay.com/vendor-payments',
+                    'url'   => 'https://x.razorpay.com/vendor-payments?utm_source=pg-dashboard&utm_medium=notification&utm_campaign=vp-new-features',
                 ],
                 [
                     'type'  => 'primary-inverted',

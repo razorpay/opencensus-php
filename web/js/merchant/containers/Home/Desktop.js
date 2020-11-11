@@ -247,6 +247,26 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
 
+          {user.isVendorPaymentNotificationEnabled && (
+            <AnnouncementBanner
+              title="RazorpayX Vendor Payments"
+              theme="primary"
+              canBeClosed={true}
+            >
+              <span className="support-tagline">
+                Welcome to the easiest way to pay vendors and TDS.
+              </span>
+              <a
+                href="https://x.razorpay.com/vendor-payments?utm_source=pg-dashboard&utm_medium=banner&utm_campaign=vp-new-features"
+                target="_blank"
+              >
+                <button className="pull-right primary btn-support" type="button">
+                  Explore Now
+                </button>
+              </a>
+            </AnnouncementBanner>
+          )}
+
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
