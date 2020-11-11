@@ -10,6 +10,7 @@ use phpseclib\Net\SFTP;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -1073,5 +1074,105 @@ class Service extends Base\Service
         (new Validator)->validateInput('settlements_status_replay', $input);
 
         return app('settlements_dashboard')->replaySettlementsStatusUpdate($input);
+    }
+
+    public function getSettlementSmsNotificationStatus($merchant = null)
+    {
+        $notificationMerchant = $this->merchant;
+
+        if(isset($merchant) === true)
+        {
+            $notificationMerchant = $merchant;
+        }
+
+        $merchantId = $notificationMerchant->getId();
+
+        $result = $this->repo->feature->getMerchantIdsHavingFeature(
+            Constants::SETTLEMENTS_SMS_STOP,
+            [
+                $merchantId
+            ]);
+
+        if (empty($result) === false)
+        {
+            return ['enabled' => false];
+        }
+
+        return ['enabled' => true];
+    }
+
+    public function toggleSettlementSmsNotification(array $input)
+    {
+        (new Validator)->validateInput('settlement_sms_notification', $input);
+
+        $status = $this->getSettlementSmsNotificationStatus();
+
+        $merchantId = $this->merchant->getId();
+
+        if($input['enable'] === true)
+        {
+            if($status['enabled'] === true)
+            {
+                return ['enabled' => true];
+            }
+
+            try
+            {
+                (new Merchant\Service)->addOrRemoveMerchantFeatures([
+                    'features' => [
+                        Constants::SETTLEMENTS_SMS_STOP => 0,
+                    ],
+                    Feature\Entity::SHOULD_SYNC => true,
+                ]);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED,
+                    [
+                        'merchant_id'       => $merchantId,
+                        'current_status'    => $status['enabled'],
+                        'requested_status'  => $input['enable'],
+                        ]);
+
+                return ['enabled' => false];
+            }
+
+            return ['enabled' => true];
+        }
+
+
+        if($status['enabled'] === false)
+        {
+            return ['enabled' => false];
+        }
+
+        try
+        {
+            (new Merchant\Service)->addOrRemoveMerchantFeatures([
+                'features' => [
+                    Constants::SETTLEMENTS_SMS_STOP => 1,
+                ],
+                Feature\Entity::SHOULD_SYNC => true,
+            ]);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED,
+                [
+                    'merchant_id'       => $merchantId,
+                    'current_status'    => $status['enabled'],
+                    'requested_status'  => $input['enable'],
+                ]);
+
+            return ['enabled' => true];
+        }
+
+        return ['enabled' => false];
     }
 }

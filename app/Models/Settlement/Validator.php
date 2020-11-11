@@ -162,6 +162,10 @@ class Validator extends Base\Validator
         'limit'            => 'required|integer',
     ];
 
+    protected static $settlementSmsNotificationRules = [
+        'enable'    => 'required|boolean',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);

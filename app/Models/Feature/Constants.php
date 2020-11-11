@@ -492,11 +492,16 @@ class Constants
 
    // for sending x banking accounts to pure partner
     const BANKING_ACCOUNTS_ISSUED = 'banking_accounts_issued';
-  
+
     // feature for enabling refund arn webhook
     const REFUND_ARN_WEBHOOK = 'refund_arn_webhook';
 
     const PL_BATCH_UPLOAD_FEATURE = 'pl_batch_upload_feature';
+
+    /**
+     * Disables settlement sms notifications
+     */
+    const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
 
 
     public static $recurringFeatures = [
@@ -760,6 +765,7 @@ class Constants
         self::BANKING_ACCOUNTS_ISSUED         => true,
         self::REFUND_ARN_WEBHOOK              => true,
         self::PL_BATCH_UPLOAD_FEATURE         => true,
+        self::SETTLEMENTS_SMS_STOP            => true,
     ];
 
     // Entity type constants
@@ -1053,6 +1059,11 @@ class Constants
             'feature'       => self::PL_BATCH_UPLOAD_FEATURE,
             'display_name'  => 'Enable batch upload for payment links on dashboard',
             'documentation' => '',
+        ],
+        self::SETTLEMENTS_SMS_STOP  => [
+            'feature'       => self::SETTLEMENTS_SMS_STOP,
+            'display_name'  => 'Disable SMS notifications for settlements',
+            'documentation' => '',
         ]
     ];
 
@@ -1087,6 +1098,7 @@ class Constants
         self::SKIP_WF_AT_PAYOUTS,
         self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
+        self::SETTLEMENTS_SMS_STOP,
     ];
 
     /*

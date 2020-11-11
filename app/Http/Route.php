@@ -558,6 +558,8 @@ class Route
         'create_settlement_entry'                  => ['post',     'settlements/create',                             'SettlementController@createSettlementEntry'                        ],
         'setl_status_update'                       => ['post',     'settlements/status/update',                      'SettlementController@postSettlementCreateStatusUpdate'             ],
         'setl_transactions_verify'                 => ['post',     'settlements/transactions/verify',                'SettlementController@settlementTransactionsVerify'                 ],
+        'setl_sms_notification_status'             => ['get',      'settlements/sms_notification/status',            'SettlementController@getSettlementSmsNotificationStatus'           ],
+        'setl_sms_notification_toggle'             => ['post',     'settlements/sms_notification/toggle',            'SettlementController@toggleSettlementSmsNotification'              ],
         //settlement service proxy routes
         'setl_admin_fetch'                         => ['post',     'admin/settlements/dashboard/fetch',              'SettlementController@serviceFetch'                                 ],
         'setl_admin_fetch_multiple'                => ['post',     'admin/settlements/dashboard/fetch_multiple',     'SettlementController@serviceFetchMultiple'                         ],
@@ -2862,6 +2864,8 @@ class Route
         'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_get_details',
+        'setl_sms_notification_status',
+        'setl_sms_notification_toggle',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'card_fetch_multiple',

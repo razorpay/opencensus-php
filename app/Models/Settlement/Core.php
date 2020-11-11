@@ -415,6 +415,24 @@ class Core extends Base\Core
     {
         try
         {
+            $notificationMerchant = ($merchant->isLinkedAccount() === true) ? $merchant->parent : $merchant;
+
+            $status = (new Service)->getSettlementSmsNotificationStatus($notificationMerchant);
+
+            if($status['enabled'] === false)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
+                    [
+                        'notification_mode'  => 'sms',
+                        'reason'             => 'merchant has settlement sms notify block feature',
+                        'merchant_id'        => $merchant->getId(),
+                        'settlement_id'      => $settlement->getId(),
+                    ]);
+
+                return;
+            }
+
             if ($merchant->isLinkedAccount() === true)
             {
                 $contactNo = $merchant->parent->merchantDetail->getContactMobile();

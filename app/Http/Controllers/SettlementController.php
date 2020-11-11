@@ -608,4 +608,20 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getSettlementSmsNotificationStatus()
+    {
+        $data = $this->service()->getSettlementSmsNotificationStatus();
+
+        return ApiResponse::json($data);
+    }
+
+    public function toggleSettlementSmsNotification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->toggleSettlementSmsNotification($input);
+
+        return ApiResponse::json($data);
+    }
 }
