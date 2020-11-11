@@ -180,4 +180,7 @@ final class RazorxTreatment
     const PAYMENT_STATUS_PENDING_CALCULATION = 'payment_status_pending_calculation';
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
+
+    // release duplicate receipt check in refunds only for Google merchant as of now
+    const DUPLICATE_RECEIPT_CHECK = 'duplicate_receipt_check';
 }

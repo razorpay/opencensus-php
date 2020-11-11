@@ -2509,6 +2509,19 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
+
+        $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::DUPLICATE_RECEIPT_CHECK,
+                $this->mode
+        );
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->checkForDuplicateReceipt($payment, $input);
+        }
+
+
         $this->validatePaymentForRefund($payment, $input);
 
         // Captured payments of transfer cannot be refunded via direct API requests
@@ -2529,6 +2542,19 @@ trait Refund
         });
 
         return $this->refund($payment, $input, $batch, $batchID);
+    }
+
+    protected function checkForDuplicateReceipt(Payment\Entity $payment, array $input = [])
+    {
+        $receiptFromInput = $input[RefundEntity::RECEIPT] ?? null;
+        $receiptFromTable = (empty($receiptFromInput) === false) ? (Payment\Refund\Entity::whereRaw('receipt = ? and merchant_id = ?', 
+                                            [$receiptFromInput, $this->merchant->getId()])->exists()) : false;
+
+        if ((empty($receiptFromInput) === false) and ($receiptFromTable === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT, null, ['method' => $payment->getMethod()]);
+        }
     }
 
     protected function validatePaymentForRefund(Payment\Entity $payment, array $input = null)

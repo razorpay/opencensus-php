@@ -790,7 +790,50 @@ class RefundTest extends TestCase
                 'receipt'    => '2544325',
             ]);
 
+        // Now handling this before build refund.
         $this->expectException('Illuminate\Database\QueryException');
+
+        $response =  $this->refund(
+                    [
+                        'payment_id' => $payment['id'],
+                        'notes'      => ['a' => 'b'],
+                        'amount'     => '1000',
+                        'receipt'    => '2544325',
+                    ]);
+    }
+
+    public function testRefundsWithDuplicateReceiptRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                   ->setConstructorArgs([$this->app])
+                   ->setMethods(['getTreatment'])
+                   ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                if ($feature === 'duplicate_receipt_check')
+                                  {
+                                    return 'on';
+                                  }
+                                  return 'off';
+                              }));
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'amount'     => '1000',
+                'receipt'    => '2544325',
+            ]);
+
+        // Now handling this before build refund.
+        $this->expectException('RZP\Exception\BadRequestException');
 
         $response =  $this->refund(
                     [

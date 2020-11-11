@@ -20,6 +20,7 @@ class PublicErrorDescription
     //        %x74 /          ; t    tab             U+0009
     //
 
+    const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
