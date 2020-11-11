@@ -31,6 +31,10 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
+    const GATEWAY_API_RAZORX_PREFIX     = 'upi_icici_gateway_api_versions';
+    const GATEWAY_API_VERSION_1         = 'v1';
+    const GATEWAY_API_VERSION_2         = 'v2';
+
     use AuthorizeFailed;
     use Base\RecurringTrait;
     use Base\MandateTrait;
@@ -82,6 +86,9 @@ class Gateway extends Base\Gateway
         Entity::VPA                       => Entity::VPA,
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
     ];
+
+    // To trace the razorx response
+    protected $razorxTrace   = [];
 
     /**
      * Authorizes a payment using UPI Gateway
@@ -495,6 +502,7 @@ class Gateway extends Base\Gateway
                 'decrypted_content' => $traceData,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
+                'razorx'            => $this->razorxTrace,
             ]);
 
         return $request;
@@ -534,6 +542,7 @@ class Gateway extends Base\Gateway
                 'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
+                'razorx'            => $this->razorxTrace,
             ]);
 
         return $request;
@@ -739,7 +748,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request' => $request,
-                'decrypted_content' => $data
+                'decrypted_content' => $data,
+                'razorx'            => $this->razorxTrace,
             ]);
 
         return $request;
@@ -777,7 +787,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
                 'request' => $request,
-                'decrypted_content' => $data
+                'decrypted_content' => $data,
+                'razorx'            => $this->razorxTrace,
             ]);
 
         return $request;
@@ -1367,6 +1378,7 @@ class Gateway extends Base\Gateway
                 'request'           => $request,
                 'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
+                'razorx'            => $this->razorxTrace,
             ]);
 
         return $request;
@@ -1486,6 +1498,18 @@ class Gateway extends Base\Gateway
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
+        // For certain actions type is different from gateway action
+        $type = $type ?? $this->action;
+
+        $version = $this->getVersionForAction($content, $type);
+
+        if ($version === self::GATEWAY_API_VERSION_2)
+        {
+            $this->domainType =  $this->getMode() . '_v2';
+
+            $type = $type . '_v2';
+        }
+
         $request = parent::getStandardRequestArray($content, $method, $type);
 
         $request['headers'] = [
@@ -1493,6 +1517,86 @@ class Gateway extends Base\Gateway
         ];
 
         return $request;
+    }
+
+    protected function getVersionForAction($input, $action)
+    {
+        $accessCode = trim($input['terminal']['gateway_access_code'] ?? null);
+
+        // If the access code is set to v2
+        if ($accessCode === self::GATEWAY_API_VERSION_2)
+        {
+            return self::GATEWAY_API_VERSION_2;
+        }
+        // Else if the access code if empty
+        else if(empty($accessCode) === true)
+        {
+            return self::GATEWAY_API_VERSION_1;
+        }
+
+        // Else go to razorx variant
+        $variant = $this->getRazorXVariantForMode();
+
+        // If enabled is set to 0 or doesn't exists we fallback to v1
+        if (empty($variant['enabled']) === true)
+        {
+            return self::GATEWAY_API_VERSION_1;
+        }
+
+        // If enabled but action is specifically added, we give preference to type
+        if (isset($variant[$action]) === true)
+        {
+            return $variant[$action];
+        }
+
+        return self::GATEWAY_API_VERSION_2;
+    }
+
+    protected function getRazorXVariantForMode()
+    {
+        $this->razorxTrace = [
+            'env'           => $this->app['env'],
+            'id'            => $this->request->getTaskId(),
+            'feature'       => self::GATEWAY_API_RAZORX_PREFIX,
+            'mode'          => $this->mode,
+            'variant'       => null,
+            'variant_array' => null,
+            'exception'     => [
+                'code'      => null,
+                'message'   => null,
+            ],
+        ];
+
+        try
+        {
+            $variant = $this->app->razorx->getTreatment(
+                           $this->request->getTaskId(),
+                           self::GATEWAY_API_RAZORX_PREFIX,
+                           $this->getMode());
+
+            parse_str($variant, $variantArray);
+
+            $this->razorxTrace['variant']       = $variant;
+            $this->razorxTrace['variant_array'] = $variantArray;
+
+            // Exception will be traced
+            assertTrue(isset($variantArray['enabled']), 'Enabled field is mandatory in variant array');
+
+            $variantArray['enabled'] = (bool) $variantArray['enabled'];
+
+            return $variantArray;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->razorxTrace['exception'] = [
+                'code'      => $exception->getCode(),
+                'message'   => $exception->getMessage(),
+            ];
+
+            return [
+                'enabled' => 0,
+            ];
+        }
     }
 
     public function getUpiTransferData(array $input)
