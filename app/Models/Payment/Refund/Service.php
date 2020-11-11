@@ -391,16 +391,15 @@ class Service extends Base\Service
         return array($from, $to);
     }
 
-    public function fetch($id)
+    public function fetch($id, array $input = [])
     {
-        $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+        $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
 
         // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addParamsForDashboard($refundArray);
         }
-
         return $refundArray;
     }
 

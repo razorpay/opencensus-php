@@ -532,6 +532,15 @@ return [
         ]
     ],
 
+    'testFetchRefundsProxyAuthExpanded' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testFetchRefundsProxyAuth' => [
         'request' => [],
         'response'  => [

@@ -113,9 +113,9 @@ trait RepositoryFetch
 
     protected $merchantIdRequiredForMultipleFetch = true;
 
-    public function fetchAndReturnPublicArray($id, $merchant)
+    public function fetchAndReturnPublicArrayWithExpand($id, $merchant, array $params)
     {
-        return $this->findByPublicIdAndMerchant($id, $merchant)->toArrayPublic();
+        return $this->findByPublicIdAndMerchant($id, $merchant, $params)->toArrayPublicWithExpand();
     }
 
     /**
