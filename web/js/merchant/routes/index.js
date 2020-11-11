@@ -374,12 +374,12 @@ const fullPageViewsMap = {
   '/subscription_buttons/new': {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX,
+      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/subscription_buttons/:id(pl_.+)/edit': {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX,
+      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
 };
 

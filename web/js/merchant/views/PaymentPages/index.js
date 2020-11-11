@@ -15,7 +15,7 @@ import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
-import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
+import SubscriptionButtonLaunchBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch';
 
 @connect(
   (state) => {
@@ -38,7 +38,7 @@ export default class PaymentPagesContainer extends React.Component {
 
     return (
       <>
-        <PaymentButtonLaunchBanner productName="PaymentPages" />
+        <SubscriptionButtonLaunchBanner productName="PaymentPages" />
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}

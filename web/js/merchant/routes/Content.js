@@ -309,7 +309,7 @@ export default class Content extends Component {
             component={PaymentButton}
             exact
             additionalCondition={(user) =>
-              user.isAllowedView('subscription_buttons') && user.isSubscriptionButtonEnabledByRazorX
+              user.isAllowedView('subscription_buttons') && user.isSubscriptionButtonEnabled
             }
           />
 
@@ -318,7 +318,7 @@ export default class Content extends Component {
             exact
             component={SubscriptionButtonDetails}
             additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabledByRazorX
+              user.isAllowedView('payment_buttons') && user.isSubscriptionButtonEnabled
             }
           />
 

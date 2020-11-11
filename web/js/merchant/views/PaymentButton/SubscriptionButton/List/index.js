@@ -227,9 +227,9 @@ export default class SubscriptionButtonsList extends ListContainer {
           <div class="btn-toolbar pull-right">
             <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
-            <DocsLink url="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons" />
+            <DocsLink url="https://razorpay.com/docs/payment-button/subscription-buttons/" />
 
-            {isRoleAllowedEdit && user.isSubscriptionButtonEnabledByRazorX && (
+            {isRoleAllowedEdit && user.isSubscriptionButtonEnabled && (
               <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
                 <i class="i i-plus" />
                 <span>Create Subscription Button</span>
@@ -282,7 +282,7 @@ const EmptyComponent = () => (
       Not sure where to start? See our getting{' '}
       <a
         target="_blank"
-        href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
+        href="https://razorpay.com/docs/payment-button/subscription-buttons/"
       >
         started guide <i class="i i-external-link" />
       </a>

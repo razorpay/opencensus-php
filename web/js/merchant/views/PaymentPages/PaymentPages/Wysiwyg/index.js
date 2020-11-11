@@ -9,6 +9,7 @@ import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
+import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch/FullPageBanner';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
@@ -18,7 +19,7 @@ import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Mod
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
 import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
 
-import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
+import {autoPrefixUrls, classList, getURLQueryParams} from 'common/utils/rzp-utils';
 
 import {
   initDefaultFormItems,
@@ -280,6 +281,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           trackClickOnCreateEmbedButton={(_) => trackClickOnCreateEmbedButton('new')}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
+          user={this.props.user}
           openSettingsModal={(_) => {
             trackPageSettingsClick();
             this.props.closeModal();
@@ -778,26 +780,33 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           actionBtns={actionBtns}
           isPageReady={isPageReady}
           handleClose={this.handleClose}
-        />
+        >
+          {
+            user.isSubscriptionButtonEnabled && <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
+          }
+        </Header>
         {content}
       </div>
     );
   }
 }
 
-const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
+const Header = ({ title, actionBtns, handleClose, isPageReady, children }) => {
   return (
-    <div class="page-nav">
-      <div class="page-size">
-        <div class="page-title">{title}</div>
+    <div class="page-nav-container">
+      {children}
+      <div class="page-nav">
+        <div class="page-size">
+          <div class="page-title">{title}</div>
 
-        {isPageReady && !!actionBtns && <div class="page-action">{actionBtns}</div>}
+          {isPageReady && !!actionBtns && <div class="page-action">{actionBtns}</div>}
 
-        {isPageReady && !!handleClose && (
-          <span class="close-btn" onClick={handleClose}>
-            ×
-          </span>
-        )}
+          {isPageReady && !!handleClose && (
+            <span class="close-btn" onClick={handleClose}>
+              ×
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

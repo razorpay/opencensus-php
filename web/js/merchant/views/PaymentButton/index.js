@@ -92,9 +92,9 @@ export default class PaymentButtonsContainer extends React.Component {
             </NavLink>
           )}
 
-          {this.props.user.isSubscriptionButtonEnabledByRazorX && (
+          {this.props.user.isSubscriptionButtonEnabled && (
             <NavLink exact to="/subscription_buttons">
-              Subscription Buttons <span class="badge bg-success m-r">new</span>
+              Subscription Buttons <span class="badge bg-primary m-r">beta</span>
             </NavLink>
           )}
         </header>

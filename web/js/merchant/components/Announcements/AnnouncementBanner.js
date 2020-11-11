@@ -35,6 +35,7 @@ export default class extends Component {
       handleClose,
       canBeClosed,
       bannerKey,
+      fullPage = false,
       ...props
     } = this.props;
 
@@ -43,10 +44,11 @@ export default class extends Component {
     }
 
     return (
-      <div class="announcement-banner-container">
+      <div class={classList('announcement-banner-container', fullPage && 'announcement-banner-container--fullpage')}>
         <AnnouncementBanner
           class={classList('Announcement_Banner', className)}
           onClose={canBeClosed && this.handleClose}
+          fullPage={fullPage}
           {...props}
         >
           {this.props.children}

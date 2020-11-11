@@ -89,7 +89,7 @@ export default class GetCodeModal extends React.Component {
           How to use this code?{' '}
           <a
             target="_black"
-            href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
+            href="https://razorpay.com/docs/payment-button/subscription-buttons/"
             onClick={this.props.onClickSeeDocumentation}
           >
             See documentation <i class="i i-external-link" />

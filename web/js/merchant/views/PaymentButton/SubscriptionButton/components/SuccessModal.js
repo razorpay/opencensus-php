@@ -34,7 +34,7 @@ export default class SuccessModal extends React.Component {
         How to use this code?{' '}
         <a
           target="_blank"
-          href="https://betasite.razorpay.com/docs/creating-subscription-buttons/payment-button/subscription-buttons"
+          href="https://razorpay.com/docs/payment-button/subscription-buttons/"
           onClick={this.props.onClickSeeDocumentation}
         >
           See our documentation <i class="i i-external-link" />

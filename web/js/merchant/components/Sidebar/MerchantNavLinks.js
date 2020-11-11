@@ -55,7 +55,7 @@ export default function MerchantNavLinks(props) {
         }
         additionalCondition={(user) =>
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
-          (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabledByRazorX)
+          (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
         }
         isNew
       />

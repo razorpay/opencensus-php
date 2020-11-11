@@ -569,7 +569,7 @@ export default class User {
     return this.getExpStatus('batch_scheduling_options');
   }
 
-  get isSubscriptionButtonEnabledByRazorX() {
+  get isSubscriptionButtonEnabled() {
     return this.isSubscriptionsEnabled;
   }
 

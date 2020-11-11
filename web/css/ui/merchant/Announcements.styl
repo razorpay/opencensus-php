@@ -389,3 +389,59 @@
     top: -14px
     left: -17px
     z-index: -9
+
+
+.announcement-banner-container.announcement-banner-container--fullpage
+  padding: 0
+
+.announcement-banner--fullpage
+  text-align: center
+
+.Announcement_Banner
+  .content
+    padding: 8px 15px 8px 8px
+
+  .skew-pattern
+    &::before, &::after
+      content: ''
+
+  .skew-pattern-left
+    transform: skew(30deg)
+
+  .skew-pattern-right
+    transform: skew(330deg)
+
+
+  .skew-pattern, .skew-pattern::before, .skew-pattern::after
+    position: absolute
+    display: block
+    background-color: currentColor
+
+  .skew-pattern
+    bottom: 0
+    width: 30px
+    height: 100%
+    opacity: 0.7
+    pointer-events: none
+    z-index: 0
+
+    &::before
+      bottom: 0
+      width: 130px
+      height: 100%
+      opacity: 0.17
+
+    &::after
+      bottom: 0
+      width: 230px
+      height: 100%
+      opacity: 0.17
+
+  .skew-pattern-left
+    left: -20px
+
+  .skew-pattern-right
+    right: -20px
+
+    &::before, &::after
+      right: 0

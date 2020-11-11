@@ -14,6 +14,8 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import SocialShareOptions from './Share/SocialShareOptions';
 import Collapsible from 'merchant/components/Collapsible';
+import ProductCard from 'merchant/components/ProductCard/ProductCard';
+
 
 export default class extends React.PureComponent {
   state = {};
@@ -91,6 +93,7 @@ export default class extends React.PureComponent {
       url,
       openSettingsModal,
       closeModal,
+      user
     } = this.props;
 
     return (
@@ -202,17 +205,19 @@ export default class extends React.PureComponent {
             </div>
           </div>
 
-          {/* Preview section for embed button */}
-          <div class="Input Input--vTop Input--radio">
-            <div class="Input-label">Payment Button</div>
-
-            <PreviewEmbedButton url={this.props.url} showPreviewLabel />
-
-            <div class="preview-btn-help">
-              Your customers can pay from your website by clicking on this
-              Payment Button
-            </div>
-          </div>
+          {
+            user.isSubscriptionButtonEnabled && (
+              <ProductCard
+                imgSrc="https://cdn.razorpay.com/static/assets/notifs/payment-button.svg"
+                title="Introducing Subscription Buttons"
+                description="Start accepting subscriptions from your consumers, right from your website or blog!"
+                primaryLink={user.isAllowedEdit('subscription_buttons') && "/app/subscription_buttons/new"}
+                secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
+                source="payment-pages"
+                trackerFn={window.rzpQ.subscriptionButtons}
+              />
+            )
+          }
 
           {/* Footer */}
           <footer>
