@@ -408,12 +408,7 @@ class FreshdeskTicketClient
     {
         $contentType = 'application/json';
 
-        if (isset($content['attachments']) === true)
-        {
-            $content['attachments[]'] = $content['attachments'];
-
-            unset($content['attachments']);
-        }
+        $this->processArrayRequestFields($content);
 
         if ((isset($content['attachments[]']) === true) and (is_null($content['attachments[]']) === false))
         {
@@ -452,7 +447,7 @@ class FreshdeskTicketClient
 
         if ($contentType === 'multipart/form-data')
         {
-            $response = $this->makeCurlRequest($request);
+            $responseBody = $this->makeCurlRequest($request);
         }
         else
         {
@@ -464,18 +459,52 @@ class FreshdeskTicketClient
                 $request['options']
             );
 
-            $response = $response->body;
+            $responseBody = $response->body;
         }
 
-        $response = json_decode($response, true);
+        $responseBody = json_decode($responseBody, true);
 
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
             [
-                'response' => $response['total'] ?? count($response) ?? 0
+                'response' => $responseBody['total'] ?? count($responseBody) ?? 0
             ]
         );
 
-        return $response;
+        if (isset($responseBody['errors']) === true)
+        {
+            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
+                [
+                    'response' => $responseBody
+                ]
+            );
+        }
+
+        return $responseBody;
+    }
+
+    private function processArrayRequestFields(array &$content)
+    {
+        if (isset($content['attachments']) === true)
+        {
+            $content['attachments[]'] = $content['attachments'];
+
+            unset($content['attachments']);
+        }
+
+        if (isset($content['cc_emails']) === true)
+        {
+            $content['cc_emails[]'] = $content['cc_emails'];
+
+            unset($content['cc_emails']);
+        }
+
+        if (isset($content['cc_emails[]']) === true)
+        {
+            foreach ($content['cc_emails[]'] as $ccEmail)
+            {
+                $content['cc_emails[]'] = $ccEmail;
+            }
+        }
     }
 
     private function getAuthKey($urlKey) : string

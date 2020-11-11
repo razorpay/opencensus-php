@@ -20,17 +20,18 @@ use RZP\Models\Merchant\FreshdeskTicket\Validator as FreshdeskTicketValidator;
 class Service extends Base\Service
 {
     protected $createRules = [
-        'email'                                => 'required|email',
-        'otp'                                  => 'required|string|min:4|max:6',
-        'name'                                 => 'required|string|max:100',
-        'phone'                                => 'sometimes|contact_syntax',
-        'description'                          => 'required|string|max:1000',
-        'subject'                              => 'required|string|max:500',
-        'attachments'                          => 'sometimes',
-        'custom_fields'                        => 'required|array',
-        'custom_fields.cf_requester_category'  => 'required|string|max:50',
-        'custom_fields.cf_transaction_id'      => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
-        'custom_fields.cf_razorpay_payment_id' => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'email'                                  => 'required|email',
+        'otp'                                    => 'required|string|min:4|max:6',
+        'name'                                   => 'required|string|max:100',
+        'phone'                                  => 'sometimes|contact_syntax',
+        'description'                            => 'required|string|max:1000',
+        'subject'                                => 'required|string|max:500',
+        'attachments'                            => 'sometimes',
+        'custom_fields'                          => 'required|array',
+        'custom_fields.cf_requester_category'    => 'required|string|max:50',
+        'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
+        'custom_fields.cf_transaction_id'        => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'custom_fields.cf_razorpay_payment_id'   => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
     ];
 
     protected $otpRules = [

@@ -123,7 +123,8 @@ return [
                 'otp'  => '0007',
                 'custom_fields' => [
                     'cf_transaction_id' => '',
-                    'cf_requester_category' => 'Customer'
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
@@ -148,6 +149,7 @@ return [
                 'otp'  => '9999',
                 'custom_fields' => [
                     'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
                     'cf_transaction_id' => ''
                 ]
             ]
@@ -192,7 +194,8 @@ return [
                 'mode' => 'test',
                 'custom_fields' => [
                     'cf_transaction_id' => '',
-                    'cf_requester_category' => 'Customer'
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
@@ -220,7 +223,8 @@ return [
                 'abc' => 'strct',
                 'mode' => 'test',
                 'custom_fields' => [
-                    'cf_requester_category' => 'Customer'
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
@@ -410,7 +414,8 @@ return [
                 'mode' => 'test',
                 'otp'  => '0007',
                 'custom_fields' => [
-                    'cf_requester_category' => 'Partner'
+                    'cf_requester_category' => 'Partner',
+                    'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
@@ -434,7 +439,8 @@ return [
                 'otp'  => '0007',
                 'custom_fields' => [
                     'cf_transaction_id' => '',
-                    'cf_requester_category' => 'Customer'
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
