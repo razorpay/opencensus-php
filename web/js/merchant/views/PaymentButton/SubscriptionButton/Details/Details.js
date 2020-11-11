@@ -80,7 +80,7 @@ export default class subscriptionButtonEntity extends React.Component {
     this.props.addPollInstance(reportId, pollInstance);
   };
 
-  downloadReport = () => {
+  downloadReport = (extension) => {
     const { user, subscriptionButtonEntity, reportConfigs } = this.props;
     let configId;
 
@@ -90,7 +90,10 @@ export default class subscriptionButtonEntity extends React.Component {
 
     for (const idx in reportConfigs) {
       const config = reportConfigs[idx];
-      if (config.type === 'payment_links') {
+      if (
+        config.type === 'payment_links' &&
+        config.name.toLowerCase() === 'payment button report'
+      ) {
         configId = config.id;
         break;
       }
@@ -101,6 +104,7 @@ export default class subscriptionButtonEntity extends React.Component {
       subscriptionButtonEntity,
       configId,
       this.saveLongPollInstances,
+      extension,
     );
 
     if (promise && promise.then) {

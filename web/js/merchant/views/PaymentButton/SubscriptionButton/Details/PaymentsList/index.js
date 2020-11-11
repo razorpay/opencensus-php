@@ -10,6 +10,9 @@ import PaymentsListFilter from './PaymentsListFilter';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
+
 
 const PaymentsTable = (props) => {
   let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
@@ -20,9 +23,6 @@ const PaymentsTable = (props) => {
 @withRouter
 @connect((state) => state.payments, { fetchAll })
 export default class PaymentsList extends ListContainer {
-  constructor(props) {
-    super(props);
-  }
 
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
@@ -59,16 +59,31 @@ export default class PaymentsList extends ListContainer {
             </div>
           ))}
 
-          <div class="btn-toolbar pull-right">
-            <Button
-              class="Button--primary--invert"
-              onClick={downloadReport}
+          <div class="report-download btn-toolbar pull-right">
+            <div
+              class="btn btn-default Button--invert report-download-trigger"
               disabled={isExportInProgress}
             >
-              <i class="i i-download m-r" />
-              Export All (CSV)
-            </Button>
+              <i class="i i-download m-r"/>
+              {isExportInProgress ? 'Downloading...' : 'Download Report'}
+            </div>
+            <Popover align="bottom">
+              <PopoverBody>
+                {reportFormatOptions.map((o, index) => (
+                  <li
+                    key={index}
+                    type="button"
+                    class="btn"
+                    onClick={() => this.props.downloadReport(o.name)}
+                    disabled={isExportInProgress}
+                  >
+                    {o.label}
+                  </li>
+                ))}
+              </PopoverBody>
+            </Popover>
           </div>
+
         </div>
 
         <div class="content-wrapper">
