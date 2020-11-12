@@ -211,6 +211,15 @@ export default class Content extends Component {
     }
   };
 
+  isPaymentMethodEnabled = (user) => {
+    return (
+      user.activation_status === 'activated' &&
+      user.isOrgRZP === true &&
+      user.isInstrumentRequestAllowed() &&
+      this.props.mode !== 'test'
+    );
+  };
+
   getBaseView = () => {
     const { user, fullPageView } = this.props;
 
@@ -453,9 +462,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/payment-methods"
             component={Settings}
-            additionalCondition={(user) =>
-              user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
-            }
+            additionalCondition={(user) => this.isPaymentMethodEnabled(user)}
           />
           <ShowWhenRoute
             path="/offers"

@@ -34,13 +34,13 @@ class LeafListItem extends React.Component {
         header: 'Confirmation',
         message: () => (
           <div style={{ marginBottom: '-5px' }}>
-            This method will be enabled for you using &nbsp;
+            This instrument will be enabled for you using &nbsp;
             <span class="toggler-btn">
               <a href="https://razorpay.com/pricing/" target="_blank" rel="noreferrer">
                 Standard Pricing <i class="i i-external-link" style={{ marginLeft: '2px' }} />
               </a>
             </span>
-            . Processing the request roughly takes 10 working days.
+            . Processing the request roughly takes 20 working days.
             <br /> <br />
           </div>
         ),
