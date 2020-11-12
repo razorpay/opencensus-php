@@ -1153,10 +1153,13 @@ class Route
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
         'tax_payments_list'                        => ['get',     'tax-payments/',                                   'TaxPaymentController@listTaxPayments'                              ],
+        'tax_payments_create'                      => ['post',    'tax-payments/',                                   'TaxPaymentController@create'                                       ],
         'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                               'TaxPaymentController@getTaxPayment'                                ],
         'tax_payments_mark_as_paid'                => ['post',    'tax-payments/mark-as-paid',                       'TaxPaymentController@markAsPaid'                                   ],
         'tax_payments_challan_upload'              => ['post',    'tax-payments/upload-challan',                     'TaxPaymentController@uploadChallan'                                ],
-        'tax_payments_edit'                        => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@edit'                                         ],
+        'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
+        'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
+        'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                         'TaxPaymentController@cancel'                                      ],
 
 
         // Payout Links
@@ -3209,10 +3212,13 @@ class Route
         'tax_payments_mark_as_paid',
         'tax_payments_challan_upload',
         'tax_payments_edit',
+        'tax_payments_cancel',
+        'tax_payments_update_challan_file_id',
         'merchant_credits_balance_fetch',
         'tax_payments_list',
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
+        'tax_payments_create',
         'payouts_scheduled_time_slots',
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
@@ -4925,7 +4931,10 @@ class Route
         'tax_payments_monthly_summary'                 => Permission::VIEW_TAX_PAYMENTS,
         'tax_payments_mark_as_paid'                    => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_challan_upload'                  => Permission::PAY_TAX_PAYMENTS,
-        'tax_payments_edit'                            => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_update_challan_file_id'          => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_edit'                            => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_cancel'                          => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
 
@@ -6102,9 +6111,13 @@ class Route
         'tax_payments_list',
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
+        'tax_payments_create',
         'tax_payments_mark_as_paid',
         'tax_payments_challan_upload',
+        'tax_payments_update_challan_file_id',
         'tax_payments_edit',
+        'tax_payments_cancel',
+
     ];
 
     public static $routesWithV2Prefix = [];

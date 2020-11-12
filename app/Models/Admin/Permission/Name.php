@@ -443,6 +443,7 @@ class Name
 
     // tax payment settings
     const PAY_TAX_PAYMENTS                    = 'pay_tax_payment';
+    const CREATE_TAX_PAYMENTS                 = 'create_tax_payment';
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
 
