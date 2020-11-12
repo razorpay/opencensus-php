@@ -3053,7 +3053,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MIGRATE_JOB_STORK_STORK_WK_ALERT_EMAIL_AFTER_REQUEST  = 'MIGRATE_JOB_STORK_STORK_WK_ALERT_EMAIL_AFTER_REQUEST';
 
     // Edge<>api integration.
-    const PASSPORT_JWT_PARSE_INVOKED                            = 'PASSPORT_JWT_PARSE_INVOKED';
     const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
     const EDGE_AUTHORIZATION_MISMATCH                           = 'EDGE_AUTHORIZATION_MISMATCH';
