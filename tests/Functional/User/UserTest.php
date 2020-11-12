@@ -2515,6 +2515,44 @@ class UserTest extends TestCase
         });
     }
 
+    public function testGetUserAndCheckEnabledMethods()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'paypal');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('methods', $response['merchants'][0]);
+
+        $this->assertArrayHasKey('paypal', $response['merchants'][0]['methods']);
+
+        $this->assertEquals(1, $response['merchants'][0]['methods']['paypal']);
+    }
+
     public function testOptOutForWhatsapp()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,

@@ -1928,4 +1928,10 @@ return [
             ],
         ],
     ],
+
+    'testGetUserAndCheckEnabledMethods'   => [
+        'response'      => [
+                'content'     => [],
+        ],
+    ],
 ];

@@ -737,6 +737,9 @@ class Core extends Base\Core
 
         // Additional resources for users.
         $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
+
+        $merchantsUnique = $this->addProductSpecificDetails($merchantsUnique);
+
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -807,6 +810,31 @@ class Core extends Base\Core
                     ];
             },
             $merchants);
+    }
+
+    protected function addProductSpecificDetails(array $merchants)
+    {
+        try
+        {
+            return array_map(
+                function (array $merchant)
+                {
+                    $merchantEntity = $this->repo->merchant->findOrFailPublic($merchant['id']);
+
+                    $methods = $merchantEntity->getMethods();
+
+                    $merchant['methods'] = $methods;
+
+                    return $merchant;
+                },
+                $merchants);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return $merchants;
+        }
     }
 
     protected function fetchBankingAccountWithBalance($merchantId)
