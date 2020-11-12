@@ -16,7 +16,7 @@ class GenericVendorPaymentEmail extends Mailable
 
     protected $customSubject;
 
-    public function __construct(string $merchantEmail, string $subject, string $templateName, array $data)
+    public function __construct(array $merchantEmail, string $subject, string $templateName, array $data)
     {
         parent::__construct();
 

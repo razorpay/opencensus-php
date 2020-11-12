@@ -1136,7 +1136,10 @@ class Route
         'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
         'vendor_payment_ocr_accuracy_cron'         => ['post',     'vendor-payments/_meta/ocr-accuracy-check',       'VendorPaymentController@ocrAccuracyCheck'                          ],
         'vendor_payment_mark_as_paid'              => ['post',     'vendor-payments/mark-as-paid',                   'VendorPaymentController@markAsPaid'                                ],
-        'vendor_payment_reporting_info'            => ['get',     'vendor-payments/_meta/get-reporting-info',       'VendorPaymentController@getReportingInfo'                          ],
+        'vendor_payment_reporting_info'            => ['get',      'vendor-payments/_meta/get-reporting-info',       'VendorPaymentController@getReportingInfo'                          ],
+        'vendor_payment_bulk_invoice_download'     => ['post',     'vendor-payments/_meta/bulk-invoice-download',    'VendorPaymentController@bulkInvoiceDownload'                       ],
+        'vendor_payment_update_invoice_file_id'    => ['post',     'vendor-payments/{id}/update-invoice-file-id',    'VendorPaymentController@updateInvoiceFileId'                       ],
+        'vendor_payment_get_invoice_zip_file'       => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                       ],
 
 
         // Tax Payments
@@ -3173,6 +3176,9 @@ class Route
         'vendor_payment_get_ocr_data',
         'vendor_payment_mark_as_paid',
         'vendor_payment_reporting_info',
+        'vendor_payment_bulk_invoice_download',
+        'vendor_payment_update_invoice_file_id',
+        'vendor_payment_get_invoice_zip_file',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -4815,6 +4821,9 @@ class Route
         'vendor_payment_bulk_cancel'                   => Permission::CANCEL_VENDOR_PAYMENTS,
         'vendor_payment_mark_as_paid'                  => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_reporting_info'                => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_update_invoice_file_id'        => Permission::EDIT_VENDOR_PAYMENTS,
+        'vendor_payment_bulk_invoice_download'         => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_get_invoice_zip_file'          => Permission::VIEW_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -6044,6 +6053,9 @@ class Route
         'vendor_payment_get_ocr_data',
         'vendor_payment_mark_as_paid',
         'vendor_payment_reporting_info',
+        'vendor_payment_bulk_invoice_download',
+        'vendor_payment_update_invoice_file_id',
+        'vendor_payment_get_invoice_zip_file',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',
