@@ -35,8 +35,16 @@ class OpenCensusProvider extends ServiceProvider
         Redis::load();
         Curl::load();
 
-        Route::matched(function($event){
+        Route::matched(function($event) {
+
             $currentRoute = $event->route;
+
+            $routesToInclude = Tracing::getRoutesToInclude();
+
+            if(!(in_array($currentRoute->getName(), $routesToInclude))){
+                return;
+            }
+
             $spanOptions = self::getSpanOptions($currentRoute);
 
             $propagator = new JaegerPropagator();
@@ -45,10 +53,10 @@ class OpenCensusProvider extends ServiceProvider
 
             $serviceName = Tracing::getServiceName($this->app);
 
-            $jaegeOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
+            $jaegerOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
                              'port' =>  $this->app['config']->get('applications.jaeger.port')];
 
-            Tracer::start(new JaegerExporter($serviceName, $jaegeOptions), $tracerOptions);
+            Tracer::start(new JaegerExporter($serviceName, $jaegerOptions), $tracerOptions);
         });
     }
 

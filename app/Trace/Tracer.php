@@ -75,7 +75,7 @@ class Tracer
         }
     }
 
-    public static function addAttribute(string $attribute, string $value, array $options = [])
+    public static function addAttribute($attribute, $value, array $options = [])
     {
         try
         {

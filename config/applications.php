@@ -705,8 +705,7 @@ return [
 
     'jaeger' => [
         'enabled'               => env('DISTRIBUTED_TRACING_ENABLED', false),
-        // as Jaeger agent will be deployed as daemonset on every node
-        'host'                  => env('NODE_NAME'),
+        'host'                  => env('JAEGER_HOSTNAME', env('NODE_NAME')),
         'port'                  => env('JAEGER_PORT'),
         'app_mode'              => env('INSTANCE_TYPE', ''),
         'tag_service_version'   => env('GIT_COMMIT_HASH', ''),
