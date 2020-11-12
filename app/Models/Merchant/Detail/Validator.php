@@ -132,7 +132,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                            => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                            => 'filled|max:255',
+        Entity::BUSINESS_NAME                            => 'sometimes|max:255',
         Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
         Entity::BUSINESS_DBA                             => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                         => 'sometimes|active_url|max:255|nullable',
