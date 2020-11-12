@@ -7,7 +7,11 @@ const next7Days = moment().add(7, 'days').unix();
 
 const CARDS = [
   {
-    title: 'Active subscriptions',
+    getTitle: () => (
+      <span>
+        Active <br /> subscriptions
+      </span>
+    ),
     color: '#2B83EA',
     key: 'subscriptions_active',
     filter: {
@@ -15,13 +19,21 @@ const CARDS = [
     },
   },
   {
-    title: 'Subscriptions with Failed Payments',
+    getTitle: () => (
+      <span>
+        Subscriptions with <br /> Failed Payments
+      </span>
+    ),
     color: '#D12D2D',
     key: 'subscriptions_failed',
     filter: { status: 'failed' },
   },
   {
-    title: `Subscriptions completing in 7 days`,
+    getTitle: () => (
+      <span>
+        Subscriptions completing <br /> in 7 days{' '}
+      </span>
+    ),
     color: '#5EBE5B',
     key: 'subscriptions_completing',
     filter: {
@@ -29,7 +41,11 @@ const CARDS = [
     },
   },
   {
-    title: `Subscriptions with Cards Expiring in 7 days`,
+    getTitle: () => (
+      <span>
+        Subscriptions with Cards <br /> Expiring in 7 days
+      </span>
+    ),
     color: '#E38E35',
     key: 'cards_expiring',
     filter: {
@@ -86,7 +102,7 @@ export default class ExpirySubscriptions extends React.Component {
               <div class="count">
                 {state.isLoading ? <PlaceholderLoader /> : state.data[card.key]}
               </div>
-              <div class="details">{card.title}</div>
+              <div class="details">{card.getTitle()}</div>
             </div>
           );
         })}
