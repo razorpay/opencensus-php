@@ -65,14 +65,16 @@ class ChannelNotification
 
     protected function sendEmail($result)
     {
-        $template = $this->getTemplate($result, 'EMAIL');
+        $template = $this->getTemplate($result, NotificationMode::MODE_EMAIL);
 
         $params = $this->getParams($result);
+
+        $subject = $this->getSubject($result);
 
         // Extract info from result section and fill the data section array accordingly
         $data = [
             'to'       => 'pawan.murarka@razorpay.com', // Will change with merchant logic
-            'subject'  => 'Downtime/Uptime Notification',
+            'subject'  => $subject,
             'body'     => $params,
             'template' => $template,
         ];
@@ -135,7 +137,7 @@ class ChannelNotification
 
     protected function processSms($result)
     {
-        $template = $this->getTemplate($result, 'SMS');
+        $template = $this->getTemplate($result, NotificationMode::MODE_SMS);
 
         $contacts  = $this->getContactList();
 
@@ -189,16 +191,50 @@ class ChannelNotification
 
     protected function getParams($data)
     {
+        $params = [
+            'mode' => $data['mode'],
+        ];
+
         if (isset($data[Constants::TYPE]) === true and $data[Constants::TYPE] === 'bene')
         {
-            $shortCode = $data['channel'];
-
-            return [
-              'short_code' => $shortCode,
-              'bank_name' => IFSC::getBankName($shortCode),
+            $params +=  [
+                'bank_name'       => IFSC::getBankName($data['channel']),
+                'ifsc_short_code' => $data['channel'],
             ];
         }
 
-        return [];
+        return $params;
+    }
+
+    protected function getSubject($result)
+    {
+        $subject = '';
+
+        if (isset($result[Constants::TYPE]) === true and $result[Constants::TYPE] === 'partner')
+        {
+            if ((isset($result['status']) === true) and $result['status'] === 'UP')
+            {
+                $subject = 'You can now process transactions to vendors through RazorpayX.';
+            }
+            else
+            {
+                $subject = 'High failure rates observed for transactions on RazorpayX';
+            }
+        }
+        else
+        {
+            if ((isset($result['status']) === true) and $result['status'] === 'UP')
+            {
+                $subject = 'You can now process transactions to vendors with ' .
+                    $result['channel'] . '  account.';
+            }
+            else
+            {
+                $subject = 'Issue with payments to vendor with ' .
+                    $result['channel'] . ' account due to high failure rates';
+            }
+        }
+
+        return $subject;
     }
 }
