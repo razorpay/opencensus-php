@@ -23,6 +23,8 @@ class Type
     // Marketplace Batch
     const LINKED_ACCOUNT            = 'linked_account';
 
+    const LINKED_ACCOUNT_CREATE     = 'linked_account_create';
+
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
@@ -339,7 +341,8 @@ class Type
         self::MPAN,
         self::ADJUSTMENT,
         self::PARTNER_SUBMERCHANT_INVITE,
-        self::REFUND
+        self::REFUND,
+        self::LINKED_ACCOUNT_CREATE,
     ];
 
     /**
@@ -377,6 +380,7 @@ class Type
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
         self::REFUND,
+        self::LINKED_ACCOUNT_CREATE,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

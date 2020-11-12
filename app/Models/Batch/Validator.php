@@ -630,6 +630,13 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $linkedAccountCreateCreateRules = [
+        Entity::TYPE                 => 'required|in:linked_account_create',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
 
     public function validateConfig($attribute, $value)
     {

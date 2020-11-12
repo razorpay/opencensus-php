@@ -61,6 +61,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Settlement\SettlementTrait;
+use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -71,6 +72,7 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -191,6 +193,57 @@ class Service extends Base\Service
         }
 
         return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+    }
+
+    public function createLinkedAccount(array $input)
+    {
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH,
+            [
+                'parent_merchant_id'    => $this->merchant->getId(),
+                'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
+            ]
+        );
+
+        $submerchantInput = $this->extractSubmerchantInput($input);
+
+        $linkedAccountArray = $this->createSubMerchantAndSetRelations($this->merchant, true, $submerchantInput);
+
+        if (isset($linkedAccountArray['id']) === false)
+        {
+            throw new Exception\LogicException(
+                'Linked account creation failed.',
+                null,
+                $linkedAccountArray
+            );
+        }
+
+        $linkedAccountId = $linkedAccountArray['id'];
+
+        $linkedAccount = $this->repo->merchant->find($linkedAccountId);
+
+        $bankAccountDetails = $this->extractBankAccountDetails($input);
+
+        (new Merchant\Detail\Core())->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+
+        $this->repo->reload($linkedAccount);
+
+        $accountStatus = ($linkedAccount->isActivated() === true) ? 'Activated' : 'Not Activated';
+
+        $input[BatchHeader::ACCOUNT_ID]         = Merchant\Account\Entity::getSignedId($linkedAccountId);
+        $input[BatchHeader::ACCOUNT_STATUS]     = $accountStatus;
+        $input[BatchHeader::ACTIVATED_AT]       = $linkedAccount->getActivatedAt();
+
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL,
+            [
+                'linked_account_id'     => $linkedAccountId,
+                'parent_merchant_id'    => $this->merchant->getId(),
+                'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
+            ]
+        );
+
+        return $input;
     }
 
      /**
@@ -847,7 +900,7 @@ class Service extends Base\Service
         }
 
         $timeTaken = millitime() - $startTime;
-        
+
         $this->trace->info(
             TraceCode::BULK_ACTION_RESPONSE_TIME,
             [
@@ -865,7 +918,7 @@ class Service extends Base\Service
     public function bulkAssignPricing(array $input): array
     {
         $startTime = millitime();
-        
+
         $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
 
         $this->increaseAllowedSystemLimits();
@@ -907,7 +960,7 @@ class Service extends Base\Service
         $this->trace->error(TraceCode::MERCHANT_PRICING_BULK_ALL_FAILED_IDS, [ 'failed_ids' => $failedIds]);
 
         $timeTaken = millitime() - $startTime;
-        
+
         $this->trace->info(
             TraceCode::BULK_ACTION_RESPONSE_TIME,
             [
@@ -1717,7 +1770,7 @@ class Service extends Base\Service
         }
 
         $timeTaken = millitime() - $startTime;
-        
+
         $this->trace->info(
             TraceCode::BULK_ACTION_RESPONSE_TIME,
             [
@@ -3561,6 +3614,8 @@ class Service extends Base\Service
 
             $allowReversals = (bool) ($input['allow_reversals'] ?? false);
 
+            $this->checkDashboardAccessForAllowReversals($enableDashboardAccess, $allowReversals);
+
             unset($input['dashboard_access']);
 
             unset($input['allow_reversals']);
@@ -5201,4 +5256,39 @@ class Service extends Base\Service
         RuntimeManager::setTimeLimit(300);
     }
 
+    protected function extractSubmerchantInput(array $input)
+    {
+        return [
+            Entity::NAME                    => $input[BatchHeader::ACCOUNT_NAME],
+            Entity::EMAIL                   => $input[BatchHeader::ACCOUNT_EMAIL],
+            Entity::DASHBOARD_ACCESS        => (bool) $input[BatchHeader::DASHBOARD_ACCESS],
+            Entity::ALLOW_REVERSALS         => (bool) $input[BatchHeader::CUSTOMER_REFUNDS],
+        ];
+    }
+
+    protected function extractBankAccountDetails(array $input)
+    {
+        return [
+            MerchantDetail::BANK_ACCOUNT_NAME       => $input[BatchHeader::BENEFICIARY_NAME],
+            MerchantDetail::BANK_ACCOUNT_NUMBER     => $input[BatchHeader::ACCOUNT_NUMBER],
+            MerchantDetail::BANK_BRANCH_IFSC        => $input[BatchHeader::IFSC_CODE],
+            MerchantDetail::BUSINESS_NAME           => $input[BatchHeader::BUSINESS_NAME],
+            MerchantDetail::BUSINESS_TYPE           => Detail\BusinessType::getIndexFromKey($input[BatchHeader::BUSINESS_TYPE]),
+            MerchantDetail::SUBMIT                  => '1',
+        ];
+    }
+
+    protected function checkDashboardAccessForAllowReversals(bool $dashboardAccess, bool $allowReversals)
+    {
+        if (($allowReversals === true) and
+            ($dashboardAccess === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_DASHBOARD_ACCESS_REQUIRED_TO_ALLOW_REVERSALS,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_DASHBOARD_ACCESS_REQUIRED_TO_ALLOW_REVERSALS
+            );
+        }
+    }
 }

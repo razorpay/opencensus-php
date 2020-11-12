@@ -1306,6 +1306,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED                  = 'MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED';
     const MERCHANT_ACCOUNT_KYC_VERIFIED                         = 'MERCHANT_ACCOUNT_KYC_VERIFIED';
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED                     = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
+    const LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH               = 'LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH';
+    const LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL            = 'LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL';
     const MERCHANT_TERMINALS                                    = 'MERCHANT_TERMINALS';
     const MERCHANT_CREATE                                       = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                                         = 'MERCHANT_EDIT';

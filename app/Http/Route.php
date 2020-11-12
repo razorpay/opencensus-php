@@ -1231,6 +1231,7 @@ class Route
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
+        'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -3249,6 +3250,7 @@ class Route
         'payouts_bulk_sample_file',
 
         'setl_fetch_source_details',
+        'linked_account_create_batch',
     ];
 
     //
@@ -5569,6 +5571,7 @@ class Route
             'mpans_bulk',
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
+            'linked_account_create_batch',
         ],
 
         'stork' => [
