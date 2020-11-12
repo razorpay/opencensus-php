@@ -133,7 +133,9 @@ class WebhookV2Test extends TestCase
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
             ['merchant_id' => '100000Razorpay']);
 
-        s($this->startTest());
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
     }
 
     public function testCreateWebhookForPartner()
