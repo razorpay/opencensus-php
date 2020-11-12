@@ -8,23 +8,18 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
-            'title'       => 'Pay vendor invoices in seconds.',
-            'description' => 'Welcome to the easiest way to make vendor payments: End-to-end automation for adding, tracking, and clearing invoice & TDS payments.',
+            'title'       => 'Pay your vendors in seconds',
+            'description' => 'Upload invoices and pay vendors and TDS automatically.',
             'start_ts'    => 1604904751,
             'end_ts'      => 1612084863,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payment-button.svg',
+            'icon'        => 'https://cdn.razorpay.com/pg_announcement_icon.svg',
             'track_event' => true,
             'id'          => 'NOV20-VP-C1',
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Enable Now',
+                    'label' => 'Learn More',
                     'url'   => 'https://x.razorpay.com/vendor-payments?utm_source=pg-dashboard&utm_medium=notification&utm_campaign=vp-new-features',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Schedule Demo',
-                    'url'   => 'https://calendly.com/payouts/vendor-payouts-demo-razorpayx',
                 ]
             ],
             'filters'     => [

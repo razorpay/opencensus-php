@@ -50,8 +50,8 @@ import NCModal from 'merchant/components/Activation/NCModal';
 )
 class AnalyticsDesktop extends Component {
   state = {
-    showNcPopup: true
-  }
+    showNcPopup: true,
+  };
   constructor(props) {
     super(props);
 
@@ -108,9 +108,9 @@ class AnalyticsDesktop extends Component {
 
   onNcModalClose = () => {
     this.setState({
-      showNcPopup: false
-    })
-  }
+      showNcPopup: false,
+    });
+  };
 
   render() {
     const {
@@ -194,11 +194,9 @@ class AnalyticsDesktop extends Component {
             )}
 
           {/* needs clarification modal */}
-          {
-            this.state.showNcPopup && user.needsClarification && (
-              <NCModal onClose={this.onNcModalClose} />
-            )
-          }
+          {this.state.showNcPopup && user.needsClarification && (
+            <NCModal onClose={this.onNcModalClose} />
+          )}
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
@@ -244,26 +242,6 @@ class AnalyticsDesktop extends Component {
                   Add Details
                 </button>
               </Link>
-            </AnnouncementBanner>
-          )}
-
-          {user.isVendorPaymentNotificationEnabled && (
-            <AnnouncementBanner
-              title="RazorpayX Vendor Payments"
-              theme="primary"
-              canBeClosed={true}
-            >
-              <span className="support-tagline">
-                Welcome to the easiest way to pay vendors and TDS.
-              </span>
-              <a
-                href="https://x.razorpay.com/vendor-payments?utm_source=pg-dashboard&utm_medium=banner&utm_campaign=vp-new-features"
-                target="_blank"
-              >
-                <button className="pull-right primary btn-support" type="button">
-                  Explore Now
-                </button>
-              </a>
             </AnnouncementBanner>
           )}
 
