@@ -15,7 +15,7 @@ import RTracking from 'react-tracking';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
-
+import SmsNotification from './SmsNotification';
 @connect(
   (state) => {
     return {
@@ -170,6 +170,7 @@ export default class CongfigurationContainer extends Component {
 
             {this.props.mode === 'live' && <InternationalConfig />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
+            {this.props.user.contact_mobile && <SmsNotification />}
           </div>
         )}
       </div>

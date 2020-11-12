@@ -1,0 +1,117 @@
+import { useEffect, useState } from 'react';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { connect } from 'react-redux';
+import { updateConfig } from 'merchant/reducers/config';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import SwitchField from 'common/ui/Forms/SwitchField';
+
+function SmsNotification({ currentUser, showNotification }) {
+  const [sms_optin, setSmsOptin] = useState(null);
+
+  function fetchSmsOptin() {
+    return merchantFetch({
+      url: `settlements/sms_notification/status`,
+    });
+  }
+
+  function updateSmsOptin(optin = false) {
+    return merchantFetch({
+      url: `settlements/sms_notification/toggle`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'post',
+      data: {
+        enable: optin,
+      },
+    });
+  }
+
+  useEffect(() => {
+    const fetchSmsState = async () => {
+      try {
+        const response = await fetchSmsOptin();
+        setSmsOptin(response.data.enabled);
+      } catch (e) {
+        showNotification({
+          type: 'error',
+          message: 'Error in fetching SMS preferences',
+        });
+      }
+    };
+    fetchSmsState();
+  }, []);
+
+  const analytics = (action) => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settings',
+      eventAction: `${action} - SMS notifications`,
+    });
+  };
+
+  const toggleSmsNotification = (sms_optin_checked, cb) => {
+    if (sms_optin_checked) {
+      analytics('Enable');
+    } else {
+      analytics('Disable');
+    }
+
+    updateSmsOptin(sms_optin_checked)
+      .then((response) => {
+        cb(true);
+        setSmsOptin(response.data.enabled);
+        showNotification({
+          type: 'success',
+          message: 'Your SMS preference was saved',
+        });
+      })
+      .catch(({ errors }) => {
+        if (errors) {
+          cb(false);
+          showNotification({
+            type: 'error',
+            message: errors,
+          });
+        }
+      });
+  };
+
+  return (
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span class="title">SMS Notifications</span>
+
+        <span class="toggler-btn">
+          <SwitchField
+            checked={sms_optin ? true : false}
+            onChange={(_, cb) => toggleSmsNotification(sms_optin ? false : true, cb)}
+            type="prime"
+          />
+          {sms_optin ? <b class="text-primary">Enabled</b> : <b class="text-faded">Disbaled</b>}
+        </span>
+      </div>
+
+      <div class="panel-body">
+        <form class="form-horizontal">
+          <div class="description">
+            Receive notifications from Razorpay via SMS on your number{' '}
+            <strong>+91 - {currentUser.contact_mobile}</strong>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+const mapStateToProps = (state) => ({
+  currentUser: state.session.user.user,
+});
+
+export default connect(mapStateToProps, {
+  updateConfig,
+  showNotification,
+  openModal,
+  closeModal,
+})(SmsNotification);
