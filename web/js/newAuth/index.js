@@ -192,18 +192,18 @@ const InlineText = Styled(Text)`
 const App = () => {
   const [showBanner, setShowBanner] = useState(false);
 
+  const isCampaignLive = () => {
+    const startDate = new Date('October 15, 2020 00:00:01').getTime();
+    const endDate = new Date('December 1, 2020 00:00:01').getTime();
+    const now = new Date().getTime();
+    return now > startDate && now < endDate;
+  };
+
   useEffect(() => {
     if (!window.location.href.includes('coupon_code') && isCampaignLive()) {
       setShowBanner(true);
     }
   }, [showBanner]);
-
-  const isCampaignLive = () => {
-    const startDate = new Date('October 15, 2020 00:00:01').getTime();
-    const endDate = new Date('November 17, 2020 00:00:01').getTime();
-    const now = new Date().getTime();
-    return now > startDate && now < endDate;
-  };
 
   const handleContactUsClick = () => {
     window.rzpQ.push(
