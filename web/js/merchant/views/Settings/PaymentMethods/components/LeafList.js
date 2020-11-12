@@ -46,7 +46,7 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
     }
   }
   return (
-    <div class="level-3">
+    <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
       {instrument.leafList.map((leafList) => {
         return (
           <React.Fragment key={leafList.header}>

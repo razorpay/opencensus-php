@@ -601,12 +601,6 @@ let initialState = {
               status: 'Request',
               slug: 'credit',
             },
-            {
-              name: 'Bajaj Finserv',
-              description: '',
-              status: 'Request',
-              slug: 'credit.bajaj',
-            },
           ],
         },
         {
