@@ -1936,6 +1936,12 @@ function ActivationField(field) {
     rest.className = rest.className(this);
   }
 
+  // temp solution for business category on NC flow
+  let isNCFlowComponentDisbaled = false
+  if(rest.name === 'business_category' || rest.name === 'business_subcategory'){
+    isNCFlowComponentDisbaled = this.isOnKYCTab() ? true : false
+  }
+
   return (
     <>
       {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
@@ -1974,7 +1980,7 @@ function ActivationField(field) {
         key={key}
         data-name={_name}
         defaultValue={defaultValue}
-        disabled={isComponentDisabled}
+        disabled={isComponentDisabled || isNCFlowComponentDisbaled}
         autoRender={_autoRenderImpure}
         required={typeof required === 'function' ? required(this) : required}
         {...rest}
