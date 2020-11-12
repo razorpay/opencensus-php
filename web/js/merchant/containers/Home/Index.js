@@ -12,6 +12,7 @@ import {
   OTHERS,
 } from 'common/utils/pokedex';
 import LocalStorageService from 'common/utils/localStorage';
+import { getCookie } from '../../../common/utils/cookies';
 import debounce from 'common/utils/debounce';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
@@ -135,6 +136,9 @@ export default class HomeContainer extends Component {
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
     this.firstStepToken = `${firstStepToken}--${user.current}`;
     this.partnerOnBoardingToken = `${partnerOnBoarding}--${user.current}`;
+
+    this.couponCode = 'UNLOCKFEST';
+    this.isFestive = getCookie(`coupon_code--${user.current}`) === this.couponCode;
 
     /*
      * Earlier , the tokens apply at browser level, if old tokens are present
@@ -860,7 +864,7 @@ export default class HomeContainer extends Component {
           !user.isPartnerIntent() && (
             <ModalMask>
               <Modal
-                className="welcome-modal"
+                className={`welcome-modal${this.isFestive ? ' festive' : ''}`}
                 onClose={() => {
                   trackIAClose();
                   this.closeOnboardingStep();
@@ -888,6 +892,7 @@ export default class HomeContainer extends Component {
                       trackActivateAccount();
                       onFirstStepClose();
                     }}
+                    isFestive={this.isFestive}
                   />
                 </ModalContent>
               </Modal>
