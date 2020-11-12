@@ -20,6 +20,9 @@ const Transactions = lazy(() =>
 const Settlements = lazy(() =>
   import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements/List'),
 );
+const SettlementDetailsV2 = lazy(() =>
+  import(/* webpackChunkName: "SettlementDetails" */ 'merchant/views/Settlements/v2/Details'),
+);
 const PaymentLinks = lazy(() =>
   import(/* webpackChunkName: "PaymentLinks" */ 'merchant/views/PaymentLinks/Index'),
 );
@@ -242,6 +245,12 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('orders')}
           />
           <Route path="/disputes" component={Transactions} />
+
+          <Route
+            path="/settlements/:id(setl_.+)/"
+            component={SettlementDetailsV2}
+            additionalCondition={(user) => user.isUxRevampPhase2Enabled}
+          />
 
           <ShowWhenRoute
             path="/settlements"

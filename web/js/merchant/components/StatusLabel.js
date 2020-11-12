@@ -42,6 +42,8 @@ export const refundStatusMap = {
   processed: 'label-success',
   processing: 'label-info',
   failed: 'label-danger',
+  created: 'bg-primary',
+  initiated: 'bg-light',
 };
 
 export const settlementStatusMap = {

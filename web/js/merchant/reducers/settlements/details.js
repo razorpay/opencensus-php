@@ -7,7 +7,7 @@ const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 
-export const fetchItem = id => {
+export const fetchItem = (id) => {
   let settlement = new Settlement();
 
   return {
@@ -24,7 +24,7 @@ export const fetchSchedule = () => {
   };
 };
 
-export const fetchBreakupDetails = params => {
+export const fetchBreakupDetails = (params) => {
   let settlement = new Settlement(params);
   return {
     type: SETTLEMENT_BREAKUP_FETCH,
@@ -47,6 +47,7 @@ let initialState = {
     loading: false,
     items: [],
     error: null,
+    isBreakupNew: null,
   },
   schedule: {
     loading: false,
@@ -60,7 +61,38 @@ let initialState = {
   },
 };
 
-export default function(state = initialState, action) {
+const isBreakupNew = (obj) => {
+  delete obj.amountInINR;
+  delete obj.resourceUrl;
+  delete obj.resourceIdField;
+
+  let newResponse = false;
+
+  if ('tax' in obj && 'fee' in obj) newResponse = true;
+  else newResponse = false;
+
+  return newResponse;
+};
+
+const calculateSettledAmountPerComponent = (items) => {
+  return items.reduce((acc, item) => {
+    const component = { ...item };
+    let amount = component.amount;
+
+    if (component.type === 'debit') {
+      amount = -1 * amount;
+    }
+
+    const { tax, fee } = component;
+    component.settled_amount = amount - tax - fee;
+
+    acc.push(component);
+
+    return acc;
+  }, []);
+};
+
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${SETTLEMENT_FETCH}::PENDING`:
       return set(state, 'loading', true);
@@ -84,20 +116,33 @@ export default function(state = initialState, action) {
         loading: true,
         items: [],
         error: null,
+        isBreakupNew: null,
       });
 
-    case `${SETTLEMENT_BREAKUP_FETCH}::SUCCESS`:
+    case `${SETTLEMENT_BREAKUP_FETCH}::SUCCESS`: {
+      const updatedItems = action.payload.data.items.map((item) => {
+        return item.component === 'settlement.ondemand'
+          ? { ...item, component: 'ondemand settlement' }
+          : item;
+      });
+
+      const val = isBreakupNew(action.payload.data.items[0]);
+      const breakupItems = val ? calculateSettledAmountPerComponent(updatedItems) : updatedItems;
+
       return set(state, 'breakupDetails', {
         loading: false,
-        items: action.payload.data.items,
+        items: breakupItems,
         error: null,
+        isBreakupNew: val,
       });
+    }
 
     case `${SETTLEMENT_BREAKUP_FETCH}::ERROR`:
       return set(state, 'breakupDetails', {
         loading: false,
         items: [],
         error: action.payload.errors,
+        isBreakupNew: null,
       });
 
     case `${SETTLEMENT_SCHEDULE_FETCH}::SUCCESS`:

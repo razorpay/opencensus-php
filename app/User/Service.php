@@ -1356,6 +1356,7 @@ class Service extends Base\Service
             'rx_payout_links_new_information_flow',
             'capital_loans_announcement_aug2020',
             'instrument_request_merchant_dashboard',
+            'settlement_ux_revamp_p2',
             'rx_view_only_update',
             'rx_accounting_payouts_active',
             'rx_accounting_payouts_ask_clientID',

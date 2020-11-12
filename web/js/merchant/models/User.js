@@ -433,6 +433,10 @@ export default class User {
     return this.getExpStatus('view_fd_tickets');
   }
 
+  get isUxRevampPhase2Enabled() {
+    return this.getExpStatus('settlement_ux_revamp_p2');
+  }
+
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }

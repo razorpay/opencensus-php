@@ -213,7 +213,8 @@ const entityDetailsMap = {
   },
   '/settlements/:id': {
     component: SettlementDetails,
-    additionalCondition: (user) => user.isAllowedView('settlements'),
+    additionalCondition: (user) =>
+      !user.isUxRevampPhase2Enabled && user.isAllowedView('settlements'),
   },
   '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,

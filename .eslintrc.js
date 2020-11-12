@@ -6,6 +6,8 @@ module.exports = {
     ...universeEsLintConfig.rules,
     'no-unused-expressions': 'off',
     'babel/no-unused-expressions': 'error',
+    'react/prop-types': 'off',
+    'react/no-unknown-property': [2, { ignore: ['class', 'for'] }],
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.tsx'] }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
   },
@@ -84,6 +86,7 @@ module.exports = {
     'import/resolver': {
       node: {
         extensions: ['.tsx', '.ts', '.js', '.web.js', '.desktop.js', '.mobile.js'],
+        moduleDirectory: ['node_modules', 'js/'],
       },
     },
   },

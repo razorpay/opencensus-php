@@ -1,0 +1,86 @@
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { calculateCreditDebitAmount } from '../util';
+import ComponentRow from './ComponentRow';
+import TotalAmount from './TotalAmount';
+import * as SettlementActions from 'merchant/reducers/settlements/details';
+import Spinner from 'common/ui/Spinner';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+const SettlementBreakup = (props) => {
+  const {
+    breakupDetails: { items, isBreakupNew, loading, error },
+  } = props;
+
+  useEffect(() => {
+    props.fetchBreakupDetails({
+      id: props.settlementId,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (error)
+      props.showNotification({
+        type: 'error',
+        message: error,
+      });
+  }, [error]);
+
+  // show spinner unless settlements and breakup data is available
+  if (loading) {
+    return (
+      <div class="div--loading">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) return null;
+
+  const calculatedAmounts = calculateCreditDebitAmount(items, isBreakupNew);
+
+  return (
+    <React.Fragment>
+      <TotalAmount
+        infoText="Total amount that has been credited to your account"
+        value={calculatedAmounts.credit}
+        type="credit"
+        isNew={isBreakupNew}
+      />
+      <table>
+        <tbody>
+          {items.map((breakupItem, index) => {
+            return breakupItem.type === 'credit' ? (
+              <ComponentRow key={index} breakupItem={breakupItem} newResponse={isBreakupNew} />
+            ) : null;
+          })}
+        </tbody>
+      </table>
+      <TotalAmount
+        infoText="Total amount that has been debited to your account"
+        value={calculatedAmounts.debit}
+        type="debit"
+        isNew={isBreakupNew}
+      />
+      <table>
+        <tbody>
+          {items.map((breakupItem, index) => {
+            return breakupItem.type === 'debit' ? (
+              <ComponentRow key={index} breakupItem={breakupItem} newResponse={isBreakupNew} />
+            ) : null;
+          })}
+        </tbody>
+      </table>
+    </React.Fragment>
+  );
+};
+
+const mapStateToProps = (state) => {
+  return {
+    breakupDetails: state.settlement.breakupDetails,
+  };
+};
+
+export default connect(mapStateToProps, { ...SettlementActions, showNotification })(
+  SettlementBreakup,
+);
