@@ -106,7 +106,7 @@ function SmsNotification({ currentUser, showNotification }) {
 }
 
 const mapStateToProps = (state) => ({
-  currentUser: state.session.user.user,
+  currentUser: state.session.user,
 });
 
 export default connect(mapStateToProps, {
