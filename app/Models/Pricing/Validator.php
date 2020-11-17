@@ -67,6 +67,14 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
     ];
 
+    protected static $merchantPricingPlansSummaryRules = [
+        Entity::TYPE      => 'sometimes|string|in:pricing,commission',
+        Entity::PLAN_NAME => 'sometimes|string',
+        Entity::PLAN_ID   => 'sometimes|string|size:14',
+        Fetch::COUNT      => 'sometimes|integer|min:0',
+        Fetch::SKIP       => 'sometimes|integer|min:0',
+    ];
+
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
         'addPlanRuleCard',

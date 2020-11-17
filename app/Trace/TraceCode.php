@@ -1448,6 +1448,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ONBOARDING_SMS_TEMPLATE_NAME                 = 'MERCHANT_ONBOARDING_SMS_TEMPLATE_NAME';
 
     const PRICING_PLAN_CREATE_ATTEMPT                           = 'PRICING_PLAN_CREATE_ATTEMPT';
+    const PRICING_PLAN_FETCH_ATTEMPT                            = 'PRICING_PLAN_FETCH_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS                           = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT                         = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
