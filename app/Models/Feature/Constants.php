@@ -372,6 +372,11 @@ class Constants
      */
     const USE_SETTLEMENT_ONDEMAND      = 'use_settlement_ondemand';
 
+    /**
+     * Flag to show deductions for instant settlements in dashboard.
+     */
+    const SHOW_ON_DEMAND_DEDUCTION      = 'show_on_demand_deduction';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -739,6 +744,7 @@ class Constants
         self::LOC                             => true,
         self::LOS                             => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
+        self::SHOW_ON_DEMAND_DEDUCTION        => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
         self::CAPITAL_CARDS                   => true,
@@ -993,6 +999,11 @@ class Constants
         self::USE_SETTLEMENT_ONDEMAND  => [
             'feature'       => self::USE_SETTLEMENT_ONDEMAND,
             'display_name'  => 'Use the settlement/ondemand route for ondemand settlement',
+            'documentation' => '',
+        ],
+        self::SHOW_ON_DEMAND_DEDUCTION => [
+            'feature'       => self::SHOW_ON_DEMAND_DEDUCTION,
+            'display_name'  => 'Flag to show deductions for instant settlements in dashboard.',
             'documentation' => '',
         ],
         self::NPS_SURVEY_OTHER_PRODUCTS  => [
