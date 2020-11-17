@@ -24,7 +24,7 @@ class RxCard extends Component {
   }
 
   componentDidMount() {
-    if (!this.state.hidden || this.isRxCaExpEnabled) {
+    if (!this.state.hidden && this.isRxCaExpEnabled) {
       this.addVisitedFlag();
     }
   }
@@ -144,15 +144,15 @@ class RxCard extends Component {
                 </a>
               </>
             ) : (
-              <div className="req-success">
-                <div>
-                  <img className="req-submit" src="/dist/css/assets/onboarding/done.png" />
+                <div className="req-success">
+                  <div>
+                    <img className="req-submit" src="/dist/css/assets/onboarding/done.png" />
+                  </div>
+                  <div className="req-info">
+                    Request submitted successfully. Our executive will call you for further process
                 </div>
-                <div className="req-info">
-                  Request submitted successfully. Our executive will call you for further process
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
         <div className="right-container">
