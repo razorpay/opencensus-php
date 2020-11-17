@@ -17,9 +17,9 @@ use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Reconciliator\NetbankingDcb\Reconciliate;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceNetbankingTest
 {
     use ReconTrait;
     use FileUploadTrait;
