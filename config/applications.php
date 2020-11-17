@@ -262,6 +262,10 @@ return [
         'secret' => env('CAPITAL_CARDS_PASSWORD'),
     ],
 
+    'capital_collections_client' => [
+        'secret' => env('CAPITAL_COLLECTIONS_PASSWORD'),
+    ],
+
     'leegality' => [
         'secret' => env('LEEGALITY_WEBHOOK_SECRET')
     ],
@@ -518,6 +522,13 @@ return [
         'username'      => 'api',
         'secret'        => env('APP_CAPITAL_CARDS_SECRET', 'api'),
         'timeout'       => env('APP_CAPITAL_CARDS_TIMEOUT', 60),
+    ],
+
+    'capital_collections' => [
+        'url'           => env('APP_CAPITAL_COLLECTIONS_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_CAPITAL_COLLECTIONS_SECRET', 'api'),
+        'timeout'       => env('APP_CAPITAL_COLLECTIONS_TIMEOUT', 60),
     ],
 
     'offline_verification' => [
