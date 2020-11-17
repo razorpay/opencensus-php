@@ -52,6 +52,8 @@ export const settlementStatusMap = {
   scheduled: 'bg-light',
   processed: 'label-success',
   failed: 'label-danger',
+  partially_processed: 'label-partial-process',
+  reversed: 'label-muted',
 };
 
 export const batchUploadStatusMap = {

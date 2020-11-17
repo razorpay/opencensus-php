@@ -1,13 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import SettlementsExample from 'merchant/views/Settlements/components/SettlementsExample';
+import SettlementsExample from 'merchant/views/Settlements/Settlements/components/SettlementsExample';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import HolidayModal from 'merchant/views/Settlements/components/Modals/HolidayModal';
+import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { titleCase } from 'common/utils/rzp-utils';
 
-@connect(state => state.settlement, {
+@connect((state) => state.settlement, {
   closeModal,
   openModal,
 })
@@ -28,12 +28,12 @@ export default class SettlementSchedule extends Component {
     const { schedule } = this.props;
 
     let defaultDomestic = schedule.data.filter(
-      item => item.method === null && item.international === 0
+      (item) => item.method === null && item.international === 0,
     );
     let defaultInternational = schedule.data.filter(
-      item => item.method === null && item.international === 1
+      (item) => item.method === null && item.international === 1,
     );
-    let otherMethods = schedule.data.filter(item => item.method !== null);
+    let otherMethods = schedule.data.filter((item) => item.method !== null);
 
     this.setState({
       defaultDomestic,
@@ -42,7 +42,7 @@ export default class SettlementSchedule extends Component {
     });
   };
 
-  formatTime = hrs => {
+  formatTime = (hrs) => {
     const formattedHrs = hrs.map((hr, idx) => {
       return moment(hr, 'hh').format('LT');
     });
@@ -57,7 +57,7 @@ export default class SettlementSchedule extends Component {
   };
 
   toggleExample = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         showExample: !prevState.showExample,
       };
@@ -102,9 +102,7 @@ export default class SettlementSchedule extends Component {
         <div class="modal-body">
           <Fragment>
             <div class="settlement-details-overflow-box">
-              <div class="payment-heading">
-                Your payments get settled to your account in,
-              </div>
+              <div class="payment-heading">Your payments get settled to your account in,</div>
               <div class="emphzd" style={{ paddingBottom: 0 }}>
                 <div class="emphzd-div">
                   {this.state.defaultDomestic.length > 0 && (
@@ -113,15 +111,11 @@ export default class SettlementSchedule extends Component {
                         Domestic Payments<span class="text-danger">*</span>
                       </div>
                       <div class="w50 text-right">
-                        {this.state.defaultDomestic[0]
-                          .is_early_settlement_schedule ? (
+                        {this.state.defaultDomestic[0].is_early_settlement_schedule ? (
                           this.formatTime(this.state.defaultDomestic[0].hour)
                         ) : (
                           <>
-                            <strong>
-                              T+{this.state.defaultDomestic[0].delay}
-                            </strong>{' '}
-                            working days
+                            <strong>T+{this.state.defaultDomestic[0].delay}</strong> working days
                           </>
                         )}
                       </div>
@@ -134,17 +128,12 @@ export default class SettlementSchedule extends Component {
                         International Payments<span class="text-danger">*</span>
                       </div>
                       <div class="w50 text-right">
-                        {this.state.defaultInternational[0]
-                          .is_early_settlement_schedule ? (
-                          this.formatTime(
-                            this.state.defaultInternational[0].hour
-                          )
+                        {this.state.defaultInternational[0].is_early_settlement_schedule ? (
+                          this.formatTime(this.state.defaultInternational[0].hour)
                         ) : (
                           <>
-                            <strong>
-                              T+{this.state.defaultInternational[0].delay}
-                            </strong>{' '}
-                            working days
+                            <strong>T+{this.state.defaultInternational[0].delay}</strong> working
+                            days
                           </>
                         )}
                       </div>
@@ -180,16 +169,11 @@ export default class SettlementSchedule extends Component {
                     </div>
                   );
                 })}
-                <div
-                  class="settlement-default-note"
-                  style={{ fontSize: '13px' }}
-                >
+                <div class="settlement-default-note" style={{ fontSize: '13px' }}>
                   <div class="w50 text-left">
                     <span class="text-danger">*</span> for Default Schedules
                   </div>
-                  <div class="w50 text-right">
-                    (T is the date of payment capture)
-                  </div>
+                  <div class="w50 text-right">(T is the date of payment capture)</div>
                 </div>
               </div>
             </div>{' '}
@@ -198,20 +182,13 @@ export default class SettlementSchedule extends Component {
                 <b>Note:</b> Weekends aren’t counted as working days. <br />
                 <a onClick={this.toggleExample} class="link">
                   {this.state.showExample ? 'Hide' : 'View'} Examples{' '}
-                  <i
-                    class={`i i-arrow-${
-                      this.state.showExample ? 'up' : 'down'
-                    }`}
-                  />
+                  <i class={`i i-arrow-${this.state.showExample ? 'up' : 'down'}`} />
                 </a>
               </p>
               {this.state.showExample ? (
                 <Fragment>
                   <h5>Following is an example for T+3 Days</h5>
-                  <img
-                    src="/img/settlement-example.svg"
-                    style={{ width: '100%' }}
-                  />
+                  <img src="/img/settlement-example.svg" style={{ width: '100%' }} />
                 </Fragment>
               ) : null}
 

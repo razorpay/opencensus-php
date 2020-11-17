@@ -8,7 +8,15 @@ import {
 import lazy from './LazyLoader';
 
 const SettlementDetails = lazy(() =>
-  import(/* webpackChunkName: "SettlementsDetails" */ 'merchant/views/Settlements/Details'),
+  import(
+    /* webpackChunkName: "SettlementsDetails" */ 'merchant/views/Settlements/Settlements/Details'
+  ),
+);
+
+const InstantSettlementDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "InstantSettlementDetails" */ 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails'
+  ),
 );
 
 const PaymentLinkDetails = lazy(() =>
@@ -215,6 +223,10 @@ const entityDetailsMap = {
     component: SettlementDetails,
     additionalCondition: (user) =>
       !user.isUxRevampPhase2Enabled && user.isAllowedView('settlements'),
+  },
+  '/instantsettlement/:id': {
+    component: InstantSettlementDetails,
+    additionalCondition: (user) => user.isAllowedView('settlements'),
   },
   '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,

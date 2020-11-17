@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import Button from 'common/new-ui/Button';
-import ScheduledModal from 'merchant/views/Settlements/components/Modals/ScheduledModal';
+import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
-@connect(state => ({}), {
+@connect((state) => ({}), {
   ...ModalActions,
 })
 export default class EarlyScheduledAnnouncement extends Component {
@@ -27,9 +27,7 @@ export default class EarlyScheduledAnnouncement extends Component {
           class="pull-right"
           onClick={() => {
             this.props.openModal({
-              component: (
-                <ScheduledModal fromWhere="Home Announcement Banner" />
-              ),
+              component: <ScheduledModal fromWhere="Home Announcement Banner" />,
               size: 'small',
               disableClose: true,
             });

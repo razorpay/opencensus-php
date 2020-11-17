@@ -16,12 +16,12 @@ import HeaderAction from 'common/ui/HeaderAction';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
-import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
+import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
-import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(

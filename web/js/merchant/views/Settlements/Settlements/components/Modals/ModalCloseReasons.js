@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
+import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import Input from 'common/new-ui/Input';
-import { CLOSE_OPTIONS } from 'merchant/views/Settlements/data';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,

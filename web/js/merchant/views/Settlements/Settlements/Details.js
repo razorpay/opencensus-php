@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import SettlementDetails from 'merchant/views/Settlements/components/Details';
+import SettlementDetails from 'merchant/views/Settlements/Settlements/components/Details';
 import * as SettlementActions from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
-import SettlementBreakupModal from 'merchant/views/Settlements/components/Modals/BreakupModal';
-
+import SettlementBreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
 @connect((state) => state.settlement, { ...SettlementActions, ...ModalActions })
 export default class SettlementDetailsContainer extends Component {
   componentWillMount() {

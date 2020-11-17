@@ -14,8 +14,8 @@ import Amount from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/ModalCloseReasons';
-import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
+import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
+import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,

@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
-import HolidaysTable from 'merchant/views/Settlements/components/HolidayTable';
+import HolidaysTable from 'merchant/views/Settlements/Settlements/components/HolidayTable';
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
-@connect(state => state.settlement, {
+@connect((state) => state.settlement, {
   fetchBreakupDetails,
   ...ModalActions,
 })
@@ -26,10 +26,7 @@ export default class HolidayModal extends Component {
             });
           }}
         />
-        <HolidaysTable
-          items={this.props.holidayList.data[year]}
-          loading={false}
-        />
+        <HolidaysTable items={this.props.holidayList.data[year]} loading={false} />
       </div>
     );
   }

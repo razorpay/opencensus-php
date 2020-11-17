@@ -363,6 +363,10 @@ export default class User {
     });
   }
 
+  get isUseSettlementOndemandEnabled() {
+    return this.isFeatureEnabled('use_settlement_ondemand');
+  }
+
   get showInstantActivation() {
     return this.isOrgRZP && (!!this.activation_flow || this.instant_activations);
   }
@@ -679,6 +683,10 @@ export default class User {
     const currentOrg = getOrg().custom_code;
 
     return currentOrg === 'axis';
+  }
+
+  get showOnDemandDeduction() {
+    return this.isFeatureEnabled('show_on_demand_deduction');
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

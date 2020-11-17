@@ -4,7 +4,7 @@ import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
 import Spinner from 'common/ui/Spinner';
-import SettlementBreakupTable from 'merchant/views/Settlements/components/BreakupTable';
+import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/components/BreakupTable';
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 

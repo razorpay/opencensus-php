@@ -8,7 +8,7 @@ const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 
 export const fetchItem = (id) => {
-  let settlement = new Settlement();
+  const settlement = new Settlement();
 
   return {
     type: SETTLEMENT_FETCH,
@@ -17,7 +17,7 @@ export const fetchItem = (id) => {
 };
 
 export const fetchSchedule = () => {
-  let settlement = new Settlement();
+  const settlement = new Settlement();
   return {
     type: SETTLEMENT_SCHEDULE_FETCH,
     payload: settlement.fetchSettlementSchedule(),
@@ -25,7 +25,7 @@ export const fetchSchedule = () => {
 };
 
 export const fetchBreakupDetails = (params) => {
-  let settlement = new Settlement(params);
+  const settlement = new Settlement(params);
   return {
     type: SETTLEMENT_BREAKUP_FETCH,
     payload: settlement.fetchBreakupDetails(),
@@ -39,7 +39,7 @@ export const fetchHolidayList = () => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   settlement: {},
   error: null,

@@ -21,6 +21,7 @@ import itemsReducer from 'merchant/reducers/items';
 import orderReducer from 'merchant/reducers/orders/details';
 import disputeReducer from 'merchant/reducers/disputes/details';
 import settlementReducer from 'merchant/reducers/settlements/details';
+import instantSettlementReducer from 'merchant/reducers/instantSettlements/details';
 import webhooksReducer from 'merchant/reducers/webhooks';
 import keysReducer from 'merchant/reducers/keys';
 import bMerchantReducer from 'merchant/reducers/b-merchants';
@@ -65,6 +66,7 @@ import {
   smartCollectPaymentsReducer,
   refundsReducer,
   settlementsReducer,
+  instantSettlementsReducer,
   disputesReducer,
   submerchantsReducer,
   registrationLinksReducer,
@@ -126,6 +128,8 @@ export default combineReducers({
   payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
+  instantSettlements: instantSettlementsReducer,
+  instantSettlement: instantSettlementReducer,
   disputes: disputesReducer,
   dispute: disputeReducer,
   webhooks: webhooksReducer,

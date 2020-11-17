@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { openModal } from 'merchant_common/reducers/modals';
 import Amount from 'common/ui/Amount';
-import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import {
   fetchSchedule,
   fetchHolidayList,

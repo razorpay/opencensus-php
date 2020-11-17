@@ -18,7 +18,12 @@ const Transactions = lazy(() =>
   import(/* webpackChunkName: "Transactions" */ 'merchant/views/Transactions'),
 );
 const Settlements = lazy(() =>
-  import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements/List'),
+  import(/* webpackChunkName: "Settlements" */ 'merchant/views/Settlements'),
+);
+const InstantSettlementPayoutDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "InstantSettlementPayoutDetails" */ 'merchant/views/Settlements/InstantSettlements/PayoutDetails'
+  ),
 );
 const SettlementDetailsV2 = lazy(() =>
   import(/* webpackChunkName: "SettlementDetails" */ 'merchant/views/Settlements/v2/Details'),
@@ -265,6 +270,18 @@ export default class Content extends Component {
             path="/settlements"
             component={Settlements}
             additionalCondition={(user) => user.isAllowedView('settlements')}
+          />
+          <ShowWhenRoute
+            path="/instantsettlement_details/:id"
+            component={InstantSettlementPayoutDetails}
+            additionalCondition={(user) => user.isAllowedView('early_settlement')}
+          />
+
+          <ShowWhenRoute
+            path="/instantsettlements"
+            exact
+            component={Settlements}
+            additionalCondition={(user) => user.isAllowedView('early_settlement')}
           />
 
           <ShowWhenRoute

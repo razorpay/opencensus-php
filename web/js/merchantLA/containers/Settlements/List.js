@@ -15,9 +15,10 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { fetchBalanceAction } from 'merchantLA/reducers/credits';
 import Amount from 'common/ui/Amount';
+import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.settlements,
     balanceData: state.credits.balanceData,
     user: state.session.user,
@@ -27,7 +28,7 @@ import Amount from 'common/ui/Amount';
     fetchAll,
     fetchBalanceAction,
     ...ModalActions,
-  }
+  },
 )
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
@@ -41,7 +42,7 @@ export default class SettlementsListContainer extends ListContainer {
     });
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
@@ -59,7 +60,7 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
-  settlementBreakupOnMount = id => {
+  settlementBreakupOnMount = (id) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Show - Settlement Breakup',
@@ -67,7 +68,7 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
-  settlementBreakupOnUnmount = id => {
+  settlementBreakupOnUnmount = (id) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Hide - Settlement Breakup',
@@ -75,7 +76,7 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
-  showBreakup = settlement => {
+  showBreakup = (settlement) => {
     this.props.openModal({
       component: (
         <SettlementBreakupModal
@@ -96,19 +97,15 @@ export default class SettlementsListContainer extends ListContainer {
           <NavLink to="/settlements">Settlements</NavLink>
           <HeaderAction>
             <div>
-              <a
-                class="btn btn-link"
-                href="http://razorpay.com/settlement"
-                target="_blank"
-              >
-                How settlements work?&nbsp;<span class="icon i-external-link" />
+              <a class="btn btn-link" href="http://razorpay.com/settlement" target="_blank">
+                How settlements work?&nbsp;
+                <span class="icon i-external-link" />
               </a>
               {this.props.balanceData.loading ? (
                 <PlaceholderLoader style={{ width: 150 }} />
               ) : (
                 <span class="settlement-balance-amount">
-                  Current Balance:{' '}
-                  <Amount value={balanceData.data.balance} currency={'INR'} />
+                  Current Balance: <Amount value={balanceData.data.balance} currency={'INR'} />
                 </span>
               )}
             </div>
@@ -142,24 +139,7 @@ export default class SettlementsListContainer extends ListContainer {
               onClick={this.paginate}
             />
 
-            <div class="settlement-row">
-              <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-                <div>
-                  The amount that gets settled to your bank account will show up
-                  here.
-                </div>
-                <div>
-                  <a
-                    class="btn-link"
-                    target="_blank"
-                    href="http://razorpay.com/settlement"
-                  >
-                    See our Settlements Guide
-                  </a>{' '}
-                  to understand how it works.
-                </div>
-              </div>
-            </div>
+            <SettlementGuideText />
           </div>
         </content>
       </tabbed-container>

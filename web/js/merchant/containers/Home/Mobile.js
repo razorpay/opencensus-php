@@ -13,7 +13,7 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
 import Button from 'common/new-ui/Button';
-import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
@@ -23,19 +23,17 @@ import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
-  state => ({
+  (state) => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
     config: state.config,
   }),
-  { openModal }
+  { openModal },
 )
 class AnalyticsMobile extends Component {
   constructor(props) {
     super(props);
-    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
-      this
-    );
+    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(this);
   }
 
   showOndemandSettlementForm() {
@@ -88,23 +86,13 @@ class AnalyticsMobile extends Component {
     return (
       <div className="home-analytics-mobile">
         <div
-          ref={node => onExtraContentMount(node)}
-          className={`extra-content${
-            showOnboardingBanner ? ' has-ob-banner' : ''
-          }${
-            !showOnboardingBanner && hasSecondaryBanner
-              ? ' has-secondary-banner'
-              : ''
+          ref={(node) => onExtraContentMount(node)}
+          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
+            !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          {showInstantActivation && (
-            <Announcement mode={mode} user={user} payments={payments} />
-          )}
-          <div
-            className={`v2-onboarding-card${
-              expandOnboardingBanner ? ' expand' : ''
-            }`}
-          >
+          {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
+          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
             {showOnboardingBanner && (
               <NewUserOnboardingCard
                 payments={payments}
@@ -121,19 +109,12 @@ class AnalyticsMobile extends Component {
             </div>
           )}
           <Header className="clearfix" title="" showMode={false}>
-            <div
-              className={`pull-left ${this.props.user
-                .isOndemandSettlementEnabled && 'm-t'}`}
-            >
+            <div className={`pull-left ${this.props.user.isOndemandSettlementEnabled && 'm-t'}`}>
               Balance:{' '}
               <b>
-                {!current_balance.loading &&
-                  typeof current_balance.data.balance === 'number' && (
-                    <Amount
-                      value={current_balance.data.balance}
-                      currency={'INR'}
-                    />
-                  )}
+                {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
+                  <Amount value={current_balance.data.balance} currency={'INR'} />
+                )}
               </b>
             </div>
             <div className="pull-right">
@@ -142,19 +123,13 @@ class AnalyticsMobile extends Component {
                 <Button.Secondary
                   class="settle-btn"
                   onClick={this.showOndemandSettlementForm}
-                  disabled={
-                    current_balance.loading ||
-                    current_balance.data.balance < 100
-                  }
+                  disabled={current_balance.loading || current_balance.data.balance < 100}
                 >
                   Settle Now
                 </Button.Secondary>
               ) : (
                 <Link className="pull-right" to="/settlements">
-                  <span
-                    className="text-no-wrap"
-                    onClick={trackSettlementsClick}
-                  >
+                  <span className="text-no-wrap" onClick={trackSettlementsClick}>
                     View Settlements <i className="i i-chevron-right" />
                   </span>
                 </Link>
@@ -177,10 +152,7 @@ class AnalyticsMobile extends Component {
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
-            <div
-              id="analytics-daterange-picker"
-              className="date-range-container"
-            >
+            <div id="analytics-daterange-picker" className="date-range-container">
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={onDatesChange}
@@ -194,7 +166,9 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360 ? 40 : 57
+                      : windowWidth > 360
+                      ? 40
+                      : 57
                     : 0
                 }
               />

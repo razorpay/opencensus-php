@@ -23,7 +23,7 @@ import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCa
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import Button from 'common/new-ui/Button';
-import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
@@ -31,7 +31,7 @@ import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/
 import CreditPullModal from 'merchant/containers/CreditPullModal';
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
-import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
+import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';

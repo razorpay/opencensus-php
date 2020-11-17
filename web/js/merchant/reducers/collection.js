@@ -5,6 +5,7 @@ import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
 import Order from 'merchant/models/Order';
 import Settlement from 'merchant/models/Settlement';
+import InstantSettlement from 'merchant/models/InstantSettlement';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 import Dispute from 'merchant/models/Dispute';
@@ -150,6 +151,10 @@ export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
 
 export const fetchSettlements = (params) => fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
+
+export const fetchInstantSettlements = (params) =>
+  fetchAll(params, InstantSettlement, 'INSTANT_SETTLEMENTS');
+export const instantSettlementsReducer = makeCollectionReducer('INSTANT_SETTLEMENTS');
 
 export const fetchDisputes = (params) => fetchAll(params, Dispute, 'DISPUTES');
 export const disputesReducer = makeCollectionReducer('DISPUTES');

@@ -4,7 +4,7 @@ import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import ListGroupToggler from 'common/ui/Toggler/ListGroupToggler';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import SettlementBreakupTable from 'merchant/views/Settlements/components/BreakupTable';
+import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/components/BreakupTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import ShowWhen from 'merchant/components/ShowWhen';
