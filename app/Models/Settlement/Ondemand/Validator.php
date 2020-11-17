@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'required_without:settle_full_balance|integer|custom',
         'settle_full_balance'       => 'required_without:amount|boolean',
         Entity::CURRENCY            => 'sometimes|in:INR',
-        'description'               => 'sometimes|nullable|string',
+        'description'               => 'sometimes|nullable|string|max:30',
         Entity::NOTES               => 'sometimes|nullable|array',
     ];
 
