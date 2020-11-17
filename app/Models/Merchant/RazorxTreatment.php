@@ -181,6 +181,9 @@ final class RazorxTreatment
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
 
+    // experiment to enable whatsapp notifications and also refactoring notifications;
+    const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
+
     // release duplicate receipt check in refunds only for Google merchant as of now
     const DUPLICATE_RECEIPT_CHECK = 'duplicate_receipt_check';
 }

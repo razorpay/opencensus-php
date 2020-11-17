@@ -54,6 +54,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
@@ -1557,7 +1558,21 @@ class Core extends Base\Core
                 $merchantDetails->getActivationStatus(),
                 $currentActivationStatus));
 
-        $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
+        $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::WHATSAPP_NOTIFICATIONS);
+
+        if($isWhatsappEnabled === true)
+        {
+            $args = [
+                'activationStatus'  => $currentActivationStatus,
+                'merchant'          => $merchant
+            ];
+            (new OnboardingNotificationHandler($args))->send();
+        }
+        else
+        {
+            $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
+        }
 
         return $merchantDetails;
     }

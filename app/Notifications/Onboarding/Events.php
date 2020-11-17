@@ -1,0 +1,38 @@
+<?php
+
+
+namespace RZP\Notifications\Onboarding;
+
+
+class Events
+{
+    const UNREGISTERED_PAYMENTS_ENABLED     = 'UNREGISTERED_PAYMENTS_ENABLED';
+
+    const UNREGISTERED_SETTLEMENTS_ENABLED  = 'UNREGISTERED_SETTLEMENTS_ENABLED';
+
+    const REGISTERED_PAYMENTS_ENABLED       = 'REGISTERED_PAYMENTS_ENABLED';
+
+    const REGISTERED_SETTLEMENTS_ENABLED    = 'REGISTERED_SETTLEMENTS_ENABLED';
+
+    const PENNY_TESTING_FAILURE             = 'PENNY_TESTING_FAILURE';
+
+    const NEEDS_CLARIFICATION               = 'NEEDS_CLARIFICATION';
+
+    const SMS_TEMPLATES = [
+        self::NEEDS_CLARIFICATION              => 'sms.onboarding.needs_clarification',
+        self::UNREGISTERED_PAYMENTS_ENABLED    => 'sms.onboarding.unregistered.payments_enabled',
+        self::UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.unregistered.settlements_enabled',
+        self::REGISTERED_PAYMENTS_ENABLED      => 'sms.onboarding.registered.payments_enabled',
+        self::REGISTERED_SETTLEMENTS_ENABLED   => 'sms.onboarding.registered.settlements_enabled',
+        self::PENNY_TESTING_FAILURE            => 'sms.onboarding.penny_test_failure'
+    ];
+
+    const WHATSAPP_TEMPLATES = [
+        self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
+        self::UNREGISTERED_PAYMENTS_ENABLED    => 'Congratulations {merchantName}, your PAN is verified successfully. You can now start accepting payments by visiting your Razorpay Dashboard at {dashboardUrl}',
+        self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
+        self::REGISTERED_PAYMENTS_ENABLED      => 'Congratulations {merchantName}, you can now start accepting payments by visiting your Razorpay Dashboard at {dashboardUrl}',
+        self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
+        self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}"
+    ];
+}
