@@ -1738,9 +1738,11 @@ class Terminal extends Base
             'gateway'                   => 'paytm',
             'card'                      => 1,
             'netbanking'                => 1,
-            'gateway_merchant_id'       => 'razorpay paytm',
-            'gateway_terminal_id'       => 'nodal account paytm',
+            'gateway_merchant_id'       => 'razorpaypaytm',
+            'gateway_secure_secret'     => 'randomsecret',
+            'gateway_terminal_id'       => 'nodalaccountpaytm',
             'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'www.merchant.com'
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

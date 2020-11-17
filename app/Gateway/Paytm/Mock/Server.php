@@ -130,7 +130,9 @@ class Server extends Base\Mock\Server
             ]
         ];
 
-        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $this->getSecret());
+        $secret = \Config::get('gateway.paytm')['test_hash_secret'];
+
+        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $secret);
 
         return $this->makeResponse(json_encode($content));
     }
@@ -168,7 +170,9 @@ class Server extends Base\Mock\Server
 
         $content = $this->content($content, 'verify_refund');
 
-        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $this->getSecret());
+        $secret = \Config::get('gateway.paytm')['test_hash_secret'];
+
+        $content['head']['signature'] = Paytm\Checksum::getChecksumFromString(json_encode($content['body']), $secret);
 
         return $this->makeResponse(json_encode($content));
     }

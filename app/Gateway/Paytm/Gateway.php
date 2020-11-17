@@ -83,10 +83,12 @@ class Gateway extends Base\Gateway
             'refundAmount'  => sprintf('%0.2f', $amount),
         );
 
-        if ($this->mode === Mode::TEST)
-        {
-            $content['mid'] = $this->config['test_merchant_id'];
-        }
+        // Commented to pick mid from terminal so that merchants can make test payment's for their mid in prod test mode
+
+        //if ($this->mode === Mode::TEST)
+        //{
+        //    $content['mid'] = $this->config['test_merchant_id'];
+        //}
 
         $checksum = Checksum::getChecksumFromString(json_encode($body), $this->getSecret());
 
@@ -171,10 +173,12 @@ class Gateway extends Base\Gateway
             'refId'         => $input['refund']['id'],
         );
 
-        if ($this->mode === Mode::TEST)
-        {
-            $content['mid'] = $this->config['test_merchant_id'];
-        }
+        // Commented to pick mid from terminal so that merchants can make test payment's for their mid in prod test mode
+
+        //if ($this->mode === Mode::TEST)
+        //{
+        //    $content['mid'] = $this->config['test_merchant_id'];
+        //}
 
         $checksum = Checksum::getChecksumFromString(json_encode($body), $this->getSecret());
 
@@ -252,7 +256,9 @@ class Gateway extends Base\Gateway
 
         $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
 
-        $this->addTestMerchantIdIfTestMode($content);
+        // Commented to pick mid from terminal so that merchants can make test payment's for their mid in prod test mode
+
+        //$this->addTestMerchantIdIfTestMode($content);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
 
@@ -425,8 +431,9 @@ class Gateway extends Base\Gateway
 
             $content['PAYMENT_MODE_ONLY'] = 'Yes';
         }
+        // Commented to pick mid from terminal so that merchants can make test payment's for their mid in prod test mode
 
-        $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
+        //$this->addMerchantIdAndOtherDetails($content, $input['terminal']);
 
         return $content;
     }
@@ -588,6 +595,11 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
+    }
+
+    protected function getTestSecret()
+    {
+        return $this->input['terminal']['gateway_secure_secret'];
     }
 
     protected function verifySecureHashV2(array $content)
