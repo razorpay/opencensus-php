@@ -77,7 +77,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
         //Push all depending fields first
         allFieldsHash[field].linkedfields.forEach((dField, i) => {
           //Add all the reasons for this fields to first dependent field only
-          if (i === 0) {
+          if (i === 0 && reasons.length) {
             allFieldsHash[dField].reasons = reasons;
           }
           if (reasons.length > 0) {
@@ -102,7 +102,8 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     // LHS (KEYS) are server side attributes and reasons are read based on this key
     // RHS (VALUE) are key names of UI input component that would be rendered for getting user input
     const mappedFields = {
-      cancelled_cheque: 'cancelled_cheque',
+      cancelled_cheque: 'bank_proof_doc',
+      bank_statement: 'bank_proof_doc',
       aadhar_front: 'address_proof_front',
       aadhar_back: 'address_proof_back',
       passport_front: 'address_proof_front',
@@ -134,7 +135,8 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
         if (
           key === 'bank_account_name' ||
           key === 'bank_branch_ifsc' ||
-          key === 'bank_account_number'
+          key === 'bank_account_number' ||
+          key === 'bank_proof'
         ) {
           bankDetailsforNC[key] = value;
           removedBankDetailsFromNC = Object.assign({}, removedBankDetailsFromNC);

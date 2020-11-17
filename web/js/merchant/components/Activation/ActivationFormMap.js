@@ -91,6 +91,18 @@ const ADDRESS_PROOF_TYPES = {
   //   backView: 'Back',
   // },
 };
+const BANK_PROOF_TYPE_DOC = {
+  cancelled_cheque: {
+    label: 'Canceled Cheque Copy',
+    value: 'cancelled_cheque',
+    description: 'Please upload a copy of cancelled cheque.',
+  },
+  bank_statement: {
+    label: 'Bank Statement Copy',
+    value: 'bank_statement',
+    description: 'Please upload a copy of bank statement.',
+  },
+};
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -529,7 +541,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
-    linkedfields: ['cancelled_cheque'],
+    linkedfields: ['bank_proof', 'bank_proof_doc'],
   },
   {
     name: 'bank_branch_ifsc',
@@ -541,7 +553,7 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
-    linkedfields: ['cancelled_cheque'],
+    linkedfields: ['bank_proof', 'bank_proof_doc'],
   },
   [
     {
@@ -559,7 +571,7 @@ const bankAccountFields = [
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },
-      linkedfields: ['cancelled_cheque'],
+      linkedfields: ['bank_proof', 'bank_proof_doc'],
     },
     {
       _name: 'account_no',
@@ -877,18 +889,37 @@ const uploadFields = [
 
 export const ndcFields = [
   {
-    label: 'Cancelled Cheque Copy',
-    name: 'cancelled_cheque',
-    uploadAs: 'cancelled_cheque',
+    label: 'Cancelled Cheque/Bank Account statement',
+    _name: 'bank_proof',
+    _cmp: Input.Select,
+    options: Object.keys(BANK_PROOF_TYPE_DOC).map((type) => {
+      return { label: BANK_PROOF_TYPE_DOC[type].label, name: type };
+    }),
+    _when: (activation) => {
+      return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
+    },
+  },
+  {
+    label: '',
+    name: 'bank_proof_doc',
+    getLabel: (activation) => {
+      const { bank_proof } = activation.state;
+      return BANK_PROOF_TYPE_DOC[bank_proof].label;
+    },
+    getName: (activation) => activation.state.bank_proof,
     _type: 'address_proof_doc_upload',
     _autoRenderImpure: true,
-    description: 'Please upload a copy of cancelled cheque.',
+    description: (activation) => {
+      const { bank_proof } = activation.state;
+      return BANK_PROOF_TYPE_DOC[bank_proof].description;
+    },
     _cmp: Input.File,
     className: 'document-group',
     _when: (activation) => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },
     isNotDeletable: true,
+    linkedfields: ['bank_proof'],
   },
 ];
 

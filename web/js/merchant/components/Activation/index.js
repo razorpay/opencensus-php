@@ -152,6 +152,7 @@ export default class ActivationWizard extends React.Component {
     additional_doc: '',
     business_proof_type: 'gst_certificate',
     commentlist: {},
+    bank_proof: 'cancelled_cheque',
   };
 
   constructor(props) {
@@ -818,6 +819,9 @@ export default class ActivationWizard extends React.Component {
         address_proof_back: () => {
           return `${state.address_proof}_back`;
         },
+        bank_proof_doc: () => {
+          return state.bank_proof;
+        },
         business_proof_type_doc: () => {
           return state.business_proof_type;
         },
@@ -826,6 +830,7 @@ export default class ActivationWizard extends React.Component {
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
         }
+
         return (
           this.canSubmitL1Form &&
           Boolean(
