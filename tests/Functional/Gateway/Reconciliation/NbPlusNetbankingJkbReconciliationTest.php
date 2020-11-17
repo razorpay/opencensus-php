@@ -12,9 +12,9 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingJkbReconciliationTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingJkbReconciliationTest extends NbPlusPaymentServiceNetbankingTest
 {
     use ReconTrait;
 

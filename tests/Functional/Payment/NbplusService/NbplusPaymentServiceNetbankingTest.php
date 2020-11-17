@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Payment;
 
 use App;
-use Mail;
 use Mockery;
 
 use RZP\Constants\Mode;
@@ -15,13 +14,11 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Services\NbPlus as NbPlusPaymentService;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentNbplusTrait;
 
-class NbPlusPaymentServiceTest extends TestCase
+class NbPlusPaymentServiceNetbankingTest extends TestCase
 {
-    use PaymentTrait;
-    use DbEntityFetchTrait;
+    use PaymentNbplusTrait;
 
     const AUTHORIZE_ACTION_INPUT = [
         'payment',
@@ -49,13 +46,6 @@ class NbPlusPaymentServiceTest extends TestCase
     const PREPROCESS_CALLBACK_INPUT = [
         'gateway_data'
     ];
-
-    /**
-     * @var array
-     */
-    protected $terminal;
-
-    protected $bank;
 
     public function setUp()
     {
@@ -93,11 +83,13 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testAuthorize()
     {
-        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $paymentArray = $this->payment;
 
         $this->mockServerRequestFunction(function (&$content, $action = null)
         {
@@ -433,53 +425,5 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('GATEWAY_ERROR', $payment[Payment\Entity::ERROR_CODE]);
 
         $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
-    }
-
-    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
-    {
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
-
-        $response = $this->mockCallbackFromGateway($url, $method, $content);
-
-        $data = $this->getPaymentJsonFromCallback($response->getContent());
-
-        $response->setContent($data);
-
-        return $response;
-    }
-
-    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
-    {
-        $request = array(
-            'url' => $url,
-            'method' => strtoupper($method),
-            'content' => $content);
-
-        $response = $this->makeRequestParent($request);
-
-        return $response;
-    }
-
-    // TODO
-    /*public function testAuthorizeViaCpsCheckoutAuthorizePayment()
-    {
-    }
-
-    public function testCaptureViaNbPlusService()
-    {
-    }
-
-    public function testAuthorizeViaCpsS2SAuthorize()
-    {
-    }*/
-
-    protected function mockServerContentFunction($closure)
-    {
-        $this->nbPlusService->shouldReceive('content')->andReturnUsing($closure);
-    }
-
-    protected function mockServerRequestFunction($closure)
-    {
-        $this->nbPlusService->shouldReceive('request')->andReturnUsing($closure);
     }
 }

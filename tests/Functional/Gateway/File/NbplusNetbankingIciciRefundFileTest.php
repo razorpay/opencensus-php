@@ -10,10 +10,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
-class NbplusNetbankingIciciRefundFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingIciciRefundFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

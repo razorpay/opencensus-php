@@ -12,9 +12,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingFsbCombinedFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingFsbCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

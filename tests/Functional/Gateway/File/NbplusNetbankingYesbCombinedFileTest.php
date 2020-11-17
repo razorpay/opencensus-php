@@ -9,9 +9,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {
@@ -22,13 +22,15 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceTest
         $this->bank = 'YESB';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testNetbankingYesbCombinedFile()
     {
         Mail::fake();
 
-        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $paymentArray = $this->payment;
 
         $this->doAuthAndCapturePayment($paymentArray);
 

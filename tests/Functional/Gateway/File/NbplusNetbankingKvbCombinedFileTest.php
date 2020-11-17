@@ -9,8 +9,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
 use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingKvbCombinedFileTest extends StaticCallbackNbplusGatewayTest
 {
@@ -18,18 +18,20 @@ class NbplusNetbankingKvbCombinedFileTest extends StaticCallbackNbplusGatewayTes
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingKvbCombinedFileTestData.php';
 
-        NbPlusPaymentServiceTest::setUp();
+        NbPlusPaymentServiceNetbankingTest::setUp();
 
         $this->bank = 'KVBL';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testNetbankingKvbCombinedFile()
     {
         Mail::fake();
 
-        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $paymentArray = $this->payment;
 
         $this->doAuthAndCapturePayment($paymentArray);
 

@@ -14,9 +14,9 @@ use RZP\Gateway\Base\AESCrypto;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NetbankingSvcCombinedFileTest extends NbPlusPaymentServiceTest
+class NetbankingSvcCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

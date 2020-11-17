@@ -13,9 +13,9 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Gateway\Mozart\NetbankingIdbi\ReconFields;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingIdbiReconciliationTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingIdbiReconciliationTest extends NbPlusPaymentServiceNetbankingTest
 {
     use ReconTrait;
 
