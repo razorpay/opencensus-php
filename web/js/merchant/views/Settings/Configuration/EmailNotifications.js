@@ -5,15 +5,16 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
+import EasterEgg from 'merchant/components/EasterEgg';
 
-@connect(state => state.config, { showNotification })
+@connect((state) => state.config, { showNotification })
 @reduxForm({})
 export default class EmailNotifications extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.initialize(this.props.config);
   }
 
-  onSave = e => {
+  onSave = (e) => {
     this.analytics();
     this.props.handleSubmit(this.props.onSave)(e);
   };
@@ -27,7 +28,7 @@ export default class EmailNotifications extends Component {
 
   render() {
     return (
-      <div class="panel panel-default">
+      <div class="panel panel-default ftx-parent">
         <div class="panel-heading">
           <span class="title">Email Notifications</span>
         </div>
@@ -35,10 +36,9 @@ export default class EmailNotifications extends Component {
         <div class="panel-body">
           <form class="form-horizontal" onSubmit={this.onSave}>
             <div class="description">
-              Enter email addresses that will receive email notifications
-              regarding payments, settlements, daily payment reports, webhooks,
-              etc. (You can enter multiple email addresses separated by a
-              comma.)
+              Enter email addresses that will receive email notifications regarding payments,
+              settlements, daily payment reports, webhooks, etc. (You can enter multiple email
+              addresses separated by a comma.)
             </div>
 
             <div class="form-group">
@@ -63,6 +63,7 @@ export default class EmailNotifications extends Component {
             </div>
           </form>
         </div>
+        <EasterEgg extraClass="ftx-settings-page" />
       </div>
     );
   }

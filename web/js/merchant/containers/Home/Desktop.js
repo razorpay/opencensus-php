@@ -35,6 +35,7 @@ import SettlementDetail from 'merchant/views/Settlements/components/SettlementDe
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 @withRouter
 @connect(
@@ -403,9 +404,9 @@ class AnalyticsDesktop extends Component {
               />
             </div>
           </div>
-
           <div className="row">
             <div className="col-md-12">
+              <EasterEgg extraClass="ftx-home-page" />
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>

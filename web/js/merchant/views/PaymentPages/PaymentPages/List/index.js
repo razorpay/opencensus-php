@@ -34,22 +34,20 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
 import { RZPFeatures } from 'merchant/helpers/data';
+import EasterEgg from 'merchant/components/EasterEgg';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.invoices,
     ...state.session,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.PP
-    ),
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
   }),
   {
     showNotification,
     populateRPLReduxList,
     handleProductQuickGuide,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesContainer extends ListContainer {
@@ -82,9 +80,7 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   trackPaymentPage = (...args) => {
-    return this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().interaction(...args)
-    );
+    return this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction(...args));
   };
 
   /* Fetch all payment pages list to find whether first-time user */
@@ -92,7 +88,7 @@ export default class PaymentPagesContainer extends ListContainer {
     fetchPaymentPagesList({
       count: 1,
     })
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           loadingAllList: false,
         });
@@ -112,7 +108,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   fetchEntityList(params) {
     return fetchPaymentPagesList(params)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           this.props.populateRPLReduxList(resp);
         }
@@ -123,7 +119,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -133,7 +129,7 @@ export default class PaymentPagesContainer extends ListContainer {
       });
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       trackListActions('Search', label);
@@ -178,7 +174,7 @@ export default class PaymentPagesContainer extends ListContainer {
       },
       () => {
         this.props.history.push('/paymentpages/new');
-      }
+      },
     );
   };
 
@@ -214,7 +210,7 @@ export default class PaymentPagesContainer extends ListContainer {
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().success('dash.pp_action', {
         action: 'Initiate_PP_Creation',
-      })
+      }),
     );
 
     this.trackPaymentPage('pp.create.click_create');
@@ -261,20 +257,12 @@ export default class PaymentPagesContainer extends ListContainer {
           >
             <div class="form-group list-filter-item">
               <label>Title</label>
-              <Field
-                name="title"
-                component="input"
-                class="form-control input-sm"
-              />
+              <Field name="title" component="input" class="form-control input-sm" />
             </div>
 
             <div class="form-group list-filter-item">
               <label>Status</label>
-              <Field
-                name="status"
-                component="select"
-                class="form-control input-sm"
-              >
+              <Field name="status" component="select" class="form-control input-sm">
                 <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -294,15 +282,15 @@ export default class PaymentPagesContainer extends ListContainer {
             </div>
           </ListFilter>
           <List loading={loading} paymentPages={paymentPages} />
-          {!loading &&
-            !!paymentPages.length && (
-              <Pager
-                count={this.state.count}
-                skip={this.state.skip}
-                length={paymentPages.length}
-                onClick={this.onClickPaginate}
-              />
-            )}
+          {!loading && !!paymentPages.length && (
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={paymentPages.length}
+              onClick={this.onClickPaginate}
+            />
+          )}
+          <EasterEgg extraClass="ftx-payment-pages" />
         </React.Fragment>
       );
     }
@@ -314,28 +302,22 @@ export default class PaymentPagesContainer extends ListContainer {
             <TakeATourButton feature={RZPFeatures.PP} />
 
             <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               <a
                 class="btn btn-link settlement-doc-btn"
                 href="https://razorpay.com/docs/payment-pages/"
                 target="_blank"
               >
-                Documentation&nbsp;<span class="icon i-external-link" />
+                Documentation&nbsp;
+                <span class="icon i-external-link" />
               </a>
             </ShowWhen>
 
             {isRoleAllowedEdit && (
-              <span
-                class="btn btn-primary"
-                onClick={this.handleProductQuickGuide}
-              >
+              <span class="btn btn-primary" onClick={this.handleProductQuickGuide}>
                 <i class="i i-plus" />
-                <span onClick={this.trackCreatePaymentPage}>
-                  Create Payment Page
-                </span>
+                <span onClick={this.trackCreatePaymentPage}>Create Payment Page</span>
               </span>
             )}
           </div>
@@ -353,6 +335,7 @@ const EmptyComponent = () => (
       <React.Fragment>
         <div>There are no payment pages yet!!</div>
         <div>Start creating new links now.</div>
+        <EasterEgg extraClass="ftx-payment-pages" />
       </React.Fragment>
     }
   />
