@@ -2763,7 +2763,8 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, null,
                 [
                     'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod()
+                    'method'     => $payment->getMethod(),
+                    'order_id'   => Order\Entity::getIdPrefix().$payment->getOrderId()
                 ]);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
@@ -2793,8 +2794,9 @@ trait Authorize
             $e = new Exception\BadRequestException($errorCode, null,
                 [
                     'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod(),
-                    'product' => $paymentProduct
+                    'method'     => $payment->getMethod(),
+                    'order_id'   => Order\Entity::getIdPrefix().$payment->getOrderId(),
+                    'product'    => $paymentProduct
                 ]);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
