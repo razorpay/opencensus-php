@@ -468,7 +468,7 @@ export default class User {
   }
 
   get isInttCurrenciesEnabled() {
-    return !!this.international;
+    return this.merchant.product_international === '1111000000' || !!this.methods.paypal;
   }
 
   get getPaymentLinkCustomizedFormFields() {
