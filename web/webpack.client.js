@@ -24,6 +24,9 @@ module.exports = ({ config, project }) => {
   };
   config.resolve.modules.push('js');
   config.resolve.extensions.push('.ts', '.tsx');
+  config.resolve.alias = {
+    v2: path.resolve(__dirname, './v2'),
+  };
   config.module.rules[0].test = /(\.ts(x?)|\.m?js)$/; //babel loader to support typescript
 
   //should be removed once commnader and blade pulish their pacakge with babel

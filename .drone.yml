@@ -31,6 +31,7 @@ pipeline:
     when:
         event: push
   test-js:
+    group: test
     image: node:12.18.2
     pull: false
     environment:
@@ -41,6 +42,16 @@ pipeline:
       - apt-get install -y chromium
       - npm test
       - npm run test:jest
+    when:
+      event: push
+  validate-js:
+    group: test
+    image: node:12.18.2
+    pull: false
+    commands:
+      - npx eslint web/v2 --ext .js,.jsx,.ts,.tsx
+      - npx stylelint web/v2/**/*.{js,jsx,ts,tsx}
+      - cd web && npx tsc
     when:
       event: push
   # Uploaded to a build artifact

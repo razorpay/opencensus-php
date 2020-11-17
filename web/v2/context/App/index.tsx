@@ -1,16 +1,20 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { axiosInstance } from '../../services/graphql/graphql-fetch';
 
-export type AppContextTypes = {
+interface orgT {
+  id: string;
+}
+
+export interface AppContextTypes {
   pathname?: string;
   query?: unknown;
   params?: unknown;
   user?: unknown;
   experiments?: unknown;
-  orgId: string;
+  org: orgT;
   mode: string;
   setMode?: (mode: string) => void;
-};
+}
 
 const AppContext = createContext<AppContextTypes | undefined>(undefined);
 
@@ -29,7 +33,7 @@ interface Props {
 
 const AppProvider: React.FC<Props> = ({ context, children }) => {
   const [mode, setMode] = useState(context.mode);
-  axiosInstance.defaults.headers.common['x-org-id'] = context.orgId;
+  axiosInstance.defaults.headers.common['x-org-id'] = context.org.id;
   axiosInstance.defaults.headers.common['x-app-mode'] = mode;
   return (
     <AppContext.Provider value={{ ...context, mode, setMode }}>{children}</AppContext.Provider>

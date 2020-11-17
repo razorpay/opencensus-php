@@ -38,6 +38,8 @@ tmp/
 /web/build
 /web/.env
 
+# typescript dist 
+/web/dist
 # IDE config
 /jsconfig.json
 .idea

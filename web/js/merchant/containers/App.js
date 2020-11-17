@@ -39,6 +39,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
+import Wrapper from 'v2/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import { FetchActiveTickets } from '../reducers/config';
 
@@ -542,55 +543,63 @@ export default class App extends Component {
     }
 
     return (
-      <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
-        <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-          {!this.renderFullPageView && (
-            <React.Fragment>
-              <HeaderNav
-                user={user}
-                mode={mode}
-                modeFormatted={modeFormatted}
-                showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
-                onSwitchMode={this.switchMode}
-                onSwitchMerchant={this.switchMerchant}
-                showMobileNav={this.props.windowWidth < 950}
-              />
-              <Sidebar
-                user={user}
-                logoURL={org.main_logo_url}
-                config={config.config}
-                org_custom_code={org.custom_code}
-              />
-            </React.Fragment>
+      <Wrapper
+        context={{
+          user,
+          org,
+          mode,
+        }}
+      >
+        <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
+          <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+            {!this.renderFullPageView && (
+              <React.Fragment>
+                <HeaderNav
+                  user={user}
+                  mode={mode}
+                  modeFormatted={modeFormatted}
+                  showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
+                  onSwitchMode={this.switchMode}
+                  onSwitchMerchant={this.switchMerchant}
+                  showMobileNav={this.props.windowWidth < 950}
+                />
+                <Sidebar
+                  user={user}
+                  logoURL={org.main_logo_url}
+                  config={config.config}
+                  org_custom_code={org.custom_code}
+                />
+              </React.Fragment>
+            )}
+
+            <Content
+              user={user}
+              modeFormatted={modeFormatted}
+              fullPageView={this.renderFullPageView}
+            />
+
+            {!this.renderFullPageView && (
+              <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+            )}
+
+            {/* Creates Portal for the comp */}
+            <ModalDialog />
+            <Notifications />
+          </TwoFactorVerificationProvider>
+
+          {this.state.isDashboardLocked && (
+            <PasswordReLogin
+              merchantId={user.current}
+              userEmail={user.user.email}
+              removeLockScreen={this.removeLockScreen}
+              showNotification={this.props.showNotification}
+              resumeLockActionCB={this.resumeLockActionCB}
+              isGoogleLogin={user.isGoogleLogin()}
+              isPartner={user.isPartner()}
+            />
           )}
-
-          <Content
-            user={user}
-            modeFormatted={modeFormatted}
-            fullPageView={this.renderFullPageView}
-          />
-
-          {!this.renderFullPageView && (
-            <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
-          )}
-
-          {/* Creates Portal for the comp */}
-          <ModalDialog />
-          <Notifications />
-        </TwoFactorVerificationProvider>
-
-        {this.state.isDashboardLocked && (
-          <PasswordReLogin
-            merchantId={user.current}
-            userEmail={user.user.email}
-            removeLockScreen={this.removeLockScreen}
-            showNotification={this.props.showNotification}
-            resumeLockActionCB={this.resumeLockActionCB}
-            isGoogleLogin={user.isGoogleLogin()}
-            isPartner={user.isPartner()}
-          />
-        )}
-      </div>
+        </div>
+      </Wrapper>
     );
   }
 }

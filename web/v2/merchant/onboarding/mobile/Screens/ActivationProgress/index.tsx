@@ -9,8 +9,11 @@ import ActivationProgressHeader from './ActivationProgressHeader';
 const Screen = styled(View)`
   background-color: #f9fbfe;
 `;
+export interface ActivationProgressT {
+  activationFlow: string;
+}
 
-const ActivationProgress: React.FC = ({ activationFlow }) => {
+const ActivationProgress: React.FC<ActivationProgressT> = ({ activationFlow }) => {
   let Steps = WhitelistedSteps;
   if (activationFlow === 'greylist') {
     Steps = GreylistedSteps;

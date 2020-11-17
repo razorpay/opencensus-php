@@ -17,6 +17,7 @@ export const DialogContainer = styled.div`
   background-color: ${({ theme }) => getColor(theme, 'shade.950')};
   touch-action: 'none';
   opacity: ${({ $opacity }) => $opacity};
+  z-index: 200000;
 `;
 
 export const Dialog = styled.div`
