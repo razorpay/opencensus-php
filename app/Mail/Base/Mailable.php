@@ -37,6 +37,8 @@ class Mailable extends BaseMailable
 
     protected $mid;
 
+    const MESSAGE_ID_TAG = 'X-SES-Message-ID';
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -79,33 +81,48 @@ class Mailable extends BaseMailable
 
         try
         {
+            $toEmail = empty($this->to[0]['address']) ? '' : (is_string($this->to[0]['address']) ? $this->to[0]['address'] : '' );
+            $toEmailHash = hash(HashAlgo::SHA256, $toEmail);
+
             Container::getInstance()->call([$this, 'build']);
 
             $this->replaceMailgunHeadersWithSesHeaders();
 
-            if ($this->isValidRecipient() === true)
+            if ($this->isValidRecipient() === false)
             {
-                // same html template can have different texts. Hence sending both in data lake.
-                $eventProperties['text_template'] = $this->textView ?? '';
-                $eventProperties['html_template'] = $this->view ?? '';
-
-                if ((isset($this->to[0])) and
-                    (isset($this->to[0]['address'])) and
-                    (is_string($this->to[0]['address'])))
-                {
-                    $eventProperties['recipient_email'] = hash(HashAlgo::SHA256, $this->to[0]['address']);
-                }
-
-                $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
-
-                $mailer->send($this->buildView(), $this->buildViewData(), function ($message) {
-                    $this->buildFrom($message)
-                         ->buildRecipients($message)
-                         ->buildSubject($message)
-                         ->buildAttachments($message)
-                         ->runCallbacks($message);
-                });
+                $trace->info(TraceCode::SEND_EMAIL_FAILED_INVALID_RECIPIENT, ['email' => $toEmail, 'email_hash' => $toEmailHash]);
+                return;
             }
+
+            // same html template can have different texts. Hence sending both in data lake.
+            $eventProperties['text_template'] = $this->textView ?? '';
+            $eventProperties['html_template'] = $this->view ?? '';
+            $eventProperties['recipient_email'] = $toEmailHash;
+
+            $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
+
+            $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, ['email' => $toEmailHash]);
+
+            $msg = null;
+            $mailer->send($this->buildView(), $this->buildViewData(), function ($message) use (&$msg) {
+                $msg = $message;
+                $this->buildFrom($message)
+                     ->buildRecipients($message)
+                     ->buildSubject($message)
+                     ->buildAttachments($message)
+                     ->runCallbacks($message);
+            });
+
+            $msgID = '';
+            if ((empty($msg) === false) && (empty($msg->getHeaders()) === false) && (empty($msg->getHeaders()->get(self::MESSAGE_ID_TAG)) === false))
+            {
+                $msgID = $msg->getHeaders()->get(self::MESSAGE_ID_TAG)->getValue() ?? '';
+            }
+
+            $eventProperties['message_id'] = $msgID;
+            $app['diag']->trackEmailEvent(EventCode::EMAIL_SUCCESS, $eventProperties);
+
+            $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL, ['email' => $toEmailHash, 'message_id' => $msgID]);
         }
         catch (\Throwable $e)
         {

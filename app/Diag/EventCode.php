@@ -617,6 +617,11 @@ class EventCode
         'name'  => 'email.attempted',
     ];
 
+    const EMAIL_SUCCESS = [
+        'group' => 'email',
+        'name'  => 'email.success',
+    ];
+
     const EMAIL_ATTEMPT_FAILED = [
         'group' => 'email',
         'name'  => 'email.attempt_failed',

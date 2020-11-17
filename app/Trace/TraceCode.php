@@ -2723,6 +2723,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
 
+    const SEND_EMAIL_ATTEMPT                                    = 'SEND_EMAIL_ATTEMPT';
+    const SEND_EMAIL_SUCCESSFUL                                 = 'SEND_EMAIL_SUCCESSFUL';
+    const SEND_EMAIL_FAILED_INVALID_RECIPIENT                   = 'SEND_EMAIL_FAILED_INVALID_RECIPIENT';
+
     const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';
