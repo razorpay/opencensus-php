@@ -7417,17 +7417,45 @@ class MerchantTest extends TestCase
             'channel'      => 'yesbank',
         ];
 
-        $ba = $this->createBankingAccount($attributes);
+        $baNodal = $this->createBankingAccount($attributes);
+
+        $rblCurrentAcc = $this->createBankingAccount(['id' => 'ABCde1234ABCdg']);
+
+        $iciciCurrentAcc = $this->createBankingAccount(['id'             => 'ABCde1234ABCla',
+                                                        'account_number' => '3334440041626905',
+                                                        'channel'        => 'icici']);
+
+        $this->fixtures->on('test')->create('banking_account', [
+            'id'                    => 'ABCde1234ABCha',
+            'account_number'        => '2224440041626874',
+            'account_ifsc'          => 'RATN0000088',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'sbi',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'balance_id'            => '',
+            'status'                => 'created',
+        ]);
 
         $expectedEvent = [
-            'entity'   => 'event',
-            'event'    => 'banking_accounts.issued',
-            'contains' => ['accounts'],
-            'payload'  => [
+            'entity'     => 'event',
+            'event'      => 'banking_accounts.issued',
+            'account_id' => 'acc_10000000000000',
+            'contains'   => ['accounts'],
+            'payload'    => [
                 'accounts' => [
                     'virtual' => [
+                        'account_number' => $baNodal->getAccountNumber(),
+                    ],
+                    'current' => [
                         [
-                            'account_number' => $ba->getAccountNumber(),
+                            'channel'        => 'rbl',
+                            'account_number' => $rblCurrentAcc->getAccountNumber(),
+                        ],
+                        [
+                            'channel'        => 'icici',
+                            'account_number' => $iciciCurrentAcc->getAccountNumber(),
                         ]
                     ],
                 ],
@@ -7439,7 +7467,44 @@ class MerchantTest extends TestCase
             'banking_accounts.issued',
             function(array $event) use ($expectedEvent) {
                 $this->assertArraySelectiveEquals($expectedEvent, $event);
-                $this->assertArrayNotHasKey('current', $event['payload']['accounts']);
+            }
+        );
+
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendBankingAccountsViaWebhook1()
+    {
+        //only va exist for the merchant and no ca account.
+
+        $attributes = [
+            'account_type' => 'nodal',
+            'channel'      => 'yesbank',
+        ];
+
+        $baNodal = $this->createBankingAccount($attributes);
+
+        $expectedEvent = [
+            'entity'     => 'event',
+            'event'      => 'banking_accounts.issued',
+            'account_id' => 'acc_10000000000000',
+            'contains'   => ['accounts'],
+            'payload'    => [
+                'accounts' => [
+                    'virtual' => [
+                        'account_number' => $baNodal->getAccountNumber(),
+                    ]
+                ],
+            ],
+        ];
+
+        // This webhook will be called for banking_accounts.issued event.
+        $this->expectWebhookEvent(
+            'banking_accounts.issued',
+            function(array $event) use ($expectedEvent) {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
             }
         );
 

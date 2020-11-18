@@ -721,20 +721,49 @@ class ApiEventSubscriber extends Base\Core
     {
         $merchantId = $merchant->getId();
 
-        $va = $this->repo->banking_account->fetchMerchantSharedBankingAccount($merchantId);
+        $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
+
+        $va = current(array_filter($bankingAccounts, function($account) {
+            return $account['account_type'] === 'nodal';
+        }));
+
+        $ca = array_filter($bankingAccounts, function($account) {
+            return ($account['account_type'] === 'current' and
+                    $account['status'] === 'activated');
+        });
+
+        $caPayload = $this->generateCurrentAccountsPayload($ca);
 
         $vaPayload = [
-            [Entity::ACCOUNT_NUMBER => $va[Entity::ACCOUNT_NUMBER]]
+            Entity::ACCOUNT_NUMBER => $va[Entity::ACCOUNT_NUMBER],
         ];
 
-        //currently supporting only for va.
         $payload = [
             'accounts' => [
                 'virtual' => $vaPayload,
             ]
         ];
 
+        if (empty($caPayload) === false)
+        {
+            $payload['accounts'] += ['current' => $caPayload];
+        }
+
+        $this->storkProduct = Constants\Product::BANKING;
+
         return $this->dispatchEventToStork($payload);
+    }
+
+    protected function generateCurrentAccountsPayload(array $bankingAccounts = [])
+    {
+        $ca = [];
+
+        foreach ($bankingAccounts as $ba)
+        {
+            array_push($ca, [Entity::CHANNEL => $ba[Entity::CHANNEL], Entity::ACCOUNT_NUMBER => $ba[Entity::ACCOUNT_NUMBER]]);
+        }
+
+        return $ca;
     }
 
     protected function getP2pPayload($p2p)
