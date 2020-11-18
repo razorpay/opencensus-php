@@ -104,6 +104,7 @@ class AuthType
     public static $redirectTo3dsAuth = [
         self::OTP,
         self::HEADLESS_OTP,
+        self::IVR,
     ];
 
     public static function isAuthTypeValid($type, $method): bool
