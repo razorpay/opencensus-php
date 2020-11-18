@@ -357,11 +357,6 @@ let initialState = {
                   slug: 'kkbk',
                 },
                 {
-                  name: 'Lakshmi Vilas Bank',
-                  status: 'Request',
-                  slug: 'lavb_r',
-                },
-                {
                   name: 'Mehsana Urban Co-operative Bank',
                   status: 'Request',
                   slug: 'msnu',
@@ -555,11 +550,6 @@ let initialState = {
                   name: 'Ratnakar Bank',
                   status: 'Request',
                   slug: 'ratn_c',
-                },
-                {
-                  name: 'Lakshmi Vilas Bank',
-                  status: 'Request',
-                  slug: 'lavb_c',
                 },
                 {
                   name: 'Dhanlaxmi Bank',
