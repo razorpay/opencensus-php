@@ -3359,6 +3359,53 @@ class Core extends Base\Core
         return $response;
     }
 
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BaseException
+     */
+    public function getCompanySearchList(array $input): array
+    {
+        (new Validator())->validateInput('company_search', $input);
+
+        $companySearchList = [];
+
+        $isCompanySearchRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $this->merchant->getId(),
+            RazorxTreatment::BVS_COMPANY_SEARCH);
+
+        if ($isCompanySearchRazorxExperimentEnabled === false)
+        {
+            return $companySearchList;
+        }
+        try
+        {
+            $companySearchList =
+                (new AutoKyc\Bvs\Core())->probeCompanySearch($input[DEConstants::SEARCH_STRING]);
+        }
+        catch (\Exception $e)
+        {
+            $dimension = AutoKyc\Bvs\Core::getProbeDimension(Constant::COMPANY_SEARCH);
+
+            $this->trace->count(DetailMetric::BVS_PROBE_API_FAILURE, $dimension);
+
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::MERCHANT_COMPANY_SEARCH_FAILED,
+                                         [
+                                             Constant::MERCHANT_ID      => $this->merchant->getId(),
+                                             DEConstants::SEARCH_STRING => $input[DEConstants::SEARCH_STRING]
+                                         ]);
+            throw new Exception\IntegrationException(
+                ErrorCode::VENDOR_CONNECTION_ERROR);
+        }
+
+        return $companySearchList;
+    }
+
+
     /**
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails

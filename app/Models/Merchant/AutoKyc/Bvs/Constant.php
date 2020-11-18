@@ -72,6 +72,19 @@ class Constant
     const BUSINESS_PAN       = 'business_pan';
     const SHOP_ESTABLISHMENT = 'shop_establishment';
 
+    //
+    // Company Search in BVS
+    //
+    const COMPANY_SEARCH    = 'company_search';
+    const SEARCH_DATA       = 'search_data';
+    const RESULTS           = 'results';
+    const ERROR_CODE        = 'code';
+    const ERROR_DESCRIPTION = 'description';
+    const IDENTITY_NUMBER   = 'identity_number';
+    const IDENTITY_TYPE     = 'identity_type';
+    const CLIENT            = 'client';
+    const MERCHANT_ID       = 'merchant_id';
+
     const PG       = 'pg';
     const MERCHANT = 'merchant';
 

@@ -73,9 +73,9 @@ class DefaultProcessor implements Processor
 
         $validation[Constant::RULES] = $this->getRules();
 
-        $response = (new BvsClient())->createValidation($validation);
+        $response = (new BvsValidationClient())->createValidation($validation);
 
-        return new BaseResponse($response);
+        return new ValidationBaseResponse($response);
     }
 
     /**

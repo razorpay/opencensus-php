@@ -1140,6 +1140,7 @@ class ErrorCode
     //
     // BVS
     //
+    const VENDOR_CONNECTION_ERROR                                                   = 'VENDOR_CONNECTION_ERROR';
     const SERVER_ERROR_VALIDATION_ID_MISSING                                        = 'SERVER_ERROR_VALIDATION_ID_MISSING';
     const SERVER_ERROR_VALIDATION_STATUS_MISSING                                    = 'SERVER_ERROR_VALIDATION_STATUS_MISSING';
     const SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE                                      = 'SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE';

@@ -267,6 +267,7 @@ class Core extends Base\Core
         return in_array($documentType, $documentsList, true);
     }
 
+
     /**
      * @param array  $input
      * @param string $processorType

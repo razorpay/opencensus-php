@@ -1073,6 +1073,21 @@ class MerchantController extends Controller
     }
 
     /**
+     * Gets list of companies and their matadata
+     * based on a string entered by user
+     *
+     *  @return mixed
+     */
+    public function getCompanySearchList()
+    {
+        $input = Request::all();
+
+        $results = $this->service(E::MERCHANT_DETAIL)->getCompanySearchList($input);
+
+        return ApiResponse::json($results);
+    }
+
+    /**
      * Returns clarification reason against each field
      *
      * @return mixed

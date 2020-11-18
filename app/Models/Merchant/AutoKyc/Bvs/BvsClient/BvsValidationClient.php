@@ -4,12 +4,10 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
 use Request;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BaseClient;
 use Twirp\Error;
-use Twirp\Context;
 use ErrorException;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger;
 use Google\Protobuf\Struct;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
@@ -17,52 +15,18 @@ use RZP\Models\Merchant\Detail\Metric;
 use RZP\Exception\IntegrationException;
 use Rzp\Bvs\Validation\V1 as validationV1;
 
-class BvsClient
+class BvsValidationClient extends BaseClient
 {
-    /** @var Logger */
-    private $trace;
-
-    private $app;
-
-    private $bvsConfig;
-
     private $ValidationApiClient;
 
-    private $apiClientCtx;
-
-    const AUTHORIZATION_KEY = 'Authorization';
-
-    const REQUEST_ID_KEY = 'X-Request-ID';
-
-    const CLIENT_ID_KEY = 'X-Client-ID';
-
     /**
-     * BvsClient constructor.
+     * BvsValidationClient constructor.
      */
     function __construct()
     {
-        $app = App::getFacadeRoot();
+        parent::__construct();
 
-        $this->app = $app;
-
-        $this->bvsConfig = $app['config']['services.business_verification_service'];
-
-        $this->trace = $app['trace'];
-
-        $host = $this->bvsConfig['host'];
-
-        $httpClient = app('bvs_http_client');
-
-        $this->ValidationApiClient = New validationV1\ValidationAPIClient($host, $httpClient);
-
-        $auth = 'Basic ' . base64_encode($this->bvsConfig['user'] . ':' . $this->bvsConfig['password']);
-
-        $headers = [
-            self::AUTHORIZATION_KEY => $auth,
-            self::REQUEST_ID_KEY    => Request::getTaskId(),
-            self::CLIENT_ID_KEY     => $this->bvsConfig['client_id']];
-
-        $this->apiClientCtx = Context::withHttpRequestHeaders([], $headers);
+        $this->ValidationApiClient = New validationV1\ValidationAPIClient($this->host, $this->httpClient);
     }
 
     /**

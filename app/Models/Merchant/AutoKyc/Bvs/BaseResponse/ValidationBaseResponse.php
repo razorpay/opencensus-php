@@ -8,7 +8,7 @@ use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use Rzp\Bvs\Validation\V1\ValidationResponse;
 
-class BaseResponse implements Response
+class ValidationBaseResponse implements Response
 {
     /**
      * @var ValidationResponse

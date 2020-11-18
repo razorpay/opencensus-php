@@ -1271,5 +1271,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS                                  = 'A source with same source_id and source_type already exists.';
     const BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY               = 'A source with same priority already exists.';
     const BAD_REQUEST_PG_ROUTER_ONLY_LIVE_MODE_SUPPORTED                            = 'Only live mode orders are supported for sync';
+
+    const VENDOR_CONNECTION_ERROR                                                   = 'Connection to vendor failed';
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
 }

@@ -465,6 +465,10 @@ class Validator extends Base\Validator
       Constants::SEARCH_STRING  => 'required|string|max:25'
     ];
 
+    protected static $companySearchRules = [
+        Constants::SEARCH_STRING  => 'required|string|min:3'
+    ];
+
     protected function validateRegisteredBusinessRules(array $input)
     {
         if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === true)

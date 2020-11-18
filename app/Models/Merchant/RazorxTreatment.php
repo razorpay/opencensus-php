@@ -47,6 +47,10 @@ final class RazorxTreatment
 
     const BVS_RULE_NEW_VERSION = "bvs_rule_new_version";
 
+    // this experiment is used to enable/disable company search
+
+    const BVS_COMPANY_SEARCH = "bvs_company_search";
+
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
