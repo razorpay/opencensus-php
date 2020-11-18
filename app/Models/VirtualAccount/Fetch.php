@@ -52,7 +52,6 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         Entity::NOTES,
-        Entity::STATUS,
         Entity::DESCRIPTION,
         Customer\Entity::EMAIL,
         Customer\Entity::NAME,

@@ -13,7 +13,6 @@ class EsRepository extends Base\EsRepository
         Entity::BALANCE_ID,
         Entity::NOTES,
         Entity::CREATED_AT,
-        Entity::STATUS,
         Entity::DESCRIPTION,
         Customer\Entity::EMAIL,
         Customer\Entity::NAME,

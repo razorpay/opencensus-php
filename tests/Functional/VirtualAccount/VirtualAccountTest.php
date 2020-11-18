@@ -1312,8 +1312,6 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input1']));
 
         $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input2']));
-
-        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input3']));
     }
 
     public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()

@@ -741,9 +741,6 @@ return [
                 'description' => 'after ES',
             ],
             'input2' => [
-                'status' => 'active',
-            ],
-            'input3' => [
                 'email' => 'test@razorpay.com',
                 'contact' => '1234567890',
             ]
