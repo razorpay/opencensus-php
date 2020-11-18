@@ -70,7 +70,8 @@ const InstantSettlementPayoutDetails = ({
             Total Settled Amount
           </div>
           <div className="instant-settlement-payout-detail--amount flex">
-            {instantSettlement.amount_settled === 0 ? (
+            {instantSettlement.amount_settled === 0 &&
+            (instantSettlement.status === 'created' || instantSettlement.status === 'initiated') ? (
               <>
                 <PlaceholderLoader />
                 <i className="i i-info-outline total-settlement-info-icon ml-8">

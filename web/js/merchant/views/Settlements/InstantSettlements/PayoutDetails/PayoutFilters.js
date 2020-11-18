@@ -27,7 +27,6 @@ const PayoutFilters = ({
           <option value="">All</option>
           <option value="created">Created</option>
           <option value="initiated">Initiated</option>
-          <option value="partially_processed">Partially Processed</option>
           <option value="processed">Processed</option>
           <option value="reversed">Reversed</option>
         </select>

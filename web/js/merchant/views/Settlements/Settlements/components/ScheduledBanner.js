@@ -46,7 +46,7 @@ export default class ScheduledBanner extends Component {
       <div>
         <i class="i i-early-settlement scheduled-enable" />
         Get your settlements on the same day, automatically.
-        <Button.Transparent class="enable-settlement-btn" onClick={this.openAutomatic}>
+        <Button.Transparent className="enable-now-btn" onClick={this.openAutomatic}>
           Enable Now
         </Button.Transparent>
       </div>

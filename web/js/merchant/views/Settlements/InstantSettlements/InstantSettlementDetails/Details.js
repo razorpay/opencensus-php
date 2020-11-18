@@ -60,7 +60,8 @@ const Details = ({
               </EntityDetailRow>
             )}
             <EntityDetailRow label="Total Settled Amount">
-              {settlement.amount_settled === 0 ? (
+              {settlement.amount_settled === 0 &&
+              (settlement.status === 'created' || settlement.status === 'initiated') ? (
                 <>
                   <PlaceholderLoader />
                   <i className="i i-info-outline total-settlement-info-icon ml-8">
