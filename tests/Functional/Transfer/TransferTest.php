@@ -80,6 +80,36 @@ class TransferTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $response);
     }
 
+    public function testFetchSingleReversalProxyAuth()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        $data['request']['url'] = '/reversals/' . $reversal['id'] . '?expand[]=transaction.settlement';
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest($data);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $expected = [
+            'id'            => $reversal['id'],
+            'transfer_id'   => $transfer['id'],
+            'amount'        => $transfer['amount'],
+            'transaction'   => [
+                'entity_id' => $reversal['id'],
+                'amount'    => $reversal['amount'],
+                'settlement' => NULL,
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $response);
+    }
+
     public function testTransferToAccount()
     {
         $transfer = $this->createTransfer('account');
@@ -94,6 +124,31 @@ class TransferTest extends TestCase
         $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
+    }
+
+    public function testFetchTransferProxyAuth()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/transfers/' . $transfer['id'] . '?expand[]=transaction.settlement';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest($data);
+
+        $expected = [
+            'id'            => $transfer['id'],
+            'amount'        => $transfer['amount'],
+            'transaction'   => [
+                'entity_id'     => $transfer['id'],
+                'amount'        => $transfer['amount'],
+                'settlement'    => NULL,
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $response);
     }
 
     public function testTransferToAccountUsingAccountCode()

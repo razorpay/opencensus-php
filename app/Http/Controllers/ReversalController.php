@@ -9,7 +9,9 @@ class ReversalController extends Controller
 {
     public function getReversal(string $id)
     {
-        $reversal = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $reversal = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($reversal);
     }

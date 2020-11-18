@@ -10,6 +10,17 @@ class DisputeController extends Controller
 {
     use Traits\HasCrudMethods;
 
+    /**
+     * {@inheritDoc}
+     * Overridden as it passes around $input to service method
+     */
+    public function get(string $id)
+    {
+        $response = $this->service()->fetch($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function create(string $paymentId)
     {
         $input = Request::all();

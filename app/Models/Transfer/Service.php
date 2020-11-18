@@ -39,7 +39,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        return $transfer->toArrayPublic();
+        return $transfer->toArrayPublicWithExpand();
     }
 
     public function UpdateTransfersWithSettlementId($settlementIds)

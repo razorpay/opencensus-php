@@ -330,16 +330,16 @@ class Service extends Base\Service
         return $reason->toArrayPublic();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input = []): array
     {
-        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         if ($this->app['basicauth']->isExpress() === true)
         {
             return $dispute->toArrayAdmin();
         }
 
-        return $dispute->toArrayPublic();
+        return $dispute->toArrayPublicWithExpand();
     }
 
     public function deleteFile(string $id, string $fileId)

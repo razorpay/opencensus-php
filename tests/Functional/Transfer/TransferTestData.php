@@ -89,6 +89,15 @@ return [
         ],
     ],
 
+    'testFetchSingleReversalProxyAuth' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testLiveModeTransferToNonActivatedAccount' => [
         'response'  => [
             'content' => [
@@ -666,5 +675,14 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testFetchTransferProxyAuth' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => []
+        ],
     ],
 ];

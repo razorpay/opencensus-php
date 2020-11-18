@@ -9,13 +9,13 @@ use RZP\Models\Payment\Refund;
 
 class Service extends Base\Service
 {
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input): array
     {
         $reversal = $this->repo
                          ->reversal
-                         ->findByPublicIdAndMerchant($id, $this->merchant);
+                         ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $reversal->toArrayPublic();
+        return $reversal->toArrayPublicWithExpand();
     }
 
     public function fetchMultiple(array $input): array

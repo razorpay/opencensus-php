@@ -746,6 +746,21 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
+    public function testDisputeFetchProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $dispute = $this->fixtures->create('dispute', ['id' => '1000000dispute', 'deduct_at_onset' => 1]);
+
+        $testData = $this->updateFetchTestData();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->checkDisputeFetchProxyAuth($dispute, $adjustment, $content);
+    }
+
     public function testDisputeFetchForMerchant()
     {
         $this->ba->proxyAuth();
@@ -787,6 +802,14 @@ class DisputeTest extends TestCase
         $testData = $this->updateFetchTestData();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    protected function checkDisputeFetchProxyAuth(DisputeEntity $dispute, $adjustment, array $content)
+    {
+        $this->assertEquals($dispute->getId(), Entity::stripDefaultSign($content['id']));
+        $this->assertEquals(1000000, $dispute['amount']);
+        $this->assertEquals(Entity::stripDefaultSign($dispute['id']), $adjustment['entity_id']);
+        $this->assertEquals(-1000000, $adjustment['amount']);
     }
 
     protected function checkDisputeFetchForMerchant(array $disputes, array $content)

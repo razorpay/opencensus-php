@@ -48,6 +48,10 @@ class Entity extends Base\PublicEntity
     const TRANSFER_ID           = 'transfer_id';
     const PAYOUT_ID             = 'payout_id';
 
+
+    // Relations
+    const TRANSACTION = 'transaction';
+
     protected static $sign = 'rvrsl';
 
     protected $entity = 'reversal';
@@ -104,6 +108,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_REFUND_ID,
         self::UTR,
         self::CREATED_AT,
+    ];
+
+    protected $expanded = [
+        self::TRANSACTION,
     ];
 
     protected $casts = [
