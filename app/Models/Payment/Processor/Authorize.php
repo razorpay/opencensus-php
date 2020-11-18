@@ -2757,15 +2757,23 @@ trait Authorize
 
         $productType = $payment->order ? $payment->order->getProductType() : null;
 
+        $orderId = $payment->order ? $payment->order->getId() : null;
+
         if ($merchant->isInternational() === false)
         {
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod()
+            ];
+
+            if ($orderId !== null)
+            {
+                $data['order_id'] = Order\Entity::getIdPrefix().$orderId;
+            }
+
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method'     => $payment->getMethod(),
-                    'order_id'   => Order\Entity::getIdPrefix().$payment->getOrderId()
-                ]);
+                $data);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
@@ -2791,13 +2799,19 @@ trait Authorize
         {
             $errorCode = ProductInternationalMapper::PRODUCT_ERROR_CODE[$paymentProduct];
 
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod(),
+                'product'    => $paymentProduct
+            ];
+
+            if ($orderId !== null)
+            {
+                $data['order_id'] = Order\Entity::getIdPrefix().$orderId;
+            }
+
             $e = new Exception\BadRequestException($errorCode, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method'     => $payment->getMethod(),
-                    'order_id'   => Order\Entity::getIdPrefix().$payment->getOrderId(),
-                    'product'    => $paymentProduct
-                ]);
+                $data);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
