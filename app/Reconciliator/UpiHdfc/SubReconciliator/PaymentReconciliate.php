@@ -287,6 +287,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $response;
     }
 
+    protected function generateCallbackData(array $row)
+    {
+        $callbackData = [
+            'payment_id'            => $row[self::ORDER_ID],
+            'amount'                => $row[self::COLUMN_PAYMENT_AMOUNT],
+            'txn_auth_date'         => $row[self::TRANSACTION_REQ_DATE],
+            'status'                => 'SUCCESS',
+            'status_description'    => 'Transaction success',
+            'respcode'              => '00',
+            'approval_no'           => 'NA',
+            'payer_va'              => $row[self::PAYER_VPA],
+            'npci_upi_txn_id'       => $row[self::TXN_REFERENCE_NUMBER],
+            'pgMerchantId'          => $row[self::UPI_MERCHANT_ID],
+        ];
+
+        return $callbackData;
+    }
+
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
