@@ -2240,7 +2240,6 @@ return [
                 ],
                 'disabled' => [
                     'YESB' => 'Yes Bank',
-                    'VIJB' => 'Vijaya Bank',
                 ]
             ],
         ],
@@ -3072,15 +3071,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ABPB',
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -3297,20 +3289,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'HDFC',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ABPB',
                         ],
                     ],
                     [
@@ -3732,7 +3717,6 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
-                                'ABPB',
                                 'AUBL',
                                 'BACB',
                                 'BBKM',

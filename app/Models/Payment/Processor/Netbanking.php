@@ -108,7 +108,6 @@ class Netbanking
         IFSC::ESFB,
         IFSC::SBIN,
         IFSC::CBIN,
-        IFSC::VIJB,
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
@@ -194,7 +193,6 @@ class Netbanking
     protected static $gatewaySupportedBanks = [
         Gateway::BILLDESK => [
             'retail' => [
-                IFSC::ABPB,
                 IFSC::ALLA,
                 IFSC::ANDB,
                 IFSC::AUBL,
@@ -258,7 +256,6 @@ class Netbanking
                 IFSC::UTBI,
                 IFSC::UTIB,
                 IFSC::VARA,
-                IFSC::VIJB,
                 IFSC::YESB,
                 IFSC::ZCBL,
                 self::ANDB_C,
@@ -335,7 +332,6 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
-                IFSC::VIJB,
                 IFSC::YESB,
                 self::LAVB_R,
                 self::PUNB_R,
@@ -380,7 +376,6 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
-                IFSC::VIJB,
                 IFSC::YESB,
                 self::LAVB_R,
                 self::PUNB_R,
@@ -416,7 +411,6 @@ class Netbanking
                 self::PUNB_R,
                 IFSC::UBIN,
                 IFSC::UTIB,
-                IFSC::VIJB,
                 IFSC::YESB,
             ],
         ],
@@ -474,7 +468,6 @@ class Netbanking
                 IFSC::UTBI,
                 IFSC::UTIB,
                 self::UTIB_C,
-                IFSC::VIJB,
                 IFSC::YESB,
             ]
         ],
@@ -562,11 +555,6 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::IDFB
-            ]
-        ],
-        Gateway::NETBANKING_VIJAYA => [
-            'retail' => [
-                IFSC::VIJB
             ]
         ],
         Gateway::NETBANKING_HDFC => [
@@ -743,7 +731,6 @@ class Netbanking
     ];
 
     const DEFAULT_DISABLED_BANKS = [
-        IFSC::ABPB,
         IFSC::AUBL,
         IFSC::BKDN,
         IFSC::BBKM,

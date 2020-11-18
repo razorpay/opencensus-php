@@ -1107,7 +1107,6 @@ class Gateway
             self::NETBANKING_EQUITAS,
             self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
-            self::NETBANKING_VIJAYA,
             self::NETBANKING_YESB,
             self::NETBANKING_KVB,
             self::NETBANKING_SVC,
