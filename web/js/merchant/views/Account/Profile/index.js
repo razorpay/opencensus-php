@@ -23,6 +23,7 @@ import UpgradeMerchantForm from 'merchant/views/Account/Profile/components/Upgra
 import SettlementDetails from 'merchant/views/Account/Profile/components/SettlementDetails';
 import { updateMerchantConfig, updateBillingLabel } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
+import { fetchSettlementAmount } from 'merchant/reducers/home';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
 
@@ -38,6 +39,7 @@ import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFac
       user: state.session.user,
       profile: state.profile,
       config: state.config.config,
+      settlement_amount: state.home.settlement_amount,
     };
   },
   {
@@ -48,6 +50,7 @@ import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFac
     updateMerchantConfig,
     updateBillingLabel,
     updateSession,
+    fetchSettlementAmount,
   },
 )
 @RTracking(() => window.rzpQ.component('Profile'))
@@ -73,6 +76,8 @@ export default class Profile extends Component {
     });
     this.props.fetchBankAccount();
     this.refreshUser(this.props.user);
+
+    this.props.fetchSettlementAmount();
 
     // fetch status whether the merchant can change their bank account details or not
     // Only allowed for role types `owner` & `admin`
@@ -391,7 +396,7 @@ export default class Profile extends Component {
   };
 
   render() {
-    let { user, profile } = this.props;
+    let { user, profile, settlement_amount } = this.props;
     let { bankAccount } = profile;
     let invitations = user.user.invitations;
 
@@ -445,6 +450,7 @@ export default class Profile extends Component {
             <BankAccountDetails
               bankAccount={bankAccount}
               isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
+              settlement_amount={settlement_amount.data}
               onChangeBankAccountDetails={this.openChangeBankDetailsModal}
             />
           ) : null}
