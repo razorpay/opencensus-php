@@ -27,7 +27,11 @@ class Handler extends BaseHandler
     {
         parent::__construct($args);
         $this->merchant = $args['merchant'];
-        $this->activationStatus = $args['activationStatus'];
+
+        if(isset($args['activationStatus']) === true)
+        {
+            $this->activationStatus = $args['activationStatus'];
+        }
     }
 
     public function send()
