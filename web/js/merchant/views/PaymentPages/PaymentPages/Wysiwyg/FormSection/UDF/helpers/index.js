@@ -9,7 +9,7 @@ import fUnits from './field-units';
 *
 * */
 
-export function getFieldTypes() {
+export function getFieldTypes(isPaymentButton) {
   const FIELD_TYPES = [
     fUnits.str,
     fUnits.alphabets,
@@ -21,9 +21,12 @@ export function getFieldTypes() {
     fUnits.textarea,
     fUnits.pan,
     fUnits.pincode,
-    fUnits.date,
     fUnits.dropdown,
   ];
+
+  if (!isPaymentButton) {
+    FIELD_TYPES.push(fUnits.date);
+  }
 
   return FIELD_TYPES; // JSON.parse(JSON.stringify(FIELD_TYPES)) is best way. But need to check if it breaks the selection in powerselect dropdown bcoz it works on object reference basis
 }

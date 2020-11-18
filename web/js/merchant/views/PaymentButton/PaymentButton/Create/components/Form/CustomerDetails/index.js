@@ -24,7 +24,7 @@ export default class CustomerDetails extends React.Component {
   }
 
   get defaultNewUDF() {
-    const newUDFField = getFieldTypes()[0].schema;
+    const newUDFField = getFieldTypes(true)[0].schema;
 
     return newUDFField;
   }

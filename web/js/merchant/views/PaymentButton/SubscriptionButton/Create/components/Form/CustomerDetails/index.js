@@ -15,7 +15,7 @@ export default class CustomerDetails extends React.Component {
   maxFieldsLimit = 5;
 
   get defaultNewUDF() {
-    const newUDFField = getFieldTypes()[0].schema;
+    const newUDFField = getFieldTypes(true)[0].schema;
 
     return newUDFField;
   }

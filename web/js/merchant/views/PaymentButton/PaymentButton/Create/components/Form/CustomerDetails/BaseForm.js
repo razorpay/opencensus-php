@@ -27,7 +27,7 @@ export default class BaseForm extends React.Component {
   constructor(props) {
     super(props);
 
-    this.fieldTypeOptions = getFieldTypes();
+    this.fieldTypeOptions = getFieldTypes(true);
 
     const { field, selectedOptionInFieldTypes } = this.props;
 

@@ -29,7 +29,7 @@ export default class EditableDisplayField extends React.Component {
     isEditModeOpened: false,
   };
 
-  fieldTypeOptions = getFieldTypes();
+  fieldTypeOptions = getFieldTypes(true);
 
   handleToggleEditMode = () => {
     this.setState({
