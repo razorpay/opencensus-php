@@ -30,11 +30,6 @@ class OpenCensusProvider extends ServiceProvider
             return;
         }
 
-        // Enable OpenCensus extension integrations
-        PDO::load();
-        Redis::load();
-        Curl::load();
-
         Route::matched(function($event) {
 
             $currentRoute = $event->route;
@@ -44,6 +39,10 @@ class OpenCensusProvider extends ServiceProvider
             if(!(in_array($currentRoute->getName(), $routesToInclude))){
                 return;
             }
+
+            PDO::load();
+            Redis::load();
+            Curl::load();
 
             $spanOptions = self::getSpanOptions($currentRoute);
 
@@ -58,6 +57,7 @@ class OpenCensusProvider extends ServiceProvider
 
             Tracer::start(new JaegerExporter($serviceName, $jaegerOptions), $tracerOptions);
         });
+
     }
 
     private function getSpanOptions($route)
