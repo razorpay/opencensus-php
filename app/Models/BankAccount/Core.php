@@ -19,6 +19,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -558,6 +559,8 @@ class Core extends Base\Core
             return $this->createBankAccount($input, $merchant, $this->mode);
         });
 
+        $this->validateNotLaxmiVilasBank($newBankAccount);
+
         (new Detail\PennyTesting())
             ->setBankAccount($newBankAccount)
             ->triggerPennyTesting($merchant->merchantDetail, Detail\Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE);
@@ -739,5 +742,13 @@ class Core extends Base\Core
         ];
 
         return $data;
+    }
+
+    protected function validateNotLaxmiVilasBank($newBankAccount): void
+    {
+        if (($newBankAccount->getBankCode() === Netbanking::LAVB_R) or
+            ($newBankAccount->getBankCode() === Netbanking::LAVB_C)) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED);
+        }
     }
 }
