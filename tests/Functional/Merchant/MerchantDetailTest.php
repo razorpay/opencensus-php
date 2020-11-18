@@ -2267,6 +2267,44 @@ class MerchantDetailTest extends OAuthTestCase
                                                   ]);
     }
 
+    public function testVerifyBvsTriggerPostFormSubmissionForCin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '4',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_cin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'cin',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForLlpin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '6',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_cin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'llp_deed',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
     public function testVerifyBvsTriggerPostFormSubmissionForCancelledChequeOcr()
     {
         $mid = '1cXSLlUU8V9sXl';
@@ -2319,6 +2357,8 @@ class MerchantDetailTest extends OAuthTestCase
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
 
         $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+
+        $this->assertNotNull($bvsValidation);
 
         $expectedValidationValues = [
             'artefact_type'     => $validationInput['artefact_type'],
