@@ -1120,10 +1120,15 @@ class Core extends Base\Core
 
                 if ($response['status_code'] === 200)
                 {
-                    $stats =  $response['response'];
+                    $stats =  $response['response']['stats'];
                 }
 
-                $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batch->getId()]);
+                $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_RESPONSE,
+                    [
+                        'batch'    => $batch->getId(),
+                        'stats'    => $stats ,
+                        'response' => $response['response']
+                    ]);
                 // all other cases , do nothing. will try fetching from invoice repo
             }
             catch(\Throwable $e)
@@ -1136,6 +1141,11 @@ class Core extends Base\Core
         if ($stats === null)
         {
             $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
+        }
+
+        if (isset($stats[Entity::TOTAL_COUNT]) === true)
+        {
+            return $stats;
         }
 
         //
@@ -1380,7 +1390,10 @@ class Core extends Base\Core
 
         if ($merchant !== null)
         {
-            if ($merchant->isFeatureEnabled(Features::PAYMENTLINKS_COMPATIBILITY_V2) === true)
+            if ($merchant->isAtLeastOneFeatureEnabled(
+                [Features::PAYMENTLINKS_COMPATIBILITY_V2,
+                    Features::PAYMENTLINKS_V2
+                ]) === true)
             {
                 return true;
             }
