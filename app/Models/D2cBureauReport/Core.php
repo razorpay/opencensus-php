@@ -78,14 +78,21 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($report);
 
-                if ($e->getCode() === ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT) {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT)
+                {
                     preg_match(self::INVALID_EMAIL_OR_CONTACT_REGEX, $e->getData()['data']['error'], $matches);
+                    $errorDesc = 'The phone number entered isn\'t linked to your PAN.';
+                    if (sizeof($matches) !== 0)
+                    {
+                        $errorDesc .= ' Please use ' . $matches['0'];
+                    };
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT,
                         null,
                         $e->getData(),
-                        'The phone number entered isn\'t linked to your PAN. Please use ' . $matches['0']);
+                        $errorDesc);
                 }
+
 
                 throw $e;
             }
