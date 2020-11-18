@@ -187,11 +187,6 @@ let initialState = {
                   slug: 'aubl',
                 },
                 {
-                  name: 'Aditya Birla Idea Payments Bank',
-                  status: 'Request',
-                  slug: 'abpb',
-                },
-                {
                   name: 'Airtel Payments Bank',
                   status: 'Request',
                   slug: 'airp',
