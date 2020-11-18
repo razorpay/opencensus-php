@@ -18,6 +18,7 @@ class ChannelNotification
 
     protected $raven;
 
+
     // TODO: Will change once merchant specific logic is plugged in
     protected $internalContact = [
         '9980755411', // Pawan
@@ -192,7 +193,7 @@ class ChannelNotification
     protected function getParams($data)
     {
         $params = [
-            'mode' => $data['mode'],
+            'transfer_mode' => $data['mode'],
         ];
 
         if (isset($data[Constants::TYPE]) === true and $data[Constants::TYPE] === 'bene')
