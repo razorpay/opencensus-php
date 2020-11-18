@@ -272,7 +272,7 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1->getId());
 
         $testData = & $this->testData[__FUNCTION__];
 
