@@ -336,14 +336,6 @@ class FundAccountValidationTest extends TestCase
 
         $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
 
-//        $this->fixtures->edit(
-//            'payout',
-//            $payout->getId(),
-//            [
-//                'status' => Payout\Status::PROCESSED,
-//                'utr'    => null,
-//            ]);
-
         $this->fixtures->edit(
             'fund_transfer_attempt',
             $fta->getId(),
@@ -384,6 +376,8 @@ class FundAccountValidationTest extends TestCase
         $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
         s($payout->getStatus());
         s($fta->getStatus());
+        $this->assertEquals('processed', $fta->getStatus());
+        $this->assertEquals('completed', $payout->getStatus());
 
     }
 
