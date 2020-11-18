@@ -217,9 +217,7 @@ export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
     batch_id: batchId,
   };
 
-  if (isPaymentlinksV2CompatEnabled) {
-    queryParams.type = 'link';
-  }
+  queryParams.type = 'link';
 
   return merchantFetch({
     url: 'invoices',
