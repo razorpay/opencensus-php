@@ -41,7 +41,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
-    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please add another bank a/c or contact support.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists

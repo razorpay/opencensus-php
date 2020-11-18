@@ -125,6 +125,7 @@ class Constants
     // Using this blacked listed banks to block bank account details
     // update in merchant details
     const BLACKLISTED_BANKS = [
+        'LAVB'
     ];
 
     const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];
