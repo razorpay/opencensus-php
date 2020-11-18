@@ -91,26 +91,5 @@ class OnboardingKycVerification extends Job
 
     public function retryVerification()
     {
-        $this->mutex->acquireAndRelease(
-            $this->merchantId, function() {
-
-            [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($this->merchantId);
-
-            $this->repoManager->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails) {
-
-                switch ($this->documentType)
-                {
-                    case Constants::CIN :
-
-                        $this->repoManager->merchant_detail->lockForUpdateAndReload($merchantDetails);
-
-                        (new Detail\Core())->verifyCINDetailsIfApplicable($merchantDetails, $merchant, true);
-
-                        $this->repoManager->merchant_detail->saveOrFail($merchantDetails);
-
-                        break;
-                }
-            });
-        });
     }
 }

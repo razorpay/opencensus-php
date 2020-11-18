@@ -279,6 +279,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $instantActivationRules = [
+        Entity::COMPANY_CIN                 => 'sometimes|max:255',
         Entity::COMPANY_PAN                 => 'sometimes|max:255|companyPan',
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',

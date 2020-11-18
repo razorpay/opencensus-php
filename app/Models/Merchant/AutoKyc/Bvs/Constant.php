@@ -130,20 +130,30 @@ class Constant
             self::ARTEFACT_TYPE   => self::SHOP_ESTABLISHMENT,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
+        Constant::LLPIN => [
+            self::ARTEFACT_TYPE   => self::LLP_DEED,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
+        Constant::CIN => [
+            self::ARTEFACT_TYPE   => self::CIN,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
-        Type::BUSINESS_PAN_URL => [
+        Type::BUSINESS_PAN_URL            => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_BUSINESS_PAN_OCR,
         ],
-        Type::PERSONAL_PAN     => [
+        Type::PERSONAL_PAN                => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
         ],
-        Type::CANCELLED_CHEQUE => [
+        Type::CANCELLED_CHEQUE            => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR,
         ],
         Entity::SHOP_ESTABLISHMENT_NUMBER => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
         ],
+        self::LLPIN                       => [],
+        self::CIN                         => [],
     ];
 }

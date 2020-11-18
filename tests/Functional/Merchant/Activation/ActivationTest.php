@@ -2634,60 +2634,6 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->create('merchant_document:multiple', $data);
     }
 
-    public function testVerifyCinDetailsVerified()
-    {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '4']);
-
-        $this->cinVerification('cinVerification', 'success', 'verified',
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'company_name',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                               ]);
-
-        $this->cinVerification('cinVerification', 'success', null,
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'company_name',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                                   'business_type'     => '1',
-                               ]);
-
-        $this->cinVerification('cinVerification', 'success', 'verified',
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'company_name',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                                   'business_type'     => '4',
-                               ]);
-
-        $this->cinVerification('cinVerification', 'incorrect_details', 'incorrect_details',
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'company_name',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                               ]
-        );
-
-        Queue::fake();
-
-        $this->cinVerification('cinVerification', 'failure', 'failed',
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'company_name',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                               ]);
-
-        Queue::assertPushed(OnboardingKycVerification::class);
-
-        $this->cinVerification('cinVerification', 'success', 'not_matched',
-                               [
-                                   'company_cin'       => '06abtpk8080c2zf',
-                                   'business_name'     => 'mahinadra finance',
-                                   'promoter_pan_name' => 'pankaj kumar',
-                               ]);
-    }
-
     public function cinVerification($test, string $mockStatus, $cinVerificationStatus, array $input): void
     {
         Config::set('applications.kyc.cin_authentication', $mockStatus);
@@ -2730,62 +2676,6 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $merchant->merchantDetail;
 
         $this->assertEquals($merchantDetail->getCinVerificationStatus(), $cinVerificationStatus);
-    }
-
-    public function testVerifyCinDetailsRetries()
-    {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '4', 'cin_verification_status' => 'failed']);
-
-        $this->cinVerificationRetry('success', 'verified',
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'company_name',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'cin_verification_status' => 'failed'
-                                    ]);
-
-        $this->cinVerificationRetry('success', null,
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'company_name',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'business_type'           => '1',
-                                        'cin_verification_status' => 'failed'
-                                    ]);
-
-        $this->cinVerificationRetry('success', 'verified',
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'company_name',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'business_type'           => '4',
-                                        'cin_verification_status' => 'failed'
-                                    ]);
-
-        $this->cinVerificationRetry('incorrect_details', 'incorrect_details',
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'company_name',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'cin_verification_status' => 'failed'
-                                    ]
-        );
-
-        $this->cinVerificationRetry('failure', 'failed',
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'company_name',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'cin_verification_status' => 'failed'
-                                    ]);
-
-        $this->cinVerificationRetry('success', 'not_matched',
-                                    [
-                                        'company_cin'             => '06abtpk8080c2zf',
-                                        'business_name'           => 'mahinadra finance',
-                                        'promoter_pan_name'       => 'pankaj kumar',
-                                        'cin_verification_status' => 'failed'
-                                    ]);
     }
 
     protected function mockRaven()

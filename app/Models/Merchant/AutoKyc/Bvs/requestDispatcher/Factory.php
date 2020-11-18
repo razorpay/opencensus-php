@@ -14,6 +14,8 @@ class Factory
             new PersonalPanOcr($merchant, $merchantDetails),
             new CancelledChequeOcr($merchant, $merchantDetails),
             new ShopEstablishmentAuth($merchant, $merchantDetails),
+            new LlpinAuth($merchant, $merchantDetails),
+            new CinAuth($merchant, $merchantDetails),
         ];
     }
 }
