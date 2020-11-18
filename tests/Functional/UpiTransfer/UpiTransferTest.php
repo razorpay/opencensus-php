@@ -116,6 +116,8 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa']);
 
         $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
 
         $this->assertEquals($upiTransfer['expected'], true);
 
@@ -169,6 +171,8 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
 
         $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
 
         $this->assertEquals($upiTransfer['expected'], true);
         $this->assertEquals(null, $upiTransfer['unexpected_reason']);
@@ -205,6 +209,8 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
 
         $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
         $this->assertEquals($upiTransfer['expected'], true);
 
         $this->assertEquals(null, $upiTransfer['unexpected_reason']);
@@ -235,6 +241,7 @@ class UpiTransferTest extends TestCase
 
         $upiTransfer = $this->getDbLastEntity('upi_transfer');
         $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getDbLastEntity('upi');
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals(4000, $payment['amount']);
@@ -243,6 +250,9 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
         $this->assertEquals($upiTransfer['expected'], false);
         $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
+
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
 
         $this->runUpiTransferRequestAssertions(
             'upi_icici',

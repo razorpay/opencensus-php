@@ -114,6 +114,8 @@ class Gateway extends Base\Gateway
             //
             $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
 
+            $input[Entity::TYPE] = Base\Type::PAY;
+
             $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
             return [
