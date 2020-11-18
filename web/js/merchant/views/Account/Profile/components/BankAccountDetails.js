@@ -1,14 +1,30 @@
+import React, { useEffect, useRef } from 'react';
+import { withRouter } from 'react-router-dom';
 import DetailRow from 'merchant/components/DetailRow';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-export default ({
+const BankAccountDetails = ({
   bankAccount,
   onChangeBankAccountDetails,
   isBankAccountChangeAllowed,
   settlement_amount,
+  location,
 }) => {
+  const bankAccountSectionRef = useRef(null);
+
+  useEffect(() => {
+    if (
+      bankAccountSectionRef &&
+      bankAccountSectionRef.current &&
+      location &&
+      location.hash === '#request-bank-account-change'
+    ) {
+      bankAccountSectionRef.current.scrollIntoView();
+    }
+  }, [bankAccountSectionRef, location]);
+
   return (
-    <div class="panel panel-default">
+    <div class="panel panel-default" ref={bankAccountSectionRef}>
       <div class="panel-heading">
         Bank Account
         {settlement_amount.no_settlement && settlement_amount.no_settlement.on_hold && (
@@ -45,3 +61,5 @@ export default ({
     </div>
   );
 };
+
+export default withRouter(BankAccountDetails);

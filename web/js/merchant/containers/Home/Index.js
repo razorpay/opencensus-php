@@ -24,6 +24,7 @@ import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
+import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
 
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
@@ -822,8 +823,14 @@ export default class HomeContainer extends Component {
       });
     }
 
+    const hasLakhmiVilasBankAcc =
+      user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
+
     return (
       <div class="react-root dashboard-home">
+        {/* Lakshmi Vilas Bank Moratorium */}
+        {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
+
         {/* Show Diwali Promotional Banner */}
         {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
           <div
