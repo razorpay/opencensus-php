@@ -10,6 +10,7 @@ use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Repository extends Base\Repository
@@ -80,6 +81,22 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
             ->first();
+    }
+
+    public function serializeForIndexing(PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        if ($entity->customer !== null)
+        {
+            $serialized[Customer\Entity::CONTACT] = $entity->customer->getContact();
+
+            $serialized[Customer\Entity::NAME] = $entity->customer->getName();
+
+            $serialized[Customer\Entity::EMAIL] = $entity->customer->getEmail();
+        }
+
+        return $serialized;
     }
 
     public function findByPublicIdAndMerchantWithRelations(string $id, Merchant $merchant, array $relations = [])

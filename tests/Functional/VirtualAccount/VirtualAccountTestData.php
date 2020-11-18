@@ -735,6 +735,42 @@ return [
         ],
     ],
 
+    'testFetchVirtualAccountsMultiple' => [
+        'input' => [
+            'input1' => [
+                'description' => 'after ES',
+            ],
+            'input2' => [
+                'status' => 'active',
+            ],
+            'input3' => [
+                'email' => 'test@razorpay.com',
+                'contact' => '1234567890',
+            ]
+        ],
+        'output' => [
+            'entity' => 'collection',
+            'count'  => 1,
+            'items'  => [
+                [
+                    'name'        => 'Test virtual account',
+                    'entity'      => 'virtual_account',
+                    'status'      => 'active',
+                    'description' => 'Testing VA fetch after ES sync',
+                    'receivers'   => [
+                        [
+                            'entity'    => 'bank_account',
+                            // This ifsc is for vas on primary balance.
+                            'ifsc'      => 'RAZR0000001',
+                            'bank_name' => null,
+                            'name'      => 'Test virtual account',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccountWithVpa' => [
         'name'        => 'Test virtual account',
         'entity'      => 'virtual_account',

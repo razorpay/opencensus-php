@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -11,11 +12,15 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::STATUS      => 'sometimes|in:active,closed,paid',
-            Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
-            Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
-            Entity::NOTES       => 'sometimes|notes_fetch',
-            Entity::BALANCE_ID  => 'sometimes|unsigned_id',
+            Entity::STATUS                       => 'sometimes|in:active,closed,paid',
+            Entity::CUSTOMER_ID                  => 'sometimes|string|min:14|max:19',
+            Entity::MERCHANT_ID                  => 'sometimes|alpha_num|size:14',
+            Entity::NOTES                        => 'sometimes|notes_fetch',
+            Entity::BALANCE_ID                   => 'sometimes|unsigned_id',
+            Entity::DESCRIPTION                  => 'sometimes|string',
+            Customer\Entity::EMAIL               => 'sometimes|string',
+            Customer\Entity::NAME                => 'sometimes|string',
+            Customer\Entity::CONTACT             => 'sometimes|string',
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE => 'sometimes|string|custom',
@@ -31,6 +36,10 @@ class Fetch extends BaseFetch
             Entity::NOTES,
             Entity::CUSTOMER_ID,
             Entity::BALANCE_ID,
+            Entity::DESCRIPTION,
+            Customer\Entity::EMAIL,
+            Customer\Entity::NAME,
+            Customer\Entity::CONTACT,
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE,
@@ -43,6 +52,11 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         Entity::NOTES,
+        Entity::STATUS,
+        Entity::DESCRIPTION,
+        Customer\Entity::EMAIL,
+        Customer\Entity::NAME,
+        Customer\Entity::CONTACT,
     ];
 
     const COMMON_FIELDS = [

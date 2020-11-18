@@ -1300,6 +1300,22 @@ class VirtualAccountTest extends TestCase
 
     }
 
+    public function testFetchVirtualAccountsMultiple()
+    {
+        // Creates virtual account on primary balance.
+        $this->createVirtualAccount(['description' => 'Testing VA fetch after ES sync', 'customer_id' => 'cust_100000customer']);
+
+        $input = $this->testData[__FUNCTION__]['input'];
+
+        $expectedOutput = $this->testData[__FUNCTION__]['output'];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input1']));
+
+        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input2']));
+
+        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input3']));
+    }
+
     public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
