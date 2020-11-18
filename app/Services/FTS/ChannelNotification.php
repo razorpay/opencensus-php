@@ -11,6 +11,7 @@ use RZP\Mail\Payout\DowntimeNotification;
 
 class ChannelNotification
 {
+    const DEFAULT_LIMIT = 100;
 
     protected $app;
 
@@ -18,6 +19,9 @@ class ChannelNotification
 
     protected $raven;
 
+    protected $repo;
+
+    protected $configs;
 
     // TODO: Will change once merchant specific logic is plugged in
     protected $internalContact = [
@@ -27,6 +31,12 @@ class ChannelNotification
         '8050408646', // Lokesh
         '8976670177', // Sagar
         '8861655100', // Karna
+    ];
+
+    protected $internalEmails = [
+        'sagar.gupta@razorpay.com',
+        'anshuman.p@razorpay.com',
+        'pawan.murarka@razorpay.com'
     ];
 
     protected $templateMap = [
@@ -47,6 +57,10 @@ class ChannelNotification
         $this->trace = $app['trace'];
 
         $this->raven = $this->app['raven'];
+
+        $this->repo = $this->app['repo'];
+
+        $this->configs = [];
     }
 
     /**
@@ -59,12 +73,10 @@ class ChannelNotification
         // TODO: Add notification specific logic here and fill the data section accordingly
         $result = $input;
 
-        $this->sendEmail($result);
-
-        $this->processSms($result);
+        $this->getConfigAndSendNotification($result);
     }
 
-    protected function sendEmail($result)
+    protected function sendEmail($result, $toEmailIds)
     {
         $template = $this->getTemplate($result, NotificationMode::MODE_EMAIL);
 
@@ -74,7 +86,7 @@ class ChannelNotification
 
         // Extract info from result section and fill the data section array accordingly
         $data = [
-            'to'       => 'pawan.murarka@razorpay.com', // Will change with merchant logic
+            'to'       => $toEmailIds, // Will change with merchant logic
             'subject'  => $subject,
             'body'     => $params,
             'template' => $template,
@@ -136,11 +148,9 @@ class ChannelNotification
         return $templateName;
     }
 
-    protected function processSms($result)
+    protected function processSms($result, $contacts)
     {
         $template = $this->getTemplate($result, NotificationMode::MODE_SMS);
-
-        $contacts  = $this->getContactList();
 
         $params = $this->getParams($result);
 
@@ -237,5 +247,25 @@ class ChannelNotification
         }
 
         return $subject;
+    }
+
+    protected function getConfigAndSendNotification($result)
+    {
+        $notificationConfigs = $this->repo
+                                    ->merchant_notification_config
+                                    ->getEnabledConfigs(self::DEFAULT_LIMIT);
+
+        $this->sendEmail($result, $this->internalEmails);
+
+        $this->processSms($result, $this->internalContact);
+
+        foreach ($notificationConfigs as $config)
+        {
+            $this->sendEmail($result, $config->getNotificationEmails());
+
+            $contactList = explode(',', $config->getNotificationMobileNumbers());
+
+            $this->processSms($result, $contactList);
+        }
     }
 }
