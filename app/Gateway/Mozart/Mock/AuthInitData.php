@@ -59,6 +59,9 @@ class AuthInitData extends Base\Mock\Server
 
     public function upi_mindgate($entities)
     {
+        assertTrue(isset($entities['upi']['remark']));
+        assertTrue($entities['upi']['remark'] === 'Test Merchant random description');
+
         $response = [
             'data' =>
                 [
@@ -97,6 +100,9 @@ class AuthInitData extends Base\Mock\Server
 
     public function upi_icici($entities)
     {
+        assertTrue(isset($entities['upi']['remark']));
+        assertTrue($entities['upi']['remark'] === 'Test Merchant random description');
+
         $response = [
             'data' =>
                 [

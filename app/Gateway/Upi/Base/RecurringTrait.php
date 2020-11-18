@@ -139,6 +139,11 @@ trait RecurringTrait
 
         // Action is mostly needed to process the response
         $input[Constants::UPI][Entity::ACTION] = $upi->getAction();
+
+        if ($this->getAction() === Action::AUTHENTICATE)
+        {
+            $input[Constants::UPI][Entity::REMARK] = $this->getPaymentRemark($input);
+        }
     }
 
     protected function isFirstRecurringPayment(array $input): bool

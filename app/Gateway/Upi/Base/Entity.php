@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const PROVIDER              = 'provider';
     const CONTACT               = 'contact';
     const MERCHANT_REFERENCE    = 'merchant_reference';
+    const REMARK                = 'remark';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const GATEWAY               = 'gateway';
@@ -54,6 +55,7 @@ class Entity extends Base\Entity
         self::GATEWAY_DATA,
         self::NAME,
         self::MERCHANT_REFERENCE,
+        self::REMARK,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::GATEWAY,
