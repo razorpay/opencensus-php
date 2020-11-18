@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { updateUser } from 'merchant_common/reducers/user';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { rxHomevisitedFlag, rxBenefits, rxCaFlag, caReqEventType, rxCaExp } from '../data';
+import { RX_HOTJAR_DATA, rxHomevisitedFlag, rxBenefits, rxCaFlag, caReqEventType, rxCaExp } from '../data';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import Button from 'common/new-ui/Button';
 import LocalStorageService from 'common/utils/localStorage';
 import RTracking from 'react-tracking';
@@ -25,7 +26,9 @@ class RxCard extends Component {
 
   componentDidMount() {
     if (!this.state.hidden && this.isRxCaExpEnabled) {
+      const { trigger, tags } = RX_HOTJAR_DATA.CA_HOME;
       this.addVisitedFlag();
+      triggerHotjarRecording(trigger, tags)
     }
   }
 

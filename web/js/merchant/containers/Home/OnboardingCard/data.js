@@ -37,3 +37,14 @@ export const rxHomevisitedFlag = 'rxHomevisitedFlag';
 export const rxCaSelectedFlag = 'rxCaSelectedFlag';
 export const caReqEventType = 'CURRENT_ACCOUNT_INTEREST';
 export const rxCaExp = 'rx_ca_experiment__1';
+
+export const RX_HOTJAR_DATA = {
+  CA_HOME: {
+    trigger: 'CA-EXP-PG-HOME',
+    tags: ['CA experiment PG - Home']
+  },
+  CA_KYC: {
+    trigger: 'CA-EXP-PG-KYC',
+    tags: ['CA experiment PG - KYC']
+  }
+}

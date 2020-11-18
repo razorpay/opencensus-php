@@ -13,6 +13,7 @@ import {
   classList,
   checkIsObjectEmpty,
 } from 'common/utils/rzp-utils';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
@@ -44,6 +45,7 @@ import {
   caReqEventType,
   rxCaExp,
   rxKYCvisitedFlag,
+  RX_HOTJAR_DATA,
 } from 'merchant/containers/Home/OnboardingCard/data';
 import {
   showInstantActivationSuccessModal,
@@ -139,7 +141,7 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-      this.props.data.business_operation_pin == this.props.data.business_registered_pin
+        this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
     has_url: this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
@@ -367,6 +369,8 @@ export default class ActivationWizard extends React.Component {
     const { user } = this.props;
     const { settings } = user.user;
     if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
+      const { trigger, tags } = RX_HOTJAR_DATA.CA_KYC;
+      triggerHotjarRecording(trigger, tags)
       // condition to show RX-Ca interest card
       if (!settings[rxKYCvisitedFlag] || settings[rxKYCvisitedFlag] === '0') {
         const _settings = { ...settings };
@@ -469,7 +473,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(null, callBack);
@@ -495,7 +499,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(this.state.activeTab + 1, callBack);
@@ -515,7 +519,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(this.state.activeTab - 1, callBack);
@@ -545,7 +549,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => {};
+      callBack = () => { };
     }
 
     this.goto(tabId, callBack);
@@ -564,7 +568,7 @@ export default class ActivationWizard extends React.Component {
           }),
         ),
       );
-    } catch (err) {}
+    } catch (err) { }
   };
 
   goto = async (newActiveTab, cb) => {
@@ -835,8 +839,8 @@ export default class ActivationWizard extends React.Component {
           this.canSubmitL1Form &&
           Boolean(
             state.dirty[field] ||
-              (this.state.commentlist.hasOwnProperty(field) &&
-                this.state.commentlist[field] !== ''),
+            (this.state.commentlist.hasOwnProperty(field) &&
+              this.state.commentlist[field] !== ''),
           )
         );
       });
@@ -967,7 +971,7 @@ export default class ActivationWizard extends React.Component {
           ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   submitL1 = async (currenActiveTab) => {
@@ -1655,7 +1659,7 @@ export default class ActivationWizard extends React.Component {
             const showFormDisabledAlert =
               !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
-            const { data } = this.props;
+            const {data} = this.props;
             let Component = Alert.Info;
             let icon, msg;
 
@@ -1664,55 +1668,55 @@ export default class ActivationWizard extends React.Component {
 
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
-                // **1. Alert: Account Activated
+            // **1. Alert: Account Activated
 
-                icon = 'i-done-all';
+            icon = 'i-done-all';
                 msg = 'Your account is activated.';
                 secondaryMsg = (
                   <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
                 );
               } else if (this.isNeedsClarificationMode()) {
-                // **2. Alert: Need clarification
-                icon = 'i-warning';
+            // **2. Alert: Need clarification
+            icon = 'i-warning';
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
-                // **3. Alert: Form Rejected
+            // **3. Alert: Form Rejected
 
-                icon = 'i-close';
+            icon = 'i-close';
                 Component = Alert.Error;
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
               } else if (isFormLocked && isFormSubmitted) {
-                // **4. Alert: Form is Locked (for reasons other than above)
-                // 'locked' status has more priority than 'submitted'
-                // If admins locked form before submiddion, then this alert is not shown
+            // **4. Alert: Form is Locked (for reasons other than above)
+            // 'locked' status has more priority than 'submitted'
+            // If admins locked form before submiddion, then this alert is not shown
 
-                icon = 'i-outline-lock';
+            icon = 'i-outline-lock';
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (isFormSubmitted) {
-                // **5. Alert: Form is Submitted
+            // **5. Alert: Form is Submitted
 
-                icon = 'i-check';
+            icon = 'i-check';
                 msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
               {
-                msg && (
-                  <Component iconBefore={icon}>
-                    {msg}
-                    <div className="side-description">{secondaryMsg}</div>
-                  </Component>
-                );
+            msg && (
+              <Component iconBefore={icon}>
+                {msg}
+                <div className="side-description">{secondaryMsg}</div>
+              </Component>
+            );
               }
             }
           }}
@@ -1943,7 +1947,7 @@ function ActivationField(field) {
 
   // temp solution for business category on NC flow
   let isNCFlowComponentDisbaled = false
-  if(rest.name === 'business_category' || rest.name === 'business_subcategory'){
+  if (rest.name === 'business_category' || rest.name === 'business_subcategory') {
     isNCFlowComponentDisbaled = this.isOnKYCTab() ? true : false
   }
 
