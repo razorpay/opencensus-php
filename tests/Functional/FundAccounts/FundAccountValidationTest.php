@@ -322,40 +322,19 @@ class FundAccountValidationTest extends TestCase
         $this->createValidationWithFundAccountEntity();
     }
 
-
-    public function testWebhookFiringFundAccountValidationCompletedWithStork()
+    public function testWebhookFiringFundAccountValidationCompleted()
     {
-        $testData = $this->testData['testFiringOfWebhookOnFAVCompletionWithStork'];
-
-        $this->enableRazorXTreatmentForStork();
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($testData)
-            {
-                $this->assertEquals('rx-test', $payload['event']['service']);
-                $this->assertEquals('fund_account.validation.completed', $payload['event']['name']);
-                $this->assertEquals('merchant', $payload['event']['owner_type']);
-                $this->assertEquals('10000000000000', $payload['event']['owner_id']);
-                $this->assertArraySelectiveEquals($testData, json_decode($payload['event']['payload'], true));
-
-                return new \Requests_Response();
-            })->once();
+        $this->mockRazorxTreatment();
 
         $this->testFundAccValidationWithAccountNumberAndBankAccount();
 
         $fav = $this->getDbLastEntity('fund_account_validation');
+
         $fta = $this->getDbLastEntity('fund_transfer_attempt');
 
         $payoutId = $fav->getId();
-        s($payoutId);
 
-        $this->fixtures->edit(
-            'fund_transfer_attempt',
-            $fta->getId(),
-            [
-                'utr'    => null,
-                'is_fts' => 1,
-            ]);
+        $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
 
 //        $this->fixtures->edit(
 //            'payout',
@@ -365,12 +344,17 @@ class FundAccountValidationTest extends TestCase
 //                'utr'    => null,
 //            ]);
 
-        $testData = $this->testData['testFiringOfWebhookOnFAVCompletionWithStork'];
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'utr'    => '933815233814',
+                'is_fts' => 1,
+            ]);
 
-        $this->expectWebhookEventWithContents('fund_account.validation.completed', $testData);
+        $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
 
         $this->ba->appAuth();
-
         $request = [
             'method'  => 'POST',
             'url'     =>  '/update_fts_fund_transfer',
@@ -397,11 +381,9 @@ class FundAccountValidationTest extends TestCase
         s($this->makeRequestAndGetContent($request));
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
-       // $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
-
-//       $this->assertEquals('933815233814', $payout->getUtr());
-//        $this->assertEquals('933815233814', $fta->);
-
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+        s($payout->getStatus());
+        s($fta->getStatus());
 
     }
 
