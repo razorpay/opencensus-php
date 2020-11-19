@@ -193,6 +193,9 @@ After running one test, you can edit them all to false. This will speed up test 
 ###### NOTE:
 * You need to make these 3 variables `true` everytime you run `make build`. Then, just run one test, and then make them `false` again.
 * Or, you can leave them all true. This will slow down the first test, but still speed up the rest of the tests on your pc.
+* To speed up tests further refer: [Doc Link](https://docs.google.com/document/d/1H7RHIJ-od7sHk3FXZCy7QeTPPpFoQpUywc91U6ApPVg/edit)
+
+
 
 #### Connecting to mysql:
 
