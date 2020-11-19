@@ -117,6 +117,8 @@ class Entity extends Base\PublicEntity
     const SCHEDULED_ON                          = 'scheduled_on';
     // Public attribute
     const DESTINATION                           = 'destination';
+    //transferred_at is the timestamp when payout request is sent to fts
+    const TRANSFERRED_AT                        = 'transferred_at';
 
 
     // These are used while creating merchant payouts.
@@ -415,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
         self::SOURCE_DETAILS,
+        self::TRANSFERRED_AT,
         self::STATUS_CODE,
     ];
 
@@ -1419,6 +1422,14 @@ class Entity extends Base\PublicEntity
             if ($status === Status::CREATED)
             {
                 $timestampKey = self::INITIATED_AT;
+            }
+
+            // When payout request is sent to FTS the status is initiated
+            //  We keep a track of this using 'transferred_at'
+
+            if ($status === Status::INITIATED)
+            {
+                $timestampKey = self::TRANSFERRED_AT;
             }
 
             $currentTime = Carbon::now()->getTimestamp();

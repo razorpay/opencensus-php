@@ -101,6 +101,32 @@ class PayoutTest extends TestCase
         $this->mockStorkService();
     }
 
+    public function testCreatePayoutAndCheckTransferredAtColumn()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $payout = $this->getDbLastEntity('payout');
+
+        self::assertNotNull($payout->transferred_at);
+
+        $transferredAt = $payout->transferred_at;
+
+        self::assertEquals(true,$transferredAt>=$currentTime);
+    }
+
     public function testCreatePayout(): array
     {
         $this->ba->privateAuth();

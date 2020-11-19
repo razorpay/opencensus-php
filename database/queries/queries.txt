@@ -6047,10 +6047,11 @@ ALTER TABLE merchant_details
 ALTER TABLE merchant_details
     ADD COLUMN shop_establishment_verification_status varchar(30) DEFAULT NULL;
 
+ALTER TABLE payouts
+    ADD COLUMN transferred_at INT DEFAULT NULL;
 
 ALTER table banking_account_activation_details
 	ADD COLUMN account_login_date int(11);
 
 ALTER TABLE `merchant_details`
     MODIFY COLUMN shop_establishment_number varchar(100) DEFAULT NULL;
-
