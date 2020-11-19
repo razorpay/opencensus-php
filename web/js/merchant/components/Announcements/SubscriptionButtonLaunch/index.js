@@ -3,11 +3,13 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 
 import { getMode, getUser } from 'merchant/store';
 
-const bannerText = 'Start accepting subscriptions from your consumers, right from your website or blog!';
+const bannerText =
+  'Start accepting subscriptions from your consumers, right from your website or blog!';
 const cardId = 'Subscription Button Launch';
 
 const cta2Text = 'Learn More';
-const cta2Link = 'https://razorpay.com/docs/payment-button/subscription-buttons/?click=dshbrd-notif-sb';
+const cta2Link =
+  'https://razorpay.com/docs/payment-button/subscription-buttons/?click=dshbrd-notif-sb';
 
 const cta1Text = 'Try Now';
 const cta1Link = '/subscription_buttons/new';

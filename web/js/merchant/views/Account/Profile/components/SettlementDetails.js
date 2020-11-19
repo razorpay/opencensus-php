@@ -3,14 +3,11 @@ import { connect } from 'react-redux';
 import { openModal } from 'merchant_common/reducers/modals';
 import Amount from 'common/ui/Amount';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
-import {
-  fetchSchedule,
-  fetchHolidayList,
-} from 'merchant/reducers/settlements/details';
+import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/details';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 
 @connect(
-  state => ({
+  (state) => ({
     ...state.profile,
     user: state.session.user,
     current_balance: state.home.current_balance,
@@ -20,7 +17,7 @@ import { fetchCurrentBalance } from 'merchant/reducers/home';
     fetchHolidayList,
     fetchSchedule,
     fetchCurrentBalance,
-  }
+  },
 )
 export default class SettlementDetails extends Component {
   componentDidMount() {
@@ -50,19 +47,14 @@ export default class SettlementDetails extends Component {
         <div class="panel-heading">
           Settlement Details
           <span class="pull-right">
-            <a onClick={this.viewSettlementSchedule}>
-              View Settlement Schedule
-            </a>
+            <a onClick={this.viewSettlementSchedule}>View Settlement Schedule</a>
           </span>
         </div>
         <div class="list-group details-row-container">
           <div class="list-group-item">
             <span>Current Balance</span>
             <span>
-              <Amount
-                value={Math.abs(current_balance.data.balance)}
-                currency={'INR'}
-              />
+              <Amount value={Math.abs(current_balance.data.balance)} currency={'INR'} />
             </span>
           </div>
         </div>

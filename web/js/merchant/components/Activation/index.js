@@ -1,5 +1,6 @@
 import { Link, withRouter } from 'react-router-dom';
 import Form from 'common/new-ui/Form';
+import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -32,6 +33,8 @@ import mainFormTabsContent, {
   getBusinessTypeOptions,
   tabToEventNames,
   bankAccountTabName,
+  CIN_BusinessTypes,
+  LLPIN_BusinessTypes,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -91,6 +94,7 @@ import SubmitFormLayer from './components/SubmitFormLayer';
 import Footer from './components/Footer';
 import RxCaInterest from './components/RxCaInterest';
 import { LOADING, FOOTER_BUTTONS } from './Constants';
+import { TypeAhead } from 'react-power-select';
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -141,7 +145,7 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-        this.props.data.business_operation_pin == this.props.data.business_registered_pin
+      this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
     has_url: this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
@@ -152,6 +156,8 @@ export default class ActivationWizard extends React.Component {
     address_proof: 'aadhar',
     needsClarification: {},
     additional_doc: '',
+    business_name_options: [],
+    business_name_selected_option: {},
     business_proof_type: 'gst_certificate',
     commentlist: {},
     bank_proof: 'cancelled_cheque',
@@ -250,6 +256,14 @@ export default class ActivationWizard extends React.Component {
 
       // Set Biz type options dynamically based on current activation stage
       FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
+
+      if (isPresent(props.data.business_name)) {
+        this.state.business_name_selected_option = {
+          company_name: props.data.business_name,
+          identity_type: '',
+          identity_number: '',
+        };
+      }
     }
 
     if (DOCUMENT_UPLOAD_STEP) {
@@ -370,7 +384,7 @@ export default class ActivationWizard extends React.Component {
     const { settings } = user.user;
     if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
       const { trigger, tags } = RX_HOTJAR_DATA.CA_KYC;
-      triggerHotjarRecording(trigger, tags)
+      triggerHotjarRecording(trigger, tags);
       // condition to show RX-Ca interest card
       if (!settings[rxKYCvisitedFlag] || settings[rxKYCvisitedFlag] === '0') {
         const _settings = { ...settings };
@@ -473,7 +487,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(null, callBack);
@@ -499,7 +513,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab + 1, callBack);
@@ -519,7 +533,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab - 1, callBack);
@@ -549,7 +563,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!activationUtils.isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(tabId, callBack);
@@ -568,7 +582,7 @@ export default class ActivationWizard extends React.Component {
           }),
         ),
       );
-    } catch (err) { }
+    } catch (err) {}
   };
 
   goto = async (newActiveTab, cb) => {
@@ -672,13 +686,6 @@ export default class ActivationWizard extends React.Component {
 
       this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
 
-      //make cin verify call
-      if ('company_cin' in reqData) {
-        this.props.verifyData({
-          type: 'cin',
-          company_cin: reqData.company_cin,
-        });
-      }
       // After updating 'Business type' detail, now update dependent field on FE.
       // Can loop and re-evaluate all tabs, IF more dependent fields are there. But this is for optimization.
       if (DOCUMENT_UPLOAD_STEP && savingWhichTab === BUSINESS_TYPE_FORM_STEP) {
@@ -839,8 +846,8 @@ export default class ActivationWizard extends React.Component {
           this.canSubmitL1Form &&
           Boolean(
             state.dirty[field] ||
-            (this.state.commentlist.hasOwnProperty(field) &&
-              this.state.commentlist[field] !== ''),
+              (this.state.commentlist.hasOwnProperty(field) &&
+                this.state.commentlist[field] !== ''),
           )
         );
       });
@@ -971,7 +978,7 @@ export default class ActivationWizard extends React.Component {
           ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-    } catch (e) { }
+    } catch (e) {}
   };
 
   submitL1 = async (currenActiveTab) => {
@@ -1261,13 +1268,60 @@ export default class ActivationWizard extends React.Component {
     };
   };
 
+  fetchBusinessNames = async (searchString) => {
+    try {
+      const res = await merchantFetch(
+        `merchant/activation/company_search?search_string=${searchString}`,
+      );
+      if (res.data && res.data.results) {
+        if (res.data.results.length) {
+          this.setState({ business_name_options: res.data.results });
+        } else {
+          this.props.tracking.trackEvent(
+            window.rzpQ.onbr().failed(`act.company_search_no_results`, {
+              search_string: searchString,
+            }),
+          );
+        }
+      }
+    } catch (err) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.onbr().failed(`act.company_search_api`, {
+          search_string: searchString,
+          status_code: err.status_code,
+          error_code: err.code,
+          errors: err.errors,
+        }),
+      );
+    }
+  };
+
+  debouncedFetchBusinessName = debounce(this.fetchBusinessNames.bind(this), 200);
+
   onChange = ({ target }) => {
+    const placeholder = target.getAttribute('placeholder');
     const stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     const fieldName = target.name;
     const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
+
+    // Company Search only available for PG Activation
+    if (placeholder === 'Business name as per PAN' && !activationUtils.isSourceRX()) {
+      setTimeout(() => {
+        const args = {
+          option: { company_name: fieldValue, identity_number: '', identity_type: '' },
+        };
+        this.onOptionChange(args);
+        if (fieldValue.length < 3) {
+          this.setState({ business_name_options: [] });
+        } else {
+          this.debouncedFetchBusinessName(fieldValue);
+        }
+      }, 5);
+      return;
+    }
 
     /*
      * Step 1: These 4 fields are directly filled on user's behalf,
@@ -1423,6 +1477,50 @@ export default class ActivationWizard extends React.Component {
         },
       });
     }
+  };
+
+  onOptionChange = (args) => {
+    const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
+    let businessIdentityType = null;
+
+    if (CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1) {
+      businessIdentityType = 'cin';
+    } else if (LLPIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1) {
+      businessIdentityType = 'llpin';
+    } else businessIdentityType = null;
+
+    const shouldAutoPopulateCompanyCin = businessIdentityType === args.option.identity_type;
+
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        business_name_selected_option: args.option,
+        dirty: {
+          ...prevState.dirty,
+          business_name: args.option.company_name,
+          ...(shouldAutoPopulateCompanyCin && { company_cin: args.option.identity_number }),
+        },
+      }),
+      () => {
+        // dependent field CIN does not update automatically on updating state since its uncontrolled component
+        // update field manually
+        const el = document.querySelector('.form-container [name="company_cin"]');
+        if (el) {
+          if (shouldAutoPopulateCompanyCin) {
+            el.value = args.option.identity_number;
+            this.props.tracking.trackEvent(
+              window.rzpQ.onbr().success(`act.company_search_CIN/LLPIN_Autopopulated`, {
+                company_name: args.option.company_name,
+                identity_number: args.option.identity_number,
+                identity_type: args.option.identity_type,
+              }),
+            );
+          } else {
+            el.value = '';
+          }
+        }
+      },
+    );
   };
 
   /* Find if all tabs are valid */
@@ -1659,7 +1757,7 @@ export default class ActivationWizard extends React.Component {
             const showFormDisabledAlert =
               !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
-            const {data} = this.props;
+            const { data } = this.props;
             let Component = Alert.Info;
             let icon, msg;
 
@@ -1668,55 +1766,55 @@ export default class ActivationWizard extends React.Component {
 
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
-            // **1. Alert: Account Activated
+                // **1. Alert: Account Activated
 
-            icon = 'i-done-all';
+                icon = 'i-done-all';
                 msg = 'Your account is activated.';
                 secondaryMsg = (
                   <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
                 );
               } else if (this.isNeedsClarificationMode()) {
-            // **2. Alert: Need clarification
-            icon = 'i-warning';
+                // **2. Alert: Need clarification
+                icon = 'i-warning';
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
-            // **3. Alert: Form Rejected
+                // **3. Alert: Form Rejected
 
-            icon = 'i-close';
+                icon = 'i-close';
                 Component = Alert.Error;
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
               } else if (isFormLocked && isFormSubmitted) {
-            // **4. Alert: Form is Locked (for reasons other than above)
-            // 'locked' status has more priority than 'submitted'
-            // If admins locked form before submiddion, then this alert is not shown
+                // **4. Alert: Form is Locked (for reasons other than above)
+                // 'locked' status has more priority than 'submitted'
+                // If admins locked form before submiddion, then this alert is not shown
 
-            icon = 'i-outline-lock';
+                icon = 'i-outline-lock';
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
               } else if (isFormSubmitted) {
-            // **5. Alert: Form is Submitted
+                // **5. Alert: Form is Submitted
 
-            icon = 'i-check';
+                icon = 'i-check';
                 msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
               {
-            msg && (
-              <Component iconBefore={icon}>
-                {msg}
-                <div className="side-description">{secondaryMsg}</div>
-              </Component>
-            );
+                msg && (
+                  <Component iconBefore={icon}>
+                    {msg}
+                    <div className="side-description">{secondaryMsg}</div>
+                  </Component>
+                );
               }
             }
           }}
@@ -1876,6 +1974,19 @@ function ActivationField(field) {
       rest.options = field._optionsFn(this, this.props.categories);
     }
   }
+
+  if (typeof rest.customField === 'function') {
+    rest.customField = rest.customField(this);
+  }
+
+  // Attach addition properties only if field is Custom Field i.e PowerSelect
+  // Business Name has customField = true only for PG Activation (Not for RX Activation)
+  if (field.name === 'business_name' && rest.customField) {
+    rest.options = this.state.business_name_options || [];
+    rest.selected = this.state.business_name_selected_option;
+    rest.onChange = this.onOptionChange;
+  }
+
   if (rest.getName) {
     rest.name = rest.getName(this);
   }
@@ -1946,10 +2057,12 @@ function ActivationField(field) {
   }
 
   // temp solution for business category on NC flow
-  let isNCFlowComponentDisbaled = false
+  let isNCFlowComponentDisabled = false;
   if (rest.name === 'business_category' || rest.name === 'business_subcategory') {
-    isNCFlowComponentDisbaled = this.isOnKYCTab() ? true : false
+    isNCFlowComponentDisabled = this.isOnKYCTab() ? true : false;
   }
+
+  const _Component = rest.customField ? CustomField : Component;
 
   return (
     <>
@@ -1985,11 +2098,11 @@ function ActivationField(field) {
           ))}
         </div>
       )}
-      <Component
+      <_Component
         key={key}
         data-name={_name}
         defaultValue={defaultValue}
-        disabled={isComponentDisabled || isNCFlowComponentDisbaled}
+        disabled={isComponentDisabled || isNCFlowComponentDisabled}
         autoRender={_autoRenderImpure}
         required={typeof required === 'function' ? required(this) : required}
         {...rest}
@@ -2063,5 +2176,41 @@ function handleInstantActivationSuccess(props) {
       props.showKYCDetailsModal();
       fireL1FormSuccessEvents(props.user);
     }
+  }
+}
+
+function CustomField(props) {
+  let error = '';
+  const businessName = props.selected.company_name;
+
+  if (typeof props.validator === 'function' && isPresent(businessName)) {
+    error = props.validator(businessName);
+  }
+
+  switch (props.name) {
+    case 'business_name':
+      return (
+        <div
+          className={classList(
+            'Input Input--required Input--small',
+            props.disabled && 'Input--disabled',
+            error && 'PowerSelectError is-mature is-invalid',
+          )}
+        >
+          <div className="Input-label">Business Name</div>
+          <div className="Input-content">
+            <TypeAhead
+              {...props}
+              showClear={false}
+              optionComponent={({ option }) => (
+                <div className="activation-power-select-option">{option.company_name}</div>
+              )}
+            />
+            {error && <div className="Input-error">{error}</div>}
+          </div>
+        </div>
+      );
+    default:
+      return null;
   }
 }

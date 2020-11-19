@@ -19,7 +19,7 @@ import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Mod
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
 import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
 
-import {autoPrefixUrls, classList, getURLQueryParams} from 'common/utils/rzp-utils';
+import { autoPrefixUrls, classList, getURLQueryParams } from 'common/utils/rzp-utils';
 
 import {
   initDefaultFormItems,
@@ -781,9 +781,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           isPageReady={isPageReady}
           handleClose={this.handleClose}
         >
-          {
-            user.isSubscriptionButtonEnabled && <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
-          }
+          {user.isSubscriptionButtonEnabled && (
+            <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
+          )}
         </Header>
         {content}
       </div>

@@ -3,11 +3,13 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 
 import { getMode, getUser } from 'merchant/store';
 
-const bannerText = 'Start accepting subscriptions from your consumers, right from your website or blog!';
+const bannerText =
+  'Start accepting subscriptions from your consumers, right from your website or blog!';
 const cardId = 'Subscription Button Launch';
 
 const ctaText = 'LEARN MORE';
-const ctaLink = 'https://razorpay.com/docs/payment-button/subscription-buttons/?click=dshbrd-notif-sb';
+const ctaLink =
+  'https://razorpay.com/docs/payment-button/subscription-buttons/?click=dshbrd-notif-sb';
 
 function _track(source) {
   const mode = getMode();
@@ -50,13 +52,14 @@ export default React.memo(({ productName }) => {
   const user = getUser();
 
   return (
-    <AnnouncementBanner
-      title="Introducing Subscription Button"
-      theme="primary"
-      fullPage
-    >
+    <AnnouncementBanner title="Introducing Subscription Button" theme="primary" fullPage>
       <span class="display-inline m-r">{bannerText}</span>
-      <a class="Button--primary Button Button--narrow m-l" href={ctaLink} target="_blank" onClick={track.onClickCTA}>
+      <a
+        class="Button--primary Button Button--narrow m-l"
+        href={ctaLink}
+        target="_blank"
+        onClick={track.onClickCTA}
+      >
         <b>
           {ctaText} <i class="i i-external-link" />
         </b>

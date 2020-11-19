@@ -37,7 +37,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   );
 };
 
-export default props => {
+export default (props) => {
   let { settlements, isLoading, showBreakup } = props;
 
   return (
@@ -60,7 +60,7 @@ export default props => {
           rows={settlements}
           emptyTableMsg="No Settlements found!"
         >
-          {settlements.map(settlement => (
+          {settlements.map((settlement) => (
             <SettlementsListItem
               key={settlement.id}
               settlement={settlement}

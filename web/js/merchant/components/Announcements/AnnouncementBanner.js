@@ -44,7 +44,12 @@ export default class extends Component {
     }
 
     return (
-      <div class={classList('announcement-banner-container', fullPage && 'announcement-banner-container--fullpage')}>
+      <div
+        class={classList(
+          'announcement-banner-container',
+          fullPage && 'announcement-banner-container--fullpage',
+        )}
+      >
         <AnnouncementBanner
           class={classList('Announcement_Banner', className)}
           onClose={canBeClosed && this.handleClose}

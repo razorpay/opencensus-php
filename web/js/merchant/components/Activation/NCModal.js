@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 
-
 const NCModal = ({ onClose }) => {
   return (
     <ModalMask>
@@ -12,17 +11,20 @@ const NCModal = ({ onClose }) => {
         </div>
         <div className="modal-body">
           <div className="modal-description">
-          <div>
-            <p>We have a few questions about your KYC submission, please provide required clarifications 
-              at the earliest for quick account activation. Please note, settlements will only be 
-              enabled to your bank account, after your revised KYC is reviewed and approved.</p>
+            <div>
+              <p>
+                We have a few questions about your KYC submission, please provide required
+                clarifications at the earliest for quick account activation. Please note,
+                settlements will only be enabled to your bank account, after your revised KYC is
+                reviewed and approved.
+              </p>
+            </div>
           </div>
-          </div>
-            <Link to="/activation">
-              <button className="btn btn-primary" onClick={onClose}>
-                Add Clarifications
-              </button>
-            </Link>
+          <Link to="/activation">
+            <button className="btn btn-primary" onClick={onClose}>
+              Add Clarifications
+            </button>
+          </Link>
         </div>
       </Modal>
     </ModalMask>

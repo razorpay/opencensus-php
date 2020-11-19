@@ -1,13 +1,13 @@
 import fUnits from './field-units';
 
 /*
-* A. Type: text
-*    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
-*
-* B. Type: Select
-*     Validation: string
-*
-* */
+ * A. Type: text
+ *    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
+ *
+ * B. Type: Select
+ *     Validation: string
+ *
+ * */
 
 export function getFieldTypes(isPaymentButton) {
   const FIELD_TYPES = [
@@ -57,33 +57,19 @@ export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
-  const {
-    title,
-    name,
-    required,
-    description,
-    settings,
-    ...schemaFields
-  } = field;
+  const { title, name, required, description, settings, ...schemaFields } = field;
 
   const { options: optionsInFieldSchema, ...restInFieldSchema } = schemaFields;
   const fieldTypes = flattenFIELD_TYPES();
 
   for (let i = 0; i < fieldTypes.length; i++) {
-    const {
-      options: optionsInDefinedSchema,
-      ...restInDefinedSchema
-    } = fieldTypes[i].schema;
+    const { options: optionsInDefinedSchema, ...restInDefinedSchema } = fieldTypes[i].schema;
 
     const FIELD_TYPES_keys = Object.keys(restInDefinedSchema); //Needs to be separated since backend sometimes sends empty options when it's not required.
-    const FIELD_TYPES_opts_keys = optionsInDefinedSchema
-      ? Object.keys(optionsInDefinedSchema)
-      : [];
+    const FIELD_TYPES_opts_keys = optionsInDefinedSchema ? Object.keys(optionsInDefinedSchema) : [];
 
     const field_keys = Object.keys(restInFieldSchema);
-    const field_opts_keys = optionsInFieldSchema
-      ? Object.keys(optionsInFieldSchema)
-      : [];
+    const field_opts_keys = optionsInFieldSchema ? Object.keys(optionsInFieldSchema) : [];
 
     let isMismatch = false;
 
@@ -126,8 +112,7 @@ export function mapFieldToIndex(field) {
       const valueInFieldSchemaOptions =
         schemaFields.options && schemaFields.options[FIELD_TYPES_opts_keys[j]];
       const valueInFieldMapSchemaOptions =
-        fieldTypes[i].schema.options &&
-        fieldTypes[i].schema.options[FIELD_TYPES_opts_keys[j]];
+        fieldTypes[i].schema.options && fieldTypes[i].schema.options[FIELD_TYPES_opts_keys[j]];
 
       if (valueInFieldSchemaOptions !== valueInFieldMapSchemaOptions) {
         isMismatch = true;
@@ -191,11 +176,7 @@ export function constructFieldSchema(fieldData) {
   const prettyTitle = title.trim().replace('  ', ' ');
 
   return {
-    name: prettyTitle
-      .trim()
-      .toLowerCase()
-      .split(' ')
-      .join('_'),
+    name: prettyTitle.trim().toLowerCase().split(' ').join('_'),
     title: prettyTitle,
     required: typeof required !== 'undefined' ? !!Number(required) : undefined,
     description: typeof description !== 'undefined' ? description : undefined,

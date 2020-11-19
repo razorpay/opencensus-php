@@ -1,8 +1,8 @@
 /*
-* Extra schema keys supported apart from the ones mentioned in 'schema' object are:
-* title, name, description, required
-*
-* */
+ * Extra schema keys supported apart from the ones mentioned in 'schema' object are:
+ * title, name, description, required
+ *
+ * */
 const str = {
   label: 'Single Line Text',
   icon: 'alphabet i-fix-alphabet',
@@ -122,7 +122,7 @@ const date = {
     type: 'string',
     pattern: 'date',
     options: {
-      cmp: 'date' // Note: providing cmp is important, bcoz a simple input field's pattern can also be date. So, to render it as date picker custom component, cmp is required. Similarly, for other field types
+      cmp: 'date', // Note: providing cmp is important, bcoz a simple input field's pattern can also be date. So, to render it as date picker custom component, cmp is required. Similarly, for other field types
     },
   },
 };
@@ -153,5 +153,5 @@ export default {
   alphanumeric,
   pan,
   pincode,
-  date
+  date,
 };

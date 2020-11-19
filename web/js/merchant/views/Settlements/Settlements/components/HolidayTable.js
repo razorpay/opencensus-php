@@ -1,7 +1,7 @@
 import { titleCase } from 'common/utils/rzp-utils';
 import TableBody from 'common/ui/TableBody';
 
-const Row = props => {
+const Row = (props) => {
   return (
     <tr>
       <td />
@@ -25,7 +25,9 @@ export default ({ items, loading }) => {
           </tr>
         </thead>
         <TableBody colSpan={2} isLoading={false} rows={items}>
-          {items.map((item, index) => <Row key={index} rowData={item} />)}
+          {items.map((item, index) => (
+            <Row key={index} rowData={item} />
+          ))}
         </TableBody>
       </table>
     </div>

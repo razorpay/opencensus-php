@@ -36,8 +36,8 @@ const ondemandEvents = {
 const ondemandTrackers = () => {
   let trackers = {};
 
-  Object.keys(ondemandEvents).forEach(elem => {
-    trackers[elem] = function(eventLabel) {
+  Object.keys(ondemandEvents).forEach((elem) => {
+    trackers[elem] = function (eventLabel) {
       track({
         eventAction: ondemandEvents[elem],
         eventLabel: eventLabel,

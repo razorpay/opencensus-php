@@ -11,15 +11,13 @@ const L1_BUSINESS_FIELD_NAMES = [
   'business_name',
   'business_website',
   'company_pan',
+  'company_cin',
 ];
-const ADDRESS_FIELD_NAMES = AddressFields.map(
-  field =>
-    Array.isArray(field)
-      ? field.map(nestedField => nestedField.name)
-      : field.name
+const ADDRESS_FIELD_NAMES = AddressFields.map((field) =>
+  Array.isArray(field) ? field.map((nestedField) => nestedField.name) : field.name,
 )
   .reduce((prevField, curField) => prevField.concat(curField), [])
-  .filter(field => !!field);
+  .filter((field) => !!field);
 const L1_FORM_FIELD_NAMES = L1_BUSINESS_FIELD_NAMES.concat(ADDRESS_FIELD_NAMES);
 
 export default L1_FORM_FIELD_NAMES;

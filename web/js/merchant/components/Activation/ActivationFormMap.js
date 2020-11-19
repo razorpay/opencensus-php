@@ -1,7 +1,6 @@
 import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
-
 import { isValidGSTIN, getDetailsForIFSC, isPresent } from 'common/utils/rzp-utils';
 import {
   validateCIN,
@@ -39,6 +38,7 @@ import {
   isAdditonalDocRequired,
   isRXV2Onboarding,
   showSubcategory,
+  isSourceRX,
   removeArrayDuplicatesByProp,
   hasUploadedBusinessProofUrl,
   hasUploadedBusinessProofTypeDoc,
@@ -104,7 +104,7 @@ const BANK_PROOF_TYPE_DOC = {
   },
 };
 
-const CIN_BusinessTypes = [PRIVATE, PUBLIC];
+export const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
@@ -360,8 +360,9 @@ const businessDetails = [
     {
       label: 'Business Name',
       name: 'business_name',
+      options: [],
       info: getBusinessNameInfo,
-      placeholder: 'Registered name',
+      placeholder: 'Business name as per PAN',
       validator: function (value) {
         const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
         const showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
@@ -370,6 +371,40 @@ const businessDetails = [
           : validateCompanyAB(value, contactName, showCompanyName);
       },
       _when: excludeFor_Indiv,
+      _disabledWhen: (activation) =>
+        !isSourceRX() &&
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_name),
+      optionLabelPath: 'company_name',
+      searchIndices: ['company_name'],
+      className: 'ps-in-modal',
+      customField: () => !isSourceRX(), // denotes its a custom field instead of the regular input fields found in dashboard
+    },
+    {
+      label: 'CIN',
+      name: 'company_cin',
+      validator: validateCIN,
+      required: true, // It's mandatory only for certain orgs
+      _autoRenderImpure: true,
+      maxLength: '21',
+      className: 'Input--capitalize',
+      info: 'Example : U67190TN2014PTC096978',
+      _when: (activation) => {
+        const currentBusinessType =
+          activation.state.dirty.business_type || activation.props.data.business_type;
+        return currentBusinessType && CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1;
+      },
+    },
+    {
+      label: 'LLPIN',
+      name: 'company_cin',
+      required: true, // It's mandatory only for LLP
+      info: 'Example : AAB-2933',
+      className: 'Input--capitalize',
+      validator: (value) => validateCIN(value, 'LLPIN'),
+      _when: (activation) =>
+        activation.props.data.business_type &&
+        LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
     },
   ],
   [
@@ -443,35 +478,6 @@ const businessDetails = [
     },
   },
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
-  {
-    label: 'CIN',
-    name: 'company_cin',
-    validator: validateCIN,
-    required: true, // It's mandatory only for certain orgs
-    maxLength: '21',
-    className: 'Input--capitalize',
-    info: 'Example : U67190TN2014PTC096978',
-    _when: (activation) => {
-      const currentBusinessType =
-        activation.state.dirty.business_type || activation.props.data.business_type;
-      return (
-        isL1Completed(activation) &&
-        currentBusinessType &&
-        CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
-      );
-    },
-  },
-  {
-    label: 'LLPIN',
-    name: 'company_cin',
-    required: true, // It's mandatory only for LLP
-    info: 'Example : AAB-2933',
-    className: 'Input--capitalize',
-    validator: (value) => validateCIN(value, 'LLPIN'),
-    _when: (activation) =>
-      activation.props.data.business_type &&
-      LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
-  },
   [
     {
       _name: 'has_gstin',

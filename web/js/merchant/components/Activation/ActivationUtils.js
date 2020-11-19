@@ -269,12 +269,15 @@ function hasAPIL1Error({ poi_verification_status, company_pan_verification_statu
   return false;
 }
 
-function isRXV2Onboarding(activation) {
+function isSourceRX() {
   const query = QueryString.parse(window.location.search);
-  const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
-  const isRXV2OnboardingExp = activation.props.user.isRXV2OnboardingEnabled;
+  const isRXActivation = !!(query && query.merchant && query.merchant === 'x');
+  return isRXActivation;
+}
 
-  return isRXV2OnboardingExp && isSourceRX;
+function isRXV2Onboarding(activation) {
+  const isRXV2OnboardingExp = activation.props.user.isRXV2OnboardingEnabled;
+  return isRXV2OnboardingExp && isSourceRX();
 }
 
 function showSubcategory(activation) {
@@ -386,6 +389,7 @@ export {
   hasAPIL1Error,
   isRXV2Onboarding,
   showSubcategory,
+  isSourceRX,
   removeArrayDuplicatesByProp,
   doesHaveBusinessProofDocs,
   getDefaultBusinessProofDoc,

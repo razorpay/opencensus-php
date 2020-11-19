@@ -62,7 +62,7 @@ export default class Announcement extends Component {
         },
         () => {
           return this.props.onClose && this.props.onClose();
-        }
+        },
       );
     }
 
@@ -85,7 +85,9 @@ export default class Announcement extends Component {
       return null;
     }
 
-    props.className = `announcement-banner${className ? ` ${className}` : ''} ${fullPage ? 'announcement-banner--fullpage' : ''}`;
+    props.className = `announcement-banner${className ? ` ${className}` : ''} ${
+      fullPage ? 'announcement-banner--fullpage' : ''
+    }`;
 
     const { dark, light } = theme.colors,
       titleStyle = {
@@ -107,14 +109,12 @@ export default class Announcement extends Component {
           </Fragment>
         )}
 
-        {
-          fullPage && (
-            <Fragment>
-              <div class="skew-pattern skew-pattern-left" style={titleStyle}></div>
-              <div class="skew-pattern skew-pattern-right" style={titleStyle}></div>
-            </Fragment>
-          )
-        }
+        {fullPage && (
+          <Fragment>
+            <div class="skew-pattern skew-pattern-left" style={titleStyle}></div>
+            <div class="skew-pattern skew-pattern-right" style={titleStyle}></div>
+          </Fragment>
+        )}
 
         <div className="content">{this.props.children}</div>
         {onClose && (

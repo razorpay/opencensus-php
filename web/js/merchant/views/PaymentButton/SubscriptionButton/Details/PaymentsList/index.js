@@ -13,7 +13,6 @@ import EntityTable from 'merchant/components/EntityTable';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
 
-
 const PaymentsTable = (props) => {
   let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
 
@@ -23,7 +22,6 @@ const PaymentsTable = (props) => {
 @withRouter
 @connect((state) => state.payments, { fetchAll })
 export default class PaymentsList extends ListContainer {
-
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
     return this.props.fetchAll({
@@ -64,7 +62,7 @@ export default class PaymentsList extends ListContainer {
               class="btn btn-default Button--invert report-download-trigger"
               disabled={isExportInProgress}
             >
-              <i class="i i-download m-r"/>
+              <i class="i i-download m-r" />
               {isExportInProgress ? 'Downloading...' : 'Download Report'}
             </div>
             <Popover align="bottom">
@@ -83,7 +81,6 @@ export default class PaymentsList extends ListContainer {
               </PopoverBody>
             </Popover>
           </div>
-
         </div>
 
         <div class="content-wrapper">

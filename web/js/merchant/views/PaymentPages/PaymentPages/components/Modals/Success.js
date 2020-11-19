@@ -16,11 +16,10 @@ import SocialShareOptions from './Share/SocialShareOptions';
 import Collapsible from 'merchant/components/Collapsible';
 import ProductCard from 'merchant/components/ProductCard/ProductCard';
 
-
 export default class extends React.PureComponent {
   state = {};
 
-  onSubmit = formData => {
+  onSubmit = (formData) => {
     const reqPayload = {};
     const msg = [];
 
@@ -38,7 +37,7 @@ export default class extends React.PureComponent {
 
     return this.props
       .handleSendLink(formData)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           this.props.showNotification({
             type: 'success',
@@ -56,7 +55,7 @@ export default class extends React.PureComponent {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -77,8 +76,7 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
-    this.props.trackClickOnCreateEmbedButton &&
-      this.props.trackClickOnCreateEmbedButton('new');
+    this.props.trackClickOnCreateEmbedButton && this.props.trackClickOnCreateEmbedButton('new');
 
     this.props.openModal({
       size: 'small',
@@ -87,14 +85,7 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const {
-      isEditExistingId,
-      handleClose,
-      url,
-      openSettingsModal,
-      closeModal,
-      user
-    } = this.props;
+    const { isEditExistingId, handleClose, url, openSettingsModal, closeModal, user } = this.props;
 
     return (
       <div class="Modal--PaymentpagesSuccess">
@@ -106,9 +97,7 @@ export default class extends React.PureComponent {
                 <div class="pattern-2" />
               </div>
               <div class="text-center">
-                {isEditExistingId
-                  ? 'Page updated successfully'
-                  : 'Page created successfully'}
+                {isEditExistingId ? 'Page updated successfully' : 'Page created successfully'}
               </div>
             </>
           }
@@ -153,9 +142,7 @@ export default class extends React.PureComponent {
 
               {/* Collapsible phone and email fields */}
               <Collapsible
-                title={() => (
-                  <span className="text-primary">Share via SMS, Email</span>
-                )}
+                title={() => <span className="text-primary">Share via SMS, Email</span>}
                 childrenPosition="bottom"
                 class="CollapsibleFields"
               >
@@ -165,7 +152,7 @@ export default class extends React.PureComponent {
                     type="tel"
                     placeholder="Mobile"
                     addonBefore={<i class="i i-phone" />}
-                    validator={val => {
+                    validator={(val) => {
                       if (!isPhone(val)) {
                         return 'Invalid phone';
                       }
@@ -177,7 +164,7 @@ export default class extends React.PureComponent {
                     type="email"
                     placeholder="Email"
                     addonBefore={<i class="i i-email" />}
-                    validator={val => {
+                    validator={(val) => {
                       if (!isEmail(val)) {
                         return 'Invalid email';
                       }
@@ -205,19 +192,19 @@ export default class extends React.PureComponent {
             </div>
           </div>
 
-          {
-            user.isSubscriptionButtonEnabled && (
-              <ProductCard
-                imgSrc="https://cdn.razorpay.com/static/assets/notifs/payment-button.svg"
-                title="Introducing Subscription Buttons"
-                description="Start accepting subscriptions from your consumers, right from your website or blog!"
-                primaryLink={user.isAllowedEdit('subscription_buttons') && "/app/subscription_buttons/new"}
-                secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
-                source="payment-pages"
-                trackerFn={window.rzpQ.subscriptionButtons}
-              />
-            )
-          }
+          {user.isSubscriptionButtonEnabled && (
+            <ProductCard
+              imgSrc="https://cdn.razorpay.com/static/assets/notifs/payment-button.svg"
+              title="Introducing Subscription Buttons"
+              description="Start accepting subscriptions from your consumers, right from your website or blog!"
+              primaryLink={
+                user.isAllowedEdit('subscription_buttons') && '/app/subscription_buttons/new'
+              }
+              secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
+              source="payment-pages"
+              trackerFn={window.rzpQ.subscriptionButtons}
+            />
+          )}
 
           {/* Footer */}
           <footer>
@@ -225,10 +212,7 @@ export default class extends React.PureComponent {
               Back to Dashboard
             </Link>
 
-            <Button.Primary
-              onClick={this.openEmbedButtonView}
-              style={{ float: 'right' }}
-            >
+            <Button.Primary onClick={this.openEmbedButtonView} style={{ float: 'right' }}>
               Get Payment Button
             </Button.Primary>
           </footer>

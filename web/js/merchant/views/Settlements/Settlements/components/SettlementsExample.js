@@ -17,7 +17,7 @@ export default class SettlementsExample extends Component {
         <div class="pull-right s-header" key={i} style={{ width: width + '%' }}>
           <div class="s-working" />
           T+{i}
-        </div>
+        </div>,
       );
     }
     if (this.props.holiday) {
@@ -29,7 +29,7 @@ export default class SettlementsExample extends Component {
         >
           <div class="s-holiday" />
           Holiday
-        </div>
+        </div>,
       );
     }
     return jsx;
