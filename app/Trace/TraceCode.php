@@ -3560,7 +3560,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Personalisation trace codes
     const PERSONALISATION_CONTENT        = 'PERSONALISATION_CONTENT';
     const PERSONALISATION_EXCEPTION      = 'PERSONALISATION_EXCEPTION';
-    const PERSONALISATION_RESPONSE       = 'PERSONALISATION_RESPONSE';
     const PERSONALISATION_REQUEST        = 'PERSONALISATION_REQUEST';
 
     // Adding Logs for debugging issue: https://razorpay.atlassian.net/browse/PCORE-526

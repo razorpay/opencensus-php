@@ -1087,10 +1087,6 @@ class Checkout
 
         if ($response !== null)
         {
-            $this->trace->info(TraceCode::PERSONALISATION_RESPONSE,[
-                'response' => $response
-            ]);
-
             $this->processPersonalisationResponse($response, $merchant, $data, $contact, $input);
         }
 
