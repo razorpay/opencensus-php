@@ -57,7 +57,7 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
                 Timezone::IST)
-                ->format('d-M-y H:i:s');
+                ->format('d/m/y');
 
             $col = [
                 'accountNumber'   => '000205025290',

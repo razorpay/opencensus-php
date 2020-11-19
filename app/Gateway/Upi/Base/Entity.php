@@ -148,6 +148,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
     public function getGatewayPaymentId()
     {
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);

@@ -9,6 +9,7 @@ use ErrorException;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
@@ -1142,6 +1143,66 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    public function getParsedDataFromUnexpectedCallback(array $input)
+    {
+        $payment = [
+            Payment\Entity::METHOD      => Payment\Method::UPI,
+            Payment\Entity::AMOUNT      => (int) ($input[Fields::PAYER_AMOUNT] * 100),
+            Payment\Entity::VPA         => $input[Fields::PAYER_VA],
+            Payment\Entity::CURRENCY    => 'INR',
+            Payment\Entity::CONTACT     => '+919999999999',
+            Payment\Entity::EMAIL       => 'void@razorpay.com',
+        ];
+
+        $terminal = [
+            Terminal\Entity::GATEWAY                => $this->gateway,
+            Terminal\Entity::GATEWAY_MERCHANT_ID    => $input[Fields::MERCHANT_ID],
+        ];
+
+        return [
+            'payment'   => $payment,
+            'terminal'  => $terminal,
+        ];
+    }
+
+    public function authorizePush($input)
+    {
+        list($paymentId , $callbackData) = $input;
+
+        $gatewayInput = [
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData[Fields::PAYER_VA],
+                'amount' => (int) ($callbackData[Fields::PAYER_AMOUNT] * 100),
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::MERCHANT_REFERENCE  => $callbackData[Fields::MERCHANT_TRAN_ID],
+            Entity::GATEWAY_MERCHANT_ID => $callbackData[Fields::MERCHANT_ID],
+            Entity::NPCI_REFERENCE_ID   => $callbackData[Fields::BANK_RRN],
+            Entity::GATEWAY_PAYMENT_ID  => $callbackData[Fields::BANK_RRN],
+            Entity::STATUS_CODE         => $callbackData[Fields::TXN_STATUS],
+            Entity::VPA                 => $callbackData[Fields::PAYER_VA],
+            Entity::RECEIVED            => 1,
+            Entity::GATEWAY_DATA        => [],
+        ];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, null, false);
+
+        $this->checkCallbackResponseStatus($callbackData);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
     }
 
     protected function isMandatePauseCallback($input)

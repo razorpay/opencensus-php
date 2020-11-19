@@ -3,7 +3,9 @@
 namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
 use Carbon\Carbon;
+use RZP\Gateway\Upi;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Models\UpiTransfer;
@@ -19,6 +21,7 @@ use RZP\Gateway\Upi\Icici\Fields as UpiIciciFields;
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     use Base\BharatQrTrait;
+    use Base\UpiReconTrait;
 
     const SUB_MERCHANT_NAME = 'submerchantname';
     const MERCHANT_TRAN_ID  = 'merchanttranid';
@@ -53,6 +56,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     ];
 
     const UPI_TRANSFER_MERCHANT_ID = '403343';
+
+    /**
+     * Actual name for the gateway
+     */
+    protected $gatewayName  = Gateway::UPI_ICICI;
 
     protected function getPaymentId(array $row)
     {
@@ -242,11 +250,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        $this->formatUpiRrn($referenceNumber);
-
-        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndPaymentIdAndGateway($referenceNumber,
-                                                                                    $paymentId,
-                                                                                    Gateway::UPI_ICICI);
+        $upiEntity = $this->getUpiExpectedEntity($paymentId, $row);
 
         if ($upiEntity === null)
         {
@@ -259,9 +263,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'gateway'              => $this->gateway,
                     'batch_id'             => $this->batchId
                 ]);
+
+            return $paymentId;
         }
 
-        return ($upiEntity === null) ? $paymentId : $upiEntity->getPaymentId();
+        // Also now since we have found/created a new UPI Entity we will consider
+        // this to be the gateway payment id
+        $this->gatewayPayment = $upiEntity;
+
+        return $upiEntity->getPaymentId();
     }
 
     protected function getReconPaymentStatus(array $row)
@@ -312,7 +322,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::BANK_TRANS_ID] ?? null;
+        return $this->toUpiRrn($row[self::BANK_TRANS_ID] ?? null);
     }
 
     public function getGatewayPayment($paymentId)
@@ -341,9 +351,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $npciRefId = $gatewayPayment->getNpciReferenceId();
 
-        $this->formatUpiRrn($npciRefId);
-        $this->formatUpiRrn($referenceNumber);
-
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
@@ -363,9 +370,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 ]);
         }
 
-        // We will only update the RRN if it is empty and if payment isn't authorized yet
-        if (($this->payment->hasNotBeenAuthorized() === true) or
-            (empty($npciRefId) === true))
+        $upiReconciledAt = $gatewayPayment->getReconciledAt();
+
+        // We will update the RRN if the UPI Entity is never marked reconciled
+        if (empty($upiReconciledAt) === true)
         {
             $gatewayPayment->setNpciReferenceId($referenceNumber);
         }

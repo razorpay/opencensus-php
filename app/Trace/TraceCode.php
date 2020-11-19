@@ -2335,6 +2335,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BIN_ISSUER_VALIDATION_FAILED                          = 'BIN_ISSUER_VALIDATION_FAILED';
 
+    const GATEWAY_UNEXPECTED_PAYMENT_REQUEST                    = 'GATEWAY_UNEXPECTED_PAYMENT_REQUEST';
     const GATEWAY_UNEXPECTED_PAYMENT_ERROR                      = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
 
     const GATEWAY_REFUND_ENTITY_FETCH_ERROR                     = 'GATEWAY_REFUND_ENTITY_FETCH_ERROR';

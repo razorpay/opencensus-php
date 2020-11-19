@@ -7,8 +7,9 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Trace\TraceCode as TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode as TraceCode;
+use RZP\Reconciliator\Base\Reconciliate;
 
 trait AuthorizePush
 {
@@ -65,6 +66,13 @@ trait AuthorizePush
     {
         try
         {
+            // We do not need to validate the payment back to gateway if it is callback form recon
+            // The problem is that we might not be able to verify the payment if this is multiple credit
+            if (Reconciliate::$isReconRunning === true)
+            {
+                return;
+            }
+
             $this->validatePushPayment($callbackData, $terminal);
         }
         catch (Exception\GatewayErrorException $exception)
