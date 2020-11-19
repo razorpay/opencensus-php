@@ -395,13 +395,12 @@ class FundAccountValidationTest extends TestCase
 
         $payoutId = $fav->getId();
 
-        $eventTestDataKey = 'testFundAccValidationWhenFailedDuringReconWithNonInternalError';
+        $eventTestDataKey = 'testWebhookFiringFundAccountValidationFailed';
 
         $this->fixtures->edit(
             'fund_transfer_attempt',
             $fta->getId(),
             [
-                'utr'    => '933815233814',
                 'is_fts' => 1,
             ]);
 
@@ -416,7 +415,7 @@ class FundAccountValidationTest extends TestCase
                 'bank_processed_time' => '2019-12-04 15:51:21',
                 'bank_status_code'    => 'ACCOUNT_INVALID',
                 'extra_info'          => [
-                    'beneficiary_name' => 'Amit M',
+                    'beneficiary_name' => null,
                     'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
                     'internal_error'   => true
                 ],
@@ -428,7 +427,6 @@ class FundAccountValidationTest extends TestCase
                 'source_id'           => $payoutId,
                 'source_type'         => 'fund_account_validation',
                 'status'              => 'FAILED',
-                'utr'                 => '933815233814'
             ],
         ];
 
