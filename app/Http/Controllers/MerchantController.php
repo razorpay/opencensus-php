@@ -80,6 +80,9 @@ class MerchantController extends Controller
 
     public function putMerchant($id)
     {
+        // this is temporary logging: to get all admins who uses this route
+        $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST, []);
+
         $input = Request::all();
 
         $data = $this->service()->edit($id, $input);
@@ -936,6 +939,9 @@ class MerchantController extends Controller
     public function putEditMerchantDetailsAfterLock($id)
     {
         $input = Request::all();
+
+        // this is temporary logging: to get all admins who uses this route
+        $this->trace->info(TraceCode::MERCHANT_DETAILS_EDIT_REQUEST, []);
 
         $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetails($id, $input);
 

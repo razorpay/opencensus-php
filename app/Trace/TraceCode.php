@@ -1886,6 +1886,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DETAIL_MIGRATE_INFO                          = 'MERCHANT_DETAIL_MIGRATE_INFO';
     const UPDATE_MERCHANT_CONTEXT_REQUEST                       = 'UPDATE_MERCHANT_CONTEXT_REQUEST';
 
+    // temporary tracecodes, will be removed
+    const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';
+    const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';
+
     // Trace codes for offers
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
