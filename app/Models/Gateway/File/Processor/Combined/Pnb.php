@@ -25,21 +25,17 @@ class Pnb extends Base
     {
         try
         {
-            $refundsFile = [];
-
-            $claimsFile = [];
+            $fileInfo = [];
 
             if (isset($data['refunds']) === true)
             {
-                $refundsFile = $this->getFileData(FileStore\Type::PNB_NETBANKING_REFUND);
+                $fileInfo[] = $this->getFileData(FileStore\Type::PNB_NETBANKING_REFUND);
             }
 
             if (isset($data['claims']) === true)
             {
-                $claimsFile = $this->getFileData(FileStore\Type::PNB_NETBANKING_CLAIMS);
+                $fileInfo[] = $this->getFileData(FileStore\Type::PNB_NETBANKING_CLAIMS);
             }
-
-            $fileInfo = [$claimsFile , $refundsFile];
 
             $bucketConfig = $this->getBucketConfig();
 
