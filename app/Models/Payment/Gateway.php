@@ -3091,6 +3091,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_DCB,
             self::NETBANKING_UBI,
+            self::NETBANKING_RBL,
         ];
 
         return (in_array($gateway, $gateways, true));
