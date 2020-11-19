@@ -53,6 +53,8 @@ class ItemTest extends TestCase
 
     public function testCreateItemWithTaxIdInternational()
     {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
         $this->startTest();
     }
 

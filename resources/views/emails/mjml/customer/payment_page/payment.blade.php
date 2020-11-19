@@ -101,7 +101,20 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element" style="display: inline-block; vertical-align: middle;">Powered by</div><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo.png" style="height: 100%; width: 100%;"></div></div></div></div>
+                                                    <div class="header" style="box-sizing: border-box; max-width: 100%;">
+                                                        <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;">
+                                                            <div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;">
+                                                                <div class="content-element" style="display: inline-block; vertical-align: middle;">Powered by</div>
+                                                                <div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;">
+                                                                    @if(isset($org) === true and empty($org['branding']) === false and empty($org['branding']['branding_logo']) === false)
+                                                                        <img style="height: 100%; width: 100%;" src="{{$org['branding']['branding_logo']}}"></a>
+                                                                    @else
+                                                                    <img src="https://cdn.razorpay.com/logo.png" style="height: 100%; width: 100%;">
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                             </td>

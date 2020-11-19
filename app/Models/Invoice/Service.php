@@ -608,6 +608,8 @@ class Service extends Base\Service
 
         $input[E::MERCHANT] = $this->serializeMerchantForHostedForPaymentLinkService($this->merchant);
 
+        $input[E::ORG] = $this->serializeOrgPropertiesForHostedForPaymentLinkService();
+
         $mailable = new PaymentLinkServiceBase($input);
 
         try
@@ -629,6 +631,31 @@ class Service extends Base\Service
         }
 
         return [];
+    }
+
+    protected function serializeOrgPropertiesForHostedForPaymentLinkService()
+    {
+        $org = $this->merchant->org;
+
+        $branding = [
+            'show_rzp_logo' => true,
+            'branding_logo' => '',
+        ];
+
+        switch ($org->getCustomCode())
+        {
+            case 'axis':
+
+                $branding['show_rzp_logo'] = false;
+
+                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
+
+                break;
+        }
+
+        return [
+            'branding'  => $branding
+        ];
     }
 
     protected function serializeMerchantForHostedForPaymentLinkService(Merchant\Entity $merchant): array

@@ -454,10 +454,12 @@ class Validator extends Base\Validator
     {
         $paymentLink = $this->entity;
 
-        $international = $paymentLink->merchant->isInternational();
+        $merchant = $paymentLink->merchant;
 
         // Non International accounts should not create PL in other currencies.
-        if (($international !== true) and ($currency !== Currency::INR))
+        if ((($merchant->convertOnApi() === null) and
+            ($currency !== Currency::INR)) or
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
