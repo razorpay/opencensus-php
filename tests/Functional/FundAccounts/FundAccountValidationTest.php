@@ -381,6 +381,63 @@ class FundAccountValidationTest extends TestCase
 
     }
 
+    public function testWebhookFiringFundAccountValidationFailed()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $payoutId = $fav->getId();
+
+        $eventTestDataKey = 'testFundAccValidationWhenFailedDuringReconWithNonInternalError';
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'utr'    => '933815233814',
+                'is_fts' => 1,
+            ]);
+
+        $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
+
+        $this->ba->appAuth();
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'ACCOUNT_INVALID',
+                'extra_info'          => [
+                    'beneficiary_name' => 'Amit M',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => true
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payoutId,
+                'source_type'         => 'fund_account_validation',
+                'status'              => 'FAILED',
+                'utr'                 => '933815233814'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+        $this->assertEquals('failed', $fta->getStatus());
+        $this->assertEquals('failed', $payout->getStatus());
+
+    }
+
 //    public function testWebhookFundAccountValidationCompletedWithStork()
 //    {
 //
@@ -438,7 +495,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
-        s($this->startTest());
+        $this->startTest();
 
         // get database entities
         $balance = $this->getLastEntity('balance', true);
