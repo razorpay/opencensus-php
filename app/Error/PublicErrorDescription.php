@@ -37,9 +37,10 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
-    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card is not enrolled for 3D Secure authentication';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
+    const BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS                         = 'Your card has been disabled for online payments by your issuing bank. Please reach out to your bank or re-try the payment with another card/method.';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
     const BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE                       = 'Card is not linked with mobile number';
     const BAD_REQUEST_ERROR                                                     = 'Something went wrong, please try again after sometime.';
