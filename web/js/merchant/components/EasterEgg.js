@@ -1,23 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import useLocalStorage from 'merchant/utils/useLocalStorage';
 
 const EasterEgg = (props) => {
   // set initial impressions
   const [impressions, setimpressions] = useLocalStorage('easter-egg-impressions', 0);
-
-  useEffect(() => {
-    // Only when easter egg is visible, track rendering
-    if (impressions < 5) {
-      props.tracking.trackEvent(
-        window.rzpQ.onbr().initiated(`merchant_dashboard.display_easteregg.success`, {
-          id: `FTX2020`,
-        }),
-      );
-    }
-  }, []);
 
   const claimTicket = () => {
     window.open('https://razorpay.com/ftx/?coupon_id=FTXEGGHUNT#buy', '_blank');
@@ -40,12 +28,6 @@ const EasterEgg = (props) => {
       eventAction: 'Clicked on Easter egg',
     });
 
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().initiated(`merchant_dashboard.click_easteregg.success`, {
-        id: `FTX2020`,
-      }),
-    );
-
     if (impressions) {
       setimpressions(impressions + 1);
     } else {
@@ -61,7 +43,7 @@ const EasterEgg = (props) => {
             <i class="i i-arrow-forward" />
           </button>
           <a
-            href="https://razorpay.com/ftx/?coupon_id=FTXEGGHUNT"
+            href="https://razorpay.com/ftx/"
             rel="noopener noreferrer"
             target="_blank"
             onClick={knowMore}
@@ -78,8 +60,4 @@ const EasterEgg = (props) => {
   );
 };
 
-export default connect(null, { openModal, closeModal })(
-  RTracking(() => {
-    window.rzpQ.component('EasteEgg');
-  })(EasterEgg),
-);
+export default connect(null, { openModal, closeModal })(EasterEgg);
