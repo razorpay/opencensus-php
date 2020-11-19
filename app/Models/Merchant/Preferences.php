@@ -174,6 +174,7 @@ class Preferences
     const MID_DIGIPAY                  = 'EO3VAyOndYiQpQ';
     const MID_MAHALAXMI_TRADERS        = 'FuedAHX6XiIEce';
     const MID_RAJESH_TELECOM           = 'FrWPMIvlTuDhKe';
+    const MID_GENEXPRO                 = 'Fz4wOMKiOQX9ez';
 
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
@@ -377,6 +378,7 @@ class Preferences
         self::MID_DIGIPAY,
         self::MID_MAHALAXMI_TRADERS,
         self::MID_RAJESH_TELECOM,
+        self::MID_GENEXPRO,
     ];
 
     // MSwipe Configurations
