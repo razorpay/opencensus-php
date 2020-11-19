@@ -130,6 +130,10 @@ class Constant
             self::ARTEFACT_TYPE   => self::SHOP_ESTABLISHMENT,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
+        Constant::GSTIN                   => [
+            self::ARTEFACT_TYPE   => self::GSTIN,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
         Constant::LLPIN => [
             self::ARTEFACT_TYPE   => self::LLP_DEED,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
@@ -153,6 +157,7 @@ class Constant
         Entity::SHOP_ESTABLISHMENT_NUMBER => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
         ],
+        Constant::GSTIN                   => [],
         self::LLPIN                       => [],
         self::CIN                         => [],
     ];

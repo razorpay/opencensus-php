@@ -257,14 +257,14 @@ class BusinessType
     }
 
 
-    public static function isGstinVerificationEnableBusinessTypes($businessType): bool
+    public static function isGstinVerificationEnableBusinessTypes($businessTypeValue): bool
     {
-        if (empty($businessType) === true)
+        if (empty($businessTypeValue) === true)
         {
             return false;
         }
 
-        $businessTypeName = self::getKeyFromIndex($businessType);
+        $businessTypeName = self::getKeyFromIndex($businessTypeValue);
 
         return in_array($businessTypeName, self::$ValidateGSTINBusinessType, true);
     }

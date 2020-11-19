@@ -2286,6 +2286,25 @@ class MerchantDetailTest extends OAuthTestCase
                                                   ]);
     }
 
+    public function testVerifyBvsTriggerPostFormSubmissionForGstin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '1',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_gstin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'gstin',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
     public function testVerifyBvsTriggerPostFormSubmissionForLlpin()
     {
         $mid = '1cXSLlUU8V9sXl';

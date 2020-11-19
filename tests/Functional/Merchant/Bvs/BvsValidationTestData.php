@@ -31,19 +31,4 @@ return [
             ],
         ],
     ],
-
-    'testCreateBvsValidationForGstin' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/merchant/activation',
-            'content' => [
-                'gstin' => '07AADCB2230M1ZV',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'gstin' => '07AADCB2230M1ZV',
-            ],
-        ],
-    ],
 ];

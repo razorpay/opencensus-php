@@ -2743,33 +2743,12 @@ class Core extends Base\Core
 
         if ($shouldVerifyGstinFromBVS === true)
         {
-            $this->verifyGstinFromBvs($merchantDetails);
+            $this->updateDocumentVerificationStatus($merchant, Constant::GSTIN);
         }
         else
         {
             $this->verifyGstinFromKycService($merchantDetails);
         }
-    }
-
-    /**
-     * Verifies Gstin from BVS
-     *
-     * @param Entity $merchantDetails
-     */
-    protected function verifyGstinFromBvs(Entity $merchantDetails)
-    {
-        $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::GSTIN,
-            Constant::CONFIG_NAME     => Constant::GSTIN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::DETAILS         => [
-                Constant::GSTIN      => $merchantDetails->getGstin(),
-                Constant::LEGAL_NAME => $merchantDetails->getPromoterPanName() ?? '',
-                Constant::TRADE_NAME => $merchantDetails->getBusinessName() ?? ''
-            ],
-        ];
-
-        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getEntityId(), $payload);
     }
 
     /**

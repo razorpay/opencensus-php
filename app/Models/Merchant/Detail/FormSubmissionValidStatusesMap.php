@@ -12,7 +12,6 @@ class FormSubmissionValidStatusesMap
     const DOCUMENT_LIST_L2 = [
         Constants::POI,
         Constants::COMPANY_PAN,
-        Constants::GSTIN,
     ];
     /**
      * list of documents for which we need to verify status before submission
