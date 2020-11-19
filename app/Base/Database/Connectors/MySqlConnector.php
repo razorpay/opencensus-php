@@ -237,7 +237,7 @@ class MySqlConnector extends BaseMySqlConnector
                         UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 +
                         SUBSTR(ts, 21, 6) )
                      ) / 1000) AS replica_lag_milli
-                FROM heartbeat.heartbeat
+                FROM heartbeat ORDER BY ts DESC
                 LIMIT  1';
 
         $result = $this->app['db']->connection($connection)->selectOne($query);
