@@ -26,7 +26,7 @@ export default class PaymentsListContainer extends ListContainer {
     }
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.

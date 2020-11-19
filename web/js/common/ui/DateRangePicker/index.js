@@ -54,11 +54,8 @@ class DateRangePicker extends Component {
         endDate,
       },
       () => {
-        return (
-          this.props.onDatesChange &&
-          this.props.onDatesChange(startDate, endDate, preset)
-        );
-      }
+        return this.props.onDatesChange && this.props.onDatesChange(startDate, endDate, preset);
+      },
     );
   }
 
@@ -90,17 +87,14 @@ class DateRangePicker extends Component {
     this.setState({ selectedPreset: this.customPreset });
   }
 
-  updatePresets(
-    presets = this.props.presets,
-    defaultPreset = this.props.defaultPreset
-  ) {
+  updatePresets(presets = this.props.presets, defaultPreset = this.props.defaultPreset) {
     const now = moment();
 
     let { startDate, endDate } = this.state;
 
     let { selectedPreset } = this.state;
 
-    presets = presets.map(preset => {
+    presets = presets.map((preset) => {
       const text = preset[0],
         rest = preset.slice(1),
         timeStampDiff =
@@ -146,20 +140,13 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const {
-      icon,
-      onDatesChange,
-      numberOfMonths = 2,
-      horizontalMargin = 0,
-    } = this.props;
+    const { icon, onDatesChange, numberOfMonths = 2, horizontalMargin = 0 } = this.props;
 
     let { presets, selectedPreset, startDate, endDate } = this.state;
 
     return (
       <div className="rzp-daterange-picker clearfix">
-        <div className="icon-container pull-left">
-          {icon ? icon : <i class="i i-date-range" />}
-        </div>
+        <div className="icon-container pull-left">{icon ? icon : <i class="i i-date-range" />}</div>
         <div className="presets-container pull-left">
           {presets.length > 0 && (
             <PowerSelect

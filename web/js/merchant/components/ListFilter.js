@@ -42,6 +42,12 @@ export default class ListFilter extends Component {
 
   // update query params in url before search
   handleOnSubmit = (props) => {
+    const date = this.props.date;
+    if (date) {
+      props.from = date.from;
+      props.to = date.to;
+    }
+
     this.props.history.push({
       pathname: this.props.location.pathname,
       search: stringifyQueryParams(props),

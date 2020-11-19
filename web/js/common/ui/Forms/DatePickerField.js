@@ -35,29 +35,23 @@ export default class DatePickerField extends Component {
     let date = (input.value && dateFormatFn(input.value)) || null;
 
     return (
-      <div
-        class={`datepicker-container ${focused ? 'datepicker--focused' : ''}`}
-      >
+      <div class={`datepicker-container ${focused ? 'datepicker--focused' : ''}`}>
         <SingleDatePicker
           id={input.name}
           date={date}
           focused={focused}
           hideKeyboardShortcutsPanel={true}
           readOnly={true}
-          initialVisibleMonth={() =>
-            date ? moment(date, 'MM YYYY') : moment()
-          }
+          initialVisibleMonth={() => (date ? moment(date, 'MM YYYY') : moment())}
           isOutsideRange={isOutsideRange}
-          onDateChange={date => {
+          onDateChange={(date) => {
             if (date) {
               if (endOfDayTimeStamp) {
                 date = date.endOf('day');
               } else if (startOfDayTimeStamp) {
                 date = date.startOf('day');
               }
-              date = outputDateFormat
-                ? date.format(outputDateFormat)
-                : date.unix();
+              date = outputDateFormat ? date.format(outputDateFormat) : date.unix();
             }
 
             input.onChange(date);
