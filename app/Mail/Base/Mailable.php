@@ -282,43 +282,51 @@ class Mailable extends BaseMailable
      */
     protected function replaceMailgunHeadersWithSesHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $textTemplate = $this->textView ?? '';
+        $htmlTemplate = $this->view ?? '';
+
+        $this->withSwiftMessage(function ($message) use ($textTemplate, $htmlTemplate)
         {
             $allHeaders = $message->getHeaders();
 
-            $mailgunHeaders = $allHeaders->getAll(MailTags::HEADER);
-
-            $mailgunHeadersLastIndex = count($mailgunHeaders) - 1;
-
-            if ($mailgunHeadersLastIndex < 0)
-            {
-                return;
-            }
-
-            $sesHeader = '';
-            // 1=webhook,2=FGlwDQqCIkI5hx,
-            for ($i=0; $i<=$mailgunHeadersLastIndex; $i++)
-            {
-                $mailgunHeaderVal = $mailgunHeaders[$i]->getValue();
-                $sesHeaderEntry = sprintf('%d=%s', $i, $mailgunHeaderVal);
-                if ($i !== $mailgunHeadersLastIndex)
-                {
-                    $sesHeaderEntry = $sesHeaderEntry . ',';
-                }
-                $sesHeader = $sesHeader . $sesHeaderEntry;
-            }
-
-            //remove mailgun headers
-            $allHeaders->removeAll(MailTags::HEADER);
-
-            // this header is for the kinesis event stream.
+            // 1. Add header for ses for the kinesis event stream for all emails.
             $configHeader = config('aws.ses_configuration_header');
             if (empty($configHeader) === false)
             {
                 $allHeaders->addTextHeader(MailTags::SES_CONFIGURATION_HEADER, $configHeader);
             }
 
-            $allHeaders->addTextHeader(MailTags::SES_HEADER, $sesHeader);
+            // 2. Maintain an array for ses headers and push all ses headers into the array
+            $sesHeaders = [];
+
+            // 2.1 Push all additional headers for template info
+            array_push($sesHeaders, sprintf('html_template_%s', $htmlTemplate));
+            if (empty($textTemplate) === false)
+            {
+                array_push($sesHeaders, sprintf('text_template_%s', $textTemplate));
+            }
+
+            // 2.2. Push all mailgun headers to the array
+            $mailgunHeaders = $allHeaders->getAll(MailTags::HEADER);
+            foreach ($mailgunHeaders as $header)
+            {
+                array_push($sesHeaders, $header->getValue());
+            }
+
+            // 3. Prepare the final header value of the format - `0=html_template_emails_webhook_deactivate,1=webhook,2=FGlwDQqCIkI5hx`
+            // Note: ses header only supports alphanumeric, `_` and `-` and hence all other are replaced with `_`.
+            $sesHeadersCommaSep = implode(',', array_map(
+                function ($v, $k) {
+                    $v = preg_replace('/[^a-zA-Z0-9_-]+/', '_', $v);
+                    return $k.'='.$v;
+                },
+                $sesHeaders,
+                array_keys($sesHeaders)
+            ));
+
+            // 4. remove mailgun headers and ses headers
+            $allHeaders->removeAll(MailTags::HEADER);
+            $allHeaders->addTextHeader(MailTags::SES_HEADER, $sesHeadersCommaSep);
         });
     }
 
