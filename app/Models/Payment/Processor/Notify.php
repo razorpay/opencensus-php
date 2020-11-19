@@ -17,6 +17,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Merchant\Email as MerchantEmail;
+use RZP\Models\Currency\DCC as Dcc;
 
 class Notify
 {
@@ -418,8 +419,11 @@ class Notify
                 // note that payment method is unavailable to the merchant
                 'method'               => $this->payment->getMethodWithDetail(),
                 'orderId'              => $this->payment->getOrderId(),
-                'risk'                 => $this->merchant->getRiskRating()
-            ],
+                'risk'                 => $this->merchant->getRiskRating(),
+
+                'dcc'                  => $this->payment->isDCC(),
+                'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC())
+            ]
         ];
 
         // add merchant support details
@@ -468,6 +472,24 @@ class Notify
         if ($this->payment->isFailed() === true)
         {
             $data['payment']['error_description'] = $this->payment->getErrorDescription();
+        }
+
+        // added dcc components in case it is a dcc transaction
+        if ($this->payment->isDCC())
+        {
+            $paymentMeta = $this->payment->paymentMeta;
+            $gatewayAmount = $paymentMeta->getGatewayAmount();
+            $gatewayCurrency = $paymentMeta->getGatewayCurrency();
+
+            $fee =  (new Dcc\Service())->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
+            $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
+            $data['payment']['currency_conversion_fee'] = $feeAsPerCurrency;
+
+            $gatewayAmountAsPerCurrency =$this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $gatewayAmount);
+            $data['payment']['gateway_amount'] = $gatewayAmountAsPerCurrency;
+
+            $dccBaseAmount = $gatewayAmount - $fee;
+            $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
         }
 
         return $data;
