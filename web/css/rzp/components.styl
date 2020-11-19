@@ -362,10 +362,6 @@ a.breadcrumb__backNav--link {
 }
 
 .ModeIndicator {
-  &--test {
-    background-color: #FFBB00;
-  }
-
   &--live {
     background-color: #27c24c;
   }
@@ -373,6 +369,27 @@ a.breadcrumb__backNav--link {
   &--inactive {
     background-color: #F47B7B;
   }
+}
+
+.dropdown-toggle.switch-modes-toggle .ModeIndicator, .dropdown-menu.switch-modes-menu .ModeIndicator {
+  &--test {
+    color: #FFBB00;
+    margin-right: 2px;
+    margin-left: -1px;
+    font-size: 95%;
+    top: -1px;
+  }
+  &--test::after {
+    background: none;
+  }
+}
+
+.test-mode-popover.rzp-popover.rzp-tooltip.show {
+  width: 333px;
+  z-index: 1001;
+}
+.test-mode-popover.rzp-popover.rzp-tooltip.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow, .test-mode-popover.rzp-popover.rzp-tooltip.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
+  left: 38.5%;
 }
 
 .centered {
