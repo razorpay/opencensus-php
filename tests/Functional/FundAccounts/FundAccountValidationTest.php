@@ -347,6 +347,7 @@ class FundAccountValidationTest extends TestCase
         $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
 
         $this->ba->appAuth();
+
         $request = [
             'method'  => 'POST',
             'url'     =>  '/update_fts_fund_transfer',
@@ -370,13 +371,14 @@ class FundAccountValidationTest extends TestCase
             ],
         ];
 
-        s($this->makeRequestAndGetContent($request));
+        $this->makeRequestAndGetContent($request);
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+
         $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
-        s($payout->getStatus());
-        s($fta->getStatus());
+
         $this->assertEquals('processed', $fta->getStatus());
+
         $this->assertEquals('completed', $payout->getStatus());
 
     }
@@ -406,6 +408,7 @@ class FundAccountValidationTest extends TestCase
         $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
 
         $this->ba->appAuth();
+
         $request = [
             'method'  => 'POST',
             'url'     =>  '/update_fts_fund_transfer',
@@ -432,8 +435,11 @@ class FundAccountValidationTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+
         $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
         $this->assertEquals('failed', $fta->getStatus());
+
         $this->assertEquals('failed', $payout->getStatus());
 
     }
