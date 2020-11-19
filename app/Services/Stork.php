@@ -299,6 +299,10 @@ class Stork
                 ]
             ];
 
+            $this->trace->info(TraceCode::STORK_WHATSAPP_REQUEST, [
+                'payload'   => $requestPayload,
+            ]);
+
             return $this->requestAndGetParsedBody(self::WHATSAPP_SEND_MSG_PATH, $requestPayload);
         }
         catch (\Throwable $e)

@@ -3492,6 +3492,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Whats app message trace code
     const STORK_WHATSAPP_MESSAGE_FAILED                       = 'STORK_WHATSAPP_MESSAGE_FAILED';
+    const STORK_WHATSAPP_REQUEST                              = 'STORK_WHATSAPP_REQUEST';
 
     // Tracing error logs
     const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';
