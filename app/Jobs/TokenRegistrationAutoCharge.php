@@ -25,7 +25,7 @@ class TokenRegistrationAutoCharge extends Job
     protected $mutex;
 
     protected $repo;
-    
+
     public $tries = 3;
 
     public function __construct(string $mode, SubscriptionRegistration\Entity $tokenRegistration )
@@ -52,13 +52,22 @@ class TokenRegistrationAutoCharge extends Job
             $this->mutex->acquireAndRelease(
                 $this->tokenRegistration->getPublicId(),
                 function ()
-                {   
-                   (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
+                {
+                    $this->trace->info(
+                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                        [
+                            'token.registration_id' => $this->tokenRegistration->getId(),
+                            'status'                => 'initial'
+                        ]
+                    );
+
+                    (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
 
                     $this->trace->info(
                         TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
                         [
-                            'token.registration_id' => $this->tokenRegistration->getId()
+                            'token.registration_id' => $this->tokenRegistration->getId(),
+                            'status'                => 'done'
                         ]
                     );
                 },
@@ -80,7 +89,7 @@ class TokenRegistrationAutoCharge extends Job
 
             $this->delete();
         }
-        
+
 
     }
 }
