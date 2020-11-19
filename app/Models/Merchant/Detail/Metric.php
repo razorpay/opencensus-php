@@ -11,7 +11,6 @@ final class Metric
 
     // Counters
     const POI_VERIFICATION_STATUS_TOTAL         = 'poi_verification_status_total';
-    const CIN_VERIFICATION_STATUS_TOTAL         = 'cin_verification_status_total';
     const POA_VERIFICATION_STATUS_TOTAL         = 'poa_verification_status_total';
     const COMPANY_PAN_VERIFICATION_STATUS_TOTAL = 'company_pan_verification_total';
     const GSTIN_VERIFICATION_STATUS_TOTAL       = 'gstin_verification_status_total';

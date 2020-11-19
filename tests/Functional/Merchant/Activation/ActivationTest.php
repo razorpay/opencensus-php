@@ -18,7 +18,6 @@ use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
-use RZP\Jobs\OnboardingKycVerification;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -2648,28 +2647,6 @@ class ActivationTest extends OAuthTestCase
         $testData = $this->testData[$test];
 
         $this->startTest($testData);
-
-        $merchant = $this->getDbEntityById('merchant', 10000000000000);
-
-        $merchantDetail = $merchant->merchantDetail;
-
-        $this->assertEquals($merchantDetail->getCinVerificationStatus(), $cinVerificationStatus);
-    }
-
-    public function cinVerificationRetry(string $mockStatus, $cinVerificationStatus, array $input)
-    {
-        Config::set('applications.kyc.cin_authentication', $mockStatus);
-
-        Config::set('applications.kyc.mock', true);
-
-        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $input);
-        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $input);
-
-        $app = App::getFacadeRoot();
-
-        $app['rzp.mode'] = 'test';
-
-        OnboardingKycVerification::dispatch('test', 'CIN', '10000000000000');
 
         $merchant = $this->getDbEntityById('merchant', 10000000000000);
 

@@ -36,7 +36,6 @@ use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Jobs\OnboardingKycVerification;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -2850,14 +2849,7 @@ class Core extends Base\Core
         {
             return;
         }
-
-        $shouldVerifyFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_CIN_VALIDATION);
-
-        ($shouldVerifyFromBVS === true) ?
-            $this->updateCINorLLPINStatusForBvsVerification($merchant, $merchantDetails) :
-            $this->verifyCINorLLPINFromKycService($merchantDetails);
+        $this->updateCINorLLPINStatusForBvsVerification($merchant, $merchantDetails);
     }
 
     /**
@@ -2886,93 +2878,6 @@ class Core extends Base\Core
     public function isLLPBusinessType(string $businessType): bool
     {
         return $businessType === BusinessType::LLP;
-    }
-
-    /**
-     * @param Entity $merchantDetails
-     * @param bool   $isRetryFlow
-     *
-     * @throws \Throwable
-     */
-    protected function verifyCINorLLPINFromKycService(Entity $merchantDetails, bool $isRetryFlow = false): void
-    {
-        //
-        // Kyc Service does not support LLPIN , so not doing verification from kyc service
-        //
-        if ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true)
-        {
-            $merchantDetails->setCinVerificationStatus(null);
-
-            return;
-        }
-
-        //
-        // in retry flow , retry only for failed cin verification status
-        //
-        if (($isRetryFlow === true) and
-            ($merchantDetails->getCinVerificationStatus() !== CinVerificationStatus::FAILED))
-        {
-            return;
-        }
-
-        $response = null;
-
-        $verificationStatus = CinVerificationStatus::FAILED;
-
-        try
-        {
-            $input = [
-                DEConstants::CIN                => $merchantDetails->getCompanyCin(),
-                DEConstants::COMPANY_NAME       => $merchantDetails->getBusinessName() ?? '',
-                DEConstants::PROMOTER_PAN_NAME  => $merchantDetails->getPromoterPanName() ?? '',
-                DEConstants::REGISTERED_ADDRESS => $merchantDetails->getBusinessRegisteredAddress() ?? '',
-            ];
-
-            $verificationStatus = (new AutoKyc\Core())->verifyCIN($merchantDetails, $input);
-
-            if ($verificationStatus === CinVerificationStatus::FAILED)
-            {
-                throw new \Exception("cin verification failed");
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                                         null,
-                                         TraceCode::MERCHANT_CIN_VERIFICATION_FAILED);
-
-            //
-            // Retry is handled by sqs , so in case of retry don't fail silently
-            // Throw exception so that automatic retry can happen
-            //
-            if ($isRetryFlow === false)
-            {
-                $this->trace->info(TraceCode::MERCHANT_CIN_VERIFICATION_RETRY, [
-                    DetailConstants::MERCHANT_ID => $merchantDetails->getMerchantId(),
-                ]);
-
-                OnboardingKycVerification::dispatch($this->mode ?? 'live', DEConstants::CIN, $merchantDetails->getMerchantId())->delay($this->kycServiceRetryDelayInSecond);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-        finally
-        {
-            $merchantDetails->setCinVerificationStatus($verificationStatus);
-
-            $dimension = $this->fetchCinMetricDimensions($verificationStatus);
-
-            $this->trace->count(DetailMetric::CIN_VERIFICATION_STATUS_TOTAL, $dimension);
-        }
-    }
-
-    protected function fetchCinMetricDimensions(string $verificationStatus): array
-    {
-        return [
-            Detail\Constants::CIN_STATUS => $verificationStatus,
-        ];
     }
 
     /**
