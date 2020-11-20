@@ -64,6 +64,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
+        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'rrn'        => $this->getReferenceNumber($row),
+                    'gateway'    => $this->gateway,
+                    'batch_id'   => $this->batchId
+                ]);
+
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_PAYMENT_FAILED);
+
+            return null;
+        }
+
         if ((isset($row[self::SUB_MERCHANT_NAME]) === true) and (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false))
         {
             return $this->getPaymentIdFromBharatQrEntity($row);
@@ -96,23 +114,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            if (empty($row[self::UNEXPECTED_PAYMENT_RRN]) === true)
-            {
-                //
-                // We create unexpected payment only when this extra column is explicitly
-                // set by FinOps team. This is to avoid un-intentional payment creation
-                // in case someone upload an old MIS file.
-                //
-
-                $this->alertUnexpectedBharatQrPayment($referenceNumber, $row);
-
-                $this->setFailUnprocessedRow(false);
-
-                return null;
-            }
-
-            // ELSE proceed to create
-
             // Generate callback data from recon row if possible
             $callbackData = $this->generateCallbackData($row);
 

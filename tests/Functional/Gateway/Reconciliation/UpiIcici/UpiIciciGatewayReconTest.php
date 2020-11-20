@@ -396,7 +396,6 @@ class UpiIciciGatewayReconTest extends TestCase
         $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
         $reconRow['merchantTranID']     = $qrCode->getReference();
         $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
-        $reconRow[PaymentReconciliate::UNEXPECTED_PAYMENT_RRN] = $reconRow['bankTranID'];
 
         $entries[] = $reconRow;
 
