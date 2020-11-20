@@ -1002,14 +1002,11 @@ class VirtualAccountTest extends TestCase
 
         $lastBankAccount = $this->getLastEntity('bank_account', true);
 
-        $response = $this->closeVirtualAccountViaEdit($virtualAccount['id']);
+        $this->expectException(\Rzp\Exception\ExtraFieldsException::class);
 
-        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+        $this->expectExceptionMessage('status is/are not required and should not be sent');
 
-        // Because Bank Account is not deleted when VA is closed via edit flow
-        $this->assertEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
-
-        $this->assertEquals(Status::CLOSED, $response['status']);
+        $this->closeVirtualAccountViaEdit($virtualAccount['id']);
     }
 
     public function testVirtualAccountPay()

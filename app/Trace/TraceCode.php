@@ -1194,7 +1194,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCHEDULE_MIGRATION_COMPLETE                           = 'SCHEDULE_MIGRATION_COMPLETE';
 
     const VIRTUAL_ACCOUNT_CREATE_REQUEST                        = 'VIRTUAL_ACCOUNT_CREATE_REQUEST';
+    const VIRTUAL_ACCOUNT_EDIT_REQUEST                          = 'VIRTUAL_ACCOUNT_EDIT_REQUEST';
     const VIRTUAL_ACCOUNT_CREATED                               = 'VIRTUAL_ACCOUNT_CREATED';
+    const VIRTUAL_ACCOUNT_EDITED                                = 'VIRTUAL_ACCOUNT_EDITED';
     const VIRTUAL_ACCOUNT_ALLOWED_PAYERS_CREATED                = 'VIRTUAL_ACCOUNT_ALLOWED_PAYERS_CREATED';
     const VIRTUAL_ACCOUNT_NUMBER_GENERATED                      = 'VIRTUAL_ACCOUNT_NUMBER_GENERATED';
     const VIRTUAL_ACCOUNT_EXCESS_REFUND                         = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
