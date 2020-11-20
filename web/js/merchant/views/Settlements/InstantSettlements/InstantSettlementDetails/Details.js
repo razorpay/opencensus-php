@@ -64,7 +64,12 @@ const Details = ({
               (settlement.status === 'created' || settlement.status === 'initiated') ? (
                 <>
                   <PlaceholderLoader />
-                  <i className="i i-info-outline total-settlement-info-icon ml-8">
+                  <i
+                    className="i i-info-outline total-settlement-info-icon ml-8"
+                    onMouseEnter={() =>
+                      trackIS.hoverLoadingTotalSettledAmountIconSettlementDetails()
+                    }
+                  >
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
                         We are fetching Total Settled Amount, and it seems that some of the

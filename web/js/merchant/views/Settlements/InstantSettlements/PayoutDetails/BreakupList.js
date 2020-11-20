@@ -21,7 +21,6 @@ const processSummaryList = (instantSettlement) => {
       component: 'Settled Amount',
       amount: <Amount currency="INR" value={instantSettlement.amount_settled} />,
       count: processedTxnCount,
-      type: 'Credit',
     },
     ...(instantSettlement.amount_pending !== 0
       ? [
@@ -38,30 +37,28 @@ const processSummaryList = (instantSettlement) => {
             component: 'Reversed Amount',
             amount: <Amount currency="INR" value={instantSettlement.amount_reversed} />,
             count: reversedTxnCount,
-            type: 'Debit',
           },
         ]
       : []),
     {
       component: 'Ondemand Fee',
       amount: <Amount currency="INR" value={instantSettlement.fees - instantSettlement.tax} />,
-      type: 'Debit',
     },
     {
       component: 'Tax',
       amount: <Amount currency="INR" value={instantSettlement.tax} />,
-      type: 'Debit',
     },
   ];
 };
 
-const SummaryListItem = ({ component, amount, count, type }) => {
+const SummaryListItem = ({ component, amount, count }) => {
   return (
     <EntityItemRow id={component}>
       <td>{component}</td>
       <td className="text-right">{amount}</td>
-      <td className="text-center">{count}</td>
-      <td>{type}</td>
+      <td style={{ paddingLeft: 68 }} className="text-center">
+        {count}
+      </td>
     </EntityItemRow>
   );
 };
@@ -69,7 +66,6 @@ const SummaryListItem = ({ component, amount, count, type }) => {
 SummaryListItem.propTypes = {
   component: PropTypes.string,
   amount: PropTypes.element,
-  type: PropTypes.string,
 };
 
 const BreakupList = ({ instantSettlement }) => {
@@ -80,18 +76,15 @@ const BreakupList = ({ instantSettlement }) => {
         <thead>
           <tr>
             <th width="22%">Component</th>
-            <th width="30%" className="text-right">
-              Amount
-            </th>
-            <th width="23%" className="text-center">
+            <th className="text-right">Amount</th>
+            <th style={{ paddingLeft: 68 }} width="44%" className="text-center">
               Count
             </th>
-            <th width="25%">Type</th>
           </tr>
         </thead>
         <TableBody
           isLoading={false}
-          colSpan={5}
+          colSpan={3}
           rows={items}
           emptyTableMsg="No Ondemand Settlement Breakup found!"
         >

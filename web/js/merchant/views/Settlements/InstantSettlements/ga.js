@@ -2,12 +2,6 @@ import { setTrackData } from 'common/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Instant Settlement';
 
-window.rzpAnalytics({
-  eventCategory: 'Dashboard - Instant Settlement',
-  eventAction: 'Go To - Instant Settlements Tab',
-  eventLabel: 'Settlements | Instant Settlements',
-});
-
 const EVENTS = {
   goToTabIS: {
     eventAction: 'Go To - Instant Settlements Tab',
@@ -85,24 +79,26 @@ const EVENTS = {
     eventAction: 'Click CTA - Settle Now',
     eventLabel: 'Instant Settlement | Empty State | Settle Now',
   },
+  hoverLoadingTotalSettledAmountIconSettlementDetails: {
+    eventAction: 'Hover - Total Settled Amount Info Icon',
+    eventLabel: 'Drawer | Total Settled Amount info icon',
+  },
+  hoverLoadingTotalSettledAmountIconPayoutDetails: {
+    eventAction: 'Hover - Total Settled Amount Info Icon',
+    eventLabel: 'Payout Details Page | Total Settled Amount info icon',
+  },
 };
 
-const trackEvents = () => {
-  const events = {};
+const trackIS = {};
 
-  Object.keys(EVENTS).forEach((key) => {
-    events[key] = (...params) => {
-      setTrackData({
-        eventCategory,
-        ...EVENTS[key],
-        ...params,
-      });
-    };
-  });
-
-  return events;
-};
-
-const trackIS = trackEvents();
+Object.keys(EVENTS).forEach((key) => {
+  trackIS[key] = (...params) => {
+    setTrackData({
+      eventCategory,
+      ...EVENTS[key],
+      ...params,
+    })();
+  };
+});
 
 export default trackIS;
