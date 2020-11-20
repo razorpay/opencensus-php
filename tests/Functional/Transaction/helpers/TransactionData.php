@@ -159,6 +159,23 @@ return [
         'channel'         => 'axis',
     ],
 
+    'testTransactionAfterCapturingPaymentForVasMerchant' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 50000,
+        'currency'        => 'INR',
+        'debit'           => 0,
+        'credit'          => 0,
+        'fee'             => 1476,
+        'tax'             => 226,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1000000,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
+
     'testTransactionCreateForOldPayment' => [
         'entity'          => 'transaction',
         'type'            => 'payment',

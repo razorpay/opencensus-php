@@ -130,6 +130,7 @@ class Constants
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
     const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
+    const VAS_MERCHANT                    = 'vas_merchant';
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
@@ -686,6 +687,7 @@ class Constants
         self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
+        self::VAS_MERCHANT                    => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
         self::ISSUE_MPANS                     => true,

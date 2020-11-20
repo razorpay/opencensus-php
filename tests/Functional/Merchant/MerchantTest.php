@@ -4163,6 +4163,18 @@ class MerchantTest extends TestCase
         $this->assertEquals(sizeof($esAutomaticPricingRules), 12);
     }
 
+    public function testMerchantFeatures()
+    {
+        $this->fixtures->merchant->addFeatures(['vas_merchant']);
+
+        $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
+
+        $isEnabled = $merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT);
+
+        // check feature enabled
+        $this->assertTrue($isEnabled);
+    }
+
     public function testEnableEsScheduledSuccess()
     {
         // We expect a mail to be shot to merchant every time Es schedule enable succeeds

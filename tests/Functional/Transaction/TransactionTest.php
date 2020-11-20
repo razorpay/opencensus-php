@@ -105,6 +105,24 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    // for vas merchant for direct settlement payment credit and debit both should be zero
+    // fee will be non-zero as same needs to be collected by the acquiring bank and not merchant
+    public function testTransactionAfterCapturingPaymentForVasMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(['vas_merchant']);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['testTransactionAfterCapturingPaymentForVasMerchant'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
     public function testFetchPaymentTransaction()
     {
         $payment = $this->doAuthAndCapturePayment();

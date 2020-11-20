@@ -201,6 +201,7 @@ class Payment extends Base
     {
         switch (true)
         {
+            case ($this->isVasMerchantWithDirectSettlement()):
             case ($this->txn->isFeeBearerCustomer()):
                 $this->calculateFeeDefault();
                 break;
@@ -245,6 +246,25 @@ class Payment extends Base
 
     }
 
+    private function isVasMerchantWithDirectSettlement(): bool
+    {
+        $payment = $this->source;
+
+        if ($payment->isDirectSettlement() === true)
+        {
+            $merchant = $payment->merchant;
+
+            $isVasMerchant = $merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT);
+
+            if ($isVasMerchant === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getNetAmount()
     {
         $amount = $this->txn->getAmount();
@@ -265,6 +285,7 @@ class Payment extends Base
 
         switch (true)
         {
+            case ($this->isVasMerchantWithDirectSettlement()):
             case ($this->txn->isPostpaid() === true):
             case ($this->txn->getCreditType() === Transaction\CreditType::FEE):
             case ($this->txn->getCreditType() === Transaction\CreditType::AMOUNT):
