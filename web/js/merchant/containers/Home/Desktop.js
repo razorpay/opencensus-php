@@ -113,6 +113,8 @@ class AnalyticsDesktop extends Component {
     });
   };
 
+  showEasterEggOnAdmin = () => (window.location.href.indexOf('admin') > -1 ? false : true);
+
   isWhatsappNotificationEnabled = (user) => {
     return (
       user.isWhatsappNotificationEnabled() &&
@@ -422,7 +424,7 @@ class AnalyticsDesktop extends Component {
           </div>
           <div className="row">
             <div className="col-md-12">
-              <EasterEgg extraClass="ftx-home-page" />
+              {this.showEasterEggOnAdmin() && <EasterEgg extraClass="ftx-home-page" />}
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>
