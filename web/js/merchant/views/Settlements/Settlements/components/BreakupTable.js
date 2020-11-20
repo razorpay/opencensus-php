@@ -3,10 +3,27 @@ import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
 import { titleCase } from 'common/utils/rzp-utils';
 
+const getBreakupComponentTitle = (key) => {
+  if (key === 'credit_repayment') {
+    return (
+      <>
+        Lending Repayment
+        <span
+          data-tooltip="This amount is collected to repay for your Loans / Cash Advance withdrawals."
+          data-tooltip-position="top"
+        >
+          <i className="i i-info-outline" />
+        </span>
+      </>
+    );
+  }
+  return titleCase(key);
+};
+
 const Breakup = ({ breakup, isNew }) => {
   return (
     <tr>
-      <td>{titleCase(breakup.component)}</td>
+      <td>{getBreakupComponentTitle(breakup.component)}</td>
       <td>
         <Amount value={breakup.amount} currency="INR" />
       </td>
