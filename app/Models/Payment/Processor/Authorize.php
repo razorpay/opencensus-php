@@ -7488,7 +7488,7 @@ trait Authorize
             return false;
         }
 
-        if (($this->canRunIvrFlow($payment, $gatewayInput) === true))
+        if (($this->canRunIvrFlow($payment) === true))
         {
             return false;
         }
