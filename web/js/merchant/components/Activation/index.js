@@ -1441,7 +1441,11 @@ export default class ActivationWizard extends React.Component {
     }
 
     // auto-populate billing label
-    if (fieldName === 'business_name' && dirty.business_name !== data.business_name) {
+    if (
+      fieldName === 'business_name' &&
+      dirty.business_name !== data.business_name &&
+      !isPresent(this.props.data.business_dba)
+    ) {
       document.querySelector(`.form-container [name=business_dba]`).value = fieldValue;
       sideEffectFieldsToUpdate.business_dba = fieldValue;
     }
@@ -1490,6 +1494,9 @@ export default class ActivationWizard extends React.Component {
     } else businessIdentityType = null;
 
     const shouldAutoPopulateCompanyCin = businessIdentityType === args.option.identity_type;
+    const shouldAutoPopulateBillingLabel =
+      !isPresent(this.props.data.business_dba) &&
+      args.option.company_name !== this.props.data.business_name;
 
     this.setState(
       (prevState) => ({
@@ -1499,25 +1506,28 @@ export default class ActivationWizard extends React.Component {
           ...prevState.dirty,
           business_name: args.option.company_name,
           ...(shouldAutoPopulateCompanyCin && { company_cin: args.option.identity_number }),
+          ...(shouldAutoPopulateBillingLabel && { business_dba: args.option.company_name }),
         },
       }),
       () => {
         // dependent field CIN does not update automatically on updating state since its uncontrolled component
         // update field manually
-        const el = document.querySelector('.form-container [name="company_cin"]');
-        if (el) {
-          if (shouldAutoPopulateCompanyCin) {
-            el.value = args.option.identity_number;
-            this.props.tracking.trackEvent(
-              window.rzpQ.onbr().success(`act.company_search_CIN/LLPIN_Autopopulated`, {
-                company_name: args.option.company_name,
-                identity_number: args.option.identity_number,
-                identity_type: args.option.identity_type,
-              }),
-            );
-          } else {
-            el.value = '';
-          }
+        const cinField = document.querySelector('.form-container [name="company_cin"]');
+        const billingLabelField = document.querySelector('.form-container [name="business_dba"]');
+
+        if (cinField && shouldAutoPopulateCompanyCin) {
+          cinField.value = args.option.identity_number;
+          this.props.tracking.trackEvent(
+            window.rzpQ.onbr().success(`act.company_search_CIN/LLPIN_Autopopulated`, {
+              company_name: args.option.company_name,
+              identity_number: args.option.identity_number,
+              identity_type: args.option.identity_type,
+            }),
+          );
+        }
+
+        if (billingLabelField && shouldAutoPopulateBillingLabel) {
+          billingLabelField.value = args.option.company_name;
         }
       },
     );
