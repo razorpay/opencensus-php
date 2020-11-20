@@ -84,6 +84,8 @@ class Type
 
     const IDBI_NETBANKING_REFUND            = 'idbi_netbanking_refund';
 
+    const DCB_NETBANKING_REFUND             = 'dcb_netbanking_refund';
+
     const IBK_NETBANKING_REFUND             = 'ibk_netbanking_refund';
 
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
@@ -281,6 +283,7 @@ class Type
             self::RBL_NETBANKING_CLAIM,
             self::SBI_NETBANKING_CLAIM,
             self::CSB_NETBANKING_REFUND,
+            self::DCB_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
@@ -437,6 +440,7 @@ class Type
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
         self::SBI_NETBANKING_CLAIM,
+        self::DCB_NETBANKING_REFUND,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -512,6 +516,7 @@ class Type
             self::SVC_NETBANKING_REFUND,
             self::FSB_NETBANKING_REFUND,
             self::JKB_NETBANKING_REFUND,
+            self::DCB_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
