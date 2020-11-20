@@ -16,6 +16,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';
+import WhatsappNotification from './WhatsappNotification';
 @connect(
   (state) => {
     return {
@@ -148,6 +149,15 @@ export default class CongfigurationContainer extends Component {
     });
   };
 
+  isWhatsappNotificationEnabled = (user) => {
+    return (
+      user.isWhatsappNotificationEnabled() &&
+      user.contact_mobile &&
+      user.activation_status === 'activated' &&
+      user.role === 'owner'
+    );
+  };
+
   render() {
     let { config, features, loading } = this.props.configState;
     return (
@@ -171,6 +181,7 @@ export default class CongfigurationContainer extends Component {
             {this.props.mode === 'live' && <InternationalConfig />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
             {this.props.user.contact_mobile && <SmsNotification />}
+            {this.isWhatsappNotificationEnabled(this.props.user) && <WhatsappNotification />}
           </div>
         )}
       </div>

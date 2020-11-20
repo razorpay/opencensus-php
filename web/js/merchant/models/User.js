@@ -719,6 +719,10 @@ export default class User {
   set secondFactorAuthOfUser(secondFactorAuth) {
     this.user.second_factor_auth = secondFactorAuth;
   }
+
+  isWhatsappNotificationEnabled() {
+    return this.getExpStatus('whatsapp_notification_enablement');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

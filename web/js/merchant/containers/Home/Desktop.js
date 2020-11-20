@@ -113,6 +113,15 @@ class AnalyticsDesktop extends Component {
     });
   };
 
+  isWhatsappNotificationEnabled = (user) => {
+    return (
+      user.isWhatsappNotificationEnabled() &&
+      user.contact_mobile &&
+      user.activation_status === 'activated' &&
+      user.role === 'owner'
+    );
+  };
+
   render() {
     const {
       mode,
@@ -243,6 +252,13 @@ class AnalyticsDesktop extends Component {
                   Add Details
                 </button>
               </Link>
+            </AnnouncementBanner>
+          )}
+
+          {this.isWhatsappNotificationEnabled(user) && (
+            <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
+              Now you can receive your account related notifications on WhatsApp. &nbsp;
+              <Link to={'/config#whatsapp_enable'}>Enable Notifications</Link>
             </AnnouncementBanner>
           )}
 

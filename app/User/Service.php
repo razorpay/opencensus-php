@@ -1370,6 +1370,7 @@ class Service extends Base\Service
             'caw_tpv',
             'show_rx_vp_announcement',
             'rx_opfin_announcement',
+            'whatsapp_notification_enablement'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
