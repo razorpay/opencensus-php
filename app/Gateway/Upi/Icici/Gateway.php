@@ -692,6 +692,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response->body);
 
+        $this->mapMigratedFields($content);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
@@ -1759,6 +1761,15 @@ class Gateway extends Base\Gateway
             $errorMessage = $status['errorDesc'];
 
             throw new GatewayErrorException($errorCode, $status, $errorMessage);
+        }
+    }
+
+    private function mapMigratedFields(& $content)
+    {
+        if ((isset($content[Fields::AMOUNT_NEW]) === true))
+        {
+            $content[Fields::AMOUNT] = $content[Fields::AMOUNT_NEW];
+            unset($content[Fields::AMOUNT_NEW]);
         }
     }
 
