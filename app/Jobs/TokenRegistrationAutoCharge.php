@@ -53,23 +53,29 @@ class TokenRegistrationAutoCharge extends Job
                 $this->tokenRegistration->getPublicId(),
                 function ()
                 {
-                    $this->trace->info(
-                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-                        [
-                            'token.registration_id' => $this->tokenRegistration->getId(),
-                            'status'                => 'initial'
-                        ]
-                    );
+                    try
+                    {
+                        (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
 
-                    (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
+                        $this->trace->info(
+                            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                            [
+                                'token.registration_id' => $this->tokenRegistration->getId(),
+                            ]
+                        );
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Logger::ERROR,
+                            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
+                            [
+                                'token_registration_id' => $this->tokenRegistration->getPublicId(),
+                            ]
+                        );
 
-                    $this->trace->info(
-                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-                        [
-                            'token.registration_id' => $this->tokenRegistration->getId(),
-                            'status'                => 'done'
-                        ]
-                    );
+                    }
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS
