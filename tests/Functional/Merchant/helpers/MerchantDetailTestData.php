@@ -469,6 +469,34 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatchBusinessNamePresent' => [
+        'request'  => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'education',
+                'business_subcategory'       => 'schools',
+                'business_name'              => 'Studio Bara',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'education',
+                'business_subcategory'       => 'schools',
+                'business_name'              => 'Studio Bara',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMerchantDetailsPatchValidStatusChange' => [
         'request'  => [
             'content' => [

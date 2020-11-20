@@ -341,6 +341,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
         Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
+        Entity::BUSINESS_NAME                            => 'sometimes|string|max:255',
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
         Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'filled|custom',
         Entity::BANK_DETAILS_VERIFICATION_STATUS         => 'filled|custom',

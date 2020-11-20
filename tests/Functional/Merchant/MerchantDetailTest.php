@@ -539,6 +539,20 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testMerchantDetailsPatchBusinessNamePresent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
     public function testMerchantDetailsPatchValidStatusChange()
     {
         $attributes = [
