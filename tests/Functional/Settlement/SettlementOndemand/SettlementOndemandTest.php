@@ -1147,6 +1147,8 @@ class SettlementOndemandTest extends TestCase
 
     public function testMinLimitForNonEsAutomaticMerchants()
     {
+        $this->markTestSkipped('2000 limit removed');
+
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([

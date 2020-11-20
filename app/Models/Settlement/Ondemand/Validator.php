@@ -69,18 +69,18 @@ class Validator extends Base\Validator
             ]);
         }
 
-        $app = App::getFacadeRoot();
-
-        if (($app['basicauth']->isProxyAuth() === true) &&
-            (($value < self::MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD) === true) &&
-            ($app['basicauth']->getMerchant()->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS,
-            null,
-            [
-                'amount' => $value,
-            ]);
-        }
+        // $app = App::getFacadeRoot();
+        //
+        // if (($app['basicauth']->isProxyAuth() === true) &&
+        //     (($value < self::MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD) === true) &&
+        //     ($app['basicauth']->getMerchant()->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === false))
+        // {
+        //     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS,
+        //     null,
+        //     [
+        //         'amount' => $value,
+        //     ]);
+        // }
         else if ($value < self::MIN_ONDEMAND_AMOUNT)
         {
             throw new Exception\BadRequestException(
