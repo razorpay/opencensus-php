@@ -473,7 +473,9 @@ export default class User {
 
   get isInttCurrenciesEnabled() {
     return (
-      this.currentMerchant.product_international === '1111000000' || !!(this.methods || {}).paypal
+      this.currentMerchant.product_international === '1111000000' ||
+      !!(this.methods || {}).paypal ||
+      !!this.international
     );
   }
 
