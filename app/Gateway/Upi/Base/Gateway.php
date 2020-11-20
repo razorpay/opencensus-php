@@ -31,11 +31,18 @@ class Gateway extends Base\Gateway
 
     protected $shouldMapLateAuthorized = true;
 
+    protected $shouldRetryForAction = true;
+
     public function isRunningOnDark(): bool
     {
         $url = $this->app['config']->get('applications.mozart.live.url');
 
         return starts_with($url, 'https://mozart-dark.razorpay.com');
+    }
+
+    public function disableRetryForAction()
+    {
+        $this->shouldRetryForAction = false;
     }
 
     public function redirectCallbackIfRequired(array $response)
@@ -124,7 +131,12 @@ class Gateway extends Base\Gateway
 
     protected function getActionsToRetry()
     {
-        return self::RETRIABLE_ACTIONS;
+        if ($this->shouldRetryForAction === true)
+        {
+            return self::RETRIABLE_ACTIONS;
+        }
+
+        return [];
     }
 
     protected function getNewGatewayPaymentEntity()
