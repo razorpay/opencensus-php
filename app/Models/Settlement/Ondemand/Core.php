@@ -18,6 +18,7 @@ use RZP\Constants\Product;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -223,7 +224,8 @@ class Core extends Base\Core
 
     public function checkMerchantFundsOnHold()
     {
-        if ($this->merchant->getHoldFunds() === true)
+        if (($this->merchant->getHoldFunds() === true) or
+            ($this->merchant->isFeatureEnabled(Constants::BLOCK_SETTLEMENTS) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
