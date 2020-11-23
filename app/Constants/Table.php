@@ -301,6 +301,9 @@ class Table
 
     const BVS_VALIDATION = 'bvs_validation';
 
+    // API Request Log
+    const REQUEST_LOG = 'request_logs';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                        => self::MIGS,
         Entity::AXIS_GENIUS                      => self::MIGS,

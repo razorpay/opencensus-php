@@ -6026,6 +6026,15 @@ class Route
     ];
 
     //
+    // Routes for which Request Logging is enabled.
+    // These routes have been tested to work with RequestLogHandler middleware
+    //
+    const REQUEST_LOG_ROUTES = [
+        'payout_cancel',
+        'create_low_balance_config'
+    ];
+
+    //
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //
     const BANKING_SPECIFIC_ROUTES = [
@@ -6615,6 +6624,11 @@ class Route
         return self::BANKING_SPECIFIC_ROUTES;
     }
 
+    public static function getRequestLogRoutes()
+    {
+        return self::REQUEST_LOG_ROUTES;
+    }
+
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
         [$schema, $host, $port] = $this->getSchemaHostAndPort();
@@ -6831,6 +6845,11 @@ class Route
         if (in_array($name, array_keys(self::$idempotentRoutesConfig, true), true) === true)
         {
             $route->middleware('merchant_idempotency_handler');
+        }
+
+        if (in_array($name, self::REQUEST_LOG_ROUTES, true) === true)
+        {
+            $route->middleware('request_log_handler');
         }
     }
 

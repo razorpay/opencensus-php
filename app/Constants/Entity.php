@@ -401,6 +401,9 @@ class Entity
     const MERCHANT_DOCUMENT = 'merchant_document';
     const BVS_VALIDATION    = 'bvs_validation';
 
+    //api request log entity
+    const REQUEST_LOG = 'request_log';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
