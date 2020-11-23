@@ -13,7 +13,7 @@ class CreateSettlementOndemandFundAccount extends Job
 
     protected $merchantId;
 
-    const MAX_ATTEMPTS = 3;
+    const MAX_ATTEMPTS = 400;
 
     public function __construct($mode, $merchantId)
     {
@@ -46,7 +46,7 @@ class CreateSettlementOndemandFundAccount extends Job
 
             if ($this->attempts() <= self::MAX_ATTEMPTS)
             {
-                $this->release(1);
+                $this->release(random_int(1, 10 * $this->attempts()));
             }
             else
             {
