@@ -367,7 +367,7 @@ class CardPaymentService
             ],
         ];
 
-        if ($this->app->environment('production') === false)
+        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
 

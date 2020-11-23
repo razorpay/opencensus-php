@@ -45,6 +45,13 @@ class Gateway extends Base\Gateway
         $this->shouldRetryForAction = false;
     }
 
+    public function isRunningOnHallmark(): bool
+    {
+        $url = $this->app['config']->get('applications.mozart.live.url');
+
+        return starts_with($url, 'https://mozart-hallmark.razorpay.com');
+    }
+
     public function redirectCallbackIfRequired(array $response)
     {
         false;
