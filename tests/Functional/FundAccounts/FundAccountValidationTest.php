@@ -346,32 +346,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
 
-        $this->ba->appAuth();
-
-        $request = [
-            'method'  => 'POST',
-            'url'     =>  '/update_fts_fund_transfer',
-            'content' => [
-                'bank_processed_time' => '2019-12-04 15:51:21',
-                'bank_status_code'    => 'SUCCESS',
-                'extra_info'          => [
-                    'beneficiary_name' => 'Amit M',
-                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
-                    'internal_error'   => false
-                ],
-                'failure_reason'      => '',
-                'fund_transfer_id'    => 1236890,
-                'mode'                => 'IMPS',
-                'narration'           => 'Kissht FastCash Disbursal',
-                'remarks'             => 'Check the status by calling getStatus API.',
-                'source_id'           => $payoutId,
-                'source_type'         => 'fund_account_validation',
-                'status'              => 'PROCESSED',
-                'utr'                 => '933815233814'
-            ],
-        ];
-
-        $this->makeRequestAndGetContent($request);
+        $this->updateFtaAndSource($payoutId, 'PROCESSED','933815233814','SUCCESS',false);
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
 
@@ -406,31 +381,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
 
-        $this->ba->appAuth();
-
-        $request = [
-            'method'  => 'POST',
-            'url'     =>  '/update_fts_fund_transfer',
-            'content' => [
-                'bank_processed_time' => '2019-12-04 15:51:21',
-                'bank_status_code'    => 'ACCOUNT_INVALID',
-                'extra_info'          => [
-                    'beneficiary_name' => null,
-                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
-                    'internal_error'   => true
-                ],
-                'failure_reason'      => '',
-                'fund_transfer_id'    => 1236890,
-                'mode'                => 'IMPS',
-                'narration'           => 'Kissht FastCash Disbursal',
-                'remarks'             => 'Check the status by calling getStatus API.',
-                'source_id'           => $payoutId,
-                'source_type'         => 'fund_account_validation',
-                'status'              => 'FAILED',
-            ],
-        ];
-
-        $this->makeRequestAndGetContent($request);
+        $this->updateFtaAndSource($payoutId, 'FAILED','944926344925','ACCOUNT_INVALID',true);
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
 
@@ -441,28 +392,6 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('failed', $payout->getStatus());
 
     }
-
-//    public function testWebhookFundAccountValidationCompletedWithStork()
-//    {
-//
-//        $testData = $this->testData['testFiringOfWebhookOnFAVCompletionWithStork'];
-//
-//        $this->enableRazorXTreatmentForStork();
-//
-//        $this->mockServiceStorkRequest(
-//            function ($path, $payload) use ($testData)
-//            {
-//                $this->assertEquals('rx-test', $payload['event']['service']);
-//                $this->assertEquals('fund_account.validation.completed', $payload['event']['name']);
-//                $this->assertEquals('merchant', $payload['event']['owner_type']);
-//                $this->assertEquals('10000000000000', $payload['event']['owner_id']);
-//                $this->assertArraySelectiveEquals($testData, json_decode($payload['event']['payload'], true));
-//
-//                return new \Requests_Response();
-//            })->once();
-//
-//        $this->testFundAccValidationWithAccountNumberAndBankAccount();
-//    }
 
     public function testFundAccValidationWhenFailedDuringReconWithNonInternalError()
     {

@@ -409,7 +409,7 @@ return [
                     'notes'        => [],
                     'results'      => [
                         'account_status'  => 'active',
-                        'registered_name' => 'Amit M',
+                        'registered_name' => null,
                     ],
                 ],
             ],
