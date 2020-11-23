@@ -306,6 +306,13 @@
       "description": "Payout failed. Contact support for help."
     }
   },
+  "BENE_INCORRECT_IFSC": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "invalid_ifsc_code",
+      "description": "Payout failed as the IFSC code is invalid. Please change the IFSC code and retry."
+    }
+  },
   "DEFAULT": {
     "source": "internal",
     "reason": "server_error",
