@@ -378,6 +378,11 @@ class Constants
      */
     const SHOW_ON_DEMAND_DEDUCTION      = 'show_on_demand_deduction';
 
+    /**
+     * Gives access to fetching bank statement using netbanking flow
+     */
+    const ALLOW_NETBANKING_FETCH = 'allow_netbanking_fetch';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -747,6 +752,7 @@ class Constants
         self::LOS                             => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::SHOW_ON_DEMAND_DEDUCTION        => true,
+        self::ALLOW_NETBANKING_FETCH          => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
         self::CAPITAL_CARDS                   => true,
@@ -1006,6 +1012,11 @@ class Constants
         self::SHOW_ON_DEMAND_DEDUCTION => [
             'feature'       => self::SHOW_ON_DEMAND_DEDUCTION,
             'display_name'  => 'Flag to show deductions for instant settlements in dashboard.',
+            'documentation' => '',
+        ],
+        self::ALLOW_NETBANKING_FETCH => [
+            'feature'       => self::ALLOW_NETBANKING_FETCH,
+            'display_name'  => 'Flag to allow fetching bank statement via netbanking flow',
             'documentation' => '',
         ],
         self::NPS_SURVEY_OTHER_PRODUCTS  => [
