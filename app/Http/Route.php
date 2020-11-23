@@ -2056,6 +2056,7 @@ class Route
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
+        'merchant_instrument_request_create_bulk'           =>  ['post',    'merchant_instrument_requests',                     'InstrumentRequestController@createMerchantInstrumentRequests'   ],
         'merchant_instrument_request_get_by_merchant_id'    =>  ['get',     'merchant_instrument_request',                      'InstrumentRequestController@getMerchantInstrumentRequest'       ],
         'merchant_instrument_status_get_by_merchant_id'     =>  ['get',     'merchant_instrument_status',                       'InstrumentRequestController@getMerchantInstrumentStatus'        ],
         'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
@@ -3893,6 +3894,7 @@ class Route
         'delete_internal_instrument_request_by_id',
         'fetch_internal_instrument_requests',
         'patch_internal_instrument_requests',
+        'merchant_instrument_request_create_bulk',
         'instrument_request_razorx_admin',
         'fetch_merchant_instrument_requests',
         'wfs_config_create',
@@ -4718,6 +4720,7 @@ class Route
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => '*',
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+        'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
