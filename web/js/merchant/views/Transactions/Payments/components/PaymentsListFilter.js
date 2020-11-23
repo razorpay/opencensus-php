@@ -4,7 +4,6 @@ import { Field } from 'redux-form';
 import { useState } from 'react';
 
 const dateRangePresets = [
-  ['All Time', -10, 'years'],
   ['Past 7 Days', -7, 'days'],
   ['Past 30 Days', -30, 'days'],
   ['Past 90 Days', -90, 'days'],
