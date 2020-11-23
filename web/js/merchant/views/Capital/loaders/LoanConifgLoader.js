@@ -4,8 +4,9 @@ import {
   CONSOLIDATED_STATES,
   APPLICATION_STATES,
 } from '../Loans/constants';
-import BaseConfigLoader from './BaseConfigLoader';
 import { isPreceedingState } from '../utils';
+import BaseConfigLoader from './BaseConfigLoader';
+import store from 'merchant/store';
 
 export default class LoansConfigLoader extends BaseConfigLoader {
   constructor(loanApplication) {
@@ -40,7 +41,9 @@ export default class LoansConfigLoader extends BaseConfigLoader {
             </div>
           </React.Fragment>
         ),
-        allowPerfios: false,
+        get allowPerfios() {
+          return store.getState().session.user.isNetBankingEnabled;
+        },
       },
     };
   }

@@ -4,9 +4,10 @@ import {
   APPLICATION_STATES,
   CONSOLIDATED_STATES,
 } from '../Loans/constants';
+import { isPreceedingState } from '../utils';
 import BaseConfigLoader from './BaseConfigLoader';
 import React from 'react';
-import { isPreceedingState } from '../utils';
+import store from 'merchant/store';
 
 export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
   constructor(loanApplication) {
@@ -63,7 +64,9 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
           text: 'Start Withdrawing Now',
           destination: '/capital/cash-advance/',
         },
-        allowPerfios: false,
+        get allowPerfios() {
+          return store.getState().session.user.isNetBankingEnabled;
+        },
       },
     };
   }

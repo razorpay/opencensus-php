@@ -665,6 +665,10 @@ export default class User {
     return this.isFeatureEnabled('withdraw_loc');
   }
 
+  get isNetBankingEnabled() {
+    return this.isFeatureEnabled('allow_netbanking_fetch');
+  }
+
   get isUnregisteredBusiness() {
     const userBusinessType = Number(this.business_type);
     const UNREGISTERED_BUSINESS_TYPES = [2, 11];
