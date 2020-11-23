@@ -48,9 +48,22 @@ class MerchantNotificationConfigTest extends TestCase
         return $this->startTest();
     }
 
+    public function testCreateMerchantNotificationConfigAsAdmin()
+    {
+        $this->ba->adminAuth();
+        return $this->startTest();
+    }
+
     public function testCreateMerchantNotificationConfigWhenConfigAlreadyExists()
     {
         $this->testCreateMerchantNotificationConfig();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantNotificationConfigAsAdminWhenConfigAlreadyExists()
+    {
+        $this->testCreateMerchantNotificationConfigAsAdmin();
 
         $this->startTest();
     }
@@ -64,6 +77,16 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateUpperThresholdForMerchantNotificationConfigAsAdmin()
+    {
+        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['url']
+            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
+        $this->startTest();
+    }
+
     public function testUpdateLowerThresholdForMerchantNotificationConfig()
     {
         $merchantNotificationConfig = $this->testCreateMerchantNotificationConfig();
@@ -73,9 +96,25 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateLowerThresholdForMerchantNotificationConfigAsAdmin()
+    {
+        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['url']
+            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
+        $this->startTest();
+    }
+
     public function testCreateMerchantNotificationConfigWithWrongThresholds()
     {
         $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
+        $this->startTest();
+    }
+
+    public function testCreateMerchantNotificationConfigAsAdminWithWrongThresholds()
+    {
+        $this->ba->adminAuth();
         $this->startTest();
     }
 
@@ -88,6 +127,15 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateNotificationEmailsForMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+    }
+
     public function testUpdateNotificationMobileNumbersForMerchantNotificationConfig()
     {
         $config = $this->testCreateMerchantNotificationConfig();
@@ -97,12 +145,30 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateNotificationMobileNumbersForMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+    }
+
     public function testUpdateNotifyAfterForMerchantNotificationConfig()
     {
         $config = $this->testCreateMerchantNotificationConfig();
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+    }
+
+    public function testUpdateNotifyAfterForMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
         $this->startTest();
     }
 
@@ -121,6 +187,21 @@ class MerchantNotificationConfigTest extends TestCase
         $this->assertEquals(1, $countBeforeDeleting - $countAfterDeletion);
     }
 
+    public function testDeleteMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $countBeforeDeleting = count($this->getDbEntities('merchant_notification_config', [], 'test'));
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+
+        $countAfterDeletion = count($this->getDbEntities('merchant_notification_config', [], 'test'));
+
+        $this->assertEquals(1, $countBeforeDeleting - $countAfterDeletion);
+    }
+
     public function testDisableMerchantNotificationConfig()
     {
         $config = $this->testCreateMerchantNotificationConfig();
@@ -129,6 +210,50 @@ class MerchantNotificationConfigTest extends TestCase
         $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'] . '/disable';
 
         $this->startTest();
+    }
+
+    public function testDisableMerchantNotificationConfigWhenAlreadyDisabled()
+    {
+        $config = $this->testCreateMerchantNotificationConfig();
+
+        $testData                   = &$this->testData['testDisableMerchantNotificationConfig'];
+        $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'] . '/disable';
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        // Repeat making request to test disabling a disabled config
+        $observedResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals('disabled', $observedResponse['config_status'],
+                            'Error in testDisableMerchantNotificationConfigWhenAlreadyDisabled');
+    }
+
+    public function testDisableMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigasAdmin();
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['url']
+            = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/disable';
+
+        $this->startTest();
+    }
+
+    public function testDisableMerchantNotificationConfigAsAdminWhenAlreadyDisabled()
+    {
+        $config = $this->testCreateMerchantNotificationConfigasAdmin();
+
+        $testData = &$this->testData['testDisableMerchantNotificationConfigAsAdmin'];
+        $testData['request']['url']
+                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/disable';
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        // Repeat making request to test disabling a disabled config
+        $observedResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals('disabled', $observedResponse['config_status'],
+                            'Error in testDisableMerchantNotificationConfigWhenAlreadyDisabled');
     }
 
     public function testEnableMerchantNotificationConfig()
@@ -146,12 +271,68 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableMerchantNotificationConfigWhenAlreadyEnabled()
+    {
+        // Not sending the enable request twice because a newly created config is already enabled
+
+        $config = $this->testCreateMerchantNotificationConfig();
+
+        $testData                   = &$this->testData['testEnableMerchantNotificationConfig'];
+        $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'] . '/enable';
+
+        $observedResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals('enabled', $observedResponse['config_status'],
+                            'Error in testEnableMerchantNotificationConfigWhenAlreadyEnabled');
+    }
+
+    public function testEnableMerchantNotificationConfigAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $this->fixtures->edit('merchant_notification_config', $config['id'], ['config_status' => 'disabled']);
+        $config = $this->getDbLastEntityToArray('merchant_notification_config', 'test');
+
+        $this->assertSame('disabled', $config['config_status']);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['url']
+            = '/admin/merchants/10000000000000/merchant_notification_configs/' . 'mnc_' . $config['id'] . '/enable';
+
+        $this->startTest();
+    }
+
+    public function testEnableMerchantNotificationConfigAsAdminWhenAlreadyEnabled()
+    {
+        // Not sending the enable request twice because a newly created config is already enabled
+
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData = &$this->testData['testEnableMerchantNotificationConfigAsAdmin'];
+        $testData['request']['url'] =
+            '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'] . '/enable';
+
+        $observedResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals('enabled', $observedResponse['config_status'],
+                            'Error in testEnableMerchantNotificationConfigAsAdminWhenAlreadyEnabled');
+    }
+
     public function testGetMerchantNotificationConfigById()
     {
         $config = $this->testCreateMerchantNotificationConfig();
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+    }
+
+    public function testGetMerchantNotificationConfigAsAdminById()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
         $this->startTest();
     }
 
@@ -169,8 +350,22 @@ class MerchantNotificationConfigTest extends TestCase
             'notification_mobile_numbers' => '9587612341',
         ]);
 
-        $testData                     = &$this->testData['testFetchMultipleMerchantNotificationConfigs'];
-        $this->testData[__FUNCTION__] = $testData;
+        $this->startTest();
+    }
+
+    public function testFetchMultipleMerchantNotificationConfigsAsAdmin()
+    {
+        $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $this->fixtures->on('test')->create('merchant_notification_config', [
+            'id'                          => 'Fz2IHRXebge3l0',
+            'upper_threshold'             => '320',
+            'lower_threshold'             => '32',
+            'mode'                        => 'NEFT',
+            'notify_after'                => '1000',
+            'notification_emails'         => 'test@razorpay.com,test@gmail.com',
+            'notification_mobile_numbers' => '9587612341',
+        ]);
 
         $this->startTest();
     }

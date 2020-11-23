@@ -33,7 +33,7 @@ class Core extends Base\Core
                            ]
         );
 
-        // validations
+        // TODO: [Refactor] Move these validators into a single place
 
         Validator::validateNotificationEmailRules($input);
 
@@ -44,11 +44,10 @@ class Core extends Base\Core
             Validator::validateMode($input);
         }
 
-        $this->checkAndThrowErrorIfLowerThresholdGreaterThanUpperThreshold($input);
+        Validator::checkThreshold($input);
 
-        $this->checkAndThrowErrorIfAlreadyExistingConfig(($input[Entity::MODE] ?? 'ALL'), $this->merchant->getId());
+        $this->checkIfAlreadyExistingConfig(($input[Entity::MODE] ?? 'ALL'), $merchant->getId());
 
-        // building entity
         $merchantNotificationConfig = new Entity();
 
         $merchantNotificationConfig->build($input);
@@ -76,6 +75,8 @@ class Core extends Base\Core
                            ]
         );
 
+        // TODO: [Refactor] Move these validators into a single place
+
         if (isset($input[Entity::NOTIFICATION_EMAILS]) === true)
         {
             Validator::validateNotificationEmailRules($input);
@@ -88,7 +89,7 @@ class Core extends Base\Core
 
         // No validation of mode field in input, because changing mode via update is not allowed.
 
-        $this->checkAndThrowErrorIfLowerThresholdGreaterThanUpperThreshold($input, $merchantNotificationConfig);
+        Validator::checkThreshold($input, $merchantNotificationConfig);
 
         $updatedMerchantNotificationConfigEntity = $this->mutex->acquireAndRelease(
             'merchant_notification_config_' . $merchantNotificationConfig->getId(),
@@ -142,16 +143,16 @@ class Core extends Base\Core
                            ]
         );
 
-        if ($merchantNotificationConfig->getConfigStatus() === Status::DISABLED)
-        {
-            return $merchantNotificationConfig;
-        }
-
         $updatedEntity = $this->mutex->acquireAndRelease(
             'merchant_notification_config_' . $merchantNotificationConfig->getId(),
             function() use($merchantNotificationConfig)
             {
                 $merchantNotificationConfig->reload();
+
+                if ($merchantNotificationConfig->getConfigStatus() === Status::DISABLED)
+                {
+                    return $merchantNotificationConfig;
+                }
 
                 $merchantNotificationConfig->setConfigStatus(Status::DISABLED);
 
@@ -180,16 +181,16 @@ class Core extends Base\Core
                            ]
         );
 
-        if ($merchantNotificationConfig->getConfigStatus() === Status::ENABLED)
-        {
-            return $merchantNotificationConfig;
-        }
-
         $updatedEntity = $this->mutex->acquireAndRelease(
             'merchant_notification_config_' . $merchantNotificationConfig->getId(),
             function() use($merchantNotificationConfig)
             {
                 $merchantNotificationConfig->reload();
+
+                if ($merchantNotificationConfig->getConfigStatus() === Status::ENABLED)
+                {
+                    return $merchantNotificationConfig;
+                }
 
                 $merchantNotificationConfig->setConfigStatus(Status::ENABLED);
 
@@ -210,7 +211,7 @@ class Core extends Base\Core
         return $updatedEntity;
     }
 
-    protected function checkAndThrowErrorIfAlreadyExistingConfig($mode, $merchantId)
+    protected function checkIfAlreadyExistingConfig($mode, $merchantId)
     {
         /** @var  $notificationConfigs Base\PublicCollection*/
         $notificationConfigs = $this->repo->merchant_notification_config
@@ -224,68 +225,6 @@ class Core extends Base\Core
                 [
                     'merchant_notification_config_ids' => $notificationConfigs->getQueueableIds(),
                 ]
-            );
-        }
-    }
-
-    protected function checkAndThrowErrorIfLowerThresholdGreaterThanUpperThreshold(array $input, Entity $entity = null)
-    {
-        $errorCode = null;
-        $data = null;
-
-        if((empty($input['lower_threshold']) === false) and
-           (empty($input['upper_threshold']) === true) and
-           (is_null($entity) === false) and
-           ($entity->getUpperThreshold() < $input['lower_threshold']))
-        {
-            $data = [
-                'existing_lower_threshold'     => $entity->getLowerThreshold(),
-                'existing_upper_threshold'     => $entity->getUpperThreshold(),
-                'new_lower_threshold_received' => $input['lower_threshold'],
-            ];
-
-            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD;
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD,
-                null,
-                $data
-            );
-        }
-
-        if((empty($input['upper_threshold']) === false) and
-           (empty($input['lower_threshold']) === true) and
-           (is_null($entity) === false) and
-           ($entity->getLowerThreshold() > $input['upper_threshold']))
-        {
-            $data = [
-                'existing_upper_threshold'     => $entity->getUpperThreshold(),
-                'existing_lower_threshold'     => $entity->getLowerThreshold(),
-                'new_upper_threshold_received' => $input['upper_threshold'],
-            ];
-
-            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD;
-        }
-
-        if((empty($input['upper_threshold']) === false) and
-           (empty($input['lower_threshold']) === false) and
-           ($input['lower_threshold'] > $input['upper_threshold']))
-        {
-            $data = [
-                'new_upper_threshold_received' => $input['upper_threshold'],
-                'new_lower_threshold_received' => $input['lower_threshold'],
-            ];
-
-            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD;
-        }
-
-        if((is_null($errorCode) === false) and
-           (is_null($data) === false))
-        {
-            throw new BadRequestException(
-                $errorCode,
-                null,
-                $data
             );
         }
     }

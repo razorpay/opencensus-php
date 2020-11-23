@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\MerchantNotificationConfig;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
@@ -56,5 +58,67 @@ class Validator extends Base\Validator
     public static function validateMode(array &$input)
     {
         Mode::validateMode($input['mode']);
+    }
+
+    public static function checkThreshold(array $input, Entity $entity = null)
+    {
+        $errorCode = null;
+        $data = null;
+
+        if ((empty($input[Entity::LOWER_THRESHOLD]) === false) and
+           (empty($input[Entity::UPPER_THRESHOLD]) === true) and
+           (is_null($entity) === false) and
+           ($entity->getUpperThreshold() < $input[Entity::LOWER_THRESHOLD]))
+        {
+            $data = [
+                'existing_lower_threshold'     => $entity->getLowerThreshold(),
+                'existing_upper_threshold'     => $entity->getUpperThreshold(),
+                'new_lower_threshold_received' => $input[Entity::LOWER_THRESHOLD],
+            ];
+
+            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD;
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD,
+                null,
+                $data
+            );
+        }
+
+        if ((empty($input[Entity::UPPER_THRESHOLD]) === false) and
+           (empty($input[Entity::LOWER_THRESHOLD]) === true) and
+           (is_null($entity) === false) and
+           ($entity->getLowerThreshold() > $input[Entity::UPPER_THRESHOLD]))
+        {
+            $data = [
+                'existing_upper_threshold'     => $entity->getUpperThreshold(),
+                'existing_lower_threshold'     => $entity->getLowerThreshold(),
+                'new_upper_threshold_received' => $input[Entity::UPPER_THRESHOLD],
+            ];
+
+            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD;
+        }
+
+        if ((empty($input[Entity::UPPER_THRESHOLD]) === false) and
+           (empty($input[Entity::LOWER_THRESHOLD]) === false) and
+           ($input[Entity::LOWER_THRESHOLD] > $input[Entity::UPPER_THRESHOLD]))
+        {
+            $data = [
+                'new_upper_threshold_received' => $input[Entity::UPPER_THRESHOLD],
+                'new_lower_threshold_received' => $input[Entity::LOWER_THRESHOLD],
+            ];
+
+            $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD;
+        }
+
+        if ((is_null($errorCode) === false) and
+           (is_null($data) === false))
+        {
+            throw new BadRequestException(
+                $errorCode,
+                null,
+                $data
+            );
+        }
     }
 }

@@ -218,11 +218,19 @@ class UserRolesScope
             'disable_low_balance_config'  => [BankingRole::OWNER],
             'enable_low_balance_config'   => [BankingRole::OWNER],
 
-            'create_merchant_notification_config'   => [BankingRole::OWNER],
-            'update_merchant_notification_config'   => [BankingRole::OWNER],
-            'delete_merchant_notification_config'   => [BankingRole::OWNER],
-            'disable_merchant_notification_config'  => [BankingRole::OWNER],
-            'enable_merchant_notification_config'   => [BankingRole::OWNER],
+            'create_merchant_notification_config'         => [Role::OWNER],
+            'update_merchant_notification_config'         => [Role::OWNER],
+            'delete_merchant_notification_config'         => [Role::OWNER],
+            'disable_merchant_notification_config'        => [Role::OWNER],
+            'enable_merchant_notification_config'         => [Role::OWNER],
+
+            'create_merchant_notification_config_admin'   => [Role::ADMIN],
+            'update_merchant_notification_config_admin'   => [Role::ADMIN],
+            'fetch_merchant_notification_config_admin'    => [Role::ADMIN],
+            'list_merchant_notification_config_admin'     => [Role::ADMIN],
+            'delete_merchant_notification_config_admin'   => [Role::ADMIN],
+            'disable_merchant_notification_config_admin'  => [Role::ADMIN],
+            'enable_merchant_notification_config_admin'   => [Role::ADMIN],
         ];
 
         /*

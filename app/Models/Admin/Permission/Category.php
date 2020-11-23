@@ -46,4 +46,5 @@ class Category
     const UPI                           = 'upi';
     const ROUTE                         = 'route';
     const VIRTUAL_ACCOUNT               = 'virtual_account';
+    const MERCHANT_NOTIFICATION_CONFIG  = 'merchant_notification_config';
 }

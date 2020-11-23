@@ -2035,7 +2035,15 @@ class Route
         'delete_merchant_notification_config'     => ['delete', 'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@delete'],
         'disable_merchant_notification_config'    => ['post',   'merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfig'],
         'enable_merchant_notification_config'     => ['post',   'merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfig'],
-        'merchant_notification_config_alert_cron' => ['post',   'merchant_notification_configs/alert',        'MerchantNotificationConfigController@alert'],
+
+        // Admin merchant notification config APIs
+        'create_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@createAsAdmin'],
+        'update_merchant_notification_config_admin'     => ['patch',  'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@updateAsAdmin'],
+        'fetch_merchant_notification_config_admin'      => ['get',    'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@getAsAdmin'],
+        'list_merchant_notification_config_admin'       => ['get',    'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@listAsAdmin'],
+        'delete_merchant_notification_config_admin'     => ['delete', 'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@deleteAsAdmin'],
+        'disable_merchant_notification_config_admin'    => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfigAsAdmin'],
+        'enable_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfigAsAdmin'],
 
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
@@ -2678,7 +2686,6 @@ class Route
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
-        'merchant_notification_config_alert_cron',
 
         // Razorpay Capital
         // Financial Data Service
@@ -3197,15 +3204,6 @@ class Route
         'disable_low_balance_config',
         'enable_low_balance_config',
 
-        // merchant notification configs
-        'create_merchant_notification_config',
-        'update_merchant_notification_config',
-        'fetch_merchant_notification_config',
-        'list_merchant_notification_config',
-        'delete_merchant_notification_config',
-        'disable_merchant_notification_config',
-        'enable_merchant_notification_config',
-
         // Refunds
         'refund_cancel_batch',
 
@@ -3261,6 +3259,15 @@ class Route
 
         'setl_fetch_source_details',
         'linked_account_create_batch',
+
+        // merchant notification config
+        'create_merchant_notification_config',
+        'update_merchant_notification_config',
+        'fetch_merchant_notification_config',
+        'list_merchant_notification_config',
+        'delete_merchant_notification_config',
+        'disable_merchant_notification_config',
+        'enable_merchant_notification_config',
     ];
 
     //
@@ -3951,6 +3958,15 @@ class Route
         'subscription_clear_feature',
 
         'fee_recovery_payout_manual_retry',
+
+        // Admin merchant notification configs
+        'create_merchant_notification_config_admin',
+        'update_merchant_notification_config_admin',
+        'fetch_merchant_notification_config_admin',
+        'list_merchant_notification_config_admin',
+        'delete_merchant_notification_config_admin',
+        'disable_merchant_notification_config_admin',
+        'enable_merchant_notification_config_admin',
     ];
 
     public static $routePermission = [
@@ -4736,6 +4752,24 @@ class Route
         'salesforce_opportunity_details'              => '*',
 
         'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
+
+        // merchant notification configs
+        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
+        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
+        'fetch_merchant_notification_config'            => '*',
+        'list_merchant_notification_config'             => '*',
+        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
+        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
+        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
+
+        // Admin merchant notification configs
+        'create_merchant_notification_config_admin'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'update_merchant_notification_config_admin'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'fetch_merchant_notification_config_admin'            => Permission::FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'list_merchant_notification_config_admin'             => Permission::LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'delete_merchant_notification_config_admin'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'disable_merchant_notification_config_admin'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'enable_merchant_notification_config_admin'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
     ];
 
     public static $bankingRoutePermissions = [
@@ -4928,15 +4962,6 @@ class Route
         'delete_low_balance_config'                     => Permission::DELETE_LOW_BALANCE_CONFIG,
         'disable_low_balance_config'                    => Permission::DISABLE_LOW_BALANCE_CONFIG,
         'enable_low_balance_config'                     => Permission::ENABLE_LOW_BALANCE_CONFIG,
-
-        // merchant notification configs
-        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
-        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
-        'fetch_merchant_notification_config'            => '*',
-        'list_merchant_notification_config'             => '*',
-        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
-        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
-        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
 
         // tax payment permission
         'tax_payments_pay'                             => Permission::PAY_TAX_PAYMENTS,
@@ -5333,7 +5358,6 @@ class Route
             'fts_bulk_transfer_publish',
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
-            'merchant_notification_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'terminals_proxy_update_recurring',
