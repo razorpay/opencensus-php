@@ -14,7 +14,6 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import { getKeysSeparatedByPipe, handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
-import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -27,15 +26,12 @@ import {
 } from 'merchant/reducers/home';
 import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
-import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
-import ShowWhen from 'merchant/components/ShowWhen';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 
 @withRouter
@@ -233,44 +229,8 @@ export default class SettlementsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        {/* instant settlements banner */}
-        {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
-
-        {current_balance.data.balance < 0 && (
-          <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
-            Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
-            <Link to="/addfunds" target="_blank">
-              {' '}
-              Add Funds
-            </Link>
-          </AnnouncementBanner>
-        )}
-
-        {handleNegativeBalanceLimit(
-          this.props.merchantBalanceConfigs,
-          this.props.current_balance.data.balance,
-        ) && (
-          <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
-            Your current balance had reached the maximum negative limit. Transactions will start to
-            fail now. Please add funds to avoid transaction failures.{' '}
-            <Link to="/addfunds" target="_blank">
-              {' '}
-              Add Funds
-            </Link>
-          </AnnouncementBanner>
-        )}
-
-        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
-          <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
-            <ScheduledNitroBanner
-              fromWhere="settlements"
-              url="https://lp.razorpay.com/razorpayxca-sttlmnts1"
-            />
-          </AnnouncementBanner>
-        </ShowWhen>
-
+        {/* banner */}
         <TestModeBanner />
-
         {mode === 'live' &&
         nextSettlement === null &&
         no_settlement &&
