@@ -1956,7 +1956,7 @@ function ActivationField(field) {
     required,
     ...rest
   } = field;
-  const { documents } = this.props.data;
+  const { documents, activation_status } = this.props.data;
 
   if (_when && !_when(this)) {
     return null;
@@ -2114,7 +2114,7 @@ function ActivationField(field) {
         defaultValue={defaultValue}
         disabled={isComponentDisabled || isNCFlowComponentDisabled}
         autoRender={_autoRenderImpure}
-        required={typeof required === 'function' ? required(this) : required}
+        required={activation_status === 'needs_clarification' ? false : typeof required === 'function' ? required(this) : required }
         {...rest}
       />
     </>

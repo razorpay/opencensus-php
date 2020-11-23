@@ -62,10 +62,10 @@ function displayCompanyPAN(activation) {
 }
 
 function requiredForNGO(activation) {
-  const selectedBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
+  const selectedBusinessType = activation.state.dirty.business_type || activation.props.data.business_type;
 
   return selectedBusinessType == NGO;
+
 }
 
 function showForOrgs(activation) {

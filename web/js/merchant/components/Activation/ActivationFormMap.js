@@ -47,7 +47,6 @@ import {
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
 
-// This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
