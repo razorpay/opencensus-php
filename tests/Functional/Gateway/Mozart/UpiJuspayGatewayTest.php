@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
@@ -267,11 +269,15 @@ class UpiJuspayGatewayTest extends TestCase
         $payment = $this->getDbLastPayment();
         $this->assertSame('failed', $payment->getStatus());
 
-        $this->makeRequestAndCatchException(function () use ($payment)
-        {
-            $this->verifyPayment($payment->getPublicId());
-        },
-        Exception\PaymentVerificationException::class);
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
     }
 
     protected function enableIntentFlow($description = 'intentPayment')

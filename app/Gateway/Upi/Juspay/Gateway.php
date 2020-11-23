@@ -16,6 +16,12 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Payment\Gateway::UPI_JUSPAY;
 
+    // As, UPI Juspay currently depends on mozart entity we will mark this flag as false
+    // TODO: Mark this as true or remove it , when we move the upi entity creation to this class.
+    protected $shouldMapLateAuthorized = false;
+
+    protected $map = [];
+
     public function authorize(array $input)
     {
         parent::authorize($input);
