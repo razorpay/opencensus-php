@@ -153,6 +153,9 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
         $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
         $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
+        $payloadDetails[ShieldConstants::MERCHANT_PAN]            = $merchant->merchantDetail->getPan();
+        $payloadDetails[ShieldConstants::MERCHANT_GSTIN]          = $merchant->merchantDetail->getGstin();
+        $payloadDetails[ShieldConstants::MERCHANT_BANK_ACCOUNT]   = $merchant->merchantDetail->getBankAccountNumber();
 
         $payloadDetails[ShieldConstants::ORG_ID] = $merchant->getOrgId();
 
@@ -170,6 +173,7 @@ class Shield
         $payloadDetails[ShieldConstants::RECURRING]     = $payment->isRecurring();
         $payloadDetails[ShieldConstants::CONTACT]       = $payment->getContact();
         $payloadDetails[ShieldConstants::INTERNATIONAL] = $payment->isInternational();
+        $payloadDetails[ShieldConstants::CALLBACK_URL]  = $payment->getCallbackUrl();
 
         $payloadDetails[ShieldConstants::EMAIL] =
             (($payment->isCustomerMailAbsent() === false) ? $payment->getEmail() : ShieldConstants::DEFAULT_EMAIL);
