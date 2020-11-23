@@ -843,4 +843,11 @@ class ContactsTest extends TestCase
 
         $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
+
+    public function testCheckDuplicateContactCreation()
+    {
+        $this->testCreateContactWithUnnecessarySpacesInNameAndType();
+
+        $this->startTest();
+    }
 }
