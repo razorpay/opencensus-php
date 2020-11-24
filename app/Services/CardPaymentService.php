@@ -711,22 +711,6 @@ class CardPaymentService
     {
         $verify = $this->verifyPayment($response);
 
-        if (($verify->match === true) and
-            ($verify->apiSuccess === false))
-        {
-            try
-            {
-                $this->checkForErrors($response);
-            }
-            catch (\Throwable $exc)
-            {
-                $verify->error = $exc->getError()->getAttributes();
-                throw new Exception\PaymentVerificationException(
-                    $verify->getDataToTrace(),
-                    $verify);
-            }
-        }
-
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
         {
