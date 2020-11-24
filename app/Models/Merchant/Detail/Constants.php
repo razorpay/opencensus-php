@@ -125,6 +125,7 @@ class Constants
     // Using this blacked listed banks to block bank account details
     // update in merchant details
     const BLACKLISTED_BANKS = [
+        'LAVB'
     ];
 
     const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];
@@ -181,5 +182,10 @@ class Constants
 
     const ACTIVATION_ROUTE_NAME     = 'merchant_activation_status';
     const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
+
+    //input for bvs probe
+    const PROBE_TYPE        = 'probe_type';
+    const VALID_PROBE_TYPES = [self::COMPANY_SEARCH];
+    const COMPANY_SEARCH    = 'company_search';
 }
 

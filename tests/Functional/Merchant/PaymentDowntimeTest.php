@@ -118,7 +118,7 @@ class PaymentDowntimeTest extends TestCase
         $request = [
             'content' => [
                 'gateway'     => 'billdesk',
-                'issuer'      => 'ABPB',
+                'issuer'      => 'BACB',
                 'method'      => 'netbanking',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',

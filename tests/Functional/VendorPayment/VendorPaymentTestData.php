@@ -229,6 +229,53 @@ return [
         ]
     ],
 
+    'testBulkInvoiceDownload' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/_meta/bulk-invoice-download',
+            'content' => [
+                'file_ids'   => ['id1','id2'],
+                'send_email' => false,
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testEditInvoice' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/vp_id/update-invoice-file-id',
+            'content' => [
+                'invoice_file_id'   => 'id1'
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testGetUfhFileStatus' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/invoices/ufh/file_12345',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',
@@ -298,7 +345,32 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The to email field is required.',
+                    'description' => 'The to emails field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testVendorPaymentSendMailValidateEmails' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/vendor-payments/sendMailGeneric',
+            'content' => [
+                "to_emails" => ["wrongmail"],
+                "data" => ["some data"],
+                "subject" => "some subject",
+                "template_name" => "some template",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The to_emails.0 must be a valid email address.',
                 ],
             ],
             'status_code' => 400,

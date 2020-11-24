@@ -58,7 +58,8 @@ server_error_ASSERTION_ERROR,Unknown Error,server_error,Technical,internal,Non a
 GATEWAY_ERROR_UNKNOWN_ERROR,Unknown Error,gateway_technical_error,Technical,gateway,Non actionable,payment_authorization,N
 BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,,gateway_technical_error,,gateway,,payment_authorization,
 SERVER_ERROR_INVALID_FORMAT,,server_error,,internal,,payment_initiation,
-GATEWAY_ERROR_CARD_NOT_ENROLLED,Card is not enrolled for 3D Secure authentication,card_not_enrolled,,customer,,card_enrollment_check,
+GATEWAY_ERROR_CARD_NOT_ENROLLED,Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.,card_not_enrolled,business,issuer_bank,Retry with another card,payment_authorization,N
+BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS,Your card has been disabled for online payments by your issuing bank. Please reach out to your bank or re-try the payment with another card/method.,card_disabled_for_online_payments,business,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED,The card is not enrolled for American Express SafeKey program. Please try another card.,card_not_enrolled,,customer,,card_enrollment_check,
 BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,The customer has exceeded the balance or credit limit available on their card.,transaction_limit_exceeded,Business,customer,Card limit exceeded - Retry with another card or payment method,payment_authorization,D
 BAD_REQUEST_CARD_DAILY_LIMIT_REACHED,The customer has exceeded the balance or credit limit available on their card.,transaction_daily_limit_exceeded,Business,customer,Card limit exceeded - Retry with another card or payment method,payment_authorization,D

@@ -375,11 +375,11 @@ class ShieldClient implements ExternalService
 
         $url = $this->baseUrl . $path;
 
-        if ($this->app->environment('production') === false)
+        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
 
-            if (empty($testCaseId) === false and strpos($testCaseId,'TC_CARD_SH') !== false)
+            if (empty($testCaseId) === false and strpos($testCaseId, 'TC_CARD_SH') !== false)
             {
                 $headers[self::X_RZP_TESTCASE_ID] = $testCaseId;
                 $url = $this->config['mock_url'] . $path;

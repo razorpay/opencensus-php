@@ -42,7 +42,7 @@ class DefaultProcessorMock extends DefaultProcessor
                 throw new IntegrationException("integration error: failed to make request");
         }
 
-        return new BaseResponse($validationResponse);
+        return new ValidationBaseResponse($validationResponse);
     }
 
     public function setMockStatus(string $mockStatus)

@@ -731,6 +731,22 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchBySettlementIdAndSource($settlementId, $source, $skip, $limit, $sourceId)
+    {
+        $result = $this->newQuery()
+                       ->where(Transaction\Entity::SETTLEMENT_ID, '=', $settlementId)
+                       ->where(Transaction\Entity::TYPE, '=', $source);
+
+        if($sourceId != null)
+        {
+            $result = $result->where(Transaction\Entity::ENTITY_ID, '=', $sourceId);
+        }
+
+        return $result->take($limit)
+                      ->skip($skip)
+                      ->get();
+    }
+
     /**
      * Updated reconciled_at to current time for given entities
      *

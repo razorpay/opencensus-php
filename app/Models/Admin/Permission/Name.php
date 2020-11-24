@@ -443,6 +443,7 @@ class Name
 
     // tax payment settings
     const PAY_TAX_PAYMENTS                    = 'pay_tax_payment';
+    const CREATE_TAX_PAYMENTS                 = 'create_tax_payment';
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
 
@@ -476,6 +477,22 @@ class Name
     const ENABLE_LOW_BALANCE_CONFIG           = 'enable_low_balance_config';
     const DISABLE_LOW_BALANCE_CONFIG          = 'disable_low_balance_config';
     const DELETE_LOW_BALANCE_CONFIG           = 'delete_low_balance_config';
+
+    // Merchant Notification Config
+    const CREATE_MERCHANT_NOTIFICATION_CONFIG        = 'create_merchant_notification_config';
+    const UPDATE_MERCHANT_NOTIFICATION_CONFIG        = 'update_merchant_notification_config';
+    const ENABLE_MERCHANT_NOTIFICATION_CONFIG        = 'enable_merchant_notification_config';
+    const DISABLE_MERCHANT_NOTIFICATION_CONFIG       = 'disable_merchant_notification_config';
+    const DELETE_MERCHANT_NOTIFICATION_CONFIG        = 'delete_merchant_notification_config';
+
+    // Admin merchant notification config
+    const CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'create_merchant_notification_config_admin';
+    const UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'update_merchant_notification_config_admin';
+    const FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN   = 'fetch_merchant_notification_config_admin';
+    const LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN    = 'list_merchant_notification_config_admin';
+    const ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'enable_merchant_notification_config_admin';
+    const DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN = 'disable_merchant_notification_config_admin';
+    const DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'delete_merchant_notification_config_admin';
 
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 

@@ -185,7 +185,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $bankingAccount->getStatus());
 
-        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $dataToReplace = [
             'request' => [
@@ -240,7 +240,7 @@ class BankingAccountTest extends TestCase
 
     public function testFailedBankAccountInfoNotification()
     {
-        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         return $this->startTest();
     }
@@ -282,7 +282,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $dataToReplace = [
             'request' => [
@@ -290,7 +290,7 @@ class BankingAccountTest extends TestCase
                     'RZPAlertNotiReq' => [
                         'Body' => [
                             'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No' => '31900299180853'
+                            'Account No.' => '31900299180853'
                         ]
                     ]
                 ]
@@ -304,6 +304,46 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
+    }
+
+    public function testDoubleAccountOpeningWebhooksAllowedAfterManualIntervention()
+    {
+        $this->testSuccessBankAccountInfoNotification();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $newAccountNumber = '31900299180853';
+
+        // asserting current account number is different
+        $this->assertNotEquals($newAccountNumber, $bankingAccount->getAccountNumber());
+
+        // Default behavior is to reject duplicate webhooks.
+        // The following change allows for duplicate webhooks to update information.
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
+            'account_activation_date' => null
+        ]);
+
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No.' => $newAccountNumber
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        // we are asserting that the values passed in second webhook will be updated
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals($newAccountNumber, $bankingAccount['account_number']);
     }
 
     protected function createMerchantDetail(array $attrs = ['activation_status' => 'activated'])
@@ -2545,7 +2585,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($expectedFileInput, $fileInput);
     }
 
-    public function testUpdateAccountOpenDateViaBatch()
+    public function testUpdateAccountOpenDateAndLoginDateViaBatch()
     {
         $this->testCreateBankingAccountWithActivationDetail();
 
@@ -2558,7 +2598,8 @@ class BankingAccountTest extends TestCase
             'source_team_type' => 'external',
             'added_at' => 1594800229,
             'assignee_team' => 'sales',
-            'account_open_date' => '23-Jun-2020'
+            'account_open_date' => '23-Jun-2020',
+            'account_login_date' => '23-Jun-2020'
         ];
 
         $this->assertUpdateViaBatch($content);

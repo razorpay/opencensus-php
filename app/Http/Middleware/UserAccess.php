@@ -254,7 +254,6 @@ class UserAccess
     {
         $userAccessResponse = $this->ba->isProductBanking() ? $this->validateBankingUserAccess($route) :
                                                               $this->validateRouteUserRolesPolicy($route);
-
         return $userAccessResponse;
     }
 

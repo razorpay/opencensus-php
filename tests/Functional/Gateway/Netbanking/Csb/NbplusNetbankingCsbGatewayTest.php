@@ -9,9 +9,9 @@ use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Transaction\Statement\Entity;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingCsbGatewayTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingCsbGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

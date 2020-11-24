@@ -208,4 +208,19 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getReportingInfo($this->ba->getMerchant(), $this->input);
     }
+
+    public function bulkInvoiceDownload()
+    {
+        return $this->service->bulkInvoiceDownload($this->ba->getMerchant(), $this->input);
+    }
+
+    public function updateInvoiceFileId(string $vendorPaymentId)
+    {
+        return $this->service->updateInvoiceFileId($vendorPaymentId, $this->ba->getMerchant(), $this->input);
+    }
+
+    public function getInvoicesFromUfh(string $fileId)
+    {
+        return $this->service->getInvoicesFromUfh($this->ba->getMerchant(), $fileId);
+    }
 }

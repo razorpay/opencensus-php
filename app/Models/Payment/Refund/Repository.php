@@ -36,7 +36,7 @@ class Repository extends Base\Repository
     protected $proxyFetchParamRules = [
         Entity::NOTES                       => 'sometimes|string|max:500',
         Entity::REVERSAL_ID                 => 'filled|public_id|size:18',
-        self::EXPAND . '.*'                 => 'filled|string|in:reversal|custom:expand',
+        self::EXPAND . '.*'                 => 'filled|string|in:reversal,transaction,transaction.settlement|custom:expand',
         ReversalEntity::INITIATOR_ID        => 'sometimes|string|min:14|max:18',
         ReversalEntity::CUSTOMER_REFUND_ID  => 'filled|string|size:19',
     ];

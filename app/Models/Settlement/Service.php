@@ -10,8 +10,8 @@ use phpseclib\Net\SFTP;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
@@ -20,6 +20,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Feature\Constants;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
@@ -532,6 +533,79 @@ class Service extends Base\Service
         return $entity;
     }
 
+    public function getSettlementTransactionsSourceDetails($id, $input)
+    {
+        $id = Entity::stripDefaultSign($id);
+
+        (new Validator())->validateInput('settlement_transaction_source_detail', $input);
+
+        $this->trace->info(
+            TraceCode::GET_SOURCE_TRANSACTION_DETAILS,
+            [
+               'settlement_id' => $id,
+               'input'         => $input,
+            ]);
+
+        $sourceId = null;
+
+        if(isset($input['source_id']) === true)
+        {
+            $sourceId = Entity::stripDefaultSign($input['source_id']);
+        }
+
+        $sourceType = $input['source_type'];
+
+        $skip = $input['skip'];
+
+        $limit = $input['limit'];
+
+        $startTime = microtime(true);
+
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+
+        $result = [];
+
+        foreach ($txns as $txn)
+        {
+            $res = [
+                'id'              => $txn->source->getPublicId(),
+                'amount'          => $txn->getAmount(),
+                'fee'             => $txn->getFee(),
+                'tax'             => $txn->getTax(),
+                'created_at'      => $txn->getCreatedAt(),
+                'international'   => false,
+            ];
+
+            if ($sourceType === E::REFUND)
+            {
+                $res['international'] = $txn->source->payment->isInternational();
+            }
+            else if (method_exists($txn->source, 'isInternational') === true)
+            {
+                $res['international'] = $txn->source->isInternational();
+            }
+
+            if(method_exists($txn->source, 'getStatus') === true)
+            {
+                $res['status'] = $txn->source->getStatus();
+            }
+
+            $result[] = $res;
+        }
+
+        $this->trace->info(
+            TraceCode::GET_SOURCE_TRANSACTION_DETAILS,
+            [
+                'settlement_id' => $id,
+                'input'         => $input,
+                'time_taken'    => get_diff_in_millisecond($startTime),
+            ]);
+
+        return $result;
+    }
+
     /**
      * This method is used to identify weather the request is done on behalf of the submerchant by the partner
      *
@@ -1000,5 +1074,105 @@ class Service extends Base\Service
         (new Validator)->validateInput('settlements_status_replay', $input);
 
         return app('settlements_dashboard')->replaySettlementsStatusUpdate($input);
+    }
+
+    public function getSettlementSmsNotificationStatus($merchant = null)
+    {
+        $notificationMerchant = $this->merchant;
+
+        if(isset($merchant) === true)
+        {
+            $notificationMerchant = $merchant;
+        }
+
+        $merchantId = $notificationMerchant->getId();
+
+        $result = $this->repo->feature->getMerchantIdsHavingFeature(
+            Constants::SETTLEMENTS_SMS_STOP,
+            [
+                $merchantId
+            ]);
+
+        if (empty($result) === false)
+        {
+            return ['enabled' => false];
+        }
+
+        return ['enabled' => true];
+    }
+
+    public function toggleSettlementSmsNotification(array $input)
+    {
+        (new Validator)->validateInput('settlement_sms_notification', $input);
+
+        $status = $this->getSettlementSmsNotificationStatus();
+
+        $merchantId = $this->merchant->getId();
+
+        if($input['enable'] === true)
+        {
+            if($status['enabled'] === true)
+            {
+                return ['enabled' => true];
+            }
+
+            try
+            {
+                (new Merchant\Service)->addOrRemoveMerchantFeatures([
+                    'features' => [
+                        Constants::SETTLEMENTS_SMS_STOP => 0,
+                    ],
+                    Feature\Entity::SHOULD_SYNC => true,
+                ]);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED,
+                    [
+                        'merchant_id'       => $merchantId,
+                        'current_status'    => $status['enabled'],
+                        'requested_status'  => $input['enable'],
+                        ]);
+
+                return ['enabled' => false];
+            }
+
+            return ['enabled' => true];
+        }
+
+
+        if($status['enabled'] === false)
+        {
+            return ['enabled' => false];
+        }
+
+        try
+        {
+            (new Merchant\Service)->addOrRemoveMerchantFeatures([
+                'features' => [
+                    Constants::SETTLEMENTS_SMS_STOP => 1,
+                ],
+                Feature\Entity::SHOULD_SYNC => true,
+            ]);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED,
+                [
+                    'merchant_id'       => $merchantId,
+                    'current_status'    => $status['enabled'],
+                    'requested_status'  => $input['enable'],
+                ]);
+
+            return ['enabled' => true];
+        }
+
+        return ['enabled' => false];
     }
 }

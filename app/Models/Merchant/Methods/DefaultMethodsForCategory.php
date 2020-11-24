@@ -17,9 +17,6 @@ class DefaultMethodsForCategory
                 Category::MUTUAL_FUNDS => [
                     Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
                 ],
-                Category::LENDING => [
-                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
-                ],
                 Category::SECURITIES => [
                     Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
                 ],

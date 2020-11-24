@@ -3,6 +3,9 @@
 
 namespace RZP\Jobs;
 
+use Razorpay\Trace\Logger;
+
+
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Support\Facades\App;
@@ -15,13 +18,15 @@ use RZP\Models\SubscriptionRegistration;
  */
 class TokenRegistrationAutoCharge extends Job
 {
-    const MUTEX_LOCK_TIMEOUT = 600;
+    const MUTEX_LOCK_TIMEOUT = 180;
 
     protected $tokenRegistration;
 
     protected $mutex;
 
     protected $repo;
+
+    public $tries = 3;
 
     public function __construct(string $mode, SubscriptionRegistration\Entity $tokenRegistration )
     {
@@ -40,39 +45,57 @@ class TokenRegistrationAutoCharge extends Job
 
         $this->repo = $app['repo'];
 
-        $this->mutex->acquireAndRelease(
-            $this->tokenRegistration->getPublicId(),
-            function ()
-            {
-                try
+        try
+        {
+            $this->repo->reload($this->tokenRegistration);
+
+            $this->mutex->acquireAndRelease(
+                $this->tokenRegistration->getPublicId(),
+                function ()
                 {
-                    $this->repo->reload($this->tokenRegistration);
+                    try
+                    {
+                        (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
 
-                    (new SubscriptionRegistration\Core())->processAutoCharge($this->tokenRegistration);
+                        $this->trace->info(
+                            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                            [
+                                'token.registration_id' => $this->tokenRegistration->getId(),
+                            ]
+                        );
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Logger::ERROR,
+                            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
+                            [
+                                'token_registration_id' => $this->tokenRegistration->getPublicId(),
+                            ]
+                        );
 
-                    $this->trace->info(
-                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-                        [
-                            'token.registration_id' => $this->tokenRegistration->getId()
-                        ]
-                    );
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        null,
-                        TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
-                        [
-                            'token_registration_id' => $this->tokenRegistration->getPublicId(),
-                        ]
-                    );
+                    }
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS
+            );
 
-                    $this->delete();
-                }
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS
-        );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
+                [
+                    'token_registration_id' => $this->tokenRegistration->getPublicId(),
+                ]
+            );
+
+            $this->delete();
+        }
+
+
     }
 }

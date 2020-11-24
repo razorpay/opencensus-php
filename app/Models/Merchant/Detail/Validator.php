@@ -41,7 +41,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
-    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please add another bank a/c or contact support.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
@@ -132,7 +132,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                            => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                            => 'filled|max:255',
+        Entity::BUSINESS_NAME                            => 'sometimes|max:255',
         Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
         Entity::BUSINESS_DBA                             => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                         => 'sometimes|active_url|max:255|nullable',
@@ -279,6 +279,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $instantActivationRules = [
+        Entity::COMPANY_CIN                 => ['sometimes', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
         Entity::COMPANY_PAN                 => 'sometimes|max:255|companyPan',
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
@@ -340,6 +341,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
         Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
+        Entity::BUSINESS_NAME                            => 'sometimes|string|max:255',
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
         Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'filled|custom',
         Entity::BANK_DETAILS_VERIFICATION_STATUS         => 'filled|custom',
@@ -463,6 +465,10 @@ class Validator extends Base\Validator
 
     protected static $searchBusinessDetailsRules = [
       Constants::SEARCH_STRING  => 'required|string|max:25'
+    ];
+
+    protected static $companySearchRules = [
+        Constants::SEARCH_STRING  => 'required|string|min:3'
     ];
 
     protected function validateRegisteredBusinessRules(array $input)

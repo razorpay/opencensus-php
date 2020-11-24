@@ -29,7 +29,9 @@ class RefundController extends Controller
 
     public function getRefund($id)
     {
-        $refunds = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $refunds = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($refunds);
     }
@@ -113,23 +115,6 @@ class RefundController extends Controller
     public function postGatewayRefundRecord($gateway)
     {
         $data = $this->service()->createGatewayRefundRecords($gateway);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * In case a refund is successful on the gateway side and is not able
-     * to record on the api side for some reason (like db lock timeout),
-     * we use this route to record it on the api side.
-     * This can actually get handled by billdesk recon itself.
-     * But, in case a refund is made before the money is settled to us,
-     * the refund is in cancelled state and not in refunded state. This
-     * means that we do not get it in the recon files.
-     *
-     */
-    public function postCreateBilldeskCancelledRefunds()
-    {
-        $data = $this->service()->createBilldeskCancelledRefunds();
 
         return ApiResponse::json($data);
     }

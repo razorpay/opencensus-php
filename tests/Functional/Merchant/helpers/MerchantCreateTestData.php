@@ -695,12 +695,18 @@ return [
                 'allow_reversals'    => true,
             ],
         ],
-        'response' => [
-            'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
-                'email' => 'linkedaccount@razorpay.com',
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DASHBOARD_ACCESS_REQUIRED_TO_ALLOW_REVERSALS,
+                ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DASHBOARD_ACCESS_REQUIRED_TO_ALLOW_REVERSALS,
         ],
     ],
 
@@ -895,6 +901,38 @@ return [
                 'amount'           => 0,
                 'processed_amount' => 0,
                 'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountFromBatch' => [
+        'request' => [
+            'url' => '/linked_accounts/batch',
+            'method' => 'post',
+            'content' => [
+                'account_name'      => 'LA_1',
+                'account_email'     => 'la.1@rzp.com',
+                'dashboard_access'  => 0,
+                'customer_refunds'  => 0,
+                'business_name'     => 'Business',
+                'business_type'     => 'individual',
+                'ifsc_code'         => 'SBIN0000002',
+                'account_number'    => '9876543210',
+                'beneficiary_name'  => 'Beneficiary'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_name'      => 'LA_1',
+                'account_email'     => 'la.1@rzp.com',
+                'dashboard_access'  => '0',
+                'customer_refunds'  => '0',
+                'business_name'     => 'Business',
+                'business_type'     => 'individual',
+                'ifsc_code'         => 'SBIN0000002',
+                'account_number'    => '9876543210',
+                'beneficiary_name'  => 'Beneficiary',
+                'account_status'    => 'Activated',
             ],
         ],
     ],

@@ -14,9 +14,10 @@ class KafkaMessageProcessor extends Job
      * Message Processor for Kafka Message,
      * Identifies and call modules/service based on the topicName
      *
-     * @param string $topic
-     * @param array $payload
+     * @param string      $topic
+     * @param array       $payload
      * @param string|null $mode
+     *
      * @return bool <TRUE/FALSE> - True - processing success, False - in case of failure
      */
     public function process(string $topic, array $payload, string $mode = null): bool
@@ -31,13 +32,14 @@ class KafkaMessageProcessor extends Job
         {
             $traceTopicDetails = [
                 'topic_name' => $topic,
-                'mode' => $this->mode,
-                'payload' => $payload
+                'mode'       => $this->mode,
+                'payload'    => $payload
             ];
 
-            $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD,  $traceTopicDetails);
+            $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD, $traceTopicDetails);
 
-            switch ($topic) {
+            switch ($topic)
+            {
                 //
                 // BVS Validation Results
                 //
@@ -45,8 +47,8 @@ class KafkaMessageProcessor extends Job
 
                     $tracePayload = [
                         'job_attempts' => $this->attempts(),
-                        'mode' => $this->mode,
-                        'payload' => $payload['data'],
+                        'mode'         => $this->mode,
+                        'payload'      => $payload['data'],
                     ];
 
                     $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
@@ -56,6 +58,7 @@ class KafkaMessageProcessor extends Job
                     return $core->process($payload['data']);
                 default:
                     $this->trace->error('no processor defined for the topic - ' . $topic);
+
                     return false;
             }
         }
@@ -65,6 +68,7 @@ class KafkaMessageProcessor extends Job
                 $e,
                 null,
                 TraceCode::KAFKA_MESSAGE_PROCESSING_ERROR);
+
             return true;
         }
     }

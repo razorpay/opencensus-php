@@ -55,6 +55,31 @@ return [
         ]
     ],
 
+    'testPreSignupSourceInfoStoredAfterRegistrationForBanking' => [
+        'request' => [
+            'url' => '/users/register',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'id'                    => '100002Razorpay',
+                'name'                  => 'nial',
+                'email'                 => 'nial@example.com',
+                'password'              => 'blahblah123',
+                'password_confirmation' => 'blahblah123',
+                'contact_mobile'        => '9999999999',
+                'confirm_token'         => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'nial@example.com',
+            ]
+        ]
+    ],
+
 
     'testRegister'  => [
         'request'  => [
@@ -115,6 +140,49 @@ return [
                         'archived_at'  => null,
                         'suspended_at' => null,
                         'role'         => 'owner',
+                    ],
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetAfterStoringPreSignUpSourceInfo' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'role'                 => 'owner',
+                    ],
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'banking_role'         => 'owner',
+                        'attributes'           => [
+                            'items'     => [
+                                [
+                                    'type'  => 'ca_page_visited',
+                                    'value' => 'true'
+                                ]
+                            ]
+                        ]
                     ],
                 ],
                 'invitations'             => [
@@ -1846,7 +1914,7 @@ return [
 
     'optInStatusForWhatsappStorkExpectations' => [
         'expected_request' => [
-            'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus',
+            'path'    => '/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent',
             'payload' => [
                 'phone_number' => '9999999999',
                 'source'       => 'api.admin.test.sms',
@@ -1858,6 +1926,12 @@ return [
                 'consent_status' => false,
                 'phone_number'   => '9999999999',
             ],
+        ],
+    ],
+
+    'testGetUserAndCheckEnabledMethods'   => [
+        'response'      => [
+                'content'     => [],
         ],
     ],
 ];

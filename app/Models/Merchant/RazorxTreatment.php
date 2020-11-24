@@ -47,6 +47,10 @@ final class RazorxTreatment
 
     const BVS_RULE_NEW_VERSION = "bvs_rule_new_version";
 
+    // this experiment is used to enable/disable company search
+
+    const BVS_COMPANY_SEARCH = "bvs_company_search";
+
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
@@ -180,4 +184,16 @@ final class RazorxTreatment
     const PAYMENT_STATUS_PENDING_CALCULATION = 'payment_status_pending_calculation';
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
+
+    // experiment to enable request logging
+    const REQUEST_LOG = 'request_log';
+
+    // experiment to enable whatsapp notifications and also refactoring notifications;
+    const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
+
+    // experiment to enable whatsapp notifications for settlements
+    const WHATSAPP_NOTIFICATIONS_SETTLEMENTS = 'whatsapp_notification_enablement';
+
+    // release duplicate receipt check in refunds only for Google merchant as of now
+    const DUPLICATE_RECEIPT_CHECK = 'duplicate_receipt_check';
 }

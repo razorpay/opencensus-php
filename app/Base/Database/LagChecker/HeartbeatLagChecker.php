@@ -278,7 +278,7 @@ class HeartbeatLagChecker implements LagChecker
                         UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 +
                         SUBSTR(ts, 21, 6))
                      ) / 1000) AS replica_lag_milli, ts, CONNECTION_ID() as connection_id
-                FROM heartbeat.heartbeat ORDER BY ts DESC
+                FROM heartbeat ORDER BY ts DESC
                 LIMIT 1';
 
         try

@@ -253,6 +253,8 @@ class Entity extends Base\PublicEntity
     const CREDIT_BALANCE            = 'credit_balance';
     const BULK_PAYOUTS_USER_TYPE    = 'bulk_payouts_user_type';
 
+    const ALLOW_REVERSALS           = 'allow_reversals';
+
     protected $entity = 'merchant';
 
     /**
@@ -2715,5 +2717,10 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function merchantNotificationConfigs()
+    {
+        return $this->hasMany(Merchant\MerchantNotificationConfig\Entity::class);
     }
 }

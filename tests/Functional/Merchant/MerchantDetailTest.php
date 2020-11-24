@@ -539,6 +539,20 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testMerchantDetailsPatchBusinessNamePresent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
     public function testMerchantDetailsPatchValidStatusChange()
     {
         $attributes = [
@@ -2205,17 +2219,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails[Entity::POI_VERIFICATION_STATUS], $data['new_verification_status']);
     }
 
-    public function testCanSubmitAutoKycVerificationStatusIncorrect()
-    {
-        $input = [
-            'poi_verification_status'         => 'incorrect_details',
-            'company_pan_verification_status' => 'verified',
-            'business_type'                   => '4'
-        ];
-
-        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'submitL2FormCanSubmitFalse');
-    }
-
     public function testCanSubmitAutoKycVerificationStatusCorrectDetails()
     {
         $input = [
@@ -2264,6 +2267,63 @@ class MerchantDetailTest extends OAuthTestCase
                                                   [
                                                       'artefact_type'   => 'business_pan',
                                                       'validation_unit' => 'proof'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForCin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '4',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_cin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'cin',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForGstin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '1',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_gstin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'gstin',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForLlpin()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = [
+            'business_type' => '6',
+            'merchant_id'   => $mid,
+        ];
+
+        $this->mockRazorX('testSubmit', 'bvs_cin_validation', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'llp_deed',
+                                                      'validation_unit' => 'identifier'
                                                   ]);
     }
 
@@ -2319,6 +2379,8 @@ class MerchantDetailTest extends OAuthTestCase
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
 
         $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+
+        $this->assertNotNull($bvsValidation);
 
         $expectedValidationValues = [
             'artefact_type'     => $validationInput['artefact_type'],

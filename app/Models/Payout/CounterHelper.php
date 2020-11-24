@@ -346,7 +346,7 @@ class CounterHelper extends Base\Core
         $payoutStateChangeMonth = $payoutStateChangeDate->firstOfMonth()->getTimestamp();
 
         $this->trace->info(
-            TraceCode::FREE_PAYOUTS_CONSUMED_RESET_CHECK,
+            TraceCode::FREE_PAYOUTS_CONSUMED_DECREMENT_CHECK,
             [
                 Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
                 Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,

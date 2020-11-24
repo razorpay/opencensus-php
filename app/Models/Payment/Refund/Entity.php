@@ -102,6 +102,8 @@ class Entity extends Base\PublicEntity
     const SPEED            = 'speed';
     const PROCESSED_SOURCE = 'processed_source';
 
+    // Relations
+    const TRANSACTION           = 'transaction';
 
     const PUBLIC_STATUS = 'public_status';
 
@@ -243,6 +245,16 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
     ];
 
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::TRANSACTION,
+    ];
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -308,6 +320,23 @@ class Entity extends Base\PublicEntity
         $this->getValidator()->setPayment($payment);
 
         return parent::build($input);
+    }
+
+    /**
+     * @param array $response
+     * @return mixed
+     */
+    public function processArrayPublicAndReturn(array $response)
+    {
+        $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPendingStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::REFUND_PENDING_STATUS);
+
+        $data = [
+            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
+            Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED => $refundPendingStatusFeatureEnabled,
+        ];
+
+        return $this->getPublicStatus($response, $data);
     }
 
     protected function generateAmount($input)
@@ -1342,16 +1371,18 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $refundPublicStatusFeatureEnabled  = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
-        $refundPendingStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::REFUND_PENDING_STATUS);
+        return $this->processArrayPublicAndReturn($response);
+    }
 
-        $data = [
-            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED  => $refundPublicStatusFeatureEnabled,
-            Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED => $refundPendingStatusFeatureEnabled,
-        ];
+    /**
+     * Overriding this function to get public expanded refund status from scrooge
+     *
+     * @return array
+     */
+    public function toArrayPublicWithExpand()
+    {
+        $response = parent::toArrayPublicWithExpand();
 
-        $scroogeResponse = $this->getPublicStatus($response, $data);
-
-        return $scroogeResponse;
+        return $this->processArrayPublicAndReturn($response);
     }
 }

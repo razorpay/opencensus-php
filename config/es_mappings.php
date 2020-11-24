@@ -281,6 +281,21 @@ return [
             'balance_id' => [
                 'type'  => 'keyword',
             ],
+            'name' => [
+                'type' => 'text',
+            ],
+            'description' => [
+                'type' => 'text',
+            ],
+            'status' => [
+                'type' => 'keyword',
+            ],
+            'email' => [
+                'type' => 'text',
+            ],
+            'contact' => [
+                'type' => 'text',
+            ]
         ],
     ],
 

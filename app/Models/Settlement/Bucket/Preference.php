@@ -287,9 +287,11 @@ class Preference extends Base\Core
             Merchant\Preferences::MID_PAISABAZAAR,
         ];
 
+        //Ref: https://razorpay.slack.com/archives/C01F6GQPD9A/p1605701696001600?thread_ts=1605701546.001400&cid=C01F6GQPD9A
+        // please go through the above thread before updating
         if ($parentMerchantId === Merchant\Preferences::MID_WEALTHY)
         {
-            $hour = Constants::TWELVE_PM;
+            $hour = Constants::ONE_PM;
         }
         // matched merchant will have only one settlement per day (@ 1 PM)
         else if ($parentMerchantId === Merchant\Preferences::MID_PAISABAZAAR)

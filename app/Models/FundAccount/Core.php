@@ -150,6 +150,8 @@ class Core extends Base\Core
                 E::FUND_ACCOUNT => $fundAccount->getId(),
             ]);
 
+        Metric::pushCreateMetrics($fundAccount);
+
         return $fundAccount;
     }
 

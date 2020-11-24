@@ -24,10 +24,10 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getKeyValues(Merchant\Entity $merchant, string $product, string $group, array $types = [])
+    public function getKeyValues(string $merchantId, string $product, string $group, array $types = [])
     {
         $query = $this->newQuery()
-                       ->where(Entity::MERCHANT_ID, $merchant->getId())
+                       ->where(Entity::MERCHANT_ID, $merchantId)
                        ->where(Entity::PRODUCT, $product)
                        ->where(Entity::GROUP, $group);
 

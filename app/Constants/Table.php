@@ -5,54 +5,55 @@ namespace RZP\Constants;
 class Table
 {
     // Core entities
-    const P2P                   = 'p2p';
-    const VPA                   = 'vpas';
-    const IIN                   = 'iins';
-    const MPAN                  = 'mpan';
-    const KEY                   = 'keys';
-    const RISK                  = 'risk';
-    const PLAN                  = 'plans';
-    const CARD                  = 'cards';
-    const ITEM                  = 'items';
-    const USER                  = 'users';
-    const OFFER                 = 'offers';
-    const ORDER                 = 'orders';
-    const TOKEN                 = 'tokens';
-    const BLADE                 = 'blade';
-    const ADDON                 = 'addons';
-    const GEO_IP                = 'geo_ips';
-    const COUPON                = 'coupons';
-    const BATCH                 = 'batches';
-    const DEVICE                = 'devices';
-    const PAYOUT                = 'payouts';
-    const REFUND                = 'refunds';
-    const REPORT                = 'reports';
-    const CONTACT               = 'contacts';
-    const COUNTER               = 'counters';
-    const QR_CODE               = 'qr_code';
-    const BALANCE               = 'balance';
-    const PRICING               = 'pricing';
-    const PRODUCT               = 'product';
-    const INVOICE               = 'invoices';
-    const PAYMENT               = 'payments';
-    const FEATURE               = 'features';
-    const DISPUTE               = 'disputes';
-    const ADDRESS               = 'addresses';
-    const DISCOUNT              = 'discounts';
-    const MERCHANT              = 'merchants';
-    const COMMISSION            = 'commissions';
-    const PAYOUT_LINK           = 'payout_links';
-    const PAYOUT_SOURCE         = 'payout_sources';
-    const FEE_RECOVERY          = 'fee_recovery';
-    const LEGAL_ENTITY          = 'legal_entity';
-    const FUND_ACCOUNT          = 'fund_accounts';
-    const PAYMENT_LINK          = 'payment_links';
-    const ENTITY_ORIGIN         = 'entity_origins';
-    const BALANCE_CONFIG        = 'balance_config';
-    const OFFLINE_DEVICE        = 'offline_devices';
-    const IDEMPOTENCY_KEY       = 'idempotency_keys';
-    const PAYMENT_PAGE_ITEM     = 'payment_page_items';
-    const LOW_BALANCE_CONFIG    = 'low_balance_configs';
+    const P2P                          = 'p2p';
+    const VPA                          = 'vpas';
+    const IIN                          = 'iins';
+    const MPAN                         = 'mpan';
+    const KEY                          = 'keys';
+    const RISK                         = 'risk';
+    const PLAN                         = 'plans';
+    const CARD                         = 'cards';
+    const ITEM                         = 'items';
+    const USER                         = 'users';
+    const OFFER                        = 'offers';
+    const ORDER                        = 'orders';
+    const TOKEN                        = 'tokens';
+    const BLADE                        = 'blade';
+    const ADDON                        = 'addons';
+    const GEO_IP                       = 'geo_ips';
+    const COUPON                       = 'coupons';
+    const BATCH                        = 'batches';
+    const DEVICE                       = 'devices';
+    const PAYOUT                       = 'payouts';
+    const REFUND                       = 'refunds';
+    const REPORT                       = 'reports';
+    const CONTACT                      = 'contacts';
+    const COUNTER                      = 'counters';
+    const QR_CODE                      = 'qr_code';
+    const BALANCE                      = 'balance';
+    const PRICING                      = 'pricing';
+    const PRODUCT                      = 'product';
+    const INVOICE                      = 'invoices';
+    const PAYMENT                      = 'payments';
+    const FEATURE                      = 'features';
+    const DISPUTE                      = 'disputes';
+    const ADDRESS                      = 'addresses';
+    const DISCOUNT                     = 'discounts';
+    const MERCHANT                     = 'merchants';
+    const COMMISSION                   = 'commissions';
+    const PAYOUT_LINK                  = 'payout_links';
+    const PAYOUT_SOURCE                = 'payout_sources';
+    const FEE_RECOVERY                 = 'fee_recovery';
+    const LEGAL_ENTITY                 = 'legal_entity';
+    const FUND_ACCOUNT                 = 'fund_accounts';
+    const PAYMENT_LINK                 = 'payment_links';
+    const ENTITY_ORIGIN                = 'entity_origins';
+    const BALANCE_CONFIG               = 'balance_config';
+    const OFFLINE_DEVICE               = 'offline_devices';
+    const IDEMPOTENCY_KEY              = 'idempotency_keys';
+    const PAYMENT_PAGE_ITEM            = 'payment_page_items';
+    const LOW_BALANCE_CONFIG           = 'low_balance_configs';
+    const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_configs';
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
     // sub-merchants as well as linked accounts. For more information, please
@@ -299,6 +300,9 @@ class Table
     const WORKFLOW_STATE_MAP             = 'workflow_state_map';
 
     const BVS_VALIDATION = 'bvs_validation';
+
+    // API Request Log
+    const REQUEST_LOG = 'request_logs';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                        => self::MIGS,

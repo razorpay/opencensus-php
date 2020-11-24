@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID       => 'sometimes|string|size:14',
             Entity::TRANSACTION_ID  => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
+            self::EXPAND_EACH       => 'filled|string|in:transaction.settlement',
         ],
     ];
 
@@ -24,6 +25,9 @@ class Fetch extends BaseFetch
         AuthType::PRIVATE_AUTH => [
             Entity::ENTITY_TYPE,
             Entity::ENTITY_ID,
+        ],
+        AuthType::PROXY_AUTH => [
+           self::EXPAND_EACH,
         ],
     ];
 }

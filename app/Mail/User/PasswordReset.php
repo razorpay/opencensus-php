@@ -19,11 +19,11 @@ class PasswordReset extends Base\Mailable
 
     protected $product;
 
-    public function __construct(User\Entity $user, $org, $product = Product::PRIMARY)
+    public function __construct($user, $org, $product = Product::PRIMARY)
     {
         parent::__construct();
 
-        $this->user = $user->toArrayPublic();
+        $this->user = $user;
 
         $this->token = (new User\Service)->getTokenWithExpiry(
                             $this->user['id'],

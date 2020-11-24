@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Customer;
 
 class EsRepository extends Base\EsRepository
 {
@@ -12,5 +13,9 @@ class EsRepository extends Base\EsRepository
         Entity::BALANCE_ID,
         Entity::NOTES,
         Entity::CREATED_AT,
+        Entity::DESCRIPTION,
+        Customer\Entity::EMAIL,
+        Customer\Entity::NAME,
+        Customer\Entity::CONTACT,
     ];
 }

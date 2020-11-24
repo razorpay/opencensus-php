@@ -405,7 +405,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'cf_refund_id' => null,
                     'cf_order_id' => null,
                     'cf_payment_email' => 'moulikak@razorpay.com',
-                    'cf_payment_phone' => '+919490445145'
+                    'cf_payment_phone' => ''
                 ],
                 'created_at' => '2020-10-28T11:02:50Z',
                 'updated_at' => '2020-10-28T11:02:51Z'
@@ -435,7 +435,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'cf_refund_id' => null,
                     'cf_order_id' => null,
                     'cf_payment_email' => 'moulikak@razorpay.com',
-                    'cf_payment_phone' => '+919490445145'
+                    'cf_payment_phone' => ''
                 ],
                 'created_at' => '2020-10-28T11:02:50Z',
                 'updated_at' => '2020-10-28T11:02:51Z'
@@ -463,36 +463,86 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
 
     public function fetchTicketById(string $ticketId, $urlKey = 'url')
     {
-        return [
-            'priority' => 1,
-            'requester_id' => 42020620300,
-            'source' => 2,
-            'company_id' => null,
-            'status' => 3,
-            'subject' => '',
-            'id' => 3328,
-            'type' => null,
-            'due_by' => '2020-11-02T11:02:50Z',
-            'fr_due_by' => '2020-10-29T11:02:50Z',
-            'is_escalated' => false,
-            'custom_fields' => [
-                'cf_category' => null,
-                'cf_merchant_id' => 'CCOhinUeUsT8HN',
-                'cf_source' => null,
-                'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
-                'cf_payment_method' => null,
-                'cf_product' => null,
-                'cf_escalation_reason' => null,
-                'cf_platform' => null,
-                'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
-                'cf_refund_id' => null,
-                'cf_order_id' => null,
-                'cf_payment_email' => 'moulikak@razorpay.com',
-                'cf_payment_phone' => '+919490445145'
-            ],
-            'created_at' => '2020-10-28T11:02:50Z',
-            'updated_at' => '2020-10-28T11:02:51Z'
-        ];
+        switch ($ticketId)
+        {
+            case 3328:
+            case 3329:
+                return [
+                    'priority' => 1,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 3,
+                    'subject' => '',
+                    'id' => 3328,
+                    'type' => null,
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'requester' => [
+                        'id' => 42020620300,
+                        'name' => 'Some name',
+                        'email' => 'thatemail@razorpay.com',
+                        'mobile' => null,
+                        'phone' => null
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            default:
+                return [
+                    'priority' => 1,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 3,
+                    'subject' => '',
+                    'id' => 3330,
+                    'type' => null,
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'requester' => [
+                        'id' => 42020620300,
+                        'name' => 'Some other name',
+                        'email' => 'someotheremail@razorpay.com',
+                        'mobile' => null,
+                        'phone' => null
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+        }
     }
 
     public function updateTicketV2(string $ticketId, array $input, $urlKey = 'url')
@@ -526,7 +576,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                         'cf_refund_id' => null,
                         'cf_order_id' => null,
                         'cf_payment_email' => 'moulikak@razorpay.com',
-                        'cf_payment_phone' => '+919490445145'
+                        'cf_payment_phone' => ''
                     ],
                     'created_at' => '2020-10-28T11:02:50Z',
                     'updated_at' => '2020-10-28T11:02:51Z'
@@ -534,5 +584,23 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
             default:
                 return [];
         }
+    }
+
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    {
+        return [
+            'body' => '<div>some description</div>',
+            'body_text' => 'some description',
+            'id' => 42068693079,
+            'incoming' => false,
+            'private' => false,
+            'user_id' => 42005730186,
+            'support_email' => null,
+            'ticket_id' => 3731,
+            'to_emails' => [],
+            'created_at' => '2020-11-11T07 =>00 =>35Z',
+            'updated_at' => '2020-11-11T07 =>00 =>35Z',
+            'attachments' => []
+        ];
     }
 }

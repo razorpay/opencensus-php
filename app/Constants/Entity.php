@@ -152,11 +152,12 @@ class Entity
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
 
-    const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
-    const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
-    const PAYMENT_META               = 'payment_meta';
-    const LOW_BALANCE_CONFIG         = 'low_balance_config';
-    const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
+    const MERCHANT_FRESHDESK_TICKETS   = 'merchant_freshdesk_tickets';
+    const MERCHANT_ATTRIBUTE           = 'merchant_attribute';
+    const PAYMENT_META                 = 'payment_meta';
+    const LOW_BALANCE_CONFIG           = 'low_balance_config';
+    const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
+    const VIRTUAL_ACCOUNT_PRODUCTS     = 'virtual_account_products';
 
     const WORKFLOW_CONFIG            = 'workflow_config';
     const WORKFLOW_ENTITY_MAP        = 'workflow_entity_map';
@@ -400,6 +401,9 @@ class Entity
     const MERCHANT_DOCUMENT = 'merchant_document';
     const BVS_VALIDATION    = 'bvs_validation';
 
+    //api request log entity
+    const REQUEST_LOG = 'request_log';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -592,6 +596,8 @@ class Entity
         self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
         self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
 
+        self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
+
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
         self::ATOM                   => \RZP\Gateway\Atom::class,
@@ -606,6 +612,7 @@ class Entity
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
+        self::UPI_JUSPAY             => \RZP\Gateway\Upi\Juspay::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
@@ -680,7 +687,6 @@ class Entity
         self::WALLET_PHONEPESWITCH   => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
-        self::UPI_JUSPAY             => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
@@ -789,6 +795,7 @@ class Entity
         self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
         self::UPI_MOZART             => \RZP\Gateway\Upi\Base::class,
+        self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

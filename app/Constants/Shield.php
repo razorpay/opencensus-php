@@ -25,6 +25,9 @@ final class Shield
     const PARTNER_WHITELISTED_DOMAINS  = 'partner_whitelisted_domains';
     const MERCHANT_CREATED_AT          = 'merchant_created_at';
     const MERCHANT_ACTIVATED_AT        = 'merchant_activated_at';
+    const MERCHANT_PAN                 = 'merchant_pan';
+    const MERCHANT_BANK_ACCOUNT        = 'merchant_bank_account';
+    const MERCHANT_GSTIN               = 'merchant_gstin';
     const ID                           = 'id';
     const AMOUNT                       = 'amount';
     const BASE_AMOUNT                  = 'base_amount';
@@ -32,6 +35,7 @@ final class Shield
     const RECURRING                    = 'recurring';
     const CONTACT                      = 'contact';
     const INTERNATIONAL                = 'international';
+    const CALLBACK_URL                 = 'callback_url';
     const EMAIL                        = 'email';
     const METHOD                       = 'method';
     const BANK                         = 'bank';

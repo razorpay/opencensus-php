@@ -3,9 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Payu;
 
 use RZP\Models\Bank\IFSC;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class PayuGatewayTest extends NbPlusPaymentServiceTest
+class PayuGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

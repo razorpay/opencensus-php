@@ -19,6 +19,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -543,6 +544,9 @@ class Core extends Base\Core
 
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
+        // if funds are on hold, this will throw an exception -> doesnt allow bank account update if funds are on hold
+        $this->validateMerchantFundsAreNotOnHold($merchant);
+
         $this->validateBankAccountUpdatePennyTestingNotInProgress($merchant);
 
         // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
@@ -554,6 +558,8 @@ class Core extends Base\Core
         $newBankAccount = $this->repo->beginTransactionAndRollback(function() use ($input, $merchant) {
             return $this->createBankAccount($input, $merchant, $this->mode);
         });
+
+        $this->validateNotLaxmiVilasBank($newBankAccount);
 
         (new Detail\PennyTesting())
             ->setBankAccount($newBankAccount)
@@ -586,6 +592,8 @@ class Core extends Base\Core
             case Detail\BankDetailsVerificationStatus::VERIFIED:
             {
                 $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
+
+                $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
 
                 break;
             }
@@ -662,7 +670,17 @@ class Core extends Base\Core
         }
     }
 
-
+    protected function validateMerchantFundsAreNotOnHold(MerchantEntity $merchant)
+    {
+        if ($merchant->getHoldFunds() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+            null,
+            null,
+            "Bank account can not be updated due to funds are on hold");
+        }
+    }
 
     protected function getBankAccountUpdatePennyTestingData(MerchantEntity $merchant)
     {
@@ -724,5 +742,13 @@ class Core extends Base\Core
         ];
 
         return $data;
+    }
+
+    protected function validateNotLaxmiVilasBank($newBankAccount): void
+    {
+        if (($newBankAccount->getBankCode() === Netbanking::LAVB_R) or
+            ($newBankAccount->getBankCode() === Netbanking::LAVB_C)) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED);
+        }
     }
 }

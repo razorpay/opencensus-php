@@ -83,14 +83,14 @@ class Core extends Base\Core
     {
         $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
 
-        $benificiaryName = str_limit(preg_replace('/[^a-zA-Z0-9 ]+/',
+        $beneficiaryName = trim(str_limit(preg_replace('/[^a-zA-Z0-9 ]+/',
                                                   '',
                                                   $accountDetails[BankAccount\Entity::BENEFICIARY_NAME]),
                                                   50,
-                                                  '');
+                                                  ''));
 
         return [
-            'name'           => trim($benificiaryName) ?: 'Razorpay',
+            'name'           => strlen($beneficiaryName) > 4 ? $beneficiaryName : 'Razorpay',
             'ifsc'           => $accountDetails[BankAccount\Entity::IFSC_CODE],
             'account_number' => $accountDetails[BankAccount\Entity::ACCOUNT_NUMBER],
             'account_type'   => self::ACCOUNT_TYPE,

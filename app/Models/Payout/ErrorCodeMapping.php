@@ -161,6 +161,8 @@ class ErrorCodeMapping
         'PBANK_VALIDATION_ERROR'                => 'Invalid Beneficiary details',
         'VERIFICATION_FAILED'                   => 'Payout failed. Contact support for help.',
         'BBANK_GATEWAY_THROTTLED_FAILURE'       => 'Beneficiary bank is offline. Reinitiate transfer after 30 min.',
+        'BBANK_TECHNICAL_FAILURE'               => 'Payout failed at beneficiary bank due to technical issue. Please retry',
+        'BENE_INCORRECT_IFSC'                   => 'Payout failed as the IFSC code is invalid. Please change the IFSC code and retry.'
     ];
 
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help';

@@ -96,7 +96,7 @@ class Service extends Base\Service
             $input['d2c_bureau_report_id'] = Entity::verifyIdAndStripSign($input['d2c_bureau_report_id']);
         }
 
-        $reportValidity = Carbon::now(Timezone::IST)->subDays(15)->getTimestamp();
+        $reportValidity = Carbon::now(Timezone::IST)->subDays(25)->getTimestamp();
 
         $bureauReport = $this->repo->d2c_bureau_report->findByParams($input, $reportValidity);
 
@@ -112,7 +112,7 @@ class Service extends Base\Service
     {
         $bureauReport = $bureauReport->toArrayForDashboard();
 
-        if ((empty($bureauReport[Entity::NTC_SCORE]) === false) || 
+        if ((empty($bureauReport[Entity::NTC_SCORE]) === false) ||
              ($bureauReport[Entity::NTC_SCORE] === 0))
         {
             $bureauReport['ntc_score'] = strval($bureauReport['ntc_score']);

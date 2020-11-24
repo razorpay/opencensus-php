@@ -21,10 +21,10 @@ use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
 use RZP\Models\Order\ProductType;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
-use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
@@ -273,7 +273,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $this->app['module']->subscription->paymentProcess($paymentPayload);
         }
 
         $this->dispatchEventToStork($payload);
@@ -287,7 +287,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $this->app['module']->subscription->paymentProcess($paymentPayload);
         }
 
         $this->dispatchEventToStork($payload);
@@ -715,6 +715,55 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getTerminalFailedPayload($terminal);
         $this->dispatchEventToStork($payload);
+    }
+
+    protected function onBankingAccountsIssued($merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
+
+        $va = current(array_filter($bankingAccounts, function($account) {
+            return $account['account_type'] === 'nodal';
+        }));
+
+        $ca = array_filter($bankingAccounts, function($account) {
+            return ($account['account_type'] === 'current' and
+                    $account['status'] === 'activated');
+        });
+
+        $caPayload = $this->generateCurrentAccountsPayload($ca);
+
+        $vaPayload = [
+            Entity::ACCOUNT_NUMBER => $va[Entity::ACCOUNT_NUMBER],
+        ];
+
+        $payload = [
+            'accounts' => [
+                'virtual' => $vaPayload,
+            ]
+        ];
+
+        if (empty($caPayload) === false)
+        {
+            $payload['accounts'] += ['current' => $caPayload];
+        }
+
+        $this->storkProduct = Constants\Product::BANKING;
+
+        return $this->dispatchEventToStork($payload);
+    }
+
+    protected function generateCurrentAccountsPayload(array $bankingAccounts = [])
+    {
+        $ca = [];
+
+        foreach ($bankingAccounts as $ba)
+        {
+            array_push($ca, [Entity::CHANNEL => $ba[Entity::CHANNEL], Entity::ACCOUNT_NUMBER => $ba[Entity::ACCOUNT_NUMBER]]);
+        }
+
+        return $ca;
     }
 
     protected function getP2pPayload($p2p)

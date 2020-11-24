@@ -422,4 +422,13 @@ class Repository extends Base\Repository
                     ->toArray();
 
     }
+
+    public function fetchMerchantBankingAccounts(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get([Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_TYPE, Entity::CHANNEL, Entity::STATUS])
+                    ->toArray();
+    }
 }

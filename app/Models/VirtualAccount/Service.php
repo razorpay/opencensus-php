@@ -222,6 +222,12 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_EDIT_REQUEST,
+                           [
+                               'id'   => $id,
+                               'data' => $input
+                           ]);
+
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
@@ -229,6 +235,10 @@ class Service extends Base\Service
         $virtualAccount->getValidator()->validateOfPrimaryBalance();
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_EDITED,
+                           $virtualAccount->toArrayPublic()
+        );
 
         return $virtualAccount->toArrayPublic();
     }

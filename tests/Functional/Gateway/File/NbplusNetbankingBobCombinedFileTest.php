@@ -8,9 +8,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingBobCombinedFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingBobCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {

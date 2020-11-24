@@ -178,3 +178,44 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/ap
         }
     }
 }'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_test/_mapping/api_virtual_account_test" -d '{
+    "properties": {
+        "description": {
+            "type": "text"
+        },
+        "status": {
+            "type": "keyword"
+        },
+        "email": {
+            "type": "text"
+        },
+        "contact": {
+            "type": "text"
+        },
+        "name": {
+            "type": "text"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_mapping/api_virtual_account_live" -d '{
+    "properties": {
+        "description": {
+            "type": "text"
+        },
+        "status": {
+            "type": "keyword"
+        },
+        "email": {
+            "type": "text"
+        },
+        "contact": {
+            "type": "text"
+        },
+        "name": {
+            "type": "text"
+        }
+    }
+}'
+

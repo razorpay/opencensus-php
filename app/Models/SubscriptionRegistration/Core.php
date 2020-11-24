@@ -666,6 +666,14 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($tokenRegistration);
 
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'status'                => 'completed'
+                ]
+            );
+
             return [];
         }
 
@@ -683,6 +691,14 @@ class Core extends Base\Core
         }
 
         $tokenRegistration->incrementAttempts();
+
+        $this->trace->info(
+            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+            [
+                'token.registration_id' => $tokenRegistration->getId(),
+                'status'                => 'increment attempts'
+            ]
+        );
 
         $this->repo->saveOrFail($tokenRegistration);
 

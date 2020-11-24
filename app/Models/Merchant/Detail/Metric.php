@@ -11,7 +11,6 @@ final class Metric
 
     // Counters
     const POI_VERIFICATION_STATUS_TOTAL         = 'poi_verification_status_total';
-    const CIN_VERIFICATION_STATUS_TOTAL         = 'cin_verification_status_total';
     const POA_VERIFICATION_STATUS_TOTAL         = 'poa_verification_status_total';
     const COMPANY_PAN_VERIFICATION_STATUS_TOTAL = 'company_pan_verification_total';
     const GSTIN_VERIFICATION_STATUS_TOTAL       = 'gstin_verification_status_total';
@@ -34,4 +33,10 @@ final class Metric
     const BVS_VALIDATION_RETRY_ATTEMPT_TOTAL  = 'bvs_validation_retry_attempt_total';
     const BVS_RESPONSE_TOTAL                  = 'bvs_response_total';
     const BVS_REQUEST_TOTAL                   = 'bvs_request_total';
+
+    //BVS Company Search Metrics
+    const BVS_COMPANY_SEARCH_RESPONSE_TOTAL = 'bvs_company_search_response_total';
+    const BVS_COMPANY_SEARCH_REQUEST_TOTAL  = 'bvs_company_search_request_total';
+    const BVS_PROBE_API_FAILURE             = 'bvs_probe_api_failure';
+
 }

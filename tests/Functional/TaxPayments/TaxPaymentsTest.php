@@ -547,13 +547,13 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock = Mockery::mock('RZP\Services\TaxPayments');
 
-        $tpMock->shouldReceive('edit')->andReturn([]);
+        $tpMock->shouldReceive('updateChallanFileId')->andReturn([]);
 
         $this->app->instance('tax-payments', $tpMock);
 
         $this->startTest();
 
-        $tpMock->shouldHaveReceived('edit');
+        $tpMock->shouldHaveReceived('updateChallanFileId');
     }
 
     public function testTaxPaymentMarkAsPaidNegative()
@@ -602,5 +602,50 @@ class TaxPaymentsTest extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('addPenalty');
+    }
+
+    public function testTaxPaymentCreateTPCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('create')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('create');
+    }
+
+    public function testTaxPaymentEditTPCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('edit')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('edit');
+    }
+
+    public function testTaxPaymentCancelTPCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('cancel')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('cancel');
     }
 }

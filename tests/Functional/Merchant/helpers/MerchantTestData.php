@@ -1723,6 +1723,31 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountLavbShouldFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'LAVB0000499',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => "We are unable to complete this operation due to the restrictions on Laxmi Vilas Bank's operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
     'testUpdateBankAccountViaPennyTesting' => [
         'request'  => [
             'content' => [
@@ -1763,6 +1788,31 @@ return [
         ],
         'exception' => [
             'internal_error_code' => 'BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
+    'testUpdateBankAccountViaPennyTestingFundsOnHoldFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'Bank account can not be updated due to funds are on hold',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD',
             'class'               => BadRequestException::class,
         ]
     ],
@@ -2190,7 +2240,6 @@ return [
                 ],
                 'disabled' => [
                     'YESB' => 'Yes Bank',
-                    'VIJB' => 'Vijaya Bank',
                 ]
             ],
         ],
@@ -3028,13 +3077,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'ABPB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'AUBL',
                         ],
                     ],
@@ -3232,6 +3274,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'YESB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'HDFC_C',
                         ],
                     ],
                 ],
@@ -3260,13 +3309,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'ABPB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'AUBL',
                         ],
                     ],
@@ -3464,6 +3506,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'YESB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'HDFC_C',
                         ],
                     ],
                 ],
@@ -3682,7 +3731,6 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
-                                'ABPB',
                                 'AUBL',
                                 'BACB',
                                 'BBKM',
@@ -5711,6 +5759,30 @@ return [
             'content' => [
                 'id'                => 'org_100000razorpay',
                 'primary_host_name' => 'dashboard.razorpay.in',
+            ],
+        ],
+    ],
+
+    'testSendBankingAccountsViaWebhook' => [
+        'request'  => [
+            'url'     => '/merchant/10000000000000/banking_accounts/',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSendBankingAccountsViaWebhook1' => [
+        'request'  => [
+            'url'     => '/merchant/10000000000000/banking_accounts/',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

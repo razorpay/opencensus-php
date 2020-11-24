@@ -173,6 +173,8 @@ class Service extends Base\Service
      */
     public function bulkCreate(array $input)
     {
+        $startTime = millitime();
+
         $this->trace->info(
             TraceCode::DISPUTE_BULK_CREATE_REQUEST,
             [
@@ -230,6 +232,15 @@ class Service extends Base\Service
         }
 
         $url = (new File\Service)->generateFile($outputFileData, self::BULK_DISPUTE_CREATE_FILE_NAME);
+
+        $timeTaken = millitime() - $startTime;
+
+        $this->trace->info(
+            TraceCode::BULK_ACTION_RESPONSE_TIME,
+            [
+                'action'          => 'create_dispute',
+                'time_taken'      => $timeTaken,
+            ]);
 
         return [
             'link' => $url,
@@ -319,11 +330,16 @@ class Service extends Base\Service
         return $reason->toArrayPublic();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input = []): array
     {
-        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $dispute->toArrayPublic();
+        if ($this->app['basicauth']->isExpress() === true)
+        {
+            return $dispute->toArrayAdmin();
+        }
+
+        return $dispute->toArrayPublicWithExpand();
     }
 
     public function deleteFile(string $id, string $fileId)
@@ -785,5 +801,12 @@ class Service extends Base\Service
     public function initiateMerchantEmails()
     {
         return $this->core()->initiateMerchantEmails();
+    }
+
+    public function fetchDisputeReasonInternal(string $id): array
+    {
+        $disputeReason = $this->repo->dispute_reason->findOrFail($id);
+
+        return $disputeReason->toArrayAdmin();
     }
 }

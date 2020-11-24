@@ -337,11 +337,11 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="bank_account[ifsc]" size="25" value="" placeholder="IFSC"></td>
         <td><input type="text" name="bank_account[name]" size="25" value="" placeholder="Name"></td>
     </tr>
-<!--    <tr>-->
-<!--        <td colspan='40'>Token recurring:</td>-->
-<!--        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>-->
-<!--        <td><input type="text" name="recurring_token[expire_by]" size="25" value=""></td>-->
-<!--    </tr>-->
+    <tr>
+        <td colspan='40'>Token recurring:</td>
+        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>
+        <td><input type="text" name="recurring_token[expire_by]" size="25" value=""></td>
+    </tr>
     <tr>
         <td colspan="40">Select Auth Type </td>
         <td>

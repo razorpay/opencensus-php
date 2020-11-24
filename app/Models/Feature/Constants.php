@@ -130,6 +130,7 @@ class Constants
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
     const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
+    const VAS_MERCHANT                    = 'vas_merchant';
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
@@ -372,6 +373,16 @@ class Constants
      */
     const USE_SETTLEMENT_ONDEMAND      = 'use_settlement_ondemand';
 
+    /**
+     * Flag to show deductions for instant settlements in dashboard.
+     */
+    const SHOW_ON_DEMAND_DEDUCTION      = 'show_on_demand_deduction';
+
+    /**
+     * Gives access to fetching bank statement using netbanking flow
+     */
+    const ALLOW_NETBANKING_FETCH = 'allow_netbanking_fetch';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -490,10 +501,19 @@ class Constants
 
     const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
 
+   // for sending x banking accounts to pure partner
+    const BANKING_ACCOUNTS_ISSUED = 'banking_accounts_issued';
+
     // feature for enabling refund arn webhook
     const REFUND_ARN_WEBHOOK = 'refund_arn_webhook';
 
     const PL_BATCH_UPLOAD_FEATURE = 'pl_batch_upload_feature';
+
+    /**
+     * Disables settlement sms notifications
+     */
+    const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -672,6 +692,7 @@ class Constants
         self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
+        self::VAS_MERCHANT                    => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
         self::ISSUE_MPANS                     => true,
@@ -730,6 +751,8 @@ class Constants
         self::LOC                             => true,
         self::LOS                             => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
+        self::SHOW_ON_DEMAND_DEDUCTION        => true,
+        self::ALLOW_NETBANKING_FETCH          => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
         self::CAPITAL_CARDS                   => true,
@@ -753,8 +776,10 @@ class Constants
         self::RX_SHOW_PAYOUT_SOURCE           => true,
         self::PAYOUT_CREDITS_NEW_FLOW         => true,
         self::REFUND_AGED_PAYMENTS            => true,
+        self::BANKING_ACCOUNTS_ISSUED         => true,
         self::REFUND_ARN_WEBHOOK              => true,
         self::PL_BATCH_UPLOAD_FEATURE         => true,
+        self::SETTLEMENTS_SMS_STOP            => true,
     ];
 
     // Entity type constants
@@ -984,6 +1009,16 @@ class Constants
             'display_name'  => 'Use the settlement/ondemand route for ondemand settlement',
             'documentation' => '',
         ],
+        self::SHOW_ON_DEMAND_DEDUCTION => [
+            'feature'       => self::SHOW_ON_DEMAND_DEDUCTION,
+            'display_name'  => 'Flag to show deductions for instant settlements in dashboard.',
+            'documentation' => '',
+        ],
+        self::ALLOW_NETBANKING_FETCH => [
+            'feature'       => self::ALLOW_NETBANKING_FETCH,
+            'display_name'  => 'Flag to allow fetching bank statement via netbanking flow',
+            'documentation' => '',
+        ],
         self::NPS_SURVEY_OTHER_PRODUCTS  => [
             'feature'       => self::NPS_SURVEY_OTHER_PRODUCTS,
             'display_name'  => 'NPS Survey for Other Products',
@@ -1048,6 +1083,11 @@ class Constants
             'feature'       => self::PL_BATCH_UPLOAD_FEATURE,
             'display_name'  => 'Enable batch upload for payment links on dashboard',
             'documentation' => '',
+        ],
+        self::SETTLEMENTS_SMS_STOP  => [
+            'feature'       => self::SETTLEMENTS_SMS_STOP,
+            'display_name'  => 'Disable SMS notifications for settlements',
+            'documentation' => '',
         ]
     ];
 
@@ -1082,6 +1122,7 @@ class Constants
         self::SKIP_WF_AT_PAYOUTS,
         self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
+        self::SETTLEMENTS_SMS_STOP,
     ];
 
     /*

@@ -37,6 +37,7 @@ class Issuer
     const CBIN = 'CBIN';    // Central Bank of India
     const IDIB = 'IDIB';    // Indian Bank
     const JAKA = 'JAKA';    // Jammu And Kashmir Bank Ltd
+    const LAVB = 'LAVB';    // Laxmi Vilas Bank Ltd
 
     protected static $issuers = [
         self::ALLA,
@@ -73,6 +74,7 @@ class Issuer
         self::CBIN,
         self::IDIB,
         self::JAKA,
+        self::LAVB,
     ];
 
     public static function getAllIssuers():array

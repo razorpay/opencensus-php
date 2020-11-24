@@ -737,6 +737,9 @@ class Core extends Base\Core
 
         // Additional resources for users.
         $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
+
+        $merchantsUnique = $this->addProductSpecificDetails($merchantsUnique);
+
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -766,6 +769,11 @@ class Core extends Base\Core
                 $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
 
                 $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
+
+                // Attach merchant attributes of specific groups
+                $attributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Entity::X_SIGNUP);
+                $merchant['attributes'] = $attributes->toArrayPublic();
+
 
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
@@ -802,6 +810,31 @@ class Core extends Base\Core
                     ];
             },
             $merchants);
+    }
+
+    protected function addProductSpecificDetails(array $merchants)
+    {
+        try
+        {
+            return array_map(
+                function (array $merchant)
+                {
+                    $merchantEntity = $this->repo->merchant->findOrFailPublic($merchant['id']);
+
+                    $methods = $merchantEntity->getMethods();
+
+                    $merchant['methods'] = $methods;
+
+                    return $merchant;
+                },
+                $merchants);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return $merchants;
+        }
     }
 
     protected function fetchBankingAccountWithBalance($merchantId)

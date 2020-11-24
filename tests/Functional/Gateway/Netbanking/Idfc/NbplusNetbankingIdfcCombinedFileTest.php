@@ -10,9 +10,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Transaction\Statement\Entity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingIdfcCombinedFileTest extends NbPlusPaymentServiceTest{
+class NbplusNetbankingIdfcCombinedFileTest extends NbPlusPaymentServiceNetbankingTest{
 
     public function setUp()
     {

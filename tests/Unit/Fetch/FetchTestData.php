@@ -653,4 +653,6 @@ return [
 
     E::PAYOUT_DOWNTIMES => [],
 
+    E::REQUEST_LOG => [],
+
 ];

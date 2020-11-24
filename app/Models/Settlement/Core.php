@@ -23,6 +23,7 @@ use RZP\Jobs\Settlement\migration;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Notifications\Settlement\Events;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Models\Schedule\Task as scheduleTask;
@@ -30,6 +31,7 @@ use RZP\Jobs\Settlement\TransactionMigration;
 use RZP\Models\Settlement\Bucket as BucketModel;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Mail\Merchant\SettlementsProcessedNotification;
+use RZP\Notifications\Settlement\Handler as SettlementNotificationHandler;
 
 class Core extends Base\Core
 {
@@ -415,6 +417,24 @@ class Core extends Base\Core
     {
         try
         {
+            $notificationMerchant = ($merchant->isLinkedAccount() === true) ? $merchant->parent : $merchant;
+
+            $status = (new Service)->getSettlementSmsNotificationStatus($notificationMerchant);
+
+            if($status['enabled'] === false)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
+                    [
+                        'notification_mode'  => 'sms',
+                        'reason'             => 'merchant has settlement sms notify block feature',
+                        'merchant_id'        => $merchant->getId(),
+                        'settlement_id'      => $settlement->getId(),
+                    ]);
+
+                return;
+            }
+
             if ($merchant->isLinkedAccount() === true)
             {
                 $contactNo = $merchant->parent->merchantDetail->getContactMobile();
@@ -444,7 +464,7 @@ class Core extends Base\Core
                 'params'   => [
                     'merchant_id'     => $merchant->getId(),
                     'bank_account_id' => $bankAccountNumber,
-                    'settlement_id'   => $settlement->getId(),
+                    'settlement_id'   => $settlement->getPublicId(),
                     'date'            => Carbon::now(timezone::IST)->format('j M Y, g A'),
                 ]
             ];
@@ -540,27 +560,23 @@ class Core extends Base\Core
             {
                 $this->triggerSettlementsMail($settlement, $bankAccountNumber, $merchant);
 
-                $this->triggerSettlementsSms($settlement, $bankAccountNumber, $merchant, false);
+                $args = [
+                    'settlement'          => $settlement,
+                    'merchant'            => $merchant,
+                    'bankAccountNumber'   => $bankAccountNumber
+                ];
+
+                (new SettlementNotificationHandler($args))->sendForEvent(Events::PROCESSED);
             }
             else if (($settlement->isStatusFailed() === true) and ($sendFailureSms === true))
             {
-                $failureReason = $settlement->getRemarks();
+                $args = [
+                    'settlement'          => $settlement,
+                    'merchant'            => $merchant,
+                    'bankAccountNumber'   => $bankAccountNumber
+                ];
 
-                if (empty($failureReason) === true)
-                {
-                    $this->trace->info(
-                        TraceCode::SETTLEMENT_NOTIFICATION_SKIPPED,
-                        [
-                            'notification_mode' => 'sms',
-                            'merchant_id'       => $merchant->getId(),
-                            'settlement_id'     => $settlement->getId(),
-                            'reason'            => 'no failure reason provided',
-                        ]);
-
-                    return;
-                }
-
-                $this->triggerSettlementsSms($settlement, $bankAccountNumber, $merchant, true);
+                (new SettlementNotificationHandler($args))->sendForEvent(Events::FAILED);
             }
         }
         catch (\Throwable $e)

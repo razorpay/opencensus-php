@@ -839,22 +839,48 @@ class PublicEntity extends UniqueIdEntity
     /**
      * 12012(in paise) as  ['₹',120, 12] (rupees paise as separate entry in array)
      *
+     * @param bool $dcc
      * @return array
      */
-    public function getAmountComponents(): array
+    public function getAmountComponents($dcc = false): array
     {
         $currency = $this->getCurrency();
+        $amount = $this->getAmount();
+
+        if($dcc === true) {
+            $currency = $this->getGatewayCurrency();
+            $amount = $this->getGatewayAmount();
+        }
 
         $currencySymbol = Currency\Currency::SYMBOL[$currency] ?: 'INR';
 
         $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?: 100;
 
-        $amount = $this->getAmount();
+        $superUnitInAmount = money_format_IN((integer)($amount / $denominationFactor));
 
-        $rupeesInAmount = money_format_IN((integer)($amount / $denominationFactor));
+        $subUnitInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
 
-        $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
+        return [$currencySymbol, $superUnitInAmount, $subUnitInAmount];
+    }
 
-        return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
+    public function getFormattedAmountsAsPerCurrency(string $currency = null, int $amount = null)
+    {
+        if ($currency === null)
+        {
+            $currency = $this->getCurrency();
+        }
+
+        $currencySymbol = Currency\Currency::SYMBOL[$currency] ?? '₹';
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?? 100;
+
+        if ($amount === null)
+        {
+            $amount = $this->getAmount();
+        }
+
+        $amount = $amount / $denominationFactor;
+        $amount = sprintf($amount === intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
     }
 }

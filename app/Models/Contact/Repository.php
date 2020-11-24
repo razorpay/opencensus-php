@@ -38,7 +38,8 @@ class Repository extends Base\Repository
         // In case all of the input parameters exactly match
         // with any existing contact, we return the same contact
         // to the merchant. Name and type are inclusive here.
-        return $this->newQuery()
+        // Using slave connection to reduce load on master cpu bcz of trim func in query
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(DB::raw('trim('. $contactContactColumn .')'), $input[Entity::CONTACT] ?? null)
                     ->where(DB::raw('trim('. $contactEmailColumn .')'), $input[Entity::EMAIL] ?? null)
                     ->where(DB::raw('trim('. $contactReferenceIdColumn .')'), $input[Entity::REFERENCE_ID] ?? null)

@@ -314,6 +314,8 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
+            $this->validateLavbBankPayments($input);
+
             $meta = [
                 'metadata' => [
                     'trackId' => $this->app['req.context']->getTrackId()
@@ -380,6 +382,55 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function validateLavbBankPayments($input)
+    {
+        // If there is no method in input, do nothing
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        $data = [];
+
+        switch ($input['method'])
+        {
+            case Payment\Method::CARD:
+                // No card number for card payment
+                if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+                {
+                    return;
+                }
+
+                $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+                $iin = $this->repo->iin->find($iinId);
+
+                // IIN not available
+                if (empty($iin) === true)
+                {
+                    return;
+                }
+
+                if (($iin->getIssuer() !== Card\Issuer::LAVB) or
+                    ($iin->isEnabled() === true))
+                {
+                    return;
+                }
+
+                $data['iin'] = $iinId;
+
+                break;
+
+            default:
+                return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED,
+            null,
+            $data);
     }
 
     protected function eventPaymentCreated()

@@ -78,6 +78,19 @@ configure_dark(){
     echo "PG_ROUTER_URL=\"https://pg-router-dark.razorpay.com/\"" >> ./environment/.env.production
 }
 
+configure_hallmark(){
+    cd /app
+    echo "== Queue on Sync driver =="
+    echo QUEUE_DRIVER=sync >> ./environment/.env.production
+    echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
+    echo "MOZART_URL=\"https://mozart-hallmark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_TEST_URL=\"https://mozart-test-hallmark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_LIVE_URL=\"https://mozart-hallmark.razorpay.com/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_LIVE_URL=\"https://payments-card-live-hallmark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_TEST_URL=\"https://payments-card-test-hallmark.razorpay.com/v1/\"" >> ./environment/.env.production
+}
+
+
 start_apache(){
   trap term_to_winch SIGTERM
   echo "$(date) Starting Apache"
@@ -121,6 +134,10 @@ main() {
     start_apache
   elif [[ "${app_type}" == "web-dark" ]]; then
     configure_dark
+    echo "Starting web app"
+    start_apache
+  elif [[ "${app_type}" == "web-hallmark" ]]; then
+    configure_hallmark
     echo "Starting web app"
     start_apache
   else

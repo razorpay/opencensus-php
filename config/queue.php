@@ -92,9 +92,13 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
-    'reconciliation_batch' => [
+    'recon_method_batch' => [
         'test'       => env('AWS_RECON_QUEUE'),
         'live'       => env('AWS_RECON_QUEUE'),
+    ],
+    'reconciliation_batch' => [
+        'test'       => env('AWS_RECON_BATCH_QUEUE'),
+        'live'       => env('AWS_RECON_BATCH_QUEUE'),
     ],
     'direct_debit_batch' => [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),

@@ -96,7 +96,6 @@ class Terminal extends Base
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingIdfcTerminal();
-        $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingAllahabadTerminal();
         $this->createSharedNetbankingIndusindTerminal();
@@ -1738,9 +1737,11 @@ class Terminal extends Base
             'gateway'                   => 'paytm',
             'card'                      => 1,
             'netbanking'                => 1,
-            'gateway_merchant_id'       => 'razorpay paytm',
-            'gateway_terminal_id'       => 'nodal account paytm',
+            'gateway_merchant_id'       => 'razorpaypaytm',
+            'gateway_secure_secret'     => 'randomsecret',
+            'gateway_terminal_id'       => 'nodalaccountpaytm',
             'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'www.merchant.com'
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -3745,6 +3746,23 @@ class Terminal extends Base
             TerminalEntity::MERCHANT_ID         => $merchantId,
             TerminalEntity::GATEWAY             => Gateway::NETBANKING_SVC,
             TerminalEntity::GATEWAY_MERCHANT_ID => 'netbanking_svc_merchant_id',
+            TerminalEntity::NETBANKING          => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingDcbTerminal(array $attributes = [])
+    {
+        $merchantId = Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            TerminalEntity::ID                  => Shared::NETBANKING_DCB_TERMINAL,
+            TerminalEntity::MERCHANT_ID         => $merchantId,
+            TerminalEntity::GATEWAY             => Gateway::NETBANKING_DCB,
+            TerminalEntity::GATEWAY_MERCHANT_ID => 'netbanking_dcb_merchant_id',
             TerminalEntity::NETBANKING          => 1,
         ];
 

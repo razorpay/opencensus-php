@@ -2,6 +2,7 @@
 
 namespace RZP\Models\D2cBureauReport;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Services\Mozart;
@@ -23,6 +24,8 @@ class Core extends Base\Core
     const MOZART_NAMESPACE = 'capital';
 
     const MOZART_GET_REPORT_ACTION = 'get_report';
+
+    const INVALID_EMAIL_OR_CONTACT_REGEX = '/(mobile number [0-9,X]+)/';
 
     public function saveAndReturnReport(D2cBureauDetail\Entity $bureauDetail, Merchant\Entity $merchant, User\Entity $user): Entity
     {
@@ -74,6 +77,22 @@ class Core extends Base\Core
                 $report->d2cBureauDetail()->associate($bureauDetail);
 
                 $this->repo->saveOrFail($report);
+
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT)
+                {
+                    preg_match(self::INVALID_EMAIL_OR_CONTACT_REGEX, $e->getData()['data']['error'], $matches);
+                    $errorDesc = 'The phone number entered isn\'t linked to your PAN.';
+                    if (sizeof($matches) !== 0)
+                    {
+                        $errorDesc .= ' Please use ' . $matches['0'];
+                    };
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT,
+                        null,
+                        $e->getData(),
+                        $errorDesc);
+                }
+
 
                 throw $e;
             }

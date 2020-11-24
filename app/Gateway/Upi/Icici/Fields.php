@@ -18,6 +18,8 @@ class Fields
     const ORIGINAL_BANK_RRN_REQ     = 'originalBankRRN';
     const ORIGINAL_MERCHANT_TRAN_ID = 'originalmerchantTranId';
     const AMOUNT                    = 'amount';
+    //The field 'Amount' (capital A) was introduced during Migration.
+    const AMOUNT_NEW                = 'Amount';
     const COLLECT_BY_DATE           = 'collectByDate';
     const BILL_NUMBER               = 'billNumber';
     const PAYEE_VA                  = 'payeeVA';

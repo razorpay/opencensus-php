@@ -79,7 +79,7 @@ services:
       HEIMDALL_WORKFLOWS_MOCK: "false"
       MUTEX_MOCK: "false"
       APP_MODE: dev
-      JAEGER_HOST: 'jaeger'
+      JAEGER_HOSTNAME: 'jaeger'
   api_db:
     image: mysql:5.7
     ports:

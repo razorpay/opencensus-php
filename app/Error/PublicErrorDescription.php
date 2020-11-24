@@ -20,6 +20,7 @@ class PublicErrorDescription
     //        %x74 /          ; t    tab             U+0009
     //
 
+    const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
@@ -36,9 +37,10 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
-    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card is not enrolled for 3D Secure authentication';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
+    const BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS                         = 'Your card has been disabled for online payments by your issuing bank. Please reach out to your bank or re-try the payment with another card/method.';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
     const BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE                       = 'Card is not linked with mobile number';
     const BAD_REQUEST_ERROR                                                     = 'Something went wrong, please try again after sometime.';
@@ -72,6 +74,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                  = 'Payment processing cancelled by customer at wallet payment page';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE              = 'Payment processing cancelled by customer at netbanking payment page';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
+    const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                   = 'Duplicate request. This request has already been processed.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED                        = 'The payment has already been either captured or voided';
@@ -386,6 +389,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND                             = 'The Partner has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS                  = 'A previous request to update your bank account is in progress. Please try after some time';
+    const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED  = 'We are unable to complete this operation due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
@@ -417,6 +421,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INSUFFICIENT_BALANCE                                      = 'Amount requested for the ondemand settlement exceeds the settlement balance.';
     const BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED             = 'Amount requested is more than the max limit for ondemand settlement';
     const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_LIMIT_FOR_NON_ES_AUTOMATIC_MERCHANTS = 'Minimum amount that can be settled is ₹ 2000.';
+    const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT                      = 'Minimum amount that can be settled is ₹ 1.';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
@@ -875,6 +880,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                          = 'Keys sent in linked_account_notes must exist in notes';
     const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The account provided is not a linked account';
+    const BAD_REQUEST_DASHBOARD_ACCESS_REQUIRED_TO_ALLOW_REVERSALS              = 'Dashboard access must be enabled to allow customer refunds.';
     const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
@@ -1220,6 +1226,12 @@ class PublicErrorDescription
     const BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER           = 'Low balance config already exists for account number';
     const BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE               = 'Low balance config is not supported in test mode';
 
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MODE                                              = 'Incorrect mode provided';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE                                   = 'Merchant notification config already exists for given mode';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD              = 'The lower threshold is greater than the upper threshold';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD   = 'The new upper threshold is lower than the existing lower threshold';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_LOWER_THRESHOLD_GREATER_THAN_EXISTING_UPPER_THRESHOLD = 'The new lower threshold is greater than the existing upper thresold';
+
     const BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE                          = 'Bad request, X credits supported in only live mode';
 
     //Using double quotes to escape newline for cred
@@ -1260,4 +1272,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_SOURCE_ALREADY_EXISTS                                  = 'A source with same source_id and source_type already exists.';
     const BAD_REQUEST_ANOTHER_PAYOUT_SOURCE_EXISTS_WITH_SAME_PRIORITY               = 'A source with same priority already exists.';
     const BAD_REQUEST_PG_ROUTER_ONLY_LIVE_MODE_SUPPORTED                            = 'Only live mode orders are supported for sync';
+
+    const VENDOR_CONNECTION_ERROR                                                   = 'Connection to vendor failed';
+    const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
 }

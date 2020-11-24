@@ -105,6 +105,13 @@ class Service extends Base\Service
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
     }
 
+    public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent)
+    {
+        $fee = (($baseAmount * $rate * $markUpPercent) / 100);
+
+        return (int) ceil($fee);
+    }
+
     /*
      * - Capture current time, round it off to nearest interval
      * - Store currencyRequestId and round off time in redis

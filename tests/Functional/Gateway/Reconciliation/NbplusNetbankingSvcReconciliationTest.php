@@ -16,9 +16,9 @@ use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Reconciliator\NetbankingSvc\Reconciliate;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingSvcReconciliationTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingSvcReconciliationTest extends NbPlusPaymentServiceNetbankingTest
 {
     use ReconTrait;
 

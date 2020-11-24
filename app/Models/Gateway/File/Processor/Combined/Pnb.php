@@ -25,21 +25,17 @@ class Pnb extends Base
     {
         try
         {
-            $refundsFile = [];
-
-            $claimsFile = [];
+            $fileInfo = [];
 
             if (isset($data['refunds']) === true)
             {
-                $refundsFile = $this->getFileData(FileStore\Type::PNB_NETBANKING_REFUND);
+                $fileInfo[] = $this->getFileData(FileStore\Type::PNB_NETBANKING_REFUND);
             }
 
             if (isset($data['claims']) === true)
             {
-                $claimsFile = $this->getFileData(FileStore\Type::PNB_NETBANKING_CLAIMS);
+                $fileInfo[] = $this->getFileData(FileStore\Type::PNB_NETBANKING_CLAIMS);
             }
-
-            $fileInfo = [$claimsFile , $refundsFile];
 
             $bucketConfig = $this->getBucketConfig();
 
@@ -178,12 +174,19 @@ class Pnb extends Base
 
         $data['refunds'] = $filteredRefunds;
 
+        if (empty($filteredRefunds) === true)
+        {
+            unset($data['refunds']);
+        }
+
         if ($entities->get('claims')->isNotEmpty() === true)
         {
             $data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
+
+            $data = $this->updateClaimsWithReversedFlag($data, $reversedPayments);
         }
 
-        return $this->updateClaimsWithReversedFlag($data, $reversedPayments);
+        return $data;
     }
 
     public function updateClaimsWithReversedFlag($data, $reversedPayments)

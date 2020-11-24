@@ -681,6 +681,21 @@ class Service extends Base\Service
         return $businessDetails;
     }
 
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BaseException
+     */
+    public function getCompanySearchList(array $input): array
+    {
+
+        $companySearchList = (new Core)->getCompanySearchList($input);
+
+        return $companySearchList;
+    }
+
     /**
      * This function is used for getting needs clarification reasons for fields
      *

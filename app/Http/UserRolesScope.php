@@ -92,6 +92,7 @@ class UserRolesScope
             'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
             'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'merchant_fetch_users'                => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
@@ -193,6 +194,7 @@ class UserRolesScope
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
             'capital_cards_service'       => [Role::OWNER, Role::ADMIN],
+            'capital_collections_service' => [Role::OWNER, Role::ADMIN],
 
             // Reporting
             'reporting_config_get'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
@@ -215,6 +217,20 @@ class UserRolesScope
             'delete_low_balance_config'   => [BankingRole::OWNER],
             'disable_low_balance_config'  => [BankingRole::OWNER],
             'enable_low_balance_config'   => [BankingRole::OWNER],
+
+            'create_merchant_notification_config'         => [Role::OWNER],
+            'update_merchant_notification_config'         => [Role::OWNER],
+            'delete_merchant_notification_config'         => [Role::OWNER],
+            'disable_merchant_notification_config'        => [Role::OWNER],
+            'enable_merchant_notification_config'         => [Role::OWNER],
+
+            'create_merchant_notification_config_admin'   => [Role::ADMIN],
+            'update_merchant_notification_config_admin'   => [Role::ADMIN],
+            'fetch_merchant_notification_config_admin'    => [Role::ADMIN],
+            'list_merchant_notification_config_admin'     => [Role::ADMIN],
+            'delete_merchant_notification_config_admin'   => [Role::ADMIN],
+            'disable_merchant_notification_config_admin'  => [Role::ADMIN],
+            'enable_merchant_notification_config_admin'   => [Role::ADMIN],
         ];
 
         /*

@@ -26,6 +26,7 @@ class Netbanking
     const RATN_C = 'RATN_C';
     const SVCB_C = 'SVCB_C';
     const DLXB_C = 'DLXB_C';
+    const HDFC_C = 'HDFC_C';
 
     // These are the IFSC's that are to be used for these
     // banks even if we integrate them directly.
@@ -56,6 +57,7 @@ class Netbanking
         self::SVCB_C,
         self::UTIB_C,
         self::YESB_C,
+        self::HDFC_C,
     ];
 
     protected static $names = [
@@ -74,6 +76,7 @@ class Netbanking
         self::SVCB_C => 'Shamrao Vithal Bank - Corporate Banking',
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
+        self::HDFC_C => 'HDFC Bank - Corporate Banking',
         IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
         IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)'
@@ -108,7 +111,6 @@ class Netbanking
         IFSC::ESFB,
         IFSC::SBIN,
         IFSC::CBIN,
-        IFSC::VIJB,
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
@@ -177,6 +179,7 @@ class Netbanking
                 IFSC::RATN,
                 IFSC::UTIB,
                 self::BARB_R,
+                self::HDFC_C,
             ],
             'tpv' => [
                 IFSC::HDFC,
@@ -194,7 +197,6 @@ class Netbanking
     protected static $gatewaySupportedBanks = [
         Gateway::BILLDESK => [
             'retail' => [
-                IFSC::ABPB,
                 IFSC::ALLA,
                 IFSC::ANDB,
                 IFSC::AUBL,
@@ -258,7 +260,6 @@ class Netbanking
                 IFSC::UTBI,
                 IFSC::UTIB,
                 IFSC::VARA,
-                IFSC::VIJB,
                 IFSC::YESB,
                 IFSC::ZCBL,
                 self::ANDB_C,
@@ -273,6 +274,7 @@ class Netbanking
                 self::RATN_C,
                 self::SVCB_C,
                 self::YESB_C,
+                self::HDFC_C,
             ],
             'tpv' => [
                 IFSC::ANDB,
@@ -335,7 +337,6 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
-                IFSC::VIJB,
                 IFSC::YESB,
                 self::LAVB_R,
                 self::PUNB_R,
@@ -380,7 +381,6 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
-                IFSC::VIJB,
                 IFSC::YESB,
                 self::LAVB_R,
                 self::PUNB_R,
@@ -416,7 +416,6 @@ class Netbanking
                 self::PUNB_R,
                 IFSC::UBIN,
                 IFSC::UTIB,
-                IFSC::VIJB,
                 IFSC::YESB,
             ],
         ],
@@ -474,7 +473,6 @@ class Netbanking
                 IFSC::UTBI,
                 IFSC::UTIB,
                 self::UTIB_C,
-                IFSC::VIJB,
                 IFSC::YESB,
             ]
         ],
@@ -562,11 +560,6 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::IDFB
-            ]
-        ],
-        Gateway::NETBANKING_VIJAYA => [
-            'retail' => [
-                IFSC::VIJB
             ]
         ],
         Gateway::NETBANKING_HDFC => [
@@ -743,7 +736,6 @@ class Netbanking
     ];
 
     const DEFAULT_DISABLED_BANKS = [
-        IFSC::ABPB,
         IFSC::AUBL,
         IFSC::BKDN,
         IFSC::BBKM,
@@ -781,6 +773,7 @@ class Netbanking
         self::ANDB_C,
         self::DLXB_C,
         self::SVCB_C,
+        self::HDFC_C,
     ];
 
     public static function isSupportedBank($bank)

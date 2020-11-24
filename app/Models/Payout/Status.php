@@ -170,6 +170,7 @@ class Status
         self::CANCELLED,
         self::BATCH_SUBMITTED,
         self::CREATE_REQUEST_SUBMITTED,
+        self::INITIATED,
     ];
 
     /**

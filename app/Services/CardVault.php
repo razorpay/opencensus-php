@@ -296,26 +296,11 @@ class CardVault
         return json_decode($response->body, true);
     }
 
-    public function traceCurlInfo($headers, $info)
-    {
-        $this->trace->info(TraceCode::CARD_VAULT_REQUEST_DURATION,[
-            'total_time'         => $info['total_time'],
-            'connect_time'       => $info['connect_time'],
-            'redirect_time'      => $info['redirect_time'],
-            'namelookup_time'    => $info['namelookup_time'],
-            'pretransfer_time'   => $info['pretransfer_time'],
-            'starttransfer_time' => $info['starttransfer_time'],
-            'primary_ip'         => $info['primary_ip'] ?? 'nil',
-        ]);
-    }
-
     protected function getRequestHooks()
     {
         $hooks = new Requests_Hooks();
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
-
-        $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
 
         return $hooks;
     }

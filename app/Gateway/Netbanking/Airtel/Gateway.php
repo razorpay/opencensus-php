@@ -57,6 +57,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'content' => $content,
+                'gateway' => 'netbanking_airtel'
             ]);
 
         $this->assertPaymentId($input['payment']['id'],
@@ -68,9 +69,9 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->verifySecureHash($content);
-
         $gatewayPayment = $this->saveCallbackContent($input, $content);
+
+        $this->verifySecureHash($content);
 
         $this->checkActionStatus($content);
 
@@ -477,6 +478,28 @@ class Gateway extends Base\Gateway
                                             ->format(Constants::TIME_FORMAT);
 
         return $date;
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        if ($actual === Constants::UNDEFINED)
+        {
+            // as per the bank, we are getting the hash as undefined in case the user cancels the
+            // transaction on the bank page
+            $this->checkActionStatus($content);
+
+            // Ideally this should not run. Adding this check here in case bank sends hash as undefined for
+            // a successful payment
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+        }
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
     }
 
     /*

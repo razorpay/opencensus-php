@@ -348,6 +348,11 @@ class Verify extends Base\Core
 
     protected function filterPaymentsWithFinalErrorCode(Base\PublicCollection $payments) : Base\PublicCollection
     {
+        $this->trace->info(TraceCode::PAYMENT_VERIFY_FILTER,
+            [
+                'payments' => $payments->getIds(),
+            ]);
+
         $pays = $payments->filter(function (Payment\Entity $payment) {
 
             $method = $payment->getMethod();
@@ -359,11 +364,23 @@ class Verify extends Base\Core
             {
                 $payment->setNonVerifiable();
 
+                $this->trace->info(TraceCode::PAYMENT_VERIFY_FILTER,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'internal_error_code' => $internal_error_code,
+                        'isFinal' => $isFinalErrorCode,
+                    ]);
+
                 $this->repo->saveOrFail($payment);
             }
 
             return !$isFinalErrorCode;
         });
+
+        $this->trace->info(TraceCode::PAYMENT_VERIFY_FILTER,
+            [
+                'after_filtering_payments' => $pays->getIds(),
+            ]);
 
         return new Base\PublicCollection($pays);
     }
@@ -1073,7 +1090,9 @@ class Verify extends Base\Core
             $this->trace->info(
                 TraceCode::VERIFY_ACTION,
                 [
-                    'action' => $action
+                    'payment_id' => $payment->getId(),
+                    'action' => $action,
+                    'verify_route' => 'verify/all',
                 ]
             );
 
@@ -1233,7 +1252,9 @@ class Verify extends Base\Core
         $this->trace->info(
             TraceCode::VERIFY_ACTION,
             [
-                'action' => $action
+                'payment_id' => $payment->getId(),
+                'action' => $action,
+                'verify_route' => 'verify/new_route',
             ]
         );
 

@@ -36,7 +36,6 @@ use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Jobs\OnboardingKycVerification;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -54,6 +53,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
@@ -104,6 +104,8 @@ class Core extends Base\Core
         $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
 
         $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
+
+        $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -600,12 +602,20 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'instant_activation');
 
+        //
         // do pan validation
-
+        //
         $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
 
+        //
         // do business pan validation
+        //
         $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+
+        //
+        // do cin validation
+        //
+        $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
         return $this->transactionInstantActivationDetails($input,$merchantDetails, $merchant);
     }
@@ -779,17 +789,8 @@ class Core extends Base\Core
 
                 return $merchantDetails->isPoiVerified();
 
-            case BusinessType::PROPRIETORSHIP:
-                $allowedPOIStatus = [POIStatus::VERIFIED, POIStatus::FAILED, POIStatus::NOT_MATCHED];
-
-                return (in_array($merchantDetails->getPoiVerificationStatus(), $allowedPOIStatus) === true);
-
             default :
-
-                return (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
-                        $merchantDetails,
-                        FormSubmissionValidStatusesMap::DOCUMENT_LIST_FOR_L1
-                    ) === true;
+                return true;
         }
     }
 
@@ -1557,7 +1558,21 @@ class Core extends Base\Core
                 $merchantDetails->getActivationStatus(),
                 $currentActivationStatus));
 
-        $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
+        $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::WHATSAPP_NOTIFICATIONS);
+
+        if($isWhatsappEnabled === true)
+        {
+            $args = [
+                'activationStatus'  => $currentActivationStatus,
+                'merchant'          => $merchant
+            ];
+            (new OnboardingNotificationHandler($args))->send();
+        }
+        else
+        {
+            $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
+        }
 
         return $merchantDetails;
     }
@@ -2718,33 +2733,12 @@ class Core extends Base\Core
 
         if ($shouldVerifyGstinFromBVS === true)
         {
-            $this->verifyGstinFromBvs($merchantDetails);
+            $this->updateDocumentVerificationStatus($merchant, Constant::GSTIN);
         }
         else
         {
             $this->verifyGstinFromKycService($merchantDetails);
         }
-    }
-
-    /**
-     * Verifies Gstin from BVS
-     *
-     * @param Entity $merchantDetails
-     */
-    protected function verifyGstinFromBvs(Entity $merchantDetails)
-    {
-        $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::GSTIN,
-            Constant::CONFIG_NAME     => Constant::GSTIN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::DETAILS         => [
-                Constant::GSTIN      => $merchantDetails->getGstin(),
-                Constant::LEGAL_NAME => $merchantDetails->getPromoterPanName() ?? '',
-                Constant::TRADE_NAME => $merchantDetails->getBusinessName() ?? ''
-            ],
-        ];
-
-        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getEntityId(), $payload);
     }
 
     /**
@@ -2812,11 +2806,11 @@ class Core extends Base\Core
     /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
-     * @param bool            $isRetryFlow
+     * @param array           $input
      *
      * @throws \Throwable
      */
-    public function verifyCINDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, bool $isRetryFlow = false)
+    public function verifyCINDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input = [])
     {
         if (BusinessType::isCinVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
         {
@@ -2832,37 +2826,37 @@ class Core extends Base\Core
             return;
         }
 
-        $fields = [Detail\Entity::COMPANY_CIN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_NAME];
+        $dependentFields = [Detail\Entity::COMPANY_CIN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_NAME];
 
-        //
-        // If we don't have all params to make api call then don't call the api
-        //
-        if ($this->hasAllRequiredFields($merchantDetails, [], $fields) === false)
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
+            $dependentFields,
+            $input,
+            Entity::CIN_VERIFICATION_STATUS,
+            [CinVerificationStatus::FAILED],
+            $merchant->getId());
+
+        if (($isAutoKycAttemptRequired === false) or
+            ($this->hasAllRequiredFields($merchantDetails, $input, $dependentFields) === false))
         {
             return;
         }
-
-        $shouldVerifyFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_CIN_VALIDATION);
-
-        ($shouldVerifyFromBVS === true) ?
-            $this->verifyCINorLLPINFromBvs($merchantDetails) :
-            $this->verifyCINorLLPINFromKycService($merchantDetails, $isRetryFlow);
+        $this->updateCINorLLPINStatusForBvsVerification($merchant, $merchantDetails);
     }
 
     /**
-     * Verifies CIN/LLPIN from BVS
+     * Update CIN/LLPIN Verification status for BVS
      *
-     * @param Entity $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     *
+     * @throws LogicException
      */
-    protected function verifyCINorLLPINFromBvs(Entity $merchantDetails): void
+    protected function updateCINorLLPINStatusForBvsVerification(Merchant\Entity $merchant, Entity $merchantDetails): void
     {
-        $payload = ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true) ?
-            $this->getPayloadForLLPIN($merchantDetails) :
-            $this->getPayloadForCIN($merchantDetails);
+        $fieldType = ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true) ?
+            Constant::LLPIN : Constant::CIN;
 
-        (new AutoKyc\Bvs\Core())->verify($merchantDetails->getEntityId(), $payload);
+        $this->updateDocumentVerificationStatus($merchant, $fieldType);
     }
 
     /**
@@ -2872,149 +2866,9 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    protected function isLLPBusinessType(string $businessType): bool
+    public function isLLPBusinessType(string $businessType): bool
     {
         return $businessType === BusinessType::LLP;
-    }
-
-    /**
-     * Returns payload for CIN
-     *
-     * @param Entity $merchantDetails
-     *
-     * @return array
-     */
-    protected function getPayloadForCIN(Entity $merchantDetails): array
-    {
-        $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::CIN,
-            Constant::CONFIG_NAME     => Constant::CIN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::DETAILS         => [
-                Constant::SIGNATORY_DETAILS =>
-                    [[
-                         Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',
-                     ]],
-                Constant::COMPANY_NAME      => $merchantDetails->getBusinessName() ?? '',
-                Constant::CIN               => $merchantDetails->getCompanyCin(),
-            ],
-        ];
-
-        return $payload;
-    }
-
-    /**
-     * Returns payload for LLPIN
-     *
-     * @param Entity $merchantDetails
-     *
-     * @return array
-     */
-    protected function getPayloadForLLPIN(Entity $merchantDetails): array
-    {
-        $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::LLP_DEED,
-            Constant::CONFIG_NAME     => Constant::LLP_DEED,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::DETAILS         => [
-                Constant::SIGNATORY_DETAILS =>
-                    [[
-                         Constant::FULL_NAME => $merchantDetails->getPromoterPanName() ?? '',
-                     ]],
-                Constant::LLP_NAME          => $merchantDetails->getBusinessName() ?? '',
-                Constant::LLPIN             => $merchantDetails->getCompanyCin(),
-
-            ],
-        ];
-
-        return $payload;
-    }
-
-    /**
-     * @param Entity $merchantDetails
-     * @param bool   $isRetryFlow
-     *
-     * @throws \Throwable
-     */
-    protected function verifyCINorLLPINFromKycService(Entity $merchantDetails, bool $isRetryFlow): void
-    {
-        //
-        // Kyc Service does not support LLPIN , so not doing verification from kyc service
-        //
-        if ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true)
-        {
-            $merchantDetails->setCinVerificationStatus(null);
-
-            return;
-        }
-
-        //
-        // in retry flow , retry only for failed cin verification status
-        //
-        if (($isRetryFlow === true) and
-            ($merchantDetails->getCinVerificationStatus() !== CinVerificationStatus::FAILED))
-        {
-            return;
-        }
-
-        $response = null;
-
-        $verificationStatus = CinVerificationStatus::FAILED;
-
-        try
-        {
-            $input = [
-                DEConstants::CIN                => $merchantDetails->getCompanyCin(),
-                DEConstants::COMPANY_NAME       => $merchantDetails->getBusinessName() ?? '',
-                DEConstants::PROMOTER_PAN_NAME  => $merchantDetails->getPromoterPanName() ?? '',
-                DEConstants::REGISTERED_ADDRESS => $merchantDetails->getBusinessRegisteredAddress() ?? '',
-            ];
-
-            $verificationStatus = (new AutoKyc\Core())->verifyCIN($merchantDetails, $input);
-
-            if ($verificationStatus === CinVerificationStatus::FAILED)
-            {
-                throw new \Exception("cin verification failed");
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                                         null,
-                                         TraceCode::MERCHANT_CIN_VERIFICATION_FAILED);
-
-            //
-            // Retry is handled by sqs , so in case of retry don't fail silently
-            // Throw exception so that automatic retry can happen
-            //
-            if ($isRetryFlow === false)
-            {
-                $this->trace->info(TraceCode::MERCHANT_CIN_VERIFICATION_RETRY, [
-                    DetailConstants::MERCHANT_ID => $merchantDetails->getMerchantId(),
-                ]);
-
-                OnboardingKycVerification::dispatch($this->mode ?? 'live', DEConstants::CIN, $merchantDetails->getMerchantId())->delay($this->kycServiceRetryDelayInSecond);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-        finally
-        {
-            $merchantDetails->setCinVerificationStatus($verificationStatus);
-
-            $dimension = $this->fetchCinMetricDimensions($verificationStatus);
-
-            $this->trace->count(DetailMetric::CIN_VERIFICATION_STATUS_TOTAL, $dimension);
-        }
-    }
-
-    protected function fetchCinMetricDimensions(string $verificationStatus): array
-    {
-        return [
-            Detail\Constants::CIN_STATUS => $verificationStatus,
-        ];
     }
 
     /**
@@ -3027,50 +2881,11 @@ class Core extends Base\Core
      * @return array
      * @throws LogicException
      * @throws \Throwable
+     * @todo will remove this route once frontend stops calling this , for now just returning empty array
      */
     public function verifyMerchantAttributes(Merchant\Entity $merchant, string $verificationType, array $input): array
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_VERIFY_ATTRIBUTES,
-            [
-                'input'             => $input,
-                'verification_type' => $verificationType
-            ]);
-
-        return $this->mutex->acquireAndRelease(
-            $merchant->getId(),
-            function() use ($input, $merchant, $verificationType) {
-
-                return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant, $verificationType) {
-
-                    switch (strtoupper($verificationType))
-                    {
-                        case DetailConstants::CIN :
-
-                            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
-
-                            $merchant = $merchantDetails->merchant;
-
-                            $this->repo->merchant_detail->lockForUpdateAndReload($merchantDetails);
-
-                            $merchantDetails->edit($input, 'cin_verification');
-
-                            $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant);
-
-                            $this->repo->saveOrFail($merchantDetails);
-
-                            return $merchantDetails->toArrayPublic();
-
-                        default:
-                            throw new LogicException(
-                                ErrorCode::BAD_REQUEST_INVALID_VERIFICATION_TYPE,
-                                ['verification_type' => $verificationType]);
-                    }
-                });
-            },
-            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
-            Constants::MERCHANT_MUTEX_RETRY_COUNT);
+        return [];
     }
 
     /**
@@ -3343,6 +3158,53 @@ class Core extends Base\Core
 
         return $response;
     }
+
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BaseException
+     */
+    public function getCompanySearchList(array $input): array
+    {
+        (new Validator())->validateInput('company_search', $input);
+
+        $companySearchList = [];
+
+        $isCompanySearchRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $this->merchant->getId(),
+            RazorxTreatment::BVS_COMPANY_SEARCH);
+
+        if ($isCompanySearchRazorxExperimentEnabled === false)
+        {
+            return $companySearchList;
+        }
+        try
+        {
+            $companySearchList =
+                (new AutoKyc\Bvs\Core())->probeCompanySearch($input[DEConstants::SEARCH_STRING]);
+        }
+        catch (\Exception $e)
+        {
+            $dimension = AutoKyc\Bvs\Core::getProbeDimension(Constant::COMPANY_SEARCH);
+
+            $this->trace->count(DetailMetric::BVS_PROBE_API_FAILURE, $dimension);
+
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::MERCHANT_COMPANY_SEARCH_FAILED,
+                                         [
+                                             Constant::MERCHANT_ID      => $this->merchant->getId(),
+                                             DEConstants::SEARCH_STRING => $input[DEConstants::SEARCH_STRING]
+                                         ]);
+            throw new Exception\IntegrationException(
+                ErrorCode::VENDOR_CONNECTION_ERROR);
+        }
+
+        return $companySearchList;
+    }
+
 
     /**
      * @param Merchant\Entity $merchant

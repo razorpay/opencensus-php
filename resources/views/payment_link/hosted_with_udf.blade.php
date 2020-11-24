@@ -65,6 +65,7 @@
                 base_url: data.base_url,
                 is_test_mode: data.is_test_mode,
                 merchant: data.merchant,
+                org: data.org,
                 payment_page_data: data.payment_link,
                 context: {
                   page_title: data.payment_link.title,

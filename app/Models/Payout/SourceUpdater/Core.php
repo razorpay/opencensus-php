@@ -49,8 +49,6 @@ class Core
         $sourceDetails = $payout->getSourceDetails();
 
         if (($sourceDetails->count() === 0) and
-            // this check to be removed after payout-link source migration is done
-            ($payout->getPayoutLinkId() === null) and
             ($payout->getStatus() !== Status::CREATED))
         {
             // no need to push to the queue

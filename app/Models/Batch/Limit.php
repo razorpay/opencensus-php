@@ -64,6 +64,7 @@ class Limit
         Type::PARTNER_SUBMERCHANT_INVITE            => 5000,
         Type::SUBMERCHANT_LINK                      => 50000,
         Type::NACH_MIGRATION                        => 500100,
+        Type::LINKED_ACCOUNT_CREATE                 => 50000,
     ];
 
     /**

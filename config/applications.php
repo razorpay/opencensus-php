@@ -262,6 +262,10 @@ return [
         'secret' => env('CAPITAL_CARDS_PASSWORD'),
     ],
 
+    'capital_collections_client' => [
+        'secret' => env('CAPITAL_COLLECTIONS_PASSWORD'),
+    ],
+
     'leegality' => [
         'secret' => env('LEEGALITY_WEBHOOK_SECRET')
     ],
@@ -520,6 +524,13 @@ return [
         'timeout'       => env('APP_CAPITAL_CARDS_TIMEOUT', 60),
     ],
 
+    'capital_collections' => [
+        'url'           => env('APP_CAPITAL_COLLECTIONS_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_CAPITAL_COLLECTIONS_SECRET', 'api'),
+        'timeout'       => env('APP_CAPITAL_COLLECTIONS_TIMEOUT', 60),
+    ],
+
     'offline_verification' => [
         'url'           => env('APP_OFFLINE_VERIFICATION_URL'),
         'username'      => 'api',
@@ -705,8 +716,7 @@ return [
 
     'jaeger' => [
         'enabled'               => env('DISTRIBUTED_TRACING_ENABLED', false),
-        // as Jaeger agent will be deployed as daemonset on every node
-        'host'                  => env('NODE_NAME'),
+        'host'                  => env('JAEGER_HOSTNAME', env('NODE_NAME')),
         'port'                  => env('JAEGER_PORT'),
         'app_mode'              => env('INSTANCE_TYPE', ''),
         'tag_service_version'   => env('GIT_COMMIT_HASH', ''),
@@ -718,5 +728,16 @@ return [
         'url'                 => env('PG_ROUTER_URL'),
         'pg_router_key'       => env('PG_ROUTER_KEY'),
         'pg_router_secret'    => env('PG_ROUTER_SECRET'),
+    ],
+
+    'upi_payment_service' => [
+        'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
+        'password'  => env('UPI_PAYMENT_SERVICE_SECRET'),
+        'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED'),
+        'url'       => [
+            'live' => env('UPI_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('UPI_PAYMENT_SERVICE_TEST_URL'),
+        ],
     ],
 ];

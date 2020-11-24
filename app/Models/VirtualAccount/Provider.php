@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\Base\PublicEntity;
@@ -20,6 +21,15 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Provider
 {
+    protected $trace;
+
+    public function __construct()
+    {
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     // Bank Account Providers
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
@@ -191,6 +201,8 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
+
         $pointOfInitiation = $this->getPointOfInitiation($qrCode);
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
@@ -471,6 +483,12 @@ class Provider
             }
         }
 
+        $this->trace->info(TraceCode::BHARAT_QR_CARD_IDENTIFIERS,
+                           [
+                               'qr_code'    => $qrCode->toArrayPublic(),
+                               'identifiers' => $identifiers,
+                           ]);
+
         return $identifiers;
     }
 
@@ -491,6 +509,12 @@ class Provider
 
         $identifier[Terminal\Entity::VPA] = $vpa ?? null;
 
+        $this->trace->info(TraceCode::BHARAT_QR_UPI_IDENTIFIERS,
+                           [
+                               'qr_code'    => $qrCode->toArrayPublic(),
+                               'identifier' => $identifier,
+                           ]);
+
         return $identifier;
     }
 
@@ -503,6 +527,8 @@ class Provider
 
     protected function getUpiQrCode(QrCode\Entity $qrCode)
     {
+        $this->trace->info(TraceCode::GENERATE_UPI_QR_CODE, $qrCode->toArrayPublic());
+
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode, null, [
             'flow'  => 'intent'
         ]);

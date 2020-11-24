@@ -40,9 +40,12 @@ class Service
     const ADD_PENALTY_CRON          = 'AddPenaltyCron';
     const MARK_AS_PAID              = 'MarkAsPaid';
     const UPLOAD_CHALLAN            = 'UploadChallan';
-    const EDIT_TP                   = 'EditTp';
+    const UPDATE_CHALLAN_FILE_ID    = 'UpdateChallanFileId';
     const ADMIN_ACTIONS             = 'AdminActions';
     const EMAIL_CRON                = 'EmailCron';
+    const CREATE_MANUAL_TAX_PAYMENT = 'CreateManualTaxPayment';
+    const EDIT_MANUAL_TAX_PAYMENT   = 'EditManualTaxPayment';
+    const CANCEL_MANUAL_TAX_PAYMENT = 'CancelManualTaxPayment';
 
     // general constants
     const DATA                      = 'data';
@@ -80,6 +83,27 @@ class Service
         $this->repo = $app['repo'];
     }
 
+    public function cancel(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
+    {
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        $input['tax_payment_id'] = $taxPaymentId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_MANUAL_TAX_PAYMENT);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
     public function sendMail(array $input)
     {
         (new Validator())->validateInput(Validator::SEND_MAIL, $input);
@@ -97,6 +121,46 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MONTHLY_SUMMARY);
 
         return $this->makeRequest($merchant, $url, []);
+    }
+
+    public function edit(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
+    {
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        $input['tax_payment_id'] = $taxPaymentId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_MANUAL_TAX_PAYMENT);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function create(MerchantEntity $merchant, array $input, UserEntity $user = null)
+    {
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_MANUAL_TAX_PAYMENT);
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     public function addPenalty()
@@ -183,7 +247,7 @@ class Service
             return false;
         }
 
-        return $jsonDecoded["key"];
+        return $jsonDecoded['key'];
 
     }
 
@@ -330,11 +394,11 @@ class Service
 
     }
 
-    public function edit(MerchantEntity $merchant,
+    public function updateChallanFileId(MerchantEntity $merchant,
                          string $taxPaymentId,
                          array $input)
     {
-        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_TP);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_CHALLAN_FILE_ID);
 
         $input['tax_payment_id'] = $taxPaymentId;
 

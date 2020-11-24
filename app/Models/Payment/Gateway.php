@@ -343,6 +343,7 @@ class Gateway
         self::NETBANKING_YESB,
         self::NETBANKING_IOB,
         self::NETBANKING_JSB,
+        self::NETBANKING_DCB,
     ];
 
     /**
@@ -1106,7 +1107,6 @@ class Gateway
             self::NETBANKING_EQUITAS,
             self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
-            self::NETBANKING_VIJAYA,
             self::NETBANKING_YESB,
             self::NETBANKING_KVB,
             self::NETBANKING_SVC,
@@ -1619,6 +1619,7 @@ class Gateway
         self::NETBANKING_JSB,
         self::NETBANKING_IDBI,
         self::NETBANKING_FSB,
+        self::NETBANKING_DCB,
     ];
 
     public static $captureVerifyEnabled = [
@@ -2104,6 +2105,7 @@ class Gateway
         IFSC::FSFB => Gateway::NETBANKING_FSB,
         IFSC::JAKA => Gateway::NETBANKING_JKB,
         IFSC::IBKL => Gateway::NETBANKING_IDBI,
+        IFSC::DCBL => Gateway::NETBANKING_DCB,
     ];
 
     /**
@@ -2792,9 +2794,9 @@ class Gateway
         return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_BANK, true) === true);
     }
 
-    public static function isDirectDebitEmandateGateway(string $bank): bool
+    public static function isDirectDebitEmandateGateway(string $gateway): bool
     {
-        return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_GATEWAY, true) === true);
+        return (in_array($gateway, self::EMANDATE_NB_DIRECT_DEBIT_GATEWAY, true) === true);
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)
@@ -3091,6 +3093,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_DCB,
             self::NETBANKING_UBI,
+            self::NETBANKING_RBL,
         ];
 
         return (in_array($gateway, $gateways, true));

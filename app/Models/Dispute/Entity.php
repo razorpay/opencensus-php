@@ -71,6 +71,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT                 = 'payment';
     const REASON                  = 'reason';
     const MERCHANT                = 'merchant';
+    const TRANSACTION             = 'transaction';
 
     const SKIP_DEDUCTION          = 'skip_deduction';
     const CONTACT                 = 'contact';
@@ -156,6 +157,10 @@ class Entity extends Base\PublicEntity
         self::PHASE,
         self::COMMENTS,
         self::CREATED_AT,
+    ];
+
+    protected $expanded = [
+        self::TRANSACTION,
     ];
 
     protected $publicSetters = [

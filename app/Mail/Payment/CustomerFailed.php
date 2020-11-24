@@ -35,4 +35,9 @@ class CustomerFailed extends Base
     {
         return MailTags::PAYMENT_FAILED;
     }
+
+    public function isCustomerReceiptEmail()
+    {
+        return true;
+    }
 }

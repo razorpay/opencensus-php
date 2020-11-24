@@ -153,33 +153,6 @@ class BvsValidationTest extends TestCase
         $this->assertNull($merchantDetails->getPoaVerificationStatus());
     }
 
-    public function testCreateBvsValidationForGstin()
-    {
-        $mid = '10000000000000';
-
-        $merchantDetailsData = [
-            'merchant_id'       => $mid,
-            'business_type'     => '1',
-            'business_name'     => 'Razorpay',
-            'promoter_pan_name' => 'Shk',
-        ];
-
-        $this->mockRazorX(__FUNCTION__, 'bvs_gstin_validation', 'on', $mid);
-
-        $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
-
-        $expectedValues = [
-            'artefact_type'     => 'gstin',
-            'owner_id'          => $mid,
-            'owner_type'        => 'merchant',
-            'platform'          => 'pg',
-            'validation_status' => 'captured',
-            'validation_unit'   => 'identifier',
-        ];
-
-        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
-    }
-
     public function testUpdateBvsValidationStatusPoa()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
@@ -428,60 +401,6 @@ class BvsValidationTest extends TestCase
                 $scenario['errorCode']
             );
         }
-    }
-
-    public function testCreateBvsValidationForCin()
-    {
-        $mid = '10000000000000';
-
-        $merchantDetailsData = [
-            'merchant_id'       => $mid,
-            'business_type'     => '4',
-            'business_name'     => 'Razorpay',
-            'promoter_pan_name' => 'Shk',
-        ];
-
-        $this->mockRazorX(__FUNCTION__, 'bvs_cin_validation', 'on', $mid);
-
-        $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
-
-        $expectedValidationValues = [
-            'artefact_type'     => 'cin',
-            'owner_id'          => $mid,
-            'owner_type'        => 'merchant',
-            'platform'          => 'pg',
-            'validation_status' => 'captured',
-            'validation_unit'   => 'identifier',
-        ];
-
-        $this->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);
-    }
-
-    public function testCreateBvsValidationForLLPIN()
-    {
-        $mid = '10000000000000';
-
-        $merchantDetailsData = [
-            'merchant_id'       => $mid,
-            'business_type'     => '6',
-            'business_name'     => 'Razorpay',
-            'promoter_pan_name' => 'Shk',
-        ];
-
-        $this->mockRazorX(__FUNCTION__, 'bvs_cin_validation', 'on', $mid);
-
-        $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
-
-        $expectedValidationValues = [
-            'artefact_type'     => 'llp_deed',
-            'owner_id'          => $mid,
-            'owner_type'        => 'merchant',
-            'platform'          => 'pg',
-            'validation_status' => 'captured',
-            'validation_unit'   => 'identifier',
-        ];
-
-        $this->validateSuccessBvsValidation($bvsValidation, $expectedValidationValues);
     }
 
     public function testUpdateBvsValidationStatusShopEstbNumber()

@@ -213,6 +213,13 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testVendorPaymentSendMailValidateEmails()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
     public function testVendorPaymentBulkExecuteCallsServiceMethods()
     {
         $this->ba->proxyAuth();
@@ -241,5 +248,50 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('getReportingInfo');
+    }
+
+    public function testBulkInvoiceDownload()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('bulkInvoiceDownload')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('bulkInvoiceDownload');
+    }
+
+    public function testEditInvoice()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('updateInvoiceFileId')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('updateInvoiceFileId');
+    }
+
+    public function testGetUfhFileStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getInvoicesFromUfh')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getInvoicesFromUfh');
     }
 }

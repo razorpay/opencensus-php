@@ -140,6 +140,25 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountCreateBatch' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'linked_account_create',
+                'name'  => 'LA batch',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'batch',
+                'type'          => 'linked_account_create',
+                'name'          => 'LA batch',
+                'status'        => 'created',
+                'total_count'   => 2,
+            ],
+        ],
+    ],
 
     'testBatchRawAPIGetAllBatches' => [
         'request' => [

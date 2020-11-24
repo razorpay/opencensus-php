@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Response;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
+use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 
 class Core extends Base\Core
 {
@@ -40,6 +44,52 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    /**
+     * @param string $searchString
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function probeCompanySearch(string $searchString): array
+    {
+        $this->trace->info(TraceCode::BVS_COMPANY_SEARCH_REQUEST, ['input' => $searchString]);
+
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.bvs.mock'];
+
+        $response = null;
+
+        if ($mock === true)
+        {
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
+
+            $companySearchMock = new CompanySearchMock($searchString, $mockStatus);
+
+            $response = $companySearchMock->getResponse();
+        }
+        else
+        {
+            $response = (new BvsProbeClient())->companySearch($searchString);
+        }
+
+        $companySearchBase = new CompanySearchBaseResponse($response);
+
+        return $companySearchBase->getCompanySearchResponse();
+    }
+
+    public static function getProbeDimension(string $probeType): array
+    {
+        $dimension = [
+            Constant::CLIENT => $probeType
+        ];
+
+        return $dimension;
     }
 
     /**

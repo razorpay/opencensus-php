@@ -324,13 +324,16 @@ class FetchTest extends TestCase
                 $this->fail('Accesses must be non associative for ' . get_class($fetch));
             }
 
-            $duplicate = array_intersect($mergedAccesses, $accesses);
 
-            if (count($duplicate) > 0)
-            {
-                $duplicateAccesses = implode(',', $duplicate);
-                $this->fail('Duplicate accesses for ' . get_class($fetch) . ' : ' . $duplicateAccesses);
-            }
+            // Removing this as now we require some similar access rules across different auth
+            // Example : for dispute fetch, expand_each rule is needed for both in proxy and admin auth.
+//            $duplicate = array_intersect($mergedAccesses, $accesses);
+//
+//            if (count($duplicate) > 0)
+//            {
+//                $duplicateAccesses = implode(',', $duplicate);
+//                $this->fail('Duplicate accesses for ' . get_class($fetch) . ' : ' . $duplicateAccesses);
+//            }
 
             $mergedAccesses = array_merge($mergedAccesses, $accesses);
         }

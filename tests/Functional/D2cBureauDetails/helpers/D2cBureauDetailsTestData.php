@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
 
@@ -115,6 +116,45 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testFetchBureauReportWithInvalidContactFailure' => [
+        'request' => [
+            'url' => '/los/d2c_bureau_details',
+            'method' => 'post',
+            'content'   => [
+                'merchant_id'   => '10000000000000',
+                'user_id'       => '20000000000000',
+                'otp'           => '0007',
+                'token'         => 'BUIj3m2Nx2VvVj',
+                'd2c_bureau_detail'    => [
+                    'first_name'      => 'john',
+                    'last_name'       => 'doe',
+                    'contact_mobile'  => '9999999999',
+                    'email'           => 'test@razorpay.com',
+                    'address'         => 'Adress',
+                    'city'            => 'city',
+                    'state'           => 'PB',
+                    'pincode'         => '560030',
+                    'pan'             => 'ABCDE1234F',
+                    'date_of_birth'   => '1996-10-10',
+                    'gender'          => 'male'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The phone number entered isn\'t linked to your PAN. Please use mobile number 99XXXXX243',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT,
         ],
     ],
 

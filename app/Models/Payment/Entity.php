@@ -4259,3 +4259,4 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $currentPaymentStatus;
     }
 }
+

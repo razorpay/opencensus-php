@@ -45,13 +45,13 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
-
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
             'merchant_id'   => $this->merchant->getId(),
             'user_id'       => isset($this->user) ? ($this->user->getId()) : null,
             'input'         => $input,
         ]);
+
+        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
 
         $this->validateIfOndemandMerchant();
 

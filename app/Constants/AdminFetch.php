@@ -2851,6 +2851,22 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
+
+            Entity::REQUEST_LOG => [
+                'entity_id'   => [
+                    Fetch::LABEL => 'Entity ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'entity_type' => [
+                    Fetch::LABEL => 'Entity Type',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'route_name'  => [
+                    Fetch::LABEL => 'Route Name',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
         ];
 
         //

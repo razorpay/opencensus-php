@@ -9,12 +9,15 @@ use RZP\Trace\TraceCode;
 use RZP\lib\FuzzyMatcher;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 use RZP\Models\FundAccount\Validation\Core as FundAccountValidationCore;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidationEntity;
 use RZP\Models\FundAccount\Validation\AccountStatus as FundAccountValidationAccountStatus;
 use Throwable;
@@ -286,8 +289,21 @@ class PennyTesting extends Base\Core
                 }
                 else
                 {
-                    $detailCore->sendOnboardingJourneySms(
-                        $merchantDetails, SmsTemplates::PENNY_TESTING_FAILURE);
+                    $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+                        RazorxTreatment::WHATSAPP_NOTIFICATIONS);
+
+                    if($isWhatsappEnabled === true)
+                    {
+                        $args = [
+                            'merchant'  => $merchant
+                        ];
+                        (new OnboardingNotificationHandler($args))->sendForEvent(Events::PENNY_TESTING_FAILURE);
+                    }
+                    else
+                    {
+                        $detailCore->sendOnboardingJourneySms(
+                            $merchantDetails, SmsTemplates::PENNY_TESTING_FAILURE);
+                    }
                 }
 
                 break;

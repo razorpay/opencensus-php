@@ -162,6 +162,10 @@ class Core extends Base\Core
                                                    Entity $settlementOndemandPayout,
                                                    $response)
     {
+        $this->trace->info(TraceCode::UPDATE_SETTLEMENT_ONDEMAND_PAYOUT_STATUS,
+                           ['payout_id' => $payoutId, 'status' => $payoutStatus]
+        );
+
         if ((empty($payoutId) === true) or
             (in_array($payoutStatus, self::PAYOUT_VALID_STATUS_LIST, true) === false))
         {

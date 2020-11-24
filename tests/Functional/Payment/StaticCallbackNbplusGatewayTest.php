@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-class StaticCallbackNbplusGatewayTest extends NbPlusPaymentServiceTest
+class StaticCallbackNbplusGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {
@@ -13,6 +13,8 @@ class StaticCallbackNbplusGatewayTest extends NbPlusPaymentServiceTest
         $this->bank = 'KVBL';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)

@@ -165,6 +165,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string|max:20',
         Entity::TYPE                       => 'sometimes|array',
@@ -365,6 +366,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -378,6 +380,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
     ];
 
     protected static $emiSbiTerminalRules = [
@@ -402,6 +405,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $isgEditTerminalRules = [
@@ -442,6 +446,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
     ];
 
     protected static $amexEditTerminalRules = [
@@ -517,6 +522,7 @@ class Validator extends Base\Validator
         Entity::CAPABILITY                 => 'sometimes',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -543,12 +549,14 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
     ];
 
     protected static $upiIciciEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_icici',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::TYPE                       => 'sometimes|array',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',

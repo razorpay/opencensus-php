@@ -11,6 +11,7 @@ use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
+use RZP\Models\Merchant\MerchantNotificationConfig\Entity as MerchantNotificationConfigEntity;
 
 final class FactoryData
 {
@@ -1545,6 +1546,23 @@ final class FactoryData
             'created_at'     => $faker->timestamp,
             'updated_at'     => $faker->timestamp,
             'deleted_at'     => null,
+        ]);
+
+        $factory(\RZP\Models\Merchant\MerchantNotificationConfig\Entity::class, [
+            MerchantNotificationConfigEntity::ID                          => $faker->uniqueid,
+            MerchantNotificationConfigEntity::MERCHANT_ID                 => '10000000000000',
+            MerchantNotificationConfigEntity::CONFIG_STATUS               => 'enabled',
+            MerchantNotificationConfigEntity::UPPER_THRESHOLD             => 100,
+            MerchantNotificationConfigEntity::LOWER_THRESHOLD             => 10,
+            MerchantNotificationConfigEntity::MODE                        => 'IMPS',
+            MerchantNotificationConfigEntity::NOTIFY_AFTER                => 900,
+            MerchantNotificationConfigEntity::NOTIFY_AT                   => $faker->timestamp,
+            MerchantNotificationConfigEntity::NOTIFICATION_EMAILS         => ['test@rzp.in', 'test2@rzp.in'],
+            MerchantNotificationConfigEntity::NOTIFICATION_MOBILE_NUMBERS => ['9898989898', '8888778888'],
+            MerchantNotificationConfigEntity::LAST_ENABLED_AT             => $faker->timestamp,
+            MerchantNotificationConfigEntity::LAST_DISABLED_AT            => $faker->timestamp,
+            MerchantNotificationConfigEntity::CREATED_AT                  => $faker->timestamp,
+            MerchantNotificationConfigEntity::UPDATED_AT                  => $faker->timestamp,
         ]);
     }
 }

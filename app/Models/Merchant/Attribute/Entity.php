@@ -19,24 +19,30 @@ class Entity extends Base\PublicEntity
     // Groups
     const ONBOARDING                    = 'onboarding';
     const X_MERCHANT_PREFERENCES        = 'x_merchant_preferences';
+    const X_SIGNUP                      = 'x_signup';
 
     // Types
     // ONBOARDING Types
     const MERCHANT_ONBOARDING_CATEGORY  = 'merchant_onboarding_category';
+    const CA_PAGE_VISITED               = 'ca_page_visited';
     // PREFERENCES Types
     const BUSINESS_CATEGORY             = 'business_category';
     const TEAM_SIZE                     = 'team_size';
     const MONTHLY_PAYOUT_COUNT          = 'monthly_payout_count';
 
     const GROUP_TYPE_MAP = [
-        Self::ONBOARDING => [
-            Self::MERCHANT_ONBOARDING_CATEGORY
+        self::X_SIGNUP => [
+            self::CA_PAGE_VISITED
         ],
 
-        Self::X_MERCHANT_PREFERENCES => [
-            Self::BUSINESS_CATEGORY,
-            Self::TEAM_SIZE,
-            Self::MONTHLY_PAYOUT_COUNT
+        self::ONBOARDING => [
+            self::MERCHANT_ONBOARDING_CATEGORY
+        ],
+
+        self::X_MERCHANT_PREFERENCES => [
+            self::BUSINESS_CATEGORY,
+            self::TEAM_SIZE,
+            self::MONTHLY_PAYOUT_COUNT
         ]
     ];
     protected $entity = 'merchant_attribute';

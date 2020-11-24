@@ -63,6 +63,9 @@ class Entity extends Base\PublicEntity
     // Expanded relation keys
     const TO                   = 'to';
 
+    // Relation
+    const TRANSACTION          = 'transaction';
+
     // Append attributes
     const RECIPIENT_DETAILS = 'recipient_details';
     const PARENT_PAYMENT_ID = 'parent_payment_id';
@@ -151,6 +154,10 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::RECIPIENT_DETAILS,
+    ];
+
+    protected $expanded = [
+        self::TRANSACTION
     ];
 
     protected $casts = [
@@ -684,6 +691,32 @@ class Entity extends Base\PublicEntity
         }
 
         $data = parent::toArrayPublic();
+
+        if (empty($data[Entity::ACCOUNT_CODE]) === true)
+        {
+            unset($data[Entity::ACCOUNT_CODE]);
+        }
+
+        return $data;
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        if ($this->isCreated() === true)
+        {
+            $this->public = [
+                self::RECIPIENT,
+                self::ACCOUNT_CODE,
+                self::AMOUNT,
+                self::CURRENCY,
+                self::NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+                self::ON_HOLD,
+                self::ON_HOLD_UNTIL,
+            ];
+        }
+
+        $data = parent::toArrayPublicWithExpand();
 
         if (empty($data[Entity::ACCOUNT_CODE]) === true)
         {

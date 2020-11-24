@@ -46,6 +46,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createLinkedAccount()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createLinkedAccount($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postSwitchProductMerchant()
     {
         $this->service()->switchProductMerchant();
@@ -71,6 +80,9 @@ class MerchantController extends Controller
 
     public function putMerchant($id)
     {
+        // this is temporary logging: to get all admins who uses this route
+        $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST, []);
+
         $input = Request::all();
 
         $data = $this->service()->edit($id, $input);
@@ -928,6 +940,9 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
+        // this is temporary logging: to get all admins who uses this route
+        $this->trace->info(TraceCode::MERCHANT_DETAILS_EDIT_REQUEST, []);
+
         $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetails($id, $input);
 
         return ApiResponse::json($response);
@@ -1061,6 +1076,21 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessDetails($input);
 
         return ApiResponse::json($response);
+    }
+
+    /**
+     * Gets list of companies and their matadata
+     * based on a string entered by user
+     *
+     *  @return mixed
+     */
+    public function getCompanySearchList()
+    {
+        $input = Request::all();
+
+        $results = $this->service(E::MERCHANT_DETAIL)->getCompanySearchList($input);
+
+        return ApiResponse::json($results);
     }
 
     /**
@@ -1823,6 +1853,17 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->partnerAccessMapBulkBulkUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * This function is called from oauth service.
+     * It is responsible for sending banking accounts webhook to pure play partners.
+     */
+    public function sendBankingAccountsViaWebhook(string $id)
+    {
+        $response = $this->service()->triggerMerchantBankingAccountsWebhook($id);
 
         return ApiResponse::json($response);
     }

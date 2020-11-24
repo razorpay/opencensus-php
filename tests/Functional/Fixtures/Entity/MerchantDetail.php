@@ -138,6 +138,7 @@ class MerchantDetail extends Base
             "business_pan_url"              => "124",
             "business_proof_url"            => "124",
             "promoter_address_url"          => "124",
+            "gstin"                         => "07AADCB2230M1ZV",
         ];
 
         $return = array_replace($return, $attributes);

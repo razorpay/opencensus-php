@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
 use Carbon\Carbon;

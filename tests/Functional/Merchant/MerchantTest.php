@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -89,6 +90,7 @@ class MerchantTest extends TestCase
     use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
+    use TestsBusinessBanking;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -270,7 +272,7 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1->getId());
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -2037,6 +2039,40 @@ class MerchantTest extends TestCase
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
 
+    public function testUpdateBankAccountAdminProxyAuth()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->makeRequestAndGetContent([
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account',
+            'method'  => 'POST'
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals('admin', $action['maker_type']);
+        $this->assertEquals($admin['id'], $action['maker_id']);
+        $this->assertEquals('test admin', $action['maker']);
+    }
+
     public function testUpdateBankAccountWithAddressProof()
     {
         $documentType = 'address_proof_url';
@@ -2053,6 +2089,13 @@ class MerchantTest extends TestCase
         $this->startTest();
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant('10000000000000'));
+    }
+
+    public function testUpdateBankAccountLavbShouldFail()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->startTest();
     }
 
     public function testUpdateBankAccountViaPennyTesting()
@@ -2107,6 +2150,21 @@ class MerchantTest extends TestCase
     public function testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail()
     {
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+            return true;
+        });
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountViaPennyTestingFundsOnHoldFail()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);
+
+        $this->fixtures->merchant->edit($merchantId, ['hold_funds' => 1]);
 
         $this->startTest();
 
@@ -2173,13 +2231,15 @@ class MerchantTest extends TestCase
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
         $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
 
 
 
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fav = $this->getDbLastEntity('fund_account_validation', 'test');
 
         $this->fixtures->edit('fund_account_validation', $fav['id'], [
             'status'            => 'processed',
@@ -2215,6 +2275,7 @@ class MerchantTest extends TestCase
         // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
         $this->assertEquals($merchantId, $action['maker_id']);
         $this->assertEquals('merchant', $action['maker_type']);
+        $this->assertEquals($merchant->toArray()['name'], $action['maker']);
 
         $this->assertEquals('open', $action['state']);
         $this->assertEquals( 'POST', $action['method']);
@@ -4102,6 +4163,18 @@ class MerchantTest extends TestCase
         $this->assertEquals(sizeof($esAutomaticPricingRules), 12);
     }
 
+    public function testMerchantFeatures()
+    {
+        $this->fixtures->merchant->addFeatures(['vas_merchant']);
+
+        $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
+
+        $isEnabled = $merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT);
+
+        // check feature enabled
+        $this->assertTrue($isEnabled);
+    }
+
     public function testEnableEsScheduledSuccess()
     {
         // We expect a mail to be shot to merchant every time Es schedule enable succeeds
@@ -5150,6 +5223,8 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData[$name];
 
+        $this->replaceValuesRecursively($testData, $testDataToReplace);
+
         return $this->runRequestResponseFlow($testData);
     }
 
@@ -5535,7 +5610,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5568,7 +5643,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5666,7 +5741,7 @@ class MerchantTest extends TestCase
             return true;
         });
 
-        Mail::assertNotQueued(PasswordResetMail::class);
+        Mail::assertNotSent(PasswordResetMail::class);
 
         $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user2['id']);
 
@@ -5719,7 +5794,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5756,7 +5831,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -5869,7 +5944,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        Mail::assertSent(PasswordResetMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -6732,7 +6807,8 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff($expVal = 'off',
                                                                                                  $category2 = 'school',
-                                                                                                 $banking = true)
+                                                                                                 $banking = true,
+                                                                                                 array $testDataToReplace = [])
     {
         $this->enableRazorXTreatmentForXOnboarding($expVal);
 
@@ -6768,7 +6844,7 @@ class MerchantTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
-        $this->startTest();
+        $this->startTest($testDataToReplace);
 
         $liveBankingAccount = $this->getDbEntity('banking_account',
             [
@@ -6966,6 +7042,34 @@ class MerchantTest extends TestCase
 
     public function testMerchantProductSwitchDoesntFireIfBankingAlreadyEnabled() {
         $this->testMerchantProductSwitchFiresEvents(false, true);
+    }
+
+    public function testMerchantProductSwitchSavesSignupInfo()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                        'final_page' => 'razorpay.com/x/current-accounts/'
+                    ])
+                ]
+            ]
+        ];
+
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', false, $testDataToReplace);
+
+        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => 'ca_page_visited',
+                'value'   => '1'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
     }
 
     /**
@@ -7313,6 +7417,109 @@ class MerchantTest extends TestCase
 
     public function testGetOrgDetails()
     {
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendBankingAccountsViaWebhook()
+    {
+        $attributes = [
+            'account_type' => 'nodal',
+            'channel'      => 'yesbank',
+        ];
+
+        $baNodal = $this->createBankingAccount($attributes);
+
+        $rblCurrentAcc = $this->createBankingAccount(['id' => 'ABCde1234ABCdg']);
+
+        $iciciCurrentAcc = $this->createBankingAccount(['id'             => 'ABCde1234ABCla',
+                                                        'account_number' => '3334440041626905',
+                                                        'channel'        => 'icici']);
+
+        $this->fixtures->on('test')->create('banking_account', [
+            'id'                    => 'ABCde1234ABCha',
+            'account_number'        => '2224440041626874',
+            'account_ifsc'          => 'RATN0000088',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'sbi',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'balance_id'            => '',
+            'status'                => 'created',
+        ]);
+
+        $expectedEvent = [
+            'entity'     => 'event',
+            'event'      => 'banking_accounts.issued',
+            'account_id' => 'acc_10000000000000',
+            'contains'   => ['accounts'],
+            'payload'    => [
+                'accounts' => [
+                    'virtual' => [
+                        'account_number' => $baNodal->getAccountNumber(),
+                    ],
+                    'current' => [
+                        [
+                            'channel'        => 'rbl',
+                            'account_number' => $rblCurrentAcc->getAccountNumber(),
+                        ],
+                        [
+                            'channel'        => 'icici',
+                            'account_number' => $iciciCurrentAcc->getAccountNumber(),
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        // This webhook will be called for banking_accounts.issued event.
+        $this->expectWebhookEvent(
+            'banking_accounts.issued',
+            function(array $event) use ($expectedEvent) {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+            }
+        );
+
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendBankingAccountsViaWebhook1()
+    {
+        //only va exist for the merchant and no ca account.
+
+        $attributes = [
+            'account_type' => 'nodal',
+            'channel'      => 'yesbank',
+        ];
+
+        $baNodal = $this->createBankingAccount($attributes);
+
+        $expectedEvent = [
+            'entity'     => 'event',
+            'event'      => 'banking_accounts.issued',
+            'account_id' => 'acc_10000000000000',
+            'contains'   => ['accounts'],
+            'payload'    => [
+                'accounts' => [
+                    'virtual' => [
+                        'account_number' => $baNodal->getAccountNumber(),
+                    ]
+                ],
+            ],
+        ];
+
+        // This webhook will be called for banking_accounts.issued event.
+        $this->expectWebhookEvent(
+            'banking_accounts.issued',
+            function(array $event) use ($expectedEvent) {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+            }
+        );
+
         $this->ba->authServiceAuth();
 
         $this->startTest();

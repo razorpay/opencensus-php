@@ -169,6 +169,7 @@ class Route
         'payment_validate_vpa'                     => ['post',     'payments/validate/vpa',                          'PaymentController@postPaymentValidateVpa'                          ],
         'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
         'payment_meta_search'                      => ['post',     'payments/meta/reference',                        'PaymentController@postPaymentMetaReference'                        ],
+        'payment_meta_fetch_by_payment_id_action'  => ['get',      'payments/meta/{payment_id}/{action_type}',       'PaymentController@getPaymentMetaByPaymentIdAction'                 ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -202,7 +203,6 @@ class Route
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
         'scrooge_refunds_retry_without_verify'     => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
         'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
-        'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
@@ -473,8 +473,8 @@ class Route
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_update_website_status'=> ['get',      'merchant/activation/websites/status',            'MerchantController@getWebsiteStatus'                               ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
-        'merchant_activation_business_details'
-                                                   => ['get',      'merchant/activation/business_details',           'MerchantController@getBusinessDetails'                             ],
+        'merchant_activation_business_details'     => ['get',      'merchant/activation/business_details',           'MerchantController@getBusinessDetails'                             ],
+        'merchant_activation_company_search'       => ['get',      'merchant/activation/company_search',             'MerchantController@getCompanySearchList'                           ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
@@ -521,6 +521,7 @@ class Route
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
+        'setl_fetch_source_details'                => ['post',     'settlements/{id}/transaction_source_details',    'SettlementController@getSettlementTransactionsSourceDetails'       ],
         'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
@@ -557,6 +558,8 @@ class Route
         'create_settlement_entry'                  => ['post',     'settlements/create',                             'SettlementController@createSettlementEntry'                        ],
         'setl_status_update'                       => ['post',     'settlements/status/update',                      'SettlementController@postSettlementCreateStatusUpdate'             ],
         'setl_transactions_verify'                 => ['post',     'settlements/transactions/verify',                'SettlementController@settlementTransactionsVerify'                 ],
+        'setl_sms_notification_status'             => ['get',      'settlements/sms_notification/status',            'SettlementController@getSettlementSmsNotificationStatus'           ],
+        'setl_sms_notification_toggle'             => ['post',     'settlements/sms_notification/toggle',            'SettlementController@toggleSettlementSmsNotification'              ],
         //settlement service proxy routes
         'setl_admin_fetch'                         => ['post',     'admin/settlements/dashboard/fetch',              'SettlementController@serviceFetch'                                 ],
         'setl_admin_fetch_multiple'                => ['post',     'admin/settlements/dashboard/fetch_multiple',     'SettlementController@serviceFetchMultiple'                         ],
@@ -763,6 +766,8 @@ class Route
         'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
         'capital_cards_service'                    => ['any',      'capital_cards/service/{path?}',                  'CapitalCardsController@handleProxyRequests'                        ],
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
+        'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
+        'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -1133,7 +1138,10 @@ class Route
         'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
         'vendor_payment_ocr_accuracy_cron'         => ['post',     'vendor-payments/_meta/ocr-accuracy-check',       'VendorPaymentController@ocrAccuracyCheck'                          ],
         'vendor_payment_mark_as_paid'              => ['post',     'vendor-payments/mark-as-paid',                   'VendorPaymentController@markAsPaid'                                ],
-        'vendor_payment_reporting_info'            => ['get',     'vendor-payments/_meta/get-reporting-info',       'VendorPaymentController@getReportingInfo'                          ],
+        'vendor_payment_reporting_info'            => ['get',      'vendor-payments/_meta/get-reporting-info',       'VendorPaymentController@getReportingInfo'                          ],
+        'vendor_payment_bulk_invoice_download'     => ['post',     'vendor-payments/_meta/bulk-invoice-download',    'VendorPaymentController@bulkInvoiceDownload'                       ],
+        'vendor_payment_update_invoice_file_id'    => ['post',     'vendor-payments/{id}/update-invoice-file-id',    'VendorPaymentController@updateInvoiceFileId'                       ],
+        'vendor_payment_get_invoice_zip_file'       => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                       ],
 
 
         // Tax Payments
@@ -1150,10 +1158,13 @@ class Route
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
         'tax_payments_list'                        => ['get',     'tax-payments/',                                   'TaxPaymentController@listTaxPayments'                              ],
+        'tax_payments_create'                      => ['post',    'tax-payments/',                                   'TaxPaymentController@create'                                       ],
         'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                               'TaxPaymentController@getTaxPayment'                                ],
         'tax_payments_mark_as_paid'                => ['post',    'tax-payments/mark-as-paid',                       'TaxPaymentController@markAsPaid'                                   ],
         'tax_payments_challan_upload'              => ['post',    'tax-payments/upload-challan',                     'TaxPaymentController@uploadChallan'                                ],
-        'tax_payments_edit'                        => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@edit'                                         ],
+        'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
+        'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
+        'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                         'TaxPaymentController@cancel'                                      ],
 
 
         // Payout Links
@@ -1225,6 +1236,7 @@ class Route
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
+        'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -1443,6 +1455,7 @@ class Route
         'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
         'dispute_merchant_emails_initiate'         => ['post',     'disputes/merchant_emails/initiate',              'DisputeController@initiateMerchantEmails'                          ],
         'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
+        'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2014,6 +2027,24 @@ class Route
         'enable_low_balance_config'               => ['post',       'low_balance_configs/{id}/enable',        'LowBalanceConfigController@enableConfig'],
         'low_balance_config_alert_cron'           => ['post',       'low_balance_configs/alert',              'LowBalanceConfigController@alert'],
 
+        // merchant notification config APIs
+        'create_merchant_notification_config'     => ['post',   'merchant_notification_configs',              'MerchantNotificationConfigController@create'],
+        'update_merchant_notification_config'     => ['patch',  'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@update'],
+        'fetch_merchant_notification_config'      => ['get',    'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@get'],
+        'list_merchant_notification_config'       => ['get',    'merchant_notification_configs',              'MerchantNotificationConfigController@list'],
+        'delete_merchant_notification_config'     => ['delete', 'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@delete'],
+        'disable_merchant_notification_config'    => ['post',   'merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfig'],
+        'enable_merchant_notification_config'     => ['post',   'merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfig'],
+
+        // Admin merchant notification config APIs
+        'create_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@createAsAdmin'],
+        'update_merchant_notification_config_admin'     => ['patch',  'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@updateAsAdmin'],
+        'fetch_merchant_notification_config_admin'      => ['get',    'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@getAsAdmin'],
+        'list_merchant_notification_config_admin'       => ['get',    'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@listAsAdmin'],
+        'delete_merchant_notification_config_admin'     => ['delete', 'admin/merchants/{merchantId}/merchant_notification_configs/{id}',         'MerchantNotificationConfigController@deleteAsAdmin'],
+        'disable_merchant_notification_config_admin'    => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfigAsAdmin'],
+        'enable_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfigAsAdmin'],
+
         'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
         'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
         'bulk_copy_internal_instrument_request'   => ['post',      'internal_instrument_request',                               'InstrumentRequestController@bulkCopyInternalInstrumentRequest' ],
@@ -2025,6 +2056,7 @@ class Route
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
+        'merchant_instrument_request_create_bulk'           =>  ['post',    'merchant_instrument_requests',                     'InstrumentRequestController@createMerchantInstrumentRequests'   ],
         'merchant_instrument_request_get_by_merchant_id'    =>  ['get',     'merchant_instrument_request',                      'InstrumentRequestController@getMerchantInstrumentRequest'       ],
         'merchant_instrument_status_get_by_merchant_id'     =>  ['get',     'merchant_instrument_status',                       'InstrumentRequestController@getMerchantInstrumentStatus'        ],
         'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
@@ -2051,6 +2083,7 @@ class Route
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
+        'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
 
     ];
 
@@ -2477,7 +2510,6 @@ class Route
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account_internal',
         'batch_process_file',
-        'billdesk_create_cancelled_refunds',
         'card_update_saved',
         'currency_update_rates',
         'currency_update_rates_multiple',
@@ -2619,6 +2651,7 @@ class Route
         'gateway_downtime_detection_purge_keys',
         'downtime_detection_cron',
         'merchant_get_org_details',
+        'merchant_banking_accounts_webhook',
         'banking_account_statement_process_cron',
         'banking_account_statement_channel_fetch',
         'subscription_registration_auto_charge',
@@ -2732,6 +2765,8 @@ class Route
         'dispute_merchant_emails_initiate',
         'fd_customer_dispute',
         'fts_channel_notification',
+        'dispute_reason_fetch_internal',
+        'payment_meta_fetch_by_payment_id_action',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2822,6 +2857,7 @@ class Route
         'settlement_ondemand_fees_dashboard',
         'loc_service',
         'capital_cards_service',
+        'capital_collections_service',
         'merchant_verify_attributes',
         'feature_get_status',
         'feature_get_all',
@@ -2846,6 +2882,8 @@ class Route
         'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_get_details',
+        'setl_sms_notification_status',
+        'setl_sms_notification_toggle',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'card_fetch_multiple',
@@ -2922,6 +2960,7 @@ class Route
         'merchant_one_time_token',
         'merchant_activation_business_categories',
         'merchant_activation_business_details',
+        'merchant_activation_company_search',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'merchant_razorx_bulk_evaluate',
@@ -3149,6 +3188,9 @@ class Route
         'vendor_payment_get_ocr_data',
         'vendor_payment_mark_as_paid',
         'vendor_payment_reporting_info',
+        'vendor_payment_bulk_invoice_download',
+        'vendor_payment_update_invoice_file_id',
+        'vendor_payment_get_invoice_zip_file',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -3180,10 +3222,13 @@ class Route
         'tax_payments_mark_as_paid',
         'tax_payments_challan_upload',
         'tax_payments_edit',
+        'tax_payments_cancel',
+        'tax_payments_update_challan_file_id',
         'merchant_credits_balance_fetch',
         'tax_payments_list',
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
+        'tax_payments_create',
         'payouts_scheduled_time_slots',
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
@@ -3212,6 +3257,18 @@ class Route
         'virtual_account_create_for_internal',
         'subscription_get_revenue_by_source',
         'payouts_bulk_sample_file',
+
+        'setl_fetch_source_details',
+        'linked_account_create_batch',
+
+        // merchant notification config
+        'create_merchant_notification_config',
+        'update_merchant_notification_config',
+        'fetch_merchant_notification_config',
+        'list_merchant_notification_config',
+        'delete_merchant_notification_config',
+        'disable_merchant_notification_config',
+        'enable_merchant_notification_config',
     ];
 
     //
@@ -3230,6 +3287,7 @@ class Route
         'paper_nach_approve_failure',
         'loc_service_admin',
         'capital_cards_admin',
+        'capital_collections_admin',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
         'los_service_admin',
@@ -3836,6 +3894,7 @@ class Route
         'delete_internal_instrument_request_by_id',
         'fetch_internal_instrument_requests',
         'patch_internal_instrument_requests',
+        'merchant_instrument_request_create_bulk',
         'instrument_request_razorx_admin',
         'fetch_merchant_instrument_requests',
         'wfs_config_create',
@@ -3901,12 +3960,22 @@ class Route
         'subscription_clear_feature',
 
         'fee_recovery_payout_manual_retry',
+
+        // Admin merchant notification configs
+        'create_merchant_notification_config_admin',
+        'update_merchant_notification_config_admin',
+        'fetch_merchant_notification_config_admin',
+        'list_merchant_notification_config_admin',
+        'delete_merchant_notification_config_admin',
+        'disable_merchant_notification_config_admin',
+        'enable_merchant_notification_config_admin',
     ];
 
     public static $routePermission = [
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'capital_cards_service'                    => Permission::CAPITAL_DEVELOPER,
+        'capital_collections_admin'                => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
@@ -4651,6 +4720,7 @@ class Route
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => '*',
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+        'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
@@ -4685,6 +4755,24 @@ class Route
         'salesforce_opportunity_details'              => '*',
 
         'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
+
+        // merchant notification configs
+        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
+        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
+        'fetch_merchant_notification_config'            => '*',
+        'list_merchant_notification_config'             => '*',
+        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
+        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
+        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
+
+        // Admin merchant notification configs
+        'create_merchant_notification_config_admin'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'update_merchant_notification_config_admin'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'fetch_merchant_notification_config_admin'            => Permission::FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'list_merchant_notification_config_admin'             => Permission::LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'delete_merchant_notification_config_admin'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'disable_merchant_notification_config_admin'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'enable_merchant_notification_config_admin'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
     ];
 
     public static $bankingRoutePermissions = [
@@ -4776,6 +4864,9 @@ class Route
         'vendor_payment_bulk_cancel'                   => Permission::CANCEL_VENDOR_PAYMENTS,
         'vendor_payment_mark_as_paid'                  => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_reporting_info'                => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_update_invoice_file_id'        => Permission::EDIT_VENDOR_PAYMENTS,
+        'vendor_payment_bulk_invoice_download'         => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_get_invoice_zip_file'          => Permission::VIEW_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -4885,7 +4976,10 @@ class Route
         'tax_payments_monthly_summary'                 => Permission::VIEW_TAX_PAYMENTS,
         'tax_payments_mark_as_paid'                    => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_challan_upload'                  => Permission::PAY_TAX_PAYMENTS,
-        'tax_payments_edit'                            => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_update_challan_file_id'          => Permission::PAY_TAX_PAYMENTS,
+        'tax_payments_edit'                            => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_cancel'                          => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
 
@@ -5140,6 +5234,9 @@ class Route
             'payment_get_authenticate_url',
             'payment_get_authentication_entity',
             'payment_get_authorization_entity',
+            'dispute_fetch',
+            'dispute_reason_fetch_internal',
+            'payment_meta_fetch_by_payment_id_action',
         ],
 
         'cron' => [
@@ -5193,7 +5290,6 @@ class Route
             'currency_update_rates_multiple',
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
-            'billdesk_create_cancelled_refunds',
             'schedule_migration',
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
@@ -5457,6 +5553,7 @@ class Route
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
             'merchant_get_org_details',
+            'merchant_banking_accounts_webhook',
         ],
 
         'reporting' => [
@@ -5516,6 +5613,7 @@ class Route
             'mpans_bulk',
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
+            'linked_account_create_batch',
         ],
 
         'stork' => [
@@ -5931,6 +6029,15 @@ class Route
     ];
 
     //
+    // Routes for which Request Logging is enabled.
+    // These routes have been tested to work with RequestLogHandler middleware
+    //
+    const REQUEST_LOG_ROUTES = [
+        'payout_cancel',
+        'create_low_balance_config'
+    ];
+
+    //
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //
     const BANKING_SPECIFIC_ROUTES = [
@@ -5988,6 +6095,9 @@ class Route
         'vendor_payment_get_ocr_data',
         'vendor_payment_mark_as_paid',
         'vendor_payment_reporting_info',
+        'vendor_payment_bulk_invoice_download',
+        'vendor_payment_update_invoice_file_id',
+        'vendor_payment_get_invoice_zip_file',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',
@@ -6058,9 +6168,13 @@ class Route
         'tax_payments_list',
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
+        'tax_payments_create',
         'tax_payments_mark_as_paid',
         'tax_payments_challan_upload',
+        'tax_payments_update_challan_file_id',
         'tax_payments_edit',
+        'tax_payments_cancel',
+
     ];
 
     public static $routesWithV2Prefix = [];
@@ -6074,6 +6188,7 @@ class Route
         'merchant_replace_key'                  => [Mode::LIVE],
         'user_2fa_change_setting'               => [Mode::LIVE, Mode::TEST],
         'merchant_2fa_change_setting'           => [Mode::LIVE, Mode::TEST],
+        'merchant_bank_account_update'          => [Mode::LIVE, Mode::TEST],
     ];
 
     // Route specific config for running read queries on mysql db:
@@ -6255,7 +6370,6 @@ class Route
         'subscription_cancel_due'                           => HeartbeatLagChecker::HEARTBEAT,
         'payment_update_on_hold'                            => HeartbeatLagChecker::HEARTBEAT,
         'scrooge_refund_verify_bulk'                        => HeartbeatLagChecker::SLAVE,
-        'billdesk_create_cancelled_refunds'                 => HeartbeatLagChecker::SLAVE,
         'gateway_validate_unknown_refund'                   => HeartbeatLagChecker::SLAVE,
         'merchant_daily_report'                             => HeartbeatLagChecker::SLAVE,
         'merchant_post_beneficiary_file'                    => HeartbeatLagChecker::SLAVE,
@@ -6513,6 +6627,11 @@ class Route
         return self::BANKING_SPECIFIC_ROUTES;
     }
 
+    public static function getRequestLogRoutes()
+    {
+        return self::REQUEST_LOG_ROUTES;
+    }
+
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
         [$schema, $host, $port] = $this->getSchemaHostAndPort();
@@ -6729,6 +6848,11 @@ class Route
         if (in_array($name, array_keys(self::$idempotentRoutesConfig, true), true) === true)
         {
             $route->middleware('merchant_idempotency_handler');
+        }
+
+        if (in_array($name, self::REQUEST_LOG_ROUTES, true) === true)
+        {
+            $route->middleware('request_log_handler');
         }
     }
 

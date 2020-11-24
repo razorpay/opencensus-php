@@ -2031,7 +2031,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
                 ],
@@ -2077,7 +2076,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
                     'ESFB'   => 'Equitas Small Finance Bank',
@@ -2193,7 +2191,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                 ],
             ],
         ],
@@ -2436,7 +2433,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                     'YESB'   => 'Yes Bank'
                 ],
                 '1000AtomShared' => [
@@ -2471,7 +2467,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                 ],
                 'success'             => true
             ]
@@ -2500,7 +2495,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                     'YESB'   => 'Yes Bank'
                 ],
                 '1000AtomShared' => [
@@ -2522,7 +2516,6 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
-                    'VIJB'   => 'Vijaya Bank',
                 ],
                 'success' => true,
             ]

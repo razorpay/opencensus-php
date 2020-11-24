@@ -23,6 +23,8 @@ class NetbankingVijayaCombinedFileTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingVijayaCombinedFileTestData.php';
 
         parent::setUp();

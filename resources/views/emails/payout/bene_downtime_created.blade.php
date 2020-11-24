@@ -1,0 +1,1 @@
+We are observing issues with processing transactions to vendors with {{ $bank_name }} ({{ $ifsc_short_code }}) account. Due to this, you will observe high failure rates and/or payouts stuck in the initiated state for the below modes.

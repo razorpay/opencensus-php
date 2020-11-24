@@ -9,9 +9,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Gateway\File\Processor\Refund\Sib;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingSibCombinedFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingSibCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     const REFUND_FIELDS = [
         Sib::SERIAL_NO,
@@ -31,6 +31,8 @@ class NbplusNetbankingSibCombinedFileTest extends NbPlusPaymentServiceTest
         $this->bank = 'SIBL';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_sib_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testNetbankingSibCombinedFile()
@@ -38,7 +40,7 @@ class NbplusNetbankingSibCombinedFileTest extends NbPlusPaymentServiceTest
         Mail::fake();
 
         // full refund
-        $paymentArray  = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $paymentArray  = $this->payment;
 
         $payment1      = $this->doAuthAndCapturePayment($paymentArray);
         $refundFull    = $this->refundPayment($payment1['id']);

@@ -155,6 +155,17 @@ class Validator extends Base\Validator
         'settlement_ids.*'  => 'required|string|size:14',
     ];
 
+    protected static $settlementTransactionSourceDetailRules = [
+        'source_id'        => 'sometimes|string',
+        'source_type'      => 'required|string',
+        'skip'             => 'required|integer',
+        'limit'            => 'required|integer',
+    ];
+
+    protected static $settlementSmsNotificationRules = [
+        'enable'    => 'required|boolean',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);

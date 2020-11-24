@@ -93,6 +93,7 @@ class ViewDataSerializer extends Base\Core
             'custom_labels'    => $this->getCustomLabelValues(),
             'checkout_options' => $this->getCheckoutOptions(),
             'view_preferences' => $this->getViewPreferences(),
+            E::ORG             => $this->serializeOrgPropertiesForHosted(),
         ];
     }
 
@@ -105,7 +106,8 @@ class ViewDataSerializer extends Base\Core
             'key_id'           => $this->getMerchantKeyId(),
             'merchant'         => $this->serializeMerchantForHosted(),
             'invoice'          => $this->serializeInvoiceForHosted(),
-            'options'          => $this->getOptions()
+            'options'          => $this->getOptions(),
+            E::ORG             => $this->serializeOrgPropertiesForHosted(),
         ];
     }
 
@@ -116,6 +118,31 @@ class ViewDataSerializer extends Base\Core
         $this->addAdditionalAttributesForInternal($serialized);
 
         return $serialized;
+    }
+
+    protected function serializeOrgPropertiesForHosted()
+    {
+        $org = $this->merchant->org;
+
+        $branding = [
+            'show_rzp_logo' => true,
+            'branding_logo' => '',
+        ];
+
+        switch ($org->getCustomCode())
+        {
+            case 'axis':
+
+                $branding['show_rzp_logo'] = false;
+
+                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
+
+                break;
+        }
+
+        return [
+            'branding'  => $branding
+        ];
     }
 
     /**

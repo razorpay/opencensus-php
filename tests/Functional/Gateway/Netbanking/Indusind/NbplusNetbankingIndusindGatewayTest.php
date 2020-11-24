@@ -10,9 +10,9 @@ use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
 use RZP\Models\Transaction\Statement\Entity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceTest
+class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     /**
      * @var array
@@ -25,7 +25,7 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceTest
     /**
      * @var array
      */
-    private $payment;
+    protected $payment;
 
     public function setUp()
     {

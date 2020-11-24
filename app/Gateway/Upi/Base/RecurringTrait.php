@@ -139,6 +139,11 @@ trait RecurringTrait
 
         // Action is mostly needed to process the response
         $input[Constants::UPI][Entity::ACTION] = $upi->getAction();
+
+        if ($this->getAction() === Action::AUTHENTICATE)
+        {
+            $input[Constants::UPI][Entity::REMARK] = $this->getPaymentRemark($input);
+        }
     }
 
     protected function isFirstRecurringPayment(array $input): bool
@@ -412,7 +417,7 @@ trait RecurringTrait
             Entity::MERCHANT_REFERENCE      => $input['upi_mandate']['id'],
         ];
 
-        if ($this->isRunningOnDark() === true)
+        if (($this->isRunningOnDark() === true) || ($this->isRunningOnHallmark() === true))
         {
             // Env=1 is set for dark
             $attr[Entity::GATEWAY_DATA][Constants::ENVIRONMENT] = 1;

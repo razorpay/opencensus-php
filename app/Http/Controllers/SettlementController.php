@@ -325,6 +325,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSettlementTransactionsSourceDetails($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getSettlementTransactionsSourceDetails($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function serviceFetch()
     {
         $input = Request::all();
@@ -596,6 +605,22 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->getSettlementSourceDetails($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSettlementSmsNotificationStatus()
+    {
+        $data = $this->service()->getSettlementSmsNotificationStatus();
+
+        return ApiResponse::json($data);
+    }
+
+    public function toggleSettlementSmsNotification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->toggleSettlementSmsNotification($input);
 
         return ApiResponse::json($data);
     }

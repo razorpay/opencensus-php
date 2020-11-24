@@ -2,12 +2,31 @@
 
 namespace RZP\Constants;
 
+use RZP\Http\Route;
+
 class Tracing
 {
     // constants related to distributed tracing setup
-
     const SERVICE_NAME_IN_JAEGER      =   'api';
 
+    // all routes which are to be excluded from distributed tracing
+    public static function getRoutesToExclude(): array
+    {
+        $allCronRoutes =  Route::$internalApps['cron'];
+
+        // for now it's only cron routes. add anything else here
+        $routesToExclude = $allCronRoutes ;
+        return $routesToExclude;
+    }
+
+    // all routes which are to be included from distributed tracing
+    public static function getRoutesToInclude(): array
+    {
+        $routesToInclude = Route::$public;
+
+        return $routesToInclude;
+    }
+    
     public static function getServiceName($app): string
     {
         $app_mode = $app['config']->get('applications.jaeger.app_mode');

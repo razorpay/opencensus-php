@@ -2102,6 +2102,14 @@ trait Authorize
 
     protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)
     {
+        if (($payment->getMethod() === Method::EMANDATE) and
+            ($payment->isRecurringTypeInitial() === true) and
+            ($payment->getAmount() > 0) and
+            (Payment\Gateway::isDirectDebitEmandateBank($payment->getBank()) === true))
+        {
+            return;
+        }
+
         if (($token->getMaxAmount() !== null) and
             ($payment->getAmount() > $token->getMaxAmount()))
         {
@@ -2749,14 +2757,23 @@ trait Authorize
 
         $productType = $payment->order ? $payment->order->getProductType() : null;
 
+        $orderId = $payment->order ? $payment->order->getId() : null;
+
         if ($merchant->isInternational() === false)
         {
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod()
+            ];
+
+            if ($orderId !== null)
+            {
+                $data['order_id'] = Order\Entity::getIdPrefix().$orderId;
+            }
+
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod()
-                ]);
+                $data);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
@@ -2782,12 +2799,19 @@ trait Authorize
         {
             $errorCode = ProductInternationalMapper::PRODUCT_ERROR_CODE[$paymentProduct];
 
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod(),
+                'product'    => $paymentProduct
+            ];
+
+            if ($orderId !== null)
+            {
+                $data['order_id'] = Order\Entity::getIdPrefix().$orderId;
+            }
+
             $e = new Exception\BadRequestException($errorCode, null,
-                [
-                    'payment_id' => $payment->getPublicId(),
-                    'method' => $payment->getMethod(),
-                    'product' => $paymentProduct
-                ]);
+                $data);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
@@ -6063,6 +6087,7 @@ trait Authorize
     protected function  canRunIvrFlow(Payment\Entity $payment)
     {
         if (($payment->merchant->isIvrEnabled() === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
@@ -7459,6 +7484,11 @@ trait Authorize
         // check only for headless need to figure out for IVR and Axis express pay
         if (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === true) and
             ($this->headlessError === false))
+        {
+            return false;
+        }
+
+        if (($this->canRunIvrFlow($payment) === true))
         {
             return false;
         }

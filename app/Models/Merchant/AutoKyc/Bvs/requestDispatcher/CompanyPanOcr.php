@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
-use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -25,7 +24,6 @@ class CompanyPanOcr extends Base
                 ($this->merchantDetails->getCompanyPanDocVerificationStatus() === BvsValidationConstants::PENDING) and
                 ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::BUSINESS_PAN_URL) !== null) and
                 ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_BUSINESS_PAN_OCR) === true));
-
     }
 
     /**

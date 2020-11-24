@@ -64,7 +64,6 @@ final class PreAuthenticate
 
         if (isset($jwt) === true)
         {
-            $this->trace->debug(TraceCode::PASSPORT_JWT_PARSE_INVOKED);
             $this->reqCtx->hasPassportJwt = true;
 
             try

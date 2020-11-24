@@ -1002,14 +1002,11 @@ class VirtualAccountTest extends TestCase
 
         $lastBankAccount = $this->getLastEntity('bank_account', true);
 
-        $response = $this->closeVirtualAccountViaEdit($virtualAccount['id']);
+        $this->expectException(\Rzp\Exception\ExtraFieldsException::class);
 
-        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+        $this->expectExceptionMessage('status is/are not required and should not be sent');
 
-        // Because Bank Account is not deleted when VA is closed via edit flow
-        $this->assertEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
-
-        $this->assertEquals(Status::CLOSED, $response['status']);
+        $this->closeVirtualAccountViaEdit($virtualAccount['id']);
     }
 
     public function testVirtualAccountPay()
@@ -1298,6 +1295,20 @@ class VirtualAccountTest extends TestCase
             $this->assertEquals('captured', $payment['status']);
         }
 
+    }
+
+    public function testFetchVirtualAccountsMultiple()
+    {
+        // Creates virtual account on primary balance.
+        $this->createVirtualAccount(['description' => 'Testing VA fetch after ES sync', 'customer_id' => 'cust_100000customer']);
+
+        $input = $this->testData[__FUNCTION__]['input'];
+
+        $expectedOutput = $this->testData[__FUNCTION__]['output'];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input1']));
+
+        $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input2']));
     }
 
     public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()

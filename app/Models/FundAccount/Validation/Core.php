@@ -246,8 +246,8 @@ class Core extends Base\Core
 
                     return;
                 },
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
-                20);
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         catch (\Throwable $e)
         {
@@ -285,8 +285,8 @@ class Core extends Base\Core
 
                     return;
                 },
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
-                20);
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         catch (\Throwable $e)
         {
@@ -324,8 +324,8 @@ class Core extends Base\Core
 
                     return;
                 },
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
-                20);
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         catch (\Throwable $e)
         {

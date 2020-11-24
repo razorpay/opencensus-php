@@ -221,14 +221,6 @@ trait Refund
         return $this->refund($payment, $input, $batch);
     }
 
-    public function createRefundOnApiForCancelledBilldeskRefund(
-        Payment\Entity $payment,
-        string $refundId,
-        int $refundAmount)
-    {
-        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
-    }
-
     public function verifyInternalRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
@@ -1106,13 +1098,6 @@ trait Refund
         }
 
         return $this->prepareScroogeRefundResponse([], $verifyRefundResult);
-    }
-
-    protected function callGatewayForAlreadyRefunded($data)
-    {
-        $gatewayRefunded = $this->callGatewayFunction(Payment\Action::ALREADY_REFUNDED, $data);
-
-        return $gatewayRefunded;
     }
 
     protected function callGatewayForCreateRefundRecord(array $data)
@@ -2524,6 +2509,19 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
+
+        $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::DUPLICATE_RECEIPT_CHECK,
+                $this->mode
+        );
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->checkForDuplicateReceipt($payment, $input);
+        }
+
+
         $this->validatePaymentForRefund($payment, $input);
 
         // Captured payments of transfer cannot be refunded via direct API requests
@@ -2544,6 +2542,19 @@ trait Refund
         });
 
         return $this->refund($payment, $input, $batch, $batchID);
+    }
+
+    protected function checkForDuplicateReceipt(Payment\Entity $payment, array $input = [])
+    {
+        $receiptFromInput = $input[RefundEntity::RECEIPT] ?? null;
+        $receiptFromTable = (empty($receiptFromInput) === false) ? (Payment\Refund\Entity::whereRaw('receipt = ? and merchant_id = ?', 
+                                            [$receiptFromInput, $this->merchant->getId()])->exists()) : false;
+
+        if ((empty($receiptFromInput) === false) and ($receiptFromTable === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT, null, ['method' => $payment->getMethod()]);
+        }
     }
 
     protected function validatePaymentForRefund(Payment\Entity $payment, array $input = null)
@@ -2643,54 +2654,6 @@ trait Refund
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
-    }
-
-    protected function createRefundOnApiSeparately(
-        Payment\Entity $payment,
-        string $refundId,
-        int $refundAmount)
-    {
-        if ($payment->transaction === null)
-        {
-            throw new Exception\LogicException(
-                'Transaction expected but not present for payment',
-                null,
-                [
-                    'payment_id'    => $payment->getId(),
-                    'refund_id'     => $refundId
-                ]);
-        }
-
-        $input = [
-            'amount' => $refundAmount
-        ];
-
-        /** @var RefundEntity $refund */
-        $refund = $this->buildRefundEntity($payment, $input);
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        $refund->setId($refundId);
-
-        $data = [
-            'payment_id' => $payment->getId(),
-            'refund_id' => $refundId,
-            'refund_amount' => $refundAmount,
-        ];
-
-        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
-
-        if ($gatewayRefunded === false)
-        {
-            throw new Exception\LogicException(
-                'Should have been refunded on gateway but is not',
-                ErrorCode::SERVER_ERROR_GATEWAY_NOT_REFUNDED,
-                $data);
-        }
-
-        $this->refund->setGatewayRefunded(true);
-
-        $this->recordTransactionAndUpdatePaymentForRefund();
     }
 
     public function validateUnknownGatewayRefund(Payment\Refund\Entity $refund)

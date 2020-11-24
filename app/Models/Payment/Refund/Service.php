@@ -391,16 +391,15 @@ class Service extends Base\Service
         return array($from, $to);
     }
 
-    public function fetch($id)
+    public function fetch($id, array $input = [])
     {
-        $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+        $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
 
         // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addParamsForDashboard($refundArray);
         }
-
         return $refundArray;
     }
 
@@ -1127,58 +1126,6 @@ class Service extends Base\Service
 
             return false;
         }
-    }
-
-    public function createBilldeskCancelledRefunds()
-    {
-        $cancelledBilldeskRefunds = $this->repo->billdesk->fetchMissingBilldeskCancelledRefunds();
-
-        $successes = $failures = 0;
-        $failureRefunds = [];
-
-        // We get all the Billdesk refunds. We return back data for applicable and if success.
-
-        foreach ($cancelledBilldeskRefunds as $cancelledBilldeskRefund)
-        {
-            $paymentId = $cancelledBilldeskRefund->getPaymentId();
-            $refundId = $cancelledBilldeskRefund->getRefundId();
-            $refundAmount = (int) ($cancelledBilldeskRefund->getRefundAmount() * 100);
-
-            $payment = $this->repo->payment->findOrFailPublic($paymentId);
-
-            $merchant = $payment->merchant;
-
-            try
-            {
-                $this->getNewProcessor($merchant)
-                     ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
-
-                $successes++;
-            }
-            catch (\Exception $ex)
-            {
-                $failures++;
-
-                $failureRefunds[] = $refundId;
-
-                $this->trace->traceException($ex);
-            }
-        }
-
-        $total = count($cancelledBilldeskRefunds);
-
-        $summary = [
-            'total'             => $total,
-            'success'           => $successes,
-            'failures'          => $failures,
-            'failed_refunds'    => $failureRefunds,
-        ];
-
-        $this->trace->info(
-            TraceCode::MISSING_BILLDESK_CANCELLED_REFUNDS,
-            $summary);
-
-        return $summary;
     }
 
     protected function getNewProcessor($merchant)

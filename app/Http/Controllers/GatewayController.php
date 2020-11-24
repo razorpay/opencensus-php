@@ -472,6 +472,25 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
+        $traceData = '';
+
+        foreach ($input as $key => $value)
+        {
+            $traceData = $traceData . '&' . $key . '=' . $value;
+        }
+
+        $traceData = base64_encode($traceData);
+
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
+            [
+                'method'             => $method,
+                'gateway'            => $gateway,
+                'mode'               => $mode,
+                'callback_data'      => $traceData,
+            ]
+        );
+
         $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
 
         $payment = $this->repo->payment->findOrFail($paymentId);
@@ -848,8 +867,7 @@ class GatewayController extends Controller
             );
         }
 
-        if (($input === '') or
-            ($input === null))
+        if (empty($input) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_RESPONSE_BODY,
@@ -1423,6 +1441,14 @@ class GatewayController extends Controller
                             'exception' => $e->getMessage(),
                             'action'    => NbPlus\Action::PREPROCESS_CALLBACK,
                         ]);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                        null,
+                        [
+                            'input' => $input
+                        ]
+                    );
                 }
             }
         }

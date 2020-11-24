@@ -558,7 +558,7 @@ class MerchantCreateTest extends TestCase
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
-        Mail::assertNotQueued(PasswordResetMail::class);
+        Mail::assertNotSent(PasswordResetMail::class);
 
         $submerchant = $this->getLastEntity('merchant', true);
 
@@ -882,13 +882,7 @@ class MerchantCreateTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
-        $account = $this->startTest();
-
-        $feature = $this->getLastEntity('feature', true);
-
-        $this->assertEquals($feature['name'], FeatureConstants::ALLOW_REVERSALS_FROM_LA);
-
-        $this->assertEquals($feature['entity_id'], $account['id']);
+        $this->startTest();
     }
 
     public function testUpdateLinkedAccountEmail()
@@ -1176,6 +1170,18 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals('test 2', $account['name']);
         $this->assertEquals(true, $account['activated']);
+    }
+
+    public function testCreateLinkedAccountFromBatch()
+    {
+        $this->fixtures->merchant->addFeatures('marketplace');
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $linkedAccount = $this->getDbLastEntity('merchant');
+        $this->assertEquals('la.1@rzp.com', $linkedAccount['email']);
+        $this->assertNotNull($linkedAccount['activated_at']);
     }
 
     public function testCreateLinkedAccountDashboardAccess()

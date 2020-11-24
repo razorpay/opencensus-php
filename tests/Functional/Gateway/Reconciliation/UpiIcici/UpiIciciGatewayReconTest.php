@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
@@ -395,7 +396,6 @@ class UpiIciciGatewayReconTest extends TestCase
         $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
         $reconRow['merchantTranID']     = $qrCode->getReference();
         $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
-        $reconRow[PaymentReconciliate::UNEXPECTED_PAYMENT_RRN] = $reconRow['bankTranID'];
 
         $entries[] = $reconRow;
 
@@ -432,51 +432,6 @@ class UpiIciciGatewayReconTest extends TestCase
             'npci_reference_id'     => $reconRow['bankTranID'],
             'merchant_reference'    => $qrCode->getId(),
         ], $upi->toArray());
-    }
-
-    public function testPaymentReconciliationUsingRRN()
-    {
-        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
-
-        $rrn = '734122607521';
-
-        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
-
-        $upiEntity1 = $this->getDbLastEntityToArray('upi');
-
-        $entries[] = $this->overrideUpiIciciPayment($upiEntity1);
-
-        //passing wrong rrn number so recon for the row should get fail
-        $entries[] = $this->overrideUpiIciciPayment($upiEntity1, '734122607522');
-
-        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
-
-        $uploadedFile = $this->createUploadedFile($file);
-
-        $this->reconcile($uploadedFile, 'UpiIcici');
-
-        $payments = $this->getEntities('payment', [], true);
-
-        $payment = $payments['items'][0];
-
-        $transactionId = $payment['transaction_id'];
-
-        $transaction = $this->getEntityById('transaction', $transactionId, true);
-
-        $this->assertNotNull($transaction['reconciled_at']);
-
-        $upi = $this->getDbLastEntity('upi');
-
-        $this->assertEquals($upi['npci_reference_id'], '734122607521');
-
-        $batch = $this->getLastEntity('batch', true);
-
-        //reconciled for RRN 734122607521, Failed to reconcile for RRN 734122607522
-        $this->assertEquals(2, $batch['total_count']);
-
-        $this->assertEquals(2, $batch['success_count']);
-
-        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)
@@ -543,6 +498,116 @@ class UpiIciciGatewayReconTest extends TestCase
             ]);
 
         $this->assertFailedPaymentRecon();
+    }
+
+    public function testMultipleRrn()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // This one will not get reconciled, this is the easier way
+        // we can create a recon file with multiple credits
+        $payments['000000000003'] = $this->makeUpiIciciPaymentsSince($createdAt, '000000000003', 1)[0];
+
+        // First lets create 2 payments in the system
+        $payments['000000000002'] = $this->makeUpiIciciPaymentsSince($createdAt, '000000000002', 1)[0];
+        $payments['000000000001'] = $this->makeUpiIciciPaymentsSince($createdAt, '000000000001', 1)[0];
+
+        // Order of payments is important as the last one created will reconcile first
+        $this->reconcileWithMock(
+            function(& $content) use ($payments)
+            {
+                $actualRrn = array_search($content['merchantTranID'], $payments);
+
+                // Correct the Gateway Merchant Id in file
+                $content['merchantid'] = $this->sharedTerminal->getGatewayMerchantId();
+
+                // Correct the RRN in the recon row
+                $content['bankTranID'] = $actualRrn;
+
+                // For the third row, change the payment id so it will become multiple rrn case
+                if ($actualRrn === '000000000003')
+                {
+                    $content['merchantTranID']  = $payments['000000000001'];
+                    $content['amount']          = '500.01';
+                }
+            });
+
+        // This is the payment which must have been created
+        $payment = $this->getDbLastPayment();
+
+        // Now we can make sure that this is the new payment created
+        $this->assertFalse(in_array($payment->getId(), $payments, true));
+
+        $this->assertArraySubset([
+            Payment\Entity::MERCHANT_ID => Account::DEMO_ACCOUNT,
+            Payment\Entity::AMOUNT      => 50001,
+            Payment\Entity::VPA         => '9619218329@ybl',
+            Payment\Entity::STATUS      => Payment\Status::AUTHORIZED,
+        ], $payment->toArray(), true);
+
+        $this->assertSame('000000000003', $payment->getReference16());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            'payment_id'                => $payment->getId(),
+            'type'                      => 'pay',
+            'action'                    => 'authorize',
+            'gateway_merchant_id'       => $this->sharedTerminal->gateway_merchant_id,
+            'npci_reference_id'         => '000000000003',
+            'gateway_payment_id'        => '000000000003',
+            'received'                  => true,
+            'status_code'               => 'SUCCESS',
+            'vpa'                       => '9619218329@ybl',
+            'acquirer'                  => 'icici',
+            'provider'                  => 'ybl',
+        ], $upi->toArray(), true);
+
+        $this->assertNotEmpty($payment->transaction->getReconciledAt());
+
+        $reconciled1 = $this->getDbEntity('transaction', ['entity_id' => $payments['000000000001']]);
+        $this->assertNotEmpty($reconciled1->getReconciledAt());
+
+        $reconciled2 = $this->getDbEntity('transaction', ['entity_id' => $payments['000000000002']]);
+        $this->assertNotEmpty($reconciled2->getReconciledAt());
+
+        // The payment with RRN
+        $reconciled3 = $this->getDbEntity('transaction', ['entity_id' => $payments['000000000003']]);
+        $this->assertNull($reconciled3->getReconciledAt());
+    }
+
+    public function testDifferentRrn()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // We will create only one payment
+        $paymentId = $this->makeUpiIciciPaymentsSince($createdAt, '000000000001', 1)[0];
+
+        // Order of payments is important as the last one created will reconcile first
+        $this->reconcileWithMock(
+            function(& $content)
+            {
+                // Change the RRN from what is saved in database
+                $content['bankTranID'] = '000000000002';
+            });
+
+        $payment = $this->getDbLastPayment();
+
+        // there must only be one payment
+        $this->assertSame($paymentId, $payment->getId());
+        // RRN must be changed to the updated one
+        $this->assertSame('000000000002', $payment->getReference16());
+
+        $this->assertNotEmpty($payment->transaction->getReconciledAt());
+
+        $upi = $this->getDbLastUpi();
+        $this->assertNotEmpty($upi->getReconciledAt());
+
+        // Before marking the payment reconciled, we need to update the correct RRN to entity
+        $this->assertSame('000000000002', $upi->getNpciReferenceId());
     }
 
     private function assertFailedPaymentRecon()
@@ -731,5 +796,53 @@ class UpiIciciGatewayReconTest extends TestCase
         $transaction   = $this->getDbEntityById('transaction', $transactionId);
 
         $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    protected function enableRazorXTreatmentForRazorXVpaIcici()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'virtual_vpa_icici')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
+    private function reconcileWithMock(callable $closure = null)
+    {
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null) use ($closure)
+            {
+                if ($action === 'col_payment_icici_recon')
+                {
+                    if (is_callable($closure) === true)
+                    {
+                        $closure($content);
+                    }
+                }
+            },
+            $this->gateway,
+            [
+                'type' => 'payment'
+            ]);
+
+        $fileContents = $this->generateReconFile(['type' => 'payment']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
     }
 }

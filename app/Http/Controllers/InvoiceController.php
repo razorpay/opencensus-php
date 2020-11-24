@@ -94,7 +94,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        if ($this->shouldForwardToPaymentLinkService($input, true) === true)
+        if ($this->shouldForwardToPaymentLinkService($input, true, null, true) === true)
         {
             try
             {
@@ -592,7 +592,12 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
-    protected function shouldForwardToPaymentLinkService(array $input = [], bool $checkForInput = false, string $id = null): bool
+    protected function shouldForwardToPaymentLinkService(
+        array $input = [],
+        bool $checkForInput = false,
+        string $id = null,
+        bool $checkForBothFlags = false
+    ): bool
     {
         if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
         {
@@ -601,11 +606,23 @@ class InvoiceController extends Controller
 
         $merchant = $this->app['basicauth']->getMerchant();
 
+
         if ($merchant !== null)
         {
-            if ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false)
+            if ($checkForBothFlags === true)
             {
-                return false;
+                if (($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false) and
+                    ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_V2) === false))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false)
+                {
+                    return false;
+                }
             }
 
             if ($checkForInput === true)

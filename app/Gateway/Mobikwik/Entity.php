@@ -18,6 +18,7 @@ class Entity extends Base\Entity
     const STATUSCODE    = 'statuscode';
     const STATUSMSG     = 'statusmessage';
     const REFID         = 'refid';
+    const GATEWAY_REFID = 'refId';
     const ISPARTIAL     = 'ispartial';
     protected $fields = array(
         'id',

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use DB;
 use Redis;
 use Carbon\Carbon;
+use RZP\Diag\Traits\PaymentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -21,6 +22,7 @@ class VerifyWithErrorCodeMappingTest extends TestCase
     use PaymentTrait;
     use PaymentVerifyTrait;
     use DbEntityFetchTrait;
+    use PaymentEvent;
 
     protected $payment = null;
 
@@ -456,7 +458,7 @@ class VerifyWithErrorCodeMappingTest extends TestCase
             'success'            => 0,
             'timeout'            => 0,
             'authorized'          => 0,
-            'error'               => 0,
+            'error'               => 1,
             'unknown'             => 0,
             'request_error'       => 0,
         ];
@@ -645,6 +647,8 @@ class VerifyWithErrorCodeMappingTest extends TestCase
     {
 
         $this->setMockGatewayTrue();
+
+        $this->setupRedisMockForBlockedGateway();
 
         $this->ba->cronAuth();
 

@@ -9,9 +9,12 @@ use Requests_Session;
 use Requests_Response;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\lib\TemplateEngine;
 use RZP\Http\Request\Hooks;
 use RZP\Exception\TwirpException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -22,6 +25,9 @@ class Stork
     // Request connect timeout in milliseconds for all HTTP requests to stork.
     // Request timeout parameter applies after connection is established.
     const REQUEST_CONNECT_TIMEOUT = 2000;
+
+    // path to send whatsapp message
+    const WHATSAPP_SEND_MSG_PATH = '/twirp/rzp.stork.message.v1.MessageAPI/Create';
 
     /**
      * Name of owning service for requests to stork.
@@ -202,19 +208,19 @@ class Stork
      *
      * @param string $mode
      * @param string $number
-     * @param string $source source is the identifier which is making the
-     *                       opt in request. For eg api.merchant.onboarding
+     * @param array $input
      * @return array
      * @throws ServerErrorException
      * @throws TwirpException
      */
-    public function optInForWhatsapp(string $mode, string $number, string $source)
+    public function optInForWhatsapp(string $mode, string $number, array $input)
     {
         $this->init($mode);
 
         $storkInput = [
-            'phone_number' => $number,
-            'source'       => $source,
+            'phone_number'         => $number,
+            'source'               => $input['source'],
+            'send_welcome_message' => $input['send_welcome_message'] ?? true,
         ];
 
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptInUser', $storkInput);
@@ -229,7 +235,7 @@ class Stork
             'source'       => $source,
         ];
 
-        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/UserOptinStatus', $storkInput);
+        return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent', $storkInput);
     }
 
     /**
@@ -254,6 +260,60 @@ class Stork
         ];
 
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptOutUser', $storkInput);
+    }
+
+    /**
+     * Makes call to stork service to send a message via Whatsapp
+     *
+     * @param string $mode -> live/test
+     * @param string $template
+     * @param string|null $receiver
+     * @param array $input
+     * @return array
+     */
+    public function sendWhatsappMessage(string $mode, string $template, ?string $receiver, array $input)
+    {
+        if(empty($receiver))
+        {
+            return;
+        }
+
+        $this->init($mode);
+        $requestPayload = [];
+
+        try {
+            $text = (new TemplateEngine)->render($template, $input['params']);
+
+            $requestPayload = [
+                'message' => [
+                    'service' => $this->service,
+                    'owner_id' => $input['ownerId'],
+                    'owner_type' => $input['ownerType'],
+                    'context' => json_decode('{}'),
+                    'whatsapp_channels' => [
+                        [
+                            'destination' => $receiver,
+                            'text' => $text
+                        ]
+                    ]
+                ]
+            ];
+
+            $this->trace->info(TraceCode::STORK_WHATSAPP_REQUEST, [
+                'payload'   => $requestPayload,
+            ]);
+
+            return $this->requestAndGetParsedBody(self::WHATSAPP_SEND_MSG_PATH, $requestPayload);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::STORK_WHATSAPP_MESSAGE_FAILED,
+                [
+                    'payload'   => $requestPayload
+                ]
+            );
+        }
     }
 
     /**

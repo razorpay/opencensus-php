@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement\Channel;
 use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -789,7 +790,50 @@ class RefundTest extends TestCase
                 'receipt'    => '2544325',
             ]);
 
+        // Now handling this before build refund.
         $this->expectException('Illuminate\Database\QueryException');
+
+        $response =  $this->refund(
+                    [
+                        'payment_id' => $payment['id'],
+                        'notes'      => ['a' => 'b'],
+                        'amount'     => '1000',
+                        'receipt'    => '2544325',
+                    ]);
+    }
+
+    public function testRefundsWithDuplicateReceiptRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                   ->setConstructorArgs([$this->app])
+                   ->setMethods(['getTreatment'])
+                   ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                if ($feature === 'duplicate_receipt_check')
+                                  {
+                                    return 'on';
+                                  }
+                                  return 'off';
+                              }));
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'amount'     => '1000',
+                'receipt'    => '2544325',
+            ]);
+
+        // Now handling this before build refund.
+        $this->expectException('RZP\Exception\BadRequestException');
 
         $response =  $this->refund(
                     [
@@ -1608,6 +1652,71 @@ class RefundTest extends TestCase
         $this->assertEquals(1, $refunds['count']);
 
         $this->assertEquals($rfnd1->getPublicId(), $refunds['items'][0]['id']);
+    }
+
+    public function testFetchRefundsProxyAuthExpanded()
+    {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($now);
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
+        $this->fixtures->merchant->activate();
+        $this->ba->privateAuth();
+        $payment1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource']);
+        $rfnd1 = $this->fixtures->create('refund:from_payment', ['payment' => $payment1]);
+        $refund  = $this->getLastEntity('refund', true);
+        $transaction = $this->getLastEntity('transaction',true);
+
+        $this->fixtures->transaction->edit($transaction['id'],['settled_at' => 1404986751]);
+
+        $setlResponse = $this->initiateSettlements(Channel::ICICI, NULL, true, ['10000000000000']);
+
+        $data = $this->testData[__FUNCTION__];
+        $this->ba->proxyAuth();
+        $data['request']['url'] = '/refunds/' . $refund['id'] . '?expand[]=transaction.settlement';
+        $response = $this->makeRequestAndGetContent($data['request']);
+
+        $lastSettlement = $this->getLastEntity('settlement', true);
+
+        $this->assertEquals($response['transaction']['type'],"refund");
+        $this->assertEquals($lastSettlement['id'],$response['transaction']['settlement_id']);
+        $this->assertEquals($response['transaction']['settlement_id'], $response['transaction']['settlement']['id']);
+        $this->assertEquals($response['transaction']['settlement']['status'],"created");
+    }
+
+    protected function initiateSettlements($channel, $testTimeStamp = null, $useQueue = false, $merchantIds = [])
+    {
+        $content = ['all' => 1];
+
+        if ($testTimeStamp !== null)
+        {
+            $content['testSettleTimeStamp'] = $testTimeStamp;
+        }
+
+        if ($useQueue === true)
+        {
+            $content['use_queue'] = '1';
+        }
+
+        if (empty($merchantIds) === false)
+        {
+            $content['merchant_ids'] = $merchantIds;
+
+            $content['settled_at'] = 1534648600;
+
+            $content['initiated_at'] = 1534658600;
+        }
+
+        $request = [
+            'url' => '/settlements/initiate/'.$channel,
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 
     public function testCreateRefundProxyAuth()

@@ -101,6 +101,8 @@ class Gateway extends Base\Gateway
 
         parent::action($input, Action::AUTHENTICATE);
 
+        $this->disableRetryForAction();
+
         $request = $this->getCollectRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);

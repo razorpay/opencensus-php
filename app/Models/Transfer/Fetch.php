@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::RECIPIENT               => 'sometimes|string|max:20',
             Entity::RECIPIENT_SETTLEMENT_ID => 'filled|string|public_id',
-            self::EXPAND_EACH               => 'filled|string|in:recipient_settlement,',
+            self::EXPAND_EACH               => 'filled|string|in:recipient_settlement,transaction.settlement',
             Entity::TRANSACTION_ID          => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
             Entity::SOURCE                  => 'sometimes|string|min:14',

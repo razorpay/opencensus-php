@@ -72,6 +72,19 @@ class Constant
     const BUSINESS_PAN       = 'business_pan';
     const SHOP_ESTABLISHMENT = 'shop_establishment';
 
+    //
+    // Company Search in BVS
+    //
+    const COMPANY_SEARCH    = 'company_search';
+    const SEARCH_DATA       = 'search_data';
+    const RESULTS           = 'results';
+    const ERROR_CODE        = 'code';
+    const ERROR_DESCRIPTION = 'description';
+    const IDENTITY_NUMBER   = 'identity_number';
+    const IDENTITY_TYPE     = 'identity_type';
+    const CLIENT            = 'client';
+    const MERCHANT_ID       = 'merchant_id';
+
     const PG       = 'pg';
     const MERCHANT = 'merchant';
 
@@ -117,20 +130,35 @@ class Constant
             self::ARTEFACT_TYPE   => self::SHOP_ESTABLISHMENT,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
+        Constant::GSTIN                   => [
+            self::ARTEFACT_TYPE   => self::GSTIN,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
+        Constant::LLPIN => [
+            self::ARTEFACT_TYPE   => self::LLP_DEED,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
+        Constant::CIN => [
+            self::ARTEFACT_TYPE   => self::CIN,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
-        Type::BUSINESS_PAN_URL => [
+        Type::BUSINESS_PAN_URL            => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_BUSINESS_PAN_OCR,
         ],
-        Type::PERSONAL_PAN     => [
+        Type::PERSONAL_PAN                => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
         ],
-        Type::CANCELLED_CHEQUE => [
+        Type::CANCELLED_CHEQUE            => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR,
         ],
         Entity::SHOP_ESTABLISHMENT_NUMBER => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
         ],
+        Constant::GSTIN                   => [],
+        self::LLPIN                       => [],
+        self::CIN                         => [],
     ];
 }

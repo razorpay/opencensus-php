@@ -10,9 +10,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
+use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NetbankingIdbiCombinedFileTest extends NbPlusPaymentServiceTest
+class NetbankingIdbiCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
     public function setUp()
     {
@@ -23,13 +23,15 @@ class NetbankingIdbiCombinedFileTest extends NbPlusPaymentServiceTest
         $this->bank = 'IBKL';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_idbi_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testNetbankingIdbiCombinedFile()
     {
         Mail::fake();
 
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $payment = $this->payment;
 
         $this->doAuthAndCapturePayment($payment);
 

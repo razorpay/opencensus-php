@@ -212,7 +212,7 @@ class Server extends Base\Mock\Server
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
             'merchantTranId'    => $input['merchantTranId'],
             'payerVA'           => $payment['vpa'],
-            'amount'            => $amount,
+            'Amount'            => $amount,
             'status'            => $status,
             'TxnInitDate'       => $initDate->getTimestamp(),
             'TxnCompletionDate' => $completeDate->getTimestamp(),

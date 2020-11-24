@@ -13,4 +13,7 @@ class Constants
     const ACTION_ERROR          = 'Action not set correctly';
 
     const MERCHANT_NAME         = 'Razorpay';
+
+    // undefined as checksum in response (in case of cancelled by user)
+    const UNDEFINED             = 'undefined';
 }

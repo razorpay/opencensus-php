@@ -1878,4 +1878,35 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
         ],
     ],
+
+    'testCheckDuplicateContactCreation' => [
+        'request'  => [
+            'content' => [
+                'name'         => '  Test / Contact',
+                'type'         => ' leading trailing',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => '  Test / Contact   ',
+                'type'         => ' leading trailing ',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '200'
+        ],
+    ],
 ];

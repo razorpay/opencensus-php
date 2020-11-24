@@ -582,6 +582,7 @@ class Service
         {
             $this->workflowMaker = $this->ba->getAdmin();
             $this->workflowMakerType = MakerType::ADMIN;
+            return;
         }
 
         // If any other auth but admin then return merchant
@@ -589,6 +590,7 @@ class Service
         {
             $this->workflowMaker = $this->ba->getMerchant();
             $this->workflowMakerType = MakerType::MERCHANT;
+            return;
         }
     }
 

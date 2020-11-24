@@ -6,6 +6,7 @@ use App;
 
 use RZP\Constants;
 use RZP\Models\Card;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
@@ -45,6 +46,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_SVC,
         RequestProcessor\Base::NETBANKING_FSB,
         RequestProcessor\Base::NETBANKING_IOB,
+        RequestProcessor\Base::NETBANKING_DCB,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -1114,10 +1116,54 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 // Now, there might be case where UPI Entity is not created for QrCode
                 // either because we missed callback or some exception occurred in callback
-                // TODO: In this case, we are simply not allowing recon, this will be fixed separately
+                // In this case we will create the UPI QR payment right way with recon row
+                $this->createUpiQrPayment($row, $paymentId, $terminalGateway);
 
+                // Now UPI entity must be created by the processor
+                $upiEntity = $this->repo->upi->fetchByMerchantReference($paymentId);
+
+                if (empty($upiEntity) === false)
+                {
+                    return $upiEntity->getPaymentId();
+                }
+
+                // Even now if for any reason the payment was not created, we can return null
+                // PAYMENT_ABSENT will be traced.
                 return null;
             }
+        }
+    }
+
+    /**
+     * Method will create a UPI QR payment for referenceId which is in fact a QrCode Id.
+     *
+     * @param array $row
+     * @param string $referenceId
+     * @param string $gateway
+     */
+    protected function createUpiQrPayment(array $row, string $referenceId, string $gateway)
+    {
+        try
+        {
+            $callbackData = $this->generateCallbackData($row);
+
+            // UPI QR processor can take care of duplicate payments, thus no issue of parallel uploads
+            $response = (new QrCode\Upi\Service)->processPayment($callbackData, $referenceId, $gateway);
+
+            // Must return true if the payment was created successfully
+            assertTrue($response);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::RECON_ALERT,
+                [
+                    'message'       => 'Failed to create UPI QR payment',
+                    'refrence_id'   => $referenceId,
+                    'gateway'       => $gateway,
+                ]);
         }
     }
 

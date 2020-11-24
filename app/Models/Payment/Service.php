@@ -3127,4 +3127,9 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function getPaymentMetaByPaymentIdAction($paymentId, $actionType)
+    {
+        return $this->repo->payment_meta->findByPaymentIdAction($paymentId, $actionType);
+    }
 }

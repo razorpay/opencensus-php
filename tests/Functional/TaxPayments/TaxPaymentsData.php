@@ -602,8 +602,8 @@ return [
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
                 'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1" => "smoething"
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
                 ],
             ],
         ],
@@ -642,8 +642,8 @@ return [
             'url'     => '/tax-payments/mark-as-paid',
             'content' => [
                 'tax_payment_id'         => ['txpy_F2qwMZe97QTGG1'],
-                "manually_paid_metadata" => [
-                    "notes1" => "smoething"
+                'manually_paid_metadata' => [
+                    'notes1' => 'smoething'
                 ],
             ],
         ],
@@ -668,11 +668,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "support_details" => [
-                    "support_contact" => null,
-                    "support_email"   => null,
-                    "support_url"     => null,
-                    "contrast_color"  => "#FFFFFF"
+                'support_details' => [
+                    'support_contact' => null,
+                    'support_email'   => null,
+                    'support_url'     => null,
+                    'contrast_color'  => '#FFFFFF'
                 ],
             ]
         ]
@@ -684,11 +684,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "support_details" => [
-                    "support_contact" => '1234',
-                    "support_email"   => 'test@email.com',
-                    "support_url"     => 'test.com',
-                    "contrast_color"  => "#FFFFFF"
+                'support_details' => [
+                    'support_contact' => '1234',
+                    'support_email'   => 'test@email.com',
+                    'support_url'     => 'test.com',
+                    'contrast_color'  => '#FFFFFF'
                 ],
             ]
         ]
@@ -699,6 +699,33 @@ return [
             'url'     => '/tax-payments/addPenalty',
             'content' => [
             ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentCreateTPCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentEditTPCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'PATCH',
+            'url'    => '/tax-payments/txpy_1234',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentCancelTPCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/txpy_1234/cancel',
         ],
         'response' => [
             'content' => []

@@ -66,6 +66,10 @@ trait Verify
             $this->modifyGatewayInputForUpi($payment, $data);
         }
 
+        $customProperties = [
+            'verify_route' => 'verify/all',
+        ];
+
         // So that verification calls can be made with the relevant token related information
         if ($payment->getGlobalOrLocalTokenEntity())
         {
@@ -80,27 +84,50 @@ trait Verify
 
             $data['payment'] = $payment->toArrayAdmin();
 
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment);
+            $customProperties += [
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'verify_response' => $data['gateway'],
+                'verify_status' => 'success',
+            ];
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, null, $customProperties);
         }
         catch (Exception\PaymentVerificationException $e)
         {
             $action = $e->getAction();
+
+            $customProperties += [
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'exception_error_code' => $e->getCode(),
+                'verify_action' => $action,
+            ];
 
             // If action is BLOCK, RETRY, FINISH we don't update Verify Status
             if ($action === null)
             {
                 $this->updatePaymentVerified($payment, VerifyStatus::FAILED, $e->getData());
 
-                $this->trace->info(
-                    TraceCode::PAYMENT_VERIFY_FAILED,
-                    $e->getData());
+                $customProperties += [
+                    'verify_status' => 'failed',
+                    'exception_data'=> $e->getData(),
+                ];
             }
             else
             {
                 $this->updatePaymentVerified($payment, VerifyStatus::UNKNOWN);
+
+                $customProperties += [
+                    'verify_status' => 'unknown'
+                ];
             }
 
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                $e->getData());
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e, $customProperties);
 
             throw $e;
         }
@@ -108,7 +135,18 @@ trait Verify
         {
             $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
 
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
+            $customProperties += [
+                'verify_status' => 'error',
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'exception_error_code' => $e->getCode(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                $customProperties);
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e, $customProperties);
 
             throw $e;
         }
@@ -116,10 +154,25 @@ trait Verify
         {
             $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
 
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
+            $customProperties += [
+                'verify_status' => 'error',
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'exception_error_code' => $e->getCode(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                $customProperties);
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e, $customProperties);
 
             throw $e;
         }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
+            $customProperties);
 
         return $data;
     }
@@ -141,22 +194,33 @@ trait Verify
 
         $data = $this->populateVerifyData($payment, $gatewayData);
 
-        $finalException = $this->callVerification($payment, $data);
+        $customProperties = [
+            'payment_id' => $payment->getId(),
+            'verify_route' => 'verify/new_cron',
+        ];
+
+        $finalException = $this->callVerification($payment, $data, $customProperties);
 
         if ($finalException !== null)
         {
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $finalException);
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED,
+                $payment, $finalException, $customProperties);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_VERIFY_FAILED,
-                $finalException->getData());
 
             throw $finalException;
         }
         else
         {
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment);
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED,
+                $payment, null, $customProperties);
+
         }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_VERIFY_EVENT_DATA,
+            [
+                'event_properties' => $customProperties,
+            ]);
 
         return $data;
     }
@@ -168,7 +232,7 @@ trait Verify
      * @param array $gatewayData
      * @return array
      */
-    protected function populateVerifyData(Payment\Entity $payment, $gatewayData) : array
+    protected function populateVerifyData(Payment\Entity $payment, &$gatewayData) : array
     {
         $refunds = $this->repo->refund->findForPayment($payment);
 
@@ -219,9 +283,10 @@ trait Verify
      * @param array $data
      * @return \Exception
      */
-    protected function callVerification(Payment\Entity $payment, array $data)
+    protected function callVerification(Payment\Entity $payment, array &$data, array &$eventData=[])
     {
         $finalException = null;
+
         try
         {
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
@@ -229,10 +294,17 @@ trait Verify
             $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS, $data['gateway']);
 
             $data['payment'] = $payment->toArrayAdmin();
+
+            $eventData += [
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'verify_response' => $data['gateway'],
+                'verify_status' => 'success',
+            ];
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->handlePaymentVerificationException($payment, $e);
+            $this->handlePaymentVerificationException($payment, $e, $eventData);
 
             $finalException = $e;
         }
@@ -241,6 +313,14 @@ trait Verify
             $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
 
             $finalException = $e;
+
+            $eventData += [
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'error_desc' => $payment->getErrorDescription(),
+                'exception_error_code' => $e->getCode(),
+                'exception_message' => $e->getMessage(),
+                'verify_status' => 'error',
+            ];
         }
 
         return $finalException;
@@ -253,30 +333,49 @@ trait Verify
      * @param Exception\PaymentVerificationException $e
      */
     protected function handlePaymentVerificationException(Payment\Entity $payment,
-                                                          Exception\PaymentVerificationException &$e)
+                                                          Exception\PaymentVerificationException &$e,
+                                                          array &$eventData=[])
     {
-        $this->finishVerifyIfApplicable($payment, $e);
+        $errorCodeNonVerifiable = $this->finishVerifyIfApplicable($payment, $e);
 
         $action = $e->getAction();
-
-        $this->trace->info(TraceCode::PAYMENT_VERIFY_FAILED,
-            [
-                'verify action' => $action,
-            ]);
 
         // If action is BLOCK, RETRY we don't update Verify Status
         if ($action === null)
         {
             $this->updatePaymentVerified($payment, VerifyStatus::FAILED, $e->getData());
+
+            $eventData += [
+                'verify_status' => 'failed',
+            ];
         }
         else if ($action === VerifyAction::FINISH)
         {
             $this->verifyFinishAction($payment, $e);
+
+            $eventData += [
+                'verify_status' => 'failed',
+            ];
         }
         else
         {
             $this->updatePaymentVerified($payment, VerifyStatus::UNKNOWN);
+
+            $eventData += [
+                'verify_status' => 'unknown',
+            ];
         }
+
+        $eventData += [
+            'verify_action' => $e->getAction(),
+            'internal_error_code' => $payment->getInternalErrorCode(),
+            'error_desc' => $payment->getErrorDescription(),
+            'exception_error_code' => $e->getCode(),
+            'exception_message' => $e->getMessage(),
+            'error_code_non_verifiable' => $errorCodeNonVerifiable,
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_VERIFY_EVENT_DATA, $eventData);
     }
 
     /**
@@ -318,19 +417,13 @@ trait Verify
      * @param Exception\PaymentVerificationException $e
      */
     protected function finishVerifyIfApplicable(Payment\Entity $payment,
-                                                Exception\PaymentVerificationException &$e)
+                                                Exception\PaymentVerificationException &$e) : bool
     {
-        $internalErrorCode = $payment->getInternalErrorCode();
+        $finalErrorCode = $payment->getInternalErrorCode();
 
-        $finalErrorCode = '';
-
-        if($internalErrorCode === null)
+        if(isset($finalErrorCode) === false)
         {
             $finalErrorCode = $e->getCode();
-        }
-        else
-        {
-            $finalErrorCode = $internalErrorCode;
         }
 
         $errorCodeNonVerifiable = $this->isFinal($payment->getMethod(), $finalErrorCode);
@@ -340,14 +433,15 @@ trait Verify
             $e->setAction(VerifyAction::FINISH);
         }
 
-
         $this->trace->info(TraceCode::PAYMENT_VERIFY_FAILED,
             [
                 'payment_id' => $payment->getId(),
                 'internal_error_code' => $finalErrorCode,
-                'error code non verifiable' => $errorCodeNonVerifiable,
-                'exception verify action' => $e->getAction(),
+                'error_code_non_verifiable' => $errorCodeNonVerifiable,
+                'exception_verify_action' => $e->getAction(),
             ]);
+
+        return $errorCodeNonVerifiable;
     }
 
     /**
@@ -361,6 +455,13 @@ trait Verify
     protected function isFinal(string $method, string $internalErrorCode) : bool
     {
         $code = $this->processErrorVerifiableMapping($method, $internalErrorCode);
+
+        $this->trace->info(TraceCode::PAYMENT_VERIFY_FAILED,
+            [
+                'internal_error_code' => $internalErrorCode,
+                'response' => $code,
+                'isFinal' => $code === 'F',
+            ]);
 
         if($code === 'F')
         {
@@ -396,6 +497,7 @@ trait Verify
             if(array_key_exists($internalErrorCode, $errorCodeMap))
             {
                 $code = $errorCodeMap[$internalErrorCode]['0'];
+
                 return $code;
             }
         }

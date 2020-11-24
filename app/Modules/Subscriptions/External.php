@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Plan\Subscription;
+use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Processor\Constants;
 
 class External extends Base
@@ -80,6 +81,57 @@ class External extends Base
         $url = $mode . '/admin/' . $entityName . '/'.$entityId;
 
         return $this->sendRequest($url, Requests::GET, $input, $headers);
+    }
+
+    /**
+     * Call Subscription Payment Processed
+     **/
+    public function paymentProcess(array $paymentPayload)
+    {
+        $shouldCallEndpoint = $this->shouldCallEndpoint();
+
+        $this->trace->info(TraceCode::SUBSCRIPTION_PAYMENT_NOTIFY,
+            [
+                'payment'    => $paymentPayload,
+                'queue_mode' => $shouldCallEndpoint
+            ]);
+
+        if ($shouldCallEndpoint === true)
+        {
+            $this->paymentProcessSync($paymentPayload);
+        }
+        else
+        {
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+        }
+    }
+
+    /**
+     * should call endpoint instead of queue
+     */
+    private function shouldCallEndpoint()
+    {
+        return (Config::get('queue.default') === 'sync');
+    }
+
+    /**
+     * Call Subscription Payment Processed, if queue is sync
+     **/
+    private function paymentProcessSync($paymentPayload)
+    {
+        $headers = [
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $input = [
+            'payment_id' => $paymentPayload['id'],
+            'merchant_id' => $paymentPayload['merchant_id'],
+        ];
+
+        $url = 'subscriptions/' . $paymentPayload['subscription_id'] . '/payment_process';
+
+        return $this->sendRequest($url, Requests::POST, $input, $headers);
     }
 
     public function fetchMultipleAdminEntity(string $entityName, array $input)

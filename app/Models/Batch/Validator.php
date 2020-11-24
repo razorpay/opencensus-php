@@ -458,12 +458,12 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
-        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|integer',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
         Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
         Header::CONTACT_TYPE                => 'sometimes|nullable|string',
         Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
-        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|contact_syntax',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
     ];
@@ -482,12 +482,12 @@ class Validator extends Base\Validator
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
-        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|integer',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
         Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
         Header::CONTACT_TYPE                => 'sometimes|nullable|string',
         Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
-        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|contact_syntax',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
     ];
@@ -630,6 +630,13 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $linkedAccountCreateCreateRules = [
+        Entity::TYPE                 => 'required|in:linked_account_create',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
 
     public function validateConfig($attribute, $value)
     {

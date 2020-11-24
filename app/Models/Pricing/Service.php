@@ -288,6 +288,14 @@ class Service extends Base\Service
 
     public function getMerchantPricingPlans(array $input = []): array
     {
+        $this->trace->info(TraceCode::PRICING_PLAN_FETCH_ATTEMPT);
+
+        $input[Fetch::COUNT] = $input[Fetch::COUNT] ?? 100000;
+
+        $input[Fetch::SKIP] = $input[Fetch::SKIP] ?? 0;
+
+        (new Pricing\Validator)->validateInput('merchant_pricing_plans_summary', $input);
+
         $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary($input);
 
         $pricingPlans->map(function ($plan)

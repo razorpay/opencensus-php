@@ -25,6 +25,7 @@ class FreshdeskTicketClient
     const POST_TICKET_REPLY   = 'tickets/%s/reply';
     const LIST_TICKETS        = 'tickets';
     const UPDATE_TICKET       = 'tickets/%s';
+    const UPDATE_NOTE         = 'tickets/%s/notes';
 
     public function __construct(Application $app)
     {
@@ -199,7 +200,7 @@ class FreshdeskTicketClient
     {
         $authKey = $this->getAuthKey($urlKey);
 
-        $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId), $urlKey);
+        $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId) . '?include=requester', $urlKey);
 
         $auth = $this->getAuth($authKey);
 
@@ -217,6 +218,19 @@ class FreshdeskTicketClient
         $auth = $this->getAuth($authKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_PUT, $url, $auth, $input);
+
+        return $response ?? [];
+    }
+
+    public function addNoteToTicket(string $ticketId, array $input, $urlKey = 'url')
+    {
+        $authKey = $this->getAuthKey($urlKey);
+
+        $url = $this->getUrl(sprintf(self::UPDATE_NOTE, $ticketId), $urlKey);
+
+        $auth = $this->getAuth($authKey);
+
+        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
         return $response ?? [];
     }
@@ -408,12 +422,7 @@ class FreshdeskTicketClient
     {
         $contentType = 'application/json';
 
-        if (isset($content['attachments']) === true)
-        {
-            $content['attachments[]'] = $content['attachments'];
-
-            unset($content['attachments']);
-        }
+        $this->processArrayRequestFields($content);
 
         if ((isset($content['attachments[]']) === true) and (is_null($content['attachments[]']) === false))
         {
@@ -452,7 +461,7 @@ class FreshdeskTicketClient
 
         if ($contentType === 'multipart/form-data')
         {
-            $response = $this->makeCurlRequest($request);
+            $responseBody = $this->makeCurlRequest($request);
         }
         else
         {
@@ -464,29 +473,52 @@ class FreshdeskTicketClient
                 $request['options']
             );
 
-            $response = $response->body;
+            $responseBody = $response->body;
         }
 
-        $response = json_decode($response, true);
+        $responseBody = json_decode($responseBody, true);
 
-        if (is_array($response) === false)
+        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
+            [
+                'response' => $responseBody['total'] ?? count($responseBody) ?? 0
+            ]
+        );
+
+        if (isset($responseBody['errors']) === true)
         {
-            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
+            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
                 [
-                    'response' => $response,
+                    'response' => $responseBody
                 ]
             );
         }
-        else
+
+        return $responseBody;
+    }
+
+    private function processArrayRequestFields(array &$content)
+    {
+        if (isset($content['attachments']) === true)
         {
-            $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
-                [
-                    'response' => $response['total'] ?? count($response) ?? 0
-                ]
-            );
+            $content['attachments[]'] = $content['attachments'];
+
+            unset($content['attachments']);
         }
 
-        return $response;
+        if (isset($content['cc_emails']) === true)
+        {
+            $content['cc_emails[]'] = $content['cc_emails'];
+
+            unset($content['cc_emails']);
+        }
+
+        if (isset($content['cc_emails[]']) === true)
+        {
+            foreach ($content['cc_emails[]'] as $ccEmail)
+            {
+                $content['cc_emails[]'] = $ccEmail;
+            }
+        }
     }
 
     private function getAuthKey($urlKey) : string

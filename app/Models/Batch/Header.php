@@ -95,6 +95,17 @@ class Header
     const REFERENCE_ID        = 'reference_id';
     const ACCOUNT_ID          = 'account_id';
 
+
+    // Linked Account Create Headers
+    const ACCOUNT_EMAIL                 = 'account_email';
+    const DASHBOARD_ACCESS              = 'dashboard_access';
+    const CUSTOMER_REFUNDS              = 'customer_refunds';
+    const IFSC_CODE                     = 'ifsc_code';
+    const ACCOUNT_NUMBER                = 'account_number';
+    const BENEFICIARY_NAME              = 'beneficiary_name';
+    const ACCOUNT_STATUS                = 'account_status';
+    const ACTIVATED_AT                  = 'activated_at';
+
     // Sub-merchant headers
     const REFERENCE1               = 'reference1';
     const MERCHANT_NAME            = 'merchant_name';
@@ -973,6 +984,7 @@ class Header
     const RM_NAME                   = 'RM Name';
     const RM_PHONE_NUMBER           = 'RM Phone Number';
     const ACCOUNT_OPEN_DATE         = 'Account Open Date';
+    const ACCOUNT_LOGIN_DATE        = 'Account Login Date';
 
 
     // Internal Instrument Request
@@ -1338,6 +1350,36 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
+        ],
+
+        Type::LINKED_ACCOUNT_CREATE => [
+            self::INPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+            ],
+            self::OUTPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::ACCOUNT_ID,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+                self::ACCOUNT_STATUS,
+                self::ACTIVATED_AT,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ],
 
         Type::VIRTUAL_BANK_ACCOUNT => [
@@ -3190,6 +3232,7 @@ class Header
                 self::RM_NAME,
                 self::RM_PHONE_NUMBER,
                 self::ACCOUNT_OPEN_DATE,
+                self::ACCOUNT_LOGIN_DATE,
             ],
         ],
 

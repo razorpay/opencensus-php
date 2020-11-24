@@ -19,6 +19,13 @@ class TaxPaymentController extends Controller
         return $this->service->cancelQueuedPayouts();
     }
 
+    public function create()
+    {
+        return $this->service->create($this->ba->getMerchant(),
+                                      $this->input,
+                                      $this->ba->getUser());
+    }
+
     public function addPenalty()
     {
         return $this->service->addPenalty();
@@ -75,6 +82,12 @@ class TaxPaymentController extends Controller
                                                  $this->ba->getUser());
     }
 
+    public function cancel(string $taxPaymentId)
+    {
+        return $this->service->cancel($this->ba->getMerchant(), $taxPaymentId, $this->input, $this->ba->getUser());
+    }
+
+
     public function listTaxPayments()
     {
         return $this->service->listTaxPayments($this->ba->getMerchant(), $this->input);
@@ -108,9 +121,14 @@ class TaxPaymentController extends Controller
         return $this->service->uploadChallan($this->ba->getMerchant(),$this->input);
     }
 
+    public function updateChallanFileId(string $taxPaymentId)
+    {
+        return $this->service->updateChallanFileId($this->ba->getMerchant(),$taxPaymentId, $this->input);
+    }
+
     public function edit(string $taxPaymentId)
     {
-        return $this->service->edit($this->ba->getMerchant(),$taxPaymentId, $this->input);
+        return $this->service->edit($this->ba->getMerchant(),$taxPaymentId, $this->input, $this->ba->getUser());
     }
 
 }

@@ -482,6 +482,38 @@ class InstrumentRequestProxyTest extends TestCase
                 ],
 
             ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchant_instrument_requests',
+                    'method'   => \Requests::POST,
+                    'content'   =>  [
+                        [
+                            'instrument'    =>  'pg.cards.visa',
+                            'special_pricing' => 'special_pricing_test',
+                            'merchant_id' => '10000000000000',
+                        ],
+                        [
+                            'instrument'    =>  'pg.cards.mastercard',
+                            'special_pricing' => 'special_pricing_test2',
+                            'merchant_id' => '10000000000001',
+                        ],
+                    ]
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_requests',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    [
+                        'instrument'    =>  'pg.cards.visa',
+                        'special_pricing' => 'special_pricing_test',
+                        'merchant_id' => '10000000000000',
+                    ],
+                    [
+                        'instrument'    =>  'pg.cards.mastercard',
+                        'special_pricing' => 'special_pricing_test2',
+                        'merchant_id' => '10000000000001',
+                    ],
+                ],
+            ],
         ];
 
         foreach ($testCases as $testCase)

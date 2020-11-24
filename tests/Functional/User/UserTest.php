@@ -96,8 +96,8 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
-    public function testSignupSourceShowingUpInMerchantAfterRegistration() {
-
+    public function testSignupSourceShowingUpInMerchantAfterRegistration()
+    {
         //Given
         $this->ba->appAuth();
 
@@ -110,6 +110,34 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->assertEquals($merchant['signup_source'], "banking");
+    }
+
+    public function testPreSignupSourceInfoStoredAfterRegistrationForBanking()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                        'final_page' => 'razorpay.com/x/current-accounts/'
+                    ])
+                ]
+            ]
+        ];
+
+        $this->ba->appAuth();
+        $this->startTest($testDataToReplace);
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => 'ca_page_visited',
+                'value'   => '1'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
     }
 
     public function testRegisterWithOtp()
@@ -175,6 +203,43 @@ class UserTest extends TestCase
         $testData['request']['url'] = '/users/' . $user['id'];
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetAfterStoringPreSignUpSourceInfo()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'x_signup',
+                'type'        => 'ca_page_visited',
+                'value'       => 'true'
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->ba->appAuth();
 
@@ -1518,7 +1583,7 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(PasswordReset::class, function ($mail)
+        Mail::assertSent(PasswordReset::class, function ($mail)
         {
             $viewData = $mail->viewData;
 
@@ -2448,6 +2513,44 @@ class UserTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testGetUserAndCheckEnabledMethods()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'paypal');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('methods', $response['merchants'][0]);
+
+        $this->assertArrayHasKey('paypal', $response['merchants'][0]['methods']);
+
+        $this->assertEquals(1, $response['merchants'][0]['methods']['paypal']);
     }
 
     public function testOptOutForWhatsapp()

@@ -11,9 +11,17 @@ Link:       {{$merchant['website']}}
 @endif
 
 Payment Id:         {{$payment['public_id']}}
-Amount:             {{$payment['amount']}}
+Amount:             {{$payment['gateway_amount_spread'][0]}} {{$payment['gateway_amount_spread'][1]}}.{{$payment['gateway_amount_spread'][2]}}
 Payment Method:     {{ucwords($payment['method'][0])}}
 Payment Details:    {{$payment['method'][1]}}
+
+@if($payment['dcc'] === true)
+Base Amount:        {{$payment['dcc_base_amount']}}
+Fees:               {{$payment['currency_conversion_fee']}}
+Total Amount:       {{$payment['gateway_amount']}}
+
+The cost of currency conversion as they may be different depending on whether you select your home currency or the transaction currency.
+@endif
 
 Customer Details:
 

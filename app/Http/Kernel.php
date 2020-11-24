@@ -66,6 +66,7 @@ class Kernel extends HttpKernel
         Middleware\SameSiteSession::class,
         \Illuminate\Session\Middleware\StartSession::class,
         Middleware\TemporaryStartSession::class,
+        Middleware\RequestLogHandler::class,
     ];
 
     /**
@@ -88,5 +89,6 @@ class Kernel extends HttpKernel
         'merchant_idempotency_handler'  => Middleware\MerchantIdempotencyHandler::class,
         'failure_interceptor'           => Middleware\FailureEventsInterceptor::class,
         'request_context'               => Middleware\RequestContextHandler::class,
+        'request_log_handler'           => Middleware\RequestLogHandler::class,
     ];
 }

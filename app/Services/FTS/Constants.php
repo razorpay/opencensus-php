@@ -176,7 +176,7 @@ final class Constants
 
     const SOURCE_ACCOUNT_ID              = 'source_account_id';
 
-
+    const DEFAULT_SOURCE                 = "fts.channel.notify";
 
     public static function getProducts(): array
     {

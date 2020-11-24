@@ -12,6 +12,10 @@ class ErrorCodes
 
     protected static $errorCodeDesc = [
         '000'       => 'Success',
+        '1'         => 'We were not able to capture all your details',
+        '401'       => 'Your Wallet Creation Attempts exhausted',
+        '501'       => 'Your Wallet Creation Attempts exhausted',
+        '900'       => 'Transaction cancelled by user',
         '902'       => 'Invalid MID in Request',
         '905'       => 'Invalid input in Success / Failure URL',
         '909'       => 'Invalid Currency, only INR supported',
@@ -27,6 +31,10 @@ class ErrorCodes
     ];
 
     protected static $errorMessageMap = [
+        '1'         => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        '401'       => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        '501'       => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        '900'       => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,
         '902'       => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
         '905'       => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
         '909'       => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,

@@ -22,6 +22,8 @@ class NetbankingVijayaGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/NetbankingVijayaGatewayTestData.php';
 
         parent::setUp();

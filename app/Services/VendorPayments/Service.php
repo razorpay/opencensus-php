@@ -45,17 +45,22 @@ class Service
     const GET_OCR_DATA                = 'GetOcrData';
     const OCR_ACCURACY_CHECK          = 'GetOcrAccuracy';
     const MARK_AS_PAID                = 'MarkAsPaid';
+    const UFH_BULK_DOWNLOAD           = 'InitiateBulkInvoiceDownload';
+    const UPDATE_INVOICE_FILE_ID      = 'UpdateInvoiceFileId';
+    const GET_INVOICES_FROM_UFH       = 'GetUfhFile';
+
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
-    const DATA               = 'data';
-    const TEMPLATE_NAME      = 'template_name';
-    const SUBJECT            = 'subject';
-    const NAME               = 'name';
-    const TO_EMAIL           = 'to_email';
-    const GET_REPORTING_INFO = 'GetReportingInfo';
-    const CONTENT_TYPE       = 'Content-Type';
-    const X_TASK_ID          = 'X-Task-ID';
-    const X_APP_MODE         = 'X-App-Mode';
+    const DATA                        = 'data';
+    const TEMPLATE_NAME               = 'template_name';
+    const SUBJECT                     = 'subject';
+    const NAME                        = 'name';
+    const TO_EMAIL                    = 'to_emails';
+    const GET_REPORTING_INFO          = 'GetReportingInfo';
+    const CONTENT_TYPE                = 'Content-Type';
+    const X_TASK_ID                   = 'X-Task-ID';
+    const X_APP_MODE                  = 'X-App-Mode';
+
 
     protected $app;
 
@@ -457,6 +462,31 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
+    public function bulkInvoiceDownload(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UFH_BULK_DOWNLOAD);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function updateInvoiceFileId(string $vendorPaymentId, MerchantEntity $merchant, array $input)
+    {
+        $input['vendor_payment_id'] = $vendorPaymentId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_INVOICE_FILE_ID);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getInvoicesFromUfh(MerchantEntity $merchant, string $fileId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVOICES_FROM_UFH);
+
+        $input = ['file_id' => $fileId];
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
     protected function makeRequest(MerchantEntity $merchant = null,
                                    string $url = '',
                                    array $data = [],
@@ -481,8 +511,6 @@ class Service
         {
             $headers[self::X_APP_MODE] = $mode;
         }
-
-
 
         $options = ['auth' => ['api', $this->config['secret']]];
 

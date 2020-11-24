@@ -18,7 +18,8 @@ class Payout extends Base
     public function getCallBackDetails(array $entityArr, array $input)
     {
         $headers = [
-            RequestHeader::X_Creator_Id => $entityArr['user_id'] ?? null,
+            RequestHeader::X_Creator_Id         => $entityArr[Entity::USER_ID] ?? null,
+            RequestHeader::X_RAZORPAY_ACCOUNT   => $entityArr[Entity::MERCHANT_ID] ?? null,
         ];
 
         $workflowCallbackPath                   = '/payouts_internal/pout_' . $entityArr['id'];

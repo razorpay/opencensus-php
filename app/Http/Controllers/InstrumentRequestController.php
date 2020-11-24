@@ -231,7 +231,7 @@ class InstrumentRequestController extends BaseController
             [],
             \Requests::GET,
             'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
-            ['timeout' => 5],
+            ['timeout' => 2],
             $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
@@ -298,6 +298,27 @@ class InstrumentRequestController extends BaseController
 
     }
 
+    // for kam dashboard
+    public function createMerchantInstrumentRequests()
+    {
+        $input = Request::all();
+
+        $this->trace->info(
+            TraceCode::CREATE_MERCHANT_INSTRUMENT_REQUEST_BULK,
+            [
+                'input'          => $input,
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            'v2/merchant_instrument_requests',
+            [],
+            $this->getKAMHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
     protected function getMerchantHeadersForInstrumentRequest() : array
     {
         $merchant = $this->app['basicauth']->getMerchant();
@@ -305,6 +326,14 @@ class InstrumentRequestController extends BaseController
         return [
             self::X_DASHBOARD_MERCHANT_ID => $merchant->getId(),
             self::X_DASHBOARD_MERCHANT_ORG_ID=>$merchant->getOrgId(),
+            self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
+        ];
+
+    }
+
+    protected function getKAMHeadersForInstrumentRequest() : array
+    {
+        return [
             self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
         ];
 
