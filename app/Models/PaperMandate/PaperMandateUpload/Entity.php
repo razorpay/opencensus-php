@@ -391,7 +391,7 @@ class Entity extends Base\PublicEntity
 
         $adminArray[self::UPLOADED_IMAGE] = (new PaperMandate\FileUploader($this->paperMandate))->getSignedUrl($this->getUploadedFileId());
 
-        $adminArray[PaperMandate\Entity::GENERATED_IMAGE] = $this->paperMandate->getGeneratedFormUrl();
+        $adminArray[PaperMandate\Entity::GENERATED_IMAGE] = $this->paperMandate->getGeneratedFormUrlTransient();
 
         return $adminArray;
     }

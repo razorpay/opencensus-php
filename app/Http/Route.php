@@ -1673,6 +1673,7 @@ class Route
         'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_nach_migration'      => ['post',     'subscription_registration/migration',                'SubscriptionRegistrationController@migrateNach'                 ],
 
+        'download_papernach_form'                       => ['get',      '{mode}/{authlinkid}/downloadnach',                    'SubscriptionRegistrationController@downloadNach'                   ],
         'paper_nach_fetch_failure'                      => ['post',     'admin/fetchPaperMandateIssues/',                      'SubscriptionRegistrationController@fetchPaperMandateIssues'        ],
         'paper_nach_approve_failure'                    => ['post',     'admin/approvePaperMandateIssues/',                    'SubscriptionRegistrationController@approvePaperMandateIssues'      ],
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
@@ -4989,6 +4990,7 @@ class Route
     ];
 
     public static $direct = [
+        'download_papernach_form',
         'settlement_ondemand_razorpayx_webhook',
         'payment_links_service_hosted_page',
         'third_party_health_check',

@@ -142,6 +142,11 @@ class FileUploader extends Base\Core
         return $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
     }
 
+    public function getShortUrl($url, $duration = 15)
+    {
+        return $this->elfin->shorten($url, [], false);
+    }
+
     protected function createUploadedFile(string $url, $fileName, $mime): UploadedFile
     {
         return new UploadedFile(

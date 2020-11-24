@@ -63,13 +63,14 @@ class Entity extends Base\PublicEntity
     // Internally it is Invoice id
     const AUTH_LINK_ID = 'auth_link_id';
 
-    const CREATE_FORM     = 'create_form';
-    const FORM_REFERENCE1 = 'form_reference1';
-    const FORM_REFERENCE2 = 'form_reference2';
-    const PREFILLED_FORM  = 'prefilled_form';
-    const UPLOAD_FORM_URL = 'upload_form_url';
-    const NACH            = 'nach';
-    const SUCCEED         = 'succeed';
+    const CREATE_FORM              = 'create_form';
+    const FORM_REFERENCE1          = 'form_reference1';
+    const FORM_REFERENCE2          = 'form_reference2';
+    const PREFILLED_FORM           = 'prefilled_form';
+    const PREFILLED_FORM_TRANSIENT = 'prefilled_form_transient';
+    const UPLOAD_FORM_URL          = 'upload_form_url';
+    const NACH                     = 'nach';
+    const SUCCEED                  = 'succeed';
 
     const PAYMENT_ID       = 'payment_id';
     const CUSTOMER_CONTACT = 'customer_contact';
@@ -196,7 +197,9 @@ class Entity extends Base\PublicEntity
 
             $nachArray[Entity::FORM_REFERENCE2] = $paperMandate->getReference2();
 
-            $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl();
+            $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl($invoice);
+
+            $nachArray[Entity::PREFILLED_FORM_TRANSIENT] = $paperMandate->getGeneratedFormUrlTransient();
 
             $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
 

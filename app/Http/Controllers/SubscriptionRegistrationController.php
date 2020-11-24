@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 
 class SubscriptionRegistrationController extends Controller
 {
@@ -204,5 +205,12 @@ class SubscriptionRegistrationController extends Controller
         $data = $this->service()->nachRegisterTestPaymentAuthorizeOrFail($id, $this->input);
 
         return ApiResponse::json($data);
+    }
+
+    public function downloadNach(string $mode, string $authLinkId)
+    {
+        $mode === 'test' ? $this->ba->setModeAndDbConnection(Mode::TEST) : $this->ba->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->service()->downloadNach($authLinkId);
     }
 }

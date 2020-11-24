@@ -2,6 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use View;
 use Queue;
 use RZP\Constants;
 use RZP\Exception;
@@ -919,5 +920,22 @@ class Service extends Base\Service
         $orderId = $payment->getApiOrderId();
 
         $response['order_id'] = Order\Entity::getSignedId($orderId);
+    }
+
+    public function downloadNach($invoiceId)
+    {
+        $invoice = $this->repo->invoice->findByPublicId($invoiceId);
+
+        (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
+
+        $subscriptionRegistration = $invoice->tokenRegistration;
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        $imageUri = $paperMandate->getGeneratedFormUrlTransient();
+
+        $TEMPLATE_FILE_NAME = 'auth_link.pnach_form';
+
+        return View::make($TEMPLATE_FILE_NAME, [ 'image_uri' => $imageUri, ]);
     }
 }
