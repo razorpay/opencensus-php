@@ -2781,7 +2781,8 @@ class Core extends Base\Core
     public function autoUpdateCategoryDetails(
         Entity $merchant,
         string $category,
-        string $subcategory = null): Entity
+        string $subcategory = null,
+        bool $shouldResetMethods = false): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
@@ -2806,6 +2807,11 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
 
         });
+
+        if ($shouldResetMethods === true)
+        {
+            $merchant->setDefaultMethodsBasedOnCategory();
+        }
 
         $newData = [
             Entity::CATEGORY2 => $merchant->getCategory2(),

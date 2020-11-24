@@ -390,6 +390,48 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatchShouldUpdateMethodsBasedOnCategory' => [
+        'request' => [
+            'raw' => json_encode([
+                'business_category'      => 'tours_and_travel',
+                'business_subcategory'   => 'travel_agency',
+                'reset_methods'          => true,
+            ]),
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+            ]
+],
+        'response' => [
+            'content' => [
+                'business_category'                        => 'tours_and_travel',
+                'business_subcategory'                     => 'travel_agency',
+            ],
+        ],
+    ],
+
+    'testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfResetMethodsIsFalse' => [
+        'request' => [
+            'raw' => json_encode([
+                'business_category'      => 'tours_and_travel',
+                'business_subcategory'   => 'travel_agency',
+                'reset_methods'          => false,
+            ]),
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+            ]
+],
+        'response' => [
+            'content' => [
+                'business_category'                        => 'tours_and_travel',
+                'business_subcategory'                     => 'travel_agency',
+            ],
+        ],
+    ],
+
     'testMerchantDetailsPatchMerchantContextNotSet' => [
         'request'  => [
             'content' => [
