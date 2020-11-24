@@ -1026,7 +1026,6 @@ export default class ActivationWizard extends React.Component {
         if (
           !hasAPIL1Error({
             poi_verification_status: user.poi_verification_status,
-            company_pan_verification_status: user.company_pan_verification_status,
             is_unreg: this.isUnregBiz,
           })
         ) {
