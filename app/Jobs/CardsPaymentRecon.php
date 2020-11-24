@@ -17,7 +17,7 @@ class CardsPaymentRecon extends Job
 
     protected $data;
 
-    protected $queueConfigKey = 'reconciliation_batch';
+    protected $queueConfigKey = 'recon_method_batch';
 
     public function __construct(array $data)
     {

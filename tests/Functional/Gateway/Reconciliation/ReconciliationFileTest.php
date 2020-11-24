@@ -1313,7 +1313,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->runForFiles([$file], 'Axis');
 
-        Queue::assertPushedOn(env('AWS_RECON_QUEUE'), Jobs\Batch::class);
+        Queue::assertPushedOn(env('AWS_RECON_BATCH_QUEUE'), Jobs\Batch::class);
 
         $this->assertBatchStatus(Status::CREATED);
     }

@@ -54,7 +54,7 @@ class Job implements ShouldQueue
     protected $jobName = null;
 
     /**
-     * In case of sync queue implementaiton it's needed that we keep mode of
+     * In case of sync queue implementation it's needed that we keep mode of
      * current request context and once job is processed we reset back to that.
      *
      * Also ref EventServiceProvider::resetModePostSyncQueueProcessed()
