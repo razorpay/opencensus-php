@@ -313,15 +313,6 @@ class FundAccountValidationTest extends TestCase
         $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
-    public function testWebhookFundAccountValidationCompleted()
-    {
-        $expectedEvent = $this->testData[__FUNCTION__]['event'];
-        $this->expectWebhookEventWithContents('fund_account.validation.completed', $expectedEvent);
-
-
-        $this->createValidationWithFundAccountEntity();
-    }
-
     public function testWebhookFiringFundAccountValidationCompleted()
     {
         $this->mockRazorxTreatment();
