@@ -536,7 +536,7 @@ class Core extends Base\Core
      */
     public function autoUpdateMerchantCategoryDetailsIfApplicable(
         Entity $merchantDetails,
-        Merchant\Entity $merchant)
+        Merchant\Entity $merchant, $shouldResetMethods = false)
     {
         $businessCategory    = $merchantDetails->getBusinessCategory();
         $businessSubcategory = $merchantDetails->getBusinessSubcategory();
@@ -551,7 +551,7 @@ class Core extends Base\Core
         if (($populateCategoryAndCategory2 === true) or
             ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory, $shouldResetMethods);
         }
     }
 
@@ -972,9 +972,13 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
 
+        $shouldResetMethods = $input['reset_methods'] ?? false;
+
+        unset($input['reset_methods']);
+
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
-        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant, $shouldResetMethods);
 
         $this->updateLegalEntity($input, $merchant);
 

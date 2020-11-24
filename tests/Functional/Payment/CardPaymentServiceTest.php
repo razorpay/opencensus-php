@@ -405,7 +405,6 @@ class CardPaymentServiceTest extends TestCase
             },
             \RZP\Exception\GatewayErrorException::class);
 
-
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('failed', $payment['status']);
@@ -415,15 +414,10 @@ class CardPaymentServiceTest extends TestCase
 
         $this->mockCpsErrorVerify($terminal, 'verify_error');
 
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            },
-            \RZP\Exception\PaymentVerificationException::class);
+        $this->verifyPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
+        $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment['internal_error_code']);
 
         $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
     }

@@ -465,33 +465,6 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateSubMerchantAndAssignPromotionalPricingPlan()
-    {
-        Mail::fake();
-
-        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
-
-        $configAttributes = [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID => DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
-        ];
-
-        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000');
-
-        $this->mockRazorxTreatment();
-
-        $testTime = Carbon::create(2020, 4, 1, 8, 1, 0, Timezone::IST);
-
-        Carbon::setTestNow($testTime);
-
-        $this->startTest();
-
-        $submerchant = $this->getEntityById('merchant', 'NewSubmerchant', true);
-
-        $this->assertEquals(DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN, $submerchant['pricing_plan_id']);
-    }
-
     public function testCreateSubMerchantByFullyManagedWOEmail()
     {
         Mail::fake();

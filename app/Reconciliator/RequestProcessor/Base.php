@@ -198,7 +198,7 @@ class Base extends Core
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
-        self::ISG                    => ['Helpdesk.Upiacquiring@kotak.com'],
+        self::ISG                    => ['kotak.acquirer@insolutionsglobal.com'],
         self::PHONEPE                => [],
         self::PHONEPE_SWITCH         => [],
         self::PAYLATER_ICICI         => [],

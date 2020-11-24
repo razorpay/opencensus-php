@@ -2,10 +2,13 @@
 
 namespace RZP\Models\PaperMandate;
 
+use App;
+use Config;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Invoice;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -198,36 +201,30 @@ class Entity extends Base\PublicEntity
 //        return false;
     }
 
-    public function getGeneratedFormUrl()
+    public function getGeneratedFormUrlTransient()
     {
-        if ($this->isGeneratedFormUrlExpired() === true)
+        $generatedFileId = $this->getGeneratedFileID();
+
+        if (empty($generatedFileId) === true)
         {
-            $generatedFileId = $this->getGeneratedFileID();
-
-            if (empty($generatedFileId) === true)
-            {
-                return null;
-            }
-
-            $shortUrl = (new FileUploader($this))->getSignedShortUrl(
-                $generatedFileId,
-                Constants::MAX_SIGNED_URL_TIMEOUT
-            );
-
-            //$this->setGeneratedFormUrl($shortUrl);
-
-            $expireAfter = '+' . Constants::MAX_SIGNED_URL_TIMEOUT_IN_DAYS . ' days';
-
-            // $this->setGeneratedFormUrlExpire((new Carbon($expireAfter))->getTimestamp());
-
-            $this->saveOrFail();
+            return null;
         }
 
-        //return $this->getAttribute(self::GENERATED_FORM_URL);
         return (new FileUploader($this))->getSignedShortUrl(
             $generatedFileId,
             Constants::MAX_SIGNED_URL_TIMEOUT
         );
+    }
+
+    public function getGeneratedFormUrl(Invoice\Entity $invoice)
+    {
+        $baseInvoiceUrl = Config::get('app.invoice');
+
+        $url = $baseInvoiceUrl . '/'. App::getFacadeRoot()['rzp.mode'] . '/'. $invoice->getSignedIdOrNull($invoice->getId()) . '/downloadnach';
+
+        $shortUrl = (new FileUploader($this))->getShortUrl($url);
+
+        return $shortUrl;
     }
 
     public function getUploadedFormUrl()

@@ -19,6 +19,7 @@ use RZP\Models\Batch;
 use RZP\Models\Partner;
 use RZP\Models\Terminal;
 use RZP\Models\Pricing;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -313,49 +314,9 @@ class Core extends Base\Core
             $config      = (new PartnerConfig\Core)->fetch($application);
 
             $pricingPlan = optional($config)->getDefaultPlanId() ?:  $pricingPlan;
-
-            $pricingPlan = $this->assignSubmerchantPromotionalPricingPlanIfApplicable($subMerchant, $pricingPlan);
         }
 
         $subMerchant->setPricingPlan($pricingPlan);
-    }
-
-    /**
-     *  Running Promotional Pricing Plan for Submerchant between 27th Feb 2020 - 30th April 2020.
-     *  Handle using Razorx. If the old Pricing Plan for Submerchant is SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
-     * then only updating to new pricing plan (SUBMERCHANT_PROMOTIONAL_PRICING_PLAN)
-     *
-     * @param Entity $subMerchant
-     * @param string $pricingPlan
-     *
-     * @return string
-     */
-    protected function assignSubmerchantPromotionalPricingPlanIfApplicable(Entity $subMerchant, $pricingPlan)
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $subMerchant->getId(),
-            Merchant\RazorxTreatment::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN,
-            $this->mode);
-
-        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $endOfPromotion = Carbon::create(2020, 4, 30, 23, 59, 59, Timezone::IST)->getTimestamp();
-
-        if (strtolower($variant) === 'on' and
-            $pricingPlan === Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS and
-            $currentTime <= $endOfPromotion)
-        {
-            $pricingPlan = Pricing\DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN;
-
-            $this->trace->info(
-                TraceCode::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN,
-                [
-                    'submerchant_id' => $subMerchant->getId(),
-                    'pricing_plan_id' => $pricingPlan
-                ]);
-        }
-
-        return $pricingPlan;
     }
 
     protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
@@ -2780,7 +2741,8 @@ class Core extends Base\Core
     public function autoUpdateCategoryDetails(
         Entity $merchant,
         string $category,
-        string $subcategory = null): Entity
+        string $subcategory = null,
+        bool $shouldResetMethods = false): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
@@ -2805,6 +2767,11 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
 
         });
+
+        if ($shouldResetMethods === true)
+        {
+            $merchant->setDefaultMethodsBasedOnCategory();
+        }
 
         $newData = [
             Entity::CATEGORY2 => $merchant->getCategory2(),
@@ -4202,7 +4169,19 @@ class Core extends Base\Core
 
     public function submerchantLink(Entity $partner, Entity $submerchant)
     {
-        return $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+        $output = $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $submerchant->getId(),
+            'partner_id'   => $partner->getId(),
+            'source'       => PartnerConstants::BULK_LINKING_ADMIN
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+            $partner, null,
+            $data);
+
+        return $output;
     }
 
     protected function validateCodeIfPresent(array $input, Entity $parentMerchant, bool $isLinkedAccount)

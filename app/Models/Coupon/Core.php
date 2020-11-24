@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
@@ -238,6 +239,17 @@ class Core extends Base\Core
         if (empty($partner) === false)
         {
             (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $merchant);
+
+            $data = [
+                'status'       => 'success',
+                'merchant_id'  => $merchant->getId(),
+                'partner_id'   => $partner->getId(),
+                'source'       => PartnerConstants::COUPON
+            ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                $partner, null,
+                $data);
         }
     }
 }

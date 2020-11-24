@@ -69,7 +69,7 @@ class AuthLink extends Base
 
             if ($paperMandate !== null)
             {
-                $entry[Header::AUTH_LINK_NACH_PRI_FILLED_FORM] = $paperMandate->getGeneratedFormUrl();
+                $entry[Header::AUTH_LINK_NACH_PRI_FILLED_FORM] = $paperMandate->getGeneratedFormUrl($this->invoice);
             }
         }
     }

@@ -122,6 +122,23 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    public function testEmptyHashFailedPayment()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['STATUS'] = 'FAL';
+            $content['CODE']   = '900';
+            $content['HASH']   = '';
+        });
+
+        $data = $this->testData['testUndefinedHashFailedPayment'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testUndefinedHashSuccessPayment()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)

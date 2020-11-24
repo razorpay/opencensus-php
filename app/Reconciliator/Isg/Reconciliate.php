@@ -7,19 +7,19 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const REFUND_RECON_FILE_NAME    = ['refund', 'Refund'];
-    const PAYMENT_RECON_FILE_NAME   = ['Purchase','purchase'];
+    const REFUND_RECON_FILE_NAME    = ['refund'];
+    const PAYMENT_RECON_FILE_NAME   = ['purchase'];
 
     protected function getTypeName($fileName)
     {
         $type = null;
 
-        if (str_contains($fileName, self::PAYMENT_RECON_FILE_NAME) !== false)
+        if (str_contains(strtolower($fileName), self::PAYMENT_RECON_FILE_NAME) !== false)
         {
             $type = self::PAYMENT;
         }
 
-        if (str_contains($fileName, self::REFUND_RECON_FILE_NAME) !== false)
+        if (str_contains(strtolower($fileName), self::REFUND_RECON_FILE_NAME) !== false)
         {
             $type = self::REFUND;
         }

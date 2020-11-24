@@ -498,6 +498,80 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
     }
 
+    public function testMerchantDetailsPatchShouldUpdateMethodsBasedOnCategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $methods = $merchant->methods;
+
+        $methods->reload();
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $merchant       = $merchantDetail->merchant->reload();
+        
+        $methods = $merchant->methods->reload();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [], // emi disabled
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methods->toArray());
+
+        $this->assertEquals($merchant->reload()->getCategory(), '4722');
+    }
+
+    public function testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfResetMethodsIsFalse()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $oldMethods = $merchant->methods->toArray();
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $merchant       = $merchantDetail->merchant;
+        
+        $methods = $merchant->methods->reload();
+
+        $this->assertArraySelectiveEquals($oldMethods, $methods->toArray());
+
+        $this->assertEquals($merchant->reload()->getCategory(), '4722');
+    }
+
     /**
      * Asserts the API response when the merchant context (X-Razorpay-Account header) is not set in the request
      */
