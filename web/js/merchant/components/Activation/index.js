@@ -1309,17 +1309,15 @@ export default class ActivationWizard extends React.Component {
 
     // Company Search only available for PG Activation
     if (placeholder === 'Business name as per PAN' && !activationUtils.isSourceRX()) {
-      setTimeout(() => {
-        const args = {
-          option: { company_name: fieldValue, identity_number: '', identity_type: '' },
-        };
-        this.onOptionChange(args);
-        if (fieldValue.length < 3) {
-          this.setState({ business_name_options: [] });
-        } else {
-          this.debouncedFetchBusinessName(fieldValue);
-        }
-      }, 5);
+      const args = {
+        option: { company_name: fieldValue, identity_number: '', identity_type: '' },
+      };
+      this.onOptionChange(args);
+      if (fieldValue.length < 3) {
+        this.setState({ business_name_options: [] });
+      } else if (fieldValue.length < 20) {
+        this.debouncedFetchBusinessName(fieldValue);
+      }
       return;
     }
 
@@ -2114,7 +2112,13 @@ function ActivationField(field) {
         defaultValue={defaultValue}
         disabled={isComponentDisabled || isNCFlowComponentDisabled}
         autoRender={_autoRenderImpure}
-        required={activation_status === 'needs_clarification' ? false : typeof required === 'function' ? required(this) : required }
+        required={
+          activation_status === 'needs_clarification'
+            ? false
+            : typeof required === 'function'
+            ? required(this)
+            : required
+        }
         {...rest}
       />
     </>
@@ -2215,6 +2219,7 @@ function CustomField(props) {
               optionComponent={({ option }) => (
                 <div className="activation-power-select-option">{option.company_name}</div>
               )}
+              matcher={matcher}
             />
             {error && <div className="Input-error">{error}</div>}
           </div>
@@ -2223,4 +2228,8 @@ function CustomField(props) {
     default:
       return null;
   }
+}
+
+function matcher({ option, searchTerm = '', searchIndices }) {
+  return true;
 }
