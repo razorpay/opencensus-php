@@ -370,6 +370,10 @@ const businessDetails = [
           : validateCompanyAB(value, contactName, showCompanyName);
       },
       _when: excludeFor_Indiv,
+      _disabledWhen: (activation) =>
+        !isSourceRX() &&
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_name),
       optionLabelPath: 'company_name',
       searchIndices: ['company_name'],
       className: 'ps-in-modal',
