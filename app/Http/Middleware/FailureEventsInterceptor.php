@@ -113,6 +113,14 @@ class FailureEventsInterceptor
                 [
                     'event_code' => EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,
                 ],
+            'merchant_sub_create'              =>
+                [
+                    'event_code' => EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP_ERROR,
+                ],
+            'merchant_sub_create_batch'              =>
+                [
+                    'event_code' => EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP_ERROR,
+                ],
         ];
 
         if (array_key_exists($routeName, $eventCodeNameRouteMappings) === true)

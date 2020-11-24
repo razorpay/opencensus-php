@@ -28,6 +28,7 @@ use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
@@ -986,6 +987,17 @@ class Service extends Base\Service
 
             // update merchant pricing plan to the one specified by partner in partner config if applicable
             $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant);
+
+            $data = [
+                'status'       => 'success',
+                'merchant_id'  => $subMerchant->getId(),
+                'partner_id'   => $partnerId,
+                'source'       => PartnerConstants::REFERRAL
+            ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                $partner, null,
+                $data);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

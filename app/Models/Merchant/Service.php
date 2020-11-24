@@ -67,6 +67,7 @@ use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -154,15 +155,16 @@ class Service extends Base\Service
     /**
      * We need the merchant param for batch. This can be removed once the code is restructured
      * in a way that batch can call just core class functions.
+     * Source param is to track the origin of sub-merchant creation in data lake. Bulk,Single,Admin,etc.
      *
-     * @param array       $input
-     * @param Entity|null $merchant
-     *
+     * @param array         $input
+     * @param Entity|null   $merchant
+     * @param string        $source
      *
      * @return array
      * @throws BadRequestException
      */
-    public function createSubMerchant(array $input, Entity $merchant = null): array
+    public function createSubMerchant(array $input, Entity $merchant = null, string $source = PartnerConstants::ADD_ACCOUNT): array
     {
         $merchant = $merchant ?? $this->merchant;
 
@@ -192,7 +194,20 @@ class Service extends Base\Service
             }
         }
 
-        return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+        $output =  $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $output['id'] ?? null,
+            'partner_id'   => $merchant->getId(),
+            'source'       => $source
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+            $merchant, null,
+            $data);
+
+        return $output;
     }
 
     public function createLinkedAccount(array $input)
@@ -3858,6 +3873,17 @@ class Service extends Base\Service
         $submerchant = $this->fetchSubmerchant($merchantId);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
+
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $merchantId,
+            'partner_id'   => $partner->getId(),
+            'source'       => PartnerConstants::LINKING_ADMIN
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+            $partner, null,
+            $data);
 
         return $accessMap;
     }

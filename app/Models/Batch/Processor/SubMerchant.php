@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
@@ -372,7 +373,7 @@ class SubMerchant extends Base
 
         if (empty($entry[Header::MERCHANT_ID]) === true)
         {
-            $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
+            $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner, PartnerConstants::BULK_ONBOARDING_ADMIN);
 
             /** @var ME $subMerchant */
             $subMerchant = $this->repo->merchant->findOrFailPublic(

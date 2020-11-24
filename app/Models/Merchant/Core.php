@@ -19,6 +19,7 @@ use RZP\Models\Batch;
 use RZP\Models\Partner;
 use RZP\Models\Terminal;
 use RZP\Models\Pricing;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -4202,7 +4203,19 @@ class Core extends Base\Core
 
     public function submerchantLink(Entity $partner, Entity $submerchant)
     {
-        return $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+        $output = $this->createPartnerSubmerchantAccessMap($partner, $submerchant);
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $submerchant->getId(),
+            'partner_id'   => $partner->getId(),
+            'source'       => PartnerConstants::BULK_LINKING_ADMIN
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+            $partner, null,
+            $data);
+
+        return $output;
     }
 
     protected function validateCodeIfPresent(array $input, Entity $parentMerchant, bool $isLinkedAccount)
