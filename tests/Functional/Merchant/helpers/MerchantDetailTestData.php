@@ -1781,21 +1781,6 @@ return [
         ],
     ],
 
-    'submitL2FormCanSubmitFalse' => [
-        'request'  => [
-            'content' => [
-                'submit' => true
-            ],
-            'url'     => '/merchant/activation',
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'can_submit'   => false,
-            ],
-        ],
-    ],
-
     'gstinVerification' => [
         'request'  => [
             'content' => [

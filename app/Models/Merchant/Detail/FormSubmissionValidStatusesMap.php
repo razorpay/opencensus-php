@@ -11,44 +11,30 @@ class FormSubmissionValidStatusesMap
      */
     const DOCUMENT_LIST_L2 = [
         Constants::POI,
-        Constants::COMPANY_PAN,
-    ];
-    /**
-     * list of documents for which we need to verify status before submission
-     */
-    const DOCUMENT_LIST_FOR_L1 = [
-        Constants::POI,
-        Constants::COMPANY_PAN,
     ];
 
     const DOCUMENT_VERIFICATION_STATUS_MAP = [
         Constants::POI         => Entity::POI_VERIFICATION_STATUS,
         Constants::POA         => Entity::POA_VERIFICATION_STATUS,
-        Constants::COMPANY_PAN => Entity::COMPANY_PAN_VERIFICATION_STATUS,
         Constants::GSTIN       => Entity::GSTIN_VERIFICATION_STATUS,
     ];
 
     /**
      * here registered refer to Registered Business types
      */
-    const POI_REGISTERED   = [POIStatus::FAILED, POIStatus::VERIFIED, POIStatus::NOT_MATCHED];
     const POI_UNREGISTERED = [POIStatus::VERIFIED];
-    const COMPANY_PAN      = [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED];
     const POA              = [OcrVerificationStatus::VERIFIED, OcrVerificationStatus::FAILED, OcrVerificationStatus::NOT_MATCHED, OcrVerificationStatus::INCORRECT_DETAILS];
     const GSTIN            = [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED, GSTINVerificationStatus::INCORRECT_DETAILS];
 
     const ALLOWED_VERIFICATION_STATUS_MAP_REGISTERED = [
-        Constants::POI         => self::POI_REGISTERED,
-        Constants::COMPANY_PAN => self::COMPANY_PAN,
-        Constants::POA         => self::POA,
-        Constants::GSTIN       => self::GSTIN,
+        Constants::POA   => self::POA,
+        Constants::GSTIN => self::GSTIN,
     ];
 
     const ALLOWED_VERIFICATION_STATUS_MAP_UNREGISTERED = [
-        Constants::POI         => self::POI_UNREGISTERED,
-        Constants::COMPANY_PAN => self::COMPANY_PAN,
-        Constants::POA         => self::POA,
-        Constants::GSTIN       => self::GSTIN,
+        Constants::POI   => self::POI_UNREGISTERED,
+        Constants::POA   => self::POA,
+        Constants::GSTIN => self::GSTIN,
     ];
 
     /**
@@ -107,6 +93,11 @@ class FormSubmissionValidStatusesMap
         }
 
         $allowedStatuses = $allowedVerificationStatuses[$verificationDocument] ?? [];
+
+        if (empty($allowedStatuses) === true)
+        {
+            return true;
+        }
 
         return in_array($verificationStatus, $allowedStatuses) === true;
     }

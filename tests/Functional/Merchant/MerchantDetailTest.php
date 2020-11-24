@@ -2219,17 +2219,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails[Entity::POI_VERIFICATION_STATUS], $data['new_verification_status']);
     }
 
-    public function testCanSubmitAutoKycVerificationStatusIncorrect()
-    {
-        $input = [
-            'poi_verification_status'         => 'incorrect_details',
-            'company_pan_verification_status' => 'verified',
-            'business_type'                   => '4'
-        ];
-
-        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'submitL2FormCanSubmitFalse');
-    }
-
     public function testCanSubmitAutoKycVerificationStatusCorrectDetails()
     {
         $input = [

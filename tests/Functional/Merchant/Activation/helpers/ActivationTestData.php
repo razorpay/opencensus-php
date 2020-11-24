@@ -1680,15 +1680,15 @@ return [
                 'business_registered_pin'     => '560050',
             ],
         ],
-        'response'    => [
+        'response' => [
             'content' => [
                 'submitted_at'                    => null,
-                'activation_status'               => null,
+                'activation_status'               => 'instantly_activated',
                 'poi_verification_status'         => 'incorrect_details',
                 'company_pan_verification_status' => 'incorrect_details',
                 'business_type'                   => "4",
                 'can_submit'                      => false,
-                'activated'                       => 0,
+                'activated'                       => 1,
             ],
         ],
         'status_code' => 200,

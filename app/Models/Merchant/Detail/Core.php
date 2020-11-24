@@ -789,17 +789,8 @@ class Core extends Base\Core
 
                 return $merchantDetails->isPoiVerified();
 
-            case BusinessType::PROPRIETORSHIP:
-                $allowedPOIStatus = [POIStatus::VERIFIED, POIStatus::FAILED, POIStatus::NOT_MATCHED];
-
-                return (in_array($merchantDetails->getPoiVerificationStatus(), $allowedPOIStatus) === true);
-
             default :
-
-                return (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
-                        $merchantDetails,
-                        FormSubmissionValidStatusesMap::DOCUMENT_LIST_FOR_L1
-                    ) === true;
+                return true;
         }
     }
 
