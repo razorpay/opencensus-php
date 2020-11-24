@@ -395,7 +395,22 @@ const onPaymentLinkDetails = (state, { payload }) =>
 
         const isBatchTypePaymentlinksV2 = batchData.type === 'payment_link_v2';
 
-        return isBatchTypePaymentlinksV2 ? payload[2].data.payment_links : payload[2].data.items;
+        let paymentLinks;
+
+        if (payload[2].data.hasOwnProperty('payment_links')) {
+          paymentLinks = payload[2].data.payment_links;
+
+          paymentLinks.forEach(item => {
+            if (!item.entity) {
+              item.entity = 'invoice';
+            }
+          });
+        } else {
+          paymentLinks = payload[2].data.items;
+        }
+
+        return paymentLinks;
+
       })(),
       invoices: payload[2].data.items,
     },
