@@ -484,7 +484,7 @@ class Gateway extends Base\Gateway
     {
         $actual = $this->getHashValueFromContent($content);
 
-        if ($actual === Constants::UNDEFINED)
+        if (($actual === Constants::UNDEFINED) or (empty($actual) === true))
         {
             // as per the bank, we are getting the hash as undefined in case the user cancels the
             // transaction on the bank page
