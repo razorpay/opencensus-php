@@ -13,30 +13,31 @@ class POI extends BaseStatusUpdater
 
     /**
      * POI constructor.
+     *
      * @param MerchantEntity $merchant
      * @param string         $documentType
-     * @param string         $validationId
+     * @param string         $consumedValidationId
      */
-    public function __construct(MerchantEntity $merchant, string $documentType, string $validationId)
+    public function __construct(MerchantEntity $merchant, string $documentType, string $consumedValidationId)
     {
-        parent::__construct($merchant, $documentType);
+        parent::__construct($merchant, $documentType, $consumedValidationId);
 
-        $this->validationId = $validationId;
+        $this->documentTypeStatusKey = Detail\Entity::POI_VERIFICATION_STATUS;
     }
 
     public function updateValidationStatus(): void
     {
-        $validation = $this->repo->bvs_validation->findOrFail($this->validationId);
+        $validation = $this->repo->bvs_validation->findOrFail($this->consumedValidationId);
 
         $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
         $documentValidationStatusFromKyc = $this->merchantDetails->getPoiVerificationStatus();
 
-        $bvsAndKycStatusComparisionResult = ($documentValidationStatus !== $documentValidationStatusFromKyc) ?
+        $bvsAndKycStatusComparisonResult = ($documentValidationStatus !== $documentValidationStatusFromKyc) ?
             Constants::MISMATCH : Constants::MATCH;
 
         $bvsPoiVerificationMetrics = [
-            Constants::BVS_KYC_VERIFICATION_RESULT      => $bvsAndKycStatusComparisionResult,
+            Constants::BVS_KYC_VERIFICATION_RESULT      => $bvsAndKycStatusComparisonResult,
             Detail\Constants::POI_STATUS                => $this->merchantDetails->getPoiVerificationStatus(),
             Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getValidationStatus()
         ];
@@ -48,5 +49,9 @@ class POI extends BaseStatusUpdater
         ]);
 
         $this->trace->count(Detail\Metric::BVS_VALIDATION_STATUS_TOTAL, $bvsPoiVerificationMetrics);
+
+        $this->updateMerchantContext();
+
+        $this->sendConsumedValidationResultEvent();
     }
 }

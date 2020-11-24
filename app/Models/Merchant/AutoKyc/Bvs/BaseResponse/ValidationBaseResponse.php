@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\AutoKyc\Bvs;
+namespace RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;

@@ -1887,6 +1887,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DETAIL_MIGRATE_FAILED                        = 'MERCHANT_DETAIL_MIGRATE_FAILED';
     const MERCHANT_DETAIL_MIGRATE_INFO                          = 'MERCHANT_DETAIL_MIGRATE_INFO';
     const UPDATE_MERCHANT_CONTEXT_REQUEST                       = 'UPDATE_MERCHANT_CONTEXT_REQUEST';
+    const SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30         = 'SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30';
 
     // temporary tracecodes, will be removed
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';

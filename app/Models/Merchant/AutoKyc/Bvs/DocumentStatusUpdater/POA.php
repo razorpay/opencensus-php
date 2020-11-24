@@ -8,9 +8,24 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Document\Core;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class POA extends BaseStatusUpdater
 {
+    /**
+     * POA constructor.
+     *
+     * @param MerchantEntity $merchant
+     * @param string         $documentType
+     * @param string         $consumedValidationId
+     */
+    public function __construct(MerchantEntity $merchant, string $documentType, string $consumedValidationId)
+    {
+        parent::__construct($merchant, $documentType, $consumedValidationId);
+
+        $this->documentTypeStatusKey = Detail\Entity::POA_VERIFICATION_STATUS;
+    }
+
     /**
      * @throws \RZP\Exception\LogicException
      */
@@ -39,6 +54,10 @@ class POA extends BaseStatusUpdater
         ];
 
         $this->trace->count(Detail\Metric::VALIDATION_STATUS_BY_ARTEFACT_TOTAL, $verificationMetrics);
+
+        $this->updateMerchantContext();
+
+        $this->sendConsumedValidationResultEvent();
     }
 
     /**

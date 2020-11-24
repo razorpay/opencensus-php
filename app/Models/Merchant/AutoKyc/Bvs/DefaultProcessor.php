@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Response;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
 
 class DefaultProcessor implements Processor
@@ -73,9 +74,9 @@ class DefaultProcessor implements Processor
 
         $validation[Constant::RULES] = $this->getRules();
 
-        $response = (new BvsValidationClient())->createValidation($validation);
+        $response = (new BvsClient\BvsValidationClient())->createValidation($validation);
 
-        return new ValidationBaseResponse($response);
+        return new BaseResponse\ValidationBaseResponse($response);
     }
 
     /**

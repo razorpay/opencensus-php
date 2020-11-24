@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 class Core extends Base\Core
@@ -88,6 +89,13 @@ class Core extends Base\Core
 
         $this->repo->bvs_validation->saveOrFail($validation);
 
+        $verificationMetrics = [
+            Constant::ARTEFACT_TYPE                     => $validation->getArtefactType(),
+            Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $validation->getValidationStatus()
+        ];
+
+        $this->trace->count(Detail\Metric::VALIDATION_STATUS_BY_ARTEFACT_TOTAL, $verificationMetrics);
+
         return $validation;
     }
 
@@ -127,11 +135,6 @@ class Core extends Base\Core
         $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
 
         $statusUpdater->updateValidationStatus();
-
-        if ($merchantDetails->isSubmitted() === true)
-        {
-            $statusUpdater->updateMerchantContext();
-        }
 
         $this->repo->saveOrFail($merchantDetails);
     }

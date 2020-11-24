@@ -3309,6 +3309,29 @@ class Core extends Base\Core
      */
     public function verifyShopEstbNumberIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
+        //
+        // This is a temp metric to observe the length of shop establishment number.
+        // It Will be removed once Column size is increased from 30.
+        //
+        if ((empty($input[Entity::SHOP_ESTABLISHMENT_NUMBER]) === false) and
+            (strlen($input[Entity::SHOP_ESTABLISHMENT_NUMBER]) > 30))
+        {
+            $this->trace->info(
+                TraceCode::SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30,
+                [
+                    Entity::SHOP_ESTABLISHMENT_NUMBER => $input[Entity::SHOP_ESTABLISHMENT_NUMBER]
+                ]);
+
+            //
+            // Unsetting value so that flow does not break at DB level as column has limit 30 char
+            //
+            unset($input[Entity::SHOP_ESTABLISHMENT_NUMBER]);
+
+            $this->trace->count(DetailMetric::SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30);
+
+            return;
+        }
+
         if (((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) or
             ((array_key_exists(Entity::SHOP_ESTABLISHMENT_NUMBER, $input) === true) and
              (empty($input[Entity::SHOP_ESTABLISHMENT_NUMBER]) === true)))

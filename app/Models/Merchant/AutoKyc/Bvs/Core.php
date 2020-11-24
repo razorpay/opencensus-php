@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
@@ -28,6 +29,9 @@ class Core extends Base\Core
 
         $input[Constant::OWNER_ID] = $merchantId;
 
+        $validation                  = null;
+        $validationTriggeringSuccess = true;
+
         try
         {
             $processor = (new Factory())->getProcessor($input);
@@ -36,14 +40,25 @@ class Core extends Base\Core
 
             $validationObject = $this->getValidationObject($input, $response);
 
-            return (new BvsValidation\Core())->create($validationObject);
+            $validation = (new BvsValidation\Core())->create($validationObject);
         }
         catch (\Exception $ex)
         {
+            $validationTriggeringSuccess = false;
+
             $this->trace->traceException($ex);
         }
+        finally
+        {
+            $dimension = [
+                Constant::ARTEFACT_TYPE => $input[Constant::ARTEFACT_TYPE] ?? '',
+                Constant::SUCCESS       => $validationTriggeringSuccess,
+            ];
 
-        return null;
+            $this->trace->count(Metric::BVS_ARTEFACT_VERIFICATION_TRIGGER, $dimension);
+        }
+
+        return $validation;
     }
 
     /**

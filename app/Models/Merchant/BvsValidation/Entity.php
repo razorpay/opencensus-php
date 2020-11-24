@@ -47,7 +47,7 @@ class Entity extends PublicEntity
 
     public function getValidationId(): string
     {
-        return $this->getAttribute(self::VALIDATION_ID);
+        return $this->getAttribute(self::VALIDATION_ID) ?? '';
     }
 
     public function getValidationUnit(): ?string

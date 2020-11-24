@@ -33,6 +33,9 @@ final class Metric
     const BVS_VALIDATION_RETRY_ATTEMPT_TOTAL  = 'bvs_validation_retry_attempt_total';
     const BVS_RESPONSE_TOTAL                  = 'bvs_response_total';
     const BVS_REQUEST_TOTAL                   = 'bvs_request_total';
+    const BVS_ARTEFACT_VERIFICATION_TRIGGER   = 'bvs_artefact_verification_trigger';
+
+    const SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30 = 'shop_establishment_number_length_more_than_30';
 
     //BVS Company Search Metrics
     const BVS_COMPANY_SEARCH_RESPONSE_TOTAL = 'bvs_company_search_response_total';

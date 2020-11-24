@@ -20,19 +20,20 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class DefaultStatusUpdater extends BaseStatusUpdater
 {
-
-    protected $documentTypeStatusKey;
-
     /**
      * DefaultStatusUpdate constructor.
      *
      * @param MerchantEntity $merchant
      * @param string         $documentTypeStatusKey
      * @param string         $artefactType
+     * @param string         $consumedValidationId
      */
-    public function __construct(MerchantEntity $merchant, string $documentTypeStatusKey, string $artefactType)
+    public function __construct(MerchantEntity $merchant,
+                                string $documentTypeStatusKey,
+                                string $artefactType,
+                                string $consumedValidationId)
     {
-        parent::__construct($merchant, $artefactType);
+        parent::__construct($merchant, $artefactType, $consumedValidationId);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
     }
@@ -68,6 +69,10 @@ class DefaultStatusUpdater extends BaseStatusUpdater
                 'document_verification_status' => $documentValidationStatus
             ]);
         }
+
+        $this->updateMerchantContext();
+
+        $this->sendConsumedValidationResultEvent();
     }
 
     public function updateStatusToPending(): void

@@ -1,19 +1,20 @@
 <?php
 
-namespace RZP\Models\Merchant\AutoKyc\Bvs;
+namespace RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 
 use App;
 use Request;
-use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BaseClient;
 use Twirp\Error;
 use ErrorException;
-use RZP\Trace\TraceCode;
 use Google\Protobuf\Struct;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
+
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Exception\IntegrationException;
 use Rzp\Bvs\Validation\V1 as validationV1;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 
 class BvsValidationClient extends BaseClient
 {

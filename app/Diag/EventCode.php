@@ -651,4 +651,9 @@ class EventCode
         'group' => 'dispute',
         'name'  => 'dispute.processed'
     ];
+
+    const BVS_CONSUMED_VALIDATION_DOCUMENT_VERIFICATION_RESULTS = [
+        'group' => 'onboarding',
+        'name'  => 'bvs.consumed_validation.document_verification.results'
+    ];
 }

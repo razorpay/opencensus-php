@@ -4,12 +4,14 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use App;
 
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -43,6 +45,16 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     protected $artefactType;
 
+    /**
+     * @var string
+     */
+    protected $consumedValidationId;
+
+    /**
+     * @var string
+     */
+    protected $documentTypeStatusKey;
+
     const VALIDATION_STATUS_FUNCTION_MAPPING = [
         Constants::VERIFIED          => 'getVerifiedStatus',
         Constants::INCORRECT_DETAILS => 'getIncorrectDetailStatus',
@@ -54,9 +66,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
      * BaseStatusUpdater constructor.
      *
      * @param MerchantEntity $merchant
-     * @param string       $artefactType
+     * @param string         $artefactType
+     * @param string         $consumedValidationId
      */
-    public function __construct(MerchantEntity $merchant, string $artefactType)
+    public function __construct(MerchantEntity $merchant, string $artefactType, string $consumedValidationId)
     {
         $this->app = App::getFacadeRoot();
 
@@ -71,6 +84,8 @@ abstract class BaseStatusUpdater implements StatusUpdater
         $this->merchantId = $this->merchantDetails->getMerchantId();
 
         $this->artefactType = $artefactType;
+
+        $this->consumedValidationId = $consumedValidationId;
     }
 
     /**
@@ -81,6 +96,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     public function updateMerchantContext(): void
     {
+        if ($this->merchantDetails->isSubmitted() === false)
+        {
+            return;
+        }
+
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
             'merchant_id'   => $this->merchantDetails->getId(),
             'artefact_type' => $this->artefactType,
@@ -184,5 +204,44 @@ abstract class BaseStatusUpdater implements StatusUpdater
             null
         );
 
+    }
+
+    /**
+     * @throws LogicException
+     */
+    public function sendConsumedValidationResultEvent()
+    {
+        $validation = $this->repo->bvs_validation->findOrFail($this->consumedValidationId);
+
+        $documentValidationStatus = $this->getDocumentValidationStatus($validation);
+
+        $properties = $this->getValidationEventProperties($validation, $documentValidationStatus);
+
+        $this->app['diag']->trackOnboardingEvent(
+            EventCode::BVS_CONSUMED_VALIDATION_DOCUMENT_VERIFICATION_RESULTS,
+            $this->merchant,
+            null,
+            $properties
+        );
+    }
+
+    /**
+     * @param Validation $validation
+     * @param string $documentValidationStatus
+     * @return array
+     */
+    protected function getValidationEventProperties(Validation $validation, string $documentValidationStatus): array
+    {
+        $responseTimeInMilliseconds = millitime() - ($validation->getCreatedAt() * 1000);
+
+        return [
+            Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $documentValidationStatus,
+            Constants::DOCUMENT_VERIFICATION_STATUS_KEY => $this->documentTypeStatusKey,
+            Constants::RESPONSE_TIME_MILLI_SECONDS      => $responseTimeInMilliseconds,
+            Entity::ARTEFACT_TYPE                       => $validation->getArtefactType(),
+            Entity::VALIDATION_STATUS                   => $validation->getValidationStatus(),
+            Entity::ERROR_CODE                          => $validation->getErrorCode(),
+            Entity::ERROR_DESCRIPTION                   => $validation->getErrorDescription(),
+        ];
     }
 }
