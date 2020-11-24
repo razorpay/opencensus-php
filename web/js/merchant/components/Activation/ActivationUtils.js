@@ -254,10 +254,15 @@ function isAdditonalDocRequired(state, props) {
   return !isOptionalAdditionalDoc(additional_doc, bizCatSubCatKey);
 }
 
-function hasAPIL1Error({ poi_verification_status, is_unreg }) {
+function hasAPIL1Error({ poi_verification_status, company_pan_verification_status, is_unreg }) {
   if (
     is_unreg &&
     (poi_verification_status === 'incorrect_details' || poi_verification_status === 'not_matched')
+  ) {
+    return true;
+  } else if (
+    poi_verification_status === 'incorrect_details' ||
+    company_pan_verification_status === 'incorrect_details'
   ) {
     return true;
   }
