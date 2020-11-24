@@ -722,6 +722,15 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
             }
 
+            $bankAccount2 = $virtualAccount->bankAccount2;
+
+            if ($bankAccount2 !== null)
+            {
+                $this->repo->deleteOrFail($bankAccount2);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount2->toArray());
+            }
+
             // Banking VA don't have vpa for now, but still keeping it
             $vpa = $virtualAccount->vpa;
 
