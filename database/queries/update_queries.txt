@@ -3763,3 +3763,12 @@ UPDATE fund_transfer_attempts
     remarks = "manual db update for data-correction",
     updated_at = UNIX_TIMESTAMP(NOW())
     WHERE source_id IN ("FeU0MYgas7Rc5D", "Ff8ivanGHJ5Jk5");
+
+// related to the above data correction query.
+// finops tried manual data correction before fts data correction was done.
+// transfer webhook was fired and it changed the FTA to the state it was before. updating it back again.
+UPDATE fund_transfer_attempts
+    SET status = "initiated",
+    remarks = "manual db update for data-correction",
+    updated_at = UNIX_TIMESTAMP(NOW())
+    WHERE id="Ff8ivefzUOVRyK";
