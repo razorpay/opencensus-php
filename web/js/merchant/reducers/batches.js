@@ -400,7 +400,7 @@ const onPaymentLinkDetails = (state, { payload }) =>
         if (payload[2].data.hasOwnProperty('payment_links')) {
           paymentLinks = payload[2].data.payment_links;
 
-          paymentLinks.forEach(item => {
+          paymentLinks.forEach((item) => {
             if (!item.entity) {
               item.entity = 'invoice';
             }
@@ -410,7 +410,6 @@ const onPaymentLinkDetails = (state, { payload }) =>
         }
 
         return paymentLinks;
-
       })(),
       invoices: payload[2].data.items,
     },

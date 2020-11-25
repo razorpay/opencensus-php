@@ -21,7 +21,7 @@ export default class CustomerDetails extends React.Component {
   }
 
   validateSameTitleExists = (title, indexInOrder) => {
-    const allFieldsTitles = this.props.udfFields.map(field => {
+    const allFieldsTitles = this.props.udfFields.map((field) => {
       return field.title.toLowerCase();
     });
 
@@ -57,18 +57,14 @@ export default class CustomerDetails extends React.Component {
               key={field.title}
               indexInOrder={index}
               field={field}
-              checkoutOptions={
-                subscriptionButtonEntity.settings.checkout_options
-              }
+              checkoutOptions={subscriptionButtonEntity.settings.checkout_options}
               validateSameTitleExists={this.validateSameTitleExists}
             />
           ))}
           {this.maxFieldsLimit !== udfFields.length && (
             <EditableDisplayField
               field={this.defaultNewUDF}
-              checkoutOptions={
-                subscriptionButtonEntity.settings.checkout_options
-              }
+              checkoutOptions={subscriptionButtonEntity.settings.checkout_options}
               validateSameTitleExists={this.validateSameTitleExists}
             >
               <Button

@@ -19,6 +19,7 @@ import PaymentSplitInItems from './PaymentSplitInItems';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
+import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 
 export default (props) => {
   let {
@@ -160,7 +161,15 @@ export default (props) => {
                 <EntityDetailRow label="Created At">
                   <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
-
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.isUxRevampPhase2Enabled && payment.transaction
+                  }
+                >
+                  <EntityDetailRow label="Settlement Details">
+                    <SettlementInfo data={payment} />
+                  </EntityDetailRow>
+                </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
                 <EntityDetailRow label="Disputes">
@@ -230,27 +239,6 @@ export default (props) => {
                 )}
 
                 <PaymentSplitInItems payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
-
-                {payment.transaction && (
-                  <EntityDetailRow label="Settlement Details">
-                    {payment.transaction.settlement ? (
-                      <ContentToggler onToggleClick={viewSettlementOverview}>
-                        <span>
-                          Settled on{' '}
-                          <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
-                        </span>
-                        <SettlementOverview payment={payment} />
-                      </ContentToggler>
-                    ) : payment.transaction.settled_at ? (
-                      <span class="link">
-                        To be settled on{' '}
-                        <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
-                      </span>
-                    ) : (
-                      '--'
-                    )}
-                  </EntityDetailRow>
-                )}
               </div>
             </div>
           </div>

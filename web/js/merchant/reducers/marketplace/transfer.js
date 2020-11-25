@@ -7,12 +7,12 @@ const TRANSFER_REVERSAL = 'TRANSFER_REVERSAL';
 const TRANSFER_FETCH_REVERSAL = 'TRANSFER_FETCH_REVERSAL';
 const UPDATE_TRANSFER = 'UPDATE_TRANSFER';
 
-export const fetchTransfer = id => {
+export const fetchTransfer = (id) => {
   let transfer = new Transfer();
 
   return {
     type: TRANSFER_FETCH,
-    payload: transfer.fetch(id, {}, { expand: ['recipient_settlement'] }),
+    payload: transfer.fetch(id, {}, { expand: ['recipient_settlement', 'transaction.settlement'] }),
   };
 };
 
@@ -25,7 +25,7 @@ export const reverseTransfer = (id, data) => {
   };
 };
 
-export const fetchReversals = id => {
+export const fetchReversals = (id) => {
   const transfer = new Transfer({ id });
 
   return {
@@ -34,7 +34,7 @@ export const fetchReversals = id => {
   };
 };
 
-export const createTransfer = data => {
+export const createTransfer = (data) => {
   const { id, ...params } = data;
   const transfer = new Transfer(params);
 
@@ -86,7 +86,7 @@ const transferReducer = makeEntityReducer(
       });
     },
   },
-  defaultInitialState
+  defaultInitialState,
 );
 
 export default transferReducer;

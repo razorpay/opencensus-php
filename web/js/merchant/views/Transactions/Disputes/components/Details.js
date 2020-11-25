@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { Link } from 'react-router-dom';
-
+import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -8,8 +8,9 @@ import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
+import { ShowWhen } from 'merchant/components/ShowWhen';
 
-export default props => {
+export default (props) => {
   const { dispute, isLoading, error } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -28,9 +29,8 @@ export default props => {
                   {/* text required only for fraud dispute */}
                   {dispute.phase === 'fraud' && (
                     <p>
-                      This transaction is suspected to be fraudulent. If you
-                      agree, a good practice would be to initiate a refund, in
-                      order to prevent a chargeback.
+                      This transaction is suspected to be fraudulent. If you agree, a good practice
+                      would be to initiate a refund, in order to prevent a chargeback.
                     </p>
                   )}
 
@@ -41,26 +41,19 @@ export default props => {
                     ) : (
                       <React.Fragment>
                         A customer has raised a dispute for&nbsp;
-                        <Amount
-                          value={dispute.amount}
-                          currency={dispute.currency}
-                        />,&nbsp;
+                        <Amount value={dispute.amount} currency={dispute.currency} />
+                        ,&nbsp;
                       </React.Fragment>
                     )}
                     {/* Text required in all types of dispute  */}
                     kindly respond to the mail sent to you by&nbsp;
-                    <Time value={dispute.respond_by} format="ll" />&nbsp; ({daysLeftInExpiry(
-                      dispute.respond_by,
-                      'in '
-                    )}).
+                    <Time value={dispute.respond_by} format="ll" />
+                    &nbsp; ({daysLeftInExpiry(dispute.respond_by, 'in ')}).
                   </p>
 
                   {/* text NOT required for fraud dispute */}
                   {dispute.phase !== 'fraud' && (
-                    <p>
-                      Failing to do so, the disputed amount will be deducted
-                      from your account.
-                    </p>
+                    <p>Failing to do so, the disputed amount will be deducted from your account.</p>
                   )}
                 </div>
               </div>
@@ -95,15 +88,19 @@ export default props => {
               <EntityDetailRow label="Type" value={titleCase(dispute.phase)} />
 
               {/* reason_description of dispute */}
-              <EntityDetailRow
-                label="Reason"
-                value={dispute.reason_description}
-              />
+              <EntityDetailRow label="Reason" value={dispute.reason_description} />
 
               {/* created_at of dispute */}
               <EntityDetailRow label="Created At">
                 <Time value={dispute.created_at} format="LL|hh:mm A" />
               </EntityDetailRow>
+              {/* <ShowWhen
+                additionalCondition={(user) => user.isUxRevampPhase2Enabled && dispute.transaction}
+              >
+                <EntityDetailRow label="Settlement Details">
+                  <SettlementInfo data={dispute} />
+                </EntityDetailRow>
+              </ShowWhen> */}
 
               {/* payment */}
               <EntityDetailRow label="Payment">
@@ -113,10 +110,7 @@ export default props => {
               </EntityDetailRow>
 
               {/* comment */}
-              <EntityDetailRow
-                label="Comment"
-                value={() => dispute.comment || '--'}
-              />
+              <EntityDetailRow label="Comment" value={() => dispute.comment || '--'} />
 
               {/* documents uploaded */}
               {/*<EntityDetailRow

@@ -187,7 +187,7 @@ export default class SettlementSchedule extends Component {
               </p>
               {this.state.showExample ? (
                 <Fragment>
-                  <h5>Following is an example for T+3 Days</h5>
+                  <h5>Following is an example for T+2 Days</h5>
                   <img src="/img/settlement-example.svg" style={{ width: '100%' }} />
                 </Fragment>
               ) : null}

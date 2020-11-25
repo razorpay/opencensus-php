@@ -2,7 +2,7 @@ import AsyncButton from 'react-async-button';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-
+import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
@@ -14,7 +14,7 @@ import Time from 'common/ui/Time';
 import { SingleDatePicker } from 'react-dates';
 import { nextWorkingDay, isHoliday } from 'common/utils/bankHolidays';
 import { titleCase } from 'common/utils/rzp-utils';
-
+import { connect } from 'react-redux';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from './Fee';
 import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
@@ -49,9 +49,7 @@ const SettlementText = ({ data, transfer, onEdit }) => {
         )}
         <span>&nbsp;&nbsp;</span>
         {
-          <ShowWhen
-            additionalCondition={user => user.isAllowedEdit('payments')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedEdit('payments')}>
             <a href class="btn-link" onClick={onEdit}>
               change
             </a>
@@ -60,14 +58,18 @@ const SettlementText = ({ data, transfer, onEdit }) => {
       </div>
       {data.onHold === 'false' && (
         <div class="text-fade">
-          Transfers scheduled to settle on bank holidays will get settled on the
-          next working day.
+          Transfers scheduled to settle on bank holidays will get settled on the next working day.
         </div>
       )}
     </div>
   );
 };
 
+@connect((state) => {
+  return {
+    user: state.session.user,
+  };
+}, null)
 export default class TransferDetails extends Component {
   constructor(props) {
     super(props);
@@ -90,13 +92,13 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,
-      date: transfer.on_hold_until
-        ? moment((transfer.on_hold_until + 600) * 1000)
-        : null,
+      date: transfer.on_hold_until ? moment((transfer.on_hold_until + 600) * 1000) : null,
     };
 
     this.setState(initialState);
@@ -175,21 +177,9 @@ export default class TransferDetails extends Component {
   }
 
   render() {
-    const {
-      transfer,
-      isLoading,
-      statusMsg,
-      openReversalModal,
-      reversals,
-      onClose,
-    } = this.props;
+    const { transfer, isLoading, statusMsg, openReversalModal, reversals, onClose } = this.props;
 
-    const nextWorkingDate = nextWorkingDay(
-      moment()
-        .startOf('day')
-        .toDate(),
-      3
-    );
+    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -201,11 +191,7 @@ export default class TransferDetails extends Component {
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               {onClose && (
-                <button
-                  type="button"
-                  class="close close-secondary"
-                  onClick={onClose}
-                >
+                <button type="button" class="close close-secondary" onClick={onClose}>
                   <i class="i i-arrow-back" />
                   <i class="i i-close" />
                 </button>
@@ -215,25 +201,21 @@ export default class TransferDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                {transfer.recipient_details &&
-                  transfer.recipient_details.name && (
-                    <EntityDetailRow label="Linked Account">
-                      <Definition>
-                        <span>{transfer.recipient_details.name}</span>
-                        {transfer.recipient_details.email && (
-                          <span>{transfer.recipient_details.email}</span>
-                        )}
-                        <code>{transfer.recipient}</code>
-                      </Definition>
-                    </EntityDetailRow>
-                  )}
+                {transfer.recipient_details && transfer.recipient_details.name && (
+                  <EntityDetailRow label="Linked Account">
+                    <Definition>
+                      <span>{transfer.recipient_details.name}</span>
+                      {transfer.recipient_details.email && (
+                        <span>{transfer.recipient_details.email}</span>
+                      )}
+                      <code>{transfer.recipient}</code>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Amount">
                   <ContentToggler>
-                    <Amount
-                      value={transfer.amount}
-                      currency={transfer.currency}
-                    />
+                    <Amount value={transfer.amount} currency={transfer.currency} />
                     <div class="m-t">
                       <Fee
                         totalFee={transfer.fees}
@@ -248,12 +230,15 @@ export default class TransferDetails extends Component {
                 <EntityDetailRow
                   label="Created At"
                   value={() => (
-                    <Time
-                      value={transfer.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
+                    <Time value={transfer.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                   )}
                 />
+
+                {/* {transfer.transaction && this.props.user.isUxRevampPhase2Enabled && (
+                  <EntityDetailRow label="Settlement Details">
+                    <SettlementInfo data={transfer} />
+                  </EntityDetailRow>
+                )} */}
 
                 <EntityDetailRow label="Settlement">
                   {this.state.editView ? (
@@ -288,20 +273,15 @@ export default class TransferDetails extends Component {
                           disabled={this.state.onHold !== 'on_hold_until'}
                           hideKeyboardShortcutsPanel={true}
                           readOnly={true}
-                          isDayBlocked={date => {
-                            date = date
-                              .clone()
-                              .startOf('day')
-                              .toDate();
+                          isDayBlocked={(date) => {
+                            date = date.clone().startOf('day').toDate();
 
                             return date < nextWorkingDate || isHoliday(date);
                           }}
                           date={this.state.date}
                           onDateChange={this.onDateChange}
                           focused={this.state.focused}
-                          onFocusChange={({ focused }) =>
-                            this.setState({ focused })
-                          }
+                          onFocusChange={({ focused }) => this.setState({ focused })}
                         />
                         {this.state.dateError && (
                           <div class="text-small text-danger text-right">
@@ -323,8 +303,7 @@ export default class TransferDetails extends Component {
                             <div class="RadioButton__label">
                               <span>Put on hold</span>
                               <div class="text-fade">
-                                The settlement will be on hold till specified
-                                otherwise.
+                                The settlement will be on hold till specified otherwise.
                               </div>
                             </div>
                           </div>
@@ -344,8 +323,7 @@ export default class TransferDetails extends Component {
                             <div class="RadioButton__label">
                               <span>Settle Now</span>
                               <div class="text-fade">
-                                This transfer will be settled in next available
-                                settlement slot
+                                This transfer will be settled in next available settlement slot
                               </div>
                             </div>
                           </div>
@@ -354,9 +332,7 @@ export default class TransferDetails extends Component {
                       {this.state.errors && (
                         <div>
                           {this.state.errors.map((item, key) => {
-                            return (
-                              <Alert key={key} type="error" message={item} />
-                            );
+                            return <Alert key={key} type="error" message={item} />;
                           })}
                         </div>
                       )}
@@ -378,11 +354,7 @@ export default class TransferDetails extends Component {
                       </div>
                     </form>
                   ) : (
-                    <SettlementText
-                      data={this.state}
-                      transfer={transfer}
-                      onEdit={this.onEdit}
-                    />
+                    <SettlementText data={this.state} transfer={transfer} onEdit={this.onEdit} />
                   )}
                 </EntityDetailRow>
 
@@ -390,9 +362,7 @@ export default class TransferDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/payments/${transfer.source}`}>
-                        {transfer.source}
-                      </Link>
+                      <Link to={`/payments/${transfer.source}`}>{transfer.source}</Link>
                     </div>
                   )}
                 />
@@ -416,11 +386,10 @@ export default class TransferDetails extends Component {
                               {key}
                               {String(transfer.notes[key])}
                               {!!transfer.linked_account_notes &&
-                                transfer.linked_account_notes.indexOf(key) >
-                                  -1 && (
+                                transfer.linked_account_notes.indexOf(key) > -1 && (
                                   <span>
-                                    <i class="i i-info-outline" /> This note is
-                                    shown to the linked account
+                                    <i class="i i-info-outline" /> This note is shown to the linked
+                                    account
                                   </span>
                                 )}
                               <i />

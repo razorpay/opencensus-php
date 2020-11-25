@@ -6,11 +6,15 @@ export const DISPUTES_LOAD = 'DISPUTES_LOAD';
 export const FETCH_OPEN = 'FETCH_OPEN_DISPUTES';
 export const DISPUTE_FETCH = 'DISPUTE_FETCH';
 
-export const loadDispute = payload => {
-  const isDispute = typeof payload !== 'string';
+export const loadDispute = (payload) => {
+  let dispute = new Dispute();
   return {
-    type: isDispute ? DISPUTES_LOAD : DISPUTE_FETCH,
-    payload: isDispute ? payload : new Dispute().fetch(payload),
+    type: DISPUTE_FETCH,
+    payload: dispute.fetch(
+      payload.id ? payload.id : payload,
+      {},
+      { expand: ['transaction.settlement'] },
+    ),
   };
 };
 
@@ -29,7 +33,7 @@ const initialState = {
   openDisputes: 0,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case DISPUTES_LOAD:
       return merge(state, {

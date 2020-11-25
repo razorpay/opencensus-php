@@ -17,10 +17,11 @@ import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
+import SettlementInfo from '../../../Settlements/components/SettlementInfo';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.payment,
       user: state.session.user,
@@ -32,7 +33,7 @@ import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/comp
     ...ModalActions,
     ...PaymentActions,
     ...NotificationsActions,
-  }
+  },
 )
 export default class PaymentDetailsContainer extends Component {
   render() {
@@ -50,10 +51,7 @@ export default class PaymentDetailsContainer extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <Alert
-                  type={this.props.statusMsg.type}
-                  message={this.props.statusMsg.message}
-                />
+                <Alert type={this.props.statusMsg.type} message={this.props.statusMsg.message} />
                 <div class="list-group details-row-container">
                   <EntityDetailRow
                     label="Payment"
@@ -66,9 +64,7 @@ export default class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Status"
                     value={() => (
-                      <ContentToggler
-                        onToggleClick={this.props.viewRefundHistory}
-                      >
+                      <ContentToggler onToggleClick={this.props.viewRefundHistory}>
                         <span>View History</span>
                         <RefundStatusTimeline refund={this.props.refund} />
                       </ContentToggler>
@@ -90,18 +86,12 @@ export default class PaymentDetailsContainer extends Component {
                         <Fragment>
                           <Fragment>
                             <span>
-                              {this.props.refund.speed_processed ===
-                                'instant' ||
+                              {this.props.refund.speed_processed === 'instant' ||
                               this.props.refund.speed_processed === null ? (
-                                <i
-                                  style={{ fontSize: '18px' }}
-                                  class="i i-instant-refund"
-                                />
+                                <i style={{ fontSize: '18px' }} class="i i-instant-refund" />
                               ) : null}{' '}
                               {this.props.refund.speed_processed !== null
-                                ? this.props.refund.speed_processed
-                                    .charAt(0)
-                                    .toUpperCase() +
+                                ? this.props.refund.speed_processed.charAt(0).toUpperCase() +
                                   this.props.refund.speed_processed.slice(1)
                                 : 'Instant'}
                             </span>
@@ -145,29 +135,26 @@ export default class PaymentDetailsContainer extends Component {
                     }}
                   />
 
-                  <EntityDetailRow
-                    label="Currency"
-                    value={this.props.refund.currency}
-                  />
+                  <EntityDetailRow label="Currency" value={this.props.refund.currency} />
 
                   <EntityDetailRow
                     label="Created At"
                     value={() => (
-                      <Time
-                        value={this.props.refund.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
+                      <Time value={this.props.refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                     )}
                   />
+
+                  {this.props.refund.transaction && this.props.user.isUxRevampPhase2Enabled && (
+                    <EntityDetailRow label="Settlement Details">
+                      <SettlementInfo data={this.props.refund} />
+                    </EntityDetailRow>
+                  )}
 
                   <NestedEntityDetailRow
                     label="Acquirer Data"
                     value={this.props.refund.acquirer_data}
                   />
-                  <NestedEntityDetailRow
-                    label="Notes"
-                    value={this.props.refund.notes}
-                  />
+                  <NestedEntityDetailRow label="Notes" value={this.props.refund.notes} />
                 </div>
               </div>
             </div>

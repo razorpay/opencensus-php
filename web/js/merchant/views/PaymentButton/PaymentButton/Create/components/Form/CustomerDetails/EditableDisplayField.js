@@ -37,13 +37,10 @@ export default class EditableDisplayField extends React.Component {
     });
   };
 
-  onSubmitBaseForm = fieldData => {
+  onSubmitBaseForm = (fieldData) => {
     const newFieldSchema = constructFieldSchema(fieldData);
 
-    if (
-      !newFieldSchema ||
-      (newFieldSchema.enum && (!fieldData.enum || !fieldData.enum.length))
-    ) {
+    if (!newFieldSchema || (newFieldSchema.enum && (!fieldData.enum || !fieldData.enum.length))) {
       throw 'Invalid field data';
     }
 
@@ -80,9 +77,7 @@ export default class EditableDisplayField extends React.Component {
     const { field, checkoutOptions } = this.props;
 
     if (field && field.name) {
-      if (
-        [checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1
-      ) {
+      if ([checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1) {
         return true;
       }
     }
@@ -121,7 +116,7 @@ export default class EditableDisplayField extends React.Component {
         class={classList(
           'EditableUDF EditableDisplayField',
           children && 'EditableDisplayField--disabled',
-          isEditModeOpened && 'EditableDisplayField--editMode'
+          isEditModeOpened && 'EditableDisplayField--editMode',
         )}
       >
         {children || (
@@ -155,9 +150,7 @@ export default class EditableDisplayField extends React.Component {
             field={field}
             isFieldForcedRequired={isFieldForcedRequired}
             selectedOptionInFieldTypes={selectedOptionInFieldTypes}
-            handleDeleteField={
-              !isFieldForcedRequired ? this.handleDeleteField : undefined
-            } // TODO: For email and phone cannot be deleted
+            handleDeleteField={!isFieldForcedRequired ? this.handleDeleteField : undefined} // TODO: For email and phone cannot be deleted
             handleClose={this.handleToggleEditMode}
             onSubmit={this.onSubmitBaseForm}
             validateSameTitleExists={this.props.validateSameTitleExists}

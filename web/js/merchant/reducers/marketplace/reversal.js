@@ -4,12 +4,12 @@ import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const REVERSAL_FETCH = 'REVERSAL_FETCH';
 
-export const fetchReversal = id => {
+export const fetchReversal = (id) => {
   const reversal = new Reversal({ id });
 
   return {
     type: REVERSAL_FETCH,
-    payload: reversal.fetch(id, {}),
+    payload: reversal.fetch(id, {}, { expand: ['transaction.settlement'] }),
   };
 };
 

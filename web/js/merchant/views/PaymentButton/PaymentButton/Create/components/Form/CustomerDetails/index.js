@@ -17,8 +17,7 @@ export default class CustomerDetails extends React.Component {
 
   get isDonationsTemplate() {
     const { paymentButtonEntity } = this.props;
-    const templateType =
-      paymentButtonEntity.settings.payment_button_template_type;
+    const templateType = paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.donation.key;
   }
@@ -30,7 +29,7 @@ export default class CustomerDetails extends React.Component {
   }
 
   validateSameTitleExists = (title, indexInOrder) => {
-    const allFieldsTitles = this.props.udfFields.map(field => {
+    const allFieldsTitles = this.props.udfFields.map((field) => {
       return field.title.toLowerCase();
     });
 

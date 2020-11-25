@@ -50,7 +50,7 @@ export default class BaseForm extends React.Component {
     this.setState({ disableSubmit });
   };
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     const newField = {
       title: formData.title,
       description: formData.description,
@@ -78,7 +78,7 @@ export default class BaseForm extends React.Component {
       },
       () => {
         // track.lj.trackCustomerScreenToggleMakeOptional(this.state.isRequired);
-      }
+      },
     );
   };
 
@@ -89,11 +89,11 @@ export default class BaseForm extends React.Component {
       },
       () => {
         // track.lj.trackCustomerScreenDescriptionField(this.state.hasDescription);
-      }
+      },
     );
   };
 
-  onChangeFieldType = option => {
+  onChangeFieldType = (option) => {
     this.setState({
       selectedOptionInFieldTypes: option,
       enumOptions: option.schema.hasOwnProperty('enum') ? [] : null,
@@ -126,11 +126,7 @@ export default class BaseForm extends React.Component {
   }
 
   get additionalOptionsButton() {
-    const {
-      indexInOrder,
-      isFieldForcedRequired,
-      handleDeleteField,
-    } = this.props;
+    const { indexInOrder, isFieldForcedRequired, handleDeleteField } = this.props;
     const { isRequired, hasDescription } = this.state;
 
     return (
@@ -161,10 +157,7 @@ export default class BaseForm extends React.Component {
 
         {typeof indexInOrder !== 'undefined' && handleDeleteField && (
           <OptionsItem>
-            <div
-              class="OptionsDropdown-item--delete"
-              onClick={handleDeleteField}
-            >
+            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
               <i class="i i-delete" />
               <div>Delete Field</div>
             </div>
@@ -192,11 +185,7 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button
-          type="submit"
-          class="save-btn Button--transparent Button"
-          disabled={disableSubmit}
-        >
+        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
           <span class="icon i-check" />
           Save
         </button>
@@ -204,25 +193,17 @@ export default class BaseForm extends React.Component {
     );
   }
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
-    const {
-      field,
-      isFieldForcedRequired,
-      selectedOptionInFieldTypes,
-    } = this.props;
+    const { field, isFieldForcedRequired, selectedOptionInFieldTypes } = this.props;
 
     // Field is taken from state and not from props, bcoz user might change field_type from InputDropdown
     const { isRequired, hasDescription, enumOptions } = this.state;
 
     return (
       <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
-        <Form
-          onSubmit={this.handleSubmit}
-          onChange={this.handleChange}
-          setRef={this.setRefForm}
-        >
+        <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           <InputDropdown
             label="Field Type"
             class="Input--vTop"
@@ -239,12 +220,7 @@ export default class BaseForm extends React.Component {
           />
 
           {/* TODO: These 2 hidden fields can be removed and relied upon through state */}
-          <input
-            name="field_type"
-            value={this.indexInUDFDropdown}
-            hidden
-            readOnly
-          />
+          <input name="field_type" value={this.indexInUDFDropdown} hidden readOnly />
           <input name="required" value={isRequired | 0} hidden readOnly />
 
           <Input.Group label="Field Label" class="Input--vTop" required>
@@ -254,7 +230,7 @@ export default class BaseForm extends React.Component {
               placeholder="Enter field label"
               defaultValue={field.title}
               autoFocus
-              validator={val => {
+              validator={(val) => {
                 if (!val) {
                   return 'Field label is required';
                 }
@@ -269,12 +245,7 @@ export default class BaseForm extends React.Component {
                   return 'Field label must have at least 1 character';
                 }
 
-                if (
-                  this.props.validateSameTitleExists(
-                    val,
-                    this.props.indexInOrder
-                  )
-                ) {
+                if (this.props.validateSameTitleExists(val, this.props.indexInOrder)) {
                   return 'Field label cannot be same as other field';
                 }
               }}
@@ -286,7 +257,7 @@ export default class BaseForm extends React.Component {
                 name="description"
                 placeholder="Enter field description"
                 defaultValue={field.description}
-                validator={val => {
+                validator={(val) => {
                   if (val && val.length > 128) {
                     return 'Field description cannot be more than 128 characters';
                   }
@@ -313,8 +284,8 @@ export default class BaseForm extends React.Component {
 
         {isFieldForcedRequired && (
           <Alert.Warning>
-            <b>Mandatory</b> {field.name} field to be filled by customers. This
-            field cannot be deleted.
+            <b>Mandatory</b> {field.name} field to be filled by customers. This field cannot be
+            deleted.
           </Alert.Warning>
         )}
 
