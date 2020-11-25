@@ -19,7 +19,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Learn More',
-                    'url'   => 'https://x.razorpay.com/vendor-payments?utm_source=pg-dashboard&utm_medium=notification&utm_campaign=vp-new-features',
+                    'url'   => 'https://x.razorpay.com/vendor-payments',
                 ]
             ],
             'filters'     => [
