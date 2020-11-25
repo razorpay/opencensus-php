@@ -1922,6 +1922,17 @@ class BankTransferTest extends TestCase
         $this->startTest($testData);
     }
 
+    /**
+     * Account number is greater than 16 characters in length for some RBL VAs.
+     */
+    public function testRblBankTransferWithLongPayeeAccount()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = '22233300433504890';
+
+        $this->startTest($testData);
+    }
+
     public function testRblBankTransferWithAlphanumericPayeeAccount()
     {
         $testData = $this->testData['testBankTransferRbl'];
