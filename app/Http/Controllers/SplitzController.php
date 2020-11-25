@@ -13,6 +13,8 @@ class SplitzController extends Controller
 {
     const CONTENT_TYPE_JSON = 'application/json';
 
+    const EVALUATE_URL = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/Evaluate';
+
     /**
      * @var string
      */
@@ -43,6 +45,40 @@ class SplitzController extends Controller
         $this->key            = $splitzConfig['username'];
         $this->secret         = $splitzConfig['secret'];
         $this->requestTimeout = $splitzConfig['request_timeout'];
+    }
+
+    public function evaluateRequest()
+    {
+        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+
+        $parameters = Request::all();
+
+        $parameters = json_encode($parameters);
+
+        $options = [
+            'timeout' => $this->requestTimeout,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        $url = $this->baseUrl . self::EVALUATE_URL;
+
+        try
+        {
+            $response = Requests::request(
+                $url,
+                $headers,
+                $parameters,
+                Requests::POST,
+                $options);
+
+            $res = $this->parseAndReturnResponse($response);
+
+            return ApiResponse::json($res);
+        }
+        catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $e);
+        }
     }
 
     public function sendRequest()
