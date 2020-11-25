@@ -103,7 +103,9 @@ final class PostAuthenticate
         {
             $this->reqCtx->passportAttrsMismatch = true;
             $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
-            $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
+
+            // Ref: https://razorpay.slack.com/archives/C0ZJSSQSV/p1606207381147900?thread_ts=1605686668.448700&cid=C0ZJSSQSV
+            // $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
         }
     }
 
