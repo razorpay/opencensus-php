@@ -325,7 +325,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
                             preFilledNachFileURL={
                               entity.token &&
                               entity.token.nach &&
-                              entity.token.nach.prefilled_form
+                              entity.token.nach.prefilled_form_transient
                             }
                             trackClickUploadNACHForm={trackClickUploadNACHForm}
                             trackClickDownloadNACHForm={() => {
