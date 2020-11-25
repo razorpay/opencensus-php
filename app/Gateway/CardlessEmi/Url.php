@@ -5,7 +5,7 @@ namespace RZP\Gateway\CardlessEmi;
 class Url
 {
     // Early Salary Urls
-    const TEST_DOMAIN_EARLYSALARY    = 'https://apps.socialworth.in';
+    const TEST_DOMAIN_EARLYSALARY    = 'https://api.socialworth.in/cardlessemiqa';
     const LIVE_DOMAIN_EARLYSALARY    = 'https://api.socialworth.in/cardlessemi';
 
     const CHECK_ACCOUNT_EARLYSALARY  = '/checkaccount';

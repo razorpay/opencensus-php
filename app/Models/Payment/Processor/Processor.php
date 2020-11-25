@@ -751,11 +751,18 @@ class Processor
         try
         {
             // merchant id is required to fetch details from cache
-            $input['merchant_id'] = $merchant[Merchant\Entity::ID];
+            $input['merchant_id']      = $merchant[Merchant\Entity::ID];
+            $input['merchant_website'] = $merchant[Merchant\Entity::WEBSITE];
+            $input['merchant_mcc']     = $merchant[Merchant\Entity::CATEGORY];
+            $input['merchant_name']    = $merchant[Merchant\Entity::NAME];
 
             $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminals[0]);
 
             unset($input['merchant_id']);
+            unset($input['merchant_website']);
+            unset($input['merchant_mcc']);
+            unset($input['merchant_name']);
+
         }
         catch (Exception\GatewayErrorException $exception)
         {

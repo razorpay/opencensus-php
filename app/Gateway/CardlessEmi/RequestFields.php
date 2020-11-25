@@ -9,6 +9,9 @@ class RequestFields
     const MERCHANT_ID            = 'merchant_id';
     const TXN_ID                 = 'client_txn_id';
     const MERCHANT_CATEGORY_CODE = 'mcc';
+    const MERCHANT_NAME          = 'merchant_name';
+    const MERCHANT_WEBSITE       = 'merchant_website';
+    const MERCHANT_MCC           = 'merchant_mcc';
     const TOKEN                  = 'token';
     const ACTION                 = 'action';
     const CURRENCY               = 'currency';

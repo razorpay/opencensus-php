@@ -8,6 +8,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -448,6 +449,9 @@ class Gateway extends Base\Gateway
                 $content[RequestFields::MOBILE_NUMBER] = $input['contact'];
                 $content[RequestFields::MERCHANT_CATEGORY_CODE] = $this->terminal[Terminal\Entity::CATEGORY];
                 $content[RequestFields::BILLING_LABEL] = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+                $content[RequestFields::MERCHANT_NAME] = $input['merchant_name'] ?? '';
+                $content[RequestFields::MERCHANT_WEBSITE] = $input['merchant_website'] ?? '';
+                $content[RequestFields::MERCHANT_MCC] = $input['merchant_mcc'] ?? '';
                 break;
             case CardlessEmi::ZESTMONEY:
                 $content[RequestFields::MOBILE_NUMBER] = $input['contact'];
@@ -650,6 +654,23 @@ class Gateway extends Base\Gateway
                 $content = $this->addBankCodeAndTransactionType($content, $input['payment']['wallet']);
 
                 break;
+            case CardlessEmi::EARLYSALARY:
+                $content[RequestFields::MERCHANT] = [
+                    RequestFields::MERCHANT_ID   =>
+                        $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
+                    RequestFields::BILLING_LABEL =>
+                        $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
+                ];
+
+                $content[RequestFields::TOKEN] = $token;
+                $content[RequestFields::USER_IP] = $input[
+                Constants\Entity::PAYMENT_ANALYTICS][Payment\Analytics\Entity::IP];
+
+                $content[RequestFields::MERCHANT_NAME] = $input[Constants\Entity::MERCHANT][Merchant\Entity::NAME] ?? '';
+                $content[RequestFields::MERCHANT_WEBSITE] = $input[Constants\Entity::MERCHANT][Merchant\Entity::WEBSITE] ?? '';
+                $content[RequestFields::MERCHANT_MCC] = $input[Constants\Entity::MERCHANT][Merchant\Entity::CATEGORY] ?? '';
+                break;
+
             default:
                 $content[RequestFields::MERCHANT] = [
                     RequestFields::MERCHANT_ID   =>

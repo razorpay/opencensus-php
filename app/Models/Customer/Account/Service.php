@@ -242,11 +242,18 @@ class Service extends Base\Service
                 }
 
                 // merchant id is required to fetch details from cache
-                $input['merchant_id'] = $this->merchant['id'];
+                $input['merchant_id']      = $this->merchant['id'];
+                $input['merchant_website'] = $this->merchant['website'];
+                $input['merchant_mcc']     = $this->merchant['category'];
+                $input['merchant_name']    = $this->merchant['name'];
 
                 $retData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
                 unset($input['merchant_id']);
+                unset($input['merchant_website']);
+                unset($input['merchant_mcc']);
+                unset($input['merchant_name']);
+
 
                 if ($retData != null)
                 {
