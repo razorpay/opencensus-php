@@ -2,6 +2,10 @@
 
 namespace RZP\Tests\Functional\Merchant\Bvs;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
     'testCompanySearchSuccess' => [
         'request'     => [
@@ -75,6 +79,29 @@ return [
                     'description' => 'hystrix: timeout'
                 ]
             ],
+        ],
+    ],
+
+    'testCompanySearchRateLimitExhausted' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/company_search',
+            'content' => [
+                'search_string' => 'abc',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED,
         ],
     ],
 ];

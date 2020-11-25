@@ -1274,5 +1274,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PG_ROUTER_ONLY_LIVE_MODE_SUPPORTED                            = 'Only live mode orders are supported for sync';
 
     const VENDOR_CONNECTION_ERROR                                                   = 'Connection to vendor failed';
+    const BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED                              = 'Company Search retries exhausted';
+
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
 }

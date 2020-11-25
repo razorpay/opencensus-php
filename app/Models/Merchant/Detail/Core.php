@@ -54,7 +54,6 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
-use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
 class Core extends Base\Core
@@ -3163,7 +3162,6 @@ class Core extends Base\Core
         return $response;
     }
 
-
     /**
      * @param array $input
      *
@@ -3172,9 +3170,7 @@ class Core extends Base\Core
      */
     public function getCompanySearchList(array $input): array
     {
-        (new Validator())->validateInput('company_search', $input);
-
-        $companySearchList = [];
+        $companySearchList = [Constant::RESULTS => []];
 
         $isCompanySearchRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $this->merchant->getId(),
@@ -3184,10 +3180,26 @@ class Core extends Base\Core
         {
             return $companySearchList;
         }
+
+        $bvsCore = new AutoKyc\Bvs\Core();
+
+        $companySearchAttempts = $bvsCore->getCompanySearchAttempts($this->merchant->getId());
+
+        if ($companySearchAttempts > DetailConstants::COMPANY_SEARCH_MAX_ATTEMPT)
+        {
+            $this->trace->count(DetailMetric::COMPANY_SEARCH_EXHAUSTED);
+
+            $this->trace->info(TraceCode::COMPANY_SEARCH_EXHAUSTED);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED);
+        }
+
+        (new Validator())->validateInput('company_search', $input);
+
         try
         {
             $companySearchList =
-                (new AutoKyc\Bvs\Core())->probeCompanySearch($input[DEConstants::SEARCH_STRING]);
+                $bvsCore->probeCompanySearch($input[DEConstants::SEARCH_STRING]);
         }
         catch (\Exception $e)
         {
@@ -3199,12 +3211,11 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::MERCHANT_COMPANY_SEARCH_FAILED,
                                          [
-                                             Constant::MERCHANT_ID      => $this->merchant->getId(),
                                              DEConstants::SEARCH_STRING => $input[DEConstants::SEARCH_STRING]
                                          ]);
-            throw new Exception\IntegrationException(
-                ErrorCode::VENDOR_CONNECTION_ERROR);
         }
+
+        $bvsCore->increaseCompanySearchAttempt($this->merchant->getId());
 
         return $companySearchList;
     }

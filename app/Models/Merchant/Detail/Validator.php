@@ -468,7 +468,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $companySearchRules = [
-        Constants::SEARCH_STRING  => 'required|string|min:3'
+        Constants::SEARCH_STRING  => 'required|string|min:3|max:80'
     ];
 
     protected function validateRegisteredBusinessRules(array $input)

@@ -183,9 +183,8 @@ class Constants
     const ACTIVATION_ROUTE_NAME     = 'merchant_activation_status';
     const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
 
-    //input for bvs probe
-    const PROBE_TYPE        = 'probe_type';
-    const VALID_PROBE_TYPES = [self::COMPANY_SEARCH];
-    const COMPANY_SEARCH    = 'company_search';
+    const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
+    const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
+    const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
 }
 

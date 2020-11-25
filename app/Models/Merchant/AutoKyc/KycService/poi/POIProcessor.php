@@ -16,6 +16,10 @@ class POIProcessor extends BaseProcessor
      */
     protected $timeout = 12;
 
+    /**
+     * @return Response
+     * @throws \RZP\Exception\IntegrationException
+     */
     public function process(): Response
     {
         $requestDetails = $this->getApplicableRequestDetails(Constants::DOCUMENT_TYPES[Constants::PERSONAL_PAN]);

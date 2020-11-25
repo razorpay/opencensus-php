@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Response;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
@@ -106,6 +107,47 @@ class Core extends Base\Core
 
         return $dimension;
     }
+
+
+    /**
+     * @param string $merchantId
+     *
+     * @return string
+     */
+    public function getCompanySearchRateLimiterKey(string $merchantId): string
+    {
+         return DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
+                                        $merchantId;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return int
+     */
+    public function getCompanySearchAttempts(string $merchantId): int
+    {
+        $companySearchAttemptRedisKey = $this->getCompanySearchRateLimiterKey($merchantId);
+
+        $companySearchCount = $this->app['cache']->get($companySearchAttemptRedisKey) ?? 0;
+
+        return $companySearchCount;
+    }
+
+    /**
+     * @param string $merchantId
+     */
+    public function increaseCompanySearchAttempt(string $merchantId)
+    {
+        $companySearchAttemptRedisKey = $this->getCompanySearchRateLimiterKey($merchantId);
+
+        $companySearchAttempt = $this->getCompanySearchAttempts($merchantId) + 1;
+
+        $this->app['cache']->put($companySearchAttemptRedisKey,
+                                 $companySearchAttempt,
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+    }
+
 
     /**
      * This function return payload for creation of Bvs_Validation entity

@@ -693,7 +693,6 @@ class Service extends Base\Service
      */
     public function getCompanySearchList(array $input): array
     {
-
         $companySearchList = (new Core)->getCompanySearchList($input);
 
         return $companySearchList;

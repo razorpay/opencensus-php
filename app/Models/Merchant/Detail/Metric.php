@@ -41,5 +41,5 @@ final class Metric
     const BVS_COMPANY_SEARCH_RESPONSE_TOTAL = 'bvs_company_search_response_total';
     const BVS_COMPANY_SEARCH_REQUEST_TOTAL  = 'bvs_company_search_request_total';
     const BVS_PROBE_API_FAILURE             = 'bvs_probe_api_failure';
-
+    const COMPANY_SEARCH_EXHAUSTED          = 'company_search_exhausted';
 }

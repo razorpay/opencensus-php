@@ -11,6 +11,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class CompanySearchTest extends TestCase
 {
@@ -42,20 +43,16 @@ class CompanySearchTest extends TestCase
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', Constant::SUCCESS);
 
-
         $this->mockRazorX('testCompanySearchSuccess',
                           'bvs_company_search',
                           'on',
                           $merchantDetail["merchant_id"]);
-
 
         $this->startTest();
     }
 
     public function testCompanySearchFailure()
     {
-        //$this->ba->proxyAuth();
-
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
@@ -71,5 +68,26 @@ class CompanySearchTest extends TestCase
         $this->startTest();
     }
 
+    public function testCompanySearchRateLimitExhausted()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        Config::set('services.bvs.mock', true);
+
+
+        $this->mockRazorX('testCompanySearchRateLimitExhausted',
+                          'bvs_company_search',
+                          'on',
+                          $merchantDetail["merchant_id"]);
+
+        $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
+                                 $merchantDetail['merchant_id'],
+                                 DetailConstants::COMPANY_SEARCH_MAX_ATTEMPT + 1,
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+
+        $this->startTest();
+    }
 
 }
