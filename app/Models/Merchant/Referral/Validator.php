@@ -27,7 +27,11 @@ class Validator extends Base\Validator
     {
         $isReseller = $merchant->isResellerPartner();
 
-        if ($isReseller === false)
+        $isAggregator = $merchant->isAggregatorPartner();
+
+        $isFullyManaged = $merchant->isFullyManagedPartner();
+
+        if (($isReseller === false) and ($isAggregator === false) and ($isFullyManaged === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);

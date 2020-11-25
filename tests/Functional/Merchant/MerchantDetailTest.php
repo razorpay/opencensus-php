@@ -8,6 +8,7 @@ use Config;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Core;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -1933,6 +1934,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,
             'type'    => 'pricing',
@@ -1964,6 +1967,17 @@ class MerchantDetailTest extends OAuthTestCase
 
         $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
 
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $app->getId()]);
+
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                        ->where('user_id', '=', $referrerId)
+                        ->get();
+
+        $this->assertEmpty($mapping);
+
+        $this->assertEquals($merchantApp->type, $appType);
+
         $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
 
         $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
@@ -1971,6 +1985,80 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
 
         $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
+    }
+
+    public function testPutPreSignUpDetailsWithReferralCodeForAggregator()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+        
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+
+        $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], true);
+
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $managedApp->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $referredApp->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals');
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+            [
+                'merchant_id' => $referredSubMerchantId
+            ], 'test')
+            ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $referredApp->getId()]);
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                       ->where('user_id', '=', $referrerId)
+                       ->get();
+
+        $this->assertEmpty($mapping);
+
+        $this->assertEquals($merchantApp->type, $appType);
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($referredApp->getId(), $merchantAcessMap['entity_id']);
     }
 
     public function testPutPreSignUpDetailsWithInvalidReferralCode()

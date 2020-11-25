@@ -2574,12 +2574,14 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * @param null $appType
      * @return bool
      */
-    public function allowSubmerchantDashboardAccess(): bool
+    public function allowSubmerchantDashboardAccess($appType = null): bool
     {
         // Later change to only fully managed partners
-        return (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true));
+        return (($appType === MerchantApplications\Entity::MANAGED) and
+                (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true)));
     }
 
     /**

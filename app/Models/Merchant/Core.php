@@ -291,12 +291,13 @@ class Core extends Base\Core
     /**
      * @param Entity $merchant
      * @param Entity $subMerchant
-     * @param bool   $linkedAccount
+     * @param bool $linkedAccount
+     * @param string|null $appType
      *
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    public function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
+    public function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false, string $appType = null)
     {
         // assign parent pricing plan by default
         $pricingPlan = $merchant->getPricingPlanId();
@@ -309,7 +310,7 @@ class Core extends Base\Core
         elseif ($merchant->isPartner() === true)
         {
             // for partner, assign based on config defined on partner, if available
-            $application = $this->fetchPartnerApplication($merchant);
+            $application = $this->fetchPartnerApplication($merchant, $appType);
 
             $config      = (new PartnerConfig\Core)->fetch($application);
 
@@ -1859,27 +1860,34 @@ class Core extends Base\Core
      * @param Entity $partner
      * @param Entity $submerchant
      *
+     * @param null $appType
      * @return array
      * @throws BadRequestException
-     * @throws Exception\LogicException
+     * @throws \Throwable
      */
-    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant, $appType = null): array
     {
         $merchantValidator = new Validator;
 
         $merchantValidator->validateIsNotLinkedAccount($submerchant);
         $merchantValidator->validatePartnerIsNotSubmerchant($partner, $submerchant);
 
+        if ($appType === null)
+        {
+            $appType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
+        }
+
         $this->trace->info(
             TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
             [
                 'partner_id'     => $partner->getId(),
                 'submerchant_id' => $submerchant->getId(),
+                'app_type'       => $appType,
             ]);
 
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType) {
 
-            $partnerApp = $this->fetchPartnerApplication($partner);
+            $partnerApp = $this->fetchPartnerApplication($partner, $appType);
 
             $config = (new PartnerConfig\Core)->fetch($partnerApp);
 
@@ -1901,7 +1909,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant, $appType);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -2480,10 +2488,11 @@ class Core extends Base\Core
      *
      * @param Entity $partner
      * @param Entity $submerchant
+     * @param null $appType
      */
-    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null)
     {
-        if ($partner->allowSubmerchantDashboardAccess() === false)
+        if ($partner->allowSubmerchantDashboardAccess($appType) === false)
         {
             return;
         }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Throwable;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -26,9 +27,10 @@ use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
@@ -86,7 +88,7 @@ class Service extends Base\Service
         {
             $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
         }
@@ -227,7 +229,7 @@ class Service extends Base\Service
             {
                 $this->editMerchantDetails($merchantId, $row);
             }
-            catch (\Throwable $e)
+            catch (Throwable $e)
             {
                 $this->trace->traceException($e, null, null, $tracePayload);
 
@@ -894,7 +896,7 @@ class Service extends Base\Service
                 {
                     (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
                 }
-                catch (\Throwable $e)
+                catch (Throwable $e)
                 {
                     $this->trace->traceException(
                         $e,
@@ -930,7 +932,7 @@ class Service extends Base\Service
      *
      * @param array $input
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function applyCoupon(array &$input)
     {
@@ -959,6 +961,7 @@ class Service extends Base\Service
      *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
+     * @throws Throwable
      */
     private function applyReferralPartner(array &$input)
     {
@@ -983,10 +986,12 @@ class Service extends Base\Service
 
             $merchantCore = new Merchant\Core;
 
-            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, MerchantApp::REFERRED);
+
+            $linkedAccount = false;
 
             // update merchant pricing plan to the one specified by partner in partner config if applicable
-            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant);
+            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant, $linkedAccount, MerchantApp::REFERRED);
 
             $data = [
                 'status'       => 'success',
@@ -1110,7 +1115,7 @@ class Service extends Base\Service
      * @param $input
      *
      * @return mixed
-     * @throws \Throwable
+     * @throws Throwable
      */
     Public function putAdditionalWebsite($merchantId, $input)
     {
@@ -1173,7 +1178,7 @@ class Service extends Base\Service
      * @param string $verificationType
      *
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function verifyMerchantAttributes(array $input, string $verificationType): array
     {
