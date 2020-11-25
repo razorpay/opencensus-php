@@ -16,7 +16,7 @@ function _track(source) {
 
   function onViewBanner() {
     window.rzpQ.push(
-      window.rzpQ.subscriptionButtons().success('merchant_dashboard.display_banner', {
+      window.rzpQ.merchantActions().success('merchant_dashboard.display_banner', {
         mode,
         banner_text: bannerText,
         card_id: cardId,
@@ -27,7 +27,7 @@ function _track(source) {
 
   function onClickCTA() {
     window.rzpQ.push(
-      window.rzpQ.subscriptionButtons().initiated('merchant_dashboard.click_banner_cta2', {
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_banner_cta2', {
         mode,
         banner_text: bannerText,
         card_id: cardId,
