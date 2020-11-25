@@ -56,7 +56,8 @@ class Redis implements IntegrationInterface
                     'attributes' => [
                         'peer.hostname' => $params['host'],
                         'peer.port' => $params['port'],
-                        'db.type' => 'redis'
+                        'db.type' => 'redis',
+                        'span.kind' => Span::KIND_CLIENT
                     ],
                     'kind' => Span::KIND_CLIENT
                 ];
@@ -71,7 +72,8 @@ class Redis implements IntegrationInterface
                         'command' => $command->getId(),
                         'service.name' => 'redis',
                         'redis.raw_command' => $query,
-                        'redis.args_length' => count($arguments)
+                        'redis.args_length' => count($arguments),
+                        'span.kind' => Span::KIND_CLIENT
                     ],
                     'kind' => Span::KIND_CLIENT
                 ];

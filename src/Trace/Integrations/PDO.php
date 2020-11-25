@@ -71,7 +71,7 @@ class PDO implements IntegrationInterface
     public static function handleQuery($pdo, $query)
     {
         return [
-            'attributes' => ['db.statement' => $query],
+            'attributes' => ['db.statement' => $query, 'span.kind' => Span::KIND_CLIENT],
             'kind' => Span::KIND_CLIENT
         ];
     }
@@ -86,7 +86,7 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        $attributes = ['dsn' => $dsn, 'db.type' => 'sql'];
+        $attributes = ['dsn' => $dsn, 'db.type' => 'sql', 'span.kind' => Span::KIND_CLIENT];
 
         return [ 'attributes' => $attributes,
             'kind' => Span::KIND_CLIENT,
@@ -153,7 +153,11 @@ class PDO implements IntegrationInterface
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
 
-        $tags = ['db.statement' => $statement->queryString, 'db.row_count' => $rowCount];
+        $tags = [
+            'db.statement' => $statement->queryString,
+            'db.row_count' => $rowCount,
+            'span.kind' => Span::KIND_CLIENT
+        ];
 
         return [
             'attributes' => $tags + $errorTags,
