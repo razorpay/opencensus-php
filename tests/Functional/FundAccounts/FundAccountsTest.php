@@ -1043,4 +1043,15 @@ class FundAccountsTest extends TestCase
 
         $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
+
+    public function testCreateCardFundAccountWithoutName()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
 }

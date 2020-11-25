@@ -1783,6 +1783,7 @@ return [
                 'contact_id'  => 'cont_1000000contact',
                 'card'      => [
                     'number' => '1234432112344321',
+                    'name'   => 'jp'
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -1810,6 +1811,7 @@ return [
                 'contact_id'  => 'cont_1000000contact',
                 'card'      => [
                     'number' => '1234432112344321',
+                    'name'   => 'jp',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -2590,6 +2592,35 @@ return [
                     'description'   =>  'The name must be between 4 and 120 characters.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business'
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateCardFundAccountWithoutName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'number' => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The card.name field is required when card is present.',
                 ],
             ],
             'status_code'   => 400,
