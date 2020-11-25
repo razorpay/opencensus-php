@@ -26,7 +26,7 @@ class Canara extends Base
 
     const FILE_TYPE = FileStore\Type::CANARA_NETBANKING_CLAIMS;
 
-    const FILE_NAME = 'Canara_Netbanking_Claims';
+    const FILE_NAME = 'RPGNBG';
 
     protected function formatDataForFile($data)
     {
@@ -56,6 +56,8 @@ class Canara extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        return static::FILE_NAME;
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
+
+        return self::FILE_NAME . $date;
     }
 }

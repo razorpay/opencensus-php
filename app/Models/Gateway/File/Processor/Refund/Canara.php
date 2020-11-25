@@ -23,7 +23,7 @@ class Canara extends Base
 {
     use FileHandler;
 
-    const FILE_NAME              = 'Canara_Netbanking_Refunds';
+    const FILE_NAME              = 'RPGREF';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::CANARA_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_CANARA;
@@ -80,9 +80,9 @@ class Canara extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('d_m_Y');
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . '_' . $date;
+        return self::FILE_NAME . $date;
     }
 
     protected function formatDataForMail(array $data)

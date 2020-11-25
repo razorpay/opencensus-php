@@ -118,6 +118,11 @@ class DailyFile extends Mailable
 
     protected function getSubject()
     {
+        if (isset($this->data['subject']) === true)
+        {
+            return $this->data['subject'];
+        }
+
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = '';

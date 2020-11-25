@@ -102,10 +102,10 @@ class NetbankingCanaraCombinedFileTest extends TestCase
 
         Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $refundFull, $refundPartial)
         {
-            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+            $date = Carbon::today(Timezone::IST)->format('dmY');
 
             $testData = [
-                'subject' => 'Canara Netbanking claims and refund files for '.$date,
+                'subject' => 'PG RECON DATA '. $date,
                 'amount' => [
                     'claims'  => '1000.00',
                     'refunds' => '505.00',
