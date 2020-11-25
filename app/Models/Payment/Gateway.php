@@ -344,6 +344,7 @@ class Gateway
         self::NETBANKING_IOB,
         self::NETBANKING_JSB,
         self::NETBANKING_DCB,
+        self::NETBANKING_IDFC,
     ];
 
     /**

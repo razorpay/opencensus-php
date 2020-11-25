@@ -25,7 +25,12 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 
     protected function getReferenceNumber($row)
     {
-        return $row[Constants::BANK_REFERENCE_NO];
+        return $row[Constants::BANK_REFERENCE_NO] ?? null;
+    }
+
+    protected function getArn($row)
+    {
+        return $row[Constants::BANK_REFERENCE_NO] ?? null;
     }
 
     public function getGatewayPayment($paymentId)
@@ -64,5 +69,14 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
     protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[Constants::TRANSACTION_AMOUNT] ?? null);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer' => [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
     }
 }
