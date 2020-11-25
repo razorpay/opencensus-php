@@ -56,12 +56,14 @@ const SettlementBreakup = (props) => {
           })}
         </tbody>
       </table>
-      <TotalAmount
-        infoText="Total amount that has been debited to your account"
-        value={calculatedAmounts.debit}
-        type="debit"
-        isNew={isBreakupNew}
-      />
+      {calculatedAmounts.debit !== 0 && (
+        <TotalAmount
+          infoText="Total amount that has been debited to your account"
+          value={calculatedAmounts.debit}
+          type="debit"
+          isNew={isBreakupNew}
+        />
+      )}
       <table>
         <tbody>
           {items.map((breakupItem, index) => {

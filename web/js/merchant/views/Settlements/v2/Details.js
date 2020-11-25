@@ -43,6 +43,8 @@ const SettlementDetails = (props) => {
     breakupDetails: { items, isBreakupNew, loading },
   } = props;
 
+  const shouldShowMore = () => items.length <= 2;
+
   const calculatedAmounts = calculateCreditDebitAmount(items, isBreakupNew);
   const totalAmount = calculateSettledAmount(items, isBreakupNew);
 
@@ -51,7 +53,7 @@ const SettlementDetails = (props) => {
       <div
         class={classList(
           'content-sm txn-details settlements-v2',
-          detailsCollapse && 'settlements-v2-collapse',
+          detailsCollapse && !shouldShowMore() && 'settlements-v2-collapse',
         )}
       >
         <div class="content-header">
@@ -92,7 +94,7 @@ const SettlementDetails = (props) => {
             </div>
           </div>
         </div>
-        {!loading && (
+        {!loading && !shouldShowMore() && (
           <button
             type="button"
             class="btn btn-primary btn-sm panel-collapser"

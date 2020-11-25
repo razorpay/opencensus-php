@@ -68,6 +68,12 @@ const ListItem = ({ item, source }) => {
           <Link to={`/route/${source}s/${item[key]}`}>{item.id}</Link>
         </td>
       );
+    } else if (source === 'payment_domestic' || source === 'payment_international') {
+      return (
+        <td key={idx}>
+          <Link to={`/payments/${item[key]}`}>{item.id}</Link>
+        </td>
+      );
     } else {
       return <td key={idx}>{item.id}</td>;
     }
@@ -120,13 +126,21 @@ const ListItem = ({ item, source }) => {
             );
             break;
           case 'status':
-            if (source === 'payment') {
+            if (
+              source === 'payment' ||
+              source === 'payment_domestic' ||
+              source === 'payment_international'
+            ) {
               row = (
                 <td key={idx}>
                   <PaymentStatusLabel status={item.status} />
                 </td>
               );
-            } else if (source === 'refund') {
+            } else if (
+              source === 'refund' ||
+              source === 'refund_domestic' ||
+              source === 'refund_international'
+            ) {
               row = (
                 <td key={idx}>
                   <RefundStatusLabel status={item.status} />

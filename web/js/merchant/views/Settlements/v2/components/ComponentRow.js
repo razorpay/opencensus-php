@@ -48,7 +48,15 @@ const ComponentRow = ({ breakupItem, newResponse }) => {
         <td>
           <div>
             <div class="title">Settled Amount</div>
-            <Amount value={breakupItem.settled_amount} currency="INR" />
+            {breakupItem.type === 'debit' ? (
+              <span>
+                - <Amount value={breakupItem.settled_amount * -1} currency="INR" />
+              </span>
+            ) : (
+              <span>
+                <Amount value={breakupItem.settled_amount} currency="INR" />
+              </span>
+            )}
           </div>
         </td>
       )}

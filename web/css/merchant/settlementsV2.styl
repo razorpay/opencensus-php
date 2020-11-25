@@ -142,31 +142,24 @@
     display flex
     justify-content flex-start
     flex-direction row
-    background #f3f4f7
-    padding 20px 0px 20px 20px
+    padding 20px 0px 0px 20px
     max-width 100%
     overflow scroll
+    border-bottom 1px solid #e2e8ea
   
     .tab
-      padding-right 20px
+      padding 0px 8px 6px 6px
       font-size 14px
       line-height 19px
       font-weight bold
       color #515978
       cursor pointer
+      height 40px
     
     .active
       color #528FF0
       position relative
-
-      &:after
-        content ''
-        position absolute
-        width 55px
-        height 3px
-        background-color #528FF0
-        top 36px
-        left 0px
+      border-bottom 4px solid #528FF0
 
 @media (max-width: 720px)
   .settlements-v2
