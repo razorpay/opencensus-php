@@ -37,12 +37,12 @@ import { setIsPaymentButtonCodeUsed } from '../utils';
 @OnBoarding({
   feature: RZPFeatures.PB,
 })
-export default class PaymentPagesOnBoarding extends React.Component {
+export default class PaymentButtonOnBoarding extends React.Component {
   getNextBtnProp = sliderProps => () => {
     return (
       <FeatureEnableSliderButton
-        isLocalEnabler
-        feature={RZPFeatures.PB}
+        isLocalEnabler={this.props.user.isSubscriptionsEnabled ? true: false}
+        feature={this.props.user.isSubscriptionsEnabled ? RZPFeatures.PB: RZPFeatures.SUBSCRIPTIONS}
         page={sliderProps.active}
         onClick={this.closeOnboarding}
       />

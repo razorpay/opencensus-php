@@ -272,10 +272,7 @@ export default class User {
     return isEnabled;
   }
 
-  // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonsEnabled() {
-    return true;
-
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PB);
 
     return isEnabled;
@@ -569,7 +566,9 @@ export default class User {
     return this.getExpStatus('upi_subscription');
   }
 
+  // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonEnabledByRazorX() {
+    return true;
     return this.getExpStatus('enable_payment_buttons');
   }
 

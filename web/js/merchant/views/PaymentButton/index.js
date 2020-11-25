@@ -12,6 +12,10 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 
+import { updateFeatures } from 'merchant/reducers/config';
+import { fetchUser } from 'merchant/reducers/session';
+
+
 import OnBoarding, {
   getIsPaymentButtonsEnabled,
   getIsAllowedResetPaymentButtonsOnBoarding,
@@ -27,7 +31,11 @@ import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
       paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
     };
   },
-  { handleProductQuickGuide },
+  {
+    handleProductQuickGuide,
+    fetchUser,
+    updateFeatures
+  },
 )
 export default class PaymentButtonsContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
@@ -72,6 +80,21 @@ export default class PaymentButtonsContainer extends React.Component {
       showOnboarding,
       isQuickGuideOpen: !getPaymentButtonsQuickGuideIsClosed(props),
     });
+
+    // Note: For those merchant who have seen the onboarding but couldn't enable Subscription feature, it would automatically make an update call
+    if (!showOnboarding && !this.props.user.isSubscriptionsEnabled) {
+      this.props.updateFeatures(
+        {
+          features: {
+            [RZPFeatures.SUBSCRIPTIONS]: 1,
+          },
+        },
+        this.props.user.current
+      )
+        .then(() => {
+          return this.props.fetchUser();
+        })
+    }
   };
 
   render() {
