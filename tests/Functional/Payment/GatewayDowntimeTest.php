@@ -1530,6 +1530,143 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($downtimeEntity->getCreatedAt(), $downtimeEntityArchived->getCreatedAt());
     }
 
+    public function testGetGatewayDowntimeForPaymentUPI()
+    {
+        $downtimeCreateRequest = [
+            'content' => [
+                'gateway'     => 'upi_mindgate',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'upi',
+                'comment'     => 'Test Reason',
+                'source'      => 'VAJRA',
+                'begin'       => strval(Carbon::now()->subMinutes(10)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals( "upi", $response['method']);
+
+        $downtimeGetRequest = [
+            'content' => [
+                'terminals' => [
+                    [
+                        'gateway' => 'upi_mindgate',
+                    ],
+                    [
+                        'gateway' => 'upi_sbi',
+                    ]
+                ],
+                'payment' => [
+                    'method' => 'upi',
+                ]
+            ],
+            'method' => 'POST',
+            'url' => '/router/gateway/downtimes'
+        ];
+
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent($downtimeGetRequest);
+        $this->assertEquals( "upi", $response['gateway_downtimes'][0]['method']);
+        $this->assertEquals( "upi_mindgate", $response['gateway_downtimes'][0]['gateway']);
+        $this->assertEquals(1, sizeof($response['gateway_downtimes']));
+
+        $downtimeCreateRequest2 = [
+            'content' => [
+                'gateway'     => 'upi_sbi',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'upi',
+                'comment'     => 'Test Reason',
+                'source'      => 'VAJRA',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->ba->adminAuth();
+
+        $response2 = $this->makeRequestAndGetContent($downtimeCreateRequest2);
+
+        $this->assertEquals( "upi", $response2['method']);
+
+        $this->ba->appAuth();
+        $response2 = $this->makeRequestAndGetContent($downtimeGetRequest);
+        $this->assertEquals(2, sizeof($response2['gateway_downtimes']));
+    }
+
+    public function testGetGatewayDowntimeForPaymentCard()
+    {
+        $downtimeCreateRequest = [
+            'content' => [
+                'gateway'     => 'hitachi',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'comment'     => 'Test Reason',
+                'source'      => 'VAJRA',
+                'begin'       => strval(Carbon::now()->subMinutes(10)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals( "card", $response['method']);
+
+        $downtimeGetRequest = [
+            'content' => [
+                'terminals' => [
+                    [
+                        'gateway' => 'hitachi',
+                    ],
+                    [
+                        'gateway' => 'card_fss',
+                    ]
+                ],
+                'payment' => [
+                    'method' => 'card',
+                    'card'  => [
+                        'network_code'  => 'RUPAY',
+                        'type'          => 'debit',
+                    ]
+                ]
+            ],
+            'method' => 'POST',
+            'url' => '/router/gateway/downtimes'
+        ];
+
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent($downtimeGetRequest);
+        $this->assertEquals( "card", $response['gateway_downtimes'][0]['method']);
+        $this->assertEquals( "hitachi", $response['gateway_downtimes'][0]['gateway']);
+        $this->assertEquals(1, sizeof($response['gateway_downtimes']));
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'gateway'     => 'card_fss',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'comment'     => 'Test Reason',
+                'source'      => 'VAJRA',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->ba->adminAuth();
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals( "card", $response['method']);
+
+        $this->ba->appAuth();
+        $response2 = $this->makeRequestAndGetContent($downtimeGetRequest);
+        $this->assertEquals(2, sizeof($response2['gateway_downtimes']));
+    }
+
     protected function getDowntimeCreationRequest(): array
     {
         return [

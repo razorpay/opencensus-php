@@ -1056,6 +1056,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FATAL_ERROR                                   = 'GATEWAY_FATAL_ERROR';
     const GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE     = 'GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE';
     const GATEWAY_PAYMENT_MODE_MISMATCH                         = 'GATEWAY_PAYMENT_MODE_MISMATCH';
+    const GET_GATEWAY_DOWNTIME_REQUEST                          = 'GET_GATEWAY_DOWNTIME_REQUEST';
+    const FETCH_GATEWAY_DOWNTIME_ERROR                          = 'FETCH_GATEWAY_DOWNTIME_ERROR';
 
     const FTA_BULK_RECONCILE_REQUEST                            = 'FTA_BULK_RECONCILE_REQUEST';
     const FTA_RECONCILE_DISPATCH_FAILED                         = 'FTA_RECONCILE_DISPATCH_FAILED';

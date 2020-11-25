@@ -603,6 +603,7 @@ return [
     'smart_routing' => [
         'url'       => env('SMART_ROUTING_URL'),
         'mock'      => env('SMART_ROUTING_MOCK',false),
+        'secret'    => env('SMART_ROUTING_SECRET'),
         'username'  => env('SMART_ROUTING_USERNAME'),
         'password'  => env('SMART_ROUTING_PASSWORD')
     ],

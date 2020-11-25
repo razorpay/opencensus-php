@@ -49,6 +49,19 @@ class Service extends Base\Service
         return $downtimes->toArrayAdmin();
     }
 
+    public function getGatewayDowntimeDataForPayment($input)
+    {
+        $this->trace->info(TraceCode::GET_GATEWAY_DOWNTIME_REQUEST, $input);
+
+        $gatewayDowntimes = $this->repo->useSlave(function () use ($input) {
+            return $this->core()->getApplicableDowntimesForPaymentForRouter($input['terminals'], $input['payment']);
+        });
+
+        return [
+            'gateway_downtimes' => $gatewayDowntimes,
+        ];
+    }
+
     public function archiveGatewayDowntimes(): array
     {
         return $this->core()->archiveGatewayDowntimes();

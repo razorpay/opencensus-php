@@ -1845,6 +1845,8 @@ class Route
         'governor_create_merchant_rule_group'       => ['post',     'merchant/mid/rule_groups',                                                                         'GovernorController@proxy'              ],
         'governor_delete_merchant_rule_group'       => ['delete',   'merchant/mid/rule_groups/{rule_group_id}',                                                         'GovernorController@proxy'              ],
 
+        'gateway_downtime_for_payment'            => ['POST',     'router/gateway/downtimes',                                  'GatewayController@getGatewayDowntimeForRouter'             ],
+
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
@@ -2768,6 +2770,7 @@ class Route
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
+        'gateway_downtime_for_payment',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5684,7 +5687,11 @@ class Route
 
         'freshdesk_webhook' => [
             'fd_customer_dispute',
-        ]
+        ],
+
+        'smart_routing' => [
+            'gateway_downtime_for_payment',
+        ],
     ];
 
     //

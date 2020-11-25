@@ -237,6 +237,21 @@ class Core extends Base\Core
         return $downtimes;
     }
 
+    public function getApplicableDowntimesForPaymentForRouter(
+        array $terminals,
+        array $payment)
+    {
+        $params = $this->buildFetchDowntimeRequest($terminals, $payment);
+
+        $downtimes = $this->repo
+            ->gateway_downtime
+            ->fetchApplicableDowntimesForPayment($params);
+
+        $this->trace->info(TraceCode::GET_GATEWAY_DOWNTIME_REQUEST, $downtimes->toArrayAdmin());
+
+        return $downtimes;
+    }
+
     /**
      * @deprecated This approach is not being used now.
      * @see Core::createDowntimeIfApplicable for current implementation
@@ -420,6 +435,39 @@ class Core extends Base\Core
         return [];
     }
 
+    protected function buildFetchDowntimeRequest(array $terminals, array $payment): array
+    {
+        $gateways = $this->getTerminalGateways($terminals);
+
+        $gateways[] = Entity::ALL;
+
+        $now = Carbon::now()->getTimestamp();
+
+        $params = [
+            Entity::GATEWAY => $gateways,
+            Entity::PARTIAL => false,
+            Entity::BEGIN   => $now,
+        ];
+
+        switch ($payment['method'])
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+                $this->fillCardDetailsForRouter($params, $payment);
+
+                return $params;
+                break;
+
+            case Payment\Method::UPI:
+                $params[Entity::METHOD] = [Payment\Method::UPI];
+
+                return $params;
+                break;
+        }
+
+        return [];
+    }
+
     /**
      * Sets card related data in params
      *
@@ -449,6 +497,31 @@ class Core extends Base\Core
         if (empty($issuer) === false)
         {
             $params[Entity::ISSUER][] = $issuer;
+        }
+    }
+
+    // fillCardDetailsForRouter builds the request for fetching gateway downtimes from DB for Card payments
+    protected function fillCardDetailsForRouter(array & $params, $payment)
+    {
+        $params[Entity::METHOD] = [Payment\Method::CARD, Payment\Method::EMI];
+
+        $params[Entity::NETWORK] = [$payment['card']['network_code'],
+            Entity::ALL,
+            Entity::UNKNOWN,
+            strtolower(Entity::UNKNOWN)];
+
+        $params[Entity::CARD_TYPE] = [$payment['card']['type'],
+            Entity::ALL,
+            Entity::UNKNOWN,
+            strtolower(Entity::UNKNOWN)];
+
+        $params[Entity::ISSUER] = [Entity::ALL,
+            Entity::UNKNOWN,
+            strtolower(Entity::UNKNOWN)];
+
+        if (isset($payment['card']['issuer']) === true)
+        {
+            $params[Entity::ISSUER][] = $payment['card']['issuer'];
         }
     }
 

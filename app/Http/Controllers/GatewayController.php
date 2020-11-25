@@ -1511,4 +1511,28 @@ class GatewayController extends Controller
             'payment_id' => $input['payment_id'],
         ]);
     }
+
+    protected function getGatewayDowntimeForRouter(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        try
+        {
+            $response = $service->getGatewayDowntimeDataForPayment($input);
+
+            return ApiResponse::json($response);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FETCH_GATEWAY_DOWNTIME_ERROR);
+
+            return ApiResponse::json([
+                'status' => false,
+                'message' => 'failed to fetch downtimes',
+            ]);
+        }
+    }
 }
