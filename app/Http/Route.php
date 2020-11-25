@@ -4097,12 +4097,12 @@ class Route
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                    => Permission::EDIT_MERCHANT_DISABLE_LIVE,
         'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
-        'merchant_activation_update'               => '*', // permission handled in code
+        'merchant_activation_update'               => Permission::EDIT_MERCHANT,
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,
         'merchant_set_banks'                       => Permission::ASSIGN_MERCHANT_BANKS,
         'merchant_fetch_bank_account'              => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
-        'merchant_edit'                            => '*', // permission handled in code
+        'merchant_edit'                            => Permission::EDIT_MERCHANT,
         'adj_add'                                  => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_bank_account_create'             => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'admin_fetch_terminal_by_id'               => '*',
