@@ -137,8 +137,8 @@ class Validator extends Base\Validator
         'authentication.provider_data'                               => 'required_if:application,visasafeclick|array',
         'authentication.provider_data.product_type'                  => 'sometimes_if:application,visasafeclick|max:10|string',
         'authentication.provider_data.auth_type'                     => 'required_if:application,visasafeclick|string|max:10',
-        'authentication.provider_data.product_transaction_id'        => 'required_if:application,visasafeclick|size:60|string',
-        'authentication.provider_data.product_merchant_reference_id' => 'required_if:application,visasafeclick|size:48|string',
+        'authentication.provider_data.product_transaction_id'        => 'required_if:application,visasafeclick|max:60|string',
+        'authentication.provider_data.product_merchant_reference_id' => 'required_if:application,visasafeclick|max:48|string',
     ];
 
     protected static $editAcquirerRules = [
@@ -146,6 +146,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
+        Entity::REFERENCE17          => 'sometimes|nullable|string',
     ];
 
     protected static $editCpsResponseRules = [

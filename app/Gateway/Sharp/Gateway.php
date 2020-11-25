@@ -100,6 +100,18 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
+        if ($input['payment']['authentication_gateway'] === Payment\Gateway::VISA_SAFE_CLICK)
+        {
+            $resp = [
+                'acquirer' => [
+                    'reference2' => 'test',
+                    'reference17' => '{"product_enrollment_id": "831eyJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.WwA2xBjK-sqL-hHIeCZ1nLRghkr-tOTVxWToFU5rH3aWlAnxsoVmvaBfBpYRPYsDBGDuAU0aQiXuJkB2ClECD07BrEcJ2eJ4hpsrYT2uF3ac_MTlLWvx8tz978DTvYPnD70-hoAVMPr6aDVLnz68-0fdx1oY0Iqum1W9Mwvr_dg8wvd_0oPpy_stPpclLCgwVTdcotcnyOfUxiiOF9CpQEoTkPzENh7QyBbNhLGri_HhUryPJN1FFFtdbCxq-NSRgKOQq__kXxv6RiY8RCKEop0a6iy7LkK6mynvf63kK1000"}',
+                ]
+            ];
+
+            return $resp;
+        }
+
         if ($content['method'] === 'card')
         {
             $content['card_number'] = $input['card']['number'];

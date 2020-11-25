@@ -1095,4 +1095,36 @@ class SharpGatewayTest extends TestCase
 
         return $content;
     }
+
+    public function testVisaSafeClickCardPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['vsc_authorization']);
+
+        $authentication = array(
+            'cavv'                  => '3q2+78r+ur7erb7vyv66vv\/\/8=',
+            'cavv_algorithm'        => '1',
+            'eci'                   => '05',
+            'xid'                   => 'ODUzNTYzOTcwODU5NzY3Qw==',
+            'enrolled_status'       => 'Y',
+            'authentication_status' => 'Y',
+            'provider_data'         => [
+                'product_transaction_id'        => '1_156049293_714_62_l73q001m_CHECK211_156049293_714_62_l73q00',
+                'product_merchant_reference_id' => '4aa1c9ffd4fc7ded80f73f1d98b35e8e24085404b6e01401',
+                'product_type'                  => 'VCIND',
+                'auth_type'                     => '3ds'
+            ]
+        );
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['application'] = 'visasafeclick';
+        $paymentArray['authentication'] = $authentication;
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['authentication_gateway'], 'visasafeclick');
+        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertNotNull($payment['acquirer_data']['product_enrollment_id']);
+    }
 }
