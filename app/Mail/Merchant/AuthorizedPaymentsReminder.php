@@ -43,7 +43,7 @@ class AuthorizedPaymentsReminder extends Mailable
 
     protected function addCc()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS];
+        $email = [];
 
         $this->cc($email);
 

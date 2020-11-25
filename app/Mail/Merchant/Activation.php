@@ -83,7 +83,7 @@ class Activation extends Mailable
     {
         if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
         {
-            $this->cc(Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS]);
+            $this->cc([]);
         }
 
         return $this;

@@ -55,7 +55,7 @@ class MerchantInvitation extends Base\Mailable
     {
         if ($this->org['custom_code'] === 'rzp')
         {
-            $this->cc(Base\Constants::MAIL_ADDRESSES[Base\Constants::NOTIFICATIONS]);
+            $this->cc([]);
         }
 
         return $this;
