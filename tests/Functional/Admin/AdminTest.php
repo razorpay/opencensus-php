@@ -963,7 +963,6 @@ class AdminTest extends TestCase
     public function testAdminAllEntitiesApi()
     {
         $result = $this->startTest();
-        s($result['entities']);
 
         $this->assertCount(11, $result['fields']);
 
