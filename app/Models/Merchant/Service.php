@@ -680,6 +680,8 @@ class Service extends Base\Service
             $response['is_suspended'] =  $this->merchant->isSuspended();
 
             $response[Entity::ORG_ID] =  $this->merchant->getOrgId();
+
+            $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
         }
 
         return $response;
