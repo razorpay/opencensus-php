@@ -206,11 +206,19 @@ export const fetchBatchStats = (batchId) =>
   });
 
 /* extra methods for more details related to payment link batch */
-export const fetchBatchStatsForPLV2 = (batchId) =>
-  merchantFetch({
+export const fetchBatchStatsForPLV2 = (batchId, batchType) => {
+  const queryParams = {};
+
+  if(batchType) {
+    queryParams.batch_type = batchType;
+  }
+
+  return merchantFetch({
     method: 'get',
     url: `payment_links/${batchId}/batch`,
+    params: queryParams
   });
+}
 
 export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
   const queryParams = {
@@ -308,12 +316,13 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
   const promise = new Promise((resolve, reject) => {
     return fetchBatchAjax(id).then((batchData) => {
       if (batchData) {
-        const isBatchTypePaymentlinksV2 = batchData.batch.type === 'payment_link_v2';
+        const batchType = batchData.batch.type;
+        const isBatchTypePaymentlinksV2 =  batchType === 'payment_link_v2';
 
         let promises = [];
 
         if (isBatchTypePaymentlinksV2) {
-          promises.push(fetchBatchStatsForPLV2(id));
+          promises.push(fetchBatchStatsForPLV2(id, batchType));
           promises.push(fetchBatchPaymentLinks(id));
         } else {
           promises.push(fetchBatchStats(id));
