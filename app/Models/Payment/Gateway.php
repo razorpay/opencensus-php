@@ -972,6 +972,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IOB,
         Payment\Gateway::NETBANKING_FSB,
         Payment\Gateway::NETBANKING_JKB,
+        Payment\Gateway::HDFC_DEBIT_EMI,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
