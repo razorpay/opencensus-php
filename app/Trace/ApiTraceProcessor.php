@@ -186,9 +186,10 @@ class ApiTraceProcessor
     protected function addRouteNameForExceptions(& $record)
     {
         // If this is an exception, a stack key is present in the context array
-        $stackPresent = isset($record['context']['stack']);
+        $isException = (isset($record['context']['stack'])
+                        or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA));
 
-        if ($stackPresent === true)
+        if ($isException === true)
         {
             $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
         }

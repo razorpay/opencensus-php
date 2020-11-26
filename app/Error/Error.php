@@ -679,7 +679,9 @@ class Error extends Support\Fluent
 
         $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
             [
-                'error_response' => $error
+                'error_response'     => $error,
+                'http_status_code'   => $this->getHttpStatusCode(),
+                'internal_error_code'=> $this->getInternalErrorCode()
             ]
         );
 
