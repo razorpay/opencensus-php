@@ -82,6 +82,39 @@ class Core extends Base\Core
         return $balance;
     }
 
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @param string $mode
+     * @param int $initialBalance
+     * @return Entity
+     */
+    public function createWithInitialBalance(Merchant\Entity $merchant,
+                                             array $input,
+                                             string $mode,
+                                             int $initialBalance): Entity
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_CREATE_REQUEST,
+            [
+                'input' => $input,
+                'mode'  => $mode,
+            ]
+        );
+
+        $balance = (new Entity)->build($input);
+
+        $balance->setBalance($initialBalance);
+
+        $balance->setConnection($mode);
+
+        $balance->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($balance);
+
+        return $balance;
+    }
+
     public function updateBalanceAccountNumber(Entity $balance, string $accountNumber)
     {
         assertTrue($balance->getAccountNumber() === null, 'Attempting to re-update balance\'s account_number!');

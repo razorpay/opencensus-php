@@ -6,11 +6,25 @@ use RZP\Models\Base;
 use RZP\Models\Counter;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Base\JitValidator;
 use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
     const FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT = 60;
+
+    public function createCapitalBalance($input)
+    {
+        (new Validator())->validateInput('create_capital_balance_input', $input);
+
+        $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
+        unset($input[Entity::MERCHANT_ID]);
+
+        $initialBalance = $input[Entity::BALANCE] ?? 0;
+        unset($input[Entity::BALANCE]);
+
+        return $this->core()->createWithInitialBalance($merchant, $input, $this->mode, $initialBalance);
+    }
 
     public function updateFreePayout($id, $input)
     {

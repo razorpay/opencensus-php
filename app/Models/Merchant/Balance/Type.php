@@ -23,6 +23,13 @@ class Type
     const BANKING           = 'banking';
     const RESERVE_BANKING   = 'reserve_banking';
 
+    /**
+     * Capital collections balance types
+     */
+    const PRINCIPAL         = 'principal';
+    const INTEREST          = 'interest';
+    const CHARGE            = 'charge';
+
     public static $pgBalances = [
         self::PRIMARY,
         self::FEE_CREDITS,

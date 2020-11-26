@@ -322,6 +322,7 @@ class Route
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
+        'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
@@ -2472,6 +2473,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_balance_create',
         'credit_repayment_transaction_create',
         'merchant_sub_create_batch',
         'currency_fetch_rates_internal',
@@ -5486,6 +5488,7 @@ class Route
         ],
 
         'capital_collections_client' => [
+            'merchant_balance_create',
             'credit_repayment_transaction_create',
         ],
 

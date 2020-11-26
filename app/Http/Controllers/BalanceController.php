@@ -15,4 +15,13 @@ class BalanceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createCapitalBalance()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createCapitalBalance($input);
+
+        return ApiResponse::json($response);
+    }
 }

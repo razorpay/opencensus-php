@@ -22,6 +22,13 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER   => 'sometimes|string|nullable',
     ];
 
+    public static $createCapitalBalanceInputRules = [
+        Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
+        Entity::CURRENCY         => 'required|string|in:INR',
+        Entity::BALANCE          => 'sometimes|int|min:0',
+        Entity::TYPE             => 'required|string|in:principal,interest,charge',
+    ];
+
     protected static $lockedBalanceRules = [
         Entity::LOCKED_BALANCE => 'required|int|min:0',
     ];

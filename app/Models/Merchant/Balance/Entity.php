@@ -180,6 +180,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setBalance($balance)
+    {
+        $this->checkNumeric($balance);
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
     protected function addAmount($amount)
     {
         $this->checkNumeric($amount);

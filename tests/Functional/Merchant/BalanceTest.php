@@ -24,6 +24,37 @@ class BalanceTest extends TestCase
         $this->ba->appAuth();
     }
 
+    public function testCreateCapitalBalance()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $response = $this->startTest();
+        $this->assertNotNull($response['id']);
+    }
+
+    public function testCreateCapitalBalanceWithDefaultBalance()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->startTest();
+    }
+
+    public function testCreateCapitalBalanceWithNegativeBalance()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->startTest();
+    }
+
     public function testUpdateFreePayoutsCount()
     {
         $balance = $this->fixtures->create('balance',

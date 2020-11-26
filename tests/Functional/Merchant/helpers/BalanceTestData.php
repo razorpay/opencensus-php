@@ -6,6 +6,79 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 return [
+    'testCreateCapitalBalance' => [
+        'request'  => [
+            'url'     => '/capital_balances',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'principal',
+                'currency'      => 'INR',
+                'balance'       => 1000,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'balance'           => 1000,
+                'type'              => 'principal',
+                'currency'          => 'INR',
+                'merchant_id'       => '10000000000000',
+                // 'id'                => 'G36eVO6FseJ35v',
+                // 'updated_at'        => 1605806235,
+                'last_fetched_at'   => null,
+            ],
+        ],
+    ],
+
+    'testCreateCapitalBalanceWithDefaultBalance' => [
+        'request'  => [
+            'url'     => '/capital_balances',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'principal',
+                'currency'      => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'balance'           => 0,
+                'type'              => 'principal',
+                'currency'          => 'INR',
+                'merchant_id'       => '10000000000000',
+                // 'id'                => 'G36eVO6FseJ35v',
+                // 'updated_at'        => 1605806235,
+                'last_fetched_at'   => null,
+            ],
+        ],
+    ],
+
+    'testCreateCapitalBalanceWithNegativeBalance' => [
+        'request'  => [
+            'url'     => '/capital_balances',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'principal',
+                'currency'      => 'INR',
+                'balance'       => -1000,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The balance must be at least 0.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdateFreePayoutsCount' => [
         'request'  => [
             'url'     => '/balance/{id}/free_payout',
