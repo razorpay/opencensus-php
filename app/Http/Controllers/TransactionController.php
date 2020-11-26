@@ -70,4 +70,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createCreditRepaymentTransaction()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createCreditRepaymentTransaction($input);
+
+        return ApiResponse::json($response);
+    }
 }

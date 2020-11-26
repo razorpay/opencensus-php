@@ -51,6 +51,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
+use RZP\Models\CreditRepayment;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Plan\Subscription;
 use RZP\Base\Http\Psr18ClientMock;
@@ -808,6 +809,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'balance'                   => Merchant\Balance\Entity::class,
 
             'settlement.ondemand'       => Settlement\Ondemand\Entity::class,
+
+            'credit_repayment'          => CreditRepayment\Entity::class,
         ]);
     }
 

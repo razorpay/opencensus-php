@@ -1741,6 +1741,7 @@ class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'credit_repayment_transaction_create'      => ['put',      'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
@@ -2471,6 +2472,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'credit_repayment_transaction_create',
         'merchant_sub_create_batch',
         'currency_fetch_rates_internal',
         'loc_mail',
@@ -5481,6 +5483,10 @@ class Route
 
         'capital_cards_client' => [
             'user_fetch',
+        ],
+
+        'capital_collections_client' => [
+            'credit_repayment_transaction_create',
         ],
 
         'loc'  => [

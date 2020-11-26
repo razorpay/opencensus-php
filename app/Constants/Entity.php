@@ -383,6 +383,8 @@ class Entity
 
     const COMMISSION = 'commission';
 
+    // this entity doesn't exist in api. it's required for transaction entity operations.
+    const CREDIT_REPAYMENT               = 'credit_repayment';
 
     const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
 

@@ -714,6 +714,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::PAYOUT);
     }
 
+    public function isTypeCreditRepayment(): bool
+    {
+        return ($this->getType() === Type::CREDIT_REPAYMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -767,6 +772,12 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic()
     {
         $reportTxn = parent::toArrayPublic();
+
+        // For credit repayment, we need id in response to store in credit_repayment entity
+        if ($this->isTypeCreditRepayment() === true)
+        {
+            return $reportTxn;
+        }
 
         unset($reportTxn[self::ID]);
         unset($reportTxn[self::ENTITY]);

@@ -295,6 +295,7 @@ class Merchant
                 case Transaction\Type::DISPUTE:
                 case Transaction\Type::FUND_ACCOUNT_VALIDATION:
                 case Transaction\Type::SETTLEMENT_ONDEMAND:
+                case Transaction\Type::CREDIT_REPAYMENT:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 

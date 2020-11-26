@@ -22,6 +22,7 @@ class Type
     const SETTLEMENT_ONDEMAND     = 'settlement.ondemand';
     const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
+    const CREDIT_REPAYMENT        = 'credit_repayment';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities

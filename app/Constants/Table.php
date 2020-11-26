@@ -301,6 +301,9 @@ class Table
 
     const BVS_VALIDATION = 'bvs_validation';
 
+    // this table doesn't exist in api db. this constant is required for transaction queries
+    const CREDIT_REPAYMENT = 'credit_repayment';
+
     // API Request Log
     const REQUEST_LOG = 'request_logs';
 

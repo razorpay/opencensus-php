@@ -738,6 +738,53 @@ class TransactionTest extends TestCase
         $this->assertEquals(0, $result['failed']);
     }
 
+    public function testCreateCreditRepayment()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $response = $this->startTest();
+
+        // make 2nd request with same input.
+        $response2 = $this->startTest();
+
+        // response of previous api request & 2nd should match. (id, created_at etc)
+        $this->assertArraySelectiveEquals($response, $response2);
+
+        $this->assertNotNull($response['id']);
+        $this->assertNotNull($response['created_at']);
+        $this->assertNotNull($response['settled_at']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertArraySelectiveEquals([
+            'entity_id'         => 'crdt_rpy_G1SRTbSC6fQOHo',
+            'type'              => 'credit_repayment',
+            'merchant_id'       => '10000000000000',
+            'amount'            => 10000,
+            'fee'               => 0,
+            'mdr'               => 0,
+            'tax'               => 0,
+            'debit'             => 10000,
+            'credit'            => 0,
+            'currency'          => 'INR',
+            'balance'           => 990000,
+            'channel'           => 'axis',
+            'fee_bearer'        => 'platform',
+            'fee_model'         => "prepaid",
+            'credit_type'       => "default",
+            'on_hold'           => false,
+            'settled'           => false,
+            'settlement_id'     => null,
+            'reconciled_type'   => 'na',
+            'balance_id'        => '10000000000000',
+            'balance_updated'   => null,
+            'entity'            => 'transaction',
+        ], $txn);
+    }
+
     protected function createMultipleTransactions()
     {
         $payments = $this->fixtures->times(5)->create(

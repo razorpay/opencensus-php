@@ -297,6 +297,37 @@ return [
         ],
     ],
 
+    'testCreateCreditRepayment' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+            ],
+            'url'    => '/credit_repayments/transaction',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                // 'id'            => 'txn_G1T4sGEJmwIj4w',
+                'entity'        => 'transaction',
+                'entity_id'     => 'crdt_rpy_G1SRTbSC6fQOHo',
+                'type'          => 'credit_repayment',
+                'debit'         => 10000,
+                'credit'        => 0,
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'fee'           => 0,
+                'tax'           => 0,
+                'settled'       => false,
+                // 'created_at'    => 1605448528,
+                // 'settled_at'    => 1605448528,
+                // 'posted_at'     => 1605448528,
+            ],
+        ],
+    ],
+
     'testTransactionsBulkUpdateBalanceId' => [
         'request' => [
             'url'    => '/admin/transaction/balance_id_update',

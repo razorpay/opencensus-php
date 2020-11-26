@@ -5,6 +5,8 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
+use RZP\Base\JitValidator;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -14,6 +16,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
 {
@@ -28,6 +31,63 @@ class Service extends Base\Service
     public function createFeeBreakupForTransaction($input)
     {
         return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
+    }
+
+    /**
+     * used by capital-collections service to create transactions
+     *
+     * @param $input
+     * @return array
+     */
+    public function createCreditRepaymentTransaction($input)
+    {
+        $span = Tracer::startSpan(['name' => 'transaction.service.createCreditRepaymentTransaction']);
+        Tracer::addAttributes($input);
+        $scope = Tracer::withSpan($span);
+
+        $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST);
+        $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST, $input);
+
+        (new JitValidator)->rules(\RZP\Models\CreditRepayment\Validator::$createTransactionInput)
+                            ->caller($this)
+                            ->input($input)
+                            ->validate();
+
+        $creditRepayment = new \RZP\Models\CreditRepayment\Entity($input);
+
+        $creditRepayment->merchant()->associate($this->repo->merchant->find($input['merchant_id']));
+
+        // find transaction if it was created already for this credit_repayment.
+        // return public response if that transaction already exists
+        // else create new transaction
+
+        try
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($creditRepayment);
+
+            $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED);
+            $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED, $input);
+            $scope->close();
+
+            return $txn->toArrayPublic();
+        }
+        catch (DbQueryException $e)
+        {
+            // Do nothing. continue with creation of new transaction
+        }
+
+        return $this->repo->transaction(function () use ($creditRepayment, $input, $scope)
+        {
+            [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction();
+
+            $this->repo->saveOrFail($txn);
+
+            $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATED);
+            $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
+            $scope->close();
+
+            return $txn->toArrayPublic();
+        });
     }
 
     public function updateMultipleTransactions(array $input)
