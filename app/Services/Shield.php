@@ -241,19 +241,20 @@ class Shield
             return;
         }
 
-        $payloadDetails[ShieldConstants::IP]               = $paymentAnalytics->getIp();
-        $payloadDetails[ShieldConstants::CHECKOUT_ID]      = $paymentAnalytics->getCheckoutId();
-        $payloadDetails[ShieldConstants::USER_AGENT]       = $paymentAnalytics->getUserAgent();
-        $payloadDetails[ShieldConstants::REFERER]          = $paymentAnalytics->getReferer();
-        $payloadDetails[ShieldConstants::BROWSER]          = $paymentAnalytics->getBrowser();
-        $payloadDetails[ShieldConstants::BROWSER_VERSION]  = $paymentAnalytics->getBrowserVersion();
-        $payloadDetails[ShieldConstants::OS]               = $paymentAnalytics->getOs();
-        $payloadDetails[ShieldConstants::OS_VERSION]       = $paymentAnalytics->getOsVersion();
-        $payloadDetails[ShieldConstants::DEVICE]           = $paymentAnalytics->getDevice();
-        $payloadDetails[ShieldConstants::ATTEMPTS]         = $paymentAnalytics->getAttempts();
-        $payloadDetails[ShieldConstants::PLATFORM]         = $paymentAnalytics->getPlatform();
-        $payloadDetails[ShieldConstants::PLATFORM_VERSION] = $paymentAnalytics->getPlatformVersion();
-        $payloadDetails[ShieldConstants::INTEGRATION]      = $paymentAnalytics->getIntegration();
+        $payloadDetails[ShieldConstants::IP]                   = $paymentAnalytics->getIp();
+        $payloadDetails[ShieldConstants::CHECKOUT_ID]          = $paymentAnalytics->getCheckoutId();
+        $payloadDetails[ShieldConstants::USER_AGENT]           = $paymentAnalytics->getUserAgent();
+        $payloadDetails[ShieldConstants::REFERER]              = $paymentAnalytics->getReferer();
+        $payloadDetails[ShieldConstants::BROWSER]              = $paymentAnalytics->getBrowser();
+        $payloadDetails[ShieldConstants::BROWSER_VERSION]      = $paymentAnalytics->getBrowserVersion();
+        $payloadDetails[ShieldConstants::OS]                   = $paymentAnalytics->getOs();
+        $payloadDetails[ShieldConstants::OS_VERSION]           = $paymentAnalytics->getOsVersion();
+        $payloadDetails[ShieldConstants::DEVICE]               = $paymentAnalytics->getDevice();
+        $payloadDetails[ShieldConstants::ATTEMPTS]             = $paymentAnalytics->getAttempts();
+        $payloadDetails[ShieldConstants::PLATFORM]             = $paymentAnalytics->getPlatform();
+        $payloadDetails[ShieldConstants::PLATFORM_VERSION]     = $paymentAnalytics->getPlatformVersion();
+        $payloadDetails[ShieldConstants::INTEGRATION]          = $paymentAnalytics->getIntegration();
+        $payloadDetails[ShieldConstants::RZP_CHECKOUT_LIBRARY] = $paymentAnalytics->getLibrary() ?? '';
     }
 
     protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)
