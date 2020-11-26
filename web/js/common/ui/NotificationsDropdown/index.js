@@ -215,6 +215,7 @@ export default class NotificationsDropdown extends Component {
       'NOV20-RZP-FESTIVEOFFER',
       'Nov20-Opfin-NitroV1',
       'NOV20-VP-C1',
+      'NOV20-FTX',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
