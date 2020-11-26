@@ -376,20 +376,32 @@ a.breadcrumb__backNav--link {
     color: #FFBB00;
     margin-right: 2px;
     margin-left: -1px;
-    font-size: 95%;
-    top: -1px;
+    font-size: 105%;
+    top: 0px;
   }
   &--test::after {
     background: none;
   }
+
+  &--live-icon {
+    color: #1F890E;
+    margin-right: 2px;
+    font-size: 90%;
+    top: 0px;
+  }
+  &--live-icon::after {
+    background: none;
+  }
+}
+
+.dropdown-toggle.switch-modes-toggle .test-mode-popover.rzp-popover.rzp-tooltip.show {
+  top: 44px !important;
 }
 
 .test-mode-popover.rzp-popover.rzp-tooltip.show {
-  width: 333px;
+  width: 292px;
   z-index: 1001;
-}
-.test-mode-popover.rzp-popover.rzp-tooltip.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow, .test-mode-popover.rzp-popover.rzp-tooltip.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
-  left: 38.5%;
+  top: 90px !important;
 }
 
 .centered {

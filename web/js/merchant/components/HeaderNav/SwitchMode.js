@@ -8,20 +8,22 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
     <Dropdown>
       <DropdownTrigger class="dropdown-toggle switch-modes-toggle">
         {mode === 'test' ? (
-          <small class="help-content">
-            <i class="i i-info-circle ModeIndicator--test" />
-            <Popover align="bottom" theme="dark" className="test-mode-popover">
+          <>
+            <i class="i i-info-circle ModeIndicator--test" /> {modeFormatted} Mode
+            <Popover align="bottom" theme="dark" followPointer={true} className="test-mode-popover">
               <PopoverBody>
-                <div>All the transactions that are done in Test mode are</div>
-                <div>sample transactions and there will not be any real money</div>
+                <div>All the transactions done in Test mode are sample</div>
+                <div>transactions and there will not be any real money</div>
                 <div>debited/credited in your account.</div>
               </PopoverBody>
             </Popover>
-          </small>
+          </>
         ) : (
-          <span class="ModeIndicator ModeIndicator--live" />
+          <>
+            <i class="i i-done ModeIndicator--live-icon" /> {modeFormatted} Mode
+          </>
         )}{' '}
-        {modeFormatted} Mode <span class="caret" />
+        <span class="caret" />
       </DropdownTrigger>
       <DropdownContent>
         <ul class="dropdown-menu switch-modes-menu nav nav-stacked">
@@ -30,17 +32,19 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
               onClick={() => onSwitchMode('test')}
               class={classList(mode === 'test' && 'selected')}
             >
-              <small class="help-content">
-                <i class="i i-info-circle ModeIndicator--test" />
-                <Popover align="bottom" theme="dark" className="test-mode-popover">
-                  <PopoverBody>
-                    <div>All the transactions that are done in Test mode are</div>
-                    <div>sample transactions and there will not be any real money</div>
-                    <div>debited/credited in your account.</div>
-                  </PopoverBody>
-                </Popover>
-              </small>{' '}
-              Test Mode
+              <i class="i i-info-circle ModeIndicator--test" /> Test Mode
+              <Popover
+                align="bottom"
+                theme="dark"
+                followPointer={true}
+                className="test-mode-popover"
+              >
+                <PopoverBody>
+                  <div>All the transactions done in Test mode are sample</div>
+                  <div>transactions and there will not be any real money</div>
+                  <div>debited/credited in your account.</div>
+                </PopoverBody>
+              </Popover>
             </a>
           </li>
           <li>
@@ -48,7 +52,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
               onClick={() => onSwitchMode('live')}
               class={classList(mode === 'live' && 'selected')}
             >
-              <span class="ModeIndicator ModeIndicator--live" /> Live Mode
+              <i class="i i-done ModeIndicator--live-icon" /> Live Mode
             </a>
           </li>
         </ul>
