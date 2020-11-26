@@ -21,6 +21,12 @@ export default class InstantActivationAnnouncements extends Component {
 
   render() {
     const { user, mode, payments } = this.props;
+    const commonSettlementBanner = {
+      theme: 'success',
+      title: 'Settlements Enabled',
+      content: `Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle. 
+        ${user.instantActivation.isGraylistFlow ? 'Go ahead and accept your first payment.' : ''}`,
+    };
     let theme = 'warning',
       title,
       content,
@@ -124,13 +130,9 @@ export default class InstantActivationAnnouncements extends Component {
     } else {
       if (user.isAccepted) {
         if (!user.isNPSSurveyBannerEnabled && !user.isCovidFeatureEnabled) {
-          theme = 'success';
-          title = 'Settlements Enabled';
-          content =
-            'Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle.';
-          if (user.instantActivation.isGraylistFlow) {
-            content = content + ' ' + 'Go ahead and accept your first payment.';
-          }
+          theme = commonSettlementBanner.theme;
+          title = commonSettlementBanner.title;
+          content = commonSettlementBanner.content;
         } else return null;
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
@@ -165,6 +167,10 @@ export default class InstantActivationAnnouncements extends Component {
             </React.Fragment>
           );
         }
+      } else if (user.activation_status === 'activated_mcc_pending') {
+        theme = commonSettlementBanner.theme;
+        title = commonSettlementBanner.title;
+        content = commonSettlementBanner.content;
       } else {
         let activation_tat = '1-2 days';
         const clarification_submitted = LocalStorageService.getItem(
