@@ -5937,6 +5937,7 @@ trait Authorize
             {
                 return false;
             }
+
             return true;
         }
 
@@ -5944,9 +5945,13 @@ trait Authorize
         // we render the otp submission page to the user
         if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
+            if ($payment->getAuthType() === Payment\AuthType::_3DS)
+            {
+                return false;
+            }
+
             if ($payment->card->iinRelation !== null)
             {
-                $authType = $payment->getAuthType();
 
                 if (empty($gatewayInput['auth_type']) === false)
                 {
