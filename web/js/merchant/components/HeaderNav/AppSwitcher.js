@@ -8,31 +8,31 @@ const appListBusinessBanking = [
   {
     icon: '/dist/css/assets/products/current-account.svg',
     name: 'Current Accounts',
-    link: 'https://razorpay.com/x/current-accounts/',
+    link: 'https://razorpay.com/x/current-accounts/?ref=app-switcher',
     desc: 'Business Banking built for disruptors.',
   },
   {
     icon: '/dist/css/assets/products/payout-link.svg',
     name: 'Payout Links',
-    link: 'https://razorpay.com/x/payout-links/',
+    link: 'https://razorpay.com/x/payout-links/?ref=app-switcher',
     desc: 'Easy and instant payouts',
   },
   {
     icon: '/dist/css/assets/products/vendor-payments.svg',
     name: 'Vendor Payments',
-    link: 'https://www.razorpay.com/x/vendor-payments/',
+    link: 'https://www.razorpay.com/x/vendor-payments/?ref=app-switcher',
     desc: 'Automated Tax payments.',
   },
   {
     icon: '/dist/css/assets/products/payouts.svg',
     name: 'Payouts',
-    link: 'https://razorpay.com/x/payouts/',
+    link: 'https://razorpay.com/x/payouts/?ref=app-switcher',
     desc: '24x7, Instant & Automated Payouts',
   },
   {
     icon: '/dist/css/assets/products/opfin.svg',
     name: 'Opfin - Payroll',
-    link: 'https://razorpay.com/payroll/',
+    link: 'https://razorpay.com/payroll/?ref=app-switcher',
     desc: 'Automate and execute payroll',
   },
 ];
@@ -41,13 +41,13 @@ const appListRiskAndFraud = [
   {
     icon: '/dist/css/assets/products/thirdwatch.svg',
     name: 'Thirdwatch',
-    link: 'https://razorpay.com/thirdwatch/',
+    link: 'https://razorpay.com/thirdwatch/?ref=app-switcher',
     desc: 'Fight fraud with Artificial Intelligence',
   },
   {
     icon: '/dist/css/assets/products/prepay-cod.svg',
     name: 'Prepay COD',
-    link: 'https://razorpay.com/thirdwatch/prepay-cod/',
+    link: 'https://razorpay.com/thirdwatch/prepay-cod/?ref=app-switcher',
     desc: 'Convert risky CoD orders to prepaid.',
     new: true,
   },
