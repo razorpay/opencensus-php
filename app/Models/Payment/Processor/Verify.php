@@ -85,6 +85,9 @@ trait Verify
             $data['payment'] = $payment->toArrayAdmin();
 
             $customProperties += [
+                'payment_id' => $payment->getId(),
+                'bucket'=> $payment->getVerifyBucket(),
+                'error_code' => $payment->getErrorCode(),
                 'internal_error_code' => $payment->getInternalErrorCode(),
                 'error_desc' => $payment->getErrorDescription(),
                 'verify_response' => $data['gateway'],

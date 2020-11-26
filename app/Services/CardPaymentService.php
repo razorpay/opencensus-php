@@ -742,7 +742,7 @@ class CardPaymentService
             $verify->verifyResponseContent = $response[self::DATA];
         }
         else {
-            $verify->verifyResponseContent = null;
+            $verify->verifyResponseContent =  $response[self::ERROR] ?? null;
         }
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -782,14 +782,7 @@ class CardPaymentService
 
     protected function checkGatewaySuccess(Verify &$verify)
     {
-
-        if (isset($verify->verifyResponseContent) === false)
-        {
-            $verify->gatewaySuccess = false;
-        }
-        else {
-            $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
-        }
+        $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'] ?? false;
     }
 
     protected function checkAmountMismatch(Verify &$verify)
