@@ -36,6 +36,7 @@ class Metric
     const LABEL_RZP_MERCHANT_ID                 = 'rzp_merchant_id';
     const LABEL_RZP_OAUTH_CLIENT_ID             = 'rzp_oauth_client_id';
     const LABEL_RZP_AUTH                        = 'rzp_auth';
+    const LABEL_RZP_PRODUCT                     = 'rzp_product';
     const LABEL_RZP_INTERNAL_APP_NAME           = 'rzp_internal_app_name';
     const LABEL_RZP_AUTH_FLOW_TYPE              = 'rzp_auth_flow_type';
     const LABEL_ASYNC_JOB_CONNECTION            = 'async_job_connection';

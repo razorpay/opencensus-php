@@ -51,6 +51,7 @@ return [
         'rzp_internal_app_name' =>  'none',
         'rzp_auth_flow_type'    =>  'key',
         'has_passport'          =>  false,
+        'rzp_product'           =>  'primary',
     ],
 
     'testCreateInvoiceAndAssertMetricsSentExpectedMetricTags' => [
@@ -65,5 +66,6 @@ return [
         'rzp_internal_app_name' =>  'none',
         'rzp_auth_flow_type'    =>  'key',
         'has_passport'          =>  false,
+        'rzp_product'           =>  'primary',
     ],
 ];

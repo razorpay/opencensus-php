@@ -30,6 +30,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Jobs\PayoutPostCreateProcess;
@@ -56,9 +57,11 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends TestCase
 {
+
     use PayoutTrait;
     use WebhookTrait;
     use PaymentTrait;
+    use TestsMetrics;
     use HeimdallTrait;
     use WorkflowTrait;
     use SettlementTrait;
@@ -9566,5 +9569,52 @@ class PayoutTest extends TestCase
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testCreatePayoutViaDashboardAndAssertMetricsSent()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->assertMetricsSentWithProduct();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutOnPrivateAuthAndMetricsSent()
+    {
+        $this->assertMetricsSentWithProduct();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function assertMetricsSentWithProduct()
+    {
+        $mock = $this->createMetricsMock();
+
+        $mock->expects($this->atLeastOnce())
+            ->method('count')
+            ->will($this->returnCallback(function (string $metric, int $times, array $dimensions) {
+                if ($metric === Constants\Metric::HTTP_REQUESTS_TOTAL)
+                {
+                    if (isset($dimensions[Constants\Metric::LABEL_RZP_PRODUCT]) and ($dimensions[Constants\Metric::LABEL_RZP_PRODUCT] === 'banking'))
+                    {
+                        return true;
+                    }
+                    // to make the test fail
+                    throw new \Exception("product not set correctly in metrics");
+                }
+                return true;
+            }));
     }
 }

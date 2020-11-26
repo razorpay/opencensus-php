@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants\Metric;
 use RZP\Http\Throttle\Throttler;
+use RZP\Http\BasicAuth\BasicAuth;
 
 final class Throttle
 {
@@ -66,6 +67,8 @@ final class Throttle
     protected function getMetricDimensions(Request $request, Response $response): array
     {
         $requestCtx = app('request.ctx');
+        /** @var BasicAuth $basicAuth */
+        $basicAuth  = app('basicauth');
 
         return [
             Metric::LABEL_METHOD                => $request->getMethod(),
@@ -79,6 +82,7 @@ final class Throttle
             Metric::LABEL_RZP_AUTH_FLOW_TYPE    => $requestCtx->getAuthFlowType(),
             Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName() ?: Metric::LABEL_NONE_VALUE,
             Metric::LABEL_HAS_PASSPORT          => $request->headers->has(Passport::PASSPORT_JWT_V1),
+            Metric::LABEL_RZP_PRODUCT           => optional($basicAuth)->getProduct(), // optional because not sure basicAuth is initialized in all flows
         ];
     }
 }
