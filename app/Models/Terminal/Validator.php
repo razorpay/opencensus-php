@@ -438,6 +438,9 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
+        Entity::STATUS                      => 'sometimes|string|in:deactivated,activated',
+
     ];
 
     protected static $bajajfinservEditTerminalRules = [
