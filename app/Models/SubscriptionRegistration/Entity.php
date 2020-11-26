@@ -199,7 +199,10 @@ class Entity extends Base\PublicEntity
 
             $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl($invoice);
 
-            $nachArray[Entity::PREFILLED_FORM_TRANSIENT] = $paperMandate->getGeneratedFormUrlTransient();
+            if (app('basicauth')->isProxyAuth() or app('basicauth')->isDirectAuth())
+            {
+                $nachArray[Entity::PREFILLED_FORM_TRANSIENT] = $paperMandate->getGeneratedFormUrlTransient();
+            }
 
             $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
 

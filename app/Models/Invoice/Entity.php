@@ -653,7 +653,9 @@ class Entity extends Base\PublicEntity
 
             $publicArray[Order\Entity::TOKEN] = $token;
 
-            $nachFormUrl = $token[SubscriptionRegistration\Entity::NACH][SubscriptionRegistration\Entity::PREFILLED_FORM_TRANSIENT] ?? null;
+            $nachFormUrl =
+                $token[SubscriptionRegistration\Entity::NACH][SubscriptionRegistration\Entity::PREFILLED_FORM_TRANSIENT] ??
+                $token[SubscriptionRegistration\Entity::NACH][SubscriptionRegistration\Entity::PREFILLED_FORM];
 
             $publicArray[self::NACH_FORM_URL] = $nachFormUrl;
         }
