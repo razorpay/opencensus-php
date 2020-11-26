@@ -8,8 +8,8 @@ const S1 = (props) => {
         <div class="title">Welcome to your Partner Dashboard</div>
         <div className="line-box brd-primary">
           <p className="info info-green">
-            Get ₹1000 referral bonus and 0.15% commission on all your referrals till 30th of
-            November.
+            Get ₹1000 referral bonus and 0.15% commission on all your referrals till 31st of
+            December.
           </p>
         </div>
         <div style={{ marginTop: '21px', padding: '2px' }}>
