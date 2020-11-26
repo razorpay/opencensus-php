@@ -25,7 +25,7 @@ final class Shield
     const PARTNER_WHITELISTED_DOMAINS  = 'partner_whitelisted_domains';
     const MERCHANT_CREATED_AT          = 'merchant_created_at';
     const MERCHANT_ACTIVATED_AT        = 'merchant_activated_at';
-    const MERCHANT_PAN                 = 'merchant_pan';
+    const MERCHANT_PROMOTER_PAN        = 'merchant_promoter_pan';
     const MERCHANT_BANK_ACCOUNT        = 'merchant_bank_account';
     const MERCHANT_GSTIN               = 'merchant_gstin';
     const ID                           = 'id';
