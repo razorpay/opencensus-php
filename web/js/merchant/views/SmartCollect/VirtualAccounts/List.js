@@ -215,6 +215,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
           onEleBlur={this.onSearchEleBlur}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
+          showAdvancedFilters={this.props.user.isSmartCollectAdvancedSearchFeaturesEnabled}
         />
 
         <DataTable

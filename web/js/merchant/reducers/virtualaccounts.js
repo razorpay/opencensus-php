@@ -1,14 +1,8 @@
 import { set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 import VirtualAccount from 'merchant/models/VirtualAccount';
-import {
-  makeActionCollectionReducer,
-  fetchAll,
-} from 'merchant/reducers/collection';
-import {
-  makeEntityReducer,
-  updateEntity,
-} from 'merchant_common/reducers/entity';
+import { makeActionCollectionReducer, fetchAll } from 'merchant/reducers/collection';
+import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity';
 
 const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';
 const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';
@@ -27,14 +21,11 @@ export const fetchConfigForVirtualAccount = () => {
   };
 };
 
-export const fetchVirtualAccounts = params => {
-  if (!params.notes) {
-    params.receiver_type = 'bank_account,vpa';
-  }
+export const fetchVirtualAccounts = (params) => {
   return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
 
-export const fetchItem = id => {
+export const fetchItem = (id) => {
   let virtualAccount = new VirtualAccount();
   return {
     type: VIRTUAL_ACCOUNT_FETCH,
@@ -42,7 +33,7 @@ export const fetchItem = id => {
   };
 };
 
-export const fetchVAPayments = id => {
+export const fetchVAPayments = (id) => {
   let virtualAccount = new VirtualAccount({ id });
   return {
     type: VIRTUAL_ACCOUNT_PAYMENTS_FETCH,
@@ -50,7 +41,7 @@ export const fetchVAPayments = id => {
   };
 };
 
-export const saveVirtualAccount = params => {
+export const saveVirtualAccount = (params) => {
   const virtualAccount = new VirtualAccount(params);
 
   return {
@@ -59,7 +50,7 @@ export const saveVirtualAccount = params => {
   };
 };
 
-export const closeVirtualAccount = params => {
+export const closeVirtualAccount = (params) => {
   const virtualAccount = new VirtualAccount(params);
   return {
     type: VIRTUAL_ACCOUNT_EDIT,
@@ -75,14 +66,14 @@ export const updateVirtualAccountDetails = (id, data) => {
   };
 };
 
-export const createTestPayment = params => {
+export const createTestPayment = (params) => {
   const virtualAccount = new VirtualAccount();
   return () => {
     return virtualAccount.createTestPayment(params);
   };
 };
 
-export const validateVPACustomPrefix = prefix => {
+export const validateVPACustomPrefix = (prefix) => {
   return merchantFetch({
     url: `virtual_vpa_prefixes/validate`,
     method: 'GET',
@@ -92,7 +83,7 @@ export const validateVPACustomPrefix = prefix => {
   });
 };
 
-export const saveVPACustomPrefix = prefix => {
+export const saveVPACustomPrefix = (prefix) => {
   return {
     type: VPA_PREFIX,
     payload: merchantFetch({
@@ -116,39 +107,36 @@ let listInitialState = {
 };
 
 // List Reducer
-export const virtualAccountsReducer = makeActionCollectionReducer(
-  'VIRTUAL_ACCOUNTS',
-  {
-    [`${VIRTUAL_ACCOUNT_CONFIG}::SUCCESS`]: (state, action) => {
-      const va_config = {
-        ...action.payload.data,
-      };
+export const virtualAccountsReducer = makeActionCollectionReducer('VIRTUAL_ACCOUNTS', {
+  [`${VIRTUAL_ACCOUNT_CONFIG}::SUCCESS`]: (state, action) => {
+    const va_config = {
+      ...action.payload.data,
+    };
 
-      const [rzp_prefix, merchant_prefix] = va_config.vpa.prefix.split('.');
+    const [rzp_prefix, merchant_prefix] = va_config.vpa.prefix.split('.');
 
-      va_config.vpa.rzp_prefix = rzp_prefix;
-      va_config.vpa.merchant_prefix = merchant_prefix;
+    va_config.vpa.rzp_prefix = rzp_prefix;
+    va_config.vpa.merchant_prefix = merchant_prefix;
 
-      return set(state, 'va_config', va_config);
-    },
-    [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state, action) => {
-      return set(state, 'va_config', {}); // Set empty config
-    },
-    [`${VPA_PREFIX}::SUCCESS`]: (state, action) => {
-      const merchant_prefix = action.payload.data.prefix;
-      const prefix = `${state.va_config.vpa.rzp_prefix}.${merchant_prefix}`;
+    return set(state, 'va_config', va_config);
+  },
+  [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state, action) => {
+    return set(state, 'va_config', {}); // Set empty config
+  },
+  [`${VPA_PREFIX}::SUCCESS`]: (state, action) => {
+    const merchant_prefix = action.payload.data.prefix;
+    const prefix = `${state.va_config.vpa.rzp_prefix}.${merchant_prefix}`;
 
-      return set(state, 'va_config', {
-        ...state.va_config,
-        vpa: {
-          ...state.va_config.vpa,
-          merchant_prefix,
-          prefix,
-        },
-      });
-    },
-  }
-);
+    return set(state, 'va_config', {
+      ...state.va_config,
+      vpa: {
+        ...state.va_config.vpa,
+        merchant_prefix,
+        prefix,
+      },
+    });
+  },
+});
 
 // Virtual Accounts Details Reducer
 let detailsInitialState = {
@@ -166,5 +154,5 @@ export const virtualAccountReducer = makeEntityReducer(
       return set(state, 'va_payments', action.payload.data.items);
     },
   },
-  detailsInitialState
+  detailsInitialState,
 );

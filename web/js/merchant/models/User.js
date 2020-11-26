@@ -558,6 +558,10 @@ export default class User {
     return true;
   }
 
+  get isSmartCollectAdvancedSearchFeaturesEnabled() {
+    return this.getExpStatus('va_search');
+  }
+
   get isEmandateNonzeroAmountEnabled() {
     return this.getExpStatus('emandate_nonzero_amount');
   }
