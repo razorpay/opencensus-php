@@ -14,4 +14,20 @@ class Constants
 
 	const REFUND_BUFFER         = 10;
 	const DISPUTE_EXPIRES_AFTER = 2;
+
+	// FD Tags
+	const FD_TAGS_AUTOMATED_DISPUTE_FLOW = 'automated_dispute_flow';
+	const FD_TAGS_DISPUTE_CREATED        = 'dispute_created';
+	const FD_TAGS_PENDING_WITH_DISPUTES  = 'pending_with_disputes';
+
+	// FD Status
+	const FD_TICKET_STATUS_OPEN                     = 2;
+	const FD_TICKET_STATUS_PENDING                  = 3;
+	const FD_TICKET_STATUS_RESOLVED                 = 4;
+	const FD_TICKET_STATUS_CLOSED                   = 5;
+	const FD_TICKET_STATUS_WAITING_ON_CUSTOMER      = 6;
+	const FD_TICKET_STATUS_NEW                      = 8;
+	const FD_TICKET_STATUS_PENDING_WITH_CHILD       = 9;
+	const FD_TICKET_STATUS_PENDING_WITH_TECH_JIRA   = 10;
+	const FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY = 11;
 }

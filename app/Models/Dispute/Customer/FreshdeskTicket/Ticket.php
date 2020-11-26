@@ -22,11 +22,22 @@ trait Ticket
 
 	private function changeTicketGroupToDispute() : array
     {
+        $response = $this->app['freshdesk_client']->fetchTicketById($this->freshdeskTicket->getTicketId());
+
+        $ticketTags = $response['tags'] ?? [];
+
+        array_push($ticketTags,
+            Constants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+            Constants::FD_TAGS_DISPUTE_CREATED,
+            Constants::FD_TAGS_PENDING_WITH_DISPUTES);
+
         $groupId = (int) $this->freshdeskCustomerDisputeConfig['dispute_group_id'];
 
         $content = [
+            'status'       => Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
             'group_id'     => $groupId,
             'responder_id' => null, // unsetting automation agent
+            'tags'         => $ticketTags,
         ];
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
@@ -56,7 +67,7 @@ trait Ticket
         $groupId = (int) $this->freshdeskCustomerDisputeConfig['automation_group_id'];
 
         $content = [
-            'status'       => 5,
+            'status'       => Constants::FD_TICKET_STATUS_CLOSED,
             'group_id'     => $groupId,
             'responder_id' => $agentId,
         ];
