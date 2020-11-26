@@ -67,6 +67,7 @@ class PayoutLinks
 
     const INVALID_REQUEST_ERROR_MSG                = 'the json request could not be decoded';
     const INVALID_REQUEST_RESPONSE_MSG             = 'Invalid request payload';
+    const TEST_MODE_ERROR_MESSAGE                  = 'Test Mode is currently not supported for Payout Links';
 
     protected $baseUrl;
 
@@ -105,6 +106,8 @@ class PayoutLinks
 
     public function create(MerchantEntity $merchant, array $input): array
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
                            $input);
 
@@ -141,6 +144,8 @@ class PayoutLinks
 
     public function getSettings(string $merchantId)
     {
+        $this->rzpModeCheck($merchantId);
+
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
                            [
                                $merchantId
@@ -163,6 +168,8 @@ class PayoutLinks
 
     public function updateSettings(string $merchantId, array $input)
     {
+        $this->rzpModeCheck($merchantId);
+
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
                            [
                                $merchantId
@@ -190,6 +197,8 @@ class PayoutLinks
 
     public function cancel(string $payoutLinkId, string $merchantId)
     {
+        $this->rzpModeCheck($merchantId);
+
         $this->trace->info(TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
                            [
                                $payoutLinkId
@@ -211,6 +220,8 @@ class PayoutLinks
 
     public function fetch(string $payoutLinkId, array $input, string $merchantId = "")
     {
+        $this->rzpModeCheck($merchantId);
+
         $forAdminResponse = true;
 
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
@@ -236,6 +247,8 @@ class PayoutLinks
 
     public function fetchMultiple(array $input)
     {
+        $this->rzpModeCheck();
+
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_MULTIPLE_PATH);
 
         if(key_exists('id', $input))
@@ -395,6 +408,8 @@ class PayoutLinks
 
     public function pushPayoutStatus($payoutLinkId, $payoutId, $payoutStatus)
     {
+        $this->rzpModeCheck();
+
         $input = [
           'payout_link_id'  => $payoutLinkId,
           'payout_id'       => $payoutId,
@@ -420,6 +435,8 @@ class PayoutLinks
 
     public function resendNotification(string $payoutLinkId, array $input)
     {
+        $this->rzpModeCheck();
+
         $url = $this->getConstructedUrl(self::RESEND_NOTIFICATION);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
@@ -451,6 +468,8 @@ class PayoutLinks
 
     public function onBoardingStatus(string $merchantId)
     {
+        $this->rzpModeCheck($merchantId);
+
         $url = $this->getConstructedUrl(self::ON_BOARDING_STATUS);
 
         $request = [
@@ -462,6 +481,8 @@ class PayoutLinks
 
     public function summary(string $merchantId)
     {
+        $this->rzpModeCheck($merchantId);
+
         $url = $this->getConstructedUrl(self::SUMMARY);
 
         $request = [
@@ -823,6 +844,21 @@ class PayoutLinks
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
         return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
+    }
+
+    private function rzpModeCheck(string $merchantId = "")
+    {
+        if($this->app['rzp.mode'] === Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+                null,
+                [
+                    Entity::MERCHANT_ID     => $merchantId
+                ],
+                self::TEST_MODE_ERROR_MESSAGE
+            );
+        }
     }
 
 }

@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\PayoutLink;
 
 use Mockery;
 use RZP\Models\Merchant;
+use RZP\Exception;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\PayoutLink\Service;
@@ -67,6 +68,51 @@ class PayoutLinkMicroserviceTest extends TestCase
         ];
     }
 
+    protected function setUpMocksAndFeatureForTestMode() : array
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks')->makePartial()->shouldAllowMockingProtectedMethods();;
+
+        $plMock->shouldReceive("makeRequest");
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $this->app->instance('rzp.mode', "test");
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'    => '12345678901234'
+            ]);
+
+        $auth->setMerchant($merchant);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        return [
+            'auth' => $auth,
+            'service' => new Service(),
+            'mock' => $plMock
+        ];
+    }
+
     public function testGetSettings()
     {
         $result = $this->setUpMocksAndFeature('getSettings');
@@ -77,6 +123,22 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('getSettings');
+    }
+
+    public function testGetSettingsForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        $this->ba->adminAuth();
+
+        try
+        {
+            $result['service']->getSettings('10000000000000');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
     }
 
     public function testUpdateSettings()
@@ -91,6 +153,22 @@ class PayoutLinkMicroserviceTest extends TestCase
         $result['mock']->shouldHaveReceived('updateSettings');
     }
 
+    public function testUpdateSettingsForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        $this->ba->adminAuth();
+
+        try
+        {
+            $result['service']->updateSettings([], '10000000000000');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
+    }
+
     public function testCancel()
     {
         $result = $this->setUpMocksAndFeature('cancel');
@@ -101,6 +179,22 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('cancel');
+    }
+
+    public function testCancelPLForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        $this->ba->privateAuth();
+
+        try
+        {
+            $result['service']->cancel('');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
     }
 
     public function testFetch()
@@ -115,6 +209,22 @@ class PayoutLinkMicroserviceTest extends TestCase
         $result['mock']->shouldHaveReceived('fetch');
     }
 
+    public function testFetchForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        $this->ba->privateAuth();
+
+        try
+        {
+            $result['service']->fetchMerchantSpecific('', []);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
+    }
+
     public function testFetchMultiple()
     {
         $result = $this->setUpMocksAndFeature('fetchMultiple');
@@ -125,6 +235,22 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('fetchMultiple');
+    }
+
+    public function testFetchMultipleForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        $this->ba->privateAuth();
+
+        try
+        {
+            $result['service']->fetchMultipleMerchantSpecific([]);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
     }
 
     public function testInitiate()
@@ -187,6 +313,20 @@ class PayoutLinkMicroserviceTest extends TestCase
         $result['mock']->shouldHaveReceived('resendNotification');
     }
 
+    public function testResendNotificationForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        try
+        {
+            $result['service']->resendNotification('', []);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
+    }
+
     public function testOnBoardingStatus()
     {
         $result = $this->setUpMocksAndFeature('onBoardingStatus');
@@ -197,6 +337,20 @@ class PayoutLinkMicroserviceTest extends TestCase
         $result['mock']->shouldHaveReceived('onBoardingStatus');
     }
 
+    public function testOnBoardingStatusForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        try
+        {
+            $result['service']->onBoardingStatus();
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
+    }
+
     public function testSummary()
     {
         $result = $this->setUpMocksAndFeature('summary');
@@ -205,5 +359,19 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('summary');
+    }
+
+    public function testSummaryForTestMode()
+    {
+        $result = $this->setUpMocksAndFeatureForTestMode();
+
+        try
+        {
+            $result['service']->summary([]);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, Exception\BadRequestException::class);
+        }
     }
 }
