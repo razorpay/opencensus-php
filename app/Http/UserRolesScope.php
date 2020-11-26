@@ -79,7 +79,6 @@ class UserRolesScope
                 Role::FINANCE,
                 Role::LINKED_ACCOUNT_OWNER,
                 Role::LINKED_ACCOUNT_ADMIN,
-                Role::SUPPORT,
             ], BankingRole::getAllRoles()),
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],

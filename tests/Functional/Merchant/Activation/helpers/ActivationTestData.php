@@ -2302,6 +2302,25 @@ return [
         ],
     ],
 
+    'testGetActivationDetailsForSupportRoleUserFail' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testReleaseFundsWithoutBankAccount' => [
         'request'   => [
             'content' => [

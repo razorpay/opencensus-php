@@ -87,6 +87,23 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function  testGetActivationDetailsForSupportRoleUserFail()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'support');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
     public function testPostInstantActivation()
     {
         $merchantId = '1cXSLlUU8V9sXl';
@@ -2526,6 +2543,18 @@ class ActivationTest extends OAuthTestCase
                                         ]],
             ],
         ];
+    }
+
+    protected function createMerchantUserMapping(string $userId, string $merchantId, string $role, $mode = 'test')
+    {
+        DB::connection($mode)->table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'role'        => $role,
+                'created_at'  => 1493805150,
+                'updated_at'  => 1493805150
+            ]);
     }
 
     protected function getClarificationReason()
