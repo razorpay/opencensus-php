@@ -21,7 +21,7 @@ class Metric extends Base\Core
 
     protected function getDefaultDimensions(array $input): array
     {
-        $receivers = $input[Entity::RECEIVERS];
+        $receivers = isset($input[Entity::RECEIVERS]) === true ? $input[Entity::RECEIVERS] : null;
 
         if ((is_array($receivers) === true) and
             (isset($receivers[Entity::TYPES]) === true) and
