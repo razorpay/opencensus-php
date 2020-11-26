@@ -36,6 +36,7 @@ import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
 import EasterEgg from 'merchant/components/EasterEgg';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 @withRouter
 @connect(
@@ -52,6 +53,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
+    whatsappNotificationStatus: 'off',
   };
   constructor(props) {
     super(props);
@@ -75,6 +77,21 @@ class AnalyticsDesktop extends Component {
 
   componentDidMount() {
     this.props.fetchInternationalProductsStatus();
+    merchantFetch({
+      url: `users/whatsapp/opt_in_status`,
+      method: 'get',
+      data: { source: 'pg.settings.config' },
+    })
+      .then((response) => {
+        if (response && response.data && response.data.consent_status)
+          this.setState({ whatsappNotificationStatus: 'on' });
+        else {
+          this.setState({ whatsappNotificationStatus: 'off' });
+        }
+      })
+      .catch((_) => {
+        this.setState({ whatsappNotificationStatus: 'off' });
+      });
   }
 
   resetHash = () => {
@@ -122,6 +139,24 @@ class AnalyticsDesktop extends Component {
       user.activation_status === 'activated' &&
       user.role === 'owner'
     );
+  };
+
+  renderWhatsappNotification = () => {
+    if (this.state.whatsappNotificationStatus === 'off')
+      return (
+        <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
+          Receive account-related notifications on WhatsApp. &nbsp;
+          <Link to={'/config#whatsapp_enable_on'}>Enable Notifications</Link>
+        </AnnouncementBanner>
+      );
+    else {
+      return (
+        <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
+          You will now receive account-related notifications on WhatsApp. &nbsp;
+          <Link to={'/config#whatsapp_enable_control'}>Manage settings here</Link>
+        </AnnouncementBanner>
+      );
+    }
   };
 
   render() {
@@ -257,12 +292,7 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
 
-          {this.isWhatsappNotificationEnabled(user) && (
-            <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
-              Now you can receive your account related notifications on WhatsApp. &nbsp;
-              <Link to={'/config#whatsapp_enable'}>Enable Notifications</Link>
-            </AnnouncementBanner>
-          )}
+          {this.isWhatsappNotificationEnabled(user) && this.renderWhatsappNotification()}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}

@@ -4,17 +4,23 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
+import RTracking from 'react-tracking';
 
-function WhatsappNotification({ currentUser, showNotification, location, history }) {
+function WhatsappNotification({ currentUser, showNotification, location, history, tracking }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
   const whatsappEnableSection = useRef(null);
 
-  if (location.hash === '#whatsapp_enable' && whatsappEnableSection.current) {
+  if (location.hash.startsWith('#whatsapp_enable') && whatsappEnableSection.current) {
     window.rzpAnalytics({
       eventCategory: 'Whatsapp Enable',
-      eventAction: 'Clicked Whatsapp Announcement',
+      eventAction: `Clicked ${location.hash}`,
       eventLabel: `Home`,
     });
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated(`whatsapp.${location.hash.replace('#', '')}`, {
+        clickSource: 'Announcement Banner',
+      }),
+    );
     whatsappEnableSection.current.scrollIntoView();
     history.push({
       pathname: history.location.pathname,
@@ -127,9 +133,12 @@ function WhatsappNotification({ currentUser, showNotification, location, history
 const mapStateToProps = (state) => ({
   currentUser: state.session.user,
 });
-
 export default withRouter(
   connect(mapStateToProps, {
     showNotification,
-  })(WhatsappNotification),
+  })(
+    RTracking(() => {
+      window.rzpQ.component('WhatsappNotification');
+    })(WhatsappNotification),
+  ),
 );
