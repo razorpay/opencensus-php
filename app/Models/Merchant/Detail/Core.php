@@ -1063,7 +1063,6 @@ class Core extends Base\Core
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
         $ncCount = $this->getNcCount($statusChangeLogs);
-        $shouldAddNcCountTag = ($merchantDetails->getActivationStatus() === Status::UNDER_REVIEW);
 
         foreach ($newReasons as $key => $values)
         {
@@ -1071,10 +1070,7 @@ class Core extends Base\Core
             {
                 $val[Merchant\Constants::REASON_FROM] = $this->getSender();
                 $val[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
-                if($shouldAddNcCountTag)
-                {
-                    $val[Merchant\Constants::NC_COUNT] = $ncCount;
-                }
+                $val[Merchant\Constants::NC_COUNT] = $ncCount;
             }
 
             if(isset($existingReasons[$key]) === true)
@@ -1087,17 +1083,11 @@ class Core extends Base\Core
             }
         }
 
-        $finalKycClarifications = [
+        return [
             Entity::CLARIFICATION_REASONS   =>  $existingReasons,
-            Entity::ADDITIONAL_DETAILS      =>  $newAdditionalDetails
+            Entity::ADDITIONAL_DETAILS      =>  $newAdditionalDetails,
+            Merchant\Constants::NC_COUNT    =>  $ncCount
         ];
-
-        if($shouldAddNcCountTag)
-        {
-            $finalKycClarifications[Merchant\Constants::NC_COUNT] = $ncCount;
-        }
-
-        return $finalKycClarifications;
     }
 
     public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
