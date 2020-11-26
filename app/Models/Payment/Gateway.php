@@ -1934,6 +1934,17 @@ class Gateway
         Gateway::ATOM,
     ];
 
+    /**
+     * List of gateways that use redirect flow so as to redirect the s2s merchant back to rzp and continue the payment.
+     * done for netbanking_svc like gateways which has requirement where the redirect request has to come from
+     * razorpay directly instead of merchant.
+     *
+     * @var array
+     */
+    public static $netbankingS2SRedirectGateways = [
+        Gateway::NETBANKING_SVC,
+    ];
+
     public static $webhooksEnabledGateways = [
         Gateway::ATOM,
         Gateway::WALLET_PHONEPE,
@@ -2384,6 +2395,11 @@ class Gateway
     public static function isWebhookEnabledGateway($gateway)
     {
         return in_array($gateway, self::$webhooksEnabledGateways, true);
+    }
+
+    public static function isNetbankingS2SRedirectGateway($gateway)
+    {
+        return in_array($gateway, self::$netbankingS2SRedirectGateways, true);
     }
 
     /**

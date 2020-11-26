@@ -4,6 +4,7 @@ namespace RZP\Services\Mock\NbPlus;
 
 use App;
 use RZP\Exception;
+use RZP\Models\Payment;
 
 use RZP\Services\NbPlus\Service as NbPlusService;
 
