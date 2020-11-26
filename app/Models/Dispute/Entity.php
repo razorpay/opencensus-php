@@ -513,6 +513,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::COMMENTS);
     }
 
+    public function getGatewayDisputeId()
+    {
+        return $this->getAttribute(self::GATEWAY_DISPUTE_ID);
+    }
+
     // ----------------------- Getters Ends-------------------------------------
 
     // --------------- Relation to other entities ------------------------------

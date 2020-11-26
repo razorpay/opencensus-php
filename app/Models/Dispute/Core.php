@@ -183,6 +183,8 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($dispute);
 
+                    $this->updateCustomerTicketIfApplicable($dispute);
+
                     $this->generateDisputeEvent($dispute);
 
                     return $dispute;
@@ -855,5 +857,20 @@ class Core extends Base\Core
         }
 
         return $disputeData;
+    }
+
+    private function updateCustomerTicketIfApplicable(Entity $dispute)
+    {
+        $gatewayDisputeId = $dispute->getGatewayDisputeId();
+
+        if ((strlen($gatewayDisputeId) <= 7) || (substr($gatewayDisputeId, 0, 7) !== 'DISPUTE'))
+        {
+            return;
+        }
+
+        $customerSupportTicketID = substr($gatewayDisputeId, 7);
+
+        $this->app['freshdesk_client']->updateTicket(
+            $customerSupportTicketID, ['status' => Customer\FreshdeskTicket\Constants::FD_TICKET_STATUS_OPEN]);
     }
 }
