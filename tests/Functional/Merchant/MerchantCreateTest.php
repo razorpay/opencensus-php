@@ -84,6 +84,8 @@ class MerchantCreateTest extends TestCase
         $testData['response']['content']['pricing_plan_id'] = 'BAJq6FJDNJ4ZqD';
 
         $this->runRequestResponseFlow($testData);
+
+        $this->checkDisableNativeCurrencyDefaultFeature($org->id);
     }
 
     public function testCreateMerchantAndRelations()
@@ -113,6 +115,8 @@ class MerchantCreateTest extends TestCase
         $this->checkMerchantDetails();
 
         $this->checkOTPAuthDefaultFeature();
+
+        $this->checkDisableNativeCurrencyDefaultFeature(Org::RZP_ORG);
     }
 
     protected function createMerchant()
@@ -1507,6 +1511,23 @@ class MerchantCreateTest extends TestCase
             $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
         }
 
+    }
+
+    protected function checkDisableNativeCurrencyDefaultFeature($orgId)
+    {
+        foreach (['test', 'live'] as $mode)
+        {
+            $disableNativeCurrencyFeature = $this->getDbEntity('feature', ['name' => 'disable_native_currency'], $mode);
+
+            if($orgId === Org::RZP_ORG)
+            {
+                $this->assertNull($disableNativeCurrencyFeature);
+            }
+
+            else {
+                $this->assertEquals(FeatureConstants::DISABLE_NATIVE_CURRENCY, $disableNativeCurrencyFeature->getName());
+            }
+        }
     }
 
     public function testCreateMerchantWithDefaultLateAuthConfig()

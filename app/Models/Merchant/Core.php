@@ -348,6 +348,16 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
         ], $shouldSync = true);
+
+        if ($merchant->isRazorpayOrgId() === false) {
+
+            (new Feature\Core)->create([
+                Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                Feature\Entity::NAME            => Feature\Constants::DISABLE_NATIVE_CURRENCY,
+            ], $shouldSync = true);
+
+        }
     }
 
     protected function setPaymentLinkServiceDefaultForMerchant(Entity $merchant)
