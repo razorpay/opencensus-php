@@ -535,12 +535,4 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($fundAccounts), 0);
         $this->assertEquals(count($contacts), 0);
     }
-
-    // composite api testing for mandating card name for card fund account creation.
-    public function testCreateCompositePayoutWithoutCardName()
-    {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
-
-         $this->startTest();
-    }
 }
