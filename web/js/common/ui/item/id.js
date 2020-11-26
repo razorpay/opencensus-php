@@ -12,6 +12,7 @@ const baseUrl = {
   acc: '/partners/submerchants/',
   token: '/tokens/',
   rvrsl: '/route/reversals/',
+  offer: '/offers/',
 };
 
 const sources = {

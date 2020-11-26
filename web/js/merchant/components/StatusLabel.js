@@ -116,8 +116,8 @@ export const tokenStatusMap = {
 };
 
 export const offerStatusMap = {
-  Enabled: 'label-info',
-  Disabled: 'label-muted',
+  enabled: 'label-info',
+  disabled: 'label-muted',
 };
 
 export const internationalStatusMap = {

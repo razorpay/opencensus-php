@@ -13,7 +13,7 @@ const allRoles = {
   ...RBLRoles,
   ...RegistrationLinkRoles,
 };
-import { RefundStatusLabel } from 'merchant/components/StatusLabel';
+import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = (onClick) => ({ value, ...rest }) => {
   return {
@@ -213,4 +213,26 @@ export const unitsSold = {
     item.payment_page_items.map((payment_page_item) => (
       <div class="item-ellipsis">{payment_page_item.quantity_sold}</div>
     )),
+};
+
+// Offers
+export const offerId = {
+  title: 'Offer Id',
+  value: makeIdLink('offer'),
+};
+export const offerTitle = {
+  title: 'Title',
+  value: (item) => item.name,
+};
+export const startOn = {
+  title: 'Start On',
+  value: getTime('starts_at', 'DD MMM YYYY, hh:mm a'),
+};
+export const endsOn = {
+  title: 'End On',
+  value: getTime('ends_at', 'DD MMM YYYY, hh:mm a'),
+};
+export const offerStatus = {
+  title: 'Status',
+  value: (item) => <OfferStatusLabel status={item.active ? 'enabled' : 'disabled'} />,
 };
