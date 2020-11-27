@@ -858,5 +858,25 @@ class Core extends Base\Core
 
         return $payload;
     }
-}
 
+    /**
+     * @param string $entityId
+     * @param string $entityType
+     */
+    public function autoCloseActivationWorkflowActionIfOpen(string $entityId, string $entityType)
+    {
+        $actions = $this->fetchOpenActionOnEntityOperation(
+            $entityId, $entityType, Permission\Name::EDIT_ACTIVATE_MERCHANT);
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            $maker = $this->app['workflow']->getWorkflowMaker();
+            foreach ($actions as $action)
+            {
+                $this->close($action, $maker);
+            }
+        }
+
+    }
+}

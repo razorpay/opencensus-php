@@ -43,6 +43,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
@@ -1494,6 +1495,10 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
             {
+                // If merchant responds to NC, activation workflow is created
+                // This workflow should get auto closed if agent marks NC again
+                (new ActionCore)->autoCloseActivationWorkflowActionIfOpen(
+                    $merchant->getId(), 'merchant_detail');
 
                 //
                 // For Older merchant who are still in old flow ,
