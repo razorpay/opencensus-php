@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Base;
 
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\Repository;
@@ -80,6 +81,15 @@ trait UpiReconTrait
             // TODO: Trace critical
             return null;
         }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'              => InfoCode::RECON_UNEXPECTED_PAYMENT_FOR_MULTIPLE_CREDIT,
+                'payment_id'            => $response[Entity::PAYMENT_ID],
+                'rrn'                   => $reconRrn,
+                'gateway'               => $this->gateway,
+            ]);
 
         return $this->getUpiAuthorizeEntityByPaymentId($response[Entity::PAYMENT_ID]);
     }
