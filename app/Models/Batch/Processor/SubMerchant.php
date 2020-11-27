@@ -110,6 +110,30 @@ class SubMerchant extends Base
             $this->unsetExtraOutputKeys($entry);
             return $subMerchant;
         });
+
+        $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
+
+        $currentActivationStatus = $subMerchantDetails->getActivationStatus();
+
+        if($currentActivationStatus=="activated")
+        {
+            try
+            { // check whether merchant is in db
+                $merchant = $this->repo->merchant->findOrFail($subMerchant->getId());
+
+                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+            }
+            catch(\Exception $e)
+            {
+                $data = [
+                    Entity::MERCHANT_ID => $subMerchant->getId(),
+                    'error'             => $e->getMessage()
+                ];
+
+                $this->trace->info(TraceCode::MERCHANT_DOES_NOT_EXIST, $data);
+
+            }
+        }
     }
 
     protected function performPreProcessingActions()

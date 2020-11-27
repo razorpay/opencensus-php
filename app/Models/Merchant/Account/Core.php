@@ -104,7 +104,7 @@ class Core extends Merchant\Core
 
         $input = Helper::modifyAccountInput($input);
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
+        $subMerchant = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
@@ -113,7 +113,31 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        return $account;
+        $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
+
+        $currentActivationStatus = $subMerchantDetails->getActivationStatus();
+
+        if($currentActivationStatus=="activated")
+        {
+            try
+            { // check whether merchant is in db
+                $merchant = $this->repo->merchant->findOrFail($subMerchant->getId());
+
+                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+            }
+            catch(\Exception $e)
+            {
+                $data = [
+                    Entity::MERCHANT_ID => $subMerchant->getId(),
+                    'error'             => $e->getMessage()
+                ];
+
+                $this->trace->info(TraceCode::MERCHANT_DOES_NOT_EXIST, $data);
+
+            }
+        }
+
+        return $subMerchant;
     }
 
     public function fetchAccountByExternalId(Merchant\Entity $partner, string $externalId)
