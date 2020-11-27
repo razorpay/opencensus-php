@@ -2943,7 +2943,18 @@ trait Authorize
             }
         }
 
-        $this->autoCapturePaymentIfApplicable($payment);
+        try
+        {
+            $this->autoCapturePaymentIfApplicable($payment);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                [
+                    'payment_id' => $payment->getPublicId(),
+                ]);
+        }
 
         $this->repo->saveOrFail($payment);
 
