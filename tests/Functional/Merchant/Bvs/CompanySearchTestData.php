@@ -104,4 +104,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED,
         ],
     ],
+
+    'testCompanySearchInvalidBusinessType' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/company_search',
+            'content' => [
+                'search_string' => 'abc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'results' => [],
+            ]
+        ]
+    ]
 ];

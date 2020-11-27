@@ -3207,6 +3207,13 @@ class Core extends Base\Core
     {
         $companySearchList = [Constant::RESULTS => []];
 
+        $businessType = $this->merchant->merchantDetail->getBusinessType();
+
+        if (BusinessType::isValidCompanySearchBusinessType($businessType) === false)
+        {
+            return $companySearchList;
+        }
+
         $isCompanySearchRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $this->merchant->getId(),
             RazorxTreatment::BVS_COMPANY_SEARCH);

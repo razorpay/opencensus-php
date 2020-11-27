@@ -36,7 +36,11 @@ class CompanySearchTest extends TestCase
 
     public function testCompanySearchSuccess()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantDetailsData = [
+            'business_type' => 6,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
@@ -53,7 +57,11 @@ class CompanySearchTest extends TestCase
 
     public function testCompanySearchFailure()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantDetailsData = [
+            'business_type' => 4,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
@@ -70,12 +78,40 @@ class CompanySearchTest extends TestCase
 
     public function testCompanySearchRateLimitExhausted()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantDetailsData = [
+            'business_type' => 5,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         Config::set('services.bvs.mock', true);
 
+        $this->mockRazorX('testCompanySearchRateLimitExhausted',
+                          'bvs_company_search',
+                          'on',
+                          $merchantDetail["merchant_id"]);
+
+        $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
+                                 $merchantDetail['merchant_id'],
+                                 DetailConstants::COMPANY_SEARCH_MAX_ATTEMPT + 1,
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+
+        $this->startTest();
+    }
+
+    public function testCompanySearchInvalidBusinessType()
+    {
+        $merchantDetailsData = [
+            'business_type' => 1,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        Config::set('services.bvs.mock', true);
 
         $this->mockRazorX('testCompanySearchRateLimitExhausted',
                           'bvs_company_search',

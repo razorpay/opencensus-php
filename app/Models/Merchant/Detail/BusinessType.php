@@ -121,6 +121,12 @@ class BusinessType
         self::PROPRIETORSHIP
     ];
 
+    protected static $validCompanySearchBusinessTypes = [
+        self::PUBLIC_LIMITED,
+        self::PRIVATE_LIMITED,
+        self::LLP,
+    ];
+
     public static function isBusinessTypeGreylistedForInternational($businessType = null)
     {
         if (empty($businessType) === true)
@@ -291,5 +297,15 @@ class BusinessType
         $businessTypeName = self::getKeyFromIndex($businessType);
 
         return in_array($businessTypeName, self::$ValidateShopEstbBusinessType, true);
+    }
+
+    public static function isValidCompanySearchBusinessType($businessTypeName): bool
+    {
+        if (empty($businessTypeName) === true)
+        {
+            return false;
+        }
+
+        return in_array($businessTypeName, self::$validCompanySearchBusinessTypes, true);
     }
 }
