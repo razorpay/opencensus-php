@@ -175,6 +175,7 @@ class Preferences
     const MID_MAHALAXMI_TRADERS        = 'FuedAHX6XiIEce';
     const MID_RAJESH_TELECOM           = 'FrWPMIvlTuDhKe';
     const MID_GENEXPRO                 = 'Fz4wOMKiOQX9ez';
+    const MID_ANDHRA_INDUSTRIAL_CORP   = 'BTcsIgeI0fvT6a';
 
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
@@ -379,6 +380,7 @@ class Preferences
         self::MID_MAHALAXMI_TRADERS,
         self::MID_RAJESH_TELECOM,
         self::MID_GENEXPRO,
+        self::MID_ANDHRA_INDUSTRIAL_CORP,
     ];
 
     // MSwipe Configurations
