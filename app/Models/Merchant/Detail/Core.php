@@ -179,10 +179,17 @@ class Core extends Base\Core
             return;
         }
 
+        $ncrCountTag = $this->getNcRespondedCountTag($statusChangeLogs);
         $tags = [
-            $this->getNcRespondedCountTag($statusChangeLogs),
+            $ncrCountTag,
             $this->getNcMarkedAgentTag($maker)
         ];
+
+        if($this->isNcrOnPennyTesting($ncrCountTag, $merchant))
+        {
+            $tags[] = "Auto NC";
+        }
+
         $input = [Entity::ACTIVATION_STATUS => Status::ACTIVATED];
 
         // The reason routeName and Controller is set here because
@@ -207,6 +214,24 @@ class Core extends Base\Core
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
         }
+    }
+
+    /**
+     * Method that returns whether merchant has responded on penny testing failure
+     * or Manual NC
+     * @param string $ncrCountTag
+     * @param $merchant
+     * @return bool
+     */
+    protected function isNcrOnPennyTesting(string $ncrCountTag, $merchant)
+    {
+        if($ncrCountTag === 'NCR1')
+        {
+            $bankDetailsVerificationStatus = $merchant->merchantDetail->getBankDetailsVerificationStatus();
+
+            return ($bankDetailsVerificationStatus !== BankDetailsVerificationStatus::VERIFIED);
+        }
+        return false;
     }
 
     protected function isNcResponded($oldActivationStatus, $newActivationStatus)
