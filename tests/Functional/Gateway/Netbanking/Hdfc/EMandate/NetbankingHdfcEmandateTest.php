@@ -357,6 +357,67 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertRegistrationReconEntities($entities);
     }
 
+    public function testEmandateDirectDebitRegistrationRecon()
+    {
+        Mail::fake();
+
+        $orderInput = [
+            Order::AMOUNT          => 50000,
+            Order::METHOD          => Method::EMANDATE,
+            Order::PAYMENT_CAPTURE => true,
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $this->payment[Payment\Entity::ORDER_ID] = $order[Order::ID];
+        $this->payment[Payment\Entity::AMOUNT]   = $orderInput[Order::AMOUNT];
+
+        $this->doAuthPayment($this->payment);
+
+        $entities[0]['payment']        = $this->getDbLastPayment();
+        $entities[0]['token']          = $this->getLastEntity('token', true);
+        $entities[0]['netbanking']     = $this->getLastEntity('netbanking', true);
+        $entities[0]['status_in_file'] = 'success';
+
+        $order = $this->createOrder($orderInput);
+
+        $this->payment[Payment\Entity::ORDER_ID] = $order[Order::ID];
+        $this->payment[Payment\Entity::AMOUNT]   = $orderInput[Order::AMOUNT];
+
+        $this->doAuthPayment($this->payment);
+
+        $entities[1]['payment']        = $this->getDbLastPayment();
+        $entities[1]['token']          = $this->getLastEntity('token', true);
+        $entities[1]['netbanking']     = $this->getLastEntity('netbanking', true);
+        $entities[1]['status_in_file'] = 'failure';
+        $entities[1]['remark_in_file'] = 'Some reject reason';
+
+        $file = $this->generateEmandateRegisterReconFile($entities);
+
+        $this->assertEquals($entities[0]['payment']['status'], 'captured');
+        $this->assertEquals($entities[1]['payment']['status'], 'captured');
+        $this->assertEquals($entities[0]['token']['recurring_status'], 'initiated');
+        $this->assertEquals($entities[1]['token']['recurring_status'], 'initiated');
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'register',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $entities[0]['payment']    = $this->getEntityById('payment', $entities[0]['payment']['id'], true);
+        $entities[0]['token']      = $this->getEntityById('token', $entities[0]['token']['id'], true);
+        $entities[0]['netbanking'] = $this->getEntityById('netbanking', $entities[0]['netbanking']['id'], true);
+        $entities[1]['payment']    = $this->getEntityById('payment', $entities[1]['payment']['id'], true);
+        $entities[1]['token']      = $this->getEntityById('token', $entities[1]['token']['id'], true);
+        $entities[1]['netbanking'] = $this->getEntityById('netbanking', $entities[1]['netbanking']['id'], true);
+
+        $this->assertRegistrationReconEntities($entities, 'captured');
+    }
+
     public function testEmandateRegistrationReconInvalidStatus()
     {
         Mail::fake();
@@ -420,7 +481,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($payment['terminal_id'], $token['terminal_id']);
     }
 
-    protected function assertRegistrationReconEntities($entities)
+    protected function assertRegistrationReconEntities($entities, $status = 'refunded')
     {
         // Validate registration success entities
         $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
@@ -442,7 +503,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
 
-        $this->assertEquals(Payment\Status::REFUNDED, $payment['status']);
+        $this->assertEquals($status, $payment['status']);
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
@@ -872,11 +933,13 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         foreach ($entities as $entityList)
         {
+            $amount = ($entityList['payment']['amount'] === 0) ? '1' : $entityList['payment']['amount'];
+
             $items[] = [
                 'Client Name'                  => 'RAZORPAY',
                 'Customer Name'                => 'User Name',
                 'Customer Account Number'      => '50100100708641',
-                'Amount'                       => '1.00',
+                'Amount'                       => $amount,
                 'Amount Type'                  => 'Maximum',
                 'Start_Date'                   => '07/05/2018',
                 'End_Date'                     => '07/05/2028',

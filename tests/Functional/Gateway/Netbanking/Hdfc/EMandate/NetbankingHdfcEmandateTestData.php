@@ -25,14 +25,14 @@ return [
 
     'testDirectDebitFlowSuccess' => [
         'gateway'           => 'netbanking_hdfc',
-        'status'            => 'authorized',
+        'status'            => 'captured',
         'amount_authorized' => 50000,
         'amount'            => 50000,
         'verified'          => null,
         'late_authorized'   => false,
         'two_factor_auth'   => 'unavailable',
-        'auto_captured'     => false,
-        'captured'          => false,
+        'auto_captured'     => true,
+        'captured'          => true,
         'recurring'         => true,
         'recurring_type'    => Payment\RecurringType::INITIAL,
     ],

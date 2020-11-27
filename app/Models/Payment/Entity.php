@@ -2903,6 +2903,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     ]);
             }
 
+            if (($this->getAmount() > 0) and
+                (Payment\Gateway::isDirectDebitEmandateGateway($gateway) === true))
+            {
+                return false;
+            }
+
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }
 
