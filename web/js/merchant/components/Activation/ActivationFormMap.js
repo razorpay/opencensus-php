@@ -377,7 +377,20 @@ const businessDetails = [
       optionLabelPath: 'company_name',
       searchIndices: ['company_name'],
       className: 'ps-in-modal',
-      customField: () => !isSourceRX(), // denotes its a custom field instead of the regular input fields found in dashboard
+      customField: (activation) => {
+        if (isSourceRX()) {
+          return false;
+        }
+        const currentBusinessType =
+          activation.state.dirty.business_type || activation.props.data.business_type;
+        if (
+          CIN_BusinessTypes.includes(Number(currentBusinessType)) ||
+          LLPIN_BusinessTypes.includes(Number(currentBusinessType))
+        ) {
+          return true;
+        }
+        return false;
+      },
     },
     {
       label: 'CIN',

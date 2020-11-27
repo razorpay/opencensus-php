@@ -1306,8 +1306,15 @@ export default class ActivationWizard extends React.Component {
     const { dirty } = this.state;
     const { data } = this.props;
 
+    const currentBusinessType = dirty.business_type || data.business_type;
+
     // Company Search only available for PG Activation
-    if (placeholder === 'Business name as per PAN' && !activationUtils.isSourceRX()) {
+    if (
+      placeholder === 'Business name as per PAN' &&
+      !activationUtils.isSourceRX() &&
+      (CIN_BusinessTypes.includes(Number(currentBusinessType)) ||
+        LLPIN_BusinessTypes.includes(Number(currentBusinessType)))
+    ) {
       const args = {
         option: { company_name: fieldValue, identity_number: '', identity_type: '' },
       };
