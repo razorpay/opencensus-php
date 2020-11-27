@@ -113,6 +113,7 @@ class Service extends Base\Service
 
                     break;
 
+                case 'activation_status':   
                 case 'role':
 
                     if (isset($user[$key]) === false)

@@ -151,6 +151,31 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Easily Update Your Bank Account',
+            'description' => 'In case you want to update your bank account, you can do so directly from your Razorpay account settings',
+            'icon'        => '/dist/css/assets/ic_building.svg',
+            'track_event' => true,
+            'id'          => 'NOV20-PG-BANKUPDATE',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try Now',
+                    'url'   => '/profile#request-bank-account-change',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn More',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/dashboard-guide/profile/#change-bank-account-details',
+                ],
+            ],
+            'start_ts'    => 1604925051,
+            'end_ts'      => 1617193851,
+            'filters'     => [
+                'activation_status' => ['activated'],
+                'role' => ['owner', 'admin'],
+            ],
+        ],
+        [
             'title'       => 'India’s Largest Fintech Event',
             'description' => 'Network with 15,000+ Founders, Business Owners and Leaders from the comfort of your home. Limited free seats available, claim yours today!',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/ftxzrp.svg',
@@ -168,7 +193,7 @@ class Constants
             'filters'     => [
                 'activated' => 1,
             ],
-        ]
+        ],
     ];
 
     public static function getNotifications(): array
