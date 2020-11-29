@@ -1566,7 +1566,7 @@ class Gateway extends Base\Gateway
         // For certain actions type is different from gateway action
         $type = $type ?? $this->action;
 
-        $version = $this->getVersionForAction($content, $type);
+        $version = $this->getVersionForAction($this->input, $type);
 
         if ($version === self::GATEWAY_API_VERSION_2)
         {
@@ -1587,6 +1587,10 @@ class Gateway extends Base\Gateway
     protected function getVersionForAction($input, $action)
     {
         $accessCode = trim($input['terminal']['gateway_access_code'] ?? null);
+
+        $this->razorxTrace = [
+            'access_code' => $accessCode,
+        ];
 
         // If the access code is set to v2
         if ($accessCode === self::GATEWAY_API_VERSION_2)
