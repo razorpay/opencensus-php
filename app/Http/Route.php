@@ -1144,6 +1144,18 @@ class Route
         'vendor_payment_update_invoice_file_id'    => ['post',     'vendor-payments/{id}/update-invoice-file-id',    'VendorPaymentController@updateInvoiceFileId'                       ],
         'vendor_payment_get_invoice_zip_file'       => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                       ],
 
+        // Accounting Payouts (inside vendor payments)
+        'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
+        'accounting_payouts_integration_app_get_url'            => ['get',     'accounting-payouts/integration/{app}',           'AccountingPayoutsController@integrationAppGetURL'      ],
+        'accounting_payouts_integration_app_initiate'           => ['post',    'accounting-payouts/integration/{app}',           'AccountingPayoutsController@integrationAppInitiate'    ],
+        'accounting_payouts_integration_status_app'             => ['get',     'accounting-payouts/integration/{app}/status',    'AccountingPayoutsController@integrationStatusApp'      ],
+        'accounting_payouts_callback'                           => ['get',     'accounting-payouts/callback',                    'AccountingPayoutsController@callback'                  ],
+        'accounting_payouts_app_credentials'                    => ['post',    'accounting-payouts/appcredentials/{app}',        'AccountingPayoutsController@appCredentials'            ],
+        'accounting_payouts_delete_integration'                 => ['post',    'accounting-payouts/delete/{app}',                'AccountingPayoutsController@deleteIntegration'         ],
+        'accounting_payouts_sync_status'                        => ['get',     'accounting-payouts/sync/{app}',                  'AccountingPayoutsController@syncStatus'                ],
+        'accounting_payouts_sync'                               => ['post',    'accounting-payouts/sync/{app}',                  'AccountingPayoutsController@sync'                      ],
+        'accounting_payouts_sync_internal'                      => ['post',    'accounting-payouts/internal/sync/{app}',         'AccountingPayoutsController@syncInternal'              ],
+        'accounting_payouts_waitlist'                           => ['post',    'accounting-payouts/waitlist/{app}',              'AccountingPayoutsController@waitlist'                  ],
 
         // Tax Payments
         'tax_payments_add_penalty_cron'            => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
@@ -2776,6 +2788,9 @@ class Route
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
         'gateway_downtime_for_payment',
+
+        //Accounting Payouts
+        'accounting_payouts_sync_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3200,6 +3215,17 @@ class Route
         'vendor_payment_bulk_invoice_download',
         'vendor_payment_update_invoice_file_id',
         'vendor_payment_get_invoice_zip_file',
+
+        // Accounting Payouts
+        'accounting_payouts_integration_status',
+        'accounting_payouts_integration_app_get_url',
+        'accounting_payouts_integration_app_initiate',
+        'accounting_payouts_integration_status_app',
+        'accounting_payouts_app_credentials',
+        'accounting_payouts_delete_integration',
+        'accounting_payouts_sync_status',
+        'accounting_payouts_sync',
+        'accounting_payouts_waitlist',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -4785,6 +4811,15 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'accounting_payouts_integration_status'        => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+        'accounting_payouts_integration_app_get_url'   => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+        'accounting_payouts_integration_app_initiate'  => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
+        'accounting_payouts_integration_status_app'    => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+        'accounting_payouts_app_credentials'           => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
+        'accounting_payouts_delete_integration'        => Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
+        'accounting_payouts_sync_status'               => Permission::ACCOUNTING_PAYOUTS_SYNC,
+        'accounting_payouts_sync'                      => Permission::ACCOUNTING_PAYOUTS_SYNC,
+        'accounting_payouts_waitlist'                  => Permission::ACCOUNTING_PAYOUTS_WAITLIST,
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
         'capital_cards_admin'                          => '*',
@@ -5103,6 +5138,9 @@ class Route
         'freshdesk_otp_send',
         'freshdesk_fetch_tickets',
         'freshdesk_raise_grievance',
+
+        //Accounting Payouts Callback
+        'accounting_payouts_callback',
     ];
 
     /**
@@ -5169,6 +5207,7 @@ class Route
             'tax_payments_send_email',
             'banking_accounts_list_internal',
             'vendor_payment_send_email_generic',
+            'accounting_payouts_sync_internal',
         ],
 
         'dashboard' => [
@@ -6130,6 +6169,18 @@ class Route
         'payout_links_merchant_on_boarding_status',
         'payout_links_merchant_summary',
         'payout_links_resend_notification',
+
+        // Accounting Payouts
+        'accounting_payouts_integration_status',
+        'accounting_payouts_integration_app_get_url',
+        'accounting_payouts_integration_app_initiate',
+        'accounting_payouts_integration_status_app',
+        'accounting_payouts_app_credentials',
+        'accounting_payouts_delete_integration',
+        'accounting_payouts_sync_status',
+        'accounting_payouts_sync',
+        'accounting_payouts_sync_internal',
+        'accounting_payouts_waitlist',
 
         'contact_get',
         'contact_list',

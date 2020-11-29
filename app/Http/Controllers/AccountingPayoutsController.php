@@ -1,0 +1,72 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Mail;
+use ApiResponse;
+
+class AccountingPayoutsController extends Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->service = $this->app['accounting-payouts'];
+    }
+
+    public function integrationAppGetURL(string $app)
+    {
+        return $this->service->getIntegrationURL($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function integrationAppInitiate(string $app)
+    {
+        return $this->service->integrationAppInitiate($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function integrationStatus()
+    {
+        return $this->service->integrationStatus($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
+    public function integrationStatusApp(string $app)
+    {
+        return $this->service->integrationStatusApp($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function callback()
+    {
+        return $this->service->callback($this->input);
+    }
+
+    public function appCredentials(string $app)
+    {
+        return $this->service->appCredentials($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function deleteIntegration(string $app)
+    {
+        return $this->service->deleteIntegration($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function syncStatus(string $app)
+    {
+        return $this->service->syncStatus($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function sync(string $app)
+    {
+        return $this->service->sync($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+    public function syncInternal(string $app)
+    {
+        return $this->service->syncInternal($this->ba->getMerchant(), $this->input, $app);
+    }
+
+    public function waitlist(string $app)
+    {
+        return $this->service->waitlist($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
+    }
+
+}

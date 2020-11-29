@@ -117,6 +117,11 @@ class UserRolePermissionsMap
                  Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
                  Permission::VIEW_MERCHANT_PREFERENCE,
+
+                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
+                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+                 Permission::ACCOUNTING_PAYOUTS_SYNC,
+                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
              ],
 
              BankingRole::ADMIN => [
@@ -196,6 +201,11 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+
+                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
+                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+                 Permission::ACCOUNTING_PAYOUTS_SYNC,
+                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
@@ -277,6 +287,10 @@ class UserRolePermissionsMap
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
                  Permission::VIEW_TAX_PAYMENTS,
+
+                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
+                 Permission::ACCOUNTING_PAYOUTS_SYNC,
+                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
              ],
 
              BankingRole::OPERATIONS => [

@@ -522,6 +522,11 @@ class Name
 
     const UPDATE_BULK_PAYOUT_AMOUNT_TYPE      = 'update_bulk_payout_amount_type';
 
+    const ACCOUNTING_PAYOUTS_INTEGRATION_STATUS         = 'accounting_payouts_integration_status';
+    const ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE      = 'accounting_payouts_integration_configure';
+    const ACCOUNTING_PAYOUTS_SYNC                       = 'accounting_payouts_sync';
+    const ACCOUNTING_PAYOUTS_WAITLIST                   = 'accounting_payouts_waitlist';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

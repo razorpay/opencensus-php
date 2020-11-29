@@ -129,6 +129,7 @@
           <directory>./tests/Functional/FeeRecovery/</directory>
           <directory>./tests/Functional/PayoutLink/</directory>
           <directory>./tests/Functional/TaxPayments/</directory>
+          <directory>./tests/Functional/AccountingPayouts/</directory>
           <file>./tests/Functional/Merchant/FeaturesTest.php</file>
           <file>./tests/Functional/Merchant/MerchantTest.php</file>
           <file>./tests/Functional/Payment/TerminalSelectionTest.php</file>
