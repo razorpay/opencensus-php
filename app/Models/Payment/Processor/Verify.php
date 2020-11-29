@@ -175,7 +175,7 @@ trait Verify
 
         $this->trace->info(
             TraceCode::PAYMENT_VERIFY_EVENT_DATA,
-            $customProperties);
+            $this->getTracableVerifyProperties($customProperties));
 
         return $data;
     }
@@ -222,7 +222,7 @@ trait Verify
         $this->trace->info(
             TraceCode::PAYMENT_VERIFY_EVENT_DATA,
             [
-                'event_properties' => $customProperties,
+                'event_properties' => $this->getTracableVerifyProperties($customProperties),
             ]);
 
         return $data;
@@ -378,7 +378,7 @@ trait Verify
             'error_code_non_verifiable' => $errorCodeNonVerifiable,
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_VERIFY_EVENT_DATA, $eventData);
+        $this->trace->info(TraceCode::PAYMENT_VERIFY_EVENT_DATA, $this->getTracableVerifyProperties($eventData));
     }
 
     /**
@@ -552,5 +552,19 @@ trait Verify
         $errorDescription = $error['description'];
 
         $payment->setError($errorCode, $errorDescription, $internalErrorCode);
+    }
+
+    /**
+     * Gateway response and entity may contain sensitive data, thus we need to remove that from trace
+     *
+     * @param array $properties
+     * @return array
+     */
+    protected function getTracableVerifyProperties(array $properties)
+    {
+        unset($properties['verify_response']['verifyResponseContent']);
+        unset($properties['verify_response']['gatewayPayment']);
+
+        return $properties;
     }
 }
