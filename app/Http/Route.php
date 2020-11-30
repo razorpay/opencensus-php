@@ -2103,6 +2103,10 @@ class Route
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
         'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
+        'reward_create'                           => ['post',    'rewards',                                                 'RewardController@createReward'                                ],
+        'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
+        'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
+        'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
 
     ];
 
@@ -3297,7 +3301,8 @@ class Route
 
         'setl_fetch_source_details',
         'linked_account_create_batch',
-
+        'reward_activate_or_deactivate',
+        'reward_fetch',
         // merchant notification config
         'create_merchant_notification_config',
         'update_merchant_notification_config',
@@ -3997,7 +4002,8 @@ class Route
         'subscription_clear_feature',
 
         'fee_recovery_payout_manual_retry',
-
+        'reward_create',
+        'reward_delete',
         // Admin merchant notification configs
         'create_merchant_notification_config_admin',
         'update_merchant_notification_config_admin',
@@ -4792,7 +4798,8 @@ class Route
         'salesforce_opportunity_details'              => '*',
 
         'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
-
+        'reward_create'                               => '*',
+        'reward_delete'                               => '*',
         // merchant notification configs
         'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
         'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,

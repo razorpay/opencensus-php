@@ -3663,6 +3663,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATION_FAILED = 'BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATION_FAILED';
 
     const PAYMENT_PENDING_CALCULATION_RAZORX_TRACE                       =  'PAYMENT_PENDING_CALCULATION_RAZORX_TRACE';
+    const REWARD_CREATE_REQUEST                                          =  'REWARD_CREATE_REQUEST';
+    const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';
+    const REWARD_ACTIVATE_DEACTIVATE_REQUEST                             = 'REWARD_ACTIVATE_DEACTIVATE_REQUEST';
+    const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';
 
 
 

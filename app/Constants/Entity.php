@@ -402,6 +402,8 @@ class Entity
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
     const BVS_VALIDATION    = 'bvs_validation';
+    const REWARD            = 'reward';
+    const MERCHANT_REWARD   = 'merchant_reward';
 
     //api request log entity
     const REQUEST_LOG = 'request_log';
@@ -757,6 +759,8 @@ class Entity
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
+        self::REWARD            => \RZP\Models\Reward::class,
+        self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
     ];
 
     protected static $repository = [

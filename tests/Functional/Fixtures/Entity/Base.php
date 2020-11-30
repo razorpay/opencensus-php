@@ -83,6 +83,8 @@ class Base
         'settlemnt.ondemand'               => \RZP\Models\Settlement\Ondemand\Entity::class,
         'settlement.ondemand_payout'       => \RZP\Models\Settlement\OndemandPayout\Entity::class,
         'merchant_notification_config'     => \RZP\Models\Merchant\MerchantNotificationConfig\Entity::class,
+        'reward'                           => \RZP\Models\Reward\Entity::class,
+        'merchant_reward'                  => \RZP\Models\Reward\MerchantReward\Entity::class,
     ];
 
     protected static $liveAndTest = [

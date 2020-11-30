@@ -1548,6 +1548,22 @@ final class FactoryData
             'deleted_at'     => null,
         ]);
 
+        $factory(\RZP\Models\Reward\Entity::class, [
+            'id'             => $faker->uniqueid,
+            'advertiser_id'  => '100000Razorpay',
+            'name'           => 'Test Reward 1',
+            'percent_rate'   => '100',
+            'max_cashback'   => '200',
+            'coupon_code'    => 'random_code',
+            'starts_at'      => Carbon::now()->getTimestamp(),
+            'ends_at'        => Carbon::tomorrow()->getTimestamp(),
+        ]);
+
+        $factory(\RZP\Models\Reward\MerchantReward\Entity::class, [
+            'merchant_id'    => '10000000000000',
+            'status'         => 'available'
+        ]);
+
         $factory(\RZP\Models\Merchant\MerchantNotificationConfig\Entity::class, [
             MerchantNotificationConfigEntity::ID                          => $faker->uniqueid,
             MerchantNotificationConfigEntity::MERCHANT_ID                 => '10000000000000',

@@ -1976,4 +1976,10 @@ class ErrorCode
     const BAD_REQUEST_DISPUTE_BULK_EMAIL_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_DISPUTE_BULK_EMAIL_OPERATION_IN_PROGRESS';
 
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED';
+
+    const BAD_REQUEST_INVALID_REWARD_DURATION                                       = 'BAD_REQUEST_INVALID_REWARD_DURATION';
+
+    const BAD_REQUEST_REWARD_ACTIVATE                                               = 'BAD_REQUEST_REWARD_ACTIVATE';
+
+    const BAD_REQUEST_REWARD_DEACTIVATE                                             = 'BAD_REQUEST_REWARD_DEACTIVATE';
 }

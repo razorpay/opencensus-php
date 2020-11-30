@@ -299,7 +299,10 @@ class Table
     const WORKFLOW_ENTITY_MAP            = 'workflow_entity_map';
     const WORKFLOW_STATE_MAP             = 'workflow_state_map';
 
-    const BVS_VALIDATION = 'bvs_validation';
+    const BVS_VALIDATION  = 'bvs_validation';
+
+    const REWARD           = 'rewards';
+    const MERCHANT_REWARD  = 'merchant_rewards';
 
     // this table doesn't exist in api db. this constant is required for transaction queries
     const CREDIT_REPAYMENT = 'credit_repayment';
