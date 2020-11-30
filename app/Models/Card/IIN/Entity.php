@@ -414,6 +414,6 @@ class Entity extends Base\PublicEntity
 
     public function getIinCurrency()
     {
-        return Currency::getCurrencyForCountry($this->getCountry());
+        return ($this->getCountry() !== null) ? Currency::getCurrencyForCountry($this->getCountry()) : null;
     }
 }
