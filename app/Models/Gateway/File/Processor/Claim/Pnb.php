@@ -11,6 +11,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Encryption\PGPEncryption;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Netbanking\Pnb\ClaimFields;
 
@@ -72,6 +73,19 @@ class Pnb extends Base
                 ],
                 $e);
         }
+    }
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
+        $end   = Carbon::createFromTimestamp($end)->addDay()->timestamp;
+
+        $claims = $this->repo->payment
+                ->fetchReconciledPaymentsForGatewayUsingReportingReplica($begin,
+                $end,
+                static::GATEWAY,
+                $statuses);
+        return $claims;
     }
 
     protected function formatDataForFile(array $data)
