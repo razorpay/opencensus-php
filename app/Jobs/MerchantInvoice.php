@@ -42,6 +42,13 @@ class MerchantInvoice extends Job
 
         try
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_ENTITY_PRE_MUTEX_DEBUG,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                ]);
             $creator = new Processor($this->merchantId, $this->month, $this->year);
 
             $resource = sprintf(self::MERCHANT_INVOICE_MUTEX_RESOURCE, $this->merchantId, $this->month, $this->year);
@@ -71,6 +78,13 @@ class MerchantInvoice extends Job
         }
         finally
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_ENTITY_POST_MUTEX_DEBUG,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                ]);
             $this->delete();
         }
     }
