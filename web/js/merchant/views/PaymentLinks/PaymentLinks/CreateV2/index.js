@@ -235,8 +235,9 @@ export default class PaymentLinkCreateV2 extends React.Component {
         this.props.showNotification({
           type: 'success',
           message: notificationMSG,
-          onCloseClick: track.lj.form.success,
         });
+
+        track.lj.form.success();
 
         this.setState({
           isFormLocked: false,
@@ -261,8 +262,9 @@ export default class PaymentLinkCreateV2 extends React.Component {
         this.props.showNotification({
           type: 'error',
           message: error,
-          onCloseClick: () => track.lj.form.fail({ error: error[1] }),
         });
+
+        track.lj.form.fail({ error });
 
         this.setState({
           isFormLocked: false,
