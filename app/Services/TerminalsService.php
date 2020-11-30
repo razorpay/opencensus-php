@@ -28,6 +28,8 @@ class TerminalsService
 
     protected $request;
 
+    protected $env;
+
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
     const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
     const X_DASHBOARD_MERCHANT_ID   = 'X-Dashboard-Merchant-Id';
@@ -51,6 +53,7 @@ class TerminalsService
     const OPTIONS           = 'options';
 
     const DEFAULT_TIMEOUT   = 0.1;
+    const QA_TIMEOUT        = 10.0;
 
     const INITIATE_ONBOARDING                  = 'initiate_onboarding';
     const CREATE_TERMINAL                      = 'create_terminal';
@@ -141,6 +144,8 @@ class TerminalsService
         $this->trace = $this->app['trace'];
 
         $this->request = $app['request'];
+
+        $this->env = $app['env'];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal): array
@@ -560,6 +565,19 @@ class TerminalsService
             $this->getPassword(),
 
         ];
+        if($this->env === 'bvt' || $this->env === 'automation' || $this->env === 'func'){
+
+            $qaOptions =  [
+                'auth'            => $auth,
+                'timeout'         => self::QA_TIMEOUT, // 2 seconds
+                'connect_timeout' => self::QA_TIMEOUT, // 2 seconds
+                'show_trace'      => true,
+            ];
+
+            $options =  array_merge($qaOptions, $additionalOptions);
+
+            return $options;
+        }
 
         $defaultOptions =  [
             'auth'            => $auth,

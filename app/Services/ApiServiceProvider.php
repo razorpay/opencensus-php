@@ -1128,6 +1128,11 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
+
+            if($this->env === 'bvt' || $this->env === 'automation' || $this->env === 'func'){
+                return new MultiCurl($responseFactory, ['timeout' => 5]);
+            }
+
             $options = ['timeout' => 1];
             $client = new MultiCurl($responseFactory, $options);
             return $client;
