@@ -1295,18 +1295,6 @@ class Repository extends Base\Repository
     }
 
     /**
-     * get total payout amount, fee and tax count for month
-     *
-     */
-    public function getPayoutAmountFeeAndTaxCountForMonth()
-    {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->startOfDay()->getTimestamp();
-        $to = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
-
-        return $this->getPayoutAmountFeeAndTaxCountBetweenTimestamp($from, $to);
-    }
-
-    /**
      * get total payout amount, fee and tax count between two time stamp
      *
      * @param $from
@@ -1314,7 +1302,7 @@ class Repository extends Base\Repository
      *
      * @return array
      */
-    protected function getPayoutAmountFeeAndTaxCountBetweenTimestamp($from, $to)
+    public function getPayoutAmountFeeAndTaxCountBetweenTimestamp($from, $to)
     {
         $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
         $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);

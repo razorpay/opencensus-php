@@ -3,9 +3,11 @@
 namespace RZP\Models\Admin;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Models;
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use RZP\Mail\Admin\BankingScorecard as BankingScorecardMail;
 
 class BankingScorecard extends Base\Core
@@ -35,7 +37,7 @@ class BankingScorecard extends Base\Core
         $yesterdayPayoutAmountFeeAndTaxCount       = $this->repo->payout->getPayoutAmountFeeAndTaxCountForYesterday();
 
         // get total payout amount, fee and tax count for month
-        $payoutAmountFeeAndTaxCountForMonth        = $this->repo->payout->getPayoutAmountFeeAndTaxCountForMonth();
+        $payoutAmountFeeAndTaxCountForMonth        = $this->getPayoutAmountFeeAndTaxCountForMonth();
 
         // get yesterday's total payout amount and tax count for merchants
         $yesterdayMerchantsPayoutAmountAndTaxCount = $this->repo->payout->getYesterdayMerchantsPayoutAmountAndTaxCountGroupByMerchant($limit);
@@ -63,5 +65,62 @@ class BankingScorecard extends Base\Core
         // previously check this https://razorpay.slack.com/archives/CR3K6S6C8/p1594860881228700
         //
         Mail::send($bankingScorecardMail);
+    }
+
+    /**
+     * get total payout amount, fee and tax count for month
+     * Run for 5 day interval of month and sum it up for the data
+     * till the time the scorecard has been created.
+     *
+     */
+    public function getPayoutAmountFeeAndTaxCountForMonth()
+    {
+        $startTimeOfMonth = Carbon::yesterday(Timezone::IST)->startOfMonth()->startOfDay();
+        $endTimeOfMonthTillNow = Carbon::today(Timezone::IST)->startOfDay();
+
+        $from = $startTimeOfMonth;
+
+        $noOfDaysToCalculate = $from->diffInDays($endTimeOfMonthTillNow);
+
+        $daysToAdd = 5;
+
+        if (($noOfDaysToCalculate % 5) !== 0)
+        {
+            $daysToAdd = $noOfDaysToCalculate % 5;
+        }
+
+        $to = $from->copy()->addDay($daysToAdd)->startOfDay();
+
+        $finalResult = null;
+
+        while ($endTimeOfMonthTillNow->greaterThanOrEqualTo($to) === true)
+        {
+            $result = $this->repo->payout->getPayoutAmountFeeAndTaxCountBetweenTimestamp(
+                $from->getTimestamp(),
+                $to->getTimestamp());
+
+            if (is_null($finalResult) === true)
+            {
+                $finalResult = $result;
+            }
+            else
+            {
+                $payoutCount = $result->getAttribute('payout_count') + $finalResult->getAttribute('payout_count');
+                $payoutAmountCr = $result->getAttribute('payout_amount_cr') + $finalResult->getAttribute('payout_amount_cr');
+                $payoutFeeCollected = $result->getAttribute('payout_fee_collected') + $finalResult->getAttribute('payout_fee_collected');
+
+
+                $finalResult->setAttribute('payout_count', $payoutCount);
+
+                $finalResult->setAttribute('payout_amount_cr', $payoutAmountCr);
+
+                $finalResult->setAttribute('payout_fee_collected', $payoutFeeCollected);
+            }
+
+            $from = $to->addSecond(1);
+            $to = $from->copy()->addDay(5)->startOfDay();
+        }
+
+        return $finalResult;
     }
 }
