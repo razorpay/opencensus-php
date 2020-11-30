@@ -8,8 +8,9 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Mozart\NetbankingScb\ClaimFields;
+use RZP\Services\NbPlus\Netbanking;
 
-class Scbl extends Base
+class Scbl extends NetbankingBase
 {
     const FILE_NAME = 'SCB_CLAIMS_';
     const EXTENSION = FileStore\Format::XLSX;
@@ -33,7 +34,7 @@ class Scbl extends Base
                 ClaimFields::TRANSACTION_DATE      => $date,
                 ClaimFields::PAYMENT_ID            => $row['payment']['id'],
                 ClaimFields::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
-                ClaimFields::BANK_REFERENCE_NUMBER => $row['gateway']['data']['bank_payment_id'],
+                ClaimFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 ClaimFields::STATUS                => $this->getstatus($row['payment']),
             ];
         }
@@ -77,5 +78,15 @@ class Scbl extends Base
         }
 
         return "failed";
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID];
+        }
+
+        return $data['gateway']['data']['bank_payment_id'];
     }
 }

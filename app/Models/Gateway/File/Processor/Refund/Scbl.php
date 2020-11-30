@@ -9,6 +9,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Mozart\NetbankingScb\RefundFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Services\NbPlus\Netbanking;
 
 class Scbl extends Base
 {
@@ -37,7 +38,7 @@ class Scbl extends Base
                 RefundFields::SR_NO                 => $count++,
                 RefundFields::TRANSACTION_DATE      => $transactionDate,
                 RefundFields::REFUND_DATE           => $refundDate,
-                RefundFields::BANK_REFERENCE_NUMBER => $row['gateway']['data']['bank_payment_id'],
+                RefundFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 RefundFields::PAYMENT_ID            => $row['payment']['id'],
                 RefundFields::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
                 RefundFields::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
@@ -57,5 +58,15 @@ class Scbl extends Base
     protected function getFormattedAmount($amount): String
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID];
+        }
+
+        return $data['gateway']['data']['bank_payment_id'];
     }
 }
