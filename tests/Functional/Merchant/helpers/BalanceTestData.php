@@ -79,6 +79,26 @@ return [
         ],
     ],
 
+    'testGetBalance' => [
+        'request'  => [
+            'url'     => '/balances/',
+            'method'  => 'get',
+            'content' => [
+                'merchant_id'   => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'balance'           => 1000,
+                'type'              => 'principal',
+                'currency'          => 'INR',
+                // 'id'                => 'G36eVO6FseJ35v',
+                // 'updated_at'        => 1605806235,
+                'last_fetched_at'   => null,
+            ],
+        ],
+    ],
+
     'testUpdateFreePayoutsCount' => [
         'request'  => [
             'url'     => '/balance/{id}/free_payout',

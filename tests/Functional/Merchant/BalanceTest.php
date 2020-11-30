@@ -24,6 +24,20 @@ class BalanceTest extends TestCase
         $this->ba->appAuth();
     }
 
+    public function testGetBalance()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $response = $this->startTest($this->testData['testCreateCapitalBalance']);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $response['id'];
+
+        $this->startTest();
+    }
+
     public function testCreateCapitalBalance()
     {
         $collectionsServiceConfig = \Config::get('applications.capital_collections_client');

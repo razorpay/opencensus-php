@@ -26,6 +26,18 @@ class Service extends Base\Service
         return $this->core()->createWithInitialBalance($merchant, $input, $this->mode, $initialBalance);
     }
 
+    public function fetchAccountBalance(string $id, array $input)
+    {
+        (new JitValidator)->rules([
+                              Entity::MERCHANT_ID => 'required|string|size:14'
+              ])->validate($input);
+
+
+        $balance = $this->repo->balance->findByIdAndMerchantId($id, $input[Entity::MERCHANT_ID]);
+
+        return $balance->toArrayPublic();
+    }
+
     public function updateFreePayout($id, $input)
     {
         Base\UniqueIdEntity::verifyUniqueId($id, true);
