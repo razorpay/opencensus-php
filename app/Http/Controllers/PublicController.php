@@ -21,31 +21,6 @@ class PublicController extends Controller
         return ApiResponse::json($response);
     }
 
-    // test route - will be removed
-    public function makeExternalRequest()
-    {
-
-        $url = $_SERVER['REQUEST_URI'];
-        $urlInfo = parse_url($url);
-
-        // redis test
-        $cache = $this->app['redis']->connection();
-        $cache->set('url', $url);
-        $cachedUrl = $cache->get('url');
-
-        // trace propagation test
-        if (!array_key_exists('query', $urlInfo)){
-            $rurl = 'http://localhost:80/_external_request?foo=bar';
-        }else{
-            $rurl = 'https://httpbin.org/get';
-        }
-        $r = Requests::request($rurl) ;
-
-        $response = [];
-        $response['body'] = $r->body;
-        return ApiResponse::json($response);
-    }
-
     public function getStatus()
     {
         $statusCode = 200;

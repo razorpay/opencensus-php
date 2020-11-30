@@ -6948,16 +6948,6 @@ class Route
                  ]);
     }
 
-    public function defineExternalRequestRoute()
-    {
-        $this->router
-             ->get('/_external_request',
-                 [
-                     'as'   => 'api_root_ext',
-                     'uses' => '\RZP\Http\Controllers\PublicController@makeExternalRequest'
-                 ]);
-    }
-
     public function defineStatusApiRoute()
     {
         $this->router

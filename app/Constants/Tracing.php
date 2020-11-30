@@ -22,7 +22,7 @@ class Tracing
     // all routes which are to be included from distributed tracing
     public static function getRoutesToInclude(): array
     {
-        $routesToInclude = Route::$public;
+        $routesToInclude = array_merge(Route::$public,  Route::$direct);
 
         return $routesToInclude;
     }

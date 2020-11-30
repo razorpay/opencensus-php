@@ -8,6 +8,8 @@ ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ARG GIT_USERNAME
 
+ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
+
 WORKDIR /app
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
