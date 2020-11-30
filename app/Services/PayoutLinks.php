@@ -144,8 +144,6 @@ class PayoutLinks
 
     public function getSettings(string $merchantId)
     {
-        $this->rzpModeCheck($merchantId);
-
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
                            [
                                $merchantId
@@ -168,8 +166,6 @@ class PayoutLinks
 
     public function updateSettings(string $merchantId, array $input)
     {
-        $this->rzpModeCheck($merchantId);
-
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
                            [
                                $merchantId
@@ -468,8 +464,6 @@ class PayoutLinks
 
     public function onBoardingStatus(string $merchantId)
     {
-        $this->rzpModeCheck($merchantId);
-
         $url = $this->getConstructedUrl(self::ON_BOARDING_STATUS);
 
         $request = [

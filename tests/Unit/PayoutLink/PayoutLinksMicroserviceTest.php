@@ -125,22 +125,6 @@ class PayoutLinkMicroserviceTest extends TestCase
         $result['mock']->shouldHaveReceived('getSettings');
     }
 
-    public function testGetSettingsForTestMode()
-    {
-        $result = $this->setUpMocksAndFeatureForTestMode();
-
-        $this->ba->adminAuth();
-
-        try
-        {
-            $result['service']->getSettings('10000000000000');
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
-    }
-
     public function testUpdateSettings()
     {
         $result = $this->setUpMocksAndFeature('updateSettings');
@@ -151,22 +135,6 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('updateSettings');
-    }
-
-    public function testUpdateSettingsForTestMode()
-    {
-        $result = $this->setUpMocksAndFeatureForTestMode();
-
-        $this->ba->adminAuth();
-
-        try
-        {
-            $result['service']->updateSettings([], '10000000000000');
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
     }
 
     public function testCancel()
@@ -335,20 +303,6 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('onBoardingStatus');
-    }
-
-    public function testOnBoardingStatusForTestMode()
-    {
-        $result = $this->setUpMocksAndFeatureForTestMode();
-
-        try
-        {
-            $result['service']->onBoardingStatus();
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
     }
 
     public function testSummary()
