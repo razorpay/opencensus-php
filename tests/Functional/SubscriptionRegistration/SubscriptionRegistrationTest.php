@@ -524,7 +524,8 @@ class SubscriptionRegistrationTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'UTIB0002766'
+            'ifsc'              => 'UTIB0002766',
+            'account_type'      => 'savings'
         ];
 
         $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
@@ -565,7 +566,8 @@ class SubscriptionRegistrationTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'HDFC0001233'
+            'ifsc'              => 'HDFC0001233',
+            'account_type'      => 'savings',
         ];
 
         $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();

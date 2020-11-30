@@ -22,6 +22,7 @@ class EmandateDebitReconciliationTest extends TestCase
     const ACCOUNT_NUMBER    = '9876543210';
     const IFSC              = 'UTIB0002766';
     const NAME              = 'Test account';
+    const ACCOUNT_TYPE      = 'savings';
 
     protected $bank;
 
@@ -279,6 +280,7 @@ class EmandateDebitReconciliationTest extends TestCase
             'account_number'    => self::ACCOUNT_NUMBER,
             'ifsc'              => self::IFSC,
             'name'              => self::NAME,
+            'account_type'      => self::ACCOUNT_TYPE,
         ];
 
         unset($payment[Entity::CARD]);

@@ -750,7 +750,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number' => '12812891982',
             'name'           => 'test name',
-            'ifsc'           => 'UTIB0002766'
+            'ifsc'           => 'UTIB0002766',
+            'account_type'   => 'savings',
         ];
 
         $this->doAuthPayment($payment);
@@ -781,7 +782,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'UTIB0002766'
+            'ifsc'              => 'UTIB0002766',
+            'account_type'      => 'savings',
         ];
 
         $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
@@ -808,7 +810,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'UTIB0002766'
+            'ifsc'              => 'UTIB0002766',
+            'account_type'      => 'savings',
         ];
 
         $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
@@ -850,7 +853,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number' => '12812891982',
             'name'           => 'test name',
-            'ifsc'           => 'UTIB0002766'
+            'ifsc'           => 'UTIB0002766',
+            'account_type'   => 'savings',
         ];
 
         $this->doAuthPayment($payment);
@@ -1508,7 +1512,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'UTIB0002766'
+            'ifsc'              => 'UTIB0002766',
+            'account_type'      => 'savings',
         ];
 
         $this->fixtures->merchant->addFeatures(['s2s']);
@@ -2729,7 +2734,8 @@ class PaymentCreateTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '123123123',
             'name'              => 'test name',
-            'ifsc'              => 'UTIB0002766'
+            'ifsc'              => 'UTIB0002766',
+            'account_type'      => 'savings',
         ];
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);

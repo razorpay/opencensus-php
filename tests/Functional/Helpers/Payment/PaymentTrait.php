@@ -1535,6 +1535,7 @@ trait PaymentTrait
                 'account_number' => '914010009305862',
                 'ifsc'           => 'utib0000123',
                 'name'           => 'Test account',
+                'account_type'   => 'savings',
             ];
         }
 

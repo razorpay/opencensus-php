@@ -185,6 +185,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -229,6 +230,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -282,6 +284,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -327,6 +330,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -699,6 +703,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'UTIB0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -1029,6 +1034,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);

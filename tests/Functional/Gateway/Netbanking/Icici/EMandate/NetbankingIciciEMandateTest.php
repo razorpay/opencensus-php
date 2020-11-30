@@ -58,6 +58,7 @@ class NetbankingIciciEMandateTest extends TestCase
             'account_number'    => self::ACCOUNT_NUMBER,
             'ifsc'              => self::IFSC,
             'name'              => self::NAME,
+            'account_type'      => 'savings',
         ];
 
         $this->mockCardVault();

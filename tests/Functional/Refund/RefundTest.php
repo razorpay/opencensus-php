@@ -986,7 +986,8 @@ class RefundTest extends TestCase
         $payment['bank_account'] = [
             'account_number'    => '0123456789',
             'ifsc'              => 'HDFC0000186',
-            'name'              => 'Test Account'
+            'name'              => 'Test Account',
+            'account_type'      => 'savings',
         ];
 
         $this->gateway = 'netbanking_hdfc';

@@ -238,6 +238,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305864',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -265,6 +266,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -302,6 +304,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -347,6 +350,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -392,6 +396,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -715,6 +720,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -998,6 +1004,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -1219,6 +1226,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -1276,6 +1284,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'HDFC0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);

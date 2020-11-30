@@ -37,6 +37,7 @@ class EmandateSorterTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'UTIB0002766',
             'name'           => 'Test account',
+            'account_type'   => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);

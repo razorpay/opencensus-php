@@ -40,6 +40,7 @@ class NetbankingSbiEmandateTest extends TestCase
     const ACCOUNT_NUMBER    = '12345678901234';
     const IFSC              = 'SBIN0000001';
     const NAME              = 'Test account';
+    const ACCOUNT_TYPE      = 'savings';
 
     public function setUp()
     {
@@ -65,6 +66,7 @@ class NetbankingSbiEmandateTest extends TestCase
             'account_number'    => self::ACCOUNT_NUMBER,
             'ifsc'              => self::IFSC,
             'name'              => self::NAME,
+            'account_type'      => self::ACCOUNT_TYPE,
         ];
 
         unset($this->payment[Entity::CARD]);

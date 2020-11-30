@@ -56,6 +56,7 @@ class LegaldeskGatewayTest extends TestCase
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
+            'account_type'      => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -76,6 +77,7 @@ class LegaldeskGatewayTest extends TestCase
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
+            'account_type'      => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -96,6 +98,7 @@ class LegaldeskGatewayTest extends TestCase
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
+            'account_type'      => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -128,6 +131,7 @@ class LegaldeskGatewayTest extends TestCase
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
+            'account_type'      => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -159,6 +163,7 @@ class LegaldeskGatewayTest extends TestCase
             'account_number'    => '914010009305862',
             'ifsc'              => 'SVCB0010015',
             'name'              => 'Test account',
+            'account_type'      => 'savings',
         ];
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);

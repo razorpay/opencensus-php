@@ -52,6 +52,7 @@ use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Payment\Processor\PayLater;
@@ -649,7 +650,7 @@ class Processor
         }
     }
 
-    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
+    protected function preProcessPaymentInputs(array & $input, Payment\Entity $payment)
     {
         $coproto = null;
 
@@ -915,7 +916,7 @@ class Processor
         return $coproto;
     }
 
-    protected function preProcessPaymentInputsForEmandate(array $input, Payment\Entity $payment)
+    protected function preProcessPaymentInputsForEmandate(array & $input, Payment\Entity $payment)
     {
         //
         // We don't want to do this coproto
@@ -953,13 +954,58 @@ class Processor
             return null;
         }
 
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                Payment\Entity::ORDER_ID,
+                [
+                    'method' => $payment->getMethod()
+                ]);
+        }
+
+        $order = $this->fetchOrderFromInput($input);
+
+        $tokenRegistration = $order->getTokenRegistration();
+
+        if ($tokenRegistration !== null)
+        {
+            if (empty($input[Payment\Entity::BANK_ACCOUNT]) === true)
+            {
+                $input[Payment\Entity::BANK_ACCOUNT] = [];
+            }
+
+            $tokenRegistrationBankAccount = $tokenRegistration->entity;
+
+            if ($tokenRegistrationBankAccount !== null)
+            {
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? $tokenRegistrationBankAccount->getBeneficiaryName();
+
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? $tokenRegistrationBankAccount->getAccountNumber();
+
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? $tokenRegistrationBankAccount->getIfscCode();
+
+                $input[Payment\Entity::BANK_ACCOUNT][Customer\Token\Entity::ACCOUNT_TYPE] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Customer\Token\Entity::ACCOUNT_TYPE] ?? $tokenRegistrationBankAccount->getAccountType();
+            }
+        }
         //
         // We need this flow only if either:
-        //   - bank_account is missing
+        //   - bank_account details are missing - name , account number, ifsc code, account type
         //   - auth_type is missing
         //
-        if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false))
+
+        $skipCoprotoFlow = ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
+                            (empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME]) === false) and
+                            (empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]) === false) and
+                            (empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC]) === false) and
+                            (empty($input[Payment\Entity::BANK_ACCOUNT][Customer\Token\Entity::ACCOUNT_TYPE]) === false) and
+                            (empty($payment->getAuthType()) === false));
+
+        if ($skipCoprotoFlow === true)
         {
             return null;
         }

@@ -336,6 +336,13 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="bank_account[account_number]" size="25" value="" placeholder="Account Number"></td>
         <td><input type="text" name="bank_account[ifsc]" size="25" value="" placeholder="IFSC"></td>
         <td><input type="text" name="bank_account[name]" size="25" value="" placeholder="Name"></td>
+        <td>
+            <select name="bank_account[account_type]">
+                <option value="">Please Select</option>
+                <option value="savings">Savings</option>
+                <option value="current">Current</option>
+            </select>
+        </td>
     </tr>
     <tr>
         <td colspan='40'>Token recurring:</td>

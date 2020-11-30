@@ -35,6 +35,7 @@ class NetbankingAxisEMandateTest extends TestCase
     const ACCOUNT_NUMBER    = '914010009305862';
     const IFSC              = 'UTIB0002766';
     const NAME              = 'Test account';
+    const ACCOUNT_TYPE      = 'savings';
 
     public function setUp()
     {
@@ -60,6 +61,7 @@ class NetbankingAxisEMandateTest extends TestCase
                                             'account_number'    => self::ACCOUNT_NUMBER,
                                             'ifsc'              => self::IFSC,
                                             'name'              => self::NAME,
+                                            'account_type'      => self::ACCOUNT_TYPE,
                                          ];
 
         unset($this->payment[Entity::CARD]);

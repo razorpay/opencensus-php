@@ -23,6 +23,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
     const ACCOUNT_NUMBER    = '12345678901234';
     const IFSC              = 'SBIN0000001';
     const NAME              = 'Test account';
+    const ACCOUNT_TYPE      = 'savings';
 
     protected $terminal;
 
@@ -177,6 +178,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
             'account_number'    => self::ACCOUNT_NUMBER,
             'ifsc'              => self::IFSC,
             'name'              => self::NAME,
+            'account_type'      => self::ACCOUNT_TYPE,
         ];
 
         unset($this->payment['card']);
