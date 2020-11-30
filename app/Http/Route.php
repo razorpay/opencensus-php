@@ -2078,6 +2078,8 @@ class Route
         'merchant_instrument_request_create_bulk'           =>  ['post',    'merchant_instrument_requests',                     'InstrumentRequestController@createMerchantInstrumentRequests'   ],
         'merchant_instrument_request_get_by_merchant_id'    =>  ['get',     'merchant_instrument_request',                      'InstrumentRequestController@getMerchantInstrumentRequest'       ],
         'merchant_instrument_status_get_by_merchant_id'     =>  ['get',     'merchant_instrument_status',                       'InstrumentRequestController@getMerchantInstrumentStatus'        ],
+        'mir_instruments_get'                               =>  ['get',     'merchant_instruments',                             'InstrumentRequestController@getMIRInstruments'        ],
+        'mir_instrument_set'                                =>  ['patch',   'merchant_instrument',                              'InstrumentRequestController@setMIRInstrument'        ],
         'merchant_instrument_request_get_by_id'             =>  ['get',     'merchant_instrument_request/{id}',                 'InstrumentRequestController@getMerchantInstrumentRequestById'   ],
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
         'fetch_merchant_instrument_requests'                       =>  ['post',    'merchant_instrument_request_fetch',                              'InstrumentRequestController@getMerchantInstruments'             ],
@@ -2248,6 +2250,7 @@ class Route
     ];
 
     public static $private = [
+        'mir_instruments_get',
         'settlement_ondemand_fees',
         'settlement_ondemand_create',
         'settlement_ondemand_fetch',
@@ -3318,6 +3321,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'mir_instrument_set',
         'virtual_account_debug',
         'transfer_debug',
         'setl_ondemand_pricing',
@@ -4765,6 +4769,7 @@ class Route
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+        'mir_instrument_set'                          => Permission::UPDATE_MERCHANT_INSTRUMENT,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
         // gateway credential

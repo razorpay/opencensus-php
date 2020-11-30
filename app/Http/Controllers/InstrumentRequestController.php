@@ -237,6 +237,32 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    public function getMIRInstruments()
+    {
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/merchant_instruments',
+            [],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
+    public function setMIRInstrument()
+    {
+        $input = Request::all();
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::PATCH,
+            'v2/merchant_instrument',
+            [],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantInstrumentRequestById(string $id)
     {
         $this->trace->info(

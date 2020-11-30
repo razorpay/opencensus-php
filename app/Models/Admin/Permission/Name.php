@@ -454,6 +454,8 @@ class Name
     const UPDATE_MERCHANT_INSTRUMENT_REQUEST = 'update_merchant_instrument_request';
     const VIEW_MERCHANT_INSTRUMENT_REQUEST   = 'view_merchant_instrument_request';
 
+    const UPDATE_MERCHANT_INSTRUMENT = 'update_merchant_instrument';
+
     const VIEW_GATEWAY_CREDENTIAL             = 'view_gateway_credential';
     const CREATE_GATEWAY_CREDENTIAL           = 'create_gateway_credential';
     const DELETE_GATEWAY_CREDENTIAL           = 'delete_gateway_credential';

@@ -1083,6 +1083,10 @@ return [
                 'description'   => 'Update single/bulk merchant instrument requests',
                 'assignable'    => true,
             ],
+            Permission::UPDATE_MERCHANT_INSTRUMENT => [
+                'description'   => 'Update merchant instrument',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::GATEWAY_CREDENTIAL => [
