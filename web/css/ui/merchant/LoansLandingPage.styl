@@ -40,6 +40,10 @@
             padding-right: 20px;
             border-right: 1px solid rgba(22, 47, 86, 0.1)
             margin-right: 18px;
+            .pan-info{
+              display: flex;
+              align-items: center;
+            }
           }
           .text-secondary{
             color: rgba(22, 47, 86, 0.76);
@@ -89,4 +93,18 @@
       flex: 1
     }
   }
+}
+
+.add-applicant-pan-modal, .Modal-container--add-applicant-pan-modal{
+  .modal-body{
+    padding-top: 0;
+    .toggle-description .Input-error{
+      margin-top: 4px;
+      font-size: 13px;
+    }
+  }
+}
+
+.Modal-container--add-applicant-pan-modal{
+  width: 328px;
 }

@@ -210,9 +210,9 @@ class ApplicationOnboardingForm extends Component {
   };
 
   saveApplicantDetails = (businessDetails) => {
-    const { loanApplicationDetails } = this.props;
+    const { loanApplicationDetails, applicantPan } = this.props;
 
-    const { contact_email, promoter_pan } = this.props.user;
+    const { contact_email } = this.props.user;
 
     const applicantExists = Boolean(
       loanApplicationDetails.promoter_details.data.applicant &&
@@ -295,7 +295,7 @@ class ApplicationOnboardingForm extends Component {
           second_name,
           gender,
           date_of_birth: moment(date_of_birth).format('YYYY-MM-DD'),
-          pan_number: promoter_pan,
+          pan_number: applicantPan,
         },
       },
     };

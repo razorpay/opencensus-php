@@ -3,7 +3,11 @@ import { OtpInput } from 'merchant/components/OtpInput';
 import { connect } from 'react-redux';
 import ajax from 'merchant/utils/ajax';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { saveD2cReportDetails, submitOtp } from 'merchant/reducers/capital';
+import {
+  fetchLoanApplicationMeta,
+  saveD2cReportDetails,
+  submitOtp,
+} from 'merchant/reducers/capital';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
@@ -18,6 +22,7 @@ import { HOTJAR_TRIGGERS, APPLICATION_STATES } from '../constants';
   {
     submitOtp,
     saveD2cReportDetails,
+    fetchLoanApplicationMeta,
     ...NotificationsActions,
   },
 )
@@ -113,7 +118,8 @@ class MobileVerification extends Component {
       const otpResponse = await this.props.submitOtp(payload);
       if (otpResponse && otpResponse.data) {
         this.props.saveD2cReportDetails(otpResponse);
-        this.props.navigation.next();
+        // this.props.navigation.next();
+        this.props.fetchLoanApplicationMeta();
       } else {
         this.setState({
           hasError: true,

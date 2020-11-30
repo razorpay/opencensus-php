@@ -1,6 +1,23 @@
 import React from 'react';
-import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
-import DataList from 'merchant/components/OnBoarding/Slides/DataList';
+import { connect } from 'react-redux';
+import { Redirect, withRouter } from 'react-router-dom';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
+import { isCashAdvanceProduct, isLoanProduct } from '../utils';
+import Spinner from '../components/Spinner';
+import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
+import ApplicationStatusOverview from './ApplicationStatusOverview';
+import LoanEntity from './LoanEntity';
+import {
+  CAPITAL_LINKS,
+  CAPITAL_PRODUCT_NAME_CODE_MAP,
+  HOTJAR_TRIGGERS,
+  TOOLTIP_DESCRIPTIONS,
+} from './constants';
+import EditPanModal from './EditPanModal';
+import CircularProgress from 'common/new-ui/CircularProgress';
+import Button from 'common/new-ui/Button';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import {
   changeActiveState,
   fetchLoanApplicationMeta,
@@ -12,19 +29,10 @@ import {
   registerProduct,
   resetCapitalLendingData,
 } from 'merchant/reducers/capital';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { connect } from 'react-redux';
-import { Redirect, withRouter } from 'react-router-dom';
-import LoanEntity from './LoanEntity';
-import ApplicationStatusOverview from './ApplicationStatusOverview';
-import CircularProgress from 'common/new-ui/CircularProgress';
+import DataList from 'merchant/components/OnBoarding/Slides/DataList';
+import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
-import { CAPITAL_LINKS, CAPITAL_PRODUCT_NAME_CODE_MAP, HOTJAR_TRIGGERS } from './constants';
-import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
-import { isCashAdvanceProduct, isLoanProduct } from '../utils';
-import Spinner from '../components/Spinner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export const PROS = [
   <React.Fragment>
@@ -71,7 +79,7 @@ class LoanApplicationOverview extends React.Component {
   }
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    eventObject.eventCategory = 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
 
@@ -82,6 +90,10 @@ class LoanApplicationOverview extends React.Component {
   }
 
   initApplication = (product) => {
+    this.setState({
+      applicantPan: this.props.user.promoter_pan,
+      availablePans: [this.props.user.promoter_pan],
+    });
     const searchParams = this.props.history.location.search;
 
     this.validateProduct();
@@ -257,6 +269,7 @@ class LoanApplicationOverview extends React.Component {
           bottom: 0,
         },
       },
+      className: 'loan-application-modal',
     });
   };
 
@@ -267,6 +280,38 @@ class LoanApplicationOverview extends React.Component {
       meta.data.application.status,
       meta.configuration.getApplicationStateGroups(),
     );
+  };
+
+  isPANLinkedWithPG = () => this.props.user.promoter_pan === this.state.applicantPan;
+
+  registerCoApplicantPan = (selectedPAN) => {
+    this.props.closeModal();
+    this.setState((prevState) => {
+      const personalPANNumberSet = new Set([]);
+      prevState.availablePans.forEach((panNumber) => personalPANNumberSet.add(panNumber));
+      personalPANNumberSet.add(selectedPAN);
+      return {
+        applicantPan: selectedPAN,
+        availablePans: Array.from(personalPANNumberSet),
+      };
+    });
+  };
+
+  handleCoApplicantPan = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <EditPanModal
+          handleSubmit={this.registerCoApplicantPan}
+          closeModal={this.props.closeModal}
+          availablePans={this.state.availablePans}
+          selected={this.state.applicantPan}
+          pgLinkedPan={this.props.user.promoter_pan}
+          parentSelector=".add-applicant-pan-modal"
+        />
+      ),
+      className: 'modal-white-background add-applicant-pan-modal',
+    });
   };
 
   getApplicationOverview = () => {
@@ -290,18 +335,40 @@ class LoanApplicationOverview extends React.Component {
             <div className="personal-pan-summary flex">
               <div className="left-section">
                 <p className="text-strong text-faded">PAN Number</p>
-                <span className="text-strong">{promoter_pan}</span>
+                <span className="pan-info text-strong">
+                  {this.state.applicantPan}
+                  {!this.isPANLinkedWithPG() && (
+                    <small className="help-content">
+                      &nbsp;
+                      <i className="i i-info-outline" />
+                      <Popover align="top" theme="dark">
+                        <PopoverBody>
+                          <div class="text-left">
+                            This PAN Number is different from the one connected with the Payment
+                            Gateway.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </small>
+                  )}
+                </span>
               </div>
               <div>
                 <span>
                   We verify the details with your central PAN database, So please ensure to enter
-                  the correct details.
+                  the correct details.&nbsp;
+                  <Button.Transparent onClick={this.handleCoApplicantPan}>
+                    Apply using different PAN
+                  </Button.Transparent>
                 </span>
               </div>
             </div>
           </div>
           <div class="loan-onboarding-content-body">
-            <ApplicationOnboardingForm productId={productDetails.id} />
+            <ApplicationOnboardingForm
+              productId={productDetails.id}
+              applicantPan={this.state.applicantPan}
+            />
           </div>
         </div>
       );

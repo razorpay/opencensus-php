@@ -140,7 +140,6 @@ class ApplicationStatusOverview extends Component {
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
       : this.getStepTobeShown(classList, step);
 
-    console.log('-> meta.configuration', meta.configuration);
     return (
       <MultiLevelStepper.ParentStep
         status={classList.join(' ')}

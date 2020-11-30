@@ -12,13 +12,16 @@ const ToggleWithDescription = ({
   hint,
   loading = false,
   showRadioInput = true,
+  radioPosition = 'right',
 }) => {
   return (
     <div
       onClick={() => {
-        if (!disabled) onClick();
+        if (!disabled && !selected) onClick();
       }}
-      class={`toggle-with-description ${disabled ? 'disabled' : ''} ${size}`}
+      class={`toggle-with-description ${disabled ? 'disabled' : ''} ${
+        selected ? 'selected' : ''
+      } ${size}`}
       role="button"
       style={{
         ...style,
@@ -26,11 +29,18 @@ const ToggleWithDescription = ({
     >
       <div class="title-content-wrapper flex">
         <div class="toggle-title flex">
-          <p class="">{title}</p>
+          {radioPosition === 'left' && (
+            <input type="radio" className="radio-pointer" name={name} checked={selected} />
+          )}
+          {typeof title === 'string' ? (
+            <p className={radioPosition === 'left' ? 'm-l' : ''}>{title}</p>
+          ) : (
+            title
+          )}
           {hint && <span class="text-faded">&nbsp;{hint}</span>}
         </div>
         {(() => {
-          if (!showRadioInput) return null;
+          if (!showRadioInput || radioPosition !== 'right') return null;
 
           if (loading) {
             return (
