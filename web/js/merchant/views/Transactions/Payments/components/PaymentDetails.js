@@ -239,6 +239,27 @@ export default (props) => {
                 )}
 
                 <PaymentSplitInItems payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
+
+                {!user.isUxRevampPhase2Enabled && payment.transaction ? (
+                  <EntityDetailRow label="Settlement Details">
+                    {payment.transaction.settlement ? (
+                      <ContentToggler onToggleClick={viewSettlementOverview}>
+                        <span>
+                          Settled on{' '}
+                          <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
+                        </span>
+                        <SettlementOverview payment={payment} />
+                      </ContentToggler>
+                    ) : payment.transaction.settled_at ? (
+                      <span class="link">
+                        To be settled on{' '}
+                        <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
+                      </span>
+                    ) : (
+                      '--'
+                    )}
+                  </EntityDetailRow>
+                ) : null}
               </div>
             </div>
           </div>
