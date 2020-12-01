@@ -8,6 +8,7 @@ const SET_INTERMEDIATE_INSTRUMENT = 'SET_INTERMEDIATE_INSTRUMENT';
 const CLEAR_INTERMEDIATE_INSTRUMENT = 'CLEAR_INTERMEDIATE_INSTRUMENT';
 const CLEAR_LEAF_INSTRUMENT = 'CLEAR_LEAF_INSTRUMENT';
 const FETCH_ALL_MERCHANT_INSTRUMENTS = 'FETCH_ALL_MERCHANT_INSTRUMENTS';
+const FETCH_REQUESTED_MERCHANT_INSTRUMENTS = 'FETCH_REQUESTED_MERCHANT_INSTRUMENTS';
 const CREATE_INSTRUMENT_REQUEST = 'CREATE_INSTRUMENT_REQUEST';
 const CANCEL_INSTRUMENT_REQUEST = 'CANCEL_INSTRUMENT_REQUEST';
 const SET_LOADING = 'SET_LOADING';
@@ -42,6 +43,13 @@ export const fetchMerchantInstruments = () => {
   return {
     type: FETCH_ALL_MERCHANT_INSTRUMENTS,
     payload: merchantFetch('merchant_instrument_status'),
+  };
+};
+
+export const fetchRequestedInstruments = () => {
+  return {
+    type: FETCH_REQUESTED_MERCHANT_INSTRUMENTS,
+    payload: merchantFetch('merchant_instruments'),
   };
 };
 
@@ -822,6 +830,14 @@ export default function (state = initialState, action) {
       lodashset(stateClone, 'intermediateInstrument', null);
       lodashset(stateClone, 'leafInstrument', null);
       lodashset(stateClone, 'loading', false);
+      return stateClone;
+    case `${FETCH_REQUESTED_MERCHANT_INSTRUMENTS}::SUCCESS`:
+      stateClone = cloneDeep(state);
+      let instrumentsTat = {};
+      action.payload.data.forEach(({ instrument, tat }) => {
+        instrumentsTat[instrument] = tat;
+      });
+      lodashset(stateClone, 'instrumentsTat', instrumentsTat);
       return stateClone;
     case `${CREATE_INSTRUMENT_REQUEST}::SUCCESS`:
       let updatedLeafIndex;

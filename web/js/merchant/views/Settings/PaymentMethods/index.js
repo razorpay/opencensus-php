@@ -8,6 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import {
   fetchMerchantInstruments,
+  fetchRequestedInstruments,
   clearIntermediateInstrument,
   clearLeafInstrument,
   setLoading,
@@ -17,6 +18,7 @@ const PaymentMethod = ({
   intermediateInstrument,
   loading,
   fetchMerchantInstruments,
+  fetchRequestedInstruments,
   clearIntermediateInstrument,
   clearLeafInstrument,
   setLoading,
@@ -30,11 +32,17 @@ const PaymentMethod = ({
         message: errors[0],
       });
     });
+    fetchRequestedInstruments().catch(({ errors }) => {
+      showNotification({
+        type: 'error',
+        message: errors[0],
+      });
+    });
     return () => {
       clearIntermediateInstrument();
       clearLeafInstrument();
     };
-  }, [fetchMerchantInstruments]);
+  }, [fetchMerchantInstruments, fetchRequestedInstruments]);
   return loading ? (
     <div class="page-spinner-container">
       <Spinner />
@@ -70,14 +78,17 @@ const PaymentMethod = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  intermediateInstrument: state.instrumentRequests.intermediateInstrument,
-  loading: state.instrumentRequests.loading,
-});
+const mapStateToProps = (state) => {
+  return {
+    intermediateInstrument: state.instrumentRequests.intermediateInstrument,
+    loading: state.instrumentRequests.loading,
+  };
+};
 
 export default connect(mapStateToProps, {
   setLoading,
   fetchMerchantInstruments,
+  fetchRequestedInstruments,
   clearIntermediateInstrument,
   clearLeafInstrument,
   showNotification,

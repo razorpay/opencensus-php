@@ -24,7 +24,7 @@ class LeafListItem extends React.Component {
 
   handleCreateRequest = () => {
     this.setState({ loading: true });
-    let { instrument, intermediateInstrument, leafInstrument } = this.props;
+    let { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
     let requestSlug = `pg.${intermediateInstrument && intermediateInstrument.slug}.${
       leafInstrument && leafInstrument.slug
     }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
@@ -40,14 +40,15 @@ class LeafListItem extends React.Component {
                 Standard Pricing <i class="i i-external-link" style={{ marginLeft: '2px' }} />
               </a>
             </span>
-            . Processing the request roughly takes 20 working days.
+            . Processing the request roughly takes {instrumentsTat[requestSlug]} working days.
             <br /> <br />
           </div>
         ),
         affirmativeLabel: 'Confirm',
+        affirmativePendingLabel: 'Requesting...',
         abortLabel: 'Cancel',
         action: () => {
-          this.props
+          return this.props
             .createMerchantInstrumentRequest(requestSlug)
             .catch(({ errors }) => {
               this.props.showNotification({
@@ -236,6 +237,7 @@ const mapStateToProps = (state) => ({
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
   leafInstrument: state.instrumentRequests.leafInstrument,
   userActivationStatus: state.session.user.activation_status,
+  instrumentsTat: state.instrumentRequests.instrumentsTat,
 });
 
 export default connect(mapStateToProps, {
