@@ -31,11 +31,8 @@ trait Ticket
             Constants::FD_TAGS_DISPUTE_CREATED,
             Constants::FD_TAGS_PENDING_WITH_DISPUTES);
 
-        $groupId = (int) $this->freshdeskCustomerDisputeConfig['dispute_group_id'];
-
         $content = [
             'status'       => Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
-            'group_id'     => $groupId,
             'responder_id' => null, // unsetting automation agent
             'tags'         => $ticketTags,
         ];
