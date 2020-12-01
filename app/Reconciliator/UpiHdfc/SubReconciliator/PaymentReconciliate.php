@@ -174,28 +174,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 $response = $this->processUnexpectedPayment($input);
 
             }
-            else if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === false)
-            {
-                $response = $this->processUnexpectedPaymentWithoutCallbackKey($row);
-            }
             else
             {
-                $this->trace->info(
-                    TraceCode::RECON_INFO_ALERT,
-                    [
-                        'info_code'             => Base\InfoCode::UNEXPECTED_PAYMENT,
-                        'payment_reference_id'  => $rrn,
-                        'payment_id'            => $gatewayPaymentId,
-                        'gateway'               => $this->gateway
-                    ]);
-
-                //
-                // Setting this unprocessed row as success as we receive such direct settlements daily.
-                // And as these payments are expected, not counting them as failure.
-                //
-                $this->setFailUnprocessedRow(false);
-
-                return $paymentId;
+                $response = $this->processUnexpectedPaymentWithoutCallbackKey($row);
             }
 
             if (empty($response['payment_id']) === false)
@@ -278,7 +259,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
                 'rrn'                       => $input[self::TXN_REFERENCE_NUMBER],
                 'gateway_payment_id'        => $input[self::ORDER_ID],
-                'unexpected_payment_ref_id' => $input[self::UNEXPECTED_PAYMENT_REF_ID],
                 'gateway'                   => $this->gateway,
             ]);
 
