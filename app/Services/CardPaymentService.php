@@ -737,12 +737,12 @@ class CardPaymentService
     protected function verifyPayment($response)
     {
         $verify = new Verify($this->gateway, []);
-        if (array_key_exists(self::DATA, $response) === true)
+        if (empty($response[self::DATA]) === false)
         {
             $verify->verifyResponseContent = $response[self::DATA];
         }
         else {
-            $verify->verifyResponseContent =  $response[self::ERROR] ?? null;
+            $verify->verifyRequest =  $response[self::ERROR] ?? null;
         }
         $verify->status = VerifyResult::STATUS_MATCH;
 

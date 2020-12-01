@@ -1565,6 +1565,10 @@ class CardPaymentServiceTest extends TestCase
         $response->headers = ['Content-Type' => 'application/json'];
         $body = '{
                   "payment": [],
+                  "data": [],
+                  "headless": [],
+                  "ivr" :[],
+                  "success": false,
                   "error": {
                     "internal_error_code": "BAD_REQUEST_PAYMENT_FAILED",
                     "gateway_error_code": "BAD_REQUEST_PAYMENT_FAILED",

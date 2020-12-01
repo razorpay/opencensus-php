@@ -198,6 +198,7 @@ trait Verify
         $data = $this->populateVerifyData($payment, $gatewayData);
 
         $customProperties = [
+            'bucket'=> $payment->getVerifyBucket(),
             'payment_id' => $payment->getId(),
             'verify_route' => 'verify/new_cron',
         ];
