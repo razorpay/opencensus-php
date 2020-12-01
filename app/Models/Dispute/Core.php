@@ -870,7 +870,17 @@ class Core extends Base\Core
 
         $customerSupportTicketID = substr($gatewayDisputeId, 7);
 
-        $this->app['freshdesk_client']->updateTicket(
-            $customerSupportTicketID, ['status' => Customer\FreshdeskTicket\Constants::FD_TICKET_STATUS_OPEN]);
+        $response = $this->app['freshdesk_client']->fetchTicketById($customerSupportTicketID);
+
+        $ticketTags = $response['tags'] ?? [];
+
+        array_push($ticketTags, Customer\FreshdeskTicket\Constants::FD_TAGS_TRIGGERED_BY_RZP_DISPUTE_FLOW);
+
+        $updateTicketContent = [
+            'status' => Customer\FreshdeskTicket\Constants::FD_TICKET_STATUS_OPEN,
+            'tags'   => $ticketTags,
+        ];
+
+        $this->app['freshdesk_client']->updateTicket($customerSupportTicketID, $updateTicketContent);
     }
 }

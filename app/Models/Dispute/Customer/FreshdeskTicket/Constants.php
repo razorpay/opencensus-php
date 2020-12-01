@@ -16,9 +16,10 @@ class Constants
 	const DISPUTE_EXPIRES_AFTER = 2;
 
 	// FD Tags
-	const FD_TAGS_AUTOMATED_DISPUTE_FLOW = 'automated_dispute_flow';
-	const FD_TAGS_DISPUTE_CREATED        = 'dispute_created';
-	const FD_TAGS_PENDING_WITH_DISPUTES  = 'pending_with_disputes';
+	const FD_TAGS_AUTOMATED_DISPUTE_FLOW        = 'automated_dispute_flow';
+	const FD_TAGS_DISPUTE_CREATED               = 'dispute_created';
+	const FD_TAGS_PENDING_WITH_DISPUTES         = 'pending_with_disputes';
+	const FD_TAGS_TRIGGERED_BY_RZP_DISPUTE_FLOW = 'triggered_by_rzp_dispute_flow';
 
 	// FD Status
 	const FD_TICKET_STATUS_OPEN                     = 2;
