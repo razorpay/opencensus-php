@@ -80,8 +80,6 @@ configure_dark(){
 
 configure_hallmark(){
     cd /app
-    echo "== Queue on Sync driver =="
-    echo QUEUE_DRIVER=sync >> ./environment/.env.production
     echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
     echo "MOZART_URL=\"https://mozart-hallmark.razorpay.com/\"" >> ./environment/.env.production
     echo "MOZART_TEST_URL=\"https://mozart-test-hallmark.razorpay.com/\"" >> ./environment/.env.production
