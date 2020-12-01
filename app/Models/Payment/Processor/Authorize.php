@@ -6291,6 +6291,8 @@ trait Authorize
     {
         $this->setRzpVaultForPayment($cardInput, $vault, $merchant, $input);
 
+        $this->setDummyCVVIfApplicable($cardInput);
+
         $cardCore = new Card\Core;
 
         $recurring = (($this->payment->isRecurring()) or
@@ -6351,6 +6353,19 @@ trait Authorize
         if (isset($cardInput[Card\Entity::VAULT]) === true)
         {
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CARDSAVING_INITIATED, $this->payment);
+        }
+    }
+
+    protected function setDummyCVVIfApplicable(array &$cardInput)
+    {
+        if ($this->payment->isCVVOptional() === true)
+        {
+            $cardInput[Card\Entity::CVV] = $cardInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv();
+
+            if (empty(trim($cardInput[Card\Entity::CVV])) === true)
+            {
+                $cardInput[Card\Entity::CVV] = Card\Entity::getDummyCvv();
+            }
         }
     }
 

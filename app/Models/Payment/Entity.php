@@ -1590,9 +1590,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             {
                 $reference17Json = json_decode($reference17, true);
 
-                if (array_key_exists('product_enrollment_id', $reference17Json) === true)
+                if (($this->getAuthenticationGateway() === Gateway::VISA_SAFE_CLICK) and
+                    (array_key_exists('product_enrollment_id', $reference17Json) === true))
                 {
                     $reference17 = $reference17Json['product_enrollment_id'];
+                }
+                else
+                {
+                    $reference17 = null;
                 }
             }
         }
@@ -1655,7 +1660,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 $productEnrollmentId = $this->getReference17();
 
-                if (isset($productEnrollmentId) === true)
+                if ((isset($productEnrollmentId) === true) and
+                    ($this->getAuthenticationGateway() === Gateway::VISA_SAFE_CLICK))
                 {
                     $acquirerData['product_enrollment_id'] = $productEnrollmentId;
                 }
@@ -2163,6 +2169,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return (($this->isCard()) and
             ($this->application === 'visasafeclick'));
+    }
+
+    public function isCVVOptional()
+    {
+        return ($this->isVisaSafeClickPayment() === true);
     }
 
     public function isGateway($gateway)

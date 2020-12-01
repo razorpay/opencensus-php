@@ -72,6 +72,13 @@ class TransactionFilter extends Terminal\Filter
 
             return false;
         }
+        else
+        {
+            if ($terminal['authentication_gateway'] === 'visasafeclick')
+            {
+                return false;
+            }
+        }
 
         return true;
     }

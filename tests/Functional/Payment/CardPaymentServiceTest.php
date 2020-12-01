@@ -1648,6 +1648,8 @@ class CardPaymentServiceTest extends TestCase
         $paymentArray['application'] = 'visasafeclick';
         $paymentArray['authentication'] = $authentication;
 
+        unset($paymentArray['card']['cvv']);
+
         $this->enableCpsConfig();
 
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
