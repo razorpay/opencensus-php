@@ -22,10 +22,16 @@ class VpaEventTest extends TestCase
                     'active'    => true,
                     'default'   => false,
                     'bank_account' => [
-                        'id'     => 'ba_ALC01bankAc002',
-                        'entity' => 'bank_account',
+                        'id'          => 'ba_ALC01bankAc002',
+                        'entity'      => 'bank_account',
 
-                    ]
+                    ],
+                    'device'       => [
+                        'id'          => 'device_ALC01device001',
+                        'entity'      => 'device',
+                        'customer_id' => 'cust_ArzpLocalCust1',
+                        'contact'     => '919988771111'
+                    ],
                 ], $event['payload']);
             }
         );
@@ -63,6 +69,42 @@ class VpaEventTest extends TestCase
         ]);
 
         $this->dontExpectAnyWebhookEvent();
+    }
+
+    public function testVpaDeleted()
+    {
+        $this->expectWebhookEvent(
+            'customer.vpa.deleted',
+            function (array $event)
+            {
+                $this->assertArraySubset([
+                    'entity'    => 'vpa',
+                    'active'    => true,
+                    'default'   => false,
+                    'bank_account' => [
+                        'id'     => 'ba_ALC01bankAc002',
+                        'entity' => 'bank_account',
+
+                    ],
+                    'device'    => [
+                        'id'     => 'device_ALC01device001',
+                        'entity' => 'device',
+                    ],
+                ], $event['payload']);
+            }
+        );
+
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
+
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->deleteVpa($vpa->getPublicId());
+
+        $this->assertTrue($vpa->refresh()->trashed());
     }
 }
 

@@ -284,4 +284,26 @@ class DeviceTest extends TestCase
         $this->assertTrue($transaction->refresh()->isCreated());
         $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }
+
+    public function testDeregisterEvents()
+    {
+        $this->expectWebhookEvent(
+            'customer.deregistration.completed',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'customer_id'   => 'cust_ArzpLocalCust1',
+                    'contact'       => '919988771111',
+                    'entity'        => 'device',
+                ], $event['payload']);
+
+                $this->assertStringStartsWith('device_', $event['payload']['id']);
+                $this->assertArrayNotHasKey('auth_token', $event['payload']);
+            }
+        );
+
+        $helper = $this->getDeviceHelper();
+
+        $helper->deregisterDevice();
+    }
 }

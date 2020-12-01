@@ -72,6 +72,9 @@ class EventServiceProvider extends ServiceProvider
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,
         ],
+        P2p\DeviceDeregistrationCompleted::class => [
+            Listeners\P2pWebhookListener::class,
+        ],
         P2p\TransactionCreated::class => [
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,
@@ -86,6 +89,9 @@ class EventServiceProvider extends ServiceProvider
             Listeners\P2pNotificationListener::class,
         ],
         P2p\VpaCreated::class        => [
+            Listeners\P2pWebhookListener::class,
+        ],
+        P2p\VpaDeleted::class        => [
             Listeners\P2pWebhookListener::class,
         ],
         P2p\DeviceCooldownCompleted::class => [

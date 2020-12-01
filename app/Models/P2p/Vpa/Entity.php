@@ -34,6 +34,7 @@ class Entity extends Base\Entity
     const ADDRESS          = 'address';
     const AVAILABLE        = 'available';
     const SUGGESTIONS      = 'suggestions';
+    const DEVICE           = 'device';
 
     /************** Entity Properties ************/
 
@@ -368,5 +369,14 @@ class Entity extends Base\Entity
             array_get($input, self::USERNAME),
             array_get($input, self::HANDLE)
         ]);
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        $array[self::DEVICE]  = $this->device->toArrayPublic();
+
+        return $array;
     }
 }

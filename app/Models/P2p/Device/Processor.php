@@ -229,6 +229,10 @@ class Processor extends Base\Processor
                 (new Beneficiary\Core)->deregister();
             });
 
+        $device = $this->context()->getDevice();
+
+        $this->app['events']->fire(new P2p\DeviceDeregistrationCompleted($this->context(), $device));
+
         return [
             Entity::SUCCESS => true,
         ];

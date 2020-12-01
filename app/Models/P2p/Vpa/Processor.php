@@ -236,6 +236,8 @@ class Processor extends Base\Processor
             $this->core->delete($vpa);
         });
 
+        $this->app['events']->fire(new P2p\VpaDeleted($this->context(), $vpa));
+
         return [
             Entity::SUCCESS     => true,
             Entity::ID          => $vpa->getPublicId(),

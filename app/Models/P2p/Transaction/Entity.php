@@ -791,6 +791,7 @@ class Entity extends Base\Entity
         $array[self::PAYER]         = array_except($this->payer->toArrayPublic(), self::BANK_ACCOUNT);
         $array[self::PAYEE]         = array_except($this->payee->toArrayPublic(), self::BANK_ACCOUNT);
         $array[self::BANK_ACCOUNT]  = $this->bankAccount->toArrayPublic();
+        $array[self::MODE]          = $this->getMode();
 
         return $array;
     }
