@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\Document\Type;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -22,8 +21,7 @@ class CancelledChequeOcr extends Base
     {
         return (
             ($this->merchantDetails->getBankDetailsDocVerificationStatus() === BvsValidationConstants::PENDING) and
-            ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::CANCELLED_CHEQUE) !== null) and
-            ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR) === true));
+            ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::CANCELLED_CHEQUE) !== null));
     }
 
     /**

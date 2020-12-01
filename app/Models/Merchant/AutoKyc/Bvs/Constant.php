@@ -51,6 +51,8 @@ class Constant
     const CANCELLED_CHEQUE_OCR_REG   = 'cancelled_cheque_ocr_reg';
     const CANCELLED_CHEQUE_OCR_UNREG = 'cancelled_cheque_ocr_unreg';
     const SHOP_ESTABLISHMENT_AUTH    = 'shop_establishment_auth';
+    const BANK_ACCOUNT_REG           = 'bank_account_reg';
+    const BANK_ACCOUNT_UNREG         = 'bank_account_unreg';
 
     //
     // Response fields
@@ -142,6 +144,10 @@ class Constant
             self::ARTEFACT_TYPE   => self::CIN,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
+        Entity::BANK_ACCOUNT_NUMBER => [
+            self::ARTEFACT_TYPE   => self::BANK_ACCOUNT,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
@@ -151,14 +157,15 @@ class Constant
         Type::PERSONAL_PAN                => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
         ],
-        Type::CANCELLED_CHEQUE            => [
-            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_CANCELLED_CHEQUE_OCR,
-        ],
+        Type::CANCELLED_CHEQUE            => [],
         Entity::SHOP_ESTABLISHMENT_NUMBER => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
         ],
         Constant::GSTIN                   => [],
         self::LLPIN                       => [],
         self::CIN                         => [],
+        Entity::BANK_ACCOUNT_NUMBER       => [
+            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PENNY_TESTING,
+        ],
     ];
 }

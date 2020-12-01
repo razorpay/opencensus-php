@@ -54,6 +54,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConst;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
@@ -300,8 +301,6 @@ class Core extends Base\Core
 
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
-        $this->triggerValidationRequests($merchant, $merchantDetails);
-
         // If a merchant does not have website or app, we would need to activate them
         // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
         // should be set to true only if one submits website details, there by will be able to
@@ -330,10 +329,9 @@ class Core extends Base\Core
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
-        //
-        // does penny testing for un-registered business type
-        //
         $this->attemptPennyTesting($merchantDetails, $merchant); // async
+
+        $this->triggerValidationRequests($merchant, $merchantDetails);
 
         $this->fireActivationTrigger($merchantDetails, $merchant);
 
@@ -2144,6 +2142,13 @@ class Core extends Base\Core
             return;
         }
 
+        $verifyBankDetailsThoughBvs = $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
+
+        if ($verifyBankDetailsThoughBvs === true)
+        {
+            return;
+        }
+
         (new PennyTesting())->triggerPennyTesting($merchantDetails);
     }
 
@@ -3417,9 +3422,10 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param string          $field // this key can refer to both (proof as well as identifier)
      *
+     * @return bool
      * @throws \RZP\Exception\LogicException
      */
-    public function updateDocumentVerificationStatus(Merchant\Entity $merchant, string $field)
+    public function updateDocumentVerificationStatus(Merchant\Entity $merchant, string $field): bool
     {
         $enabledVerificationDocuments = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
 
@@ -3432,7 +3438,7 @@ class Core extends Base\Core
             if ((empty($razorxExperiment) === false) and
                 (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $razorxExperiment) === false)
             {
-                return;
+                return false;
             }
 
             $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field]);
@@ -3451,6 +3457,8 @@ class Core extends Base\Core
 
             $statusUpdater->updateStatusToPending();
         }
+
+        return true;
     }
 
     /**

@@ -645,6 +645,8 @@ class PennyTesting extends Base\Core
 
     /**
      * Returns merchant attributes details that can be matched in case of penny testing
+     * Here The Order of Array Matters as BVS verification Rules and Enrichments are configured in such a way that
+     * First name should be PROMOTER_PAN_NAME and second should be second be COMPANY_PAN_NAME
      *
      * @param Entity $merchantDetails
      *

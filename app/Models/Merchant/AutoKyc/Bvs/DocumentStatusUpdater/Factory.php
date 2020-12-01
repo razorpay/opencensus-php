@@ -57,9 +57,7 @@ class Factory
 
             case Constant::BANK_ACCOUNT :
 
-                return $this->getStatusUpdater($merchant,
-                                               $validation,
-                                               Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS);
+                return $this->getStatusUpdaterForBankAccount($merchant, $validation);
 
             case Constant::AADHAAR :
             case Constant::VOTERS_ID:
@@ -140,5 +138,22 @@ class Factory
                 ValidationEntity::ARTEFACT_TYPE   => $artefactType,
                 ValidationEntity::VALIDATION_UNIT => $validationUnit
             ]);
+    }
+
+    public function getStatusUpdaterForBankAccount(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        $artefactType = $validation->getArtefactType();
+        $validationId = $validation->getValidationId();
+
+        if ($validation->getValidationUnit() === Constants::PROOF)
+        {
+            return new DefaultStatusUpdater(
+                $merchant,
+                Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS,
+                $artefactType,
+                $validationId);
+        }
+
+        return new BankAccount($merchant, $artefactType, $validationId);
     }
 }

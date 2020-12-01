@@ -17,6 +17,7 @@ class Factory
             new GstinAuth($merchant, $merchantDetails),
             new LlpinAuth($merchant, $merchantDetails),
             new CinAuth($merchant, $merchantDetails),
+            new BankAccount($merchant, $merchantDetails),
         ];
     }
 }

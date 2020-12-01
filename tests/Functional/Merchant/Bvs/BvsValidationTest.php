@@ -160,112 +160,198 @@ class BvsValidationTest extends TestCase
         $mid = $merchantDetail->getId();
 
         $capturedBvsValidation = $this->fixtures->create('bvs_validation',
-            [
-                'owner_id'      => $mid,
-                'artefact_type' => 'aadhaar',
-            ]);
+                                                         [
+                                                             'owner_id'      => $mid,
+                                                             'artefact_type' => 'aadhaar',
+                                                         ]);
 
         $this->fixtures->create('merchant_document',
-            [
-                'merchant_id'   => $mid,
-                'document_type' => 'aadhar_front',
-                'validation_id' => $capturedBvsValidation->getValidationId(),
-            ]);
+                                [
+                                    'merchant_id'   => $mid,
+                                    'document_type' => 'aadhar_front',
+                                    'validation_id' => $capturedBvsValidation->getValidationId(),
+                                ]);
 
-        //
-        // Poa_verification_status, activation_status are expected value used for validation
-        // MerchantDetailData is edit merchantDetails according to test case requirement.
-        //
-        // 1) POI status failed 2) form submitted false 3) activation status = null only
-        //
-        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
-            $capturedBvsValidation,
+        $possibleScenarios = [
             [
-                'poa_verification_status' => 'failed',              //expected status
-                'validation_status'       => 'failed',
-                'activation_status'       => null,                  //expected status
-            ],
-            ['merchant_id' => $mid]
-        );
-
-        //
-        // 1) POA status failed 2) form submitted true 3) bank details verification status = verified
-        //
-        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
-            $capturedBvsValidation,
-            [
-                'poa_verification_status' => 'failed',
-                'validation_status'       => 'failed',
-                'error_code'              => 'EXTERNAL_SERVICE_ERROR',
-                'activation_status'       => 'under_review',
+                'input'               => [
+                    'documentVerificationKey'    => 'poa_verification_status',
+                    'documentVerificationStatus' => 'failed',              //expected status
+                    'validation_status'          => 'failed',
+                    'activation_status'          => null,                  //expected status
+                ],
+                'merchantDetailsData' => ['merchant_id' => $mid]
             ],
             [
-                'merchant_id'       => $mid,
-                'submitted'         => 1,
-                'activation_status' => 'under_review',
-            ]
-        );
-
-        //
-        // 1) POA status failed 2) 3) activation status = under_review only
-        //
-        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
-            $capturedBvsValidation,
-            [
-                'poa_verification_status' => 'incorrect_details',
-                'validation_status'       => 'failed',
-                'error_code'              => 'VALIDATION_ERROR',
-                'activation_status'       => 'under_review',
+                'input'               => [
+                    'documentVerificationKey'    => 'poa_verification_status',
+                    'documentVerificationStatus' => 'failed',
+                    'validation_status'          => 'failed',
+                    'error_code'                 => 'EXTERNAL_SERVICE_ERROR',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'       => $mid,
+                    'submitted'         => 1,
+                    'activation_status' => 'under_review',
+                ]
             ],
             [
-                'merchant_id'                      => $mid,
-                'submitted'                        => 1,
-                'activation_status'                => 'under_review',
-                'bank_details_verification_status' => 'verified',
-                'poi_verification_status'          => 'verified',
-            ]
-        );
-
-        //
-        // 1) POA status Success 2) activation status = under_review only for registered businesses
-        //
-        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
-            $capturedBvsValidation,
-            [
-                'poa_verification_status' => 'verified',
-                'validation_status'       => 'success',
-                'error_code'              => '',
-                'activation_status'       => 'under_review',
+                'input'               => [
+                    'documentVerificationKey'    => 'poa_verification_status',
+                    'documentVerificationStatus' => 'incorrect_details',
+                    'validation_status'          => 'failed',
+                    'error_code'                 => 'VALIDATION_ERROR',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'                      => $mid,
+                    'submitted'                        => 1,
+                    'activation_status'                => 'under_review',
+                    'bank_details_verification_status' => 'verified',
+                    'poi_verification_status'          => 'verified',
+                ]
             ],
             [
-                'merchant_id'                      => $mid,
-                'submitted'                        => 1,
-                'activation_status'                => 'under_review',
-                'bank_details_verification_status' => 'verified',
-                'poi_verification_status'          => 'verified',
-            ]
-        );
-
-        //
-        // 1) POA status Success 2) 3) activation status = Activated only unregistered
-        //
-        $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
-            $capturedBvsValidation,
-            [
-                'poa_verification_status' => 'verified',
-                'validation_status'       => 'success',
-                'error_code'              => '',
-                'activation_status'       => 'activated',
+                'input'               => [
+                    'documentVerificationKey'    => 'poa_verification_status',
+                    'documentVerificationStatus' => 'verified',
+                    'validation_status'          => 'success',
+                    'error_code'                 => '',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'                      => $mid,
+                    'submitted'                        => 1,
+                    'activation_status'                => 'under_review',
+                    'bank_details_verification_status' => 'verified',
+                    'poi_verification_status'          => 'verified',
+                ]
             ],
             [
-                'merchant_id'                      => $mid,
-                'submitted'                        => 1,
-                'business_type'                    => 2,
-                'activation_status'                => 'under_review',
-                'bank_details_verification_status' => 'verified',
-                'poi_verification_status'          => 'verified',
-            ]
-        );
+                'input'               => [
+                    'documentVerificationKey'    => 'poa_verification_status',
+                    'documentVerificationStatus' => 'verified',
+                    'validation_status'          => 'success',
+                    'error_code'                 => '',
+                    'activation_status'          => 'activated',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'                      => $mid,
+                    'submitted'                        => 1,
+                    'business_type'                    => 2,
+                    'activation_status'                => 'under_review',
+                    'bank_details_verification_status' => 'verified',
+                    'poi_verification_status'          => 'verified',
+                ]
+            ],
+        ];
+
+        foreach ($possibleScenarios as $possibleScenario)
+        {
+            $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+                $capturedBvsValidation,
+                $possibleScenario['input'],
+                $possibleScenario['merchantDetailsData']
+            );
+        }
+    }
+
+    public function testUpdateBvsValidationStatusBankDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mid = $merchantDetail->getId();
+
+        $capturedBvsValidation = $this->fixtures->create('bvs_validation',
+                                                         [
+                                                             'owner_id'      => $mid,
+                                                             'artefact_type' => 'bank_account',
+                                                         ]);
+
+        $possibleScenarios = [
+            [
+                'input'               => [
+                    'documentVerificationKey'    => 'bank_details_verification_status',
+                    'documentVerificationStatus' => 'failed',              //expected status
+                    'validation_status'          => 'failed',
+                    'activation_status'          => null,                  //expected status
+                ],
+                'merchantDetailsData' => ['merchant_id' => $mid]
+            ],
+            [
+                'input'               => [
+                    'documentVerificationKey'    => 'bank_details_verification_status',
+                    'documentVerificationStatus' => 'failed',
+                    'validation_status'          => 'failed',
+                    'error_code'                 => 'EXTERNAL_SERVICE_ERROR',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'       => $mid,
+                    'submitted'         => 1,
+                    'activation_status' => 'under_review',
+                ]
+            ],
+            [
+                'input'               => [
+                    'documentVerificationKey'    => 'bank_details_verification_status',
+                    'documentVerificationStatus' => 'incorrect_details',
+                    'validation_status'          => 'failed',
+                    'error_code'                 => 'VALIDATION_ERROR',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'                      => $mid,
+                    'submitted'                        => 1,
+                    'activation_status'                => 'under_review',
+                    'bank_details_verification_status' => 'verified',
+                    'poi_verification_status'          => 'verified',
+                ]
+            ],
+            [
+                'input'               => [
+                    'documentVerificationKey'    => 'bank_details_verification_status',
+                    'documentVerificationStatus' => 'verified',
+                    'validation_status'          => 'success',
+                    'error_code'                 => '',
+                    'activation_status'          => 'under_review',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'             => $mid,
+                    'submitted'               => 1,
+                    'activation_status'       => 'under_review',
+                    'poa_verification_status' => 'verified',
+                    'poi_verification_status' => 'verified',
+                ]
+            ],
+            [
+                'input'               => [
+                    'documentVerificationKey'    => 'bank_details_verification_status',
+                    'documentVerificationStatus' => 'verified',
+                    'validation_status'          => 'success',
+                    'error_code'                 => '',
+                    'activation_status'          => 'activated',
+                ],
+                'merchantDetailsData' => [
+                    'merchant_id'             => $mid,
+                    'submitted'               => 1,
+                    'business_type'           => 2,
+                    'activation_status'       => 'under_review',
+                    'poa_verification_status' => 'verified',
+                    'poi_verification_status' => 'verified',
+                ]
+            ],
+        ];
+
+        foreach ($possibleScenarios as $possibleScenario)
+        {
+            $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
+                $capturedBvsValidation,
+                $possibleScenario['input'],
+                $possibleScenario['merchantDetailsData']
+            );
+        }
     }
 
     public function updateBvsValidationStatusAndCheckMerchantDetailsPoa($capturedBvsValidation,
@@ -280,8 +366,8 @@ class BvsValidationTest extends TestCase
         $this->verifyDocumentVerificationStatus(
             $capturedBvsValidation,
             $mid,
-            'poa_verification_status',
-            $input['poa_verification_status'],
+            $input['documentVerificationKey'],
+            $input['documentVerificationStatus'],
             $input['validation_status'],
             $input['error_code'] ?? ''
         );

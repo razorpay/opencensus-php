@@ -519,7 +519,7 @@ class MerchantDetailTest extends OAuthTestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
 
         $merchant       = $merchantDetail->merchant->reload();
-        
+
         $methods = $merchant->methods->reload();
 
         $expectedMethods = [
@@ -565,7 +565,7 @@ class MerchantDetailTest extends OAuthTestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
 
         $merchant       = $merchantDetail->merchant;
-        
+
         $methods = $merchant->methods->reload();
 
         $this->assertArraySelectiveEquals($oldMethods, $methods->toArray());
@@ -1994,7 +1994,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
-        
+
         $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
 
         $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], true);
@@ -2525,6 +2525,22 @@ class MerchantDetailTest extends OAuthTestCase
                                                   $mid,
                                                   [
                                                       'artefact_type'   => 'shop_establishment',
+                                                      'validation_unit' => 'identifier'
+                                                  ]);
+    }
+
+    public function testVerifyBvsTriggerPostFormSubmissionForBankDetails()
+    {
+        $mid = '1cXSLlUU8V9sXl';
+
+        $input = ['merchant_id' => $mid];
+
+        $this->mockRazorX('testSubmit', 'bvs_penny_testing', 'on');
+
+        $this->submitL2FormAndVerifyBvsValidation($input,
+                                                  $mid,
+                                                  [
+                                                      'artefact_type'   => 'bank_account',
                                                       'validation_unit' => 'identifier'
                                                   ]);
     }
