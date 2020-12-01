@@ -114,81 +114,6 @@ class Service extends Base\Service
         );
     }
 
-    public function getTickets(array $input): array
-    {
-        $page = $input[Constants::PAGE] ?? 1;
-
-        $status = $input[Constants::STATUS] ?? null;
-
-        // Adding Merchant ID in query with required prefix
-        $queryString = '"custom_string:' . $this->getQueryParamMerchantIdForSearchAPI();
-
-        // Adding status filter if necessary
-        if (empty($status) === false)
-        {
-            $queryString .= ' AND (';
-
-            if (is_array($status) === true)
-            {
-                foreach ($status as $index => $value)
-                {
-                    $queryString .= ($index === 0) ? 'status:' . $value : ' OR status:' . $value;
-                }
-            }
-            else
-            {
-                $queryString .= 'status:' . $status;
-            }
-
-            $queryString .= ')';
-        }
-
-        $queryString .= '"';
-
-        $queryParams = [
-            Constants::QUERY => $queryString,
-            Constants::PAGE  => $page
-        ];
-
-        $allTickets = [];
-
-        foreach (self::FRESKDESK_INSTANCES as $fdInstance => $url)
-        {
-            $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
-
-            $results = $response[Constants::RESULTS] ?? [];
-
-            // Adding FD instance in each ticket
-            array_walk(
-                $results,
-                function(&$value, $key, $fdInstanceKey) {
-                    $value[Constants::FD_INSTANCE] = $fdInstanceKey;
-                },
-                $fdInstance
-            );
-
-            $allTickets = array_merge($allTickets, $results);
-        }
-
-        // Sorting the tickets in descending order of created_at
-        $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
-
-        //
-        // Order tickets by the following buckets
-        // 1. Awaiting your response - MERCHANT_ACTION_STATUSES
-        // 2. Active & Work in Progress - ACTIVE_STATUSES
-        // 3. All other tickets
-        //
-        $statusGroupedAndOrderedTickets = $this->groupTicketsInBucketsAndOrderFinalList($allTickets);
-
-        $ticketsResponse = [
-            Constants::RESULTS => $statusGroupedAndOrderedTickets,
-            Constants::TOTAL   => count($statusGroupedAndOrderedTickets)
-        ];
-
-        return $ticketsResponse;
-    }
-
     /**
      * @param array $input
      * @param array $return
@@ -217,65 +142,6 @@ class Service extends Base\Service
         $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
 
         return $ticketCreateResponse;
-    }
-
-    public function getConversations(array $input): array
-    {
-        $page = $input[Constants::PAGE] ?? 1;
-
-        $perPage = $input[Constants::PER_PAGE] ?? 10;
-
-        $ticketId = $input[Constants::TICKET_ID];
-
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
-
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
-
-        $queryParams = [
-            Constants::PAGE     => $page,
-            Constants::PER_PAGE => $perPage
-        ];
-
-        $response = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($ticketId, $queryParams, $url);
-
-        return $response;
-    }
-
-    public function getTicketWithStats($ticketId, array $input): array
-    {
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
-
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
-
-        $ticketWithStats = $this->app[Constants::FRESHDESK_CLIENT]->getTicketWithStats($ticketId, $url);
-
-        if (empty($ticketWithStats) === false)
-        {
-            $ticketWithStats[Constants::FD_INSTANCE] = $fdInstance;
-        }
-
-        return $ticketWithStats ?? [];
-    }
-
-    public function postTicketReply($ticketId, array $input): array
-    {
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
-
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
-
-        unset($input[Constants::FD_INSTANCE]);
-
-        // Converting user id to int - it comes as a string from FE sometimes
-        if (isset($input[Constants::USER_ID]) === true)
-        {
-            $input[Constants::USER_ID] += 0;
-        }
-
-        $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketId, $input, $url);
-
-        $ticketReplyResponse[Constants::FD_INSTANCE] = $fdInstance;
-
-        return $ticketReplyResponse;
     }
 
     /**
@@ -436,6 +302,211 @@ class Service extends Base\Service
         ];
     }
 
+    public function postTicketV2($type, $input)
+    {
+        $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
+
+        $input = $this->$function($input);
+
+        $fdInstance = $this->getFdInstance($input);
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        (new Validator)->validateInput('create_support_dashboard_ticket', $input);
+
+        $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
+
+        $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
+
+        $this->validateTicketCreateResponse($ticketCreateResponse);
+
+        $ticketEntity = (new Core)->create([
+            Entity::TICKET_ID       => stringify($ticketCreateResponse['id']),
+            Entity::TICKET_DETAILS  => Type::SUPPORT_DASHBOARD,
+            Entity::TYPE            => Type::SUPPORT_DASHBOARD,
+        ], $this->merchant->getId(), true);
+
+        return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity->getId());
+    }
+
+    public function getTicket($id, array $input, $type): array
+    {
+        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE        => $type,
+            Entity::ID          => $id,
+        ], $this->merchant->getId())->firstOrFail();
+
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $ticketWithStats = $this->app[Constants::FRESHDESK_CLIENT]->getTicketWithStats($ticketEntity->getTicketId(), $url);
+
+        if (empty($ticketWithStats) === false)
+        {
+            $ticketWithStats[Constants::FD_INSTANCE] = $fdInstance;
+        }
+
+        $response = $ticketWithStats ?? [];
+
+        return $this->rewriteFreshdeskTicket($response, $ticketEntity->getId());
+    }
+
+    public function getTickets(array $input, $type)
+    {
+        $input[Constants::PAGE] = $input[Constants::PAGE] ?? 1;
+
+        $input[Constants::STATUS] = $input[Constants::STATUS] ?? null;
+
+        (new Validator)->validateInput('get_' . studly_case($type) . '_tickets' , $input);
+
+        $queryString = $this->buildQueryStringForGetTickets($input[Constants::STATUS]);
+
+        $queryParams = [
+            Constants::QUERY => $queryString,
+            Constants::PAGE  => $input[Constants::PAGE],
+        ];
+
+        $allTickets = [];
+
+        foreach (self::FRESKDESK_INSTANCES as $fdInstance => $url)
+        {
+            $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
+
+            $results = $response[Constants::RESULTS] ?? [];
+
+            // Adding FD instance in each ticket
+            array_walk(
+                $results,
+                function(&$value, $key, $fdInstanceKey) {
+                    $value[Constants::FD_INSTANCE] = $fdInstanceKey;
+                },
+                $fdInstance
+            );
+
+            $allTickets = array_merge($allTickets, $results);
+        }
+
+        // Sorting the tickets in descending order of created_at
+        $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
+
+        //
+        // Order tickets by the following buckets
+        // 1. Awaiting your response - MERCHANT_ACTION_STATUSES
+        // 2. Active & Work in Progress - ACTIVE_STATUSES
+        // 3. All other tickets
+        //
+        $statusGroupedAndOrderedTickets = $this->groupTicketsInBucketsAndOrderFinalList($allTickets);
+
+        $rewrittenTickets = $this->rewriteFreshdeskTicketsBulk($statusGroupedAndOrderedTickets, $type);
+
+        $ticketsResponse = [
+            Constants::RESULTS => $rewrittenTickets,
+            Constants::TOTAL   => count($rewrittenTickets)
+        ];
+
+        return $ticketsResponse;
+    }
+
+    public function getConversations($id, array $input, $type): array
+    {
+        $input[Constants::PAGE] = $input[Constants::PAGE] ?? 1;
+
+        $input[Constants::PER_PAGE] = $input[Constants::PER_PAGE] ?? 10;
+
+        $input[Constants::FD_INSTANCE] = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        (new Validator)->validateInput('get_' . studly_case($type) . '_conversations', $input);
+
+        $url = self::FRESKDESK_INSTANCES[$input[Constants::FD_INSTANCE]];
+
+        $queryParams = [
+            Constants::PAGE     => $input[Constants::PAGE],
+            Constants::PER_PAGE => $input[Constants::PER_PAGE]
+        ];
+
+        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE        => $type,
+            Entity::ID          => $id,
+        ], $this->merchant->getId())->firstOrFail();
+
+
+        $conversations = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($ticketEntity->getTicketId(), $queryParams, $url);
+
+        return $this->rewriteFreshdeskConversations($conversations, $ticketEntity);
+    }
+
+    public function postTicketReply($id, array $input, $type): array
+    {
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        unset($input[Constants::FD_INSTANCE]);
+
+        // Converting user id to int - it comes as a string from FE sometimes
+        if (isset($input[Constants::USER_ID]) === true)
+        {
+            $input[Constants::USER_ID] += 0;
+        }
+
+        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket_reply', $input);
+
+        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE        => $type,
+            Entity::ID          => $id,
+        ], $this->merchant->getId())->firstOrFail();
+
+
+        $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $input, $url);
+
+        $ticketReplyResponse[Constants::FD_INSTANCE] = $fdInstance;
+
+        return $this->rewriteFreshdeskTicketReply($ticketReplyResponse, $ticketEntity);
+    }
+
+    public function postGrievance($id, $input, $type)
+    {
+        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE        => $type,
+            Entity::ID          => $id,
+        ], $this->merchant->getId())->firstOrFail();
+
+
+        (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
+
+        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $data = [
+            'status'        => 2,
+            'priority'      => 4, //todo move to constants
+        ];
+
+        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketEntity->getTicketId(), $data, $url);
+
+        $this->validateGrievanceResponse($ticket, $input['description']);
+
+        return $this->rewriteFreshdeskTicket($ticket, $ticketEntity->getId());
+    }
+
+    protected function validateTicketCreateResponse($response)
+    {
+        if (isset($response['id']) === true)
+        {
+            return;
+        }
+
+        if (isset($response['errors']))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED, null, $response['errors']);
+        }
+
+        throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR);
+
+    }
+
     protected function validateGrievanceResponse($response)
     {
         if ((isset($response['status']) === false) or ($response['status'] !== 2))
@@ -547,6 +618,8 @@ class Service extends Base\Service
 
         return $statusGroupedAndOrderedTickets;
     }
+
+
 
     protected function preProcessInputCustomer(array &$input): string
     {
@@ -691,5 +764,155 @@ class Service extends Base\Service
         }
 
         return $customFields;
+    }
+
+    protected function buildQueryStringForGetTickets($status): string
+    {
+        // Adding Merchant ID in query with required prefix
+        $queryString = '"custom_string:' . $this->getQueryParamMerchantIdForSearchAPI();
+
+        // Adding status filter if necessary
+        if (empty($status) === false) {
+            $queryString .= ' AND (';
+
+            if (is_array($status) === true) {
+                foreach ($status as $index => $value) {
+                    $queryString .= ($index === 0) ? 'status:' . $value : ' OR status:' . $value;
+                }
+            } else {
+                $queryString .= 'status:' . $status;
+            }
+
+            $queryString .= ')';
+        }
+
+        $queryString .= '"';
+
+        return $queryString;
+    }
+
+    protected function rewriteFreshdeskTicket(array $response, $newTicketId)
+    {
+        if (isset($response['id']) === true)
+        {
+            $response['id'] = $newTicketId;
+        }
+
+        return $response;
+    }
+
+    protected function rewriteFreshdeskConversations($conversations, $ticketEntity)
+    {
+        return array_map(function ($conversation) use ($ticketEntity) {
+            return $this->rewriteFreshdeskConversation($conversation, $ticketEntity);
+        }, $conversations);
+    }
+
+    protected function rewriteFreshdeskConversation($conversation, $ticketEntity)
+    {
+        if (isset($conversation['id']) === true)
+        {
+            $conversation['id'] = 'redacted';
+        }
+
+        if (isset($conversation['ticket_id']) === true)
+        {
+            $conversation['ticket_id'] = $ticketEntity->getId();
+        }
+
+        return $conversation;
+    }
+
+    protected function rewriteFreshdeskTicketReply($ticketReplyResponse, $ticketEntity)
+    {
+        if (isset($ticketReplyResponse['id']) === true)
+        {
+            $ticketReplyResponse['id'] = 'redacted';
+        }
+
+        if (isset($ticketReplyResponse['ticket_id']) === true)
+        {
+            $ticketReplyResponse['ticket_id'] = $ticketEntity->getId();
+        }
+
+        return $ticketReplyResponse;
+    }
+
+    /**
+     * @param $status
+     * @return string
+     */
+
+
+    protected function rewriteFreshdeskTicketsBulk(array $ticketsResponse, $type)
+    {
+        $freshdeskTicketIds = [];
+
+        foreach ($ticketsResponse as $ticket)
+        {
+            array_push($freshdeskTicketIds, $ticket['id']);
+        }
+
+        $freshdeskTicketIds = array_values(array_unique($freshdeskTicketIds));
+
+        if (count($freshdeskTicketIds) === 0)
+        {
+            return [];
+        }
+
+
+        $tickets = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TICKET_ID   => $freshdeskTicketIds,
+            Entity::TYPE        => $type,
+        ], $this->merchant->getId());
+
+
+
+
+        $freshdeskTicketIdRazorpayTicketIdMap = [];
+
+        foreach($tickets as $ticket)
+        {
+            $freshdeskTicketIdRazorpayTicketIdMap[$ticket->getTicketId()] = $ticket->getId();
+        }
+
+        $response = [];
+
+        foreach ($ticketsResponse as $ticket)
+        {
+            if (isset($ticket['id']) === false)
+            {
+                continue;
+            }
+
+            $ticket['id'] = stringify($ticket['id']);
+
+            if (array_key_exists($ticket['id'], $freshdeskTicketIdRazorpayTicketIdMap) === false)
+            {
+                continue;
+            }
+
+            $rewrittenTicket = $this->rewriteFreshdeskTicket($ticket, $freshdeskTicketIdRazorpayTicketIdMap[$ticket['id']]);
+
+            array_push($response, $rewrittenTicket);
+        }
+
+        return $response;
+    }
+
+
+    protected function makeInputForSupportDashboardPostTicket($input)
+    {
+        $input['email'] = $this->merchant->getEmail();
+
+        $input['name'] = $this->merchant->getName();
+
+        $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
+
+        $input['custom_fields']['cf_merchant_id_dashboard'] = $this->getQueryParamMerchantIdForSearchAPI();
+
+        $input['priority'] = 1;
+
+        return $input;
     }
 }

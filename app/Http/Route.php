@@ -2008,10 +2008,14 @@ class Route
 
         'fd_reserve_balance_ticket'               => ['post',      'fd/reserve_balance/tickets',                                 'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
         'fd_reserve_balance_ticket_status'        => ['get',       'fd/reserve_balance/tickets/status',                          'FreshdeskTicketController@getReserveBalanceTicketStatus'     ],
-        'fd_fetch_tickets'                        => ['get',       'fd/tickets',                                                 'FreshdeskTicketController@getTickets'                        ],
-        'fd_fetch_converations'                   => ['get',       'fd/conversations',                                           'FreshdeskTicketController@getConversations'                  ],
-        'fd_fetch_ticket'                         => ['get',       'fd/tickets/{ticket_id}',                                     'FreshdeskTicketController@getTicketWithStats'                ],
-        'fd_post_ticket_reply'                    => ['post',      'fd/tickets/{ticket_id}/reply',                               'FreshdeskTicketController@postTicketReply'                   ],
+
+        'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
+        'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
+        'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
+        'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
+        'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
+        'fd_post_ticket_grievance'                => ['post',      'fd/{type}/ticket/{id}/grievance',                           'FreshdeskTicketController@postTicketGrievance'                ],
+
         'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
         'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
 
@@ -3182,6 +3186,14 @@ class Route
 
         'fd_reserve_balance_ticket',
         'fd_reserve_balance_ticket_status',
+
+        'fd_create_ticket',
+        'fd_fetch_tickets',
+        'fd_fetch_converations',
+        'fd_fetch_ticket',
+        'fd_post_ticket_reply',
+        'fd_post_ticket_grievance',
+
 
         'entity_bulk_update',
         'user_resend_verification_otp',

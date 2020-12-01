@@ -1,0 +1,217 @@
+<?php
+
+
+return [
+    'testGetById' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/razorpayid0012',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'id'    => 'razorpayid0012',
+                'body'  => 'some random body 12',
+
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testGetByIdProhibitedShouldFail' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/razorpayid0012',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'No db records found',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_NO_RECORDS_FOUND',
+        ],
+    ],
+
+    'testFetchTicketsForMerchant' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 4,
+                'results' => [
+                    [
+                        'id'    => 'razorpayid0012',
+                    ],
+                    [
+                        'id'    => 'razorpayid0034',
+                    ],
+                    [
+                        'id'    => 'razorpayid0012',
+                    ],
+                    [
+                        'id'    => 'razorpayid0034',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetConversationsForTicket' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/razorpayid0012/conversations',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'body'=> 'some random body1',
+                    'id'=> 'redacted',
+                    'ticket_id'=> 'razorpayid0012',
+                ],
+                [
+                    'body'=> 'some random body2',
+                    'id'=> 'redacted',
+                    'ticket_id'=> 'razorpayid0012',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetConversationsProhibitedShouldFail' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/razorpayid0012',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'No db records found',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_NO_RECORDS_FOUND',
+        ],
+    ],
+
+    'testReplyToTicket' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/razorpayid0012/reply',
+            'method'  => 'POST',
+            'content' => [
+                'user_id'=> '890',
+                'body'   => 'random reply',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'redacted',
+                'user_id'   => 890,
+                'body'      => 'random reply',
+                'ticket_id' => 'razorpayid0012',
+
+            ],
+        ],
+    ],
+    'testReplyToTicketProhibitedShouldFail' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/razorpayid0012/reply',
+            'method'  => 'POST',
+            'content' => [
+                'user_id'=> '890',
+                'body'   => 'random reply',
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'No db records found',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_NO_RECORDS_FOUND',
+        ],
+    ],
+
+    'testRaiseGrievanceOnTicket' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/razorpayid0012/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'random grievance',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'razorpayid0012',
+                'description'  => 'random grievance',
+                'status'       => 2,
+                'priority'     => 4,
+            ],
+        ],
+    ],
+
+    'testCreateTicket' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testCreateTicketFreshdeskError' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Invalid',
+                    'cf_requestor_subcategory'    => 'activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'Something went wrong, please try again after sometime.',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED',
+        ],
+    ],
+];

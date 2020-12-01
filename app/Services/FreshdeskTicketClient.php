@@ -27,6 +27,11 @@ class FreshdeskTicketClient
     const UPDATE_TICKET       = 'tickets/%s';
     const UPDATE_NOTE         = 'tickets/%s/notes';
 
+    const REQUEST_REDACT_FIELDS = [
+        'content',
+        'headers',
+    ];
+
     public function __construct(Application $app)
     {
         $this->app    = $app;
@@ -296,7 +301,7 @@ class FreshdeskTicketClient
         return $request;
     }
 
-    private function getResponse(array $request) : \Requests_Response
+    protected function getResponse($request) : \Requests_Response
     {
         $response = Requests::request(
             $request['url'],
@@ -465,13 +470,7 @@ class FreshdeskTicketClient
         }
         else
         {
-            $response = Requests::request(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $request['method'],
-                $request['options']
-            );
+            $response = $this->getResponse($request);
 
             $responseBody = $response->body;
         }
@@ -535,7 +534,10 @@ class FreshdeskTicketClient
 
     private function getRedactedRequest(array $request) : array
     {
-        unset($request['headers']['Authorization']);
+        foreach (self::REQUEST_REDACT_FIELDS as $field)
+        {
+            unset($request[$field]);
+        }
 
         return $request;
     }

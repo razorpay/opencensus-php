@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\FreshdeskTicket;
 class Type
 {
     const RESERVE_BALANCE_ACTIVATE = 'reserve_balance_activate';
+    const SUPPORT_DASHBOARD        = 'support_dashboard';
 
     public static function exists(string $type): bool
     {

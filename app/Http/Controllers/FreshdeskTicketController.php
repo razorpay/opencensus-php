@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\Merchant\FreshdeskTicket;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Service as CustomerDisputeFreshdeskTicketService;
 
@@ -41,20 +42,6 @@ class FreshdeskTicketController extends Controller
     }
 
     /**
-     * Get Freshdesk Tickets for the given merchant
-     *
-     * @return mixed
-     */
-    public function getTickets()
-    {
-        $input = Request::all();
-
-        $response = (new FreshdeskTicketService)->getTickets($input);
-
-        return ApiResponse::json($response);
-    }
-
-    /**
      * Create Freshdesk Ticket
      *
      * @return mixed
@@ -64,48 +51,6 @@ class FreshdeskTicketController extends Controller
         $input = Request::all();
 
         $response = (new FreshdeskTicketService)->postTicket($input);
-
-        return ApiResponse::json($response);
-    }
-
-    /**
-     * Get Freshdesk Ticket conversations for the given ticket id
-     *
-     * @return mixed
-     */
-    public function getConversations()
-    {
-        $input = Request::all();
-
-        $response = (new FreshdeskTicketService)->getConversations($input);
-
-        return ApiResponse::json($response);
-    }
-
-    /**
-     * Get Freshdesk Ticket with stats for the given ticket id
-     *
-     * @return mixed
-     */
-    public function getTicketWithStats($ticketId)
-    {
-        $input = Request::all();
-
-        $response = (new FreshdeskTicketService)->getTicketWithStats($ticketId, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    /**
-     * Post Freshdesk Ticket conversation reply
-     *
-     * @return mixed
-     */
-    public function postTicketReply($ticketId)
-    {
-        $input = Request::all();
-
-        $response = (new FreshdeskTicketService)->postTicketReply($ticketId, $input);
 
         return ApiResponse::json($response);
     }
@@ -150,4 +95,59 @@ class FreshdeskTicketController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postTicketV2($type)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postTicketV2($type, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getTickets()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getTickets($input, FreshdeskTicket\Type::SUPPORT_DASHBOARD);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getConversations($type, $id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getConversations($id, $input, $type);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getTicket($type, $id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getTicket($id, $input, $type);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postTicketReply($type, $id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postTicketReply($id, $input, $type);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postTicketGrievance($type, $id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService())->postGrievance($id, $input, $type);
+
+        return ApiResponse::json($response);
+    }
+
 }

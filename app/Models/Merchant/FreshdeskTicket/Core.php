@@ -33,22 +33,26 @@ class Core extends Base\Core
         $this->redis = $this->app['cache'];
     }
 
-    public function create(array $input, string $merchantId): Entity
+    public function create(array $input, string $merchantId, $allowMultiple = false): Entity
     {
         $params = ['type' => $input[Entity::TYPE]];
 
-        $tickets = $this->repo->merchant_freshdesk_tickets->fetch($params, $merchantId);
 
-        if ($tickets->count() !== 0)
+        if ($allowMultiple === false)
         {
-            throw new BadRequestValidationFailureException(
-                ErrorCode::FRESHDESK_TICKET_ALREADY_EXISTS,
-                null,
-                [
-                    'merchant_id' => $merchantId,
-                    'type' => $input[Entity::TYPE]
-                ]
-            );
+            $tickets = $this->repo->merchant_freshdesk_tickets->fetch($params, $merchantId);
+
+            if ($tickets->count() !== 0)
+            {
+                throw new BadRequestValidationFailureException(
+                    ErrorCode::FRESHDESK_TICKET_ALREADY_EXISTS,
+                    null,
+                    [
+                        'merchant_id' => $merchantId,
+                        'type' => $input[Entity::TYPE]
+                    ]
+                );
+            }
         }
 
         $ticketEntity = new Entity;
