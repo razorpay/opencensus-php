@@ -8,7 +8,7 @@ use Config;
 
 use Database\Connection;
 use Razorpay\Trace\Logger as Trace;
-
+use RZP\Base\Database\ConnectionHeartbeatLagChecker;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
@@ -986,9 +986,18 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
+        $connection = Connection::DATA_WAREHOUSE_LIVE;
+
+        if ($mode !== Mode::LIVE)
+        {
+            $connection = Connection::DATA_WAREHOUSE_TEST;
+        }
+
         $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), $experiment, $mode);
 
-        return ($experimentResult === 'enable');
+        $isReplicationLag = (new ConnectionHeartbeatLagChecker($connection))->isConnectionLagging();
+
+        return ($experimentResult === 'enable') && ($isReplicationLag === false);
     }
 
     protected function getDataWarehouseConnection()
@@ -1005,7 +1014,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
-    protected function getDataWarehouseConnectionWithRazorX()
+    protected function getDataWarehouseConnectionWithReplicationLagCheck()
     {
         if ($this->useDataWarehouseConnection(self::ASYNC_PROCESS_FETCH) === true)
         {

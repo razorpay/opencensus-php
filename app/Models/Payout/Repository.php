@@ -1314,7 +1314,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn    = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
@@ -1354,7 +1354,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)

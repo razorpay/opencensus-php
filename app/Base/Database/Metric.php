@@ -9,8 +9,9 @@ final class Metric
      * Method: Count
      * Dimensions: Master
      */
-    const ENFORCE_MASTER_CONNECTION = 'enforce_master_connection';
-    const HEARTBEAT_REPLICA_LAG     = 'heartbeat_replica_lag';
+    const ENFORCE_MASTER_CONNECTION     = 'enforce_master_connection';
+    const HEARTBEAT_REPLICA_LAG         = 'heartbeat_replica_lag';
+    const DATAWAREHOUSE_REPLICATION_LAG = 'datawarehouse_replication_lag';
 
     // ------------------------- dimensions ------------------------- //
 

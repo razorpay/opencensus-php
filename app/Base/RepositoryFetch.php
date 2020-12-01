@@ -932,7 +932,7 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        if (($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_LIVE) or ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_TEST))
+        if (($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_LIVE) and ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_TEST))
         {
             $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
         }

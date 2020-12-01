@@ -227,7 +227,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
@@ -1159,7 +1159,7 @@ class Repository extends Base\Repository
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
@@ -1383,7 +1383,7 @@ class Repository extends Base\Repository
 
     public function getPaymentVolumeBetweenTimestamp($from, $to)
     {
-        $vol = $this->newQueryWithConnection($this->getDataWarehouseConnectionWithRazorX())
+        $vol = $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->betweenTime($from, $to)
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
