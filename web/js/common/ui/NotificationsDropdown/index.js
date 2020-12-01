@@ -71,15 +71,22 @@ export default class NotificationsDropdown extends Component {
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
     const { notifications } = this.state;
+    const ID = [],
+      readID = [],
+      unreadID = [];
 
     let totalUnread = 0;
     for (let i = 0; i < notifications.length; i++) {
       const notifStartTS = notifications[i].start_ts;
       const notifEndTS = notifications[i].end_ts;
+      const notifID = notifications[i].id;
 
+      if (notifID) ID.push(notifID);
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
         totalUnread++;
-      }
+
+        if (notifID) unreadID.push(notifID);
+      } else if (notifID) readID.push(notifID);
     }
 
     trackLoad(totalUnread);
@@ -87,7 +94,13 @@ export default class NotificationsDropdown extends Component {
 
     if (totalUnread) {
       const tracking = this.props.tracking;
-      tracking.trackEvent(window.rzpQ.merchantActions().success('display.notification.bubble'));
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('display.notification.bubble', {
+          ID,
+          readID,
+          unreadID,
+        }),
+      );
     }
   }
 
@@ -109,8 +122,25 @@ export default class NotificationsDropdown extends Component {
 
   onShow = () => {
     const tracking = this.props.tracking;
+    const ID = [],
+      readID = [],
+      unreadID = [];
+
+    this.state.notifications.forEach((notification) => {
+      const notifID = notification.id;
+
+      if (notifID) {
+        ID.push(notifID);
+        readID.push(notifID);
+      }
+    });
+
     tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab'),
+      window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab', {
+        ID,
+        readID,
+        unreadID,
+      }),
     );
 
     trackExpand(this.state.totalUnread);
@@ -208,6 +238,7 @@ export default class NotificationsDropdown extends Component {
     const { showHubSpotCAForm } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
+      'TwoStepVerification2020',
       'upiAutopay',
       'projectNitro',
       'paymentButton_GTM',

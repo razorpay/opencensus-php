@@ -32,6 +32,8 @@ class Constants
             'start_ts'    => 1588876200,
             'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/2fa.svg',
+            'track_event' => true,
+            'id'          => 'TwoStepVerification2020',
             'buttons'     => [
                 [
                     'type'  => 'button',
