@@ -530,6 +530,21 @@ class Error extends Support\Fluent
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getReason()
+    {
+        return $this->getAttribute(self::REASON);
+    }
+
+    public function getSource()
+    {
+        return $this->getAttribute(self::SOURCE);
+    }
+
+    public function getStep()
+    {
+        return $this->getAttribute(self::STEP);
+    }
+
     public function getGatewayErrorCode()
     {
         return $this->getAttribute(self::GATEWAY_ERROR_CODE);

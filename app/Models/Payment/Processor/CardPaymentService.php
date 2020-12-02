@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Gateway\Base\Action;
 use Razorpay\Trace\Logger as Trace;
 
@@ -159,14 +160,31 @@ trait CardPaymentService
         }
         catch (Exception\BaseException $e)
         {
-            $errorCode = $e->getError()->getPublicErrorCode();
+            $error = $e->getError();
 
-            $internalErrorCode = $e->getError()->getInternalErrorCode();
+            $errorCode = $error->getPublicErrorCode();
+
+            $internalErrorCode = $error->getInternalErrorCode();
+
+            $error->setDetailedError($internalErrorCode, Payment\Method::CARD);
+
+            $step = $error->getStep();
+
+            $source = $error->getSource();
+
+            $reason = $error->getReason();
+
+            $internalErrorDetails = [
+                'step'                  => $step,
+                'reason'                => $reason,
+                'source'                => $source,
+                'internal_error_code'   => $internalErrorCode,
+            ];
 
             //TODO: Remove this later
             try
             {
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorDetails);
             }
             catch (\Throwable $ex)
             {

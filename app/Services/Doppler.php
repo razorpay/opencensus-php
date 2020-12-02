@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Requests;
+use RZP\Error;
 use RZP\Exception;
 use Carbon\Carbon;
 use Requests_Session;
@@ -103,7 +104,7 @@ class Doppler
     }
 
     // sends event to doppler's topic
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null, $paymentRetryAttempt = null)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, array $internalErrorDetails = [], $paymentRetryAttempt = null)
     {
         // We do not want to publish events in case for test mode payments
         if ($this->mode === Mode::TEST)
@@ -117,7 +118,7 @@ class Doppler
             ($payment->getMethod() === Method::NETBANKING))
         {
 
-            $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode, $paymentRetryAttempt);
+            $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorDetails, $paymentRetryAttempt);
 
             if ($this->sendDopplerFeedback === true)
             {
@@ -151,7 +152,7 @@ class Doppler
         }
     }
 
-    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null, $paymentRetryAttempt = null)
+    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, array $internalErrorDetails = [], $paymentRetryAttempt = null)
     {
 
         $card = [];
@@ -270,7 +271,10 @@ class Doppler
             'created_at'            => $payment->getCreatedAt(),
             'authorized_at'         => Carbon::now()->getTimestamp(),
             'error_code'            => $errorCode ?? null,
-            'internal_error_code'   => $internalErrorCode ?? null,
+            'step'                  => $internalErrorDetails[Error\Error::STEP] ?? null,
+            'source'                => $internalErrorDetails[Error\Error::SOURCE] ?? null,
+            'reason'                => $internalErrorDetails[Error\Error::REASON] ?? null,
+            'internal_error_code'   => $internalErrorDetails[Error\Error::INTERNAL_ERROR_CODE] ?? null,
             'attempt'               => $paymentRetryAttempt ?? null,
         ];
 

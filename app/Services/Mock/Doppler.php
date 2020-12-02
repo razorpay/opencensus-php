@@ -7,7 +7,7 @@ use RZP\Services\Doppler as BaseDoppler;
 
 class Doppler extends BaseDoppler
 {
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null, $paymentRetryAttempt = null)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, array $internalErrorDetails = [], $paymentRetryAttempt = null)
     {
 
     }

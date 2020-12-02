@@ -2126,6 +2126,21 @@ class Processor
 
         $payment = $this->payment;
 
+        $error->setDetailedError($internalCode, $payment->getMethod());
+
+        $step = $error->getStep();
+
+        $source = $error->getSource();
+
+        $reason = $error->getReason();
+
+        $internalErrorDetails = [
+            'step'                  => $step,
+            'reason'                => $reason,
+            'source'                => $source,
+            'internal_error_code'   => $internalCode,
+        ];
+
         $status = $payment->getStatus();
 
         $segmentCustomProperties = [
@@ -2194,7 +2209,7 @@ class Processor
         {
             try
             {
-                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalErrorDetails);
             }
             catch (\Throwable $e)
             {

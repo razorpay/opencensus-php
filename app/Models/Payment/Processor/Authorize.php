@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Jobs;
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
@@ -540,14 +541,31 @@ trait Authorize
                     continue;
                 }
 
-                $errorCode = $e->getError()->getPublicErrorCode();
+                $error = $e->getError();
 
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
+                $errorCode = $error->getPublicErrorCode();
+
+                $internalErrorCode = $error->getInternalErrorCode();
+
+                $error->setDetailedError($internalErrorCode, $payment->getMethod());
+
+                $step = $error->getStep();
+
+                $source = $error->getSource();
+
+                $reason = $error->getReason();
+
+                $internalErrorDetails = [
+                    Error\Error::STEP                   => $step,
+                    Error\Error::REASON                 => $reason,
+                    Error\Error::SOURCE                 => $source,
+                    Error\Error::INTERNAL_ERROR_CODE    => $internalErrorCode,
+                ];
 
                 try
                 {
                     $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
-                        $errorCode, $internalErrorCode, $retryAttempts);
+                        $errorCode, $internalErrorDetails, $retryAttempts);
                 }
                 catch (\Throwable $e)
                 {
