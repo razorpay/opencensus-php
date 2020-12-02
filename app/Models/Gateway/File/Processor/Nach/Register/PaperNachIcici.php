@@ -284,7 +284,7 @@ class PaperNachIcici extends Base
 
         $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
 
-        $this->generateXml($token, $dirName);
+        $this->generateXml($token, $dirName, $baseFileName);
 
         // zip file can contain max 150 files (50 registrations - 1 xml, 2 images)
         if (($count % self::ZIP_FILE_SIZE) === (self::ZIP_FILE_SIZE - 1))
@@ -342,7 +342,7 @@ class PaperNachIcici extends Base
         Storage::put($filePath . $tiffName, $tiffFileContents);
     }
 
-    protected function generateXml($token, $dirName)
+    protected function generateXml($token, $dirName, $fileName)
     {
         $merchant = $token->merchant;
 
@@ -454,7 +454,7 @@ class PaperNachIcici extends Base
 
         $dom->loadXML($document->asXML());
 
-        $xmlFilePath  = $dirName . DIRECTORY_SEPARATOR . $dirName . '.xml';
+        $xmlFilePath  = $dirName . DIRECTORY_SEPARATOR . $fileName . '-INP.xml';
 
         Storage::put($xmlFilePath, $dom->saveXML());
     }

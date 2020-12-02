@@ -59,15 +59,20 @@ class IciciGatewayTest extends TestCase
                                                             'gateway_access_code' => 'ICIC0TREA00',
                                                             'gateway_acquirer'    => 'icic',
                                                           ]);
+        $this->fixtures->create(
+            E::CUSTOMER,
+            ['id' => '1000000000cust']
+        );
     }
 
     public function testGatewayFileRegister()
     {
         Mail::fake();
 
-        $payment = $this->createDummyRegisterToken();
+        $payment1 = $this->createDummyRegisterToken();
+        $this->fixtures->stripSign($payment1['id']);
 
-        $this->fixtures->stripSign($payment['id']);
+        $this->createDummyRegisterToken();
 
         $this->ba->cronAuth();
 
@@ -86,21 +91,51 @@ class IciciGatewayTest extends TestCase
             'extension'   => 'zip',
         ];
 
+        $zipArchive = new ZipArchive();
+
+        $zipFilePath = storage_path('files/filestore') . '/' . $zipFile['location'];
+
+        $zipArchive->open($zipFilePath);
+
+        $zipArchive->extractTo(dirname($zipFilePath) . '/extracted');
+
+        $zipArchive->close();
+
+        $fileName = 'MMS-CREATE-ICIC-ICIC401790-{$date}-{$count}';
+
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $fileName1 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000001']);
+        $fileName2 = strtr($fileName, ['{$date}' => $date, '{$count}' => '000002']);
+
+        $extractedFileList = scandir(dirname($zipFilePath) . '/extracted');
+
+        $expectedExtractedFiles = [
+            $fileName1 . '-INP.xml',
+            $fileName1 . '_detailfront.jpg',
+            $fileName1 . '_front.tiff',
+            $fileName2 . '-INP.xml',
+            $fileName2 . '_detailfront.jpg',
+            $fileName2 . '_front.tiff',
+        ];
+
+        $this->assertEquals(['.', '..'], array_diff($extractedFileList, $expectedExtractedFiles));
+
         $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
 
-        Mail::assertQueued(NachMail::class, function ($mail)
+        $this->validateRegisterXml(dirname($zipFilePath) . '/extracted/' . $fileName1 . '-INP.xml', $payment1['id']);
+
+        Mail::assertQueued(NachMail::class, function ($mail) use ($fileName, $date)
         {
-            $fileName = 'MMS-CREATE-ICIC-ICIC401790-{$date}-000001-INP.zip';
+            $fileName = strtr($fileName, ['{$date}' => $date, '{$count}' => '000001']);
 
-            $date = Carbon::now(Timezone::IST)->format('dmY');
-
-            $fileName = strtr($fileName, ['{$date}' => $date]);
+            $fileName = $fileName . '-INP.zip';
 
             $this->assertEquals($fileName, (array_keys($mail->viewData['mailData']))[0]);
 
             $mailData = $mail->viewData['mailData'];
 
-            $this->assertEquals(1, $mailData[$fileName]['count']);
+            $this->assertEquals(2, $mailData[$fileName]['count']);
 
             return true;
         });
@@ -452,11 +487,15 @@ class IciciGatewayTest extends TestCase
 
     protected function createDummyRegisterToken()
     {
+        $orderId = UniqueIdEntity::generateUniqueId();
+
         $this->createOrder([
+            'id'     => $orderId,
             'amount' => 0,
             'method' => 'nach',
             E::INVOICE => [
-                'amount' => 0,
+                'order_id' => $orderId,
+                'amount'   => 0,
                 E::SUBSCRIPTION_REGISTRATION => [
                     'token_id'   => '100000000token',
                     'max_amount' => 1000000,
@@ -474,7 +513,7 @@ class IciciGatewayTest extends TestCase
             "amount"      => 0,
             "currency"    => "INR",
             "method"      => "nach",
-            "order_id"    => "order_100000000order",
+            "order_id"    => 'order_' . $orderId,
             "customer_id" => "cust_1000000000cust",
             "recurring"   => true,
             "contact"     => "9483159238",
@@ -529,12 +568,10 @@ class IciciGatewayTest extends TestCase
     {
         $invoice = array_pull($overrideWith, E::INVOICE, []);
 
-        $order = $this->fixtures
-            ->create(
+        $order = $this->fixtures->create(
                 E::ORDER,
                 array_merge(
                     [
-                        'id'              => '100000000order',
                         'amount'          => 100000,
                     ],
                     $overrideWith
@@ -550,6 +587,7 @@ class IciciGatewayTest extends TestCase
     {
         $subscriptionRegistration = array_pull($overrideWith, E::SUBSCRIPTION_REGISTRATION, []);
 
+        $invoiceId                  = UniqueIdEntity::generateUniqueId();
         $subscriptionRegistrationId = UniqueIdEntity::generateUniqueId();
 
         $order = $this->fixtures
@@ -557,8 +595,7 @@ class IciciGatewayTest extends TestCase
                 'invoice',
                 array_merge(
                     [
-                        'id'              => '1000000invoice',
-                        'order_id'        => '100000000order',
+                        'id'              => $invoiceId,
                         'entity_type'     => 'subscription_registration',
                         'entity_id'       => $subscriptionRegistrationId,
                     ],
@@ -605,11 +642,6 @@ class IciciGatewayTest extends TestCase
         $bankAccountId = UniqueIdEntity::generateUniqueId();
 
         $bankAccount = array_pull($overrideWith, E::BANK_ACCOUNT, []);
-
-        $this->fixtures->create(
-            E::CUSTOMER,
-            ['id' => '1000000000cust']
-        );
 
         $paperMandate = $this->fixtures
             ->create(
@@ -688,5 +720,16 @@ class IciciGatewayTest extends TestCase
         ];
 
         return $values;
+    }
+
+    protected function validateRegisterXml($generatedXmlPath, $paymentId)
+    {
+        $actual = file_get_contents($generatedXmlPath);
+
+        $expected = file_get_contents(__DIR__ . '/RegisterRequest.xml');
+
+        $expected = strtr($expected, ['$paymentId' => $paymentId]);
+
+        $this->assertEquals($expected, $actual);
     }
 }
