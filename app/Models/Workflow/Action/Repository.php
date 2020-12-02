@@ -161,6 +161,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getOpenActionOnEntityListOperation(
+        array $entityIdList,
+        string $entityName,
+        string $permissionId)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::ENTITY_ID, $entityIdList)
+            ->where(Entity::ENTITY_NAME, $entityName)
+            ->where(Entity::PERMISSION_ID, $permissionId)
+            ->whereIn(Entity::STATE, State\Name::OPEN_ACTION_STATES)
+            ->get();
+    }
+
     /**
      * Will filter our checker actions which needs to be checked.
      * This will provide awaiting for your approval actions.

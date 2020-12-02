@@ -54,6 +54,9 @@ class Route
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'internal_merchant_checkout_preferences'   => ['get',      'internal/preferences/{merchant_id}',             'MerchantController@getInternalCheckoutPreferences'                 ],
         'internal_merchant_auto_disabled_methods'  => ['get',      'internal/auto_disabled_methods/{merchant_id}',   'MerchantController@getAutoDisabledMethods'                         ],
+        'merchant_autokyc_soft_limit'              => ['post',     'merchants/auto-kyc-cron/soft-limit',             'MerchantController@postSoftLimitBreachOnAutoKYC'                 ],
+        'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
+        'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -2800,6 +2803,7 @@ class Route
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
+
         'gateway_downtime_for_payment',
 
         //Accounting Payouts
@@ -5318,6 +5322,13 @@ class Route
         'cron' => [
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
+
+
+            // crons for autoKYC'd merchants who have not been verified manually yet
+            'merchant_autokyc_soft_limit',
+            'merchant_autokyc_hard_limit',
+            'merchant_autokyc_escalation',
+
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',

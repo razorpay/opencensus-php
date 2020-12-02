@@ -261,4 +261,26 @@ class Repository extends Base\Repository
                     ->where(Entity::PENNY_TESTING_UPDATED_AT, '<', $pennyTestingUpdatedAt)
                     ->get();
     }
+
+    public function fetchMerchantIdsByActivationStatus(array $activationStatusList): array
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array
+    {
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::MERCHANT_ID, $mids)
+            ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
 }

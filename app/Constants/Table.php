@@ -142,6 +142,8 @@ class Table
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
     const PAYMENT_META              = 'payment_meta';
 
+    const MERCHANT_AUTO_KYC_ESCALATIONS = 'merchant_auto_kyc_escalations';
+
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
     // services have to be stored in API source only

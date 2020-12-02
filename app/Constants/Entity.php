@@ -405,6 +405,9 @@ class Entity
     const REWARD            = 'reward';
     const MERCHANT_REWARD   = 'merchant_reward';
 
+    // merchant auto kyc escalations
+    const MERCHANT_AUTO_KYC_ESCALATIONS  = 'merchant_auto_kyc_escalations';
+
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
@@ -759,6 +762,9 @@ class Entity
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
+
+        self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
+
         self::REWARD            => \RZP\Models\Reward::class,
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
     ];

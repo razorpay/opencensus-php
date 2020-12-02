@@ -32,6 +32,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
+use RZP\lib\ConditionParser\Parser;
 use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
@@ -180,16 +181,7 @@ class Core extends Base\Core
             return;
         }
 
-        $ncrCountTag = $this->getNcRespondedCountTag($statusChangeLogs);
-        $tags = [
-            $ncrCountTag,
-            $this->getNcMarkedAgentTag($maker)
-        ];
-
-        if($this->isNcrOnPennyTesting($ncrCountTag, $merchant))
-        {
-            $tags[] = "Auto NC";
-        }
+        $tags = $this->getNcRespondedTags($merchant->merchantDetail, $statusChangeLogs, $maker);
 
         $input = [Entity::ACTIVATION_STATUS => Status::ACTIVATED];
 
@@ -224,15 +216,34 @@ class Core extends Base\Core
      * @param $merchant
      * @return bool
      */
-    protected function isNcrOnPennyTesting(string $ncrCountTag, $merchant)
+    protected function isNcrOnPennyTesting(string $ncrCountTag, $merchantDetails)
     {
         if($ncrCountTag === 'NCR1')
         {
-            $bankDetailsVerificationStatus = $merchant->merchantDetail->getBankDetailsVerificationStatus();
+            $bankDetailsVerificationStatus = $merchantDetails->getBankDetailsVerificationStatus();
 
             return ($bankDetailsVerificationStatus !== BankDetailsVerificationStatus::VERIFIED);
         }
         return false;
+    }
+
+    protected function getNcRespondedTags($merchantDetails, $statusChangeLogs, $maker)
+    {
+        $ncrCountTag = $this->getNcRespondedCountTag($statusChangeLogs);
+        $tags = [
+            $ncrCountTag,
+            $this->getNcMarkedAgentTag($maker)
+        ];
+
+        if($this->isNcrOnPennyTesting($ncrCountTag, $merchantDetails))
+        {
+            $tags[] = "Auto NC";
+        }
+
+        if ($this->isAutoKycDone($merchantDetails)) {
+            $tags[] = "auto-kyc";
+        }
+        return $tags;
     }
 
     protected function isNcResponded($oldActivationStatus, $newActivationStatus)
@@ -1519,6 +1530,17 @@ class Core extends Base\Core
 
             }
 
+            if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
+                ($merchant->isLinkedAccount() === false))
+            {
+
+                (new Merchant\Activate)->activate($merchant, false);
+
+                // request for default instruments when merchant is activated
+
+                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
+            }
+
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
             {
                 $this->triggerWorkflowForRejectionActivationStatusChange(
@@ -2183,31 +2205,60 @@ class Core extends Base\Core
      */
     public function getApplicableActivationStatus(Entity $merchantDetails): string
     {
-        switch ($merchantDetails->getBusinessType())
+        $autoKyc = $this->isAutoKycDone($merchantDetails);
+
+        if ($autoKyc)
         {
-            case BusinessType::NOT_YET_REGISTERED:
-            case BusinessType::INDIVIDUAL:
+            switch ($merchantDetails->getBusinessType())
+            {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                    return Status::ACTIVATED;
 
-                $preConditions = [
-                    Entity::POA_VERIFICATION_STATUS          => [POIStatus::VERIFIED],
-                    Entity::POI_VERIFICATION_STATUS          => [POIStatus::VERIFIED],
-                    Entity::BANK_DETAILS_VERIFICATION_STATUS => [POIStatus::VERIFIED],
-                ];
-
-                foreach ($preConditions as $key => $allowedStatus)
-                {
-                    if (in_array($merchantDetails->getAttribute($key), $allowedStatus, true) === false)
-                    {
-                        return Status::UNDER_REVIEW;
-                    }
-                }
-
-                return Status::ACTIVATED;
-
-            default :
-
-                return Status::UNDER_REVIEW;
+                case BusinessType::PROPRIETORSHIP:
+                case BusinessType::PRIVATE_LIMITED:
+                case BusinessType::PUBLIC_LIMITED:
+                case BusinessType::LLP:
+                    return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
+            }
         }
+        return Status::UNDER_REVIEW;
+    }
+
+    private function getApplicableActivationStatusForRegisteredMerchant($merchantDetails)
+    {
+        if ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST)
+        {
+            $isSelfServeEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+                $merchantDetails->getMerchantId(),
+                RazorxTreatment::SELF_SERVE_AUTO_KYC
+            );
+
+            if ($isSelfServeEnabled) {
+                return Status::ACTIVATED_MCC_PENDING;
+            }
+        }
+
+        return Status::UNDER_REVIEW;
+    }
+
+    public function isAutoKycDone($merchantDetails)
+    {
+        $businessType = $merchantDetails->getBusinessType();
+        if (isset($businessType) === false or $businessType === '')
+        {
+            return false;
+        }
+        if(isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
+        {
+            return false;
+        }
+
+        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+
+        return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails){
+            return in_array($merchantDetails->getAttribute($key), $value, true);
+        });
     }
 
     /**

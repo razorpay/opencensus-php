@@ -304,6 +304,9 @@ class Name
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
     const CAPITAL_DEVELOPER                   = 'capital_developer';
 
+    // Permission to create auto-kyc soft limit breached workflow
+    const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';
+
     // UFH permission
     const DOWNLOAD_UFH_FILE_BY_MID            = 'download_ufh_file_by_mid';
 

@@ -12,15 +12,17 @@ class Status
     const NEEDS_CLARIFICATION = 'needs_clarification';
     const ACTIVATED           = 'activated';
     const REJECTED            = 'rejected';
+    const ACTIVATED_MCC_PENDING = 'activated_mcc_pending';
 
     /*
      * Allowed next activation statuses mapping
      */
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING = [
         self::INSTANTLY_ACTIVATED => [self::UNDER_REVIEW, self::ACTIVATED],
-        self::UNDER_REVIEW        => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED],
+        self::UNDER_REVIEW        => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING],
         self::NEEDS_CLARIFICATION => [self::UNDER_REVIEW],
         self::REJECTED            => [self::UNDER_REVIEW],
+        self::ACTIVATED_MCC_PENDING => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
         self::ACTIVATED           => [],
     ];
 }

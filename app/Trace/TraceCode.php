@@ -3508,6 +3508,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_WHATSAPP_MESSAGE_FAILED                       = 'STORK_WHATSAPP_MESSAGE_FAILED';
     const STORK_WHATSAPP_REQUEST                              = 'STORK_WHATSAPP_REQUEST';
 
+    // Self Serve enablement trace code
+    const SELF_SERVE_ESCALATION_ATTEMPT         = 'SELF_SERVE_ESCALATION_ATTEMPT';
+    const SELF_SERVE_CRON                       = 'SELF_SERVE_CRON';
+    const SELF_SERVE_CRON_FAILURE               = 'SELF_SERVE_CRON_FAILURE';
+    const SELF_SERVE_ESCALATION_FAILURE         = 'SELF_SERVE_ESCALATION_FAILURE';
+
     // Tracing error logs
     const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';
 

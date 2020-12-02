@@ -194,7 +194,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     public function getUpdatedActivationStatus(): string
     {
-        return $this->merchantDetails->getActivationStatus();
+        return (new Detail\Core())->getApplicableActivationStatus($this->merchantDetails);
     }
 
     public function updateStatusToPending(): void

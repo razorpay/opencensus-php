@@ -1857,6 +1857,27 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postSoftLimitBreachOnAutoKYC()
+    {
+        $response = $this->service()->handleSoftLimitBreachOnAutoKYC();
+
+        return ApiResponse::json($response);
+    }
+
+    public function postHardLimitBreachOnAutoKYC()
+    {
+        $response = $this->service()->handleHardLimitBreachOnAutoKYC();
+
+        return ApiResponse::json($response);
+    }
+
+    public function handleAutoKycEscalationCron()
+    {
+        $response = $this->service()->handleAutoKycEscalationCron();
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * This function is called from oauth service.
      * It is responsible for sending banking accounts webhook to pure play partners.

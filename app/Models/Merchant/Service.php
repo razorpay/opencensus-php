@@ -65,6 +65,7 @@ use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -5282,6 +5283,21 @@ class Service extends Base\Service
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
+    }
+
+    public function handleSoftLimitBreachOnAutoKYC()
+    {
+        return (new Escalations\Core())->handleSoftLimitBreach();
+    }
+
+    public function handleHardLimitBreachOnAutoKYC()
+    {
+        return (new Escalations\Core())->handleHardLimitBreach();
+    }
+
+    public function handleAutoKycEscalationCron()
+    {
+        return (new Escalations\Core())->handleEscalationsCron();
     }
 
     protected function extractSubmerchantInput(array $input)

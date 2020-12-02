@@ -222,6 +222,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::OWNER_ID);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
     public function getCurrentLevel() : int
     {
         return $this->getAttribute(self::CURRENT_LEVEL);

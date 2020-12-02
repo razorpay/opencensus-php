@@ -188,6 +188,13 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onAccountActivatedMccPending($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountInstantlyActivated($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);

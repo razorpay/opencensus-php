@@ -44,14 +44,14 @@ class Activate extends Base\Core
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function activate(Entity $merchant): Detail\Entity
+    public function activate(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
     {
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
             $this->trace->info(TraceCode::ALREADY_ACTIVATED, $merchant->toArrayPublic());
 
-            return $this->markKycVerified($merchant);
+            return $this->markKycVerified($merchant, $triggerWorkflow);
         }
         //
         // For merchants who never went through the instant activations flow, and,
@@ -59,7 +59,7 @@ class Activate extends Base\Core
         //
         $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
 
-        return $this->activateAndMarkKycVerified($merchant);
+        return $this->activateAndMarkKycVerified($merchant, $triggerWorkflow);
     }
 
     /**
@@ -70,7 +70,7 @@ class Activate extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Throwable
      */
-    public function activateAndMarkKycVerified(Entity $merchant): Detail\Entity
+    public function activateAndMarkKycVerified(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -101,9 +101,12 @@ class Activate extends Base\Core
             $merchant->setHasKeyAccess(true);
         }
 
-        // Triggering workflow for the activation_status change in merchantDetail entity
-        $this->app['workflow']
-             ->handle();
+        if ($triggerWorkflow)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $this->app['workflow']
+                ->handle();
+        }
 
         $merchantCore = new Merchant\Core;
 
@@ -223,7 +226,7 @@ class Activate extends Base\Core
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function markKycVerified(Entity $merchant): Detail\Entity
+    public function markKycVerified(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -239,9 +242,12 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
-        // Triggering workflow for the activation_status change in merchantDetail entity
-        $this->app['workflow']
-             ->handle();
+        if ($triggerWorkflow)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $this->app['workflow']
+                ->handle();
+        }
 
         $merchantCore = new Merchant\Core;
 

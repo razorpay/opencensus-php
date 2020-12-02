@@ -445,6 +445,18 @@ class Repository extends Base\Repository
         return $txns2;
     }
 
+
+    public function fetchMerchantIdListWithGmvAboveThreshold(array $merchantIdList, int $gmvThreshold): array
+    {
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw('SUM(' . Entity::CREDIT . ') as gmv,' . Entity::MERCHANT_ID)
+                    ->having('gmv', '>=' , $gmvThreshold)
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function updateSettledAtToNow($txn)
     {
         $id = $txn->getId();

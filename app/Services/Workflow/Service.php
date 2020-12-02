@@ -610,6 +610,13 @@ class Service
         return $this;
     }
 
+    public function setWorkflowMakerType($makerType)
+    {
+        $this->workflowMakerType = $makerType;
+
+        return $this;
+    }
+
     public function getWorkflowMakerType()
     {
         if ($this->makerFromAuth or empty($this->workflowMakerType) === true)

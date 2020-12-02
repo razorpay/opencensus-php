@@ -712,6 +712,30 @@ class Core extends Base\Core
         return $actions;
     }
 
+    public function fetchOpenActionOnEntityListOperation(
+        array $entityIdList,
+        string $entityName,
+        string $permissionName)
+    {
+        $permissionIdList = $this->repo
+            ->permission
+            ->retrieveIdsByNames([$permissionName])
+            ->toArray();
+
+        if (empty($permissionIdList) === true)
+        {
+            throw new
+            Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PERMISSION);
+        }
+        $permissionId = $permissionIdList[0]['id'];
+
+        $actions = $this->repo
+            ->workflow_action
+            ->getOpenActionOnEntityListOperation($entityIdList, $entityName, $permissionId);
+
+        return $actions;
+    }
+
     public function fetchActionsOnEntityOperation(
         string $entityId,
         string $entityName,
