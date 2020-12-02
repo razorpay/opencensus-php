@@ -383,8 +383,12 @@ class Entity
 
     const COMMISSION = 'commission';
 
-    // this entity doesn't exist in api. it's required for transaction entity operations.
+    // these entities doesn't exist in api. they are required for transaction entity operations.
     const CREDIT_REPAYMENT               = 'credit_repayment';
+    const CAPITAL_TRANSACTION            = 'capital_transaction';
+    const REPAYMENT_BREAKUP              = 'repayment_breakup';
+    const INSTALMENT                     = 'instalment';
+    const CHARGE                         = 'charge';
 
     const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
 
@@ -762,6 +766,10 @@ class Entity
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
+
+        self::REPAYMENT_BREAKUP => \RZP\Models\CapitalTransaction::class,
+        self::INSTALMENT        => \RZP\Models\CapitalTransaction::class,
+        self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
 

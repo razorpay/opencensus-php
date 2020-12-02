@@ -498,6 +498,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_SETTLED_AT);
     }
 
+    public function setType(string $type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
@@ -719,6 +724,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::CREDIT_REPAYMENT);
     }
 
+    public function isTypeCapitalTransaction(): bool
+    {
+        return (in_array($this->getType(), Type::CAPITAL_TYPE, true) === true);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -773,8 +783,9 @@ class Entity extends Base\PublicEntity
     {
         $reportTxn = parent::toArrayPublic();
 
-        // For credit repayment, we need id in response to store in credit_repayment entity
-        if ($this->isTypeCreditRepayment() === true)
+        // For credit repayment & capital txns, we need id in response to store ids in entities
+        if (($this->isTypeCreditRepayment() === true) or
+            ($this->isTypeCapitalTransaction() === true))
         {
             return $reportTxn;
         }

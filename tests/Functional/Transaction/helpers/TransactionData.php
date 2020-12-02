@@ -328,6 +328,72 @@ return [
         ],
     ],
 
+    'testCreateCapitalBalanceTransactionNegativeAmount' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => -1000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+                'type'          => 'repayment_breakup',
+                'balance_id'    => '',
+            ],
+            'url'    => '/capital_balances/transaction',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                // 'id'            => 'txn_G1T4sGEJmwIj4w',
+                'entity'        => 'transaction',
+                'entity_id'     => 'G1SRTbSC6fQOHo',
+                'type'          => 'repayment_breakup',
+                'debit'         => 1000,
+                'credit'        => 0,
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'fee'           => 0,
+                'tax'           => 0,
+                'settled'       => false,
+                // 'created_at'    => 1605448528,
+                // 'settled_at'    => 1605448528,
+                // 'posted_at'     => 1605448528,
+            ],
+        ],
+    ],
+
+    'testCreateCapitalBalanceTransactionPositiveAmount' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+                'type'          => 'repayment_breakup',
+                'balance_id'    => '',
+            ],
+            'url'    => '/capital_balances/transaction',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                // 'id'            => 'txn_G1T4sGEJmwIj4w',
+                'entity'        => 'transaction',
+                'entity_id'     => 'G1SRTbSC6fQOHo',
+                'type'          => 'repayment_breakup',
+                'debit'         => 0,
+                'credit'        => 1000,
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'fee'           => 0,
+                'tax'           => 0,
+                'settled'       => false,
+                // 'created_at'    => 1605448528,
+                // 'settled_at'    => 1605448528,
+                // 'posted_at'     => 1605448528,
+            ],
+        ],
+    ],
+
     'testTransactionsBulkUpdateBalanceId' => [
         'request' => [
             'url'    => '/admin/transaction/balance_id_update',

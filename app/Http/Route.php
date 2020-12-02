@@ -1760,6 +1760,7 @@ class Route
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
         'credit_repayment_transaction_create'      => ['put',      'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
+        'capital_transaction_create'               => ['put',      'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
@@ -2504,6 +2505,7 @@ class Route
         'internal_balance_fetch',
         'merchant_balance_create',
         'credit_repayment_transaction_create',
+        'capital_transaction_create',
         'merchant_sub_create_batch',
         'currency_fetch_rates_internal',
         'loc_mail',
@@ -5570,6 +5572,7 @@ class Route
             'merchant_balance_create',
             'internal_balance_fetch',
             'credit_repayment_transaction_create',
+            'capital_transaction_create',
         ],
 
         'loc'  => [

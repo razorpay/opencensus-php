@@ -309,6 +309,11 @@ class Table
     // this table doesn't exist in api db. this constant is required for transaction queries
     const CREDIT_REPAYMENT = 'credit_repayment';
 
+    const CAPITAL_TRANSACTION = 'capital_transaction';
+    const REPAYMENT_BREAKUP   = 'repayment_breakup';
+    const INSTALMENT          = 'instalment';
+    const CHARGE              = 'charge';
+
     // API Request Log
     const REQUEST_LOG = 'request_logs';
 

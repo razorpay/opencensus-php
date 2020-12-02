@@ -816,6 +816,12 @@ class ApiServiceProvider extends BaseServiceProvider
             'settlement.ondemand'       => Settlement\Ondemand\Entity::class,
 
             'credit_repayment'          => CreditRepayment\Entity::class,
+
+            'repayment_breakup'         => RZP\Models\CapitalTransaction\Entity::class,
+
+            'instalment'                => RZP\Models\CapitalTransaction\Entity::class,
+
+            'charge'                    => RZP\Models\CapitalTransaction\Entity::class,
         ]);
     }
 

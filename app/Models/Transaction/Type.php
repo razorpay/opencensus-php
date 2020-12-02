@@ -23,6 +23,9 @@ class Type
     const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const CREDIT_REPAYMENT        = 'credit_repayment';
+    const INSTALMENT              = 'instalment';
+    const CHARGE                  = 'charge';
+    const REPAYMENT_BREAKUP       = 'repayment_breakup';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
@@ -51,6 +54,12 @@ class Type
         self::ADJUSTMENT,
         self::EXTERNAL,
         self::FUND_ACCOUNT_VALIDATION,
+    ];
+
+    const CAPITAL_TYPE = [
+        self::REPAYMENT_BREAKUP,
+        self::INSTALMENT,
+        self::CHARGE,
     ];
 
     public static function validateType(string $type)

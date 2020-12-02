@@ -90,6 +90,53 @@ class Service extends Base\Service
         });
     }
 
+    public function createCapitalTransaction($input)
+    {
+        $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATE_REQUEST);
+        $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATE_REQUEST, $input);
+
+        (new JitValidator)->rules(\RZP\Models\CapitalTransaction\Validator::$createTransactionInput)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+
+        $capitalTxn = new \RZP\Models\CapitalTransaction\Entity($input);
+
+        $capitalTxn->merchant()->associate($this->repo->merchant->find($input['merchant_id']));
+
+        $capitalTxn->balance()->associate($this->repo->balance->findOrFailById($input['balance_id']));
+
+        // find transaction if it was created already for this entity.
+        // return public response if that transaction already exists
+        // else create new transaction
+
+        try
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($capitalTxn);
+
+            $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_ALREADY_CREATED);
+            $this->trace->info(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
+
+            return $txn->toArrayPublic();
+        }
+        catch (DbQueryException $e)
+        {
+            // Do nothing. continue with creation of new transaction
+        }
+
+        return $this->repo->transaction(function () use ($capitalTxn, $input)
+        {
+            [$txn, $feesplit] = (new Transaction\Processor\CapitalTransaction($capitalTxn))->createTransaction();
+
+            $this->repo->saveOrFail($txn);
+
+            $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
+            $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $input);
+
+            return $txn->toArrayPublic();
+        });
+    }
+
     public function updateMultipleTransactions(array $input)
     {
         (new Validator())->validateInput('unsettled_txns_channel_update', $input);
