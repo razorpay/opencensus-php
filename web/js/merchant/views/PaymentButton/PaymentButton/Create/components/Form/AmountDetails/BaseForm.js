@@ -15,15 +15,12 @@ import {
   FixedAmountWithQuantity,
 } from './FieldTypesRepresentations';
 
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import {
-  getAmountFieldTypes,
-  getBaseFieldForAmountFieldType,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { isMandatoryToBool } from '../../../../../../PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { validateAmount } from 'common/utils/validators';
 
 import track from '../../../track';
 
@@ -338,14 +335,7 @@ export default class BaseForm extends React.Component {
         class="placeholder-field Input--Amount"
         placeholder={placeholder}
         defaultValue={amount}
-        validator={val => {
-          if (val) {
-            if (Number(val) < Number(minAmountAllowed)) {
-              return `Amount must be at least ${minAmountAllowed}`;
-            }
-          }
-        }}
-        pattern="^[0-9]+(.([0-9]){1,2})?$"
+        validator={(val) => validateAmount(val, minAmountAllowed)}
         disabled={disableAmountInput}
         required={!disableAmountInput}
       />

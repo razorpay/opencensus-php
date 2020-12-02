@@ -269,3 +269,19 @@ export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLen
 
   return validateAlphanumericWithMaxLength(value, maxLength);
 }
+
+
+export function validateAmount(val, minAmountAllowed) {
+  if (val) {
+    const amountPattern = '^[0-9]+(.([0-9]){1,2})?$';
+    const regex = new RegExp(amountPattern);
+
+    if (!regex.test(Number(val))) {
+      return 'Amount must be a number in the format 123.45';
+    }
+
+    if (typeof minAmountAllowed !== 'undefined' && Number(val) < Number(minAmountAllowed)) {
+      return `Amount must be at least ${minAmountAllowed}`;
+    }
+  }
+}

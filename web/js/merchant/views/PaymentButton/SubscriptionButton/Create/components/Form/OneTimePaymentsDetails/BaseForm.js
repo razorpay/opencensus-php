@@ -1,11 +1,11 @@
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
 import EditorModal from '../components/EditorModal';
-import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
 import { getCurrency } from 'common/ui/Amount';
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
+import { validateAmount } from 'common/utils/validators';
+
 
 // import track from '../../../track';
 
@@ -134,14 +134,7 @@ export default class BaseForm extends React.Component {
               placeholder="Enter Amount"
               defaultValue={field ? field.item.amount : ''}
               required
-              validator={(val) => {
-                if (val) {
-                  if (Number(val) < Number(minAmountAllowed)) {
-                    return `Amount must be at least ${minAmountAllowed}`;
-                  }
-                }
-              }}
-              pattern="^[0-9]+(.([0-9]){1,2})?$"
+              validator={(val) => validateAmount(val, minAmountAllowed)}
             />
 
             <Input.TextareaAutoResize

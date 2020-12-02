@@ -5,10 +5,7 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
-import {
-  mapFieldToAmountFieldType,
-  isMandatoryToBool,
-} from '../Amount/helpers';
+import { isMandatoryToBool } from '../Amount/helpers';
 import FIELD_TYPES from '../Amount/helpers/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -16,6 +13,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
+import {validateAmount} from 'common/utils/validators';
 
 import ModalHeader from 'common/ui/ModalHeader';
 
@@ -152,14 +150,7 @@ export default class BaseForm extends React.PureComponent {
         class="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
-        validator={val => {
-          if (val) {
-            if (Number(val) < Number(minAmountAllowed)) {
-              return `Amount must be at least ${minAmountAllowed}`;
-            }
-          }
-        }}
-        pattern="^[0-9]+(.([0-9]){1,2})?$"
+        validator={(val) => validateAmount(val, minAmountAllowed)}
         disabled={isDisabled}
         required={!isDisabled}
       />

@@ -1,6 +1,8 @@
 import Input from 'common/new-ui/Input';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
+import {validateAmount} from 'common/utils/validators';
+
 
 export default class InputCurrencyAmount extends React.Component {
   state = {
@@ -78,14 +80,7 @@ export default class InputCurrencyAmount extends React.Component {
             description={description}
             type="number"
             defaultValue={defaultValueAmount}
-            validator={val => {
-              if (val) {
-                if (Number(val) < Number(this.minAmountAllowed)) {
-                  return `Amount must be at least ${this.minAmountAllowed}`;
-                }
-              }
-            }}
-            pattern="^[0-9]+(.([0-9]){1,2})?$"
+            validator={(val) => validateAmount(val, this.minAmountAllowed)}
             onChange={e =>
               this.handleChange({
                 [this.amountFieldName]: e.target.value,
