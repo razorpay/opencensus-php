@@ -3,10 +3,12 @@
 namespace RZP\Models\Merchant\BvsValidation;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 

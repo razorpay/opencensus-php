@@ -6,6 +6,10 @@ use Razorpay\IFSC\Bank;
 
 class Constants
 {
+    const ADMIN  = 'admin';
+    const SYSTEM = 'system';
+
+    const NEEDS_CLARIFICATION_SOURCES = [self::ADMIN, self::SYSTEM];
     //verification retry constants
     const RETRY_DELAY_IN_SECONDS = 300;
 

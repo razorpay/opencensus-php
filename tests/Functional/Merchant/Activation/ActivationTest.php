@@ -2102,6 +2102,7 @@ class ActivationTest extends OAuthTestCase
             'business_type'     => 2,
             'promoter_pan_name' => 'pankaj kumar',
             'bank_account_name' => 'pankaj k',
+            'activation_status' => 'under_review',
         ];
 
         $favAttribute = [
@@ -2260,7 +2261,7 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForUnRegisteredBusiness()
     {
-        $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar'];
+        $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar','activation_status' => 'under_review',];
 
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
     }

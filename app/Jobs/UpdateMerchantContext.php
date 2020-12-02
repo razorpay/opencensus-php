@@ -1,0 +1,148 @@
+<?php
+
+namespace RZP\Jobs;
+
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Constants;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\NeedsClarification\Core;
+use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
+
+class UpdateMerchantContext extends Job
+{
+    const MAX_RETRY_ATTEMPT = 2;
+
+    const RETRY_INTERVAL = 300;
+
+    protected $queueConfigKey = 'onboarding_kyc_verification';
+
+    protected $merchantId;
+
+    protected $updateContextRequirements;
+
+    public function __construct(string $mode, string $merchantId)
+    {
+        parent::__construct($mode);
+
+        $this->merchantId = $merchantId;
+
+        $this->updateContextRequirements = new UpdateContextRequirements();
+    }
+
+    /**
+     * Updates merchant status based on verification , triggers system based needs clarification if required .
+     */
+    public function handle()
+    {
+        parent::handle();
+
+        try
+        {
+            $tracePayload = [
+                Entity::MERCHANT_ID => $this->merchantId,
+            ];
+
+            $this->trace->debug(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
+
+            $this->trace->count(Metrics::UPDATE_CONTEXT_JOB_TOTAL);
+
+            $this->mutex->acquireAndRelease(
+                $this->merchantId,
+                function() {
+                    $this->updateMerchantContext();
+
+                    $this->delete();
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
+                [
+                    'merchant_id' => $this->merchantId,
+                ]);
+        }
+
+        $this->checkRetry();
+    }
+
+    protected function updateMerchantContext(): void
+    {
+        [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndSetBasicAuth($this->merchantId);
+
+        $canUpdateMerchantContext = $this->updateContextRequirements
+            ->canUpdateMerchantContext($merchantDetail);
+
+        if ($canUpdateMerchantContext === true)
+        {
+            $detailCore = new DetailCore();
+
+            $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
+
+            if ($newActivationStatus !== Status::ACTIVATED)
+            {
+                $clarificationCore = new Core();
+
+                if ($clarificationCore->shouldTriggerNeedsClarification($merchantDetail) === true)
+                {
+                    $kycClarificationReasons = (new Core())->composeNeedsClarificationReason($merchantDetail);
+
+                    if (empty($kycClarificationReasons) === false)
+                    {
+                        $kycClarificationReasons = (new DetailCore())
+                            ->getUpdatedKycClarificationReasons($kycClarificationReasons, $merchantDetail->getId(), DetailConstant::SYSTEM);
+
+                        $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
+
+                        $newActivationStatus = Status::NEEDS_CLARIFICATION;
+
+                        $this->trace->count(Metrics::NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
+                    }
+                }
+            }
+
+            $activationStatus = $merchantDetail->getActivationStatus();
+
+            if (($activationStatus !== $newActivationStatus) and
+                ($activationStatus === Status::UNDER_REVIEW))
+            {
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => $newActivationStatus
+                ];
+
+                $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            }
+        }
+    }
+
+    protected function checkRetry()
+    {
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        {
+            $this->trace->error(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_DELETE, [
+                Entity::MERCHANT_ID => $this->merchantId,
+                'job_attempts'      => $this->attempts(),
+                'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
+            ]);
+
+            $this->delete();
+
+            $this->trace->count(Metrics::UPDATE_CONTEXT_JOB_MAX_RETRIED_TOTAL);
+        }
+        else
+        {
+            $this->release(self::RETRY_INTERVAL);
+        }
+    }
+}

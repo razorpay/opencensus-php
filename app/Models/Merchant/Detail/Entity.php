@@ -922,6 +922,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return BusinessType::getKeyFromIndex($this->getBusinessTypeValue());
     }
 
+    public function setBusinessTypeValue(string $businessTypeValue)
+    {
+        $this->setAttribute(self::BUSINESS_TYPE, $businessTypeValue);
+    }
+
     public function getBusinessTypeValue()
     {
         return $this->getAttribute(self::BUSINESS_TYPE);

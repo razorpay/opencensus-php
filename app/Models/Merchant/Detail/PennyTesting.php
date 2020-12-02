@@ -3,14 +3,17 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\lib\FuzzyMatcher;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
@@ -180,12 +183,8 @@ class PennyTesting extends Base\Core
             else
             {
                 $this->updateMerchantContext($merchantDetails, $merchant);
-
-                $this->repo->merchant->saveOrFail($merchant);
             }
         }
-
-        $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
     }
 
@@ -219,6 +218,9 @@ class PennyTesting extends Base\Core
                                                 $nameValidationData,
                                                 $input);
 
+            $this->repo->merchant->saveOrFail($merchant);
+            $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
             return $bankAccountValidationStatus;
         }
         catch (Throwable $e)
@@ -244,6 +246,19 @@ class PennyTesting extends Base\Core
      */
     public function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
     {
+        $merchantId = $merchant->getId();
+
+        $isSystemBasedNeedsClarificationEnabled = (new MerchantCore())->isRazorxExperimentEnable(
+            $merchantId,
+            RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION);
+
+        if ($isSystemBasedNeedsClarificationEnabled === true)
+        {
+            UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId);
+
+            return;
+        }
+
         $detailCore = new Core();
 
         switch ($merchantDetails->getBankDetailsVerificationStatus())
@@ -323,6 +338,11 @@ class PennyTesting extends Base\Core
 
             $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
         }
+
+        $this->repo->merchant->saveOrFail($merchant);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
     }
 
     /**
@@ -516,6 +536,8 @@ class PennyTesting extends Base\Core
         ]);
 
         $this->triggerPennyTesting($merchantDetails);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
     }
 
     /**
@@ -578,6 +600,8 @@ class PennyTesting extends Base\Core
             ]);
 
             $this->setBankDetailsVerificationStatusAndUpdatedAt($merchantDetails, BankDetailsVerificationStatus::FAILED);
+
+            $this->repo->merchant_detail->saveOrFail($merchantDetails);
         }
 
         return $shouldPerformPennyTesting;

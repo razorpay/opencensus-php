@@ -2897,6 +2897,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ONBOARDING_BVS_VERIFICATION_STATUS                    = 'ONBOARDING_BVS_VERIFICATION_STATUS';
     const ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED        = 'ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED';
 
+    // Needs clarification
+    const BVS_ERROR_MAPPING_NOT_DEFINED                         = 'BVS_ERROR_MAPPING_NOT_DEFINED';
+    const UPDATE_MERCHANT_CONTEXT_JOB                           = 'UPDATE_MERCHANT_CONTEXT_JOB';
+    const UPDATE_MERCHANT_CONTEXT_JOB_ERROR                     = 'UPDATE_MERCHANT_CONTEXT_JOB_ERROR';
+    const UPDATE_MERCHANT_CONTEXT_JOB_DELETE                    = 'UPDATE_MERCHANT_CONTEXT_JOB_DELETE';
+
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
@@ -3675,8 +3681,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';
     const REWARD_ACTIVATE_DEACTIVATE_REQUEST                             = 'REWARD_ACTIVATE_DEACTIVATE_REQUEST';
     const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';
-
-
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\Merchant\Bvs;
 use DB;
 use App;
 use Config;
+use Illuminate\Support\Facades\Queue;
 
 use Illuminate\Http\UploadedFile;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -379,7 +381,11 @@ class BvsValidationTest extends TestCase
 
     public function testUpdateBvsValidationStatusGstin()
     {
+        //Queue::fake();
+
         $this->verifyArtefactValidation('gstin', "gstin_verification_status");
+
+        //Queue::assertPushed(UpdateMerchantContext::class, 5);
     }
 
     public function verifyArtefactValidation(string $artefactType, string $documentTypeStatusKey)
@@ -387,6 +393,7 @@ class BvsValidationTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $mid = $merchantDetail->getId();
+
 
         $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
             'owner_id'      => $mid,

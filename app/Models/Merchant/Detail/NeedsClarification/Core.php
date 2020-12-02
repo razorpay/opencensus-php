@@ -2,14 +2,18 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
-use RZP\Constants\Entity;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Type as DocumentType;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Models\Merchant\Detail\ActivationFields as ActivationFields;
+use RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer\Factory;
 
 /**
  * This class contains logic specific to kyc clarification
@@ -18,6 +22,67 @@ use RZP\Models\Merchant\Detail\ActivationFields as ActivationFields;
  */
 class Core extends Base\Core
 {
+    /**
+     * @param DetailEntity $merchantDetails
+     *
+     * @return bool
+     */
+    public function shouldTriggerNeedsClarification(DetailEntity $merchantDetails): bool
+    {
+        $statusChangeLogs = (new MerchantCore)->getActivationStatusChangeLog($merchantDetails->merchant);
+
+        $needsClarificationCount = (new MerchantDetailCore())->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+
+        //
+        // If we have already raised needs clarification flow once then don't raise it again
+        //
+        if ($needsClarificationCount >= 1)
+        {
+            return false;
+        }
+
+        //
+        // If all statuses are verified then don't trigger needs clarification request
+        //
+        return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($merchantDetails);
+    }
+
+    /**
+     * @param DetailEntity $merchantDetail
+     *
+     * @return array
+     * @throws \RZP\Exception\LogicException
+     */
+    public function composeNeedsClarificationReason(DetailEntity $merchantDetail): array
+    {
+        $clarificationKeys = (new UpdateContextRequirements())->getClarificationKeys($merchantDetail);
+
+        $kycClarificationReasons = [];
+
+        $factory = new Factory($merchantDetail);
+
+        foreach ($clarificationKeys as $clarificationKey)
+        {
+            $clarificationMetadata = NeedsClarificationMetaData::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA[$clarificationKey] ?? [];
+
+            //
+            // If clarification metadata is not defined then continue
+            //
+            if (empty($clarificationMetadata) === true)
+            {
+                continue;
+            }
+
+            $reason = $factory->getClarificationReasonComposer($clarificationMetadata)->getClarificationReason();
+
+            $kycClarificationReasons[DetailEntity::KYC_CLARIFICATION_REASONS] = $this->mergeKycClarificationReasons(
+                $kycClarificationReasons[DetailEntity::KYC_CLARIFICATION_REASONS] ?? [],
+                $reason[$merchantDetail::CLARIFICATION_REASONS] ?? [],
+                $reason[$merchantDetail::ADDITIONAL_DETAILS] ?? []);
+        }
+
+        return $kycClarificationReasons;
+    }
 
     /**
      * Merge clarification reason and additional details with existing kyc clarification reasons
@@ -59,6 +124,7 @@ class Core extends Base\Core
 
         return $kycClarificationReason;
     }
+
     /**
      * Returns Formatted Kyc clarification reason
      *
@@ -90,14 +156,15 @@ class Core extends Base\Core
 
     protected function getLatestAdminCommentForField(array $reasons)
     {
-        $lastReason = [];
+        $lastReason  = [];
         $requirement = [];
         foreach ($reasons as $reason)
         {
             $lastReason = $reason;
         }
 
-        if(!empty($lastReason) and $lastReason[MerchantConstant::REASON_FROM] === Entity::ADMIN)
+        if ((empty($lastReason) === false) and
+            (in_array($lastReason[MerchantConstant::REASON_FROM], DetailConstant::NEEDS_CLARIFICATION_SOURCES, true) === true))
         {
             if ($lastReason[MerchantConstant::REASON_TYPE] === MerchantConstant::PREDEFINED_REASON_TYPE)
             {
@@ -125,7 +192,7 @@ class Core extends Base\Core
         {
             $requirement = $this->getLatestAdminCommentForField($reasons);
 
-            if(!empty($requirement))
+            if (!empty($requirement))
             {
                 $requirement[Constants::DISPLAY_NAME] = ActivationFields::getFieldDisplayName($fieldName);
 

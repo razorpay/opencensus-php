@@ -2,23 +2,35 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Document\Type as DocumentType;
+use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList as ReasonList;
 
 class NeedsClarificationMetaData
 {
-    const DESCRIPTION    = 'description';
-    const REASONS        = 'reasons';
-    const OTHERS         = 'others';
+    const DESCRIPTION                              = 'description';
+    const REASONS                                  = 'reasons';
+    const OTHERS                                   = 'others';
+    const FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY = 'FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY';
+    const NEEDS_CLARIFICATION_VERSION              = 'needs_clarification_version';
+    const VERSION_V1                               = 'V1';
+    const VERSION_V2                               = 'V2';
 
     const REASON_MAPPING = [
         Entity::CONTACT_NAME                    => [ReasonList::PROVIDE_POC],
         Entity::CONTACT_MOBILE                  => [ReasonList::INVALID_CONTACT_NUMBER],
         Entity::BUSINESS_TYPE                   => [ReasonList::IS_COMPANY_REG],
         Entity::BUSINESS_WEBSITE                => [ReasonList::WEBSITE_NOT_LIVE],
+        Entity::GSTIN                           => [ReasonList::INVALID_GSTIN_NUMBER,
+                                                    ReasonList::GSTIN_DATA_UNAVAILABLE],
+        Entity::COMPANY_CIN                     => [ReasonList::INVALID_CIN_NUMBER,
+                                                    ReasonList::CIN_DATA_UNAVAILABLE,
+                                                    ReasonList::INVALID_LLPIN_NUMBER,
+                                                    ReasonList::LLPIN_DATA_UNAVAILABLE],
         Entity::PROMOTER_PAN                    => [ReasonList::UPDATE_DIRECTOR_PAN,
-                                                    ReasonList::UPDATE_PROPRIETOR_PAN,
-        ],
+                                                    ReasonList::UPDATE_PROPRIETOR_PAN,],
         Entity::COMPANY_PAN_NAME                => [ReasonList::UPDATE_DIRECTOR_PAN],
         Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER],
         Entity::BANK_ACCOUNT_NAME               => [ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME],
@@ -65,6 +77,59 @@ class NeedsClarificationMetaData
                                                     ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT],
         DocumentType::MEMORANDUM_OF_ASSOCIATION => [ReasonList::AUTHORIZED_SIGNATORY_MISMATCH,
                                                     ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT]
+    ];
+
+    /**
+     * Version :
+     *  V1 : If Verification is done by any system other than bvs
+     *  V2 : If verification is done by bvs
+     */
+    const SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
+        Constants::GSTIN_IDENTIFER     => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::GSTIN,
+            Constants::FIELD_NAME                          => Entity::GSTIN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_GSTIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::GSTIN_DATA_UNAVAILABLE,
+            ],
+        ],
+        Constants::CIN_IDENTIFER       => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::CIN,
+            Constants::FIELD_NAME                          => Entity::COMPANY_CIN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_CIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::CIN_DATA_UNAVAILABLE,
+            ],
+        ],
+        Constants::LLPIN_IDENTIFIER    => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::LLPIN,
+            Constants::FIELD_NAME                          => Entity::COMPANY_CIN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_LLPIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::LLPIN_DATA_UNAVAILABLE,
+            ],],
+        Constants::BANK_ACCOUNT_NUMBER => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V1,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BANK_ACCOUNT,
+            Constants::FIELD_NAME                          => DocumentType::CANCELLED_CHEQUE,
+            Constants::FIELD_TYPE                          => Constants::DOCUMENT,
+        ],
+        Constants::SHOP_ESTABLISHMENT_IDENTIFIER => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Entity::SHOP_ESTABLISHMENT_NUMBER,
+            Constants::FIELD_NAME                          => Entity::SHOP_ESTABLISHMENT_NUMBER,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::SHOP_ESTABLISHMENT_DATA_UNAVAILABLE,
+            ],
+        ]
     ];
 
     // Supported additional text fields from merchants

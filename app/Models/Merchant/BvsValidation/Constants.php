@@ -55,6 +55,10 @@ class Constants
     const PENDING           = 'pending';
     const INITIATED         = 'initiated';
 
+    // error codes
+    const INPUT_DATA_ISSUE = 'INPUT_DATA_ISSUE';
+    const DATA_UNAVAILABLE = 'DATA_UNAVAILABLE';
+
     const ERROR_MAPPING = [
         self::FAILED            => [
             'NO_PROVIDER_ERROR',

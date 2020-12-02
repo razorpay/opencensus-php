@@ -156,12 +156,20 @@ class Core extends Base\Core
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
-    public function getNcCount($statusChangeLogs)
+    /**
+     * @param        $statusChangeLogs
+     * @param string $status
+     *
+     * @return int
+     */
+    public function getStatusChangeCount($statusChangeLogs, string $status)
     {
         $count = 0;
 
-        foreach ($statusChangeLogs as $statusData) {
-            if ($statusData[State\Entity::NAME] === Status::UNDER_REVIEW) {
+        foreach ($statusChangeLogs as $statusData)
+        {
+            if ($statusData[State\Entity::NAME] === $status)
+            {
                 $count++;
             }
         }
@@ -1060,11 +1068,21 @@ class Core extends Base\Core
 
     /**
      * This function is used to detect the sender for kyc communication
+     *
+     * @param string|null $source
+     *
      * @return string
      */
-    protected function getSender()
+    protected function getSender(?string $source)
     {
+        if ($source !== null)
+        {
+            return $source;
+        }
+
+        //
         // If admin auth then sender will be admin
+        //
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             return \RZP\Constants\Entity::ADMIN;
@@ -1076,15 +1094,18 @@ class Core extends Base\Core
     /**
      * This function is used to get the updated kyc clarification reasons
      * with the sender info and the timestamp
-     * @param array $input
-     * @param string $merchantId
+     *
+     * @param array       $input
+     * @param string      $merchantId
+     * @param string|null $source
+     *
      * @return array
      */
-    public function getupdatedKycClarificationReasons(array $input, string $merchantId)
+    public function getUpdatedKycClarificationReasons(array $input, string $merchantId, ?string $source = null): array
     {
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
-        $existingKycClarifications = $merchantDetails->getKycClarificationReasons();
+        $existingKycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
         $newKycClarifications = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
         $existingReasons = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? [];
         $newAdditionalDetails = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
@@ -1097,13 +1118,13 @@ class Core extends Base\Core
 
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
-        $ncCount = $this->getNcCount($statusChangeLogs);
+        $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
 
         foreach ($newReasons as $key => $values)
         {
             foreach ($values as &$val)
             {
-                $val[Merchant\Constants::REASON_FROM] = $this->getSender();
+                $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
                 $val[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
                 $val[Merchant\Constants::NC_COUNT] = $ncCount;
             }
@@ -1144,7 +1165,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $kycClarificationReasons = $this->getupdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
+        $kycClarificationReasons = $this->getUpdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
 
         if(empty($kycClarificationReasons) === false)
         {

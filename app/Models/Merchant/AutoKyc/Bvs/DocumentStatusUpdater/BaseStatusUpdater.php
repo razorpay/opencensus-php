@@ -4,12 +4,16 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use App;
 
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\BvsValidation\Constants;
@@ -101,10 +105,23 @@ abstract class BaseStatusUpdater implements StatusUpdater
             return;
         }
 
+        $merchantId =  $this->merchantDetails->getId();
+
+        $isSystemBasedNeedsClarificationEnabled = (new MerchantCore())->isRazorxExperimentEnable(
+            $merchantId,
+            RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION);
+
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
-            'merchant_id'   => $this->merchantDetails->getId(),
-            'artefact_type' => $this->artefactType,
+            'artefact_type'     => $this->artefactType,
+            'experiment_status' => $isSystemBasedNeedsClarificationEnabled,
         ]);
+
+        if ($isSystemBasedNeedsClarificationEnabled === true)
+        {
+            UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId);
+
+            return;
+        }
 
         $newActivationStatus = $this->getUpdatedActivationStatus();
 

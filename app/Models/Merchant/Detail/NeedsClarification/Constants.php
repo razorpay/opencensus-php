@@ -5,10 +5,24 @@ namespace RZP\Models\Merchant\Detail\NeedsClarification;
 class Constants
 {
     const FIELD_NAME         = 'field_name';
+    const FIELD_TYPE         = 'field_type';
+    const TEXT               = 'text';
+    const DOCUMENT           = 'document';
     const REASON_CODE        = 'reason_code';
     const REASON             = 'reason';
     const REASON_DESCRIPTION = 'reason_description';
     const FIELDS             = 'fields';
     const DOCUMENTS          = 'documents';
     const DISPLAY_NAME       = 'display_name';
+    const REASON_MAPPING     = 'reason_mapping';
+
+    // needs clarification field names
+    const BANK_ACCOUNT_NUMBER           = 'bank_account_number';
+    const PERSONAL_PAN_IDENTIFIER       = 'personal_pan_identifier';
+    const COMPANY_PAN_IDENTIFIER        = 'company_pan_identifier';
+    const POA_DOC                       = 'poa_doc';
+    const GSTIN_IDENTIFER               = 'gstin_identifier';
+    const CIN_IDENTIFER                 = 'cin_identifier';
+    const LLPIN_IDENTIFIER              = 'llpin_identifier';
+    const SHOP_ESTABLISHMENT_IDENTIFIER = 'shop_establishment_identifier';
 }
