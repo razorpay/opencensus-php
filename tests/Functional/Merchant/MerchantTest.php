@@ -3341,6 +3341,56 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testPreferencesAfterFilterForMinimumAmountWithOrderAmountGreater()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create(['receipt' => 'check001', 'amount' => '200000']);
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testPreferencesAfterFilterForMinimumAmountWithOrderAmountLess()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create(['receipt' => 'check002', 'amount' => '1000']);
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testPreferencesAfterFilterForMinimumAmountWithoutOrderOrAmount()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+        $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
+    }
+
     public function testPreferenceforForcedOfferWithMethod()
     {
         $this->ba->publicAuth();

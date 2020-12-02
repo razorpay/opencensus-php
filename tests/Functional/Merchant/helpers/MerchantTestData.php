@@ -2433,6 +2433,72 @@ return [
         ],
     ],
 
+    'testPreferencesAfterFilterForMinimumAmountWithOrderAmountLess' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '200000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'paylater' => [
+                        'icic' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesAfterFilterForMinimumAmountWithOrderAmountGreater' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '100'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'paylater' => [
+                        'icic' => true,
+                        'hdfc' => true,
+
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesAfterFilterForMinimumAmountWithoutOrderOrAmount' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'paylater' => [
+                        'icic' => true,
+                        'hdfc' => true,
+
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPreferenceforTpvMerchantWithOrder' => [
         'request'  => [
             'url'    => '/preferences',
