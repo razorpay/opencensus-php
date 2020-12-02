@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
 
+use RZP\Exception\BadRequestException;
+
 class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 {
     public function setUp()
@@ -21,5 +23,17 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+    }
+
+    public function testIciciRecurringMandateInvalidPsp(){
+
+        $this->payment['vpa'] = 'razoypay@okicici'; // override the vpa to test this scenario in TEST env
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->testRecurringMandateCreate();
+        },
+            BadRequestException::class,
+            "App not Supported for Upi AutoPay");
     }
 }

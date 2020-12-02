@@ -296,6 +296,9 @@ class ProviderCode
         self::ICICI         => ProviderPsp::WHATSAPP,
         self::PAYTM         => ProviderPsp::PAYTM,
         self::YBL           => ProviderPsp::PHONEPE,
+
+        // used only for testing
+        self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];
 
     /**
@@ -320,6 +323,15 @@ class ProviderCode
         self::ICICI,
         self::YBL,
         self::SIB,
+    ];
+
+    /**
+     * @see https://www.bhimupi.org.in/list-banks-and-apps-live-upi-autopay
+     * @var array Psp Provider supporting AutoPay
+     */
+    protected static $validAutoPayPspProvider = [
+        ProviderPsp::BHIM,
+        ProviderPsp::PAYTM,
     ];
 
     public static function getBankCode($provider)
@@ -362,5 +374,23 @@ class ProviderCode
         }
 
         return (array_search($bankCode, self::$validOtmProviders) !== false);
+    }
+
+    public static function validateAutoPayPspProvider(string $vpa, bool $isTestMode = false)
+    {
+        $psp = self::getPspForVpa($vpa);
+
+        $testModeProvider = [
+            ProviderPsp::RAZORPAY,
+            ProviderPsp::WHATSAPP,
+        ];
+
+        if (($isTestMode === true) and
+            (array_search($psp, $testModeProvider) !== false))
+        {
+            return true;
+        }
+
+        return (array_search($psp, self::$validAutoPayPspProvider) !== false);
     }
 }

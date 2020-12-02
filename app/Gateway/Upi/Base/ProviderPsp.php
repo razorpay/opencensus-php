@@ -10,4 +10,7 @@ class ProviderPsp
     const PHONEPE       = 'phonepe';
     const WHATSAPP      = 'whatsapp';
     const AMAZON_PAY    = 'amazon_pay';
+
+    // used only for testing.
+    const RAZORPAY      = 'razorpay';
 }

@@ -52,6 +52,13 @@ trait UpiTrait
         return false;
     }
 
+    public function isUpiRecurringPayment($input): bool
+    {
+        return ((isset($input[Method::UPI]) === true) and
+                (isset($input[Payment\Entity::RECURRING]) === true) and
+                ((bool)$input[Payment\Entity::RECURRING] === true));
+    }
+
     public function getUpiExpiryTime($input)
     {
         return $input['upi']['expiry_time'] ?? null;
