@@ -42,12 +42,12 @@ class ChannelNotification
     protected $templateMap = [
         'partner_resolved_sms_template'   => 'sms.payout.partner_downtime_resolved',
         'partner_downtime_sms_template'   => 'sms.payout.partner_downtime_created',
-        'partner_downtime_email_template' => 'emails.payout.partner_downtime_created',
-        'partner_resolved_email_template' => 'emails.payout.partner_downtime_resolved',
+        'partner_downtime_email_template' => 'emails.payout.partner_bank_downtime_email',
+        'partner_resolved_email_template' => 'emails.payout.partner_bank_downtime_resolution_email',
         'bene_resolved_sms_template'      => 'sms.payout.bene_downtime_resolved',
         'bene_downtime_sms_template'      => 'sms.payout.bene_downtime_created',
-        'bene_downtime_email_template'    => 'emails.payout.bene_downtime_created',
-        'bene_resolved_email_template'    => 'emails.payout.bene_downtime_resolved',
+        'bene_downtime_email_template'    => 'emails.payout.bene_bank_downtime_email',
+        'bene_resolved_email_template'    => 'emails.payout.bene_bank_downtime_resolution_email',
     ];
 
     public function __construct($app)
@@ -225,24 +225,24 @@ class ChannelNotification
         {
             if ((isset($result['status']) === true) and $result['status'] === 'UP')
             {
-                $subject = 'You can now process transactions to vendors through RazorpayX.';
+                $subject = 'RazorpayX: Service available | You can now process payouts through RazorpayX';
             }
             else
             {
-                $subject = 'High failure rates observed for transactions on RazorpayX';
+                $subject = 'RazorpayX: Service downtime alert';
             }
         }
         else
         {
             if ((isset($result['status']) === true) and $result['status'] === 'UP')
             {
-                $subject = 'You can now process transactions to vendors with ' .
-                    $result['channel'] . '  account.';
+                $subject = 'RazorpayX: Service resumed | ' .
+                    $result['channel'] . '  beneficiaries are now available to accept payouts.';
             }
             else
             {
-                $subject = 'Issue with payments to vendor with ' .
-                    $result['channel'] . ' account due to high failure rates';
+                $subject = 'RazorpayX: Service downtime | ' .
+                    $result['channel'] . ' beneficiaries are facing failures in receiving payouts.';
             }
         }
 
