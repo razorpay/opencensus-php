@@ -160,6 +160,8 @@ class Constants
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
 
+    const P2P_UPI                         = 'p2p_upi';
+
 
     /**
      * Disables retry option in checkout
@@ -782,6 +784,7 @@ class Constants
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
+        self::P2P_UPI                         => true,
     ];
 
     // Entity type constants

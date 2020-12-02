@@ -97,7 +97,13 @@ class Event
     const PAYMENT_LINK_CANCELLED            = 'payment_link.cancelled';
     const BANKING_ACCOUNTS_ISSUED           = 'banking_accounts.issued';
     const PAYMENT_PAGE_PAID                 = 'payment_page.paid';
-
+    const P2P_TRANSACTION_CREATED           = 'customer.transaction.created';
+    const P2P_TRANSACTION_COMPLETED         = 'customer.transaction.completed';
+    const P2P_TRANSACTION_FAILED            = 'customer.transaction.failed';
+    const P2P_VPA_CREATED                   = 'customer.vpa.created';
+    const P2P_VPA_DELETED                   = 'customer.vpa.deleted';
+    const P2P_VERIFICATION_COMPLETED        = 'customer.verification.completed';
+    const P2P_DEREGISTRATION_COMPLETED      = 'customer.deregistration.completed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -182,6 +188,13 @@ class Event
         self::PAYMENT_LINK_CANCELLED,
         self::BANKING_ACCOUNTS_ISSUED,
         self::PAYMENT_PAGE_PAID,
+        self::P2P_TRANSACTION_CREATED,
+        self::P2P_TRANSACTION_COMPLETED,
+        self::P2P_TRANSACTION_FAILED,
+        self::P2P_VPA_CREATED,
+        self::P2P_VPA_DELETED,
+        self::P2P_VERIFICATION_COMPLETED,
+        self::P2P_DEREGISTRATION_COMPLETED,
     ];
 
     /**
@@ -273,6 +286,13 @@ class Event
         self::PAYMENT_LINK_CANCELLED,
         self::BANKING_ACCOUNTS_ISSUED,
         self::PAYMENT_PAGE_PAID,
+        self::P2P_TRANSACTION_CREATED,
+        self::P2P_TRANSACTION_COMPLETED,
+        self::P2P_TRANSACTION_FAILED,
+        self::P2P_VPA_CREATED,
+        self::P2P_VPA_DELETED,
+        self::P2P_VERIFICATION_COMPLETED,
+        self::P2P_DEREGISTRATION_COMPLETED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -450,6 +470,13 @@ class Event
         self::PAYMENT_LINK_EXPIRED              => [Product::PRIMARY],
         self::PAYMENT_LINK_CANCELLED            => [Product::PRIMARY],
         self::BANKING_ACCOUNTS_ISSUED           => [Product::PRIMARY],
+        self::P2P_TRANSACTION_CREATED           => [Product::PRIMARY],
+        self::P2P_TRANSACTION_COMPLETED         => [Product::PRIMARY],
+        self::P2P_TRANSACTION_FAILED            => [Product::PRIMARY],
+        self::P2P_VPA_CREATED                   => [Product::PRIMARY],
+        self::P2P_VPA_DELETED                   => [Product::PRIMARY],
+        self::P2P_VERIFICATION_COMPLETED        => [Product::PRIMARY],
+        self::P2P_DEREGISTRATION_COMPLETED      => [Product::PRIMARY],
     ];
 
     /**
@@ -533,6 +560,13 @@ class Event
         self::PAYOUT_PENDING                    => Entity::PAYOUT,
         self::BANKING_ACCOUNTS_ISSUED           => Entity::MERCHANT,
         self::PAYMENT_PAGE_PAID                 => Entity::PAYMENT_PAGE,
+        self::P2P_TRANSACTION_CREATED           => Entity::P2P_TRANSACTION,
+        self::P2P_TRANSACTION_COMPLETED         => Entity::P2P_TRANSACTION,
+        self::P2P_TRANSACTION_FAILED            => Entity::P2P_TRANSACTION,
+        self::P2P_VPA_CREATED                   => Entity::P2P_VPA,
+        self::P2P_VPA_DELETED                   => Entity::P2P_VPA,
+        self::P2P_VERIFICATION_COMPLETED        => Entity::P2P_DEVICE,
+        self::P2P_DEREGISTRATION_COMPLETED      => Entity::P2P_DEVICE,
     ];
 
     public static $eventsToFeatureMap = [
@@ -590,6 +624,13 @@ class Event
         self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
         self::BANKING_ACCOUNTS_ISSUED           => Feature\Constants::BANKING_ACCOUNTS_ISSUED,
         self::REFUND_ARN_UPDATED                => Feature\Constants::REFUND_ARN_WEBHOOK,
+        self::P2P_TRANSACTION_CREATED           => Feature\Constants::P2P_UPI,
+        self::P2P_TRANSACTION_COMPLETED         => Feature\Constants::P2P_UPI,
+        self::P2P_TRANSACTION_FAILED            => Feature\Constants::P2P_UPI,
+        self::P2P_VPA_CREATED                   => Feature\Constants::P2P_UPI,
+        self::P2P_VPA_DELETED                   => Feature\Constants::P2P_UPI,
+        self::P2P_VERIFICATION_COMPLETED        => Feature\Constants::P2P_UPI,
+        self::P2P_DEREGISTRATION_COMPLETED      => Feature\Constants::P2P_UPI,
     ];
 
     public static function getLaunchedEventNames()

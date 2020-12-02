@@ -1839,4 +1839,9 @@ class FeaturesTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testP2pUpiFeature()
+    {
+        $this->startTest();
+    }
 }

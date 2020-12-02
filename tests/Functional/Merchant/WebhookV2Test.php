@@ -399,4 +399,19 @@ class WebhookV2Test extends TestCase
             ]
         );
     }
+
+    public function testGetP2pWebhookEvents()
+    {
+        $this->fixtures->merchant->addFeatures(['p2p_upi']);
+
+        $response = $this->startTest();
+
+        $this->assertContains('customer.transaction.created', $response);
+        $this->assertContains('customer.transaction.completed', $response);
+        $this->assertContains('customer.transaction.failed', $response);
+        $this->assertContains('customer.vpa.created', $response);
+        $this->assertContains('customer.vpa.deleted', $response);
+        $this->assertContains('customer.verification.completed', $response);
+        $this->assertContains('customer.deregistration.completed', $response);
+    }
 }

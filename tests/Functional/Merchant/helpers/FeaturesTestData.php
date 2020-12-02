@@ -1397,4 +1397,30 @@ return [
             ]
         ]
     ],
+
+    'testP2pUpiFeature' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['p2p_upi'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                'name' => 'p2p_upi',
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant',
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

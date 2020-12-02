@@ -1019,4 +1019,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testGetP2pWebhookEvents' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ],
+        ],
+    ],
 ];
