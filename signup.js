@@ -8,7 +8,7 @@ let content = [].concat
   .apply(
     [],
     [
-      'public/js/jquery/jquery-2.1.4.min.js',
+      'public/js/jquery/jquery-3.5.1.min.js',
       'public/js/angular/angular.min.js',
       'public/js/angular/angular-cookies.min.js',
       'public/js/angular/angular-animate.min.js',
