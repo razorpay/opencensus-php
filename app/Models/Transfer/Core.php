@@ -68,17 +68,17 @@ class Core extends Base\Core
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
 
-            if ($transfer->isProcessed() === true)
-            {
-                $this->eventTransferProcessed($transfer);
-            }
-
             $this->trace->info(
                 TraceCode::TRANSFER_CREATE_SUCCESS,
                 ['transfer_id' => $transfer->getId()]);
 
             return $transfer;
         });
+
+        if ($transfer->isProcessed() === true)
+        {
+            $this->eventTransferProcessed($transfer);
+        }
 
         return $transfer;
     }
