@@ -8,8 +8,9 @@
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 
+Note: Please ensure that you install composer 1.x.x and not 2.x.x, as the latest version of composer is incompatible with our codebase, and causes issues during ``composer install``. If you are already at composer 2.x.x use ``composer self-update 1.10.17`` to downgrade.
 
-### (Docker) 
+### (Docker)
 
 * [Refer Docker](readme-docker.md)
 
