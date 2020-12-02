@@ -3532,6 +3532,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace DataWarehouse fetch duration
     const DATA_WAREHOUSE_RESPONSE_DURATION                       = 'DATA_WAREHOUSE_RESPONSE_DURATION';
+    const DATA_WAREHOUSE_REPLICATION_LAG                         = 'DATA_WAREHOUSE_REPLICATION_LAG';
 
     // Low Balance Config
     const LOW_BALANCE_CONFIG_CREATE_REQUEST                      = 'LOW_BALANCE_CONFIG_CREATE_REQUEST';

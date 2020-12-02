@@ -995,9 +995,14 @@ class Repository extends \Razorpay\Spine\Repository
 
         $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), $experiment, $mode);
 
-        $isReplicationLag = (new ConnectionHeartbeatLagChecker($connection))->isConnectionLagging();
+        if ($experimentResult === 'enable')
+        {
+            $isReplicationLag = (new ConnectionHeartbeatLagChecker($connection))->isConnectionLagging();
 
-        return ($experimentResult === 'enable') && ($isReplicationLag === false);
+            return $isReplicationLag === false;
+        }
+
+        return false;
     }
 
     protected function getDataWarehouseConnection()

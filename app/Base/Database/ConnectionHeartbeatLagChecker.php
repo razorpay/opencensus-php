@@ -51,11 +51,10 @@ class ConnectionHeartbeatLagChecker
 
             $password = $this->config['read']['password'] ?? $this->config['password'];
 
-            $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
-
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            $pdo->setAttribute(PDO::ATTR_TIMEOUT, 2);
+            $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password, array(
+                PDO::ATTR_TIMEOUT => 1, // in seconds
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ));
 
             return $pdo;
         }
@@ -99,6 +98,12 @@ class ConnectionHeartbeatLagChecker
         $pdo = null;
 
         $this->trace->histogram(Metric::DATAWAREHOUSE_REPLICATION_LAG, $this->lag);
+
+        $this->trace->info(TraceCode::DATA_WAREHOUSE_REPLICATION_LAG, [
+            'lag'       => $this->lag,
+            'threshold' => $lagThreshold,
+            'is_lag'    => ($this->lag > $lagThreshold),
+        ]);
 
         return ($this->lag > $lagThreshold);
     }
