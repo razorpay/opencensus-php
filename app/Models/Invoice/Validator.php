@@ -285,6 +285,7 @@ class Validator extends Base\Validator
 
     protected static $paymentLinkServiceSendEmailRules = [
         E::INVOICE          => 'required|array',
+        E::PAYMENT          => 'sometimes|array',
         'to'                => 'required|email',
         'view'              => 'required|string|custom',
         'subject'           => 'required|string',
