@@ -349,7 +349,7 @@ class Preferences
         self::MID_VOCATIONAL_EDU,
     ];
 
-    const TRANSFER_PROCESSED_SETTLED_WEBHOOK_MIDS = [
+    const TRANSFER_SETTLED_WEBHOOK_MIDS = [
         self::MID_BSE,
         self::MID_ASHISH,
     ];

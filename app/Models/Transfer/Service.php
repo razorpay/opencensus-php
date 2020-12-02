@@ -101,7 +101,7 @@ class Service extends Base\Service
                         ]
                     );
 
-                    $this->fireTransferProcessedSettledWebhookIfApplicable($transferIds, $setl);
+                    $this->fireTransferSettledWebhookIfApplicable($transferIds, $setl);
                 }
                 $timeTaken = microtime(true) - $startTime;
 
@@ -648,7 +648,7 @@ class Service extends Base\Service
      * @param array $transferIds
      * @param Settlement $settlement
      */
-    protected function fireTransferProcessedSettledWebhookIfApplicable(array $transferIds, Settlement $settlement)
+    protected function fireTransferSettledWebhookIfApplicable(array $transferIds, Settlement $settlement)
     {
         if ($settlement->isStatusProcessed() === false)
         {
@@ -657,7 +657,7 @@ class Service extends Base\Service
 
         $linkedAccountId = $settlement->getMerchantId();
 
-        if (in_array($linkedAccountId, Merchant\Preferences::TRANSFER_PROCESSED_SETTLED_WEBHOOK_MIDS) === false)
+        if (in_array($linkedAccountId, Merchant\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === false)
         {
             return;
         }
@@ -672,7 +672,7 @@ class Service extends Base\Service
             }
 
             $this->trace->info(
-                TraceCode::FIRING_TRANSFER_PROCESSED_SETTLED_WEBHOOK,
+                TraceCode::FIRING_TRANSFER_SETTLED_WEBHOOK,
                 [
                     'linked_account_id' => $linkedAccountId,
                     'settlement_id'     => $settlement->getPublicId(),
@@ -680,17 +680,17 @@ class Service extends Base\Service
                 ]
             );
 
-            $this->fireTransferProcessedSettledWebhook($transfer, $settlement);
+            $this->fireTransferSettledWebhook($transfer, $settlement);
         }
     }
 
-    protected function fireTransferProcessedSettledWebhook(Entity $transfer, Settlement $settlement)
+    protected function fireTransferSettledWebhook(Entity $transfer, Settlement $settlement)
     {
         $eventPayload = [
             ApiEventSubscriber::MAIN => $transfer,
             ApiEventSubscriber::WITH => $settlement,
         ];
 
-        $this->app['events']->fire('api.transfer.processed.settled', $eventPayload);
+        $this->app['events']->fire('api.transfer.settled', $eventPayload);
     }
 }

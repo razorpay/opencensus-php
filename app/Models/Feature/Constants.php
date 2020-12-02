@@ -514,6 +514,7 @@ class Constants
      */
     const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
 
+    const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -780,6 +781,7 @@ class Constants
         self::REFUND_ARN_WEBHOOK              => true,
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
+        self::TRANSFER_SETTLED_WEBHOOK        => true,
     ];
 
     // Entity type constants
@@ -1088,7 +1090,12 @@ class Constants
             'feature'       => self::SETTLEMENTS_SMS_STOP,
             'display_name'  => 'Disable SMS notifications for settlements',
             'documentation' => '',
-        ]
+        ],
+        self::TRANSFER_SETTLED_WEBHOOK => [
+            'feature'       => self::TRANSFER_SETTLED_WEBHOOK,
+            'display_name'  => 'transfer.settled webhook',
+            'documentation' => '',
+        ],
     ];
 
     /**

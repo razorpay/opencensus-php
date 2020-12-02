@@ -368,7 +368,7 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
-    protected function onTransferProcessedSettled($transfer)
+    protected function onTransferSettled($transfer)
     {
         $payload = $this->getTransferPayloadWithSettlement($transfer);
 
