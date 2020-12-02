@@ -73,12 +73,13 @@ class Core extends Base\Core
                 continue;
             }
 
-            $reason = $factory->getClarificationReasonComposer($clarificationMetadata)->getClarificationReason();
+            $reason = $factory->getClarificationReasonComposer($clarificationMetadata)
+                              ->getClarificationReason();
 
-            $kycClarificationReasons[DetailEntity::KYC_CLARIFICATION_REASONS] = $this->mergeKycClarificationReasons(
-                $kycClarificationReasons[DetailEntity::KYC_CLARIFICATION_REASONS] ?? [],
-                $reason[$merchantDetail::CLARIFICATION_REASONS] ?? [],
-                $reason[$merchantDetail::ADDITIONAL_DETAILS] ?? []);
+            $kycClarificationReasons = $this->mergeKycClarificationReasons(
+                $kycClarificationReasons ?? [],
+                $reason[DetailEntity::CLARIFICATION_REASONS] ?? [],
+                $reason[DetailEntity::ADDITIONAL_DETAILS] ?? []);
         }
 
         return $kycClarificationReasons;

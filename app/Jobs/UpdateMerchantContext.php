@@ -100,8 +100,10 @@ class UpdateMerchantContext extends Job
 
                     if (empty($kycClarificationReasons) === false)
                     {
+                        $input[Entity::KYC_CLARIFICATION_REASONS] = $kycClarificationReasons;
+
                         $kycClarificationReasons = (new DetailCore())
-                            ->getUpdatedKycClarificationReasons($kycClarificationReasons, $merchantDetail->getId(), DetailConstant::SYSTEM);
+                            ->getUpdatedKycClarificationReasons($input, $merchantDetail->getId(), DetailConstant::SYSTEM);
 
                         $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
 

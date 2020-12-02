@@ -1106,12 +1106,14 @@ class Core extends Base\Core
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
         $existingKycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
-        $newKycClarifications = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
-        $existingReasons = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? [];
-        $newAdditionalDetails = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
-        $newReasons = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? [];
+        $existingReasons           = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
 
-        if(empty($newReasons) === true)
+        $newKycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
+        $newAdditionalDetails      = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $newReasons                = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+
+        if ((empty($newReasons) === true) and
+            (empty($newAdditionalDetails) === true))
         {
             return $existingKycClarifications;
         }
@@ -1120,22 +1122,30 @@ class Core extends Base\Core
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
 
-        foreach ($newReasons as $key => $values)
+        if (empty($newReasons) === false)
         {
-            foreach ($values as &$val)
-            {
-                $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
-                $val[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
-                $val[Merchant\Constants::NC_COUNT] = $ncCount;
-            }
+            //
+            // new reason is not null then reassign existing reason as we are appending new reasons in existing
+            //
+            $existingReasons = $existingReasons ?? [];
 
-            if(isset($existingReasons[$key]) === true)
+            foreach ($newReasons as $key => $values)
             {
-                array_push($existingReasons[$key], ...$values);
-            }
-            else
-            {
-                $existingReasons[$key] = $values;
+                foreach ($values as &$val)
+                {
+                    $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
+                    $val[Entity::CREATED_AT]              = Carbon::now(Timezone::IST)->getTimestamp();
+                    $val[Merchant\Constants::NC_COUNT]    = $ncCount;
+                }
+
+                if (isset($existingReasons[$key]) === true)
+                {
+                    array_push($existingReasons[$key], ...$values);
+                }
+                else
+                {
+                    $existingReasons[$key] = $values;
+                }
             }
         }
 
