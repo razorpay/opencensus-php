@@ -84,6 +84,8 @@ class Base
 
     const FTS_TEST_TRANSACTIONS_TRIGGER = '/channel_health_events/trigger_test_transactions';
 
+    const FTS_CHANNEL_HEALTH_EVENT_STATS = '/channel_health_events/stats';
+
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
 
     const FUND_TRANSFER_ATTEMPTS_INITIATE_URI = '/attempts/process';
