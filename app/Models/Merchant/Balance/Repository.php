@@ -34,6 +34,16 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function getBankingBalanceWithMerchantAndAccountNumberOrFail($merchantId, $accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->where(Entity::ACCOUNT_TYPE, '=', AccountType::SHARED)
+                    ->where(Entity::TYPE, '=', Type::BANKING)
+                    ->firstOrFail();
+    }
+
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()

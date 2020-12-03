@@ -49,6 +49,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSettlementAccountDetails($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::TYPE, Type::MERCHANT)
+                    ->where(function ($query) {
+                            $query->where(Entity::IFSC_CODE, '=', VirtualAccount\Provider::IFSC[VirtualAccount\Provider::YESBANK])
+                                  ->orWhere(Entity::IFSC_CODE, '=', VirtualAccount\Provider::IFSC[VirtualAccount\Provider::ICICI]);
+                            })
+                    ->pluck(Entity::ACCOUNT_NUMBER);
+    }
+
     /**
      * Returns an array of all the bank accounts for a merchant
      *

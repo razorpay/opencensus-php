@@ -32,6 +32,10 @@ class RazorpayXClient
 
     const GET = 'GET';
 
+    const ID = 'id';
+
+    const STATUS = 'status';
+
     protected $app;
 
     protected $trace;
@@ -124,7 +128,7 @@ class RazorpayXClient
         return $responseMap;
     }
 
-    public function makePayoutRequest($data, $idempotencyKey)
+    public function makePayoutRequest($data, $idempotencyKey, bool $isMerchantWithXSettlementAccount)
     {
         if ((empty($data['fund_account_id']) === true) ||
             (empty($data['amount']) === true) ||
@@ -137,12 +141,13 @@ class RazorpayXClient
         }
 
         $this->trace->info(TraceCode::CREATE_SETTLEMENT_ONDEMAND_PAYOUT_REQUEST, [
-            'settlement_ondemand_payout_id'   => $data['reference_id'],
-            'amount'                           => $data['amount'],
-        ]);
+                'settlement_ondemand_payout_id' => $data['reference_id'],
+                'amount'                        => $data['amount'],
+            ]);
 
-        $data = $data + ['account_number'=>Config::get('applications.razorpayx_client.live.ondemand_x_merchant.account_number'),
-                         'purpose' => self::PURPOSE];
+        $data = $data + ['account_number'=> Config::get('applications.razorpayx_client.live.ondemand_x_merchant.account_number'),
+                         'purpose'       => self::PURPOSE
+                        ];
 
         $customHeaders = [
             'X-Payout-Idempotency' => $idempotencyKey,
@@ -161,6 +166,15 @@ class RazorpayXClient
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_CREATION_FAILURE,
+                null,
+                null,
+                ['response' => $responseMap]);
+        }
+
+        if ($isMerchantWithXSettlementAccount and isset($responseMap['status']) === true and $responseMap['status'] === 'reversed')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL,
                 null,
                 null,
                 ['response' => $responseMap]);

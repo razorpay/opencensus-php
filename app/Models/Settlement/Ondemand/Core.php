@@ -17,9 +17,12 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Pricing\Feature as PricingFeature;
 
@@ -88,9 +91,35 @@ class Core extends Base\Core
 
         $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());
 
+        if ((new Service)->isMerchantWithXSettlementAccount($merchant->getId()))
+        {
+            (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand);
+        }
+
         $this->repo->saveOrFail($settlementOndemand);
 
         return [$settlementOndemand, $settlementOndemandPayouts, $txn];
+    }
+
+    public function isMerchantWithXSettlementAccount($merchantId) : bool
+    {
+        $accountNumber = (new BankAccount\Repository)->getSettlementAccountDetails($merchantId);
+
+        if(count($accountNumber) !== 0)
+        {
+            try
+            {
+                 (new Balance\Repository)->getBankingBalanceWithMerchantAndAccountNumberOrFail($merchantId, $accountNumber[0]);
+            }
+            catch (\Throwable $e)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function createTransaction($settlementOndemand)

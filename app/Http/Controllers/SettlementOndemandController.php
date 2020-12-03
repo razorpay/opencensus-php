@@ -20,6 +20,15 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function processXSettlementBulkTransfer()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_TRANSFER)->processXSettlementBulkTransfer();
+
+        return ApiResponse::json($data);
+    }
+
     public function createFundAccount()
     {
         $data = $this->service(Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT)->createFundAccount();

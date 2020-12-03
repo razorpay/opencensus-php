@@ -1548,6 +1548,13 @@ final class FactoryData
             'deleted_at'     => null,
         ]);
 
+        $factory(\RZP\Models\Settlement\Ondemand\Bulk\Entity::class,[
+            'id'                              => $faker->uniqueid,
+            'amount'                          => 20000,
+            'settlement_ondemand_id'          => $faker->uniqueid,
+            'settlement_ondemand_transfer_id' => NULL,
+        ]);
+
         $factory(\RZP\Models\Reward\Entity::class, [
             'id'             => $faker->uniqueid,
             'advertiser_id'  => '100000Razorpay',

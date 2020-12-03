@@ -38,6 +38,9 @@ return [
                 'account_number'    => env('ONDEMAND_X_MERCHANT_LIVE_ACCOUNT_NUMBER'),
                 'webhook_key'       => env('ONDEMAND_X_MERCHANT_LIVE_WEBHOOK_KEY'),
             ],
+            'ondemand_contact' => [
+                'fund_account_id' => env('ONDEMAND_CONTACT_FUND_ACCOUNT_ID'),
+            ],
         ]
     ],
 

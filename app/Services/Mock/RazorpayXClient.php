@@ -73,7 +73,7 @@ class RazorpayXClient extends BaseRazorpayXClient
         return $response;
     }
 
-    public function makePayoutRequest($data, $idempotencyKey)
+    public function makePayoutRequest($data, $idempotencyKey, $isMerchantWithXSettlementAccount)
     {
         if (empty($data['fund_account_id']) === true ||
             empty($data['amount']) === true ||
@@ -116,6 +116,15 @@ class RazorpayXClient extends BaseRazorpayXClient
         if ($data['amount'] === 859232)
         {
             $response['status'] = 'reversed';
+
+            if ($isMerchantWithXSettlementAccount)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL,
+                    null,
+                    null,
+                    ['response' => $response]);
+            }
         }
 
 

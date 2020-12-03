@@ -40,6 +40,8 @@ class Core extends Base\Core
 
     const PAYOUT_REVERSED_EVENT = 'payout.reversed';
 
+    const ADJUSTMENT = 'adjustment';
+
     const MIN_SPLIT_AMOUNT = 10000;
 
     public function __construct()
@@ -58,8 +60,15 @@ class Core extends Base\Core
 
     public function setMode()
     {
-        //Temporary fix - always returning IMPS to use PG ICIC nodal for X merchant
-        return FundTransfer\Mode::IMPS;
+        if((new Ondemand\Service)->isMerchantWithXSettlementAccount($this->merchant->getId()))
+        {
+            return FundTransfer\Mode::NEFT;
+        }
+        else
+        {
+            //Temporary fix - always returning IMPS to use PG ICIC nodal for X merchant
+            return FundTransfer\Mode::IMPS;
+        }
 
         //For ES_AUTOMATIC Merchants IMPS mode is used always regardless of banking or non-banking hour
         if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === true)
@@ -341,7 +350,7 @@ class Core extends Base\Core
             'reference_id'     => $settlementOndemandPayout->getId(),
         ];
 
-        $response = $this->app->razorpayXClient->makePayoutRequest($data, $settlementOndemandPayoutId);
+        $response = $this->app->razorpayXClient->makePayoutRequest($data, $settlementOndemandPayoutId, false);
 
         $status = $response['status'] ?: null;
 
@@ -373,5 +382,19 @@ class Core extends Base\Core
         (new Repository)->saveOrFail($settlementOndemandPayout);
 
         return $feesSplit;
+    }
+
+    public function setAdjustmentId($settlementOndemandPayouts, $adjId)
+    {
+        foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+        {
+            $settlementOndemandPayout->setPayoutId($adjId);
+
+            $settlementOndemandPayout->setEntityType(self::ADJUSTMENT);
+
+            $settlementOndemandPayout->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($settlementOndemandPayout);
+        }
     }
 }

@@ -276,6 +276,9 @@ class Table
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
 
     const SETTLEMENT_ONDEMAND_FUND_ACCOUNT = 'settlement_ondemand_fund_accounts';
+    const SETTLEMENT_ONDEMAND_TRANSFER     = 'settlement_ondemand_transfer';
+    const SETTLEMENT_ONDEMAND_BULK         = 'settlement_ondemand_bulk';
+    const SETTLEMENT_ONDEMAND_ATTEMPT      = 'settlement_ondemand_attempts';
 
     const CREDITNOTE           = 'creditnote';
 
@@ -331,6 +334,9 @@ class Table
         Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT,
         Entity::SETTLEMENT_ONDEMAND              => self::SETTLEMENT_ONDEMAND,
         Entity::SETTLEMENT_ONDEMAND_PAYOUT       => self::SETTLEMENT_ONDEMAND_PAYOUT,
+        Entity::SETTLEMENT_ONDEMAND_BULK         => self::SETTLEMENT_ONDEMAND_BULK,
+        Entity::SETTLEMENT_ONDEMAND_TRANSFER     => self::SETTLEMENT_ONDEMAND_TRANSFER,
+        Entity::SETTLEMENT_ONDEMAND_ATTEMPT      => self::SETTLEMENT_ONDEMAND_ATTEMPT,
     ];
 
     public static function getTableNameForEntity(string $entity)

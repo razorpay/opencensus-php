@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const USER_ID                = 'user_id';
     const SETTLEMENT_ONDEMAND_ID = 'settlement_ondemand_id';
     const PAYOUT_ID              = 'payout_id';
+    const ENTITY_TYPE            = 'entity_type';
     const MODE                   = 'mode';
     const INITIATED_AT           = 'initiated_at';
     const PROCESSED_AT           = 'processed_at';
@@ -202,6 +203,11 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($time)
     {
         $this->setAttribute(self::REVERSED_AT, $time);
+    }
+
+    public function setEntityType($entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 
     public function toArrayPublic()

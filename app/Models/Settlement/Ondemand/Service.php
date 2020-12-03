@@ -19,11 +19,11 @@ use RZP\Models\Settlement\OndemandPayout;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
 class Service extends Base\Service
 {
     protected $settlementOndemandPayout;
-
 
     public function __construct()
     {
@@ -41,6 +41,13 @@ class Service extends Base\Service
         $finalFeesSplit= $this->core()->getFeesSplit($input, $this->merchant, $this->user);
 
         return $finalFeesSplit;
+    }
+
+    public function isMerchantWithXSettlementAccount($merchantId)
+    {
+        $isFeatureEnabled = $this->validateIfESOndemandXSettlementFeatureEnabled();
+
+        return $isFeatureEnabled and $this->core()->isMerchantWithXSettlementAccount($merchantId);
     }
 
     public function create(array $input): array
@@ -71,26 +78,53 @@ class Service extends Base\Service
                                                     $settlementOndemand->getId(),
                 Adjustment\Entity::CURRENCY     => 'INR',
                 Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-
             ];
 
             (new Adjustment\Service)->addAdjustment($adjInput);
         }
 
-        CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
-            $settlementOndemand->getMerchantId());
-
-        $settlementOndemand->setStatus(Status::INITIATED);
-
-        $this->repo->saveOrFail($settlementOndemand);
-
-        $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
-
-        if ($mockRazorpayX === true)
+        if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
         {
-            foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+            $merchantAdjInput = [
+                Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
+                Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                Adjustment\Entity::DESCRIPTION  => 'ondemand settlement for OndemandID - ' .
+                                                    $settlementOndemand->getId(),
+                Adjustment\Entity::CURRENCY     => 'INR',
+                Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+            ];
+
+            $settlementOndemand->setStatus(Status::INITIATED);
+
+            $this->repo->transaction(function () use ($merchantAdjInput, $settlementOndemandPayouts, $settlementOndemand)
             {
-                MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
+
+                (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
+
+                foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+                {
+                    $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
+                }
+            });
+        }
+        else
+        {
+            CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
+                $settlementOndemand->getMerchantId());
+
+            $settlementOndemand->setStatus(Status::INITIATED);
+
+            $this->repo->saveOrFail($settlementOndemand);
+
+            $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
+
+            if ($mockRazorpayX === true)
+            {
+                foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+                {
+                    MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                }
             }
         }
 
@@ -136,6 +170,11 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ES_ON_DEMAND_MERCHANTS_NOT_ALLOWED);
         }
+    }
+
+    public function validateIfESOndemandXSettlementFeatureEnabled()
+    {
+        return $this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_X_SETTLEMENT);
     }
 
     public function fetch(string $id, array $input): array

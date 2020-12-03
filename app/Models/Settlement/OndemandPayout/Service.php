@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Models\FundAccount;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\Ondemand\Attempt;
 
 class Service extends Base\Service
 {
@@ -61,10 +62,21 @@ class Service extends Base\Service
             'event'                            => $input['event'],
         ]);
 
-        return $this->repo->transaction(function() use ($event, $payoutData)
+        if($payoutData['fund_account_id'] ===
+            Config::get('applications.razorpayx_client.live.ondemand_contact.fund_account_id'))
         {
-            return $this->core()->updateOndemandPayoutStatus($event, $payoutData);
-        });
+            return $this->repo->transaction(function () use ($event, $payoutData)
+            {
+                return (new Attempt\Core)->updateOndemandBulkPayoutStatus($event, $payoutData);
+            });
+        }
+        else
+        {
+            return $this->repo->transaction(function () use ($event, $payoutData)
+            {
+                return $this->core()->updateOndemandPayoutStatus($event, $payoutData);
+            });
+        }
     }
 
     public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout, $response)

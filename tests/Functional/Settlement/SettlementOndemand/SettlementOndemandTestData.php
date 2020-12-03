@@ -722,5 +722,38 @@ return [
 //                'created_at'         => 1582000200,
             ]
         ]
-    ]
+    ],
+
+    'testOndemandCreationForMerchantWithXSettlementAccount' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 20030000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 20030000,
+                'fees'                  => 472708,
+                'tax'                   => 72108,
+                'amount_pending'        => 0,
+                'amount_settled'        => 19557292,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'processed',
+                'description'             => 'Demo Narration - optional',
+                'notes'                 => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ]
+        ]
+    ],
 ];

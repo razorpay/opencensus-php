@@ -1502,7 +1502,7 @@ class Route
         'settlement_ondemand_fees_dashboard'       => ['get',       'settlement/ondemand/fees/dashboard',            'SettlementOndemandController@calculateFees'                        ],
         'settlement_ondemand_fetch_by_id'          => ['get',       'settlements/ondemand/{id}',                     'SettlementOndemandController@getSettlementOndemand'                ],
         'settlement_ondemand_fetch'                => ['get',       'settlements/ondemand',                          'SettlementOndemandController@getMultipleSettlementOndemand'        ],
-
+        'settlement_ondemand_process'              => ['post',      'settlements/ondemand/process',                  'SettlementOndemandController@processXSettlementBulkTransfer'       ],
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -2502,6 +2502,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'settlement_ondemand_process',
         'internal_balance_fetch',
         'merchant_balance_create',
         'credit_repayment_transaction_create',
@@ -5345,6 +5346,7 @@ class Route
             'setl_reconcile_test',
             'setl_reconcile_pull',
             'setl_transaction_replay',
+            'settlement_ondemand_process',
             'nodal_initiate_transfer',
             'payment_timeout',
             'payment_auth_timeout',

@@ -33,6 +33,9 @@ class CreateSettlementOndemandPayoutsTable extends Migration
             $table->char(Entity::PAYOUT_ID)
                   ->nullable();
 
+            $table->string(Entity::ENTITY_TYPE)
+                  ->nullable();
+
             $table->string(Entity::MODE);
 
             $table->integer(Entity::INITIATED_AT)
@@ -69,7 +72,7 @@ class CreateSettlementOndemandPayoutsTable extends Migration
 
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
-            
+
             $table->index(Entity::SETTLEMENT_ONDEMAND_ID);
         });
     }

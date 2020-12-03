@@ -99,6 +99,7 @@ class Constants
     const ASYNC_CAPTURE                   = 'async_capture';
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
+    const ES_ON_DEMAND_X_SETTLEMENT       = 'es_on_demand_x_settlement';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
@@ -645,6 +646,7 @@ class Constants
         self::ASYNC_CAPTURE                   => true,
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
+        self::ES_ON_DEMAND_X_SETTLEMENT       => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
@@ -862,6 +864,11 @@ class Constants
         self::ES_ON_DEMAND              => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
+            'documentation' => '',
+        ],
+        self::ES_ON_DEMAND_X_SETTLEMENT => [
+            'feature'       => self::ES_ON_DEMAND_X_SETTLEMENT,
+            'display_name'  => 'Es Ondemand X Settlement',
             'documentation' => '',
         ],
         self::ES_AUTOMATIC              => [
