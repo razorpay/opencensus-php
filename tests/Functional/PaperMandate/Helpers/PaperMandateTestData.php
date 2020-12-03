@@ -31,7 +31,8 @@ return [
                         'bank_name' => 'HDFC',
                         'account_number' => '1111111111111',
                         'ifsc_code' => 'HDFC0001233',
-                        'beneficiary_name' => 'Gaurav Kumar',
+                        'beneficiary_name' => 'Gaurav Kumar lllllllllllllllllllllllllllllllllllll',
+                        'beneficiary_email' => 'gaurav.kumarwqqqwqwjkhwdjbwhbdbhjdbdbjdwbhjdbjd11111111111111111@example.com',
                         'beneficiary_mobile' => '9483159238'
                     ]
                 ]

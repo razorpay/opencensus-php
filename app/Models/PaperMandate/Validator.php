@@ -29,8 +29,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $bankAccountRules = [
-        BankAccount\Entity::BENEFICIARY_NAME   => 'required|between:4,32|string',
-        BankAccount\Entity::BENEFICIARY_EMAIL  => 'sometimes|email|max:30',
+        BankAccount\Entity::BENEFICIARY_NAME   => 'required|between:4,120|string',
+        BankAccount\Entity::BENEFICIARY_EMAIL  => 'sometimes|email',
         BankAccount\Entity::BENEFICIARY_MOBILE => 'sometimes|numeric|digits_between:10,12',
     ];
 
