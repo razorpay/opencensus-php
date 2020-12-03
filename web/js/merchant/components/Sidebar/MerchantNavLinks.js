@@ -61,7 +61,7 @@ export default function MerchantNavLinks(props) {
       />
       <MainNavLink
         label="Route"
-        icon="i i-store text-success"
+        icon="i i-route text-success"
         to={routes.marketplace}
         additionalCondition={(user) => user.isAllowedView('marketplace')}
       />
