@@ -20,8 +20,10 @@ trait Ticket
         return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
     }
 
-	private function changeTicketGroupToDispute() : array
+	private function changeTicketGroupToCspWithRelevantTags() : array
     {
+        $groupId = (int) $this->freshdeskCustomerDisputeConfig['customer_support_group_id'];
+
         $response = $this->app['freshdesk_client']->fetchTicketById($this->freshdeskTicket->getTicketId());
 
         $ticketTags = $response['tags'] ?? [];
@@ -32,6 +34,7 @@ trait Ticket
             Constants::FD_TAGS_PENDING_WITH_DISPUTES);
 
         $content = [
+            'group_id'     => $groupId,
             'status'       => Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
             'responder_id' => null, // unsetting automation agent
             'tags'         => $ticketTags,

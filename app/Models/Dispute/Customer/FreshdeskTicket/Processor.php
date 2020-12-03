@@ -179,6 +179,6 @@ class Processor
 
         $this->sendCreateDisputeEmail();
 
-        $this->changeTicketGroupToDispute();
+        $this->changeTicketGroupToCspWithRelevantTags();
     }
 }
