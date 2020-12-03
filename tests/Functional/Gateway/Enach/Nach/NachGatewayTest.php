@@ -302,6 +302,51 @@ class NachGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testGatewayFileSplitDebit()
+    {
+        $initialPayment = $this->createAcceptedToken();
+
+        for ($i = 0; $i <= 10; $i++)
+        {
+            $order = $this->fixtures->create('order', [
+                'amount' => 300000,
+                'method' => 'nach',
+            ]);
+
+            $payment = [
+                'contact'     => '9876543210',
+                'email'       => 'r@g.c',
+                'customer_id' => 'cust_1000000000cust',
+                'currency'    => 'INR',
+                'method'      => 'nach',
+                'amount'      => 300000,
+                'recurring'   => true,
+                'token'       => $initialPayment[Payment::TOKEN_ID],
+                'order_id'    => $order->getPublicId(),
+            ];
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/payments/create',
+                'content' => $payment
+            ];
+
+            $this->ba->privateAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }
+
+        $this->ba->cronAuth();
+
+        $data = $this->testData['testGatewayFileDebit'];
+
+        $this->startTest($data);
+
+        $files = $this->getEntities('file_store', ['type' => 'citi_nach_debit'], true);
+
+        $this->assertCount(4, $files['items']);
+    }
+
     public function testGatewaySuccessRegistrationResponseFile()
     {
         $payment = $this->createDummyRegisterToken();

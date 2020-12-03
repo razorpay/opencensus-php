@@ -45,6 +45,8 @@ class PaperNachCiti extends Debit\Base
         'mode'  => '33188'
     ];
 
+    protected $pageCount = 90000;
+
     protected $fileStore;
 
     public function __construct()
@@ -61,6 +63,11 @@ class PaperNachCiti extends Debit\Base
         }
         try
         {
+            if ($this->isTestMode() === true)
+            {
+                $this->pageCount = 3;
+            }
+
             $summaryData = [];
 
             $allFilesData = $this->formatDataForFile($data);
@@ -69,15 +76,46 @@ class PaperNachCiti extends Debit\Base
 
             foreach ($allFilesData as $key => $fileData)
             {
-                $fileHeader = $this->getFileHeader($key, $fileData);
+                $totalCount = count($fileData);
 
-                $fileHeaderText = $this->getTextData($fileHeader, "", "");
+                $presentCount = $serialNumber = 0;
 
-                $fileDataText   = $this->getTextData($fileData, $fileHeaderText, "");
+                while ($presentCount < $totalCount)
+                {
+                    $fileDataPerSheet = array_slice($fileData, $presentCount, $this->pageCount, true);
 
-                $fileName = $this->getFileToWriteNameWithoutExt(['fileName' =>static::FILE_NAME, 'utilityCode' => $key]);
+                    $fileHeader = $this->getFileHeader($key, $fileDataPerSheet);
 
-                $creator = new FileStore\Creator;
+                    $fileHeaderText = $this->getTextData($fileHeader, "", "");
+
+                    $fileDataText = $this->getTextData($fileDataPerSheet, $fileHeaderText, "");
+
+                    $fileName = $this->getFileToWriteNameWithoutExt(
+                                [
+                                    'fileName'     => static::FILE_NAME,
+                                    'utilityCode'  => $key,
+                                    'serialNumber' => $serialNumber,
+                                ]);
+
+                    $creator = new FileStore\Creator;
+
+                    $creator->extension(static::EXTENSION)
+                            ->content($fileDataText)
+                            ->name($fileName)
+                            ->store(FileStore\Store::S3)
+                            ->type(static::FILE_TYPE)
+                            ->entity($this->gatewayFile)
+                            ->metadata(static::FILE_METADATA)
+                            ->save();
+
+                    $file = $creator->getFileInstance();
+
+                    $fileStoreIds[] = $file->getId();
+
+                    $presentCount = $presentCount + $this->pageCount;
+
+                    $serialNumber++;
+                }
 
                 $amount = 0;
 
@@ -86,36 +124,21 @@ class PaperNachCiti extends Debit\Base
                     $amount = $amount + $data[Headings::AMOUNT];
                 }
 
-                $size = count($fileData);
-
                 $date = Carbon::now(Timezone::IST)->format('dmY');
 
-                $row =[
+                $row = [
                     Headings::UTILITY_CODE                  => $key,
-                    Headings::NO_OF_RECORDS                 => $size,
+                    Headings::NO_OF_RECORDS                 => $totalCount,
                     Headings::TOTAL_AMOUNT                  => $amount,
                     Headings::SETTLEMENT_DATE               => $date,
                 ];
 
                 $summaryData[] = $row;
-
-                $creator->extension(static::EXTENSION)
-                        ->content($fileDataText)
-                        ->name($fileName)
-                        ->store(FileStore\Store::S3)
-                        ->type(static::FILE_TYPE)
-                        ->entity($this->gatewayFile)
-                        ->metadata(static::FILE_METADATA)
-                        ->save();
-
-                $file = $creator->getFileInstance();
-
-                $fileStoreIds[] = $file->getId();
             }
 
             $creatorSummary = new FileStore\Creator;
 
-            $summaryFileName = $this->getFileToWriteNameWithoutExt(['fileName' =>static::SUMMARY_FILE_NAME]);
+            $summaryFileName = $this->getFileToWriteNameWithoutExt(['fileName' => static::SUMMARY_FILE_NAME]);
 
             $creatorSummary->extension(static::SUMMARY_EXTENSION)
                            ->content($summaryData)
@@ -246,6 +269,11 @@ class PaperNachCiti extends Debit\Base
          else
          {
              $fileName = strtr($data['fileName'], ['{$date}' => $date]);
+         }
+
+         if ((isset($data['serialNumber']) === true) and ($data['serialNumber'] > 0))
+         {
+             $fileName = $fileName . '_' . $data['serialNumber'];
          }
 
         if ($this->isTestMode() === true)
@@ -461,6 +489,7 @@ class PaperNachCiti extends Debit\Base
                 'entity_ids'      => $paymentIds,
                 'begin'           => $begin,
                 'end'             => $end,
+                'entity_count'    => count($paymentIds),
             ]);
 
         return $tokens;
@@ -552,6 +581,10 @@ class PaperNachCiti extends Debit\Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setMemoryLimit('3072M');
+
+        RuntimeManager::setTimeLimit(7200);
+
+        RuntimeManager::setMaxExecTime(7200);
     }
 }
