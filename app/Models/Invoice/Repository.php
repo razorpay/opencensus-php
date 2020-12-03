@@ -233,7 +233,7 @@ class Repository extends Base\Repository
 
         $pastTimeMinus14days = Carbon::createFromTimestamp($pastTime, Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQuery()
                     ->where(Entity::TYPE, '=' ,$type)
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->whereIn(Entity::STATUS, $statuses)

@@ -734,6 +734,8 @@ class Core extends Base\Core
                 $this->repo->invoice->deleteOrFail($invoice);
 
             }, $maxAttempts);
+
+        $this->trace->count(Metric::INVOICE_DELETED_TOTAL, $invoice->getMetricDimensions());
     }
 
     /**
