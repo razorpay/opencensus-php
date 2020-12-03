@@ -1,8 +1,8 @@
 import { observable, observe } from 'mobx';
-import BaseModel from './base';
-import CollectionItem from './collectionItem';
 import { notifySuccess, notifyError } from 'razorx/components/Modal';
 import { adminDelete } from 'razorx/helpers/admin-fetch';
+import BaseModel from './base';
+import CollectionItem from './collectionItem';
 
 export const defaultFilters = {
   count: 20,
@@ -17,15 +17,11 @@ export default class Collection extends BaseModel {
     let newFilters;
 
     if (this.noPagination) {
-      newFilters = Object.assign({}, filters);
+      newFilters = { ...filters };
     } else {
-      newFilters = Object.assign({}, defaultFilters, filters);
+      newFilters = { ...defaultFilters, ...filters };
 
-      if (
-        (!filters || !filters.count) &&
-        this.filters &&
-        Object.keys(this.filters).length
-      ) {
+      if ((!filters || !filters.count) && this.filters && Object.keys(this.filters).length) {
         newFilters.count = this.filters.count;
       }
     }
@@ -43,7 +39,7 @@ export default class Collection extends BaseModel {
   }
 
   addFilters(filters) {
-    for (let f in defaultFilters) {
+    for (const f in defaultFilters) {
       // TODO: This should ideally consider this.filters || defaultFilters, not defaultFilters
       if (f in filters) {
         filters[f] = Number(filters[f]);
@@ -51,7 +47,7 @@ export default class Collection extends BaseModel {
     }
 
     // Clear the empty values. Send value = null, in case you want to clear out the value from the final filters
-    for (let key in filters) {
+    for (const key in filters) {
       if (filters[key] == null) {
         delete filters[key];
 
@@ -67,7 +63,7 @@ export default class Collection extends BaseModel {
 
   constructor(props) {
     super(props);
-    let {
+    const {
       data,
       fetchFn,
       filters,
@@ -76,8 +72,9 @@ export default class Collection extends BaseModel {
       extraFields = {},
       noPagination,
       deleteUrl,
+      isSplitz,
     } = props;
-    Object.assign(this, { data, fetchFn, model });
+    Object.assign(this, { data, fetchFn, model, isSplitz });
 
     this.deleteUrl = deleteUrl;
     this.noPagination = noPagination;
@@ -93,7 +90,7 @@ export default class Collection extends BaseModel {
       this.fetch();
     }
 
-    observe(this.items, _ => {
+    observe(this.items, (_) => {
       this.animateItems = true;
     });
   }
@@ -105,17 +102,17 @@ export default class Collection extends BaseModel {
       'fetch',
       this.fetchFn({
         ...this.data,
-        params: { ...this.filters },
-      })
-    ).then(data => {
+        [this.isSplitz ? 'data' : 'params']: { ...this.filters },
+      }),
+    ).then((data) => {
       if (data) {
-        let Model = this.model || CollectionItem;
+        const Model = this.model || CollectionItem;
 
         const items = data.items ? data.items : data; // pricing_get_merchant_plans api no longer has data.items
 
         // If searching for particular id
         if (items instanceof Array) {
-          data.items = items.map(i => new Model(this, i));
+          data.items = items.map((i) => new Model(this, i));
         } else {
           data.items = [new Model(this, items)];
         }
@@ -126,20 +123,20 @@ export default class Collection extends BaseModel {
     });
   }
 
-  delete = item => {
+  delete = (item) => {
     if (typeof this.deleteUrl === 'function') {
       const data = {
         url: this.deleteUrl(item.id),
       };
 
       return adminDelete(data)
-        .then(data => {
+        .then((data) => {
           if (data) {
             this.remove(item);
             notifySuccess('Workflow deleted successfully');
           }
         })
-        .catch(err => notifyError(err));
+        .catch((err) => notifyError(err));
     } else {
       notifyError("entity doesn't have delete url");
     }

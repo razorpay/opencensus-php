@@ -1,0 +1,158 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
+import adminFetch from 'razorx/helpers/admin-fetch';
+import { formatDate } from 'razorx/helpers/utils';
+import { splitzFetch } from 'razorx/helpers/fetch';
+
+export default
+@withRouter
+class SegmentDetails extends React.Component {
+  state = {
+    data: null,
+    isFetchingSegment: true,
+  };
+
+  componentDidMount() {
+    this.fetch(this.props.segmentId);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.segmentId !== nextProps.segmentId) {
+      this.fetch(nextProps.segmentId);
+    }
+  }
+
+  fetch(segmentId) {
+    if (!segmentId) {
+      return;
+    }
+
+    this.setState({
+      data: null,
+      isFetchingSegment: true,
+    });
+
+    splitzFetch({
+      url: 'segment.v1.SegmentAPI/Get',
+      data: {
+        segmentID: segmentId,
+      },
+    })
+      .then((res) => {
+        this.setState({
+          isFetchingSegment: false,
+          data: res.items, // TODO: fix from API
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isFetchingSegment: false,
+        });
+      });
+  }
+
+  viewFile = (fileId) => {
+    const bodyFormData = new FormData();
+    bodyFormData.append('mode', 'live');
+    bodyFormData.append('method', 'GET');
+    bodyFormData.append('auth', 'admin');
+    bodyFormData.append('file', '');
+
+    adminFetch({
+      url: `/makeapicall/admin-ufh/file/${fileId}/get-signed-url`,
+      method: 'POST',
+      data: bodyFormData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+      .then((res) => {
+        if (res.signed_url) {
+          window.open(res.signed_url);
+        } else {
+          console.error('File Download Error: ', res);
+        }
+      })
+      .catch((err) => {
+        console.error('File Download Error: ', err);
+      });
+  };
+
+  // onEdit = () => this.fetch(this.props.segmentId);
+
+  render() {
+    const { isFetchingSegment, data } = this.state;
+    const { segmentId } = this.props;
+
+    const isFetching = isFetchingSegment;
+    let content;
+
+    if (!segmentId) {
+      content = null;
+    } else if (isFetching) {
+      content = <div className="spinner center" />;
+    } else if (!isFetching && !data) {
+      content = (
+        <div className="page-center empty-entity">
+          <i className="i-layers" />
+          <div className="description">
+            <div>ID: {segmentId}</div>
+            No segment found!
+          </div>
+        </div>
+      );
+    } else {
+      content = (
+        <div className="entity-details">
+          <div className="sub-description">
+            <span>
+              <b>ID:</b> {data.id}
+            </span>
+          </div>
+          <div className="pad-highlight">
+            <div className="title">{data.name}</div>
+            <div className="description">
+              {data.description}
+              <div className="sub-description">
+                <b>Created at</b> {formatDate(data.created_at)}
+              </div>
+            </div>
+            <br />
+            <br />
+          </div>
+          <br />
+          <br />
+          <div className="flex-row" style={{ justifyContent: 'space-between' }}>
+            <div className="flex-row-item">
+              <div className="label">Entries</div>
+              <span className="square-pills label-semi-muted">{data.entries}</span>
+            </div>
+          </div>
+          <br />
+          <br />
+          <div className="flex-row">
+            <div className="flex-row-item">
+              <div className="label">Input File</div>
+              <div className="sub-description column">
+                <div>
+                  <b>ID: </b> {data.inputFileID}
+                </div>
+              </div>
+              <div className="link" onClick={() => this.viewFile(data.inputFileID)}>
+                View File
+              </div>
+            </div>
+          </div>
+          <br />
+          <br />
+        </div>
+      );
+    }
+
+    return <div className="entity-container">{content}</div>;
+  }
+}
+
+SegmentDetails.propTypes = {
+  segmentId: PropTypes.string.isRequired,
+  collection: PropTypes.object.isRequired,
+};

@@ -4,14 +4,7 @@ import ShowWhen from './ShowWhen';
 
 export default class MainNavLink extends Component {
   render() {
-    let {
-      icon,
-      children,
-      isNew,
-      isBeta = false,
-      permission,
-      ...linkProps
-    } = this.props;
+    const { icon, children, isNew, isBeta = false, permission, ...linkProps } = this.props;
 
     let tag;
 
@@ -24,7 +17,7 @@ export default class MainNavLink extends Component {
     return (
       <ShowWhen permission={permission}>
         <NavLink class="main-nav" {...linkProps}>
-          <i class={'i-' + icon} />
+          <i class={icon} />
           {children}
           {tag}
         </NavLink>

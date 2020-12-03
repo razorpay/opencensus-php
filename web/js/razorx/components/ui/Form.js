@@ -31,11 +31,13 @@ export default class Form extends Component {
           pending: true,
         });
 
-        returnValue.catch(e => notifyError(e.message)).then(() => {
-          this.setState({
-            pending: false,
+        returnValue
+          .catch((e) => notifyError(e.message))
+          .then(() => {
+            this.setState({
+              pending: false,
+            });
           });
-        });
       }
     }
   }
@@ -55,7 +57,7 @@ export function postForm(form) {
 export function serialize(form) {
   return Array.prototype.reduce.call(
     form.querySelectorAll('[name]'),
-    function(data, el) {
+    function (data, el) {
       let { name, value } = el;
       if (el.type === 'checkbox') {
         value = el.checked ? '1' : '0';
@@ -70,7 +72,7 @@ export function serialize(form) {
         value = [];
         const selectedOptions = Array.from(el.selectedOptions);
 
-        selectedOptions.forEach(option => value.push(option.value));
+        selectedOptions.forEach((option) => value.push(option.value));
       }
       if (el.type === 'file') {
         value = el.files.length ? el.files : null;
@@ -98,6 +100,6 @@ export function serialize(form) {
       }
       return data;
     },
-    {}
+    {},
   );
 }

@@ -40,7 +40,7 @@ export default function Table({
   }
 
   if (pending) {
-    return <div class={`table-pending ${customClass}`} />;
+    return <div className="spinner center" />;
   }
 
   if (!items || !items.length) {
@@ -63,23 +63,10 @@ export default function Table({
         )}
         {items.map((item, index) => {
           return (
-            <CSSTransition
-              key={indexFn(item, index, items)}
-              classNames="row"
-              timeout={animObj}
-            >
-              <Row
-                class={rowClass}
-                onClick={onClick && item::onClick}
-                to={href && href(item)}
-              >
+            <CSSTransition key={indexFn(item, index, items)} classNames="row" timeout={animObj}>
+              <Row class={rowClass} onClick={onClick && item::onClick} to={href && href(item)}>
                 {fields.map((field, index) => (
-                  <Value
-                    key={index}
-                    index={index}
-                    item={item}
-                    valueFn={field[1]}
-                  />
+                  <Value key={index} index={index} item={item} valueFn={field[1]} />
                 ))}
               </Row>
             </CSSTransition>
@@ -93,11 +80,7 @@ export default function Table({
 @observer
 class Value extends Component {
   render() {
-    return (
-      <div class="td">
-        {this.props.valueFn(this.props.item, this.props.index)}
-      </div>
-    );
+    return <div class="td">{this.props.valueFn(this.props.item, this.props.index)}</div>;
   }
 }
 
@@ -111,7 +94,7 @@ export class PageTable extends Component {
   state = { searchQuery: '' };
   ClotSearch = new ClotSearch(250);
 
-  handleSearchQuery = e => {
+  handleSearchQuery = (e) => {
     let searchQuery = e.target.value;
 
     this.ClotSearch.startClotCycle(() => {
@@ -128,15 +111,14 @@ export class PageTable extends Component {
     let displayItems = items;
 
     if (searchFilters && this.state.searchQuery) {
-      displayItems = items.filter(item => {
+      displayItems = items.filter((item) => {
         let matched = false;
 
         for (let i = 0; i < searchFilters.length; i++) {
           if (
             item[searchFilters[i]] &&
-            item[searchFilters[i]]
-              .toLowerCase()
-              .indexOf(this.state.searchQuery.toLowerCase()) !== -1
+            item[searchFilters[i]].toLowerCase().indexOf(this.state.searchQuery.toLowerCase()) !==
+              -1
           ) {
             matched = true;
             break;

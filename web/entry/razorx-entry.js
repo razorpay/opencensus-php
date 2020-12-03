@@ -12,6 +12,10 @@ function RazorxEntry() {
       document.documentElement.appendChild(link);
     };
 
+    appendLink(
+      'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
+    );
+
     websiteAssets.js.forEach(function (src) {
       document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
     });

@@ -1,10 +1,5 @@
 import React, { Component } from 'react';
-import {
-  methods,
-  cardSteps,
-  authTypes,
-  authGateway,
-} from 'razorx/helpers/data';
+import { methods, cardSteps, authTypes, authGateway } from 'razorx/helpers/data';
 import { prevent, classList } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
@@ -15,7 +10,7 @@ function focusInput(e) {
 }
 
 function toggleChecked(e) {
-  var sib = e.target.parentNode.querySelector('input');
+  const sib = e.target.parentNode.querySelector('input');
   sib.checked = !sib.checked;
 }
 
@@ -34,63 +29,49 @@ export default function Field({
   if (tag === 'input' && !props.type) {
     props.type = 'text';
   }
-  let Tag = tag;
+  const Tag = tag;
 
   return (
-    <div class={`field ${fieldClass}`}>
-      <label class={props.required ? 'required' : ''} onClick={focusInput}>
-        {label}
-      </label>
+    <div className={`field ${fieldClass}`} style={props.style}>
+      {label && (
+        <label className={props.required ? 'required' : ''} onClick={focusInput}>
+          {label}
+        </label>
+      )}
       <Tag {...props} />
-      {icon && <i class={`post-field-icon ${icon}`} />}
+      {icon && <i className={`post-field-icon ${icon}`} />}
       <HelpMsg infoMsg={infoMsg} helpMsg={helpMsg} />
     </div>
   );
 }
 
-export const SelectField = _ => <Field {..._} tag="select" />;
-export const TextAreaField = _ => <Field {..._} tag="textarea" />;
-export const FileField = _ => <Field {..._} type="file" />;
+export const SelectField = (_) => <Field {..._} tag="select" />;
+export const TextAreaField = (_) => <Field {..._} tag="textarea" />;
+export const FileField = (_) => <Field {..._} type="file" />;
 
-export const TimeField = _ => <Field {..._} type="time" />;
-export const DataListField = _ => <Field {..._} tag="datalist" />;
+export const TimeField = (_) => <Field {..._} type="time" />;
+export const DataListField = (_) => <Field {..._} tag="datalist" />;
 
-export const DateField = ({
-  label = '',
-  fieldClass = '',
-  onChange,
-  component,
-  ...props
-}) => (
-  <div class={`field ${fieldClass}`}>
-    {label && <label class={props.required ? 'required' : ''}>{label}</label>}
+export const DateField = ({ label = '', fieldClass = '', onChange, component, ...props }) => (
+  <div className={`field ${fieldClass}`}>
+    {label && <label className={props.required ? 'required' : ''}>{label}</label>}
     <CalendarPicker onDayChange={onChange} {...props} />
-    <i class="post-field-icon i-date" />
+    <i className="post-field-icon i-date" />
     {component}
   </div>
 );
 
-export const FromField = _ => (
-  <DateField
-    name="from"
-    label="From"
-    postSelectionValue={val => val.startOf('day')}
-    {..._}
-  />
+export const FromField = (_) => (
+  <DateField name="from" label="From" postSelectionValue={(val) => val.startOf('day')} {..._} />
 );
 
-export const ToField = _ => (
-  <DateField
-    name="to"
-    label="To"
-    postSelectionValue={val => val.endOf('day')}
-    {..._}
-  />
+export const ToField = (_) => (
+  <DateField name="to" label="To" postSelectionValue={(val) => val.endOf('day')} {..._} />
 );
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (
-    <div class="field">
+    <div className="field">
       <input
         type="radio"
         id={value}
@@ -98,27 +79,22 @@ export function RadioField({ label, value, defaultValue, ...props }) {
         {...props}
         defaultChecked={defaultValue === value}
       />
-      <label for={value}>{label}</label>
+      <label htmlFor={value}>{label}</label>
     </div>
   );
 }
 
 export function CheckField({ label, children, fieldClass, ...props }) {
   return (
-    <div class={classList('field', fieldClass)}>
+    <div className={classList('field', fieldClass)}>
       <label
-        class={props.required ? 'required' : ''}
-        for={'id-' + props.name}
+        className={props.required ? 'required' : ''}
+        htmlFor={`id-${props.name}`}
         style={{ cursor: 'pointer' }}
       >
         {label}
       </label>
-      <input
-        class="ui-checkbox"
-        id={'id-' + props.name}
-        {...props}
-        type="checkbox"
-      />
+      <input className="ui-checkbox" id={`id-${props.name}`} {...props} type="checkbox" />
       {children}
     </div>
   );
@@ -134,16 +110,14 @@ export function SwitchField({
   ...props
 }) {
   return (
-    <div class={classList('field', props.disabled && 'disabled')}>
-      {label && <label class={props.required ? 'required' : ''}>{label}</label>}
+    <div className={classList('field', props.disabled && 'disabled')}>
+      {label && <label className={props.required ? 'required' : ''}>{label}</label>}
 
       {disabledLabel && (
-        <span class={`${nocaption ? '' : 'caption'} m-r`}>{disabledLabel}</span>
+        <span className={`${nocaption ? '' : 'caption'} m-r`}>{disabledLabel}</span>
       )}
       <Switch knob {...props} />
-      {enabledLabel && (
-        <span class={`${nocaption ? '' : 'caption'} m-l`}>{enabledLabel}</span>
-      )}
+      {enabledLabel && <span className={`${nocaption ? '' : 'caption'} m-l`}>{enabledLabel}</span>}
       <HelpMsg infoMsg={infoMsg} helpMsg={helpMsg} />
     </div>
   );
@@ -155,18 +129,17 @@ export class Switch extends Component {
   buttonClass = this.props.knob ? 'checkbox knob' : 'checkbox';
 
   state = {
-    checked:
-      this.enabledValue == this.props.defaultValue || this.props.defaultChecked,
+    checked: this.enabledValue == this.props.defaultValue || this.props.defaultChecked,
   };
 
-  toggle = e => {
+  toggle = (e) => {
     // it's an actual click, not triggered syntheticmouseevent due to form submission
     if (e.pageX && e.pageY) {
-      var checked = !this.state.checked;
-      let onChange = this.props.onChange;
-      let target = e.target;
+      const checked = !this.state.checked;
+      const onChange = this.props.onChange;
+      const target = e.target;
 
-      this.setState({ checked }, _ => onChange && onChange({ target }));
+      this.setState({ checked }, (_) => onChange && onChange({ target }));
     }
     prevent(e);
   };
@@ -178,8 +151,8 @@ export class Switch extends Component {
   }
 
   render() {
-    let { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
-    let { checked } = this.state;
+    const { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
+    const { checked } = this.state;
 
     let buttonClass = this.buttonClass;
     if (checked) {
@@ -189,7 +162,7 @@ export class Switch extends Component {
     return (
       <button
         {...restProps}
-        class={buttonClass}
+        className={buttonClass}
         value={checked ? this.enabledValue : this.disabledValue}
         onClick={this.toggle}
       />
@@ -211,14 +184,14 @@ class SearchableSelect extends Component {
   }
 
   getDefaultOption = ({ options, trackBy, defaultValue }) => {
-    return options.find(option => option[trackBy] === defaultValue) || {};
+    return options.find((option) => option[trackBy] === defaultValue) || {};
   };
 
   handleChange = ({ option }) => {
     this.setState({ selectedOption: option });
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const target = e.target;
 
     setTimeout(() => {
@@ -228,10 +201,7 @@ class SearchableSelect extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.defaultValue &&
-      nextProps.defaultValue !== this.state.selectedOption.value
-    ) {
+    if (nextProps.defaultValue && nextProps.defaultValue !== this.state.selectedOption.value) {
       this.setState({
         selectedOption: this.getDefaultOption(nextProps),
       });
@@ -251,14 +221,12 @@ class SearchableSelect extends Component {
     } = this.props;
 
     return (
-      <div class="searchable-select">
+      <div className="searchable-select" style={props.selectStyleProps}>
         <input
           type="hidden"
-          class="hide"
+          className="hide"
           name={name}
-          value={
-            this.state.selectedOption ? this.state.selectedOption[trackBy] : ''
-          }
+          value={this.state.selectedOption ? this.state.selectedOption[trackBy] : ''}
           readOnly
         />
         {isSearchable ? (
@@ -288,16 +256,14 @@ class SearchableSelect extends Component {
   }
 }
 
-export const SearchableSelectField = props => (
-  <Field {...props} tag={SearchableSelect} />
-);
+export const SearchableSelectField = (props) => <Field {...props} tag={SearchableSelect} />;
 
 export function HelpMsg({ infoMsg, helpMsg }) {
   return infoMsg || helpMsg ? (
-    <div class="info-block">
-      {helpMsg && <i class="i i-info-circle" />}
+    <div className="info-block">
+      {helpMsg && <i className="i i-info-circle" />}
       {do {
-        var msg = infoMsg || helpMsg;
+        const msg = infoMsg || helpMsg;
         typeof msg === 'function' ? msg() : msg;
       }}
     </div>

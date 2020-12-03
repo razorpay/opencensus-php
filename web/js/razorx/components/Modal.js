@@ -27,8 +27,8 @@ class ModalStore {
 
   tabActive = true;
   waitingToasts = [];
-  openModal = modal => this.modals.push(modal);
-  closeModal = _ => this.modals.pop();
+  openModal = (modal) => this.modals.push(modal);
+  closeModal = (_) => this.modals.pop();
 
   confirm = (message, confirmLabel = 'Yes', rejectLabel = 'Cancel') => {
     return new Promise((resolve, reject) => {
@@ -42,7 +42,7 @@ class ModalStore {
             <div class="message">{message}</div>
             <div class="action-buttons">
               <button
-                onClick={_ => {
+                onClick={(_) => {
                   isResolved = 1;
                   this.closeModal();
                 }}
@@ -50,7 +50,7 @@ class ModalStore {
               >
                 {confirmLabel}
               </button>
-              <button onClick={_ => this.closeModal()} class="btn-reject">
+              <button onClick={(_) => this.closeModal()} class="btn-reject">
                 {rejectLabel}
               </button>
             </div>
@@ -59,7 +59,7 @@ class ModalStore {
       );
 
       this.openModal(Confirm);
-      let disposer = observe(modals, _ => {
+      let disposer = observe(modals, (_) => {
         if (modals.indexOf(Confirm) === -1) {
           isResolved && resolve();
           disposer();
@@ -68,15 +68,15 @@ class ModalStore {
     });
   };
 
-  replaceSlider = slider => this.sliders.replace([slider]);
-  openSlider = slider => this.sliders.push(slider);
-  closeSlider = _ => this.sliders.pop();
+  replaceSlider = (slider) => this.sliders.replace([slider]);
+  openSlider = (slider) => this.sliders.push(slider);
+  closeSlider = (_) => this.sliders.pop();
 
-  notify = toast => {
+  notify = (toast) => {
     if (this.tabActive) {
       var len = this.toasts.push(toast);
       toast = this.toasts[len - 1];
-      setTimeout(_ => {
+      setTimeout((_) => {
         this.toasts.remove(toast);
       }, toast.duration || 5000);
     } else {
@@ -84,15 +84,14 @@ class ModalStore {
     }
   };
 
-  notifyDone = _ =>
-    this.notify({ message: 'Done!', duration: 3000, className: 'success' });
-  notifySuccess = message => this.notify({ message, className: 'success' });
-  notifyError = message => this.notify({ message, className: 'error' });
+  notifyDone = (_) => this.notify({ message: 'Done!', duration: 3000, className: 'success' });
+  notifySuccess = (message) => this.notify({ message, className: 'success' });
+  notifyError = (message) => this.notify({ message, className: 'error' });
 }
 
 const store = new ModalStore();
 
-observe(store.modals, e => {
+observe(store.modals, (e) => {
   document.body.className = store.modals.length ? 'noscroll' : '';
 });
 
@@ -107,7 +106,7 @@ export default class ModalContainer extends Component {
   }
 
   // Remove last modal on click of escape
-  escapePress = evt => {
+  escapePress = (evt) => {
     evt = evt || window.event;
     if (evt.keyCode == 27) {
       store.closeModal();
@@ -126,7 +125,7 @@ export default class ModalContainer extends Component {
                   <div class="slider" key={index}>
                     <div
                       class="slider-close"
-                      onClick={_ => {
+                      onClick={(_) => {
                         store.sliders.remove(slider);
                       }}
                     >
@@ -148,7 +147,7 @@ export default class ModalContainer extends Component {
                   <Modal
                     key={index}
                     class={'admin'}
-                    onClose={_ => {
+                    onClose={(_) => {
                       store.modals.remove(modal);
                     }}
                   >
@@ -167,6 +166,7 @@ export default class ModalContainer extends Component {
               class={'toast ' + className}
               classNames="toast"
               timeout={animObj}
+              style={{ maxWidth: 'inherit' }}
             >
               <div>{'' + message}</div>
             </CSSTransition>

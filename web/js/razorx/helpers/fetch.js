@@ -7,22 +7,25 @@ import { notifyError } from 'razorx/components/Modal';
   For all custom rexFetch, Post, /etc helpers, payload must have relative url to "/admin/api/"
   Eg: rexFetch({url: '{mode}/your_url'}), or rexFetch('{mode}/your_url')
 */
-export const rexFetch = payload => _makeRequest(payload, 'GET');
-export const rexPost = payload => _makeRequest(payload, 'POST');
-export const rexPut = payload => _makeRequest(payload, 'PUT');
-export const rexDelete = payload => _makeRequest(payload, 'DELETE');
-export const rexPatch = payload => _makeRequest(payload, 'PATCH');
+export const rexFetch = (payload) => _makeRequest(payload, 'GET');
+export const rexPost = (payload) => _makeRequest(payload, 'POST');
+export const rexPut = (payload) => _makeRequest(payload, 'PUT');
+export const rexDelete = (payload) => _makeRequest(payload, 'DELETE');
+export const rexPatch = (payload) => _makeRequest(payload, 'PATCH');
+
+// TODO: confirm if we can send live always
+const SPLITZ_BASE_URL = `/admin/api/live/service/splitz`;
 
 /*
-* Request Footprint
-* {
-*   url: '/admin/api/${mode}/service/razorx?service_path=__&q1=__&q2=__&mode=__&environment=__'
-*   method: 'GET/POST/...',
-*   data: {},
-*   params: {}
-* }
-*
-* */
+ * Request Footprint
+ * {
+ *   url: '/admin/api/${mode}/service/razorx?service_path=__&q1=__&q2=__&mode=__&environment=__'
+ *   method: 'GET/POST/...',
+ *   data: {},
+ *   params: {}
+ * }
+ *
+ * */
 function _makeRequest(payload, type) {
   let mode = AppStore.mode; // Default
 
@@ -59,7 +62,7 @@ function _makeRequest(payload, type) {
   }
 
   // Construct url
-  url = BASE_URL + '?service_path=' + url;
+  url = `${BASE_URL}?service_path=${url}`;
 
   if (razorxQueryParams && Object.keys(razorxQueryParams).length) {
     url += window.encodeURIComponent(stringifyQueryParams(razorxQueryParams));
@@ -72,7 +75,7 @@ function _makeRequest(payload, type) {
   }
 
   return adminFetch(reqPayload)
-    .then(resp => {
+    .then((resp) => {
       if (!resp) {
         return;
       }
@@ -86,7 +89,7 @@ function _makeRequest(payload, type) {
         return resp.response || resp;
       }
     })
-    .catch(err => {
+    .catch((err) => {
       let error = typeof err.errors !== 'undefined' ? err.errors : err;
 
       if (error instanceof Array) {
@@ -95,4 +98,65 @@ function _makeRequest(payload, type) {
 
       notifyError(error);
     });
+}
+
+export function splitzFetch(requestOptions) {
+  const data = requestOptions.data || {};
+  if (data.count) {
+    data.limit = data.count;
+    data.offset = data.skip;
+    delete data.count;
+    delete data.skip;
+  }
+
+  const options = {
+    url: `${SPLITZ_BASE_URL}?service_path=twirp/rzp.splitz.${requestOptions.url}`,
+    data,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+
+  return new Promise((resolve, reject) =>
+    adminFetch(options)
+      .then((resp) => {
+        if (!resp) {
+          return;
+        }
+
+        if (resp.status_code && Math.floor(resp.status_code / 100) !== 2) {
+          reject(resp.response.msg);
+        }
+
+        // In some cases like Workflow creation, resp.response / resp.status_code doesn't exist => resp is success
+        if (resp) {
+          const entity =
+            resp.response.projects ||
+            resp.response.experiments ||
+            resp.response.groups ||
+            resp.response.segment ||
+            null;
+          if (entity) {
+            resolve({
+              items: entity,
+              count: entity.length,
+            });
+          } else {
+            resolve(resp.response);
+          }
+        }
+      })
+      .catch((err) => {
+        let error = typeof err.errors !== 'undefined' ? err.errors : err;
+
+        if (error instanceof Array) {
+          error = error[0];
+        }
+
+        notifyError(error);
+
+        reject(error);
+      }),
+  );
 }
