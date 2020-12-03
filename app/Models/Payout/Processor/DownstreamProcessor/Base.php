@@ -4,6 +4,9 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
@@ -58,7 +61,9 @@ class Base extends BaseCore
         switch ($ftaAccountEntity)
         {
             case Constants\Entity::BANK_ACCOUNT:
-                $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
+                $bankAccount = $this->getBankAccountToAssociateWithFTA($ftaAccount, $payout);
+
+                $ftaCore->createWithBankAccount($payout, $bankAccount, $ftaInput);
                 break;
 
             case Constants\Entity::VPA:
@@ -83,5 +88,65 @@ class Base extends BaseCore
     protected function postTransactionCreationProcessing(Transaction\Entity $txn, Entity $payout)
     {
         return;
+    }
+
+    protected function getBankAccountToAssociateWithFTA(PublicEntity $bankAccount, Entity  $payout)
+    {
+        // We want to swap older IFSC to new IFSC for banks which are getting
+        // merged to bigger banks. This is being done for now for IMPS payouts
+        // only. This code will remain in FTA currently and will have to ported
+        // to payouts as bank mergers will continue to happen.
+        // Detailed discussion - https://razorpay.slack.com/archives/CM9230B5Y/p1606721863218100
+        $ifscCode = $bankAccount->getIfscCode();
+
+        $merchant = $payout->merchant;
+
+        if ($this->isIfscSwappingRequired($ifscCode) === true)
+        {
+            $variant  = $this->app['razorx']->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::OLD_TO_NEW_IFSC_FOR_MERGED_BANK,
+                $this->mode);
+
+            if ($variant === 'on')
+            {
+                $ifscCode = $this->getNewIfscMapping($bankAccount->getIfscCode());
+
+                // only below parameters are required for FA payouts
+                $input = [
+                    BankAccount\Entity::IFSC_CODE         => $ifscCode,
+                    BankAccount\Entity::ACCOUNT_NUMBER    => $bankAccount->getAccountNumber(),
+                    BankAccount\Entity::BENEFICIARY_NAME  => $bankAccount->getBeneficiaryName(),
+                ];
+
+                $bankAccount = (new BankAccount\Core)->createOrFetchBankAccount($input, $merchant, $this->mode);
+            }
+        }
+
+        return $bankAccount;
+    }
+
+    protected function isIfscSwappingRequired(string $ifsc)
+    {
+        $isRequired = false;
+
+        if (array_key_exists($ifsc, BankAccount\OldNewIfscMapping::$oldToNewIfscMapping) === true)
+        {
+            $isRequired = true;
+        }
+
+        return $isRequired;
+    }
+
+    protected function getNewIfscMapping(string $ifsc)
+    {
+        $newIfsc = BankAccount\OldNewIfscMapping::$oldToNewIfscMapping[$ifsc];
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
+                  'old_ifsc' => $ifsc,
+                  'new_ifsc' => $newIfsc,
+        ]);
+
+        return $newIfsc;
     }
 }

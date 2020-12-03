@@ -30,6 +30,8 @@ final class RazorxTreatment
 
     const REGISTERED_ONBOARDING_AUTO_KYC = 'registered_onboarding_auto_kyc';
 
+    const OLD_TO_NEW_IFSC_FOR_MERGED_BANK = 'old_to_new_ifsc_for_merged_bank';
+
     //
     // This experiment is used for POI verification only
     //

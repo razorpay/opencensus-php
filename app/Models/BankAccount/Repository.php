@@ -3,6 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Models\Base;
+use Rzp\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
@@ -434,5 +435,19 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->limit(1000)
                     ->get();
+    }
+
+    public function fetchBankAccountWithNameAndBeneDetails(
+        Merchant\Entity $merchant,
+        string $name = null,
+        string $accountNumber = null,
+        string $ifsc = null)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BENEFICIARY_NAME, $name)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::IFSC_CODE, $ifsc)
+                    ->where(Entity::MERCHANT_ID, $merchant->getId())
+                    ->first();
     }
 }

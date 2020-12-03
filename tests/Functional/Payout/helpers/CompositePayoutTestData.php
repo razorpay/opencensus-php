@@ -81,6 +81,160 @@ return [
         ],
     ],
 
+    'testCreateCompositePayoutWithOldNewIfsc' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Prashanth YV',
+                        'ifsc'           => 'ORBC0101685',
+                        'account_number' => '111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'IMPS',
+                'tax'          => 162,
+                'fees'         => 1062,
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc'           => 'ORBC0101685',
+                        'bank_name'      => 'Oriental Bank of Commerce',
+                        'name'           => 'Prashanth YV',
+                        'notes'          => [],
+                        'account_number' => '111000'
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCompositePayoutWithOldNewIfscWithExistingAccount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Prashanth YV',
+                        'ifsc'           => 'ORBC0101685',
+                        'account_number' => '111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'IMPS',
+                'tax'          => 162,
+                'fees'         => 1062,
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc'           => 'ORBC0101685',
+                        'bank_name'      => 'Oriental Bank of Commerce',
+                        'name'           => 'Prashanth YV',
+                        'notes'          => [],
+                        'account_number' => '111000'
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateCompositePayoutWithOldCreditsFlow' => [
         'request'  => [
             'method'  => 'POST',
