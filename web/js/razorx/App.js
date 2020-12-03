@@ -65,8 +65,9 @@ class RazorXApp extends React.Component {
                     {/* RazorX Routes */}
                     <Route path="/experiments/:id?" component={Experiments} exact />
                     <Route path="/features_flags/:id?" component={Features} exact />
+                    <Route path="/requests" component={WorkflowRequestsList} exact />
                     <Route
-                      path="/requests/:id(w_action_.+)?"
+                      path="/requests/:id(w_action_.+)"
                       component={WorkflowRequestsEntity}
                       exact
                     />
