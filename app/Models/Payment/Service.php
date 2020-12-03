@@ -427,6 +427,8 @@ class Service extends Base\Service
 
             (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
 
+            $payment->setMetadataKey('payment_analytics', $payment->analytics);
+
             if ($response !== null)
             {
                 return $response;

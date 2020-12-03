@@ -7827,8 +7827,6 @@ trait Authorize
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
-                $this->setAnalyticsLog($payment);
-
                 /*
                  * In double redirect scenario terminal will be set
                  * we will use the same terminal and set auth type as null

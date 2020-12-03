@@ -70,6 +70,9 @@ class Metadata
     // Payment UI made for Legacy Browsers like IE 8
     const LEGACYJS      = 'legacyjs';
 
+    const HOSTED        = 'hosted';
+    const EMBEDDED      = 'embedded';
+
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
@@ -78,6 +81,8 @@ class Metadata
         self::DIRECT        => 5,
         self::PUSH          => 6,
         self::LEGACYJS      => 7,
+        self::HOSTED        => 8,
+        self::EMBEDDED      => 9,
     ];
 
     // Browser values
