@@ -287,6 +287,7 @@ class Gateway
         self::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING,
         self::PAYU                  => self::PAYU,
         self::CASHFREE              => self::CASHFREE,
+        self::NETBANKING_YESB       => self::YESB,
     ];
 
     /**
