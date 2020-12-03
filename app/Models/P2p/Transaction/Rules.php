@@ -18,6 +18,9 @@ class Rules
     // In Paisa
     const MAX_AMOUNT_ALLOWED_ON_FIRST_TRANSACTION = 500000;
 
+    // In Paisa
+    const MAX_AMOUNT_ALLOWED_IN_COLLECT_REQUEST = 200000;
+
     // In Seconds
     const MAX_COOLDOWN_PERIOD = 86400;
 
@@ -56,6 +59,19 @@ class Rules
                                 ]
                             ],
                         ],
+                    ],
+                ],
+            ],
+        ],
+        'collect'=>[
+            'function' => 'collect_request_check',
+            'values' => [
+                0 => true,
+                1 => [
+                    'function' => 'collect_request_amount_exceeds_check',
+                    'values' => [
+                        0 => 'Maximum per collect transaction limit is Rs %s.',
+                        1 => true,
                     ],
                 ],
             ],
@@ -144,6 +160,18 @@ class Rules
         $currentTransactionAmount = $this->transaction->getAmount();
 
         return ($totalAmount + $currentTransactionAmount) <= self::MAX_AMOUNT_ALLOWED_IN_COOLDOWN;
+    }
+
+    protected function collectRequestCheck():bool
+    {
+        return ($this->transaction->getFlow() === Flow::CREDIT && $this->transaction->getType() === Type::COLLECT);
+    }
+
+    protected function collectRequestAmountExceedsCheck():bool
+    {
+        $this->fillMessages([self::MAX_AMOUNT_ALLOWED_IN_COLLECT_REQUEST / 100]);
+
+        return ($this->transaction->getAmount() <= self::MAX_AMOUNT_ALLOWED_IN_COLLECT_REQUEST);
     }
 
     private function retrieveDataValue(string $key)

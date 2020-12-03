@@ -8,6 +8,7 @@ use RZP\Models\P2p\Status;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Service;
 use RZP\Models\P2p\Base\Libraries\Context;
+use RZP\Models\Payment\Flow;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -257,6 +258,32 @@ class TransactionTest extends TestCase
         ]);
 
         $this->assertSame('1000.00', $response['request']['content']['amount']);
+    }
+
+    public function testCollectAmountExceeds()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Maximum per collect transaction limit is Rs 2000.');
+
+        $transaction = $this->createCollectTransaction([
+            Entity::AMOUNT => 300000
+        ]);
+
+        $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+    }
+
+    public function testCollectAmountExceedsForDebitFlow()
+    {
+        $transaction = $this->createCollectIncomingTransaction([
+            Entity::AMOUNT => 300000
+        ]);
+
+        $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
     }
 
     protected function getService()

@@ -136,6 +136,42 @@ class TransactionTest extends TestCase
         ], $transaction->reload()->toArray());
     }
 
+    public function testCollectRequestAboveInitiateLimit()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $expiry = (clone $this->testCurrentTime)->timezone('Asia/Kolkata')->addDay(1);
+
+        $gatewayTransactionId = str_random(35);
+
+        $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
+            Fields::AMOUNT                  => '4000.00', // Amount above 2000 for incoming collect
+            Fields::PAYEE_VPA               => 'random@mypsp',
+            Fields::PAYER_VPA               => $this->fixtures->vpa->getAddress(),
+            Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
+            Fields::REMARKS                 => 'SomeTransaction',
+            Fields::GATEWAY_TRANSACTION_ID  => $gatewayTransactionId,
+            Fields::EXPIRY                  => $expiry->toIso8601String(),
+            Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
+                ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->getDbLastTransaction();
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
+            Entity::STATUS            => Status::REQUESTED,
+            Entity::INTERNAL_STATUS   => Status::REQUESTED,
+            Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
+            Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+            Entity::EXPIRE_AT         => $expiry->getTimestamp(),
+        ], $transaction->toArray());
+    }
+
     public function testPayAccept()
     {
         $helper = $this->getTransactionHelper();
