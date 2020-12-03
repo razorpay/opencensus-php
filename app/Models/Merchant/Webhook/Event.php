@@ -594,8 +594,6 @@ class Event
         self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
-        self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
-        self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TRANSFER_SETTLED                  => Feature\Constants::TRANSFER_SETTLED_WEBHOOK,
         self::TERMINAL_CREATED                  => Feature\Constants::TERMINAL_ONBOARDING,
