@@ -18,6 +18,7 @@ const ActivationProgress: React.FC<ActivationProgressT> = ({ activationFlow }) =
   if (activationFlow === 'greylist') {
     Steps = GreylistedSteps;
   }
+
   return (
     <View>
       <ActivationProgressHeader />

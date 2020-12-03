@@ -7,8 +7,8 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import Icon from '@razorpay/blade/src/atoms/Icon';
 import Link from '@commander/shield/src/shared/Link';
-import Card from '../../../../../../components/Card';
-import { FormSection, Field } from '../../../Form/';
+import Card from '../../../../components/Card';
+import { FormSection, Field } from '../Form';
 
 const StyledSeparator = styled(View)`
   height: 1px;

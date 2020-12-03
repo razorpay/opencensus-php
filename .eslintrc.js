@@ -74,7 +74,7 @@ module.exports = {
       ],
     },
     {
-      files: ['**/__tests__/**/*.tsx'],
+      files: ['**/__tests__/**/*.tsx', '*.test.js'],
       settings: {
         'import/resolver': {
           jest: {

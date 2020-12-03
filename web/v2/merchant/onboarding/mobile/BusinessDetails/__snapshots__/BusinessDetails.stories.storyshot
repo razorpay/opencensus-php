@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Storyshots Onboarding/ActivationForm Default 1`] = `
+exports[`Storyshots Onboarding/BusinessDetails Default 1`] = `
 <div>
   <div>
     <div>
       <div>
-        Loading
+        Loading...
       </div>
     </div>
     <div

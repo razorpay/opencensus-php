@@ -1,14 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Storyshots Loader Loader Default 1`] = `
-Array [
+<div>
   <div>
+    <div>
+      <div
+        class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-vactag-0 hksJTv Sizeweb__Size-sc-10bl685-0 bPIJuv"
+      />
+    </div>
     <div
-      className="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-vactag-0 hksJTv Sizeweb__Size-sc-10bl685-0 bPIJuv"
+      id="layerHost"
     />
-  </div>,
+  </div>
   <div
     id="layerHost"
-  />,
-]
+  />
+</div>
 `;

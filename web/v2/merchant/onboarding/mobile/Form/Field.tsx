@@ -17,7 +17,7 @@ const Field: React.FC<FieldProps> = ({ children, visible = true, last = false })
   }
 
   return (
-    <Space margin={[0, 0, 2.5, 0]}>
+    <Space margin={[0, 0, 3.5, 0]}>
       <View>{children}</View>
     </Space>
   );

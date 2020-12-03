@@ -1,58 +1,64 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Storyshots Layer Basic Layer 1`] = `
-Array [
-  <div />,
+<div>
+  <div>
+    <div />
+    <div
+      id="layerHost"
+    >
+      <div>
+        <div>
+          Layer Child
+        </div>
+      </div>
+    </div>
+  </div>
   <div
     id="layerHost"
-  />,
-]
+  />
+</div>
 `;
 
 exports[`Storyshots Layer Composite Layer 1`] = `
-Array [
+<div>
   <div>
-    <button
-      className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
-      data-testid="ds-button"
-      disabled={false}
-      onClick={[Function]}
-      onMouseUp={[Function]}
-      size="medium"
-      type="button"
-    >
-      <div
-        className="Textweb__Text-sc-6jf9e4-0 dxOYOr"
-        color="light.900"
-        data-testid="ds-text"
-        size="medium"
+    <div>
+      <button
+        class="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
+        data-testid="ds-button"
+        type="button"
       >
-        Render Red Layer
-      </div>
-    </button>
-    <br />
-    <br />
-    <button
-      className="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
-      data-testid="ds-button"
-      disabled={false}
-      onClick={[Function]}
-      onMouseUp={[Function]}
-      size="medium"
-      type="button"
-    >
-      <div
-        className="Textweb__Text-sc-6jf9e4-0 dxOYOr"
-        color="light.900"
-        data-testid="ds-text"
-        size="medium"
+        <div
+          class="Textweb__Text-sc-6jf9e4-0 dxOYOr"
+          color="light.900"
+          data-testid="ds-text"
+        >
+          Render Red Layer
+        </div>
+      </button>
+      <br />
+      <br />
+      <button
+        class="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
+        data-testid="ds-button"
+        type="button"
       >
-        Render Orange Layer
-      </div>
-    </button>
-  </div>,
+        <div
+          class="Textweb__Text-sc-6jf9e4-0 dxOYOr"
+          color="light.900"
+          data-testid="ds-text"
+        >
+          Render Orange Layer
+        </div>
+      </button>
+    </div>
+    <div
+      id="layerHost"
+    />
+  </div>
   <div
     id="layerHost"
-  />,
-]
+  />
+</div>
 `;

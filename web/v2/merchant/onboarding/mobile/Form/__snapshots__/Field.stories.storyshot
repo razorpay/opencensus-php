@@ -1,238 +1,254 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Storyshots Onboarding/Field Multiple Field 1`] = `
-Array [
+<div>
   <div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp"
-    >
+    <div>
       <div
-        className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
       >
         <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
         >
           <div
-            className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
           >
             <div
-              className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
             >
               <div
-                className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
-                disabled={false}
+                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
               >
                 <div
-                  className="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
-                  disabled={false}
+                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
                 >
                   <div
-                    className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
                   >
-                    <input
-                      className="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
-                      data-testid="ds-text-input"
-                      disabled={false}
-                      inputMode={null}
-                      name="contact_name"
-                      onBlur={[Function]}
-                      onChange={[Function]}
-                      onFocus={[Function]}
-                      onKeyPress={[Function]}
-                      onPaste={[Function]}
-                      placeholder="Enter text here"
-                      rows=""
-                      type="text"
-                      value=""
-                    />
+                    <div
+                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                    >
+                      <label
+                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        color="shade.980"
+                        data-testid="ds-text"
+                        value=""
+                        width="auto"
+                      >
+                        Contact Name
+                      </label>
+                    </div>
+                    <div
+                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                    >
+                      <input
+                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        data-testid="ds-text-input"
+                        name="contact_name"
+                        placeholder="Enter text here"
+                        type="text"
+                        value=""
+                      />
+                    </div>
                   </div>
-                </div>
-                <div
-                  className="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
-                  disabled={false}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
-      >
-        <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
-        >
-          <div
-            className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
-          >
-            <div
-              className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
-            >
-              <div
-                className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
-                disabled={false}
-              >
-                <div
-                  className="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
-                  disabled={false}
-                >
                   <div
-                    className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
-                  >
-                    <input
-                      className="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
-                      data-testid="ds-text-input"
-                      disabled={false}
-                      inputMode={null}
-                      name="contact_email"
-                      onBlur={[Function]}
-                      onChange={[Function]}
-                      onFocus={[Function]}
-                      onKeyPress={[Function]}
-                      onPaste={[Function]}
-                      placeholder="Enter text here"
-                      rows=""
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                </div>
-                <div
-                  className="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
-                  disabled={false}
-                />
-              </div>
-              <div
-                className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
-              >
-                <div
-                  className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 libPPx Spaceweb__Space-njatzl-0 cUyWDv"
-                >
-                  <div
-                    className="Textweb__Text-sc-6jf9e4-0 krUdvH"
-                    color="shade.950"
-                    data-testid="ds-text"
-                    disabled={false}
-                    size="xsmall"
-                  >
-                    We will reach out at this email id in case of any account related issue
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
-      >
-        <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
-        >
-          <div
-            className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
-          >
-            <div
-              className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
-              disabled={false}
-            >
-              <div
-                className="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
-                disabled={false}
-              >
-                <div
-                  className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
-                >
-                  <input
-                    className="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
-                    data-testid="ds-text-input"
-                    disabled={false}
-                    inputMode={null}
-                    name="contact_number"
-                    onBlur={[Function]}
-                    onChange={[Function]}
-                    onFocus={[Function]}
-                    onKeyPress={[Function]}
-                    onPaste={[Function]}
-                    placeholder="Enter text here"
-                    rows=""
-                    type="text"
-                    value=""
+                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+          >
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+            >
               <div
-                className="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
-                disabled={false}
-              />
+                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+              >
+                <div
+                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                >
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                  >
+                    <div
+                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                    >
+                      <label
+                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        color="shade.980"
+                        data-testid="ds-text"
+                        value=""
+                        width="auto"
+                      >
+                        Contact Email
+                      </label>
+                    </div>
+                    <div
+                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                    >
+                      <input
+                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        data-testid="ds-text-input"
+                        name="contact_email"
+                        placeholder="Enter text here"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </div>
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                  />
+                </div>
+                <div
+                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
+                >
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 libPPx Spaceweb__Space-njatzl-0 cUyWDv"
+                  >
+                    <div
+                      class="Textweb__Text-sc-6jf9e4-0 krUdvH"
+                      color="shade.950"
+                      data-testid="ds-text"
+                    >
+                      We will reach out at this email id in case of any account related issue
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+          >
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+            >
+              <div
+                class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+              >
+                <div
+                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                >
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                  >
+                    <label
+                      class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                      color="shade.980"
+                      data-testid="ds-text"
+                      value=""
+                      width="auto"
+                    >
+                      Contact Number
+                    </label>
+                  </div>
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                  >
+                    <input
+                      class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                      data-testid="ds-text-input"
+                      name="contact_number"
+                      placeholder="Enter text here"
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                </div>
+                <div
+                  class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>,
+    <div
+      id="layerHost"
+    />
+  </div>
   <div
     id="layerHost"
-  />,
-]
+  />
+</div>
 `;
 
 exports[`Storyshots Onboarding/Field Single Field 1`] = `
-Array [
+<div>
   <div>
-    <div
-      className="Viewweb__View-sc-1cphyjf-0 lhSUkp"
-    >
+    <div>
       <div
-        className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
       >
         <div
-          className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
         >
           <div
-            className="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
           >
             <div
-              className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
-              disabled={false}
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
             >
               <div
-                className="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
-                disabled={false}
+                class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
               >
                 <div
-                  className="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
                 >
-                  <input
-                    className="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
-                    data-testid="ds-text-input"
-                    disabled={false}
-                    inputMode={null}
-                    name="contact_name"
-                    onBlur={[Function]}
-                    onChange={[Function]}
-                    onFocus={[Function]}
-                    onKeyPress={[Function]}
-                    onPaste={[Function]}
-                    placeholder="Enter text here"
-                    rows=""
-                    type="text"
-                    value=""
-                  />
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                  >
+                    <label
+                      class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                      color="shade.980"
+                      data-testid="ds-text"
+                      value=""
+                      width="auto"
+                    >
+                      Contact Name
+                    </label>
+                  </div>
+                  <div
+                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                  >
+                    <input
+                      class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                      data-testid="ds-text-input"
+                      name="contact_name"
+                      placeholder="Enter text here"
+                      type="text"
+                      value=""
+                    />
+                  </div>
                 </div>
+                <div
+                  class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                />
               </div>
-              <div
-                className="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
-                disabled={false}
-              />
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>,
+    <div
+      id="layerHost"
+    />
+  </div>
   <div
     id="layerHost"
-  />,
-]
+  />
+</div>
 `;
