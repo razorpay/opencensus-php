@@ -533,6 +533,13 @@ class TerminalsService
         return $this->app['config']->get($urlConfig);
     }
 
+    protected function getTimeout()
+    {
+        $timeoutConfig = 'applications.terminals_service.timeout';
+
+        return $this->app['config']->get($timeoutConfig);
+    }
+
     protected function getHeaders(array $additionalHeaders)
     {
         $defaultHeaders = [
@@ -563,8 +570,8 @@ class TerminalsService
 
         $defaultOptions =  [
             'auth'            => $auth,
-            'timeout'         => self::DEFAULT_TIMEOUT, // 100 milliseconds
-            'connect_timeout' => self::DEFAULT_TIMEOUT, // 100 milliseconds
+            'timeout'         => self::getTimeout(),
+            'connect_timeout' => self::getTimeout(),
             'show_trace'      => true,
         ];
 

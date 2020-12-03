@@ -685,7 +685,7 @@ return [
             'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
             'url'           => env('TERMINALS_SERVICE_TEST_URL'),
         ],
-
+        'timeout'       => env('TERMINALS_SERVICE_TIMEOUT'),
     ],
 
     'financial_data_service' => [
