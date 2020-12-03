@@ -8,12 +8,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const COLUMN_PAYMENT_AMOUNT = 'Debit Amount';
 
     const BLACKLISTED_COLUMNS = [];
-    
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)

@@ -23,6 +23,7 @@ class Netbanking extends Service
     const BANK_TRANSACTION_ID    = 'bank_transaction_id';
     const BANK_ACCOUNT_NUMBER    = 'bank_account_number';
     const ADDITIONAL_DATA        = 'additional_data';
+    const GATEWAY_STATUS         = 'gateway_status';
 
     // attributes which are part of additional data in netbanking entity
     const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';

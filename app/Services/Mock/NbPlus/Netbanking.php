@@ -53,6 +53,11 @@ class Netbanking extends NetbankingBase
                 'gateway_transaction_id' => str_random(),
                 'bank_transaction_id'    => str_random(),
                 'bank_account_number'    => str_random(),
+                'additional_data'        => [
+                'customer_id'            => str_random(),
+                'credit_account_number'  => str_random()
+                ],
+                'gateway_status'         => 'SUC'
             ];
         }
 

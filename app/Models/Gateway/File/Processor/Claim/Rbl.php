@@ -6,12 +6,13 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Rbl extends Base
+class Rbl extends NetbankingBase
 {
     use FileHandler;
 
@@ -33,14 +34,29 @@ class Rbl extends Base
 
             $paymentAmount = $this->getFormattedAmount($row['payment'][Payment\Entity::AMOUNT]);
 
+            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                $customerId = $row['gateway'][Netbanking::ADDITIONAL_DATA]['customer_id'];
+                $bankRef = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+                $credit_account_number = $row['gateway'][Netbanking::ADDITIONAL_DATA]['credit_account_number'];
+                $debit_account_number = $row['gateway'][Netbanking::BANK_ACCOUNT_NUMBER];
+            }
+            else
+            {
+                $customerId = $row['gateway'][Entity::CUSTOMER_ID];
+                $bankRef = $row['gateway'][Entity::BANK_PAYMENT_ID];
+                $credit_account_number = $row['gateway'][Entity::CREDIT_ACCOUNT_NUMBER];
+                $debit_account_number = $row['gateway'][Entity::ACCOUNT_NUMBER];
+            }
+
             $formattedData[] = [
                 ClaimFields::SERIAL_NO          => $index++,
                 ClaimFields::TRANSACTION_DATE   => $date,
-                ClaimFields::USER_ID            => $row['gateway'][Entity::CUSTOMER_ID],
-                ClaimFields::DEBIT_ACCOUNT      => $row['gateway'][Entity::ACCOUNT_NUMBER],
-                ClaimFields::CREDIT_ACCOUNT     => $row['gateway'][Entity::CREDIT_ACCOUNT_NUMBER],
+                ClaimFields::USER_ID            => $customerId,
+                ClaimFields::DEBIT_ACCOUNT      => $debit_account_number,
+                ClaimFields::CREDIT_ACCOUNT     => $credit_account_number,
                 ClaimFields::TRANSACTION_AMOUNT => $paymentAmount,
-                ClaimFields::PGI_REFERENCE      => $row['gateway'][Entity::BANK_PAYMENT_ID],
+                ClaimFields::PGI_REFERENCE      => $bankRef,
                 ClaimFields::BANK_REFERENCE     => $row['payment'][Payment\Entity::ID],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
@@ -77,12 +93,24 @@ class Rbl extends Base
 
     protected function getGatewayStatus(array $row)
     {
-        if ($row['gateway'][Entity::STATUS] === 'SUC')
+        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
         {
-            return 'Success';
-        }
+            $status = $row['gateway'][Netbanking::GATEWAY_STATUS];
 
-        return 'Failed';
+            if ($status === 'SUC')
+            {
+                return 'Success';
+            }
+            return 'Failed';
+        }
+        else
+        {
+            if ($row['gateway'][Entity::STATUS] === 'SUC')
+            {
+                return 'Success';
+            }
+            return 'Failed';
+        }
     }
 
     protected function getErrorMessage(array $row)

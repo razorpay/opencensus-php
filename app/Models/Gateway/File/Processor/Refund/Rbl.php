@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\RefundFields;
 
@@ -37,6 +38,15 @@ class Rbl extends Base
                               Timezone::IST)
                               ->format('m-d-y h:m:s');
 
+            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                $bankRefId = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+            }
+            else
+            {
+                $bankRefId = $row['gateway']['bank_payment_id']; // payment through api
+            }
+
             $formattedData[] = [
                 RefundFields::SERIAL_NO          => $index++,
                 RefundFields::REFUND_ID          => $row['refund']['id'],
@@ -45,7 +55,7 @@ class Rbl extends Base
                 RefundFields::TRANSACTION_DATE   => $date,
                 RefundFields::REFUND_DATE        => $refundDate,
                 RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
-                RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
+                RefundFields::BANK_REFERENCE     => $bankRefId,
                 RefundFields::PGI_REFERENCE      => $row['payment']['id'],
                 RefundFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 RefundFields::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
