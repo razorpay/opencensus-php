@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -68,6 +69,7 @@ class Entity extends Base\PublicEntity
     const FORM_REFERENCE2          = 'form_reference2';
     const PREFILLED_FORM           = 'prefilled_form';
     const PREFILLED_FORM_TRANSIENT = 'prefilled_form_transient';
+    const PREFILLED_FORM_DOWNLOAD  = 'prefilled_form_download';
     const UPLOAD_FORM_URL          = 'upload_form_url';
     const NACH                     = 'nach';
     const SUCCEED                  = 'succeed';
@@ -200,6 +202,11 @@ class Entity extends Base\PublicEntity
             $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl($invoice);
 
             $nachArray[Entity::PREFILLED_FORM_TRANSIENT] = $paperMandate->getGeneratedFormUrlTransient();
+
+            if ($this->shouldSendPrefilledFormDownload() === true)
+            {
+                $nachArray[Entity::PREFILLED_FORM_DOWNLOAD] = $paperMandate->getGeneratedFormUrlTransient();
+            }
 
             $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
 
@@ -415,5 +422,10 @@ class Entity extends Base\PublicEntity
         }
 
         return $subscriptionRegistration;
+    }
+
+    private function shouldSendPrefilledFormDownload(): bool
+    {
+        return $this->merchant->isFeatureEnabled(Feature\Constants::NACH_FORM_DIRECT_DOWNLOAD) === true;
     }
 }

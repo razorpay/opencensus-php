@@ -208,6 +208,8 @@ class Constants
      */
     const RETAIN_SUB_MERCHANT_NAME    = 'retain_sub_merchant_name';
 
+    // to get nach form direct download url
+    const NACH_FORM_DIRECT_DOWNLOAD = 'nach_form_direct_download';
 
     /**
      * Only partners having this feature will be able to onboard the submerchants using the account apis
@@ -742,6 +744,7 @@ class Constants
         self::RAAS                            => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
+        self::NACH_FORM_DIRECT_DOWNLOAD       => true,
         self::PAYMENTLINKS_COMPATIBILITY_V2   => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,
