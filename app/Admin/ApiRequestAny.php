@@ -258,6 +258,12 @@ class ApiRequestAny
                     $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
                 }
 
+                Trace::info(TraceCode::USER_CONTEXT_LOG, [
+                    'user_id'            => $user ? $user->id : null,
+                    'user_email'         => $user ? $user->email : null,
+                    'headers'            => $this->options['headers'],
+                ]);
+
                 // NOTE: We should NEVER hit this as Dashboard internal.
                 $baUser = 'live';
 
