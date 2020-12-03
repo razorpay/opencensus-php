@@ -17,8 +17,6 @@ use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    use Base\UpiReconTrait;
-
     const RRN                     = 'rrn';
     const VPA                     = 'vpa';
     const IFSC                    = 'ifsc';
@@ -52,11 +50,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     //
     const UPI_MERCHANT_ID           = 'upi_merchant_id';
     const UPI_MERCHANT_CHANNEL_ID   = 'upi_merchant_channel_id';
-
-    /**
-     * Actual name for the gateway
-     */
-    protected $gatewayName  = Gateway::UPI_AXIS;
 
     const BLACKLISTED_COLUMNS = [
         self::ACCOUNT_CUST_NAME,
@@ -100,28 +93,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return $this->getPaymentIdForUnexpectedPayment($row);
         }
 
-        $upiEntity = $this->getUpiExpectedEntity($paymentId, $row);
-
-        if ($upiEntity === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'           => TraceCode::RECON_MISMATCH,
-                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
-                    //'payment_reference_id' => $row[self::BANK_TRANS_ID],
-                    'payment_id'           => $paymentId,
-                    'gateway'              => $this->gateway,
-                    'batch_id'             => $this->batchId
-                ]);
-
-            return $paymentId;
-        }
-
-        // Also now since we have found/created a new UPI Entity we will consider
-        // this to be the gateway payment id
-        $this->gatewayPayment = $upiEntity;
-
-        return $upiEntity->getPaymentId();
+        return $paymentId;
     }
 
     /**
@@ -166,25 +138,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $paymentId;
-    }
-
-    protected function generateCallbackData(array $input)
-    {
-        $callbackData = [
-            'customerVpa'            => $input[self::VPA],
-            'merchantId'             => $input[self::UPI_MERCHANT_ID] ?? null,
-            'merchantChannelId'      => $input[self::UPI_MERCHANT_CHANNEL_ID] ?? null,
-            'merchantTransactionId'  => $input[self::COLUMN_PAYMENT_ID[0]] ?? ($input[self::COLUMN_PAYMENT_ID[1]] ?? null),
-            'transactionTimestamp'   => $input[self::COLUMN_TRANSACTION_DATE[0]] ?? ($input[self::COLUMN_TRANSACTION_DATE[1]] ?? null),
-            'transactionAmount'      => $input[self::COLUMN_PAYMENT_AMOUNT],
-            'gatewayTransactionId'   => $input[self::TXN_ID],
-            'gatewayResponseCode'    => $input[self::RESPCODE],
-            'gatewayResponseMessage' => $input[self::RESPONSE],
-            'rrn'                    => $input[self::RRN],
-            'checksum'               => null,
-        ];
-
-        return $callbackData;
     }
 
     /**

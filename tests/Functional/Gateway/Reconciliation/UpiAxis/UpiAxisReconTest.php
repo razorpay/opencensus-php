@@ -9,9 +9,8 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Batch\Status;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -51,33 +50,6 @@ class UpiAxisReconTest extends TestCase
         $entries[] = $this->overrideUpiAxisPayment($upiEntity);
 
         $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
-    }
-
-    public function testMultipleRrn()
-    {
-        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
-        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
-        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
-
-        $this->makeUpiAxisPaymentsSince($createdAt, '734122607521', 1);
-
-        $upiEntity1 = $this->getDbLastEntityToArray('upi');
-
-        $entries[] = $this->overrideUpiAxisPaymentForMultipleRRN($upiEntity1);
-
-        $this->makeUpiAxisPaymentsSince($createdAt, '734122607522', 1);
-
-        $upiEntity2 = $this->getDbLastEntityToArray('upi');
-
-        $entries[] = $this->overrideUpiAxisPaymentForMultipleRRN($upiEntity2);
-
-        $entries[] = $this->overrideUpiAxisPaymentForMultipleRRN($upiEntity2, '734122607523');
-
-        $this->createFileAndReconcileForMultipleRRN('Razorpay Software Pvt Ltd.xlsx', $entries);
-
-        $batch = $this->getLastEntity('batch', true);
-
-        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testUpiAxisDirectSettlementPaymentFile()
@@ -197,59 +169,6 @@ class UpiAxisReconTest extends TestCase
         $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
-    }
-
-    protected function createFileAndReconcileForMultipleRRN($fileName = '', $entries = [])
-    {
-        $file = $this->writeToExcelFile($entries, $fileName);
-
-        $uploadedFile = $this->createUploadedFile($file, $fileName);
-
-        $this->reconcile($uploadedFile, 'UpiAxis');
-
-        $this->assertBatchStatus(Status::PROCESSED);
-
-         foreach ($entries as $entry)
-        {
-            $payments[] = $entry['ORDER_ID'];
-
-            $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $entry['ORDER_ID']])->toArray();
-
-            $this->assertNotNull($transactionEntity['reconciled_at']);
-        }
-
-        // This is the payment which must have been created
-        $payment = $this->getDbLastPayment();
-
-        // Now we can make sure that this is the new payment created
-        $this->assertFalse(in_array($payment->getId(), $payments, true));
-
-        $this->assertArraySubset([
-            Payment\Entity::MERCHANT_ID => Account::DEMO_ACCOUNT,
-            Payment\Entity::AMOUNT      => 50000,
-            Payment\Entity::VPA         => 'vishnu@icici',
-            Payment\Entity::STATUS      => Payment\Status::AUTHORIZED,
-        ], $payment->toArray(), true);
-
-        $this->assertSame('734122607523', $payment->getReference16());
-
-        $upi = $this->getDbLastUpi();
-
-        $this->assertArraySubset([
-            'payment_id'                => $payment->getId(),
-            'type'                      => 'pay',
-            'action'                    => 'authorize',
-            'gateway_merchant_id'       => $this->sharedTerminal->gateway_merchant_id,
-            'npci_reference_id'         => '734122607523',
-            'gateway_payment_id'        => '99999999999',
-            'received'                  => true,
-            'status_code'               => '00',
-            'vpa'                       => 'vishnu@icici',
-            'acquirer'                  => 'axis',
-            'provider'                  => 'icici'
-        ], $upi->toArray(), true);
-
-        $this->assertNotEmpty($payment->transaction->getReconciledAt());
     }
 
     public function testUpiAxisManualReconPaymentFile()
@@ -441,42 +360,6 @@ class UpiAxisReconTest extends TestCase
         ];
 
         return $row;
-    }
-
-    protected function overrideUpiAxisPaymentForMultipleRRN(array $upiEntity, $rrn = null)
-    {
-        $facade = $this->testData['upiAxis'];
-
-        $facade['ORDER_ID'] = $upiEntity['payment_id'];
-
-        $facade['RRN'] = $rrn ?? $upiEntity['npci_reference_id'];
-
-        $facade['TXNID'] = $upiEntity['gateway_payment_id'];
-
-        $facade['upi_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
-
-        $facade['upi_merchant_channel_id'] = 'TSTMERCHIAPP';
-
-        return $facade;
-    }
-
-    private function makeUpiAxisPaymentsSince(int $createdAt, string $rrn, int $count = 3)
-    {
-        for ($i = 0; $i < $count; $i++)
-        {
-            $payments[] = $this->doUpiAxisPayment();
-
-            $upiEntity = $this->getDbLastEntity('upi');
-
-            $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => $rrn, 'gateway' => 'upi_axis']);
-        }
-
-        foreach ($payments as $payment)
-        {
-            $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt]);
-        }
-
-        return $payments;
     }
 
     private function makeUpiAxisRefundsSince(int $createdAt)
