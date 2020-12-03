@@ -87,7 +87,7 @@ BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,Payment blocked for possible fraud,paym
 BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,Payment blocked for possible fraud,payment_risk_check_failed,Business,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT,Amount greater than registered amount,transaction_limit_exceeded,Business,customer,Non actionable,payment_authorization,N
 BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment blocked for possible fraud,payment_risk_check_failed,Business,internal,Retry with another card,payment_initiation,N
-GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,3D Secure authentication attempted,payment_timed_out,,issuer_bank,,payment_authentication,
+GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.,payment_timed_out,,issuer_bank,,payment_authentication,
 BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,incorrect_card_details,Business,customer,Retry with correct details/ another card,payment_authentication,D
 BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,Customer has exceeded the max number of OTP attempts for card,otp_attempts_exceeded,Business,customer,Retry with another card,payment_authentication,D
 BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,Customer has exceeded the max number of pin attempts for card,pin_attempts_exceeded,Business,customer,Retry with another card,payment_authentication,D

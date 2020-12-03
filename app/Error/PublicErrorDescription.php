@@ -38,7 +38,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
-    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = 'Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
     const BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS                         = 'Your card has been disabled for online payments by your issuing bank. Please reach out to your bank or re-try the payment with another card/method.';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
