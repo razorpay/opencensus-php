@@ -3291,9 +3291,20 @@ class Processor
 
         $inputTrace = $input;
 
+        $this->unsetSensitiveBankDetails($inputTrace);
+
         unset($inputTrace['notes'], $inputTrace['contact'], $inputTrace['email']);
 
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
+    }
+
+    protected function unsetSensitiveBankDetails(array & $input)
+    {
+        if ((isset($input[Payment\Entity::BANK_ACCOUNT]) === true) and
+            (is_array($input[Payment\Entity::BANK_ACCOUNT]) === true))
+        {
+            unset($input[Payment\Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_NUMBER]);
+        }
     }
 
     protected function unsetSensitiveCardDetails(array & $input)
