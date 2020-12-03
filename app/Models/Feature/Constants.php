@@ -514,6 +514,8 @@ class Constants
 
     const PL_BATCH_UPLOAD_FEATURE = 'pl_batch_upload_feature';
 
+    const PAYPAL_GTM_NOTIFICATION = 'paypal_gtm_notification';
+
     /**
      * Disables settlement sms notifications
      */
@@ -790,6 +792,7 @@ class Constants
         self::SETTLEMENTS_SMS_STOP            => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::P2P_UPI                         => true,
+        self::PAYPAL_GTM_NOTIFICATION         => true,
     ];
 
     // Entity type constants
@@ -1107,6 +1110,11 @@ class Constants
         self::TRANSFER_SETTLED_WEBHOOK => [
             'feature'       => self::TRANSFER_SETTLED_WEBHOOK,
             'display_name'  => 'transfer.settled webhook',
+            'documentation' => '',
+        ],
+        self::PAYPAL_GTM_NOTIFICATION  => [
+            'feature'       => self::PAYPAL_GTM_NOTIFICATION,
+            'display_name'  => 'paypal gtm notification',
             'documentation' => '',
         ],
     ];
