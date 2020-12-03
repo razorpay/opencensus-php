@@ -4695,7 +4695,7 @@ class Route
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_bulk_status_get'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_test_transactions_trigger'   => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
-        'fts_dashboard_channel_health_stats'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_channel_health_stats'        => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_create'       => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_delete'       => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_sa_mappings_create'          => Permission::FTS_ROUTING_RULES_UPDATE,
