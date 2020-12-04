@@ -17,6 +17,8 @@ class PlinkController extends Controller
 {
     const CONTENT_TYPE_JSON = 'application/json';
 
+    const MERCHANT_ID = 'merchant_id';
+
     /**
      * @var string
      */
@@ -208,7 +210,7 @@ class PlinkController extends Controller
         {
             $followRedirects = false;
         }
-        
+
         $options = [
             'timeout'          => $this->timeOut,
             'auth'             => [$this->key, $this->secret],
@@ -286,9 +288,17 @@ class PlinkController extends Controller
     }
 
     // This function would generate the razorpay signature for a given payload
+    // This route will be removed once pl service is using the new internal auth one
 	public function signPayload()
 	{
-        $input = Req::all();
+        if ($this->ba->isPaymentLinkServiceApp() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND
+            );
+        }
+
+	    $input = Req::all();
 
         ksort($input);
 
@@ -304,6 +314,45 @@ class PlinkController extends Controller
 
         return $response;
 	}
+
+    // This function would generate the razorpay signature for a given payload
+    // Internal auth route. Merchant id will be passed in input
+    public function signPayloadInternal()
+    {
+        if ($this->ba->isPaymentLinkServiceApp() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND
+            );
+        }
+
+        $input = Req::all();
+
+        $merchant = null;
+
+        if (isset($input[self::MERCHANT_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PRESENT
+            );
+        }
+
+        $merchant = $this->repo->merchant->findByPublicId($input[self::MERCHANT_ID]);
+
+        unset($input[self::MERCHANT_ID]);
+
+        ksort($input);
+
+        $str = implode('|', $input);
+
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($merchant->getId());
+
+        $this->ba->authCreds->setKeyEntity($key);
+
+        $response['razorpay_signature'] = $this->ba->sign($str);
+
+        return $response;
+    }
 
     public function fetchPaymentDetails($id)
     {

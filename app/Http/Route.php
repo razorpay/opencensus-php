@@ -863,6 +863,7 @@ class Route
         'payment_links_demo_cors'                  => ['options',  'payment_links_demo',                             'PlinkController@plDemoCors'                                        ],
         'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
         'payment_links_sign_payload'               => ['post',     'payment_links_sign_payload',                     'PlinkController@signPayload'                                       ],
+        'payment_links_sign_payload_internal'      => ['post',     'payment_links_sign_payload_internal',            'PlinkController@signPayloadInternal'                               ],
         'payment_links_payment_by_id'              => ['get',      'payment_links_payment/{id}',                     'PlinkController@fetchPaymentDetails'                               ],
         // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
@@ -2811,6 +2812,7 @@ class Route
 
         //Accounting Payouts
         'accounting_payouts_sync_internal',
+        'payment_links_sign_payload_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5541,6 +5543,7 @@ class Route
             'batch_stats',
             'invoice_send_notification_proxy',
             'virtual_account_create_for_internal',
+            'payment_links_sign_payload_internal',
         ],
 
         'kotak' => [
