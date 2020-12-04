@@ -646,7 +646,16 @@ class Core extends Base\Core
 
         $noAttempts  = ($tokenRegistration->getAttempts() === 0 );
 
-        $tokenConfirmedAt = $tokenRegistration->token->getConfirmedAt();
+        $token = $tokenRegistration->token;
+
+        // if tokenRegistration doesn't have token means either it is still not authenticated
+        // or token has been deleted and it is not able to fetch deleted token
+        if ($token === null)
+        {
+            return false;
+        }
+
+        $tokenConfirmedAt = $token->getConfirmedAt();
 
         $midDay = Carbon::now(Timezone::IST)->midDay()->getTimestamp();
 
@@ -677,18 +686,7 @@ class Core extends Base\Core
             return [];
         }
 
-        if ($this->isValidForAutoCharge($tokenRegistration) === false)
-        {
-            $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
-                [
-                    'token.registration_id' =>$tokenRegistration->getId(),
-                    'amount'   => $tokenRegistration->getAmount(),
-                    'status'   => $tokenRegistration->getStatus(),
-                    'attempts' => $tokenRegistration->getAttempts()
-                ]);
-
-            return [];
-        }
+        $isValidForCharge = $this->isValidForAutoCharge($tokenRegistration);
 
         $tokenRegistration->incrementAttempts();
 
@@ -701,6 +699,19 @@ class Core extends Base\Core
         );
 
         $this->repo->saveOrFail($tokenRegistration);
+
+        if ($isValidForCharge === false)
+        {
+            $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
+                [
+                    'token.registration_id' =>$tokenRegistration->getId(),
+                    'amount'   => $tokenRegistration->getAmount(),
+                    'status'   => $tokenRegistration->getStatus(),
+                    'attempts' => $tokenRegistration->getAttempts()
+                ]);
+
+            return [];
+        }
 
         $order = $this->createOrder($tokenRegistration);
 
