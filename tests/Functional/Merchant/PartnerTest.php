@@ -896,6 +896,34 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals(1, $entity['failure_count']);
     }
 
+    public function  testPartnerSubmerchantTypeChange()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp( ['partner_type' => 'aggregator']);
+
+        $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged( ['partner_type' => 'reseller']);
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+            'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_type'     => 'application',
+            'entity_id'       => $referredApp->getId()
+        ]);
+
+        $this->startTest();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map');
+
+        $this->assertEquals($accessMapEntity['entity_id'], $managedApp->getId());
+    }
+
     public function testFetchPartnerSubmerchant()
     {
         // Failing intermittently way too often and hindering development. TODO: fix

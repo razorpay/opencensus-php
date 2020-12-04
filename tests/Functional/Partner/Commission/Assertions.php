@@ -127,7 +127,7 @@ class Assertions extends TestCase
         $this->assertEquals(3304, $commission->getFee());
         $this->assertEquals(504, $commission->getTax());
     }
-    
+
     public function testImplicitVariableWithSubmerchantPartnerDiffPricingRules(array $data)
     {
         $this->assertShouldCreateCommission($data);
@@ -339,6 +339,35 @@ class Assertions extends TestCase
 
         $this->assertEquals(944, $commission->getFee());
         $this->assertEquals(144, $commission->getTax());
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitVariableAndExplicitForReferredApp(array $data)
+    {
+        $referredAppId = ($data['post_setup']['referred_app_id']);
+
+        $managedAppId =  ($data['post_setup']['application_id']);
+
+        $this->assertNotEquals($referredAppId, $managedAppId);
+
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertEquals(1888, $commission->getFee());
+        $this->assertEquals(288, $commission->getTax());
 
         $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT, 2);
 

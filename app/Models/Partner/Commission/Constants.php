@@ -79,6 +79,8 @@ class Constants
      */
     public static $partnerTypesEligibleWithoutOrigin = [
         Merchant\Constants::RESELLER,
+        Merchant\Constants::AGGREGATOR,
+        Merchant\Constants::FULLY_MANAGED,
     ];
 
     /**

@@ -1078,7 +1078,7 @@ class Calculator extends Base\Core
         }
         else
         {
-            $partnerApp = (new Merchant\AccessMap\Core)->getNonPurePlatformPartnerApp($submerchant);
+            $partnerApp = (new Merchant\AccessMap\Core())->getReferredAppOfSubmerchant($submerchant);
 
             $this->setIsPartnerOriginated(false);
         }

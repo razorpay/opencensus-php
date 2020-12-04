@@ -4,10 +4,10 @@ namespace RZP\Models\Partner;
 
 use Razorpay\OAuth;
 
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as FeatureConstant;

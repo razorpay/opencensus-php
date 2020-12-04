@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Partner\Commission\Base;
 
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Setup
 {
@@ -38,11 +39,20 @@ class Setup
 
         $appData = [
             'merchant_id' => $account->getId(),
+            'partner_type' => $data['type'],
         ];
 
-        $app = $this->fixtures->merchant->createDummyPartnerApp($appData);
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp($appData);
 
-        $output['application_id'] = $app['id'];
+        if (($data['type'] === MerchantConstants::AGGREGATOR) or ($data['type'] === MerchantConstants::FULLY_MANAGED))
+        {
+            $appData['partner_type'] = 'reseller';
+            $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged($appData);
+
+            $output['referred_app_id'] = $referredApp['id'];
+        }
+
+        $output['application_id'] = $managedApp['id'];
     }
 
     public function addFeature(array $data, array &$output)
@@ -90,11 +100,16 @@ class Setup
         $partnerId = $data['partner_id'];
         unset($data['partner_id']);
 
+        $appType = $data['submerchant_type'] ?? 'managed';
+        unset($data['submerchant_type']);
+
+        $applicationId = $appType === 'managed' ? $output['application_id'] : $output['referred_app_id'];
+
         $merchant = $this->fixtures->create('merchant:with_balance', $data);
 
         $accessMapArray = [
             'entity_type'     => 'application',
-            'entity_id'       => $output['application_id'],
+            'entity_id'       => $applicationId,
             'merchant_id'     => $merchant->getId(),
             'entity_owner_id' => $partnerId,
         ];
@@ -117,6 +132,28 @@ class Setup
             $data['entity_id'] = $data['merchant_id'];
             $data['origin_type'] = 'application';
             $data['origin_id'] = $output['application_id'];
+        }
+
+        unset($data['type']);
+
+        $data = array_merge($this->getDefaultPartnerConfig(), $data);
+
+        $this->fixtures->create('partner_config', $data);
+    }
+
+    public function defineConfigForReferredApp(array $data, array & $output)
+    {
+        if ($data['type'] === 'partner')
+        {
+            $data['entity_type'] = 'application';
+            $data['entity_id'] = $output['referred_app_id'];
+        }
+        else
+        {
+            $data['entity_type'] = 'merchant';
+            $data['entity_id'] = $data['merchant_id'];
+            $data['origin_type'] = 'application';
+            $data['origin_id'] = $output['referred_app_id'];
         }
 
         unset($data['type']);

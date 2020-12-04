@@ -1640,6 +1640,7 @@ class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+        'merchants_access_map_update'              => ['put',      'merchants/{id}/access_maps',                     'MerchantController@updatePartnerAccessMap'                         ],
         'merchants_access_map_create_bulk'         => ['post',     'access_map/bulk',                                'MerchantController@postPartnerAccessMapBulk'                       ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
@@ -2156,8 +2157,6 @@ class Route
         'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
-        'backfill_merchant_applications',
-        'backfill_referred_application',
         'merchant_checkout_preferences',
         'mock_acs',
         'mock_atom_payment',
@@ -3699,6 +3698,9 @@ class Route
         // Partners
         'merchants_access_map_create',
         'merchants_access_map_delete',
+        'merchants_access_map_update',
+        'backfill_merchant_applications',
+        'backfill_referred_application',
 
         // Scrooge - ODS Dashboard
         'scrooge_dashboard_init',
@@ -4523,6 +4525,7 @@ class Route
         'token_registration_tokens_authenticate'   => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
+        'merchants_access_map_update'              => Permission::EDIT_PARTNERS,
         'partner_referral_create'                  => Permission::EDIT_PARTNERS,
         'update_partner_intent'                    => Permission::EDIT_PARTNERS,
         'update_partner_type'                      => Permission::EDIT_PARTNERS,
@@ -4533,6 +4536,8 @@ class Route
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
         'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
+        'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
+        'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',

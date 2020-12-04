@@ -60,12 +60,15 @@ use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\MerchantApplications\Validator as MerchantAppValidator;
+
 
 class Core extends Base\Core
 {
@@ -1887,13 +1890,33 @@ class Core extends Base\Core
             $appType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
         }
 
-        $this->trace->info(
-            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
-            [
-                'partner_id'     => $partner->getId(),
-                'submerchant_id' => $submerchant->getId(),
-                'app_type'       => $appType,
-            ]);
+        $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $submerchant, $appType);
+
+        if ($isMapped === true)
+        {
+            // since a submerchant can have multiple tokens for a partner, auth-service can call this function
+            // multiple times and because of this exception is not thrown here in order to handle multiple calls
+            // even though access map already exists between the partner and submerchant.
+
+            $this->trace->info(
+              TraceCode::PARTNER_MERCHANT_MAPPING_ALREADY_EXISTS,
+              [
+                  Entity::PARTNER_ID  => $partner->getId(),
+                  Entity::MERCHANT_ID => $submerchant->getId(),
+                  Constants::APP_TYPE => $appType,
+              ]
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+                [
+                    Entity::PARTNER_ID  => $partner->getId(),
+                    Entity::MERCHANT_ID => $submerchant->getId(),
+                    Constants::APP_TYPE => $appType,
+                ]);
+        }
 
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType) {
 
@@ -1961,6 +1984,58 @@ class Core extends Base\Core
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
         });
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function updatePartnerAccessMap(array $input, Entity $partner, Entity $submerchant)
+    {
+        $fromAppType = $input['from_app_type'] ?? MerchantApplications\Entity::REFERRED;
+
+        $toAppType = $input['to_app_type'] ?? MerchantApplications\Entity::MANAGED;
+
+        $this->trace->info(
+            TraceCode::PARTNER_UPDATE_ACCESS_MAP_REQUEST,
+            [
+                Entity::PARTNER_ID  => $partner->getId(),
+                Entity::MERCHANT_ID => $submerchant->getId(),
+                'from_app_type'     => $fromAppType,
+                'to_app_type'       => $toAppType,
+            ]);
+
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $fromAppType, $toAppType) {
+
+            (new PartnerValidator())->validateIfAggregatorOrFullyManagedPartner($partner);
+
+            (new MerchantAppValidator())->validateAppTypeChange($fromAppType, $toAppType);
+
+            $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $submerchant, $fromAppType);
+
+            if ($isMapped === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
+                    [
+                        Entity::PARTNER_ID  => $partner->getId(),
+                        Entity::MERCHANT_ID => $submerchant->getId(),
+                        Constants::APP_TYPE => $fromAppType,
+                    ]
+                );
+            }
+
+            //TODO : check if detaching submerchant owner is required or not after deleting access map
+            $this->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            return $this->createPartnerSubmerchantAccessMap($partner, $submerchant, $toAppType);
+        });
+
+        return $accessMap;
     }
 
     /**

@@ -273,7 +273,7 @@ class SubMerchant extends Base
 
                 $status                           = Status::FAILURE;
                 $entry[Header::ERROR_DESCRIPTION] = 'Activation details not submitted successfully';
-
+                
             }
 
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))

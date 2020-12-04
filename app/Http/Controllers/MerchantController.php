@@ -15,6 +15,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
 
 class MerchantController extends Controller
@@ -1397,7 +1398,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response =$this->service()->updatePartnerIntent($input);
+        $response = $this->service()->updatePartnerIntent($input);
 
         return ApiResponse::json($response);
     }
@@ -1412,6 +1413,15 @@ class MerchantController extends Controller
         $this->service()->deletePartnerAccessMap($merchantId);
 
         return ApiResponse::json([], 204);
+    }
+
+    public function updatePartnerAccessMap(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePartnerAccessMap($merchantId, $input);
+
+        return ApiResponse::json($response);
     }
 
     public function getSubmerchant(string $submerchantId)

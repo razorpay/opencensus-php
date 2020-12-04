@@ -842,8 +842,7 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function editPreSignupDetails(array $input) : array
     {
@@ -905,9 +904,7 @@ class Service extends Base\Service
             }
         });
 
-        $preSignupDetails = $this->getPreSignupDetails();
-
-        return $preSignupDetails;
+        return $this->getPreSignupDetails();
     }
 
     /**

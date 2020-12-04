@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZp\Models\Merchant\MerchantApplications as MerchantApp;
 
 class Repository extends Base\Repository
 {
@@ -126,6 +127,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param array $merchantIds
+     *
+     * @return array
+     */
     public function fetchMerchantsMappedToPartner(array $merchantIds): array
     {
         $subMerchantIds = [];
@@ -152,4 +158,30 @@ class Repository extends Base\Repository
 
         return $subMerchantIds;
     }
+
+    /**
+     * Returns the access map that links a submerchant to the referred app of a partner.
+     *
+     * @param string $subMerchantId
+     *
+     * @return Entity|null
+     */
+    public function getReferredAppMapping(string $subMerchantId)
+    {
+        $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
+        $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
+        $applicationIds       = $this->repo->merchant_application->dbColumn(MerchantApp\Entity::APPLICATION_ID);
+        $applicationType      = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::TYPE;
+        $applicationDeleted   = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::DELETED_AT;
+
+        return $this->newQuery()
+                    ->select($this->getTableName() . '.*')
+                    ->merchantId($subMerchantId)
+                    ->join(Table::MERCHANT_APPLICATION, $accessMapsEntityId, $applicationIds)
+                    ->where($accessMapsEntityType, '=', Entity::APPLICATION)
+                    ->where($applicationType, '=', MerchantApp\Entity::REFERRED)
+                    ->whereNull($applicationDeleted)
+                    ->first();
+    }
+
 }

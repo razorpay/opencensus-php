@@ -68,11 +68,11 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
-use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
@@ -3887,6 +3887,25 @@ class Service extends Base\Service
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
             $partner, null,
             $data);
+
+        return $accessMap;
+    }
+
+    /**
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    public function updatePartnerAccessMap(string $merchantId, array $input)
+    {
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->fetchSubmerchant($merchantId);
+
+        $accessMap = $this->core()->updatePartnerAccessMap($input, $partner, $submerchant);
 
         return $accessMap;
     }

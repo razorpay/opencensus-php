@@ -50,6 +50,7 @@ final class Constants
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
+    const APP_TYPE                                = 'app_type';
 
     // used in merchant es sync
     const INTERVAL                                 = 'interval';

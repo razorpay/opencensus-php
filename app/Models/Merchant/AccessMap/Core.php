@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Application;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\MerchantApplications;
 
 class Core extends Base\Core
 {
@@ -279,6 +280,24 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns the internal partner referred oauth app associated with the submerchant
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return mixed
+     */
+    public function getReferredAppOfSubmerchant(Merchant\Entity $subMerchant)
+    {
+        $accessMap = $this->repo
+                          ->merchant_access_map
+                          ->getReferredAppMapping($subMerchant->getId());
+
+        $partnerApp = optional($accessMap)->entity;
+
+        return $partnerApp;
+    }
+
+    /**
      * @param Merchant\Entity    $merchant
      * @param Application\Entity $app
      *
@@ -311,5 +330,42 @@ class Core extends Base\Core
                     'application_id' => $app->getId(),
                 ]);
         }
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param Merchant\Entity $merchant
+     * @param string $appType
+     *
+     * @return bool
+     */
+    public function isMerchantMappedToPartnerWithAppType(Merchant\Entity $partner, Merchant\Entity $merchant, string $appType) : bool
+    {
+        $accessMaps = $this->repo
+                           ->merchant_access_map
+                           ->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
+
+        foreach ($accessMaps as $accessMap)
+        {
+            $appId = $accessMap->getAttribute(Merchant\AccessMap\Entity::ENTITY_ID);
+
+            $merchantAppRepo = (new MerchantApplications\Repository());
+
+            $merchantApp = $merchantAppRepo->fetchMerchantApplication($appId, MerchantApplications\Entity::APPLICATION_ID);
+
+            if ($merchantApp->isEmpty() === true)
+            {
+                continue;
+            }
+
+            $merchantAppType = $merchantApp->first()->getApplicationType();
+
+            if ($merchantAppType === $appType)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

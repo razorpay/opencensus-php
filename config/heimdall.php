@@ -108,6 +108,10 @@ return [
                 'description' => 'Partner and submerchant debug actions',
                 'assignable'  => true,
             ],
+            Permission::ADMIN_MANAGE_PARTNERS => [
+                'description' => 'Back fill merchant applications of partner',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [

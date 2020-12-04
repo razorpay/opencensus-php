@@ -255,6 +255,7 @@ class Name
     const ADMIN_FILE_UPLOAD                   = 'admin_bank_file_upload';
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
+    const ADMIN_MANAGE_PARTNERS               = 'admin_manage_partners';
     const EDIT_REFUND                         = 'edit_refund';
     const VIEW_COMMISSIONS                    = 'view_commissions';
     const PARTNER_AND_SUBMERCHANT_ACTIONS     = 'partner_submerchant_actions';

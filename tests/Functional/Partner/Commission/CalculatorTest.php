@@ -198,6 +198,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testImplicitVariableAndExplicitForReferredApp()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     /**
      * checks that both implicit and explicit commissions are created
      * if both implicit fixed and explicit plans are present

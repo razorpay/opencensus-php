@@ -742,6 +742,28 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantTypeChange' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'from_app_type' => 'referred',
+                'to_app_type'   => 'managed',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'     => '10000000000009',
+                'entity_type'     => 'application',
+                'entity_owner_id' => '10000000000000',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPartnerSubmerchantsBatchFileRows' => [
         [
             Header::PARTNER_MERCHANT_ID  => '10000000000000',
