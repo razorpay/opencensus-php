@@ -248,10 +248,18 @@ class Core extends Base\Core
             $tags[] = "Auto NC";
         }
 
-        if ($this->isAutoKycDone($merchantDetails)) {
+        if ($this->canAddAutoKycTag($merchantDetails)) {
             $tags[] = "auto-kyc";
         }
         return $tags;
+    }
+
+    protected function canAddAutoKycTag($merchantDetails)
+    {
+        $autoKyc = $this->isAutoKycDone($merchantDetails);
+        $isWhitelisted = ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST);
+
+        return ($autoKyc === true and $isWhitelisted === true);
     }
 
     protected function isNcResponded($oldActivationStatus, $newActivationStatus)
@@ -2258,7 +2266,16 @@ class Core extends Base\Core
 
     private function getApplicableActivationStatusForRegisteredMerchant($merchantDetails)
     {
-        if ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST)
+        $excludeActivationStatusList = [
+            Status::NEEDS_CLARIFICATION,
+            Status::ACTIVATED,
+            Status::REJECTED
+        ];
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+        $isWhitelisted = ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST);
+
+        if ($isWhitelisted === true and
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
             $isSelfServeEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
                 $merchantDetails->getMerchantId(),
@@ -2276,10 +2293,12 @@ class Core extends Base\Core
     public function isAutoKycDone($merchantDetails)
     {
         $businessType = $merchantDetails->getBusinessType();
+
         if (isset($businessType) === false or $businessType === '')
         {
             return false;
         }
+
         if(isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
         {
             return false;
