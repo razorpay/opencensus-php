@@ -1401,7 +1401,8 @@ class Service extends Base\Service
             'show_rx_vp_announcement',
             'rx_opfin_announcement',
             'whatsapp_notification_enablement',
-            'rx_manual_tax_payment'
+            'rx_manual_tax_payment',
+            'rx_vp_inline_recommendation'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
