@@ -910,6 +910,17 @@ class PartnerTest extends OAuthTestCase
 
         $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged( ['partner_type' => 'reseller']);
 
+        $this->fixtures->create('user', ['id' => self::DEFAULT_MERCHANT_ID, 'email' => 'test@razorpay.com']);
+
+        DB::connection('test')->table('merchant_users')
+            ->insert([
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'user_id'     => self::DEFAULT_MERCHANT_ID,
+                'role'        => 'owner',
+                'created_at'  => 1793805150,
+                'updated_at'  => 1793805150
+            ]);
+
         $this->fixtures->create('merchant_access_map', [
             'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,

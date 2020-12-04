@@ -1961,6 +1961,24 @@ class Core extends Base\Core
     /**
      * @param Entity $partner
      * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    public function deletePartnerAccessMap(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+
+            $this->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
+        });
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
@@ -1984,6 +2002,39 @@ class Core extends Base\Core
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
         });
+    }
+
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->assertTransactionActive();
+
+        $partnerUserId = $partner->primaryOwner()->getId();
+
+        if (($partner->isFullyManagedPartner() === true) or
+            ($partner->isAggregatorPartner() === true))
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+
+                $this->detachSubMerchantOwner($partnerUserId, $submerchant);
+
+                if ($submerchant->primaryOwner() === null)
+                {
+                    $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
+                        [
+                            'submerchant' => $submerchant,
+                        ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
+                }
+            });
+        }
     }
 
     /**
@@ -2029,8 +2080,7 @@ class Core extends Base\Core
                 );
             }
 
-            //TODO : check if detaching submerchant owner is required or not after deleting access map
-            $this->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+            $this->deletePartnerAccessMap($partner, $submerchant);
 
             return $this->createPartnerSubmerchantAccessMap($partner, $submerchant, $toAppType);
         });
