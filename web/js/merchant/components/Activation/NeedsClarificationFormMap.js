@@ -35,7 +35,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     if (allFieldsHash[field]) {
       if (latestNc) {
         clarificationDetails[origKey].map((key) => {
-          if (key.from === 'admin' && key.nc_count === latestNc) {
+          if ((key.from === 'admin' || key.from === 'system') && key.nc_count === latestNc) {
             if (key.reason_type === 'predefined') {
               try {
                 reasons.push(predefinedReasons[origKey].reasons[key.reason_code].description);
