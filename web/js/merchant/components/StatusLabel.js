@@ -2,7 +2,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 const StatusLabel = (statusMap) => ({ status = '', className }) => (
   <span class={`status-label label ${statusMap[status.toLowerCase()]} ${className}`}>
-    {titleCase(status)}
+    {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
   </span>
 );
 
@@ -98,6 +98,7 @@ export const activationStatusMap = {
   needs_clarification: 'label-pending',
   under_review: 'label-info',
   instantly_activated: 'label-muted',
+  activated_mcc_pending: 'label-success',
 };
 
 export const disputeStatusMap = {
