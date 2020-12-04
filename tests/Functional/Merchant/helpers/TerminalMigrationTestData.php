@@ -27,6 +27,27 @@ return [
         ],
     ],
 
+    'testAssignTerminalInternalAuthMigrateVariantFulcrum' => [
+        'request' => [
+            'content' => [
+                'id'                         => "FVkV1bgreKuciM",
+                'gateway'                    => 'fulcrum',
+                'gateway_terminal_id'        => '1000000d',
+                'gateway_merchant_id'        => '10000000000000d',
+                'currency'                   => ['INR'],
+                'card'                       => '1',
+                'type'                       =>  [
+                    'non_recurring' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+        
+                
     'testAssignTerminalInternalAuthMigrateVariantPaysecure' => [
         'request' => [
             'content' => [

@@ -174,34 +174,64 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount + 1, $afterCount);
     }
 
+    // terminal is created via this route in fulcrum onboarding, then its synced to terminals service
+    public function testAssignTerminalInternalAuthMigrateVariantFulcrum()
+    {
+        
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        });
+
+
+        $this->razorxValue = 'migrate';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+    }
+
      // terminal is created via this route in paysecure axis onboarding, TS calls this route then its synced back to terminals service
      public function testAssignTerminalInternalAuthMigrateVariantPaysecure()
      {
-         $this->mockTerminalsServiceSendRequest(function() {
-             return $this->getDefaultTerminalServiceResponse();
-         });
- 
- 
-         $this->razorxValue = 'migrate';
- 
-         $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
- 
-         $this->testData[__FUNCTION__]['request']['url'] = $url;
- 
-         $beforeCount = DB::table('terminals')->count();
- 
-         $this->ba->appAuth();
- 
-         $response = $this->startTest();
-         
-         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
- 
-         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
- 
-         $afterCount = Db::table('terminals')->count();
- 
-         $this->assertEquals($beforeCount + 1, $afterCount);
-     }
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        });
+
+
+        $this->razorxValue = 'migrate';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+        
+        $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+    }
 
     public function testAssignTerminalInternalAuthMissingId()
     {

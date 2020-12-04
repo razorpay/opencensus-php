@@ -343,6 +343,18 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes|array|max:1',
     ];
 
+    protected static $fulcrumTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:fulcrum',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
+        Entity::MODE                       => 'sometimes|integer|in:3',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CURRENCY                   => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:razorpay',
+    ];
+
     protected static $amexTerminalRules = [
         Entity::GATEWAY                    => 'required|in:amex',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:8',

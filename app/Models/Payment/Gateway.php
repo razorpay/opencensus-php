@@ -44,6 +44,7 @@ class Gateway
     const ENACH_RBL              = 'enach_rbl';
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const FIRST_DATA             = 'first_data';
+    const FULCRUM                = 'fulcrum';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
