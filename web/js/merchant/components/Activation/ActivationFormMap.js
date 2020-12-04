@@ -90,16 +90,18 @@ const ADDRESS_PROOF_TYPES = {
   //   backView: 'Back',
   // },
 };
+const commonDescription =
+  'Ensure Signatory Name, IFSC code and Bank a/c is visible on the uploaded document.';
 const BANK_PROOF_TYPE_DOC = {
   cancelled_cheque: {
     label: 'Canceled Cheque Copy',
     value: 'cancelled_cheque',
-    description: 'Please upload a copy of cancelled cheque.',
+    description: commonDescription,
   },
   bank_statement: {
     label: 'Bank Statement Copy',
     value: 'bank_statement',
-    description: 'Please upload a copy of bank statement.',
+    description: commonDescription,
   },
 };
 

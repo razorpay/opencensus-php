@@ -122,7 +122,7 @@ export class Info extends React.Component {
         <div class="Input-info">
           {typeof text === 'object' ? (
             <ul>
-              {Object.keys(text).map(key => (
+              {Object.keys(text).map((key) => (
                 <li key={key}>
                   <b>{key}:</b> {text[key]}
                 </li>
@@ -239,14 +239,14 @@ export default class Field extends React.Component {
     }
   }
 
-  focus = e => {
+  focus = (e) => {
     this.props.onFocus && this.props.onFocus(e);
     this.setState({ focus: true });
 
     this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
   };
 
-  blur = e => {
+  blur = (e) => {
     this.props.onBlur && this.props.onBlur(e);
     this.setState({ focus: false });
 
@@ -259,7 +259,7 @@ export default class Field extends React.Component {
     }
   };
 
-  change = e => {
+  change = (e) => {
     this.valid();
     this.props.onChange && this.props.onChange(e);
 
@@ -271,13 +271,7 @@ export default class Field extends React.Component {
   };
 
   valid() {
-    let {
-      pattern,
-      required,
-      validator,
-      requiredError,
-      patternError,
-    } = this.props;
+    let { pattern, required, validator, requiredError, patternError } = this.props;
 
     let el = this.el;
     let value = el.value;
@@ -298,7 +292,7 @@ export default class Field extends React.Component {
     // }
   }
 
-  setRef = el => {
+  setRef = (el) => {
     this.el = el;
     if (el) {
       this.valid();
@@ -321,12 +315,12 @@ export default class Field extends React.Component {
         // If info is thenable to get real time info based on input
         if (infoEle.then) {
           infoEle
-            .then(data => {
+            .then((data) => {
               this.setState({
                 infoEle: data || null,
               });
             })
-            .catch(err => {
+            .catch((err) => {
               this.setState({
                 infoEle: null,
               });
@@ -367,7 +361,7 @@ export default class Field extends React.Component {
         class={classList(
           'Input-el',
           allProps.addonBefore && 'Input-el--before',
-          allProps.addonAfter && 'Input-el--after'
+          allProps.addonAfter && 'Input-el--after',
         )}
         defaultValue={defaultValue}
         ref={this.setRef}
@@ -382,22 +376,18 @@ export default class Field extends React.Component {
           <div
             class={classList(
               'Input-elWrapper',
-              InputTag.toLowerCase() === 'select' && 'Select-elWrapper'
+              InputTag.toLowerCase() === 'select' && 'Select-elWrapper',
             )}
           >
             {allProps.addonBefore && (
-              <span class="Input-addons Input-addons--before">
-                {allProps.addonBefore}
-              </span>
+              <span class="Input-addons Input-addons--before">{allProps.addonBefore}</span>
             )}
             {allProps.addonValueBefore && (
               <span class="Input-valueBefore">{allProps.addonValueBefore}</span>
             )}
             {InputComponent}
             {allProps.addonAfter && (
-              <span class="Input-addons Input-addons--after">
-                {allProps.addonAfter}
-              </span>
+              <span class="Input-addons Input-addons--after">{allProps.addonAfter}</span>
             )}
             <Info text={infoEle} />
           </div>
@@ -416,7 +406,7 @@ class Check extends Field {
     value: this.props.defaultValue,
   };
 
-  toggle = e => {
+  toggle = (e) => {
     e.target.value = e.target.checked ? 1 : 0;
 
     this.setState({
@@ -433,9 +423,7 @@ class Check extends Field {
   }
 
   render() {
-    let { label, fieldLabel, description, info, props } = separateDomProps(
-      this.props
-    );
+    let { label, fieldLabel, description, info, props } = separateDomProps(this.props);
 
     return (
       <div class={inputClass(this)}>
@@ -446,9 +434,7 @@ class Check extends Field {
               <input
                 {...props}
                 defaultChecked={
-                  typeof this.props.checked !== 'undefined'
-                    ? undefined
-                    : this.checked
+                  typeof this.props.checked !== 'undefined' ? undefined : this.checked
                 }
                 class="Input-el"
                 type="checkbox"
@@ -462,11 +448,7 @@ class Check extends Field {
               ) : (
                 <React.Fragment>
                   <div className="Input-checkbox" />
-                  <Label
-                    class="Input-inlineLabel"
-                    text={fieldLabel}
-                    {...this.props.labelProps}
-                  />
+                  <Label class="Input-inlineLabel" text={fieldLabel} {...this.props.labelProps} />
                 </React.Fragment>
               )}
             </label>
@@ -484,17 +466,14 @@ class Radio extends Field {
     value: this.props.defaultValue || 0,
   };
 
-  toggle = e => {
+  toggle = (e) => {
     let target = e.target;
     if (!this.props.name) {
-      Array.prototype.forEach.call(
-        target.parentNode.parentNode.querySelectorAll('input'),
-        el => {
-          if (el !== target) {
-            el.checked = false;
-          }
+      Array.prototype.forEach.call(target.parentNode.parentNode.querySelectorAll('input'), (el) => {
+        if (el !== target) {
+          el.checked = false;
         }
-      );
+      });
     }
     this.setState({
       value: target.value,
@@ -503,7 +482,7 @@ class Radio extends Field {
     this.props.onChange && this.props.onChange(e);
   };
 
-  onBlur = e => {
+  onBlur = (e) => {
     this.props.onBlur && this.props.onBlur(e);
   };
 
@@ -563,19 +542,13 @@ class Radio extends Field {
 Field.Radio = Radio;
 Field.Check = Check;
 
-Field.Textarea = _ => <Field {..._} tag="textarea" />;
-Field.File2 = _ => {
+Field.Textarea = (_) => <Field {..._} tag="textarea" />;
+Field.File2 = (_) => {
   return <Field {..._} type="file" />;
 };
 
-Field.File = _ => {
-  let {
-    label,
-    description,
-    selectedDescription,
-    defaultValue,
-    ...props
-  } = separateDomProps(_);
+Field.File = (_) => {
+  let { label, description, selectedDescription, defaultValue, ...props } = separateDomProps(_);
 
   return (
     <div class={inputClass({ props: _ })}>
@@ -583,7 +556,7 @@ Field.File = _ => {
       <div class="Input-content Input-File">
         <FileUpload
           name={_.name}
-          onBiggerFileSize={_ => {
+          onBiggerFileSize={(_) => {
             console.log('File size is bigger');
           }}
           onFileChange={_.onChange}
@@ -600,7 +573,7 @@ Field.File = _ => {
   );
 };
 
-Field.Time = _ => <Field {..._} type="time" />;
+Field.Time = (_) => <Field {..._} type="time" />;
 
 /*
  * Input type=select Component
@@ -630,13 +603,7 @@ Field.Select = ({ options, ...props }) => (
 /* Fields to be shown visually closer than other fields in form*/
 Field.Group = ({ label, className, children, ...otherProps }) => {
   return (
-    <div
-      class={classList(
-        'InputGroup',
-        className,
-        inputClass({ props: otherProps })
-      )}
-    >
+    <div class={classList('InputGroup', className, inputClass({ props: otherProps }))}>
       <Label text={label} />
       {children}
     </div>
@@ -651,7 +618,7 @@ Field.EnumList = EnumList;
 const ToCalendar = React.forwardRef((props, ref) => (
   <CalendarPicker
     class="disable-past-year"
-    postSelectionValue={val => val.endOf('day')}
+    postSelectionValue={(val) => val.endOf('day')}
     {...props}
     ref={ref}
   />
