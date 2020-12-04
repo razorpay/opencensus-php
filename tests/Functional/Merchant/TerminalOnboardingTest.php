@@ -37,6 +37,13 @@ class TerminalOnboardingTest extends TestCase
         $this->assertArrayHasKey('links', $response);
     }
 
+    public function testInitiateOnboardingPaysecureAxis()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testInitiateOnboardingWithNoGatewayInInput()
     {
         $this->ba->proxyAuth();

@@ -19,6 +19,19 @@ return [
         ],
     ],
 
+    'testInitiateOnboardingPaysecureAxis' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/terminals/onboard',
+            'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'axis']
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testInitiateOnboardingWithNoGatewayInInput' => [
         'request' => [
             'method' => 'POST',

@@ -34,6 +34,7 @@ class TerminalsService
 
 
     const GATEWAY           = 'gateway';
+    const GATEWAY_ACQUIRER  = 'gateway_acquirer';
     const MERCHANT_ID       = 'merchant_id';
     const IDENTIFIERS       = 'identifiers';
     const CURRENCY          = 'currency';
@@ -251,7 +252,7 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
-    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = []): array
+    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = [], array $otherInputs = []): array
     {
         $params = self::PARAMS[self::INITIATE_ONBOARDING];
 
@@ -263,6 +264,12 @@ class TerminalsService
             self::CURRENCY      =>  $currency,
             self::IDENTIFIERS   =>  $identifiers,
         ];
+
+        // for paysecure
+        if (isset($otherInputs[self::GATEWAY_ACQUIRER]) === true)
+        {
+            $content[self::GATEWAY_ACQUIRER] = $otherInputs[self::GATEWAY_ACQUIRER];
+        }
 
         $content = json_encode($content);
 

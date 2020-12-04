@@ -2,6 +2,7 @@
 
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Error\PublicErrorCode;
 use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
@@ -25,6 +26,33 @@ return [
             ],
         ],
     ],
+
+    'testAssignTerminalInternalAuthMigrateVariantPaysecure' => [
+        'request' => [
+            'content' => [
+                'id'                         => "TVrV1teaePuciQ",
+                'gateway'                    => 'paysecure',
+                'gateway_acquirer'           => 'axis',
+                'mode'                       => 3,
+                'gateway_terminal_id'        => 'axis000d',
+                'gateway_merchant_id'        => 'axis0000000000d',
+                'currency'                   => ['INR'],
+                'card'                       => '1',
+                'status'                     => 'pending',
+                'enabled'                    => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gateway'   =>  'paysecure',
+                'mode'      =>  3,
+                'enabled'   =>  false,
+                'card'      =>  true,
+                'status'    =>  'pending',
+            ],
+        ],
+    ],
+
     'testAssignTerminalInternalAuthMissingId' => [
         'request' => [
             'content' => [

@@ -539,6 +539,19 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
     ];
 
+    protected static $paysecureTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:paysecure',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
+        Entity::MODE                       => 'required|in:3',
+        Entity::CURRENCY                   => 'required|array',
+        Entity::CARD                       => 'required|boolean|in:1',
+        Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
+        Entity::ENABLED                    => 'required|in:0',
+        Entity::GATEWAY_ACQUIRER           => 'required|in:axis',
+        Entity::STATUS                     => 'required|in:pending'
+    ];
+
     protected static $cybersourceEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
@@ -1601,22 +1614,24 @@ class Validator extends Base\Validator
     {
         Payment\Gateway::validateGateway($input['gateway']);
 
-        unset(
-            $input[Entity::TPV],
-            $input[Entity::CARD],
-            $input[Entity::SHARED],
-            $input[Entity::CATEGORY],
-            $input[Entity::CORPORATE],
-            $input[Entity::BANKING_TYPES],
-            $input[Entity::NETBANKING],
-            $input[Entity::EMANDATE],
-            $input[Entity::MERCHANT_ID],
-            $input[Entity::NETWORK_CATEGORY],
-            $input[Entity::GATEWAY_ACQUIRER],
-            $input[Entity::MODE]);
-
+        // Don't unset for paysecure gateway, req is initiated from Terminals Service via merchants/{id}/terminals/internal route
+        if ($input['gateway'] != Payment\Gateway::PAYSECURE)
+        {
+            unset(
+                $input[Entity::TPV],
+                $input[Entity::CARD],
+                $input[Entity::SHARED],
+                $input[Entity::CATEGORY],
+                $input[Entity::CORPORATE],
+                $input[Entity::BANKING_TYPES],
+                $input[Entity::NETBANKING],
+                $input[Entity::EMANDATE],
+                $input[Entity::MERCHANT_ID],
+                $input[Entity::NETWORK_CATEGORY],
+                $input[Entity::GATEWAY_ACQUIRER],
+                $input[Entity::MODE]);
+        }
         $op = $input['gateway'] . '_terminal';
-
         $var = $this->getRulesVariableName($op);
 
         if (property_exists(__CLASS__, $var))

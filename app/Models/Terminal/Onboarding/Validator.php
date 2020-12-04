@@ -4,12 +4,12 @@
 namespace RZP\Models\Terminal\Onboarding;
 
 use RZP\Base;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Validator extends Base\Validator
 {
-    const GATEWAY = 'gateway';
-
     protected static $onboardingInputRules = [
-        self::GATEWAY       => 'required',
+        TerminalEntity::GATEWAY            => 'required',
+        TerminalEntity::GATEWAY_ACQUIRER   => 'sometimes',
     ];
 }
