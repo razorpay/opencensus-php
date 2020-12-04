@@ -30,4 +30,15 @@ return [
             'model'  => Illuminate\Auth\GenericUser::class
         ]
     ],
+
+    'service_provider' => [
+        'thirdwatch' => [
+            'signing_secret' => env('THIRDWATCH_JWT_SIGNING_KEY'),
+            'redirect_url'   => env('THIRDWATCH_REDIRECT_URL'),
+        ],
+        'opfin'      => [
+            'signing_secret' => env('OPFIN_JWT_SIGNING_KEY'),
+            'redirect_url'   => env('OPFIN_REDIRECT_URL'),
+        ],
+    ],
 ];

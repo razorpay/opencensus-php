@@ -467,6 +467,34 @@ class UserController extends Controller
     }
 
     /**
+     * Creates an identity token for the logged in user and share the same via redirect URL
+     *
+     * @param string $clientId
+     * @return mixed
+     */
+    public function getIdentityToken(string $clientId)
+    {
+        $queryParams = Input::all();
+
+        list($error, $url) = (new User\Service)->generateIdentityToken($clientId, $queryParams);
+
+        //
+        // if there are no errors then do a 302 redirect to the service providers
+        // callback url with the token
+        //
+        // if there is an error then we should redirect the user to login page
+        // with the ?next param as the user/identifier. So that once the user
+        // is authenticated successfully we can pass the token to service provider
+        //
+        if (empty($error) === true)
+        {
+            return redirect($url);
+        }
+
+        return AppResponse::jsonResponse($error, null);
+    }
+
+    /**
      * The auth-service gets details of the currently logged in user
      * using this route (once it has the token)
      *

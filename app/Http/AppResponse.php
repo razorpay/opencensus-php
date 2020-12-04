@@ -17,7 +17,14 @@ class AppResponse
         'admin_merchant_stats',
         'razorx_catchall',
         'report_download',
-        'extension_catchall'
+        'extension_catchall',
+
+        //
+        // adding this is because in case if user is not authenticated then
+        // we should be redirecting to login page
+        // and once the login is successful we should revisit this again
+        //
+        'user_identity',
     ];
 
     /**

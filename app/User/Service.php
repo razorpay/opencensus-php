@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\Crypt;
 use Lcobucci\JWT\ValidationData as JWTValidation;
 use Illuminate\Auth\Access\AuthorizationException;
 
-
 class Service extends Base\Service
 {
     const OAUTH_SESSION_TOKEN = 'oauth_session_token';
@@ -50,7 +49,6 @@ class Service extends Base\Service
     const LOGIN_UNAUTHENTICATED = 'LOGIN_UNAUTHENTICATED';
 
     const LOGIN_UNREGISTERED = 'LOGIN_UNREGISTERED';
-
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
@@ -1179,6 +1177,35 @@ class Service extends Base\Service
         ]);
 
         return $data;
+    }
+
+    /**
+     * generate the redirect URL with the user identity token
+     *
+     * @param string $clientId
+     * @param array $params
+     * @return array
+     */
+    public function generateIdentityToken(string $clientId, array $params): array
+    {
+        $error = $url = null;
+
+        try
+        {
+            list($redirectURL, $token) = (new Identity())->generateIdentityToken($clientId, $params);
+
+            $url = $redirectURL . '?token=' . (string) $token;
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [
+                'code'        => $e->getCode(),
+                'description' => $e->getMessage(),
+                'status_code' => $e->getHttpStatusCode(),
+            ];
+        }
+
+        return [$error, $url];
     }
 
     /**

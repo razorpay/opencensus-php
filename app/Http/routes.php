@@ -71,6 +71,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact');
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);
+        Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
