@@ -35,4 +35,6 @@ class Constants
     const PNB_NB_COMBINED_FILE_JOB_NAME  = 'pnb_net_banking';
 
     const JKB_NB_REFUND_FILE_JOB_NAME = 'jkb_netbanking_refund_file';
+
+    const UBI_NB_REFUND_FILE_JOB_NAME = 'ubi_netbanking_refund_prod';
 }

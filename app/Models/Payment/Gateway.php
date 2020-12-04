@@ -346,6 +346,7 @@ class Gateway
         self::NETBANKING_JSB,
         self::NETBANKING_DCB,
         self::NETBANKING_IDFC,
+        self::NETBANKING_UBI,
     ];
 
     /**
@@ -974,6 +975,7 @@ class Gateway
         Payment\Gateway::NETBANKING_FSB,
         Payment\Gateway::NETBANKING_JKB,
         Payment\Gateway::HDFC_DEBIT_EMI,
+        Payment\Gateway::NETBANKING_UBI,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1008,6 +1010,7 @@ class Gateway
         Payment\Gateway::NETBANKING_FSB         => 1591900200,
         Payment\Gateway::NETBANKING_JKB         => 1593685800,
         Payment\Gateway::NETBANKING_DCB         => 1593907200,
+        Payment\Gateway::NETBANKING_UBI         => 1607059163,
     ];
 
     public static $channels = [
@@ -2120,6 +2123,7 @@ class Gateway
         IFSC::JAKA => Gateway::NETBANKING_JKB,
         IFSC::IBKL => Gateway::NETBANKING_IDBI,
         IFSC::DCBL => Gateway::NETBANKING_DCB,
+        IFSC::UBIN => Gateway::NETBANKING_UBI,
     ];
 
     /**

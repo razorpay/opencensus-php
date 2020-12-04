@@ -745,6 +745,7 @@ class Creator extends Base\Core
             // When the extension of the file which need to be created has no standard extension (in case of ASCII file)
             // we dont set the extension while creating it, then `NONE` will match with it and process it as text file
             case Format::NONE:
+            case Format::VAL:
                 $this->writeTextFile();
                 break;
 

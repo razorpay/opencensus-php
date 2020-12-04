@@ -31,6 +31,7 @@ class Lambda extends Base
         Base::BT_RBL,
         Base::NETBANKING_PNB,
         Base::CRED,
+        Base::NETBANKING_UBI,
     ];
 
     public function process(array $input): array

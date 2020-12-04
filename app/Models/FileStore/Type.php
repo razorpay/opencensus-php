@@ -122,6 +122,8 @@ class Type
 
     const FSB_NETBANKING_REFUND             = 'fsb_netbanking_refund';
 
+    const UBI_NETBANKING_REFUND             = 'ubi_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -278,6 +280,7 @@ class Type
             self::JSB_NETBANKING_CLAIM,
             self::IOB_NETBANKING_REFUND,
             self::FSB_NETBANKING_REFUND,
+            self::UBI_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -430,6 +433,7 @@ class Type
         self::JSB_NETBANKING_CLAIM,
         self::IOB_NETBANKING_REFUND,
         self::FSB_NETBANKING_REFUND,
+        self::UBI_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,
@@ -517,6 +521,7 @@ class Type
             self::FSB_NETBANKING_REFUND,
             self::JKB_NETBANKING_REFUND,
             self::DCB_NETBANKING_REFUND,
+            self::UBI_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

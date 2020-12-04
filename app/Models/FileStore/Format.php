@@ -28,6 +28,7 @@ class Format
     const SEVEN_Z   = '7z';
     const GPG       = 'gpg';
     const IOB       = 'iob';
+    const VAL       = 'val';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -52,6 +53,7 @@ class Format
         self::SEVEN_Z,
         self::GPG,
         self::IOB,
+        self::VAL,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -89,6 +91,7 @@ class Format
         self::SEVEN_Z => ['application/x-7z-compressed'],
         self::GPG     => ['application/pgp', 'application/octet-stream'],
         self::IOB     => ['text/plain'],
+        self::VAL     => ['text/plain'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

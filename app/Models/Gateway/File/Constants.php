@@ -54,6 +54,7 @@ class Constants
     const JKB              = 'jkb';
     const FSB              = 'fsb';
     const DCB              = 'dcb';
+    const UBI              = 'ubi';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
@@ -127,6 +128,7 @@ class Constants
             self::FSB,
             self::JKB,
             self::DCB,
+            self::UBI,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -222,6 +224,7 @@ class Constants
             self::JKB         => ['jkb-netbanking-claims@razorpay.com'],
             self::FSB         => ['fsb-netbanking-refunds@razorpay.com'],
             self::DCB         => ['dcb-netbanking-refunds@razorpay.com'],
+            self::UBI         => [],
         ],
 
         Type::EMANDATE_REGISTER => [

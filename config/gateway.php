@@ -810,6 +810,11 @@ return [
         'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
         'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
+
+    'netbanking_ubi' => [
+        'recon_key'         => env('NETBANKING_UBI_RECON_DECRYPTION_KEY'),
+    ],
+
     'paysecure' => [
         'caller_id'         => env('PAYSECURE_CALLER_ID'),
         'token'             => env('PAYSECURE_TOKEN'),
