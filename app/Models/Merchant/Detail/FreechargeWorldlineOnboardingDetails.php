@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
@@ -179,20 +180,6 @@ class FreechargeWorldlineOnboardingDetails
             self::QR_CODE_BASE_TXNS_ONUS        => '0.55',
             self::QR_CODE_BASE_TXNS_OFFUS       => '0.7'
         ],
-        5399 => [
-            self::MCC_NAME                      => 'Misc. General Merchandise',
-            self::MANDATORY_FLAG                => 'Non-Mandatory',
-            self::DEBIT_CARD_QR_ONUS            => '0',
-            self::DEBIT_CARD_QR_OFFUS           => '0',
-            self::CREDIT_CARD_PREMIUM_ONUS      => '0.8',
-            self::CREDIT_CARD_PREMIUM_OFFUS     => '0.8',
-            self::CREDIT_CARD_NON_PREMIUM_ONUS  => '1.42',
-            self::CREDIT_CARD_NON_PREMIUM_OFFUS => '1.42',
-            self::AXIS_UPI_MSF_L20K             => '0',
-            self::AXIS_UPI_MSF_G20K             => '0',
-            self::QR_CODE_BASE_TXNS_ONUS        => '0.55',
-            self::QR_CODE_BASE_TXNS_OFFUS       => '0.7'
-        ],
         6300 => [
             self::MCC_NAME                      => 'Insurance Sales, Underwriting, and Premiums',
             self::MANDATORY_FLAG                => 'Non-Mandatory',
@@ -223,6 +210,10 @@ class FreechargeWorldlineOnboardingDetails
         ]
     ];
 
+    const BARRED_MCC = [
+        5399
+    ];
+
     // These hardcoded values for freecharge are provided to us by axis bank
     const OTHER_DETAILS = [
         self::BUSINESSTYPE  => 'O',
@@ -251,6 +242,12 @@ class FreechargeWorldlineOnboardingDetails
             return self::MCC_PRICING[$mccCode];
         }
         
+        if (in_array($mccCode, self::BARRED_MCC) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MCC_IS_BARRED);
+        }
+
         return self::MCC_PRICING[0];
     }
 

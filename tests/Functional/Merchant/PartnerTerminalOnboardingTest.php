@@ -394,6 +394,25 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalOnboardingCreateTerminalWithBarredMcc()
+    {
+        $this->setUpMpans('10000000000000');
+
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->setUpTidConfigs();
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId(true, 5399);
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testTerminalOnboardingCreateTerminalForNonActivatedMerchant()
     {
         $this->app['config']->set('gateway.mock_mozart', true);

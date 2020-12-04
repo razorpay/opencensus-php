@@ -274,6 +274,32 @@ return [
         ]
     ],
 
+    'testTerminalOnboardingCreateTerminalWithBarredMcc' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '5122600005005789',
+                  'visa'        => '4604901005005799',
+                  'rupay'       => '6100020005005792'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The merchant`s mcc is barred.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MCC_IS_BARRED
+        ],
+    ],
+
     'testTerminalOnboardingCreateTerminalAdditionalTidFlow' => [
         'request' => [
             'content' => [

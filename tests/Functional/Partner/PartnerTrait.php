@@ -278,7 +278,7 @@ trait PartnerTrait
         return [$client->getId(), 'acc_' . $submerchantId];
     }
 
-    public function setUpPartnerAuthAndGetSubMerchantId($activated = true)
+    public function setUpPartnerAuthAndGetSubMerchantId($activated = true, $category = 4722)
     {
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -286,11 +286,11 @@ trait PartnerTrait
 
         if ($activated === true)
         {
-            $subMerchant = $this->fixtures->create('merchant', ['activated' => 1]);
+            $subMerchant = $this->fixtures->create('merchant', ['activated' => 1, 'category' => $category]);
         }
         else
         {
-            $subMerchant = $this->fixtures->create('merchant');
+            $subMerchant = $this->fixtures->create('merchant', ['category' => $category]);
         }
 
         $subMerchantId = $subMerchant->getId();
