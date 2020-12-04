@@ -89,7 +89,6 @@ class BankCodes
         Netbanking::RATN_C => 'RTC',            // RBL Bank Limited Corporate
         Netbanking::SVCB_C => 'SV2',            // Shamrao Vithal Bank Corporate
         Netbanking::YESB_C => 'YBC',            // Yes Bank Corporate
-        Netbanking::HDFC_C => 'CH3',            // Hdfc Bank - Corporate
     ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
