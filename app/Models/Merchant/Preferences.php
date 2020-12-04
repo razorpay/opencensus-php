@@ -176,6 +176,9 @@ class Preferences
     const MID_RAJESH_TELECOM           = 'FrWPMIvlTuDhKe';
     const MID_GENEXPRO                 = 'Fz4wOMKiOQX9ez';
     const MID_ANDHRA_INDUSTRIAL_CORP   = 'BTcsIgeI0fvT6a';
+    const MID_OAKSTER_MEDIA_TECH       = 'G2hWoiPFTdsBbC';
+    const MID_MILLIONSTRO              = 'G7loPlVW2DIxdv';
+    const MID_AMAZING_KART             = 'G7mPROV5i51GJt';
 
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
@@ -381,6 +384,9 @@ class Preferences
         self::MID_RAJESH_TELECOM,
         self::MID_GENEXPRO,
         self::MID_ANDHRA_INDUSTRIAL_CORP,
+        self::MID_OAKSTER_MEDIA_TECH,
+        self::MID_MILLIONSTRO,
+        self::MID_AMAZING_KART,
     ];
 
     // MSwipe Configurations
