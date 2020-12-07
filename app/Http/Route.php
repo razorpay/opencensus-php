@@ -1593,7 +1593,8 @@ class Route
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
-        'splitz_evaluate'                          => ['post',     'splitz/evaluate',                               'SplitzController@evaluateRequest'                                  ],
+        'splitz_evaluate'                          => ['post',     'splitz/evaluate',                                'SplitzController@evaluateRequest'                                  ],
+        'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
 
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
@@ -5078,6 +5079,7 @@ class Route
     public static $direct = [
         'download_papernach_form',
         'splitz_evaluate',
+        'splitz_preflight',
         'settlement_ondemand_razorpayx_webhook',
         'payment_links_service_hosted_page',
         'third_party_health_check',

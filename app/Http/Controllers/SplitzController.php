@@ -47,6 +47,11 @@ class SplitzController extends Controller
         $this->requestTimeout = $splitzConfig['request_timeout'];
     }
 
+    public function allowCors()
+    {
+        return ApiResponse::json([]);
+    }
+
     public function evaluateRequest()
     {
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
@@ -73,7 +78,9 @@ class SplitzController extends Controller
 
             $res = $this->parseAndReturnResponse($response);
 
-            return ApiResponse::json($res);
+            $response = ApiResponse::json($res);
+
+            return $response;
         }
         catch (\Throwable $e)
         {

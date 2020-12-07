@@ -429,6 +429,8 @@ class Response
             'freshdesk_otp_send',
             'freshdesk_fetch_tickets',
             'freshdesk_raise_grievance',
+            'splitz_preflight',
+            'splitz_evaluate',
         ];
 
         if (in_array($route, $routes, true) === true)
