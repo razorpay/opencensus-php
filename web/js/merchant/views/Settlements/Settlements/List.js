@@ -18,7 +18,12 @@ import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettl
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
-import { trackEarlySettlementRequests, trackOndemand } from './ga';
+import {
+  trackEarlySettlementRequests,
+  trackOndemand,
+  EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
+  EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
+} from './ga';
 import {
   fetchCurrentBalance,
   fetchSettlementAmount,
@@ -97,7 +102,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   componentDidMount() {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Go To - Settlements',
     });
 
@@ -120,7 +125,7 @@ export default class SettlementsListContainer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
-        eventCategory: 'Dashboard - Settlements',
+        eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
         eventAction: 'Search - Settlements',
         eventLabel: label,
       });
@@ -136,14 +141,14 @@ export default class SettlementsListContainer extends ListContainer {
 
   onClearAnalytics = () => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Clear Search Params - Settlements',
     });
   };
 
   settlementBreakupOnMount = (id) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Show - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
     });
@@ -151,7 +156,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   settlementBreakupOnUnmount = (id) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Hide - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
     });
@@ -192,6 +197,7 @@ export default class SettlementsListContainer extends ListContainer {
           currentBalance={balance}
           fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
           showOndemandSettlementForm={this.showOndemandSettlementForm}
+          eventCategory={EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT}
         />
       ),
       size: 'small',
@@ -283,6 +289,7 @@ export default class SettlementsListContainer extends ListContainer {
                         }}
                         openAutoModal={this.state.openAutoModal}
                         fromWhere={this.state.openAutoModal ? 'Announcement' : 'Settlements'}
+                        eventCategory={EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT}
                       />
                     </div>
                   )}

@@ -19,7 +19,12 @@ import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
-import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
+import {
+  trackPresetChange,
+  trackSettlementsClick,
+  trackSettleNow,
+  EVENT_CATEGORY_DASHBOARD_HOME,
+} from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
@@ -40,7 +45,13 @@ class AnalyticsMobile extends Component {
     trackSettleNow();
     let balance = this.props.current_balance.data.balance;
     this.props.openModal({
-      component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
+      component: (
+        <OndemandModal
+          currentBalance={balance}
+          eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
+          fromWhere="Home"
+        />
+      ),
       size: 'small',
       disableClose: true,
     });

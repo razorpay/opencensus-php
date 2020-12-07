@@ -165,7 +165,7 @@ export default class ScheduledModal extends Component {
   };
 
   fireGAEvent = (eventPayload) => {
-    eventPayload['eventCategory'] = 'Dashboard - Early Settlement';
+    eventPayload['eventCategory'] = this.props.eventCategory;
     window.rzpAnalytics(eventPayload);
   };
 
@@ -311,7 +311,7 @@ export default class ScheduledModal extends Component {
     return (
       <div class="container-scheduled-modal">
         {modalClosed ? (
-          <ModalCloseReasons closeOrigin="Scheduled" />
+          <ModalCloseReasons eventCategory={this.props.eventCategory} closeOrigin="Scheduled" />
         ) : autoEnabled ? (
           this.renderPostEnablement()
         ) : (

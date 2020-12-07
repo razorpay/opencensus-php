@@ -20,7 +20,9 @@ import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/Instan
 import CurrentBalance from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/CurrentBalance';
 import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage';
 import InstantSettlementListFilter from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/ListFilter';
-import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import trackIS, {
+  EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
+} from 'merchant/views/Settlements/InstantSettlements/ga';
 
 @withRouter
 @connect(
@@ -61,8 +63,9 @@ class InstantSettlements extends ListContainer {
       component: (
         <OndemandModal
           currentBalance={balance}
-          fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
+          fromWhere="Instant Settlements"
           showOndemandSettlementForm={this.showOndemandSettlementForm}
+          eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
         />
       ),
       size: 'small',
@@ -173,7 +176,11 @@ class InstantSettlements extends ListContainer {
                 }
                 {user.isOndemandSettlementEnabled && user.isAllowedView('early_settlement') && (
                   <div className="box-left-pad10-inline">
-                    <ScheduledBanner openAutoModal={false} fromWhere="Instant Settlements" />
+                    <ScheduledBanner
+                      openAutoModal={false}
+                      fromWhere="Instant Settlements"
+                      eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
+                    />
                   </div>
                 )}
               </div>

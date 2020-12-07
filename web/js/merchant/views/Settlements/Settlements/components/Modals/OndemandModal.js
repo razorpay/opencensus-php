@@ -5,7 +5,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
-import { trackOndemand } from '../../ga';
+import { trackOndemand, EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from '../../ga';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
 import Alert from 'common/ui/Forms/Alert';
@@ -65,7 +65,7 @@ export default class OndemandModal extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - Early Settlement';
+    eventObject['eventCategory'] = this.props.eventCategory;
     window.rzpAnalytics(eventObject);
   };
 
@@ -529,7 +529,10 @@ export default class OndemandModal extends Component {
             </Button.Primary>
           </div>
 
-          <ScheduledBanner fromWhere="Early Settlement Modal" />
+          <ScheduledBanner
+            eventCategory={this.props.eventCategory}
+            fromWhere="Early Settlement Modal"
+          />
         </div>
       </div>
     );
@@ -551,6 +554,7 @@ export default class OndemandModal extends Component {
             <ModalCloseReasons
               showOndemandSettlementForm={showOndemandSettlementForm}
               closeOrigin="OnDemand"
+              eventCategory={this.props.eventCategory}
             />
           )}
         </React.Fragment>
@@ -558,3 +562,7 @@ export default class OndemandModal extends Component {
     );
   }
 }
+
+OndemandModal.defaultProps = {
+  eventCategory: EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
+};

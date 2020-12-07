@@ -2,13 +2,20 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
-import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import trackIS, {
+  EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
+} from 'merchant/views/Settlements/InstantSettlements/ga';
 
 const Message = ({ heading, description, image, showEnableNowButton, openModal }) => {
   function handleEnableNowClick() {
     trackIS.clickCTAEnableNow();
     openModal({
-      component: <ScheduledModal fromWhere="Instant Settlements" />,
+      component: (
+        <ScheduledModal
+          eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
+          fromWhere="Instant Settlements"
+        />
+      ),
       size: 'small',
       disableClose: true,
     });

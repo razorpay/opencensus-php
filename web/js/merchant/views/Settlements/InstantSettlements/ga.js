@@ -1,6 +1,6 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
 
-const eventCategory = 'Dashboard - Instant Settlement';
+export const EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT = 'Dashboard - Instant Settlement';
 
 const EVENTS = {
   goToTabIS: {
@@ -94,7 +94,7 @@ const trackIS = {};
 Object.keys(EVENTS).forEach((key) => {
   trackIS[key] = (...params) => {
     setTrackData({
-      eventCategory,
+      eventCategory: EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
       ...EVENTS[key],
       ...params,
     })();

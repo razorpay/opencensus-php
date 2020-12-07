@@ -19,7 +19,13 @@ export default class ScheduledBanner extends Component {
 
   openAutomatic = () => {
     this.props.openModal({
-      component: <ScheduledModal fromWhere={this.props.fromWhere} onExit={this.props.onExit} />,
+      component: (
+        <ScheduledModal
+          eventCategory={this.props.eventCategory}
+          fromWhere={this.props.fromWhere}
+          onExit={this.props.onExit}
+        />
+      ),
       size: 'small',
       disableClose: true,
     });

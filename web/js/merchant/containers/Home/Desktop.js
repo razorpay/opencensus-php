@@ -29,7 +29,12 @@ import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import CreditPullModal from 'merchant/containers/CreditPullModal';
-import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
+import {
+  trackPresetChange,
+  trackSettlementsClick,
+  trackSettleNow,
+  EVENT_CATEGORY_DASHBOARD_HOME,
+} from './ga';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
@@ -105,7 +110,13 @@ class AnalyticsDesktop extends Component {
     trackSettleNow();
     let balance = this.props.current_balance.data.balance;
     this.props.openModal({
-      component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
+      component: (
+        <OndemandModal
+          currentBalance={balance}
+          eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
+          fromWhere="Home"
+        />
+      ),
       size: 'small',
       disableClose: true,
     });

@@ -1,4 +1,5 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
+import { EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from 'merchant/views/Settlements/Settlements/ga';
 
 const pageTitle = 'Dashboard - Home V2';
 
@@ -85,7 +86,7 @@ export const trackViewTour = () => {
 export default track;
 
 export const trackES = setTrackData({
-  eventCategory: 'Dashboard - Early Settlement',
+  eventCategory: EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
 });
 
 export const trackSettleNow = () => {
@@ -181,3 +182,5 @@ export const trackSupportDetailPopupDisplay = () => {
     eventLabel: 'Support detail popup_displayed',
   });
 };
+
+export const EVENT_CATEGORY_DASHBOARD_HOME = 'Dashboard - Home';

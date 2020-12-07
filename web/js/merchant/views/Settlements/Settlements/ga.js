@@ -1,13 +1,15 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
 
-const eventCategory = 'Dashboard - Settlements';
+export const EVENT_CATEGORY_DASHBOARD_SETTLEMENTS = 'Dashboard - Settlements';
+
+export const EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT = 'Dashboard - Early Settlement';
 
 export const track = setTrackData({
-  eventCategory,
+  eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
 });
 
 export const trackES = setTrackData({
-  eventCategory: 'Dashboard - Early Settlement',
+  eventCategory: EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
 });
 
 export function trackEarlySettlementRequests() {
