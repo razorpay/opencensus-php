@@ -976,6 +976,7 @@ class Gateway
         Payment\Gateway::NETBANKING_FSB,
         Payment\Gateway::NETBANKING_JKB,
         Payment\Gateway::HDFC_DEBIT_EMI,
+        Payment\Gateway::CASHFREE,
         Payment\Gateway::NETBANKING_UBI,
     ];
 
