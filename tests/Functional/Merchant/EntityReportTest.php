@@ -584,7 +584,7 @@ class EntityReportTest extends TestCase
             'Merchant Txn Id'    => null,
             'Product'            => 'NSE',
             'Discriminator'      => 'NB',
-            'Bank Name'          => 'Indian Bank',
+            'Bank Name'          => 'UCO Bank',
             'Card Type'          => null,
             'Card No'            => null,
             'Card Issuing Bank'  => null,

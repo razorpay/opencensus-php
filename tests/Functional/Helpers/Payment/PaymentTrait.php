@@ -1473,7 +1473,7 @@ trait PaymentTrait
                 'merchant_order_id' => 'random order id',
             ],
             'description'       => 'random description',
-            'bank'              => 'IDIB',
+            'bank'              => 'UCBA',
         ];
 
         return $payment;

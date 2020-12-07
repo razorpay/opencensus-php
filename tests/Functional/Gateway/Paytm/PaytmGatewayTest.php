@@ -33,6 +33,7 @@ class PaytmGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
+        $payment['bank'] = 'MAHB';
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -86,6 +87,8 @@ class PaytmGatewayTest extends TestCase
     public function testRefundPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'MAHB';
 
         $payment = $this->doAuthAndCapturePayment($payment);
 

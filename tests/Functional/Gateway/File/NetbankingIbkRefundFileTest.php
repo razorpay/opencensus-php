@@ -29,6 +29,8 @@ class NetbankingIbkRefundFileTest extends TestCase
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_netbanking_ibk_terminal');
+        
+        $this->markTestSkipped('gateway is migrated to nbplus service');
     }
 
     public function testNetbankingIbkRefundFile()
