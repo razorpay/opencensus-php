@@ -6362,13 +6362,22 @@ class MerchantTest extends TestCase
 
     public function testSubmitSupportCallRequest()
     {
+        $this->enableRazorXTreatmentForFeature('support_call');
+
         $this->ba->proxyAuth();
-        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 0]);
 
         // 5th Nov 2018, 10 AM, Monday
         Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
 
         $this->startTest();
+
+        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->holdFunds();
+
+        $this->startTest();
+
+        $this->assertTrue($this->isMerchantAllowedtoSubmitSupportCallRequest());
     }
 
     public function testSubmitSupportCallRequestForBanking()
@@ -6413,17 +6422,22 @@ class MerchantTest extends TestCase
 
     public function testSubmitSupportCallRequestWithInvalidContact()
     {
+        $this->enableRazorXTreatmentForFeature('support_call');
+
         $this->ba->proxyAuth();
-        $this->fixtures->merchant->activate();
 
         // 5th Nov 2018, 10 AM, Monday
         Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
 
         $this->startTest();
+
+        $this->assertTrue($this->isMerchantAllowedtoSubmitSupportCallRequest());
     }
 
     public function testSubmitSupportCallRequestOnNonWorkingHours()
     {
+        $this->enableRazorXTreatmentForFeature('support_call');
+
         $this->ba->proxyAuth();
         $this->fixtures->merchant->activate();
 
@@ -6438,6 +6452,8 @@ class MerchantTest extends TestCase
         // 4th Nov 2018, 10 AM, Sunday
         Carbon::setTestNow(Carbon::create(2018, 11, 4, 10, null, null, Timezone::IST));
         $this->startTest();
+
+        $this->assertFalse($this->isMerchantAllowedtoSubmitSupportCallRequest());
     }
 
     public function testSearchWithDateFilter()
@@ -9371,5 +9387,19 @@ class MerchantTest extends TestCase
         $this->app['basicauth']->setOrgId($merchant->getOrgId());
 
         return (new Merchant\Service())->getBankAccountChangeStatus($merchantId);
+    }
+
+    protected function isMerchantAllowedtoSubmitSupportCallRequest($merchantId = '10000000000000')
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent(
+            [
+                'url'    => '/merchants/support_call/can_submit',
+                'method' => 'GET',
+            ]
+        );
+
+        return $response['response'];
     }
 }

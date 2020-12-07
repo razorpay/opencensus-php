@@ -1558,6 +1558,14 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function canSubmitSupportCallRequest()
+    {
+        $response = [
+            'response'  =>  $this->service()->canSubmitSupportCallRequest(),
+        ];
+
+        return ApiResponse::json($response);
+    }
     /**
      * Syncs merchant entity between mysql and elastic search
      *

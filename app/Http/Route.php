@@ -1722,6 +1722,7 @@ class Route
         'nach_register_test_payment_authorize_or_fail'  => ['post',     'token.registration/auth_links/{id}/paper_mandate/test_payment','SubscriptionRegistrationController@nachRegisterTestPaymentAuthorizeOrFail'],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
+        'can_merchant_submit_support_call_request' => ['get',      'merchants/support_call/can_submit',              'MerchantController@canSubmitSupportCallRequest'                    ],
 
         'merchant_es_sync_cron'                    => ['post',     'merchant/sync_es/bulk',                          'MerchantController@syncMerchantsToEs'                              ],
 
@@ -3134,6 +3135,7 @@ class Route
         'auth_link_paper_mandate_retry_token',
         'nach_register_test_payment_authorize_or_fail',
         'merchant_submit_support_call_request',
+        'can_merchant_submit_support_call_request',
         'token_fetch_card',
         'token_fetch_vpa',
         'user_edit_self',

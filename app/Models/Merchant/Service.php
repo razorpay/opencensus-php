@@ -4312,24 +4312,47 @@ class Service extends Base\Service
         $validator->validateNowIsWorkingHour();
         $validator->validateInput(__FUNCTION__, $input);
 
-        $allowCallRequest = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::SUPPORT_CALL,
-            $this->mode ?? 'live');
-
-        $isActivated = $this->merchant->isActivated();
-
-        $this->trace->info(
-            TraceCode::SUBMIT_SUPPORT_CALL_REQUEST,
-            compact('input', 'allowCallRequest', 'isActivated'));
-
         // Dashboard also does treatment check hence happening this is a invalid request.
-        if (($allowCallRequest === 'off') or ($isActivated === false))
+        if ($this->canSubmitSupportCallRequest() === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid request.');
         }
 
         return $this->app->myoperator->submitSupportCallRequest($input);
+    }
+
+    public function canSubmitSupportCallRequest() : bool
+    {
+        $allowCallRequest = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::SUPPORT_CALL,
+            $this->mode ?? 'live');
+
+        if ($allowCallRequest !== 'on')
+        {
+            return false;
+        }
+
+        $isActivated = $this->merchant->isActivated();
+
+        $product = $this->app['basicauth']->getProduct();
+
+        $this->trace->info(
+        TraceCode::SUBMIT_SUPPORT_CALL_REQUEST,
+            compact('input', 'allowCallRequest', 'isActivated'));
+
+        if ($product === Product::BANKING)
+        {
+            return ($isActivated === true);
+        }
+
+        if ($product === Product::PRIMARY)
+        {
+            return (($isActivated === false) or
+                    ($this->merchant->isFundsOnHold() === true));
+        }
+
+        return false;
     }
 
     public function syncMerchantsToEs(array $input)
