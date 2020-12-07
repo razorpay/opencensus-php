@@ -1276,11 +1276,11 @@ return [
                     'Test Name Private Limited Ltd Ltd. Liability Partnership',
                     'TEST NAME PRIVATE LIMITED LTD LTD. LIABILITY PARTNERSHIP',
                     'Test Name',
-                    'https://www.test.in',
-                    'test',
-                    'TEST',
-                    'Test',
-                    'test.in',
+                    'https://shopify.secondleveldomain.edu.in',
+                    'secondleveldomain',
+                    'SECONDLEVELDOMAIN',
+                    'Secondleveldomain',
+                    'secondleveldomain.edu.in',
             ]
         ]
     ],
@@ -1295,6 +1295,22 @@ return [
                     'Test Name Liability Company Pvt Pvt. Llp Llp. Llc Llc.',
                     'TEST NAME LIABILITY COMPANY PVT PVT. LLP LLP. LLC LLC.',
                     'Test Name',
+            ]
+        ]
+    ],
+
+    'testGetBillingLabelSuggestionsWebsiteUrlWithSubdomain' => [
+        'request'  => [
+            'url'     => '/merchants/billing_label/suggestions',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'http://a.amazon.mywebsite.com',
+                'mywebsite',
+                'MYWEBSITE',
+                'Mywebsite',
+                'mywebsite.com',
             ]
         ]
     ],
@@ -1330,7 +1346,7 @@ return [
         ]
     ],
 
-    'testBillingLabelUpdateMatchesWithWebsite' => [
+    'testBillingLabelUpdateMatchesWithWebsiteNotHavingPath' => [
         'request'  => [
             'content' => [
                 'billing_label' => 'Tests',
@@ -1347,10 +1363,51 @@ return [
         ]
     ],
 
+    'testBillingLabelUpdateMatchesWithWebsiteHavingPath' => [
+        'request'  => [
+            'content' => [
+                'billing_label' => 'Tests',
+            ],
+            'url'     => '/merchants/billing_label/update',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => '10000000000000',
+                'billing_label' => 'Tests',
+                'business_dba'  => 'Tests',
+            ]
+        ]
+    ],
+
+    'testBillingLabelUpdateMatchesWithWebsiteHavePlayStoreLinkFail' => [
+        'request' => [
+            'content' => [
+                'billing_label' => 'google',
+            ],
+            'url'    => '/merchants/billing_label/update',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid value, the brand name must be similar to business name or website name. website: https://play.google.com/store/apps/details?id=com.beseller.apps, business name: abc test pvt ltd'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
     'testBillingLabelUpdateMatchesWithBusinessName' => [
         'request'  => [
             'content' => [
-                'billing_label'         => 'make trip my',
+                'billing_label'         => 'liability company make trip my',
             ],
             'url'     => '/merchants/billing_label/update',
             'method'  => 'patch',
@@ -1358,8 +1415,8 @@ return [
         'response' => [
             'content' => [
                 'id' => '10000000000000',
-                'billing_label' => 'make trip my',
-                'business_dba'  => 'make trip my',
+                'billing_label' => 'liability company make trip my',
+                'business_dba'  => 'liability company make trip my',
             ]
         ]
     ],
@@ -1376,7 +1433,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid value, the brand name must be similar to business name or website name'
+                    'description' => 'Invalid value, the brand name must be similar to business name or website name. website: https://www.test.com, business name: Test Name Private Limited'
                 ],
             ],
             'status_code' => 400,

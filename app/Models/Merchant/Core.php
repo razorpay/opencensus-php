@@ -548,44 +548,77 @@ class Core extends Base\Core
 
     /**
      * Generates suggestions for billing labels based on website name
-     * generate suggestions if website url follows http[s]://[www\.]\w+.tld pattern
-     * trailing '/' is allowed in website url
+     * generate suggestions if website url is valid and host is not google play store
      * @param $merchant
-     * @return array of suggestions, empty is url does not folow pattern or merchant has no website
+     * @return array of suggestions, empty if url is invalid or merchant has no website
      */
     protected function getBillingLabelSuggestionsByWebsite($merchant): array
     {
         $websiteUrl = $merchant->merchantDetail->getWebsite();
 
+        $websiteUrl = $this->preProcessStringForBillingLabelUpdate($websiteUrl);
+
         $suggestions = [];
 
-        if(isset($websiteUrl) === true)
+        if ((isset($websiteUrl) === false) or
+            ($this->isValidSchemeAndHostForBillingLabelUpdate($websiteUrl) === false))
         {
-            // remove trailing '/' to match with pattern {http[s]://[www\.]\w+.tld}
-            $websiteUrl = rtrim($websiteUrl, '/');
+            return $suggestions;
+        }
 
-            $websiteName = $this->extractWebsiteNameFromUrlForBillingLabelUpdate($websiteUrl);
+        $host = parse_url($websiteUrl, PHP_URL_HOST);
 
-            if($websiteName != "")
-            {
-                array_push($suggestions, $websiteUrl);
+        $extractedDomains = (new TLDExtract())->extract($host);
 
-                array_push($suggestions, $websiteName);
+        if (count($extractedDomains) >= 2)
+        {
+            $topLevelDomain = $extractedDomains[1];
 
-                array_push($suggestions, strtoupper($websiteName));
+            $hostWithoutTld = $extractedDomains[0];
 
-                array_push($suggestions, ucfirst($websiteName));
+            // divide in subdomain and second level domain
+            $hostParts = explode('.', $hostWithoutTld);
 
-                $domains = (new TLDExtract())->extract($websiteUrl);
+            // take second level domain(just below top level domain) as website name
+            $websiteName = $hostParts[count($hostParts)-1];
 
-                if(count($domains) > 1)
-                {
-                    array_push($suggestions, $websiteName . '.' . $domains[1]);
-                }
-            }
+            array_push($suggestions, $websiteUrl);
+
+            array_push($suggestions, $websiteName);
+
+            array_push($suggestions, strtoupper($websiteName));
+
+            array_push($suggestions, ucfirst($websiteName));
+
+            array_push($suggestions, $websiteName . '.' . $topLevelDomain);
         }
 
         return $suggestions;
+    }
+
+    /**
+     * checks if scheme is valid(http and https) and
+     * host is not 'play.google.com' for billing label update
+     * @param $websiteUrl
+     * @return bool top level domain and domain name
+     */
+    public function isValidSchemeAndHostForBillingLabelUpdate($websiteUrl):bool
+    {
+        $host = parse_url($websiteUrl, PHP_URL_HOST);
+
+        $scheme = parse_url($websiteUrl, PHP_URL_SCHEME);
+
+        // allow only http, https scheme
+        // do not consider play store app link as merchant website
+        if (($host === null) or
+            ($scheme === null) or
+            ((($scheme === 'http') or ($scheme === 'https')) === false) or
+            ($host === 'play.google.com'))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -608,12 +641,12 @@ class Core extends Base\Core
 
             array_push($suggestions, strtoupper($businessName));
 
-            $businessNameWithoutBType = $this->removeBusinessTypeFromBusinessNameForBillingLabelUpdate($businessName);
+            $businessNameWithoutBusinessType = $this->removeBusinessTypesForBillingLabelUpdate($businessName);
 
             // if business name is not same after removing business type
-            if ($businessName != $businessNameWithoutBType)
+            if ($businessName !== $businessNameWithoutBusinessType)
             {
-                array_push($suggestions, ucwords($businessNameWithoutBType));
+                array_push($suggestions, ucwords($businessNameWithoutBusinessType));
             }
         }
 
@@ -622,11 +655,11 @@ class Core extends Base\Core
 
     /**
      * Remove Pvt, Pvt., Ltd, Ltd., Private, Limited, liability,
-     * company, partnership words from business name
+     * company, partnership words
      * @param string Business name
      * @return string Business name without above words
      */
-    protected function removeBusinessTypeFromBusinessNameForBillingLabelUpdate($businessName): string
+    public function removeBusinessTypesForBillingLabelUpdate($businessName): string
     {
         $businessTypes = [
             'pvt.',
@@ -651,39 +684,6 @@ class Core extends Base\Core
         $businessName = trim(preg_replace('/\s+/', ' ', $businessName));;
 
         return $businessName;
-    }
-
-    /**
-     * extracts website name from url only if website url
-     * url should follow http[s]://[www\.]\w+.tld pattern
-     * @param $url
-     * @return string website name, empty string if url does not follow pattern
-     */
-    public function extractWebsiteNameFromUrlForBillingLabelUpdate($url) : string
-    {
-
-        //extract top and second level domains
-        $domains = (new TLDExtract())->extract($url);
-
-        $urlRegexPattern = '/^(https|http)\:\/\/w{3}\.[A-Za-z0-9\-]+$/D';
-
-        // if domains are extracted successfully
-        // and url follows pattern
-        if (
-            (count($domains) > 1)
-            and
-            (preg_match($urlRegexPattern, $domains[0]) === 1))
-        {
-
-            $secondLevelDomain = explode(".", $domains[0]);
-
-            if(count($secondLevelDomain) > 1)
-            {
-                return $secondLevelDomain[1];
-            }
-        }
-
-        return "";
     }
 
     /**

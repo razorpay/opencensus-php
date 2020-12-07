@@ -536,7 +536,7 @@ class Validator extends Base\Validator
      * Validates if billing label value has similarity with business
      * or website name or value belongs from suggestion
      * It uses fuzzy logic to check similarity
-     * Threshold for website similarity is 70%
+     * Threshold for website similarity is 80%
      * Threshold for business name similarity is 80%
      * @param $billingLabel : billing label value which need to be validated
      * @param $attribute
@@ -550,6 +550,10 @@ class Validator extends Base\Validator
         $suggestions = (new core())->getBillingLabelSuggestions($merchant);
 
         $billingLabel = (new core())->preProcessStringForBillingLabelUpdate($billingLabel);
+
+        $businessName = $merchant->merchantDetail->getBusinessName();
+
+        $website = $merchant->merchantDetail->getWebsite();
 
         $traceData = [
             self::NEW_BILLING_LABEL => $billingLabel,
@@ -568,7 +572,7 @@ class Validator extends Base\Validator
 
         $traceData[self::SIMILARITY_WITH_WEBSITE] = $similarityWithWebsite;
 
-        $traceData[Detail\Entity::BUSINESS_WEBSITE] = $merchant->merchantDetail->getWebsite();;
+        $traceData[Detail\Entity::BUSINESS_WEBSITE] = $website;
 
         $similarityWithBusinessName = $this -> getSimilarityWithBusinessNameForBillingLabelUpdate(
             $billingLabel,
@@ -576,7 +580,7 @@ class Validator extends Base\Validator
 
         $traceData[self::SIMILARITY_WITH_BUSINESS_NAME] = $similarityWithBusinessName;
 
-        $traceData[Detail\Entity::BUSINESS_NAME] = $merchant->merchantDetail->getBusinessName();
+        $traceData[Detail\Entity::BUSINESS_NAME] = $businessName;
 
         if ((in_array($billingLabel, $suggestions, true) === true) or
             ($similarityWithWebsite >= self::THRESHOLD_FOR_WEBSITE_SIMILARITY) or
@@ -600,12 +604,12 @@ class Validator extends Base\Validator
         );
 
         throw new Exception\BadRequestValidationFailureException(
-            self::BILLING_LABEL_INVALID_MESSAGE);
+            self::BILLING_LABEL_INVALID_MESSAGE . ". website: " . $website . ", business name: " . $businessName);
     }
 
     /**
-     * Gives similarity of a string with website name
-     * website url should follow http[s]://[www\.]\w+.tld pattern
+     * Gives similarity of a string with website/domain name
+     * website url should be a valid url
      * It uses fuzzy logic to check similarity
      * @param $value string
      * @param $merchant \RZP\Models\Merchant\Entity
@@ -615,23 +619,33 @@ class Validator extends Base\Validator
     {
         $websiteUrl = $merchant->merchantDetail->getWebsite();
 
-        if(isset($websiteUrl) === false)
+        $merchantCore = new core();
+
+        if ((isset($websiteUrl) === false) or
+            ($merchantCore->isValidSchemeAndHostForBillingLabelUpdate($websiteUrl) === false))
         {
             return 0;
         }
 
         $websiteUrl = (new core())->preProcessStringForBillingLabelUpdate($websiteUrl);
 
-        // if website url follows http[s]://[www\.]\w+.tld pattern but have trailing '/'
-        // then it should also be consider hence just remove trailing '/'
-        $websiteUrl = rtrim($websiteUrl, '/');
+        $host = parse_url($websiteUrl, PHP_URL_HOST);
 
-        $websiteName = (new core())->extractWebsiteNameFromUrlForBillingLabelUpdate($websiteUrl);
+        $extractedDomains = (new TLDExtract())->extract($host);
 
-        // if website url does not follow pattern $websiteName will be empty
-        if ($websiteName != "")
+        if(count($extractedDomains) >= 2)
         {
+            $hostWithoutTld = $extractedDomains[0];
+
+            // divide in subdomain and second level domain
+            $hostParts = explode('.', $hostWithoutTld);
+
+            // take second level domain(just below top level domain) as website name
+            $websiteName = $hostParts[count($hostParts)-1];
+
             return $this->getSimilarityOfStringsForBillingLabelUpdate($websiteName, $value);
+
+
         }
 
         return 0;
@@ -640,11 +654,11 @@ class Validator extends Base\Validator
     /**
      * Gives similarity of a string with business name
      * It uses fuzzy logic to check similarity
-     * @param $value
+     * @param $newBillingLabel
      * @param $merchant
      * @return int  max of (fuzzy ratio, token_sort_ratio)
      */
-    protected function getSimilarityWithBusinessNameForBillingLabelUpdate($value, $merchant): int
+    protected function getSimilarityWithBusinessNameForBillingLabelUpdate($newBillingLabel, $merchant): int
     {
         $businessName = $merchant->merchantDetail->getBusinessName();
 
@@ -653,9 +667,15 @@ class Validator extends Base\Validator
             return 0;
         }
 
-        $businessName =  (new core())->preProcessStringForBillingLabelUpdate($businessName);
+        $merchantCore = new core();
 
-        return $this->getSimilarityOfStringsForBillingLabelUpdate($businessName, $value);
+        $businessName =  $merchantCore->preProcessStringForBillingLabelUpdate($businessName);
+
+        $businessName =  $merchantCore->removeBusinessTypesForBillingLabelUpdate($businessName);
+
+        $newBillingLabel = $merchantCore->removeBusinessTypesForBillingLabelUpdate($newBillingLabel);
+
+        return $this->getSimilarityOfStringsForBillingLabelUpdate($businessName, $newBillingLabel);
     }
 
     /**

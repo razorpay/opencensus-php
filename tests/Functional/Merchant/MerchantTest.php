@@ -1442,7 +1442,7 @@ class MerchantTest extends TestCase
         $this->fixtures->create('merchant_detail', [
             'merchant_id'      =>  '10000000000000',
             'business_name'    =>  'Test Name Private Limited ltd ltd. Liability partnership',
-            'business_website' =>  'https://www.test.in/'
+            'business_website' =>  'https://shopify.secondleveldomain.edu.in'
         ]);
 
         $this->ba->proxyAuth();
@@ -1450,11 +1450,24 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+
     public function testGetBillingLabelSuggestionsWithoutWebsite()
     {
         $this->fixtures->create('merchant_detail', [
-            'merchant_id' => '10000000000000',
+            'merchant_id'   => '10000000000000',
             'business_name' => 'Test Name liability company pvt pvt. llp llp. llc llc. '
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetBillingLabelSuggestionsWebsiteUrlWithSubdomain()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000000',
+            'business_website' => 'http://a.amazon.mywebsite.com'
         ]);
 
         $this->ba->proxyAuth();
@@ -1488,11 +1501,36 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testBillingLabelUpdateMatchesWithWebsite()
+    public function testBillingLabelUpdateMatchesWithWebsiteNotHavingPath()
     {
         $this->fixtures->create('merchant_detail', [
             'merchant_id'      =>  '10000000000000',
-            'business_website' =>  'https://www.test.com/'
+            'business_website' =>  'https://www.test.com'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateMatchesWithWebsiteHavingPath()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_website' =>  'https://test.com/anypath/abc/'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBillingLabelUpdateMatchesWithWebsiteHavePlayStoreLinkFail()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_website' =>  'https://play.google.com/store/apps/details?id=com.beseller.apps',
+            'business_name'    => 'abc test pvt ltd'
         ]);
 
         $this->ba->proxyAuth();
@@ -1504,7 +1542,7 @@ class MerchantTest extends TestCase
     {
         $this->fixtures->create('merchant_detail', [
             'merchant_id'      =>  '10000000000000',
-            'business_name'    =>  'make my trip'
+            'business_name'    =>  'make my trip pvt ltd private Limited llp'
         ]);
 
         $this->ba->proxyAuth();
