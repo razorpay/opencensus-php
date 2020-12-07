@@ -16,6 +16,7 @@ use RZP\Models\Batch\Entity;
 use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -1125,7 +1126,18 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 if (empty($upiEntity) === false)
                 {
-                    return $upiEntity->getPaymentId();
+                    $paymentId = $upiEntity->getPaymentId();
+
+                    $this->trace->info(
+                        TraceCode::RECON_INFO,
+                        [
+                            'infoCode'      => InfoCode::RECON_UNEXPECTED_UPI_QR_VA_PAYMENT_CREATED,
+                            'payment_id'    => $paymentId,
+                            'gateway'       => $this->gateway,
+                            'batch_id'      => $this->batchId,
+                        ]);
+
+                    return $paymentId;
                 }
 
                 // Even now if for any reason the payment was not created, we can return null
