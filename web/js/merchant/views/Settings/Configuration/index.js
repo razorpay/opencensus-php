@@ -7,16 +7,14 @@ import FlashCheckout from './FlashCheckout';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
-import InternationalConfig from './InternationalConfig';
 import PaymentSettings from './PaymentSettings';
-import PaypalOnboarding from './PaypalOnboarding';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';
 import WhatsappNotification from './WhatsappNotification';
+import InternationalPayments from './InternationalPayments';
 @connect(
   (state) => {
     return {
@@ -159,7 +157,11 @@ export default class CongfigurationContainer extends Component {
   };
 
   render() {
-    let { config, features, loading } = this.props.configState;
+    const {
+      mode,
+      user,
+      configState: { config, loading },
+    } = this.props;
     return (
       <div class="content-wrapper content-sm" id="settings-content">
         {loading ? (
@@ -169,19 +171,15 @@ export default class CongfigurationContainer extends Component {
         ) : (
           <div>
             <CheckoutTheme form="configForm" onSave={this.saveConfig} />
-            {this.props.user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
+            {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
             <PaymentSettings />
-            {this.props.user.isActivated &&
-            this.props.mode === 'live' &&
-            config.fee_bearer !== 'customer' ? (
-              <PaypalOnboarding />
-            ) : null}
             <DefaultRefundSpeed />
 
-            {this.props.mode === 'live' && <InternationalConfig />}
+            {mode === 'live' && <InternationalPayments user={user} mode={mode} config={config} />}
+
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
-            {this.props.user.contact_mobile && <SmsNotification />}
-            {this.isWhatsappNotificationEnabled(this.props.user) && <WhatsappNotification />}
+            {user.contact_mobile && <SmsNotification />}
+            {this.isWhatsappNotificationEnabled(user) && <WhatsappNotification />}
           </div>
         )}
       </div>

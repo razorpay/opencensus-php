@@ -35,6 +35,78 @@
     .description
       margin: 8px 0 12px 0
 
+  .international-payments
+    ol
+      padding-left: 0
+
+    ul
+      padding-left: 15px
+
+    .international-card
+      .checkbox-knob
+        &::after
+          background: #5E90E9
+        &.checked
+          &::after
+            background: #fff
+
+    .international-card, .paypal-auto-onboarding
+      border-top: 2px solid rgba(22, 47, 86, 0.05)
+
+      .status-label
+        text-transform: uppercase
+        padding: 5px 12px
+      
+    .product-list
+      list-style: disc
+
+    .heading
+      border-bottom: 0
+      padding-top: 20px
+      height: 40px
+
+      .Button
+        margin: 0
+
+      .title
+        vertical-align: middle
+        font-size: 16px
+        font-weight: 600
+        color: #333
+
+      li.title
+        float left
+        margin-left: 15px
+
+      .access-status
+        display: flex
+        justify-content: flex-end
+      
+      .heading-link
+        margin-left: 10px
+        vertical-align: middle
+
+        .i-external-link
+          margin-left: 5px
+
+      .description
+        margin: 8px 0 12px 0
+
+      .toggler-btn
+        vertical-align: middle
+        margin-left: 20px
+      
+        button
+          margin-right: 4px
+
+        b
+          vertical-align: middle
+    .body
+      .form-group
+        margin-bottom: 0
+      .description
+        margin: 8px 0 12px 0
+
   .footer-note
     margin: 60px -20px -20px -20px
     padding: 16px 24px
@@ -289,30 +361,45 @@
 
 
 
-  .international__Product
-    margin: 10px 0
+.international__Product
+  margin: 15px 0
+  display: flex
+
+  .international__ProductInfo
+    width: 50%
     display: flex
+    flex-direction: column
+    justify-content: center
 
-    .international__ProductInfo
-      width: 50%
+    .international__ProductDescription
+      font-size: 12px
 
-      .international__ProductDescription
-        font-size: 12px
+  .international__ProductActionAndStatus
+    width: 50%
+    display: flex
+    justify-content: flex-end
+    align-items: center
 
-    .international__ProductActionAndStatus
-      width: 50%
-      display: flex
-      justify-content: flex-end
-      align-items: center
+    .help-content
+      margin-right: 5px
+      font-size: 100%
 
-      .help-content
-        margin-right: 5px
-        font-size: 100%
-
-  .international__ProductSeparator
-    border: 1px solid rgba(22,47,86,0.05)
-    margin: 10px 0
-    width: 100%
+.international__ProductSeparator
+  border: 1px solid rgba(22,47,86,0.05)
+  margin: 10px 0px 10px -15px
+  width: calc(100% + 15px)
 
 .Modal__Request-initiate-modal .Input-desc
   margin-left: 25px
+
+.label-primary-light
+  color: #2A8CFF
+  background-color: #EAF4FF
+
+.label-success-light
+  color: rgba(31, 137, 14, 1);
+  background-color: rgba(31, 137, 14, 0.1);
+
+.label-danger-light
+  color: rgba(209, 45, 45, 1);
+  background-color: rgba(209, 45, 45, 0.1);

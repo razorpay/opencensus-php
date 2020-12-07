@@ -107,9 +107,9 @@ export default class PaypalOnboarding extends Component {
     let showStatus = ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
     return (
       <React.Fragment>
-        <div class="panel panel-default paypal-auto-onboarding" id="paypal-auto-onboarding">
-          <div class="panel-heading">
-            <span class="title">PayPal </span>{' '}
+        <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
+          <div class="heading">
+            <li class="title">PayPal </li>
             <a
               class={`highlight ${showStatus ? 'know-more' : ''}`}
               target="_blank"
@@ -160,12 +160,6 @@ export default class PaypalOnboarding extends Component {
                 </span>{' '}
               </span>
             ) : null}
-          </div>
-
-          <div class="panel-body">
-            <div class="description" style={{ marginTop: 0, marginBottom: '15px' }}>
-              Accept international payments using PayPal on Razorpay Checkout.
-            </div>
             {status === 'requested' || this.props.terminals.length === 0 ? (
               <button
                 disabled={this.state.loading}
@@ -180,6 +174,12 @@ export default class PaypalOnboarding extends Component {
                 {this.state.loading ? 'Processing..' : 'Link Account'}
               </button>
             ) : null}
+          </div>
+
+          <div class="body">
+            <div class="description">
+              Accept international payments using PayPal on Razorpay Checkout.
+            </div>
 
             <div className="alert alert-info">
               <h4>International Payments Only</h4>

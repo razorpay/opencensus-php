@@ -10,16 +10,15 @@ const ProductAction = ({
   showRequestAccessBtn,
   onRequestAccessClick,
 }) => {
-  if (status === 'rejected') {
+  if (status === 'request_rejected') {
     return (
       <small class="help-content">
         <i class="i i-info-outline" />
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
-              We are currently unable to support international payments for all
-              products for your business. Please reach out to support for any
-              queries.
+              We can currently not support international payments for these products. Please reach
+              out to support for any queries
             </div>
           </PopoverBody>
         </Popover>
@@ -47,8 +46,8 @@ const ProductAction = ({
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
-              You need to add your website to request access for international
-              payments on other products.
+              You need to add your website to request access for international payments on other
+              products.
             </div>
           </PopoverBody>
         </Popover>
@@ -58,7 +57,7 @@ const ProductAction = ({
 
   if (showRequestAccessBtn) {
     return (
-      <button onClick={onRequestAccessClick} class="btn btn-link">
+      <button onClick={onRequestAccessClick} class="btn-link">
         Request Access
       </button>
     );
@@ -76,11 +75,14 @@ const ProductInfo = ({
   isWebsiteAdded,
   isKycComplete,
   product,
+  showStatusLabel,
 }) => {
   return (
     <div class="international__Product">
       <div class="international__ProductInfo">
-        <strong>{title}</strong>
+        <li>
+          <strong>{title}</strong>
+        </li>
         <div class="international__ProductDescription">{description}</div>
       </div>
       <div class="international__ProductActionAndStatus">
@@ -92,7 +94,7 @@ const ProductInfo = ({
           showRequestAccessBtn={showRequestAccessBtn}
           onRequestAccessClick={onRequestAccessClick}
         />
-        <InternationalStatusLabel status={status} />
+        {status !== 'disabled' && showStatusLabel && <InternationalStatusLabel status={status} />}
       </div>
     </div>
   );

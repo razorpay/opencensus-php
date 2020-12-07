@@ -4,6 +4,7 @@ import RTracking from 'react-tracking';
 import { makePopup } from '@typeform/embed';
 import { withRouter } from 'react-router-dom';
 
+import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import { InternationalStatusLabel } from 'merchant/components/StatusLabel';
@@ -14,6 +15,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateSession } from 'merchant/reducers/session';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
+import { fetchSchedule } from 'merchant/reducers/settlements/details';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isPresent } from 'common/utils/rzp-utils';
@@ -26,8 +28,8 @@ import ProductInfo from './components/InternationalConfigComponents/ProductInfo.
 const StatusMap = {
   no_action_received: 'disabled',
   in_review: 'access_requested',
-  approved: 'approved',
-  rejected: 'rejected',
+  approved: 'enabled',
+  rejected: 'request_rejected',
 };
 
 const NO_ACTION_RECEIVED = 'no_action_received';
@@ -39,10 +41,12 @@ const REJECTED = 'rejected';
 @connect(
   (state) => ({
     user: state.session.user,
+    settlement: state.settlement,
   }),
   {
     openModal,
     closeModal,
+    fetchSchedule,
     showNotification,
     updateSession,
     fetchAddWebsiteWorkflowStatus,
@@ -59,6 +63,7 @@ class InternationalConfig extends Component {
       otherProductsStatus: '', // otherProducts = Payment Pages, Payment Links, Invoices
       requestedAccessFrom: '',
       isWebsiteInWorkflow: null,
+      showStatusLabel: props.user.international,
     };
     this.initializeTypeForm();
   }
@@ -124,6 +129,7 @@ class InternationalConfig extends Component {
     ) {
       this.internationalSection.current.scrollIntoView();
     }
+    this.props.fetchSchedule();
   }
 
   setInternationalFlowStatusForProducts = (internationalWorkflowStatus) => {
@@ -228,6 +234,8 @@ class InternationalConfig extends Component {
   )
   toggleInternationalization = (enableInternational, postActionCB) => {
     this.analytics(enableInternational ? 'Enable' : 'Disable');
+
+    this.setState({ showStatusLabel: enableInternational });
 
     return merchantFetch({
       url: 'merchant/international',
@@ -383,46 +391,38 @@ class InternationalConfig extends Component {
     const { user } = this.props;
     const _isInternationalPaymentsAllowed = this.isInternationalPaymentsAllowed;
 
-    let line1 =
-      'Accept international payments in nearly 100 foreign currencies from your customers.';
-    let line2 = '';
+    let line = '';
 
     if (this.isInternationalGreyList && !this.isKycComplete) {
       if (
         user.activation_status === 'under_review' ||
         user.activation_status === 'needs_clarification'
       ) {
-        line2 =
+        line =
           'Your KYC form is under review. You will be able to request access for international payments once your KYC is approved.';
       } else {
-        line2 = 'Please submit your KYC form to request access.';
+        line = 'Please submit your KYC form to request access.';
       }
     } else {
       if (!this.isWebsiteAdded) {
         if (this.isInternationalWhiteList) {
-          line2 = 'Add a website to enable international payments.';
+          line = 'Add a website to enable international payments.';
         } else if (this.isInternationalGreyList) {
-          line2 = 'You need to add your website to request access for international payments.';
+          line = 'You need to add your website to request access for international payments.';
         }
       } else {
         // Intl. whitelist but added website after L1 completion
         if (this.isInternationalWhiteList && user.isAccepted) {
-          line2 =
+          line =
             'Your website is currently in review. International payments will be enabled once website is approved.';
         } else if (this.isInternationalWhiteList && user.instantActivation.isL1Submitted) {
-          line2 = 'Please complete your KYC to enable international payments.';
+          line = 'Please complete your KYC to enable international payments.';
         }
       }
     }
 
     if (_isInternationalPaymentsAllowed) {
-      return (
-        <>
-          {line1}
-          <br />
-          {!this.isAnyProductIntlApproved && line2}
-        </>
-      );
+      return <>{!this.isAnyProductIntlApproved && line}</>;
     }
 
     return <>International card payments is not supported for your business model.</>;
@@ -437,13 +437,33 @@ class InternationalConfig extends Component {
       return null;
     }
 
-    const { pgProductStatus, otherProductsStatus } = this.state;
+    const { pgProductStatus, otherProductsStatus, showStatusLabel } = this.state;
+    const { settlement, user } = this.props;
 
+    const settlementCycle = settlement.schedule.data.filter(
+      (item) => item.method === null && item.international === 1,
+    );
+    const pgDescription = (
+      <>
+        <span>
+          Transaction Size enabled:&nbsp;
+          <Amount value={user.merchant.max_payment_amount} currency={'INR'} />
+        </span>
+        &nbsp;&nbsp;
+        <span>
+          {settlementCycle.length && settlementCycle[0].delay ? (
+            <>|&nbsp;&nbsp;Settlement Cycle: T+{settlementCycle[0].delay} days</>
+          ) : (
+            ''
+          )}
+        </span>
+      </>
+    );
     return (
-      <div>
+      <ul class="product-list">
         <ProductInfo
           title="On Payment Gateway"
-          description="API & SDK & Plugin integrations"
+          description={pgProductStatus === 'approved' ? pgDescription : ''}
           status={StatusMap[pgProductStatus]}
           showRequestAccessBtn={!this.hasRequestedAccessForProduct('pg')}
           onRequestAccessClick={(e) => {
@@ -453,13 +473,13 @@ class InternationalConfig extends Component {
           isWebsiteAdded={this.isWebsiteAdded}
           isKycComplete={this.isKycComplete}
           product="pg"
+          showStatusLabel={showStatusLabel}
         />
 
         <div class="international__ProductSeparator" />
 
         <ProductInfo
-          title="On Other Products"
-          description="Payment Pages, Payment Links & Invoices"
+          title="Payment Pages, Payment Links & Invoices"
           status={StatusMap[otherProductsStatus]}
           showRequestAccessBtn={!this.hasRequestedAccessForProduct('otherProducts')}
           onRequestAccessClick={(e) => {
@@ -469,10 +489,9 @@ class InternationalConfig extends Component {
           isWebsiteAdded={this.isWebsiteAdded}
           isKycComplete={this.isKycComplete}
           product="otherProducts"
+          showStatusLabel={showStatusLabel}
         />
-
-        <div class="international__ProductSeparator" />
-      </div>
+      </ul>
     );
   }
 
@@ -495,7 +514,7 @@ class InternationalConfig extends Component {
 
     if (currentStatus) {
       return (
-        <span class="pull-right">
+        <span class="access-status">
           <InternationalStatusLabel status={StatusMap[currentStatus]} />
         </span>
       );
@@ -509,11 +528,25 @@ class InternationalConfig extends Component {
     const isTogglerVisible = this.isAnyProductIntlApproved;
     const description = this.description;
 
+    const knowMoreLink = (
+      <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
+        <a
+          target="_blank"
+          class="m-l"
+          href="https://razorpay.com/payment-gateway/#go-international"
+        >
+          Know more
+          <i class="i i-external-link" />
+        </a>
+      </ShowWhen>
+    );
+
     return (
-      <div ref={this.internationalSection} class="panel panel-default">
-        <div class="panel-heading">
-          <span class="title">International Payments</span>
-          {isTogglerVisible && (
+      <div ref={this.internationalSection} class="international-card">
+        <div class="heading">
+          <li class="title">International Card</li>
+
+          {isTogglerVisible ? (
             <span class="toggler-btn">
               <SwitchField
                 defaultChecked={internationalEnabled}
@@ -528,31 +561,24 @@ class InternationalConfig extends Component {
                 <b class="text-faded">Disabled</b>
               )}
             </span>
+          ) : (
+            <span style={{ float: 'left' }}>{knowMoreLink}</span>
           )}
 
           {this.renderInternationalAccessOrStatus()}
         </div>
 
-        <div class="panel-body">
+        <div class="body">
           <form class="form-horizontal">
-            <div class="description">{description}</div>
-            <div class="description">{this.renderProductsSection()}</div>
-            <div class="form-group">
-              <ShowWhen
-                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
-              >
-                <div class="col-sm-10">
-                  To know more about Pricing and other FAQs,&nbsp;
-                  <a
-                    class="highlight"
-                    target="_blank"
-                    href="https://razorpay.com/payment-gateway/#go-international"
-                  >
-                    click here.
-                  </a>
-                </div>
-              </ShowWhen>
+            <div class="description">
+              {this.isInternationalPaymentsAllowed && (
+                <span>Card payments on payment gateway, payment pages, links & invoices</span>
+              )}
+              {isTogglerVisible && knowMoreLink}
+              <br />
+              <span>{description}</span>
             </div>
+            <div class="description">{this.renderProductsSection()}</div>
           </form>
         </div>
       </div>

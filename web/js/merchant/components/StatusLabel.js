@@ -122,11 +122,11 @@ export const offerStatusMap = {
 };
 
 export const internationalStatusMap = {
-  rejected: 'label-danger',
+  request_rejected: 'label-danger-light',
   disabled: 'label-muted',
-  access_requested: 'bg-primary',
-  enabled: 'label-success',
-  approved: 'label-success',
+  access_requested: 'label-primary-light',
+  enabled: 'label-success-light',
+  approved: 'label-success-light',
   no_website_added: 'label-warning',
 };
 
