@@ -289,7 +289,7 @@ function disableEmptyInputs(form) {
     <tr>
         <td colspan ='40'>Exp Date:</td>
         <td><input type="text" name="card[expiry_month]" value="11" autocomplete="cc-exp-month"></td>
-        <td><input type="text" name="card[expiry_year]" value="2020" autocomplete="cc-exp-year"></td>
+        <td><input type="text" name="card[expiry_year]" value="2030" autocomplete="cc-exp-year"></td>
         <tr>
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="100"></td>
