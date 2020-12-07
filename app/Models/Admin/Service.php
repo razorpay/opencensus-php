@@ -146,7 +146,9 @@ class Service extends Base\Service
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
 
-        if (Terminal\Migrate::shouldRunComparison() === true)
+        $sync = $this->app['config']->get('applications.terminals_service.sync');
+
+        if ($sync === true)
         {
             (new Terminal\Service)->runTerminalComparison($entity);
         }

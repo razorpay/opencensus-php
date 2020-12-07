@@ -146,12 +146,11 @@ class TerminalMigrationTest extends TestCase
     // the below cases are to ensure sanity when creating a terminal via internal auth
     public function testAssignTerminalInternalAuthMigrateVariant()
     {
-
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function() {
             return $this->getDefaultTerminalServiceResponse();
         });
-
 
         $this->razorxValue = 'migrate';
 
@@ -177,7 +176,8 @@ class TerminalMigrationTest extends TestCase
     // terminal is created via this route in fulcrum onboarding, then its synced to terminals service
     public function testAssignTerminalInternalAuthMigrateVariantFulcrum()
     {
-        
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function() {
             return $this->getDefaultTerminalServiceResponse();
         });
@@ -207,6 +207,8 @@ class TerminalMigrationTest extends TestCase
      // terminal is created via this route in paysecure axis onboarding, TS calls this route then its synced back to terminals service
      public function testAssignTerminalInternalAuthMigrateVariantPaysecure()
      {
+         $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function() {
             return $this->getDefaultTerminalServiceResponse();
         });
@@ -223,7 +225,7 @@ class TerminalMigrationTest extends TestCase
         $this->ba->appAuth();
 
         $response = $this->startTest();
-        
+
         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
 
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
@@ -277,6 +279,8 @@ class TerminalMigrationTest extends TestCase
     // the below cases tests migration functionality when a new terminal is created
     public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
            return $this->getDefaultTerminalServiceResponse();
         });
@@ -302,6 +306,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAssignTerminalTerminalServiceDownMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function () {
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
         }, 1);
@@ -327,6 +333,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAssignTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function() {
 
             $terminal = $this->getLastEntity(Entity::TERMINAL, true);
@@ -361,6 +369,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAssignTerminalsServiceFailureResponseMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function () {
             $response = $this->getDefaultTerminalServiceResponse();
 
@@ -421,6 +431,8 @@ class TerminalMigrationTest extends TestCase
     // the below cases tests migration functionality when an attribute of an existing terminal is tested
     public function testUpdateTerminalTerminalsServiceUpMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
 
@@ -450,6 +462,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalTerminalsServiceDownMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
                 'used' => true,
@@ -485,6 +499,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
             'used' => true,
@@ -524,6 +540,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceFailureResponseMigrateTerminalVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
             'used' => true,
@@ -569,7 +587,6 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant()
     {
-
         //-- setup terminal + add merchant as submerchant to the terminal
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
@@ -593,6 +610,8 @@ class TerminalMigrationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function() use ($tid) {
 
@@ -649,6 +668,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
             $response = new  \Requests_Response;
 
@@ -688,6 +709,8 @@ class TerminalMigrationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
             $response = new  \Requests_Response;
@@ -748,6 +771,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
                 'used'        => true,
@@ -786,6 +811,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testDeleteTerminalNoPaymentTerminalsServiceUpBadResponseOnTerminalFetchMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
             'used'        => true,
@@ -887,6 +914,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $url = '/terminals/'.$tid;
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -909,6 +938,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testDeleteTerminalWithPaymentTerminalsServiceDownMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $tid = $this->makePaymentAndGetTerminalId();
 
         $terminal = $this->terminalRepository->findOrFail($tid);
@@ -950,6 +981,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testDeleteTerminalWithPaymentTerminalsServiceUpBadResponseMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $tid = $this->makePaymentAndGetTerminalId();
 
         $terminal = $this->terminalRepository->findOrFail($tid);
@@ -1025,8 +1058,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertNotNull($terminalEntity->deleted_at);
 
-        $this->assertEquals(Terminal\SyncStatus::getValueForSyncStatusString(Terminal\SyncStatus::NOT_SYNCED),
-                            $terminalEntity->sync_status);
+        $this->assertEquals(Terminal\SyncStatus::getValueForSyncStatusString(Terminal\SyncStatus::NOT_SYNCED), $terminalEntity->sync_status);
     }
 
     // tests for syncing merchant_terminal pivot row when submerchants are added to
@@ -1060,6 +1092,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAddSubmerchantTerminalsServiceUpMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1115,6 +1149,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAddSubmerchantTerminalsServiceDownMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1145,6 +1181,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAddSubmerchantTerminalsServiceUpBadResponseMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1199,6 +1237,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAddSubmerchantTerminalsServiceUpSubmerchantNotCreatedOnTerminalsServiceMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1258,6 +1298,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAddSubmerchantTerminalsServiceUpSubmerchantAlreadyExistOnTerminalsServiceMigrateVariant()
     {
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->razorxValue = 'migrate';
 
         $terminal = $this->fixtures->create(
@@ -1330,6 +1372,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
 
             $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
@@ -1368,6 +1412,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
 
             $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
@@ -1395,6 +1441,8 @@ class TerminalMigrationTest extends TestCase
         [$tid, $mid] = $this->testAddSubmerchantControlVariant();
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
 
@@ -1440,6 +1488,8 @@ class TerminalMigrationTest extends TestCase
         [$tid, $mid] = $this->testAddSubmerchantControlVariant();
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
 
@@ -1546,6 +1596,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $mock = $this->createMetricsMock();
 
         $expected = [
@@ -1569,6 +1621,8 @@ class TerminalMigrationTest extends TestCase
     public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
     {
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
@@ -1626,6 +1680,8 @@ class TerminalMigrationTest extends TestCase
         ]);
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $terminal = $this->fixtures->create(
             'terminal', [
@@ -1688,6 +1744,8 @@ class TerminalMigrationTest extends TestCase
     {
         $this->razorxValue = 'migrate';
 
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
         $this->fixtures->create(
             'terminal', [
             'merchant_id' => '10000000000000',
@@ -1745,6 +1803,8 @@ class TerminalMigrationTest extends TestCase
         ]);
 
         $this->razorxValue = 'migrate';
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
 
         $terminal = $this->fixtures->create(
             'terminal', [

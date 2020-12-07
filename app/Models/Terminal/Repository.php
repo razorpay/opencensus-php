@@ -88,7 +88,10 @@ class Repository extends Base\Repository
                 // id gets created on save
                 parent::saveOrFail($entity, $options);
 
-                if (Terminal\Service::shouldMigrateTerminal($shouldSync) === true) {
+                $sync = $this->app['config']->get('applications.terminals_service.sync');
+
+                if ($sync === true && $shouldSync === true)
+                {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
                     $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
@@ -592,7 +595,9 @@ class Repository extends Base\Repository
 
         return $this->transaction(function() use ($entity, $count)
         {
-            if (Migrate::shouldMigrateTerminalDelete(true) === true)
+            $sync = $this->app['config']->get('applications.terminals_service.sync');
+
+            if ($sync === true)
             {
                 (new Terminal\Service)->migrateTerminalDelete($entity->getId());
 
@@ -634,11 +639,11 @@ class Repository extends Base\Repository
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->attach($merchant);
 
-            if (Migrate::shouldMigrateSubmerchant() === true)
+            $sync = $this->app['config']->get('applications.terminals_service.sync');
+            if ($sync === true)
             {
                 (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
             }
-
         });
     }
 
@@ -646,7 +651,8 @@ class Repository extends Base\Repository
     {
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->detach($merchant);
-            if (Migrate::shouldMigrateSubmerchant() === true)
+            $sync = $this->app['config']->get('applications.terminals_service.sync');
+            if ($sync === true)
             {
                 (new Terminal\Service)->migrateTerminalRemoveMerchant($terminal, $merchant);
             }

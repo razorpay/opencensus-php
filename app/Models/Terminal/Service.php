@@ -67,8 +67,9 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        if (Migrate::shouldRunComparison() === true)
-        {
+        $sync = $this->app['config']->get('applications.terminals_service.sync');
+
+        if ($sync === true) {
             $this->runGetTerminalsForMerchantComparison($terminals, $merchant, $subMerchantFlag);
         }
 

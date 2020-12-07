@@ -3,7 +3,6 @@
 
 namespace RZP\Models\Terminal;
 
-use App;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
@@ -11,104 +10,6 @@ use RZP\Trace\TraceCode;
 
 trait Migrate
 {
-
-    /**
-     * @param bool $shouldSync
-     * @return bool
-     * order of preference in deciding whether the terminals should be synced or not
-     * 1) shouldSync
-     * 2) razorx feature called "TerminalsService_MigrateTerminal"
-     */
-    public static function shouldMigrateTerminal(bool $shouldSync) : bool
-    {
-        if ($shouldSync === false)
-        {
-            return false;
-        }
-
-        return self::getRazorxTreatment(self::getMigrateTerminalFeature());
-    }
-
-    public static function shouldMigrateTerminalDelete(bool $shouldSync) : bool
-    {
-        if ($shouldSync === false)
-        {
-            return false;
-        }
-
-        return self::getRazorxTreatment(self::getMigrateDeleteTerminalFeature());
-    }
-
-    public static function shouldMigrateSubmerchant(): bool
-    {
-        return self::getRazorxTreatment(self::getMigrateSubmerchantFeature());
-    }
-
-    public static function shouldRunComparison(): bool
-    {
-        return self::getRazorxTreatment(self::getShouldRunComparisonFeature());
-    }
-
-    protected static function getMigrateTerminalFeature(): string
-    {
-        return'TerminalsService_MigrateTerminal';
-    }
-
-    protected static function getMigrateDeleteTerminalFeature(): string
-    {
-        return'TerminalsService_MigrateDeleteTerminal';
-    }
-
-    protected static function getMigrateSubmerchantFeature(): string
-    {
-        return 'TerminalsService_MigrateSubmerchant';
-    }
-
-    protected static function getShouldRunComparisonFeature() : string
-    {
-        return 'TerminalsService_ShouldRunComparison';
-    }
-
-
-    protected static function getRazorxTreatment(string $feature): bool
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
-
-        $merchant = $app['basicauth']->getMerchant();
-
-        $reqId = $app['request']->getId();
-
-        if (isset($merchant) === true)
-        {
-            $reqId = $merchant->getId();
-        }
-
-        $variant = $app['razorx']->getTreatment($reqId, $feature, $mode);
-
-        self::logRazorxResponse($feature, $variant);
-
-        if ($variant === 'migrate')
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected static function logRazorxResponse(string $feature, string $variant)
-    {
-        $app = App::getFacadeRoot();
-
-        $data = [
-            'feature'   => $feature,
-            'variant'   => $variant,
-        ];
-
-        $app['trace']->info(TraceCode::TERMINALS_SERVICE_RAZORX_RESPONSE, $data);
-    }
-
     /**
      * This function fetches the terminal given in $terminal from terminals
      * It does a comparison. It logs the success/failure of the fetch and pushes metrics
