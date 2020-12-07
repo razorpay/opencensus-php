@@ -106,6 +106,9 @@ class CreateOffers extends Migration
 
             $table->text(Offer::TERMS);
 
+            $table->string(Offer::PRODUCT_TYPE, 20)
+                  ->nullable();
+
             $table->integer(Offer::CREATED_AT);
 
             $table->integer(Offer::UPDATED_AT);

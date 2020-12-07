@@ -1938,6 +1938,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
     const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
 
+    // Offers On Subcription
+    const OFFER_ON_SUBSCRIPTION                                 = 'OFFER_ON_SUBSCRIPTION';
+    const OFFER_ON_SUBSCRIPTION_CALCULATION                     = 'OFFER_ON_SUBSCRIPTION_CALCULATION';
+    const OFFER_ON_SUBSCRIPTION_ERROR                           = 'OFFER_ON_SUBSCRIPTION_ERROR';
+    const OFFER_ON_SUBSCRIPTION_NA                              = 'OFFER_ON_SUBSCRIPTION_NA';
+
     // Trace codes for Gateway Priorities
     const CARD_GATEWAY_PRIORITY                                 = 'CARD_GATEWAY_PRIORITY';
     const NETBANKING_GATEWAY_PRIORITY                           = 'NETBANKING_GATEWAY_PRIORITY';

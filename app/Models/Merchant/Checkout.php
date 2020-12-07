@@ -98,7 +98,7 @@ class Checkout
 
         $this->filterMethodsBasedOnAmount($data, $input);
 
-        $this->checkAndFillOfferDetails($merchant, $input, $data);
+        $this->checkAndFillOfferDetails($merchant, $input, $data, $mode);
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
@@ -697,7 +697,7 @@ class Checkout
         return $rememberCustomer;
     }
 
-    public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
+    public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data, $mode)
     {
         $order = null;
 
@@ -716,6 +716,34 @@ class Checkout
             }
         }
 
+        elseif (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+            if ((isset($data['subscription']) === true) and
+                ($cardChange === false) and
+                ($this->isSubscriptionOffersEnabled($merchant, $mode) === true))
+            {
+                $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+                if (($pos = strpos($subscriptionId, "_")) !== false)
+                {
+                    $subscriptionId = substr($subscriptionId, $pos + 1);
+                }
+
+                $invoiceEntity = $this->repo->invoice->fetchIssuedInvoicesOfSubscriptionId($subscriptionId);
+
+                if ($invoiceEntity !== null and $invoiceEntity->getOrderId() !== null)
+                {
+                    $orderId = 'order_' . $invoiceEntity->getOrderId();
+
+                    $data['subscription']['order_id'] = $orderId;
+
+                    $order = $this->setOrGetOrder($orderId, $merchant);
+                }
+            }
+        }
+
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
@@ -725,6 +753,27 @@ class Checkout
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
         }
+    }
+
+    protected function isSubscriptionOffersEnabled(Merchant\Entity $merchant, $mode)
+    {
+        $treatment = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::OFFER_ON_SUBSCRIPTION,
+            $mode
+        );
+
+        if (($treatment === null) or
+            ($treatment !== 'on'))
+        {
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => false ]);
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
+
+        return true;
     }
 
     protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)

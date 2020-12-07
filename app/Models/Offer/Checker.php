@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Offer\Core;
+use RZP\Exception\LogicException;
 
 class Checker extends Base\Core
 {
@@ -593,6 +594,17 @@ class Checker extends Base\Core
         if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
+        }
+
+        $calculator = new Calculator($this->offer);
+
+        try
+        {
+            $calculator->calculateDiscountedAmount($this->order->getAmount(), null);
+        }
+        catch (LogicException $e)
+        {
+            return false;
         }
 
         return $result;

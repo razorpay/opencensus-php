@@ -1330,6 +1330,25 @@ class ApiEventSubscriber extends Base\Core
             ];
         }
 
+        $paidOffer = $payment->getOffer();
+
+        if($paidOffer !== null)
+        {
+            $discountAmount = $paidOffer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
+
+            $paidOfferSubscriptionDetails = $this->repo->offer->fetchOffersSubscription(
+                [$payment->getMethod()],
+                $payment->merchant->getMerchantId(),
+                $paidOffer->getId()
+            );
+
+            $payload['offer'] = [
+                'order_amount'      => $payment->order->getAmount(),
+                'discounted_amount' => $discountAmount,
+                'offer_details'     => $paidOfferSubscriptionDetails,
+            ];
+        }
+
         return $payload;
     }
 

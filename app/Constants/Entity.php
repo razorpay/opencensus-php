@@ -363,6 +363,7 @@ class Entity
     const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
     const PAYMENTS_CARDS_CAPTURE        = 'payments_cards.capture';
 
+    const SUBSCRIPTION_OFFERS_MASTER     = 'subscription_offers_master';
     // Service: Subscription
     const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
     const SUBSCRIPTIONS_ADDON            = 'subscriptions.addon';
@@ -604,6 +605,8 @@ class Entity
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
         self::LOW_BALANCE_CONFIG        => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
         self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
+
+        self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 
         //ondemand
         self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,

@@ -2736,15 +2736,41 @@ class Service extends Base\Service
                 $payload['card'] = array_merge($cardDetails, $cardFormatted);
             }
 
-            if ($payment->hasInvoice() === true)
-            {
-                $payload['invoice'] = [
-                    Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
-                    Invoice\Entity::BILLING_END => $payment->invoice->getBillingEnd()
-                ];
-            }
+            $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
         }
+
         return $payload;
+    }
+
+    private function addInvoiceOfferDetailsForSubscription(Payment\Entity $payment, &$payload)
+    {
+        if ($payment->hasInvoice() === true)
+        {
+            $payload['invoice'] = [
+                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
+                Invoice\Entity::BILLING_END => $payment->invoice->getBillingEnd()
+            ];
+        }
+
+        // offer payload
+        $paidOffer = $payment->getOffer();
+
+        if($paidOffer !== null)
+        {
+            $discountAmount = $paidOffer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
+
+            $paidOfferSubscriptionDetails = $this->repo->offer->fetchOffersSubscription(
+                [$payment->getMethod()],
+                $payment->merchant->getMerchantId(),
+                $paidOffer->getId()
+            );
+
+            $payload['offer'] = [
+                'order_amount'      => $payment->order->getAmount(),
+                'discounted_amount' => $discountAmount,
+                'offer_details'     => $paidOfferSubscriptionDetails,
+            ];
+        }
     }
 
 
@@ -2791,13 +2817,7 @@ class Service extends Base\Service
             $payload['card'] = array_merge($cardDetails, $cardFormatted);
         }
 
-        if ($payment->hasInvoice() === true)
-        {
-            $payload['invoice'] = [
-                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
-                Invoice\Entity::BILLING_END   => $payment->invoice->getBillingEnd()
-            ];
-        }
+        $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
 
         return $payload;
     }

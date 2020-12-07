@@ -181,6 +181,13 @@ class Generator extends Base\Core
 
     public function generate(array $input): Entity
     {
+        $subscriptionOffers = null;
+
+        if (isset($input['subscription_offers']) === true)
+        {
+            $subscriptionOffers = array_pull($input, 'subscription_offers');
+        }
+
         $this->generateInvoiceSkeleton($input);
 
         $this->autoEnableRemindersIfApplicable($input);
@@ -198,7 +205,7 @@ class Generator extends Base\Core
         $maxAttempts = 2;
 
         $this->repo->transaction(
-            function() use ($input)
+            function() use ($input, $subscriptionOffers)
             {
                 $this->preProcessGeneration($input);
 
@@ -206,7 +213,7 @@ class Generator extends Base\Core
 
                 if ($this->invoice->getStatus() === Status::ISSUED)
                 {
-                    $this->issueInvoice();
+                    $this->issueInvoice($subscriptionOffers);
                 }
 
                 $this->repo->saveOrFail($this->invoice);
@@ -435,14 +442,14 @@ class Generator extends Base\Core
      * - Update invoice status
      * - Save the invoice
      */
-    public function issueInvoice()
+    public function issueInvoice(array $subscriptionOffers = null)
     {
         $this->invoice->getValidator()
                       ->validateInvoiceIssue();
 
         $this->invoice->setStatus(Status::ISSUED);
 
-        $this->setOrderForInvoice();
+        $this->setOrderForInvoice($subscriptionOffers);
 
         $this->associateOrderForInvoice();
 
@@ -468,7 +475,7 @@ class Generator extends Base\Core
     /**
      * @return void
      */
-    private function setOrderForInvoice()
+    private function setOrderForInvoice(array $subscriptionOffers = null)
     {
         $order = $this->getOrder();
 
@@ -496,6 +503,12 @@ class Generator extends Base\Core
             {
                 $orderInput[Order\Entity::PRODUCT_ID] = $this->invoice->getSubscriptionId();
                 $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::SUBSCRIPTION;
+
+                if ($subscriptionOffers !== null)
+                {
+                    $orderInput[Order\Entity::OFFERS] = $subscriptionOffers;
+                    //$orderInput[Order\Entity::FORCE_OFFER] = true;
+                }
             }
 
             if (($this->externalEntity !== null) and

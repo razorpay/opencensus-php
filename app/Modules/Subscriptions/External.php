@@ -120,7 +120,7 @@ class External extends Base
     private function paymentProcessSync($paymentPayload)
     {
         $headers = [
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => $this->mode ?? 'test',
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 

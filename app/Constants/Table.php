@@ -87,6 +87,7 @@ class Table
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefixes';
     const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
 
+    const SUBSCRIPTION_OFFERS_MASTER     = 'subscription_offers_master';
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';
     const SUBSCRIPTION_CYCLE             = 'subscription_cycles';

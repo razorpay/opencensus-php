@@ -108,7 +108,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Promotion\Repository                         $promotion
  * @property Models\RequestLog\Repository                        $request_log
  * @property Models\Merchant\MerchantApplications\Repository     $merchant_application
- *
+ * @property Models\Offer\SubscriptionOffer\Repository           $subscription_offers_master
  * @property Models\Merchant\MerchantNotificationConfig\Repository $merchant_notification_config
  * @property Models\Reward\Repository                              $reward;
  * @property Models\Reward\MerchantReward\Repository               $merchant_reward;

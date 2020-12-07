@@ -20,6 +20,7 @@ class Service extends Base\Service
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'offer_fetch_subscription',
     ];
 
     public function __construct()
@@ -102,6 +103,15 @@ class Service extends Base\Service
     public function fetchMultiple(array $input)
     {
         $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
+
+        return $offers->toArrayProxy();
+    }
+
+    public function fetchOffersSubscription(array $input)
+    {
+        $paymentMethods = $input['payment_methods'] ?? ['card', 'upi'];
+
+        $offers = $this->repo->offer->fetchOffersSubscription($paymentMethods, $this->merchant->getId());
 
         return $offers->toArrayProxy();
     }
@@ -215,5 +225,27 @@ class Service extends Base\Service
         }
 
         return $verbose;
+    }
+
+    /**
+     * Checks If Offer is Existing and can be Applied on the Amount
+     * Used by Subscription Service to validate even before forcing an offer, on subscription creation
+     * @param $input
+     * @return array
+     */
+    public function fetchOffersDiscountForSubscription($input): array
+    {
+        return $this->core->fetchOffersDiscountForSubscription($input);
+    }
+
+    /**
+     * Fetches Offers that can be applied on a subscription
+     * Used By subscription Service to Show On Hosted Page
+     * @param $input
+     * @return array
+     */
+    public function fetchOffersPreferenceForSubscription($input): array
+    {
+        return $this->core->fetchOffersPreferenceForSubscription($input);
     }
 }

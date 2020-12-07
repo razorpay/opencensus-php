@@ -445,7 +445,8 @@ trait UpiRecurring
     {
         $order = $payment->order;
 
-        if ($payment->getAmount() !== $order->getAmount())
+        if ($payment->getAmount() !== $order->getAmount() and
+            ($payment->getOffer() === null and $payment->hasSubscription() === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The initial payment amount must be equal to order amount for upi recurring',

@@ -43,6 +43,33 @@ class OfferController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchOffersSubscription()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchOffersSubscription($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchOffersDiscountForSubscription()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchOffersDiscountForSubscription($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchOffersPreferenceForSubscription()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchOffersPreferenceForSubscription($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchOfferById(string $id)
     {
         $data = $this->service()->fetch($id);

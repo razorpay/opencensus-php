@@ -3,8 +3,10 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
+
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -91,6 +93,8 @@ class Entity extends Base\PublicEntity
 
     const MAX_ORDER_AMOUNT    = 'max_order_amount';
 
+    const PRODUCT_TYPE        = 'product_type';
+
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
      * payment criteria as another offer
@@ -137,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::MAX_OFFER_USAGE,
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
+        self::PRODUCT_TYPE,
     ];
 
     protected $public = [
@@ -176,6 +181,11 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
+        self::PRODUCT_TYPE,
+
+        SubscriptionOfferEntity::APPLICABLE_ON,
+        SubscriptionOfferEntity::NO_OF_CYCLES,
+        SubscriptionOfferEntity::REDEMPTION_TYPE,
     ];
 
     protected $visible = [
@@ -212,6 +222,11 @@ class Entity extends Base\PublicEntity
         self::CURRENT_OFFER_USAGE,
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
+        self::PRODUCT_TYPE,
+
+        SubscriptionOfferEntity::APPLICABLE_ON,
+        SubscriptionOfferEntity::NO_OF_CYCLES,
+        SubscriptionOfferEntity::REDEMPTION_TYPE,
     ];
 
     protected $defaults = [
@@ -223,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION   => null,
         self::EMI_DURATIONS    => null,
         self::DEFAULT_OFFER    => 0,
+        self::PRODUCT_TYPE     => null,
     ];
 
     protected $publicSetters = [
@@ -306,6 +322,11 @@ class Entity extends Base\PublicEntity
 
         return (($now >= $this->getStartsAt()) and
                 ($now <= $this->getEndsAt()));
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
     }
 
     public function getPercentRate()
@@ -438,6 +459,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_ORDER_AMOUNT);
     }
 
+    public function getProductType()
+    {
+        return $this->getAttribute(self::PRODUCT_TYPE);
+    }
+
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int
@@ -468,7 +494,7 @@ class Entity extends Base\PublicEntity
         return $this->getDiscount($amount, $percentDiscount);
     }
 
-    protected function getDiscountedAmount(int $amount, $percentDiscount = null)
+    public function getDiscountedAmount(int $amount, $percentDiscount = null)
     {
         $calculator = new Calculator($this);
 
@@ -611,6 +637,11 @@ class Entity extends Base\PublicEntity
             self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
             self::TYPE            => $this->getAttribute(self::TYPE),
         ];
+
+        if ($this->getProductType() === 'subscription')
+        {
+            $data[self::TERMS] = $this->getTerms();
+        }
 
         //
         // If this flag is set then amount is to be discounted by us

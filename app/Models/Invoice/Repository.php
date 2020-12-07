@@ -251,6 +251,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchIssuedInvoicesOfSubscriptionId(string $subscriptionId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscriptionId)
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->with(Entity::ORDER)
+                    ->first();
+    }
+
     public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
     {
         $invoices = $this->newQuery()

@@ -6,6 +6,8 @@ use DB;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 
 class Repository extends Base\Repository
 {
@@ -42,7 +44,8 @@ class Repository extends Base\Repository
 
         $query->where(Entity::ACTIVE, '=', true)
               ->where(Entity::STARTS_AT, '<=', $newOffer->getAttribute(Entity::ENDS_AT))
-              ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
+              ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT))
+              ->where(Entity::PRODUCT_TYPE, '=', $newOffer->getAttribute(Entity::PRODUCT_TYPE));
 
         return $query->get();
     }
@@ -58,6 +61,67 @@ class Repository extends Base\Repository
                     ->where(Entity::STARTS_AT, '<=', $now)
                     ->where(Entity::ENDS_AT, '>=', $now)
                     ->get();
+    }
+
+    public function fetchOffersSubscription($paymentMethods = null, $merchantId, $offerId = null): Base\PublicCollection
+    {
+        $now = Carbon::now()->getTimestamp();
+
+        $offerIdCol = $this->dbColumn(Entity::ID);
+
+        $subOfferIdCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::OFFER_ID);
+        $subApplOnCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::APPLICABLE_ON);
+        $subRedempTypeCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::REDEMPTION_TYPE);
+        $subCycleCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::NO_OF_CYCLES);
+
+        $offerQuery = $this->newQuery()
+                            ->select($this->dbColumn('*'),
+                                $subOfferIdCol, $subApplOnCol, $subRedempTypeCol, $subCycleCol)
+                            ->join(Table::SUBSCRIPTION_OFFERS_MASTER, $offerIdCol, '=', $subOfferIdCol)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->where(Entity::ACTIVE, '=', true)
+                            ->where(Entity::STARTS_AT, '<=', $now)
+                            ->where(Entity::ENDS_AT, '>=', $now)
+                            ->where(Entity::PRODUCT_TYPE, '=', 'subscription');
+
+        if ($paymentMethods !== null)
+        {
+            $offerQuery->whereIn(Entity::PAYMENT_METHOD, $paymentMethods);
+        }
+
+        if ($offerId !== null)
+        {
+            $offerQuery->where($offerIdCol , '=', $offerId);
+        }
+
+        return $offerQuery->get();
+    }
+
+    public function fetchSubscriptionOfferById(string $offerId, bool $fetchActive = true, bool $fetchExpired = false)
+    {
+        $now = Carbon::now()->getTimestamp();
+
+        $offerIdCol = $this->dbColumn(Entity::ID);
+        $subOfferIdCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::OFFER_ID);
+
+        $offerQuery = $this->newQuery()
+                           ->select($this->dbColumn('*'), $this->repo->subscription_offers_master->dbColumn('*'))
+                           ->join(Table::SUBSCRIPTION_OFFERS_MASTER, $offerIdCol, '=', $subOfferIdCol)
+                           ->where(Entity::STARTS_AT, '<=', $now)
+                           ->where(Entity::PRODUCT_TYPE, '=', 'subscription')
+                           ->where($offerIdCol , '=', $offerId);
+
+        if ($fetchActive === true)
+        {
+            $offerQuery->where(Entity::ACTIVE, '=', true);
+        }
+
+        if ($fetchExpired === false)
+        {
+            $offerQuery->where(Entity::ENDS_AT, '>=', $now);
+        }
+
+        return $offerQuery->first();
     }
 
     public function fetchActiveExpiredOffers()

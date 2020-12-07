@@ -56,6 +56,7 @@ class Validator extends Base\Validator
         Entity::ACTIVE              => 'filled|boolean',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
+        Entity::PRODUCT_TYPE        => 'sometimes|filled|string|in:subscription',
     ];
 
     protected static $createBulkRules = [

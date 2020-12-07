@@ -196,10 +196,11 @@ final class RazorxTreatment
     // release duplicate receipt check in refunds only for Google merchant as of now
     const DUPLICATE_RECEIPT_CHECK = 'duplicate_receipt_check';
 
+    // Check if Offers is enabled for subscription
+    const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
-
 }

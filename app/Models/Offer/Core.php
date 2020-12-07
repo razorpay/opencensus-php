@@ -13,7 +13,9 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
@@ -39,23 +41,37 @@ class Core extends Base\Core
             $resource,
             function() use ($input, $merchant)
             {
-                $this->verifyIdAndStripSignForLinkedOfferIds($input);
+                return $this->repo->transaction(function() use ($input, $merchant)
+                {
+                    if (isset($input[Entity::PRODUCT_TYPE]) === true and $input[Entity::PRODUCT_TYPE] === 'subscription')
+                    {
+                        $subscriptionInput = array_pull($input, 'subscription');
+                    }
 
-                $offer = new Entity;
+                    $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
-                $offer->merchant()->associate($merchant);
+                    $offer = new Entity;
 
-                $offer = $offer->build($input);
+                    $offer->merchant()->associate($merchant);
 
-                $this->validateMerchant($merchant, $input);
+                    $offer = $offer->build($input);
 
-                $this->checkConflictingOffers($offer);
+                    $this->validateMerchant($merchant, $input);
 
-                $this->repo->saveOrFail($offer);
+                    $this->checkConflictingOffers($offer);
 
-                $this->traceNonExistingIins($offer, $merchant);
+                    $this->repo->saveOrFail($offer);
 
-                return $offer;
+                    if (isset($input[Entity::PRODUCT_TYPE]) and $input[Entity::PRODUCT_TYPE] === 'subscription')
+                    {
+                        // create entry in subscription_offers_master
+                        $this->addSubscriptionData($offer, $subscriptionInput);
+                    }
+
+                    $this->traceNonExistingIins($offer, $merchant);
+
+                    return $offer;
+                });
             });
     }
 
@@ -193,6 +209,11 @@ class Core extends Base\Core
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($this->validateOfferForOrderProductType($order, $offer) === false)
+        {
+            return null;
+        }
+
         $verbose = true;
 
         $checker = new Checker($offer, $verbose);
@@ -211,6 +232,11 @@ class Core extends Base\Core
 
     public function validateDefaultOfferForOrder(Order\Entity $order, Entity $offer)
     {
+        if ($this->validateOfferForOrderProductType($order, $offer) === false)
+        {
+            return null;
+        }
+
         $verbose = true;
 
         $checker = new Checker($offer, $verbose);
@@ -219,6 +245,22 @@ class Core extends Base\Core
         {
             return $offer;
         }
+    }
+
+    public function validateOfferForOrderProductType(Order\Entity $order, Entity $offer)
+    {
+        if (($order->getProductType() === ProductType::SUBSCRIPTION) and
+            ($offer->getProductType() !== $order->getProductType()))
+        {
+            return false;
+        }
+        else if (($order->getProductType() !== ProductType::SUBSCRIPTION)  and
+                 ($offer->getProductType() === ProductType::SUBSCRIPTION))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function fetchDefaultOffersForMerchant(string $merchantId)
@@ -447,5 +489,153 @@ class Core extends Base\Core
         }
 
 
+    }
+
+    private function addSubscriptionData(Entity $offer, array $subscriptionInput)
+    {
+        if ($this->isSubscriptionOffersEnabled() === true)
+        {
+            $subscriptionInput[SubscriptionOffer\Entity::OFFER_ID] = $offer->getId();
+
+            (new SubscriptionOffer\Core())->create($subscriptionInput);
+        }
+    }
+
+    /**
+     * Checks RazorX is enabled for Offer On Subscription
+     * @return bool
+     */
+    protected function isSubscriptionOffersEnabled()
+    {
+        $treatment = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::OFFER_ON_SUBSCRIPTION,
+            $this->mode
+        );
+
+        if (($treatment === null) or
+            ($treatment !== 'on'))
+        {
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => false ]);
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
+
+        return true;
+    }
+
+    /**
+     * Checks If Offer is Existing and can be Applied on the Amount
+     * Used by Subscription Service to validate even before forcing an offer, on subscription creation
+     * @param $input
+     * @return array
+     */
+    public function fetchOffersDiscountForSubscription($input): array
+    {
+        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_CALCULATION, ['input' => $input]);
+
+        $offerId      = Entity::verifyIdAndStripSign($input['offer']);
+        $fetchActive  = $input['active'] ?? true;
+        $fetchExpired = $input['expired'] ?? false;
+
+        $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $fetchActive, $fetchExpired);
+
+        $data = [ 'original_amount' => (int)$input['amount'], 'offer_valid' => 0, 'message' => null, 'offer_name' => ''];
+
+        if ($offer === null)
+        {
+            $data['discounted_amount'] = (int)$input['amount'];
+            $data['message']           = 'Offer Not Found';
+
+            return $data;
+        }
+
+        try
+        {
+            $data['discounted_amount'] = $offer->getDiscountedAmount($input['amount']);
+
+            if ($data['discounted_amount'] === $data['original_amount'])
+            {
+                $data['message']     = 'Offer No Discount Applied';
+            }
+            else
+            {
+                $data['offer_name']  = $offer->getName();
+                $data['offer_valid'] = 1;
+            }
+
+            return $data;
+        }
+        catch (\Exception $e)
+        {
+            // Not an error for just the calculation, so printing in info
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_NA,
+                ['input'  => $input,
+                 'reason' => $e->getMessage()
+                ]
+            );
+
+            $data['discounted_amount'] = (int)$input['amount'];
+            $data['message']           = $e->getMessage();
+
+            return $data;
+        }
+    }
+
+    /**
+     * Fetches Offers that can be applied on a subscription
+     * Used By subscription Service to Show On Hosted Page
+     * @param $input
+     * @return array
+     */
+    public function fetchOffersPreferenceForSubscription($input): array
+    {
+        $data['offers'] = [];
+
+        $data['force_offer'] = false;
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        $invoiceEntity = $this->repo->invoice->fetchIssuedInvoicesOfSubscriptionId($subscriptionId);
+
+        if ($invoiceEntity !== null and $invoiceEntity->getOrderId() !== null)
+        {
+            $orderId = 'order_' . $invoiceEntity->getOrderId();
+
+            $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            if (($order !== null) and
+                ($order->hasOffers() === true))
+            {
+                $offers = $order->offers;
+
+                $orderAmount = $order->getAmount();
+
+                if ($offers->isEmpty() !== true)
+                {
+                    $verbose = true;
+
+                    foreach ($offers as $offer)
+                    {
+                        $checker = new Checker($offer, $verbose);
+
+                        if ($checker->checkValidityOnOrder($order) === true)
+                        {
+                            $data['offers'][] = $offer->toArrayCheckout($orderAmount);
+                        }
+                    }
+
+                    if (($offers->count() === 1) and
+                        ($order->isOfferForced() === true))
+                    {
+                        $data['force_offer'] = true;
+                    }
+                }
+            }
+        }
+
+        return $data;
     }
 }
