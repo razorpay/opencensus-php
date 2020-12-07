@@ -219,6 +219,7 @@ export default class NotificationsDropdown extends Component {
         break;
 
       case 'announcement-Nov20-Opfin-NitroV1-cta1':
+      case 'announcement-Nov20-Opfin-NitroV2-cta1':
         this.showOpfinAnnouncement(id);
 
         break;

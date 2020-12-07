@@ -10,6 +10,17 @@ import RTracking from 'react-tracking';
 
 // STYLE - opfin-announcement.styl
 
+const hubspotFormMap = {
+  'announcement-Nov20-Opfin-NitroV1-cta1': {
+    portalId: '5558946',
+    formId: '8bfb6418-5d39-447c-bc6c-f1208b1d0beb',
+  },
+  'announcement-Nov20-Opfin-NitroV2-cta1': {
+    portalId: '5558946',
+    formId: '37e50967-746b-46c9-9018-1e07fecfd9a1',
+  },
+};
+
 const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => {
   const handleCloseAnnouncement = () => {
     tracking.trackEvent(
@@ -37,8 +48,15 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
         popUpID: id,
       }),
     );
+
     openModal({
-      component: <HubspotForm onClose={handleCloseHubspot} />,
+      component: (
+        <HubspotForm
+          onClose={handleCloseHubspot}
+          portalId={hubspotFormMap[id].portalId}
+          formId={hubspotFormMap[id].formId}
+        />
+      ),
       size: 'xlarge',
       className: 'OpfinAnnouncement__HubspotForm--modal',
     });
@@ -78,12 +96,12 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
   );
 };
 
-const HubspotForm = ({ onClose }) => {
+const HubspotForm = ({ onClose, portalId, formId }) => {
   useEffect(() => {
     if (window.hbspt) {
       window.hbspt.forms.create({
-        portalId: '5558946',
-        formId: '8bfb6418-5d39-447c-bc6c-f1208b1d0beb',
+        portalId,
+        formId,
         target: '#hbspt-opfin-nitro-form',
         onFormReady: () => {
           setHasFormLoaded(true);
