@@ -1,8 +1,7 @@
 import Input from 'common/new-ui/Input';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import {validateAmount} from 'common/utils/validators';
-
+import { validateAmount } from 'common/utils/validators';
 
 export default class InputCurrencyAmount extends React.Component {
   state = {
@@ -21,7 +20,7 @@ export default class InputCurrencyAmount extends React.Component {
     return this.props.name || 'amount';
   }
 
-  handleChange = data => {
+  handleChange = (data) => {
     if (data.hasOwnProperty('currency')) {
       const currencyISO = data.currency.name;
 
@@ -33,7 +32,7 @@ export default class InputCurrencyAmount extends React.Component {
     this.props.onChange && this.props.onChange(data);
   };
 
-  onBlur = event => {
+  onBlur = (event) => {
     this.props.onBlur &&
       this.props.onBlur({
         currency: this.state.currency,
@@ -55,17 +54,13 @@ export default class InputCurrencyAmount extends React.Component {
     } = this.props;
 
     return (
-      <Input.Group
-        label={label}
-        class={`InputGroup--inline ${className}`}
-        required={required}
-      >
+      <Input.Group label={label} class={`InputGroup--inline ${className}`} required={required}>
         <div class="Input-content">
           <Input.CurrencySelect
             name="currency"
             defaultValue={this.state.currency}
             disabled={disabledCurrency}
-            onChange={currency =>
+            onChange={(currency) =>
               this.handleChange({
                 currency,
               })
@@ -73,7 +68,7 @@ export default class InputCurrencyAmount extends React.Component {
           />
 
           <Input
-            ref={e => (this.ele = e)}
+            ref={(e) => (this.ele = e)}
             class="Input--Amount"
             name={this.amountFieldName}
             placeholder={placeholder}
@@ -81,7 +76,7 @@ export default class InputCurrencyAmount extends React.Component {
             type="number"
             defaultValue={defaultValueAmount}
             validator={(val) => validateAmount(val, this.minAmountAllowed)}
-            onChange={e =>
+            onChange={(e) =>
               this.handleChange({
                 [this.amountFieldName]: e.target.value,
               })

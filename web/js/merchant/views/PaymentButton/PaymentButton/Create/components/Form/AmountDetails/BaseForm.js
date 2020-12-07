@@ -9,11 +9,7 @@ import FieldOptionsDropdown, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import AdvancedForm from './AdvancedForm';
-import {
-  DynamicAmount,
-  FixedAmount,
-  FixedAmountWithQuantity,
-} from './FieldTypesRepresentations';
+import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
@@ -50,7 +46,7 @@ export default class BaseForm extends React.Component {
     this.setState({ disableSubmit });
   };
 
-  onSubmitAdvancedForm = formData => {
+  onSubmitAdvancedForm = (formData) => {
     const { field } = this.state;
 
     // TODO: HERE....
@@ -59,10 +55,7 @@ export default class BaseForm extends React.Component {
       formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
     }
 
-    if (
-      formData.hasOwnProperty('max_purchase') &&
-      !Number(formData.max_purchase)
-    ) {
+    if (formData.hasOwnProperty('max_purchase') && !Number(formData.max_purchase)) {
       formData.max_purchase = null;
     }
 
@@ -85,7 +78,7 @@ export default class BaseForm extends React.Component {
     });
   };
 
-  handleSubmitBaseForm = formData => {
+  handleSubmitBaseForm = (formData) => {
     const { name, description, amount, ...restFormData } = formData;
     const { currency } = this.state; // Can be taken from formData.currency too
 
@@ -121,12 +114,12 @@ export default class BaseForm extends React.Component {
       {
         isMandatory: !this.state.isMandatory,
       },
-      this.onChangeIsMandatory
+      this.onChangeIsMandatory,
     );
   };
 
   // To keep BaseForm and AdvancedForm in sync. Helps in adding default value and validators on min_purchase / min_amount.
-  onChangeIsMandatory = mandatory => {
+  onChangeIsMandatory = (mandatory) => {
     const { fieldType } = this.props;
     const { field, currency } = this.state;
 
@@ -138,9 +131,7 @@ export default class BaseForm extends React.Component {
     if (isMandatory) {
       switch (fieldType) {
         case FIELD_TYPES.dynamic_price.key: {
-          const minAmountAllowed = paiseToRupees(
-            getCurrency(currency).min_value
-          ); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
+          const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
 
           if (Number(newField.min_amount) < Number(minAmountAllowed)) {
             newField.min_amount = minAmountAllowed; // Must be at least min payable value as per currency
@@ -173,17 +164,17 @@ export default class BaseForm extends React.Component {
       },
       () => {
         track.lj.trackAmountFieldDescription(this.state.hasDescription);
-      }
+      },
     );
   };
 
-  handleToggleAdvancedOptionsForm = toOpen => {
+  handleToggleAdvancedOptionsForm = (toOpen) => {
     this.setState({
       isAdvancedFormOpened: toOpen,
     });
   };
 
-  onChangeCurrency = selectedCurrency => {
+  onChangeCurrency = (selectedCurrency) => {
     // TODO: Add onUpdateCurrency
     const newCurrencyISO = selectedCurrency.name;
 
@@ -207,16 +198,10 @@ export default class BaseForm extends React.Component {
                 You're changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{newCurrencyISO}</b>.
               </div>
-              <div>
-                On saving this item, this currency will apply to all items on
-                this page.
-              </div>
+              <div>On saving this item, this currency will apply to all items on this page.</div>
               <br />
               <footer>
-                <Button.Primary
-                  class="Button--full-width"
-                  onClick={this.props.closeModal}
-                >
+                <Button.Primary class="Button--full-width" onClick={this.props.closeModal}>
                   Ok
                 </Button.Primary>
               </footer>
@@ -234,9 +219,7 @@ export default class BaseForm extends React.Component {
     return (
       <FieldOptionsDropdown
         trigger={
-          <Button.Transparent
-            onClick={track.lj.trackAmountScreenOpenMoreOptions}
-          >
+          <Button.Transparent onClick={track.lj.trackAmountScreenOpenMoreOptions}>
             <i class="i i-ellipsis-v" />
           </Button.Transparent>
         }
@@ -266,19 +249,14 @@ export default class BaseForm extends React.Component {
             <i class="i i-options" />
             <div>
               Advanced Options
-              <div class="subOption">
-                Add quantity, define rules around quantity, etc.
-              </div>
+              <div class="subOption">Add quantity, define rules around quantity, etc.</div>
             </div>
           </div>
         </OptionsItem>
 
         {typeof indexInOrder !== 'undefined' && handleDeleteField && (
           <OptionsItem>
-            <div
-              class="OptionsDropdown-item--delete"
-              onClick={handleDeleteField}
-            >
+            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
               <i class="i i-delete" />
               <div>Delete Field</div>
             </div>
@@ -306,11 +284,7 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button
-          type="submit"
-          class="save-btn Button--transparent Button"
-          disabled={disableSubmit}
-        >
+        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
           <span class="icon i-check" />
           Save
         </button>
@@ -325,9 +299,7 @@ export default class BaseForm extends React.Component {
 
     const amount = field.item.amount || '', // Note: If amount is there, then disableAmountInput = false;
       placeholder = disableAmountInput ? 'To be filled by customer' : '0.00',
-      minAmountAllowed = disableAmountInput
-        ? ''
-        : paiseToRupees(getCurrency(currency).min_value);
+      minAmountAllowed = disableAmountInput ? '' : paiseToRupees(getCurrency(currency).min_value);
 
     let inputField = (
       <Input
@@ -389,7 +361,7 @@ export default class BaseForm extends React.Component {
     }
   }
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
     const { fieldType } = this.props;
@@ -414,7 +386,7 @@ export default class BaseForm extends React.Component {
                 defaultValue={field.item.name}
                 autoFocus
                 description={!isMandatory ? 'Optional' : ''}
-                validator={val => {
+                validator={(val) => {
                   if (!val) {
                     return 'Field label is required';
                   }
@@ -429,12 +401,7 @@ export default class BaseForm extends React.Component {
                     return 'Field label must have at least 1 character';
                   }
 
-                  if (
-                    this.props.validateSameTitleExists(
-                      val,
-                      this.props.indexInOrder
-                    )
-                  ) {
+                  if (this.props.validateSameTitleExists(val, this.props.indexInOrder)) {
                     return 'Field label cannot be same as other field';
                   }
                 }}
@@ -450,7 +417,7 @@ export default class BaseForm extends React.Component {
                   name="description"
                   placeholder="Enter field description"
                   defaultValue={field.description}
-                  validator={val => {
+                  validator={(val) => {
                     if (val && val.length > 128) {
                       return 'Field description cannot be more than 128 characters';
                     }

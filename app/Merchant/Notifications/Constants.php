@@ -152,6 +152,50 @@ class Constants
                 'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-1'],
             ],
         ],
+        // [
+        //     'title'       => 'Boost International Sales With PayPal',
+        //     'description' => 'Get upto 20% higher international success rates as well at T+1 settlement with PayPal',
+        //     'start_ts'    => 1605160337,
+        //     'end_ts'      => 1607752337,
+        //     'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
+        //     'buttons'     => [
+        //         [
+        //             'type'  => 'button',
+        //             'label' => 'Enable Now',
+        //             'url'   => '/config',
+        //         ],
+        //         [
+        //             'type'  => 'primary-inverted',
+        //             'label' => 'Know More',
+        //             'url'   => 'https://razorpay.com/docs/payment-gateway/payment-methods/paypal/',
+        //         ],
+        //     ],
+        //     'filters'     => [
+        //         'features'  => ['paypal_gtm_notification'],
+        //     ],
+        // ],
+        [
+            'title'       => 'Get ₹10,000 PayPal FREE Credits',
+            'description' => 'Get ₹10K International Free Credits on PayPal.Enjoy 20% higher conversion, T+1 settlement and activation within 24hrs. TnCs apply.',
+            'start_ts'    => 1606998624,
+            'end_ts'      => 1609417824,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable Now',
+                    'url'   => '/config',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://lp.razorpay.com/links/international-free-credits-paypal',
+                ],
+            ],
+            'filters'     => [
+                'features'  => ['paypal_gtm_notification'],
+            ],
+        ],
         [
             'title'       => 'Easily Update Your Bank Account',
             'description' => 'In case you want to update your bank account, you can do so directly from your Razorpay account settings',

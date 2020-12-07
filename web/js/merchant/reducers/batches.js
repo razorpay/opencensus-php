@@ -209,16 +209,16 @@ export const fetchBatchStats = (batchId) =>
 export const fetchBatchStatsForPLV2 = (batchId, batchType) => {
   const queryParams = {};
 
-  if(batchType) {
+  if (batchType) {
     queryParams.batch_type = batchType;
   }
 
   return merchantFetch({
     method: 'get',
     url: `payment_links/${batchId}/batch`,
-    params: queryParams
+    params: queryParams,
   });
-}
+};
 
 export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
   const queryParams = {
@@ -317,7 +317,7 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
     return fetchBatchAjax(id).then((batchData) => {
       if (batchData) {
         const batchType = batchData.batch.type;
-        const isBatchTypePaymentlinksV2 =  batchType === 'payment_link_v2';
+        const isBatchTypePaymentlinksV2 = batchType === 'payment_link_v2';
 
         let promises = [];
 

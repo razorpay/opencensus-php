@@ -6,7 +6,6 @@ import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
 
-
 // import track from '../../../track';
 
 export default class BaseForm extends React.Component {

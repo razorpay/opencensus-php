@@ -13,7 +13,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import {validateAmount} from 'common/utils/validators';
+import { validateAmount } from 'common/utils/validators';
 
 import ModalHeader from 'common/ui/ModalHeader';
 
@@ -54,7 +54,7 @@ export default class BaseForm extends React.PureComponent {
     this.setState({ disableSubmit });
   };
 
-  onSaveForm = formData => {
+  onSaveForm = (formData) => {
     const { name, description, amount, ...restFormData } = formData;
 
     // Normalize data as per amount field's blueprint
@@ -70,13 +70,13 @@ export default class BaseForm extends React.PureComponent {
     this.props.onSaveForm(baseFormData);
   };
 
-  toggleDescriptionField = _ => {
+  toggleDescriptionField = (_) => {
     this.setState({
       hasDescription: !this.state.hasDescription,
     });
   };
 
-  toggleIsMandatory = _ => {
+  toggleIsMandatory = (_) => {
     const isMandatory = !this.state.isMandatory;
 
     this.setState({
@@ -86,7 +86,7 @@ export default class BaseForm extends React.PureComponent {
     this.props.onChangeIsMandatory(isMandatory);
   };
 
-  onDeleteField = _ => {
+  onDeleteField = (_) => {
     this.props.onDeleteField();
   };
 
@@ -95,12 +95,10 @@ export default class BaseForm extends React.PureComponent {
       mirrorDisplayName: target.value,
     });
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().interaction('pp.create.edit_field')
-    );
+    this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction('pp.create.edit_field'));
   };
 
-  onChangeCurrency = selectedCurrency => {
+  onChangeCurrency = (selectedCurrency) => {
     this.props.onUpdateCurrency(selectedCurrency.name);
 
     if (this.props.currency !== selectedCurrency.name) {
@@ -115,16 +113,10 @@ export default class BaseForm extends React.PureComponent {
                 You're changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{selectedCurrency.name}</b>.
               </div>
-              <div>
-                On saving this item, this currency will apply to all items on
-                this page.
-              </div>
+              <div>On saving this item, this currency will apply to all items on this page.</div>
               <br />
               <footer>
-                <Button.Primary
-                  class="Button--full-width"
-                  onClick={this.props.closeModal}
-                >
+                <Button.Primary class="Button--full-width" onClick={this.props.closeModal}>
                   Ok
                 </Button.Primary>
               </footer>
@@ -140,9 +132,7 @@ export default class BaseForm extends React.PureComponent {
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
     const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
 
-    const minAmountAllowed = isDisabled
-      ? ''
-      : paiseToRupees(getCurrency(currency).min_value);
+    const minAmountAllowed = isDisabled ? '' : paiseToRupees(getCurrency(currency).min_value);
 
     let inputField = (
       <Input
@@ -157,13 +147,11 @@ export default class BaseForm extends React.PureComponent {
     );
 
     if (isDisabled) {
-      const minAmount = `${getCurrency(currency).symbol} ${Number(
-        field.min_amount || 0
-      ).toFixed(2)}`;
+      const minAmount = `${getCurrency(currency).symbol} ${Number(field.min_amount || 0).toFixed(
+        2,
+      )}`;
       const maxAmount = field.max_amount
-        ? `${getCurrency(currency).symbol} ${Number(field.max_amount).toFixed(
-            2
-          )}`
+        ? `${getCurrency(currency).symbol} ${Number(field.max_amount).toFixed(2)}`
         : 'No Limit';
 
       inputField = (
@@ -230,9 +218,7 @@ export default class BaseForm extends React.PureComponent {
                   theme="dark"
                   parentQuerySelector=".Modal-content .paymentlinks-creator"
                 >
-                  <PopoverBody>
-                    Customers can select or unselect this Item
-                  </PopoverBody>
+                  <PopoverBody>Customers can select or unselect this Item</PopoverBody>
                 </Popover>
               </div>
             )}
@@ -260,11 +246,7 @@ export default class BaseForm extends React.PureComponent {
                   <button type="button" disabled>
                     -
                   </button>
-                  <input
-                    class="Field-el counter-value"
-                    value={field.min_purchase}
-                    disabled
-                  />
+                  <input class="Field-el counter-value" value={field.min_purchase} disabled />
                   <button type="button" disabled>
                     +
                   </button>
@@ -280,8 +262,7 @@ export default class BaseForm extends React.PureComponent {
                   Customers can change Item quantity
                   <br />
                   {/* TODO: As per the actual limits */}
-                  (Min: {field.min_purchase}, Max:{' '}
-                  {field.max_purchase || 'No Limit'})
+                  (Min: {field.min_purchase}, Max: {field.max_purchase || 'No Limit'})
                 </PopoverBody>
               </Popover>
             </div>
@@ -290,30 +271,15 @@ export default class BaseForm extends React.PureComponent {
     }
   }
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
-    const {
-      field,
-      selfIndex,
-      validateSameTitleExists,
-      onCloseForm,
-      onDeleteField,
-    } = this.props;
+    const { field, selfIndex, validateSameTitleExists, onCloseForm, onDeleteField } = this.props;
 
-    const {
-      hasDescription,
-      disableSubmit,
-      mirrorDisplayName,
-      isMandatory,
-    } = this.state;
+    const { hasDescription, disableSubmit, mirrorDisplayName, isMandatory } = this.state;
 
     return (
-      <Form
-        setRef={this.setRefForm}
-        onChange={this.onChange}
-        onSubmit={this.onSaveForm}
-      >
+      <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
         {/* This will automatically be controlled by both initial field and on re-render on save of Advanced Form */}
         <input name="mandatory" value={Number(isMandatory)} readOnly hidden />
 
@@ -325,7 +291,7 @@ export default class BaseForm extends React.PureComponent {
           placeholder="Enter field label"
           onInput={this.onInputName}
           autoRender
-          validator={function(val) {
+          validator={function (val) {
             if (!val) {
               return 'Field title is required';
             }
@@ -346,15 +312,9 @@ export default class BaseForm extends React.PureComponent {
           }}
           autoFocus
         >
-          <div
-            class={classList(
-              'Field Field--mirrorDisplay',
-              isMandatory && 'Field--required'
-            )}
-          >
+          <div class={classList('Field Field--mirrorDisplay', isMandatory && 'Field--required')}>
             <span class="mirror-title">{mirrorDisplayName}</span>
-            {mirrorDisplayName &&
-              !isMandatory && <div class="text-optional">(Optional)</div>}
+            {mirrorDisplayName && !isMandatory && <div class="text-optional">(Optional)</div>}
           </div>
         </Input.TextareaAutoResize>
 
@@ -367,7 +327,7 @@ export default class BaseForm extends React.PureComponent {
               name="description"
               placeholder="Enter description"
               defaultValue={field.item.description || ''}
-              validator={val => {
+              validator={(val) => {
                 if (val && val.length > 128) {
                   return 'Field description cannot be more than 128 characters';
                 }
@@ -388,7 +348,7 @@ export default class BaseForm extends React.PureComponent {
             <div
               onClick={
                 !!field.image_url
-                  ? _ => this.props.onUpdateImage(null)
+                  ? (_) => this.props.onUpdateImage(null)
                   : this.props.openImageCropper
               }
             >
@@ -400,18 +360,14 @@ export default class BaseForm extends React.PureComponent {
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
               <i class="i i-sort i-fix-sort" />
-              {this.state.hasDescription
-                ? 'Remove Description'
-                : 'Add Description'}
+              {this.state.hasDescription ? 'Remove Description' : 'Add Description'}
             </div>
           </OptionsItem>
 
           <OptionsItem isSelected={!this.state.isMandatory}>
             <div onClick={this.toggleIsMandatory}>
               <i class="i i-optional_mark" />
-              {!this.state.isMandatory
-                ? 'Optional Item'
-                : 'Make it Optional Item'}
+              {!this.state.isMandatory ? 'Optional Item' : 'Make it Optional Item'}
             </div>
           </OptionsItem>
 
@@ -420,25 +376,19 @@ export default class BaseForm extends React.PureComponent {
               <i class="i i-options" />
               <div>
                 Advanced Options
-                <div class="subOption">
-                  Add quantity, define rules around quantity, etc.
-                </div>
+                <div class="subOption">Add quantity, define rules around quantity, etc.</div>
               </div>
             </div>
           </OptionsItem>
 
-          {typeof selfIndex !== 'undefined' &&
-            onDeleteField && (
-              <OptionsItem>
-                <div
-                  class="OptionsDropdown-item--delete"
-                  onClick={this.onDeleteField}
-                >
-                  <i class="i i-delete" />
-                  <div>Delete Field</div>
-                </div>
-              </OptionsItem>
-            )}
+          {typeof selfIndex !== 'undefined' && onDeleteField && (
+            <OptionsItem>
+              <div class="OptionsDropdown-item--delete" onClick={this.onDeleteField}>
+                <i class="i i-delete" />
+                <div>Delete Field</div>
+              </div>
+            </OptionsItem>
+          )}
         </FieldOptionsDropdown>
 
         <Button.Transparent

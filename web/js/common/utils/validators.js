@@ -270,7 +270,6 @@ export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLen
   return validateAlphanumericWithMaxLength(value, maxLength);
 }
 
-
 export function validateAmount(val, minAmountAllowed) {
   if (val) {
     const amountPattern = '^[0-9]+(.([0-9]){1,2})?$';

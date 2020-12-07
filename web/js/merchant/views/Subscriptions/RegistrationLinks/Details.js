@@ -38,7 +38,7 @@ import {
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     ...state.registrationLink,
   }),
   {
@@ -48,7 +48,7 @@ import {
     notifyCustomer,
     openModal,
     closeModal,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('RegistrationLinkDetailsContainer'))
 export default class RegistrationLinkDetailsContainer extends React.Component {
@@ -85,9 +85,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     if (!event) return;
 
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .chargeAtWill()
-        .interaction(`registration_link.${event}`, options)
+      window.rzpQ.chargeAtWill().interaction(`registration_link.${event}`, options),
     );
   };
 
@@ -100,7 +98,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
       .then(() => {
         this.trackRegistrationLinkDetails('nach.download_signed_nach.success');
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -112,7 +110,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
       });
   };
 
-  onResendLinkSubmit = notifyProps => {
+  onResendLinkSubmit = (notifyProps) => {
     let promises = [];
 
     if (notifyProps.email) {
@@ -123,7 +121,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     }
 
     return Promise.all(promises)
-      .then(resp => {
+      .then((resp) => {
         this.props.showNotification({
           type: 'success',
           message: 'Link sent successfully!',
@@ -134,7 +132,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
         this.trackRegistrationLinkDetails('resend.success');
         return resp;
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: error.errors,
@@ -162,8 +160,8 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
           closeModal={this.props.closeModal}
           testModeMessage={
             <div>
-              This registration link is created in <strong>Test Mode</strong>.
-              So only test payments can be made for this registration link.
+              This registration link is created in <strong>Test Mode</strong>. So only test payments
+              can be made for this registration link.
             </div>
           }
           onSubmit={this.onResendLinkSubmit}
@@ -179,10 +177,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
       header: 'Cancel Link?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            The Link will be cancelled and the customer will not be able to pay
-            for it.
-          </p>
+          <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
       affirmativeLabel: 'Yes, Cancel',
@@ -220,15 +215,12 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     const { loading: isLoading, entity, error } = this.props,
       { subscription_registration = {} } = entity;
 
-    const isSmsOrEmailSent =
-        entity.sms_status === 'sent' || entity.email_status === 'sent',
+    const isSmsOrEmailSent = entity.sms_status === 'sent' || entity.email_status === 'sent',
       isIssued = entity.status === 'issued',
       isCancelled = entity.status === 'cancelled',
-      isSubscriptionRegistrationCreated =
-        subscription_registration.status === 'created';
+      isSubscriptionRegistrationCreated = subscription_registration.status === 'created';
 
-    const isResendAndCancelledAllowed =
-      isSubscriptionRegistrationCreated && isIssued;
+    const isResendAndCancelledAllowed = isSubscriptionRegistrationCreated && isIssued;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -242,13 +234,8 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
               {entity.id}
               {isResendAndCancelledAllowed && (
                 <div class="btn-toolbar pull-right">
-                  <button
-                    onClick={this.openResendLinkModal}
-                    class="btn Button--primary"
-                  >
-                    <Tooltip theme="dark">
-                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
-                    </Tooltip>
+                  <button onClick={this.openResendLinkModal} class="btn Button--primary">
+                    <Tooltip theme="dark">{isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}</Tooltip>
 
                     <i className="i i-send" />
                   </button>
@@ -276,10 +263,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
 
                     {/* amount of entity */}
                     <EntityDetailRow label="Amount">
-                      <Amount
-                        value={entity.amount}
-                        currency={entity.currency}
-                      />
+                      <Amount value={entity.amount} currency={entity.currency} />
                     </EntityDetailRow>
 
                     {/* currency for entity */}
@@ -294,51 +278,40 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
                     <EntityDetailRow label="Receipt" value={entity.receipt} />
 
                     {/* Description */}
-                    <EntityDetailRow
-                      label="Description"
-                      value={entity.description}
-                    />
+                    <EntityDetailRow label="Description" value={entity.description} />
 
                     {/* method */}
                     <EntityDetailRow label="Method">
-                      <MandatePaymentMethod
-                        mandate={entity.subscription_registration}
-                      />
+                      <MandatePaymentMethod mandate={entity.subscription_registration} />
                     </EntityDetailRow>
 
                     {/* Customer Details */}
                     <EntityDetailRow label="Customer Details">
-                      <MandateCustomerDetails
-                        customer={entity.customer_details}
-                      />
+                      <MandateCustomerDetails customer={entity.customer_details} />
                     </EntityDetailRow>
 
-                    {this.isNACHMethod &&
-                      !isCancelled && (
-                        <EntityDetailRow label="NACH form">
-                          <NACHDetails
-                            registrationLinkId={entity.id}
-                            downloadSignedNACHFile={
-                              entity.is_nach_form_uploaded &&
-                              this.downloadSignedNACHFile
-                            }
-                            preFilledNachFileURL={
-                              entity.token &&
-                              entity.token.nach &&
-                              entity.token.nach.prefilled_form_transient
-                            }
-                            trackClickUploadNACHForm={trackClickUploadNACHForm}
-                            trackClickDownloadNACHForm={() => {
-                              this.trackRegistrationLinkDetails(
-                                'nach.download_pre_signed_form'
-                              );
+                    {this.isNACHMethod && !isCancelled && (
+                      <EntityDetailRow label="NACH form">
+                        <NACHDetails
+                          registrationLinkId={entity.id}
+                          downloadSignedNACHFile={
+                            entity.is_nach_form_uploaded && this.downloadSignedNACHFile
+                          }
+                          preFilledNachFileURL={
+                            entity.token &&
+                            entity.token.nach &&
+                            entity.token.nach.prefilled_form_transient
+                          }
+                          trackClickUploadNACHForm={trackClickUploadNACHForm}
+                          trackClickDownloadNACHForm={() => {
+                            this.trackRegistrationLinkDetails('nach.download_pre_signed_form');
 
-                              trackClickDownloadNACHForm();
-                            }}
-                            trackClickViewNACHForm={trackClickViewNACHForm}
-                          />
-                        </EntityDetailRow>
-                      )}
+                            trackClickDownloadNACHForm();
+                          }}
+                          trackClickViewNACHForm={trackClickViewNACHForm}
+                        />
+                      </EntityDetailRow>
+                    )}
 
                     {/* created at */}
                     <EntityDetailRow label="Created At">

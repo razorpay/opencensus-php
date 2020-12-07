@@ -24,25 +24,24 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import { setIsPaymentButtonCodeUsed } from '../utils';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
     mode: state.session.mode,
-    paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.PB
-    ),
+    paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
   }),
-  { handleProductQuickGuide }
+  { handleProductQuickGuide },
 )
 @OnBoarding({
   feature: RZPFeatures.PB,
 })
 export default class PaymentButtonOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
+  getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
-        isLocalEnabler={this.props.user.isSubscriptionsEnabled ? true: false}
-        feature={this.props.user.isSubscriptionsEnabled ? RZPFeatures.PB: RZPFeatures.SUBSCRIPTIONS}
+        isLocalEnabler={this.props.user.isSubscriptionsEnabled ? true : false}
+        feature={
+          this.props.user.isSubscriptionsEnabled ? RZPFeatures.PB : RZPFeatures.SUBSCRIPTIONS
+        }
         page={sliderProps.active}
         onClick={this.closeOnboarding}
       />
@@ -57,7 +56,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
         mid: this.props.user.current,
         mode: this.props.mode,
       },
-      false
+      false,
     );
   };
 
@@ -73,7 +72,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
             closeOnboarding: this.closeOnboarding,
           })}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               title="Payment Buttons"
@@ -83,7 +82,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Payment Buttons great?"
@@ -99,11 +98,8 @@ export default class PaymentButtonOnBoarding extends React.Component {
   }
 }
 
-function getOnBoardingSliderDots({
-  closeOnboarding,
-  paymentButtonsProductOnBoarding,
-}) {
-  return sliderProps => (
+function getOnBoardingSliderDots({ closeOnboarding, paymentButtonsProductOnBoarding }) {
+  return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
         isLocalEnabler
@@ -138,10 +134,7 @@ export function getIsAllowedResetPaymentButtonsOnBoarding({ items, loading }) {
   return getIsAllowedResetBoarding(RZPFeatures.PB);
 }
 
-export function getIsPaymentButtonsEnabled({
-  user,
-  paymentbuttons: { items, loading },
-}) {
+export function getIsPaymentButtonsEnabled({ user, paymentbuttons: { items, loading } }) {
   if (user.isPaymentButtonsEnabled || loading) {
     return true;
   }
