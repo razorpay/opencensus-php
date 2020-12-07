@@ -5,7 +5,6 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
-import EasterEgg from 'merchant/components/EasterEgg';
 
 @connect((state) => state.config, { showNotification })
 @reduxForm({})
@@ -63,7 +62,6 @@ export default class EmailNotifications extends Component {
             </div>
           </form>
         </div>
-        <EasterEgg extraClass="ftx-settings-page" />
       </div>
     );
   }

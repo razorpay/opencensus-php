@@ -34,7 +34,6 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
 import { RZPFeatures } from 'merchant/helpers/data';
-import EasterEgg from 'merchant/components/EasterEgg';
 
 @withRouter
 @connect(
@@ -290,7 +289,6 @@ export default class PaymentPagesContainer extends ListContainer {
               onClick={this.onClickPaginate}
             />
           )}
-          <EasterEgg extraClass="ftx-payment-pages" />
         </React.Fragment>
       );
     }
@@ -335,7 +333,6 @@ const EmptyComponent = () => (
       <React.Fragment>
         <div>There are no payment pages yet!!</div>
         <div>Start creating new links now.</div>
-        <EasterEgg extraClass="ftx-payment-pages" />
       </React.Fragment>
     }
   />

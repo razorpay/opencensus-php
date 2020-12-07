@@ -1,20 +1,27 @@
+import React from 'react';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-
 import HeaderAction from 'common/ui/HeaderAction';
-
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
-
+import EasterEgg from 'merchant/components/EasterEgg';
 import ListContainer from 'merchant/containers/ListContainer';
 
-export default class PaymentsListContainer extends ListContainer {
-  constructor(props) {
-    super(props);
-  }
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no payments yet!!</div>
+        <div>Create a linked account first to route payments.</div>
+        <EasterEgg extraClass="ftx-payments-page" />
+      </React.Fragment>
+    }
+  />
+);
 
+export default class PaymentsListContainer extends ListContainer {
   componentDidMount() {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
@@ -80,18 +87,8 @@ export default class PaymentsListContainer extends ListContainer {
           EmptyComponent={isRoute && EmptyComponent}
           {...this.props}
         />
+        <EasterEgg extraClass="ftx-payments-page" />
       </div>
     );
   }
 }
-
-const EmptyComponent = () => (
-  <EmptyList
-    description={
-      <React.Fragment>
-        <div>There are no payments yet!!</div>
-        <div>Create a linked account first to route payments.</div>
-      </React.Fragment>
-    }
-  />
-);
