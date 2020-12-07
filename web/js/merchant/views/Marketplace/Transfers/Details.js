@@ -17,7 +17,7 @@ import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 @withRouter
-@connect(state => state.transfer, {
+@connect((state) => state.transfer, {
   fetchTransfer,
   fetchReversals,
   showNotification,
@@ -33,9 +33,7 @@ export default class TransferDetailsContainer extends Component {
       return;
     }
 
-    this.props
-      .fetchTransfer(transferId)
-      .then(() => this.props.fetchReversals(transferId));
+    this.props.fetchTransfer(transferId).then(() => this.props.fetchReversals(transferId));
   }
 
   componentWillMount() {
@@ -71,16 +69,14 @@ export default class TransferDetailsContainer extends Component {
     }
   }
 
-  onTransferUpdate = patch => {
+  onTransferUpdate = (patch) => {
     return updateTransfer(this.props.entity.id, patch);
   };
 
   // Open modal for reversing transfer
-  openReversalModal = transfer => {
+  openReversalModal = (transfer) => {
     this.props.openModal({
-      component: (
-        <ReversalModal transfer={transfer} onReverse={this.props.onReverse} />
-      ),
+      component: <ReversalModal transfer={transfer} onReverse={this.props.onReverse} />,
       size: 'small',
     });
   };
@@ -108,6 +104,7 @@ export default class TransferDetailsContainer extends Component {
         onReverse,
         showNotification,
         reversal_id,
+        isDirectTransferEnabled,
       } = this.props,
       statusMsg = {};
 
@@ -119,11 +116,7 @@ export default class TransferDetailsContainer extends Component {
     }
 
     return (
-      <div
-        class={`transfer-details-container ${
-          reversal_id ? 'multi-content' : ''
-        }`}
-      >
+      <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
         <TransferDetails
           transfer={entity}
           reversals={reversals}
@@ -134,12 +127,13 @@ export default class TransferDetailsContainer extends Component {
           openReversalModal={this.openReversalModal}
           onTransferUpdate={this.onTransferUpdate}
           showNotification={showNotification}
+          isDirectTransferEnabled={isDirectTransferEnabled}
         />
         {reversal_id && (
           <ReversalDetails
             id={reversal_id}
             onClose={this.onReversalDetailsClose}
-            ref={c => (this.reversalsView = c)}
+            ref={(c) => (this.reversalsView = c)}
             notAllowFetchTransfer={true}
           />
         )}

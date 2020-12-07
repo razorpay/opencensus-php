@@ -16,14 +16,11 @@ import RefundModal from 'merchant/views/Transactions/Payments/components/RefundM
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 
-import {
-  getKeysSeparatedByPipe,
-  getEventCategoryFromPath,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.payment,
       user: state.session.user,
@@ -36,7 +33,7 @@ import {
     ...ModalActions,
     ...PaymentActions,
     ...NotificationsActions,
-  }
+  },
 )
 export default class PaymentDetailsContainer extends Component {
   state = {};
@@ -45,10 +42,10 @@ export default class PaymentDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  fetchData = id => {
+  fetchData = (id) => {
     this.props.resetPayment();
 
-    this.props.fetchItem(id).then(payment => {
+    this.props.fetchItem(id).then((payment) => {
       if (payment.amount_refunded !== 0) {
         this.props.fetchRefunds(payment);
       }
@@ -127,16 +124,14 @@ export default class PaymentDetailsContainer extends Component {
     }
   }
 
-  fetchCardDetails = payment => {
+  fetchCardDetails = (payment) => {
     return this.props.fetchCardDetails(payment);
   };
 
   goToLink = () => {
     if (!this.props.entity_name) {
       // Don't do anything if dual view already opened
-      this.props.history.push(
-        `/payments/${this.props.payment.id}/transfers/new`
-      );
+      this.props.history.push(`/payments/${this.props.payment.id}/transfers/new`);
 
       if (this.transfersView && findDOMNode(this.transfersView)) {
         findDOMNode(this.transfersView).classList.toggle('toggle-slider');
@@ -144,7 +139,7 @@ export default class PaymentDetailsContainer extends Component {
     }
   };
 
-  confirmCapture = payment => {
+  confirmCapture = (payment) => {
     const { id, closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
@@ -161,10 +156,7 @@ export default class PaymentDetailsContainer extends Component {
             <p>
               The payment amount is{' '}
               <b>
-                <Amount
-                  value={payment.capturableAmount}
-                  currency={payment.currency}
-                />
+                <Amount value={payment.capturableAmount} currency={payment.currency} />
               </b>
             </p>
           </div>
@@ -200,7 +192,7 @@ export default class PaymentDetailsContainer extends Component {
       .catch(() => {});
   };
 
-  secClose = closeTransferDetails => {
+  secClose = (closeTransferDetails) => {
     let { compactSlider, history, location } = this.props;
 
     if (this.transfersView) {
@@ -211,14 +203,14 @@ export default class PaymentDetailsContainer extends Component {
     history.push(
       location.pathname.replace(
         !closeTransferDetails ? /\/[^\/]+\/[^\/]+\/?$/ : /\/[^\/]+\/?$/,
-        ''
-      )
+        '',
+      ),
     );
   };
 
   onCreateTransfer = () => {
     this.secClose();
-    this.props.fetchItem(this.props.id).then(payment => {
+    this.props.fetchItem(this.props.id).then((payment) => {
       this.props.fetchTransfers(payment);
     });
   };
@@ -228,7 +220,7 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   onPaymentRefund = () => {
-    this.props.fetchItem(this.props.id).then(payment => {
+    this.props.fetchItem(this.props.id).then((payment) => {
       this.props.fetchRefunds(payment);
     });
   };
@@ -255,7 +247,7 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  onRefundModalMount = payment => {
+  onRefundModalMount = (payment) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Open Form - Refund',
@@ -263,7 +255,7 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  onRefundModalUnmount = payment => {
+  onRefundModalUnmount = (payment) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Close Form - Refund',
@@ -353,14 +345,15 @@ export default class PaymentDetailsContainer extends Component {
 
         <ShowWhen
           apiFeatureEnabled="Marketplace"
-          additionalCondition={user => user.isAllowedView('payments')}
+          additionalCondition={(user) => user.isAllowedView('payments')}
         >
           {this.state.secView ? (
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
-              ref={c => (this.transfersView = c)}
+              ref={(c) => (this.transfersView = c)}
+              isDirectTransferEnabled={this.props.user.isDirectTransferEnabled}
             />
           ) : null}
         </ShowWhen>

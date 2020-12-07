@@ -27,6 +27,7 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/reducers/payments/details';
 import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
 import RadioButton from 'common/ui/Forms/RadioButton';
+import DirectTransferBanner from './components/DirectTransferBanner';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -228,7 +229,7 @@ export default class TransferNew extends Component {
   };
 
   render() {
-    const { handleSubmit, invalid, plan, accounts } = this.props;
+    const { handleSubmit, invalid, plan, accounts, isDirectTransferEnabled } = this.props;
 
     let accountsList;
 
@@ -252,175 +253,179 @@ export default class TransferNew extends Component {
           </div>
 
           <div class="SliderPanel__Body">
-            <form
-              class="panel-body"
-              name="createPaymentTransfer"
-              onSubmit={handleSubmit(this.save)}
-            >
-              <FormItem
-                label={() => <Label text="Account" required />}
-                field={() => (
-                  <div class="custom-select transfers-accounts" style={{ position: 'relative' }}>
-                    <TypeAhead
-                      options={accountsList}
-                      disabled={!accountsList}
-                      class="ps-in-modal"
-                      searchIndices={['id', 'name', 'email']}
-                      placeholder={`${
-                        !accountsList ? 'Loading...' : 'Account ID, Account Name, Email Address'
-                      }`}
-                      showClear={true}
-                      selected={this.state.selectedAccount}
-                      selectedOptionLabelPath="name"
-                      optionComponent={({ option }) => {
-                        return (
-                          <div class="custom-powerselect-options">
-                            <div>
-                              <b>{titleCase(option.name)}</b> ({option.code || option.id})
+            <div class="panel-body">
+              {isDirectTransferEnabled && <DirectTransferBanner />}
+
+              <form
+                class="panel-body"
+                name="createPaymentTransfer"
+                onSubmit={handleSubmit(this.save)}
+              >
+                <FormItem
+                  label={() => <Label text="Account" required />}
+                  field={() => (
+                    <div class="custom-select transfers-accounts" style={{ position: 'relative' }}>
+                      <TypeAhead
+                        options={accountsList}
+                        disabled={!accountsList}
+                        class="ps-in-modal"
+                        searchIndices={['id', 'name', 'email']}
+                        placeholder={`${
+                          !accountsList ? 'Loading...' : 'Account ID, Account Name, Email Address'
+                        }`}
+                        showClear={true}
+                        selected={this.state.selectedAccount}
+                        selectedOptionLabelPath="name"
+                        optionComponent={({ option }) => {
+                          return (
+                            <div class="custom-powerselect-options">
+                              <div>
+                                <b>{titleCase(option.name)}</b> ({option.code || option.id})
+                              </div>
+                              {option.email}
                             </div>
-                            {option.email}
-                          </div>
-                        );
-                      }}
-                      beforeOptionsComponent={() => <div class="heading">Recent</div>}
-                      onChange={this.handleSelect}
-                      onKeyDown={this.handleKeyDown}
-                    />
-                    <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
-                      {this.state.selectedAccount ? (
-                        <div>
-                          <b class="option-title">{this.state.selectedAccount.name}</b>
-                          <span> - {this.state.selectedAccount.id} </span>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-              />
-
-              <FormItem
-                label={(_) => <Label text="Billing Amount" required />}
-                field={(_) => (
-                  <div>
-                    <Field
-                      name="amount"
-                      component={InputGroupField}
-                      prefix="INR"
-                      class="form-control"
-                      validate={required('Transfer amount is required')}
-                      placeholder="0.00"
-                      type="text"
-                    />
-                    <span class="help-block label--secondary">
-                      <i class="i i-info-outline" />
-                      <b>Transfer amount</b> can not exceed payment amount.
-                    </span>
-                  </div>
-                )}
-              />
-
-              <FormItem
-                label={(_) => <Label text="Settlement schedule" />}
-                field={(_) => (
-                  <div>
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="false"
-                      checked={this.props.onHold === 'false'}
-                      label={(_) => (
-                        <div>
-                          <span>Settle Now</span>
-                          <div class="text-fade">
-                            This transfer will be settled in next available settlement slot.
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="on_hold_until"
-                      checked={this.props.onHold === 'on_hold_until'}
-                      label={(_) => (
-                        <div>
-                          <span>Schedule settlement on</span>
-                        </div>
-                      )}
-                    />
-                    <div class="transfers-onhold-datepicker">
-                      <Field
-                        component={DatePickerField}
-                        name="holdUntil"
-                        required
-                        placeholder="Select Date"
-                        disabled={this.props.onHold !== 'on_hold_until'}
-                        isDayBlocked={(date) => {
-                          date = date.clone().startOf('day').toDate();
-
-                          return date < nextWorkingDate || isHoliday(date);
+                          );
                         }}
+                        beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                        onChange={this.handleSelect}
+                        onKeyDown={this.handleKeyDown}
+                      />
+                      <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
+                        {this.state.selectedAccount ? (
+                          <div>
+                            <b class="option-title">{this.state.selectedAccount.name}</b>
+                            <span> - {this.state.selectedAccount.id} </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+                />
+
+                <FormItem
+                  label={(_) => <Label text="Billing Amount" required />}
+                  field={(_) => (
+                    <div>
+                      <Field
+                        name="amount"
+                        component={InputGroupField}
+                        prefix="INR"
+                        class="form-control"
+                        validate={required('Transfer amount is required')}
+                        placeholder="0.00"
+                        type="text"
+                      />
+                      <span class="help-block label--secondary">
+                        <i class="i i-info-outline" />
+                        <b>Transfer amount</b> can not exceed payment amount.
+                      </span>
+                    </div>
+                  )}
+                />
+
+                <FormItem
+                  label={(_) => <Label text="Settlement schedule" />}
+                  field={(_) => (
+                    <div>
+                      <Field
+                        component={RadioButton}
+                        name="onHold"
+                        htmlValue="false"
+                        checked={this.props.onHold === 'false'}
+                        label={(_) => (
+                          <div>
+                            <span>Settle Now</span>
+                            <div class="text-fade">
+                              This transfer will be settled in next available settlement slot.
+                            </div>
+                          </div>
+                        )}
+                      />
+                      <Field
+                        component={RadioButton}
+                        name="onHold"
+                        htmlValue="on_hold_until"
+                        checked={this.props.onHold === 'on_hold_until'}
+                        label={(_) => (
+                          <div>
+                            <span>Schedule settlement on</span>
+                          </div>
+                        )}
+                      />
+                      <div class="transfers-onhold-datepicker">
+                        <Field
+                          component={DatePickerField}
+                          name="holdUntil"
+                          required
+                          placeholder="Select Date"
+                          disabled={this.props.onHold !== 'on_hold_until'}
+                          isDayBlocked={(date) => {
+                            date = date.clone().startOf('day').toDate();
+
+                            return date < nextWorkingDate || isHoliday(date);
+                          }}
+                        />
+                      </div>
+                      <Field
+                        component={RadioButton}
+                        name="onHold"
+                        htmlValue="on_hold"
+                        checked={this.props.onHold === 'on_hold'}
+                        label={(_) => (
+                          <div>
+                            <span>Put on hold</span>
+                            <div class="text-fade">
+                              The settlement will be on hold till specified otherwise.
+                            </div>
+                          </div>
+                        )}
                       />
                     </div>
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="on_hold"
-                      checked={this.props.onHold === 'on_hold'}
-                      label={(_) => (
-                        <div>
-                          <span>Put on hold</span>
-                          <div class="text-fade">
-                            The settlement will be on hold till specified otherwise.
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
-                )}
-              />
-
-              <FormItem
-                label={(_) => <Label text="Internal Notes" />}
-                field={(_) => (
-                  <FieldArray
-                    name="notes"
-                    component={NotesFieldArray}
-                    showLinkedAccountOpt={true}
-                  />
-                )}
-              />
-
-              <Alert type="error" message={this.state.errors} />
-              <div class="btn-toolbar text-center">
-                {typeof this.props.onClose === 'function' && (
-                  <button
-                    type="button"
-                    class="btn btn-default btn-half"
-                    onClick={() => {
-                      this.context
-                        .confirm({
-                          header: 'Do you want to close this panel?',
-                          message: 'Changes that you made may not be saved',
-                          affirmativeLabel: 'Leave',
-                          abortLabel: 'Stay',
-                          action: () => this.props.onClose(),
-                        })
-                        .catch(() => {});
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-                <AsyncButton
-                  type="submit"
-                  class="btn btn-primary btn-half"
-                  text="Create Transfer"
-                  pendingText="Creating..."
-                  onClick={handleSubmit(this.save)}
+                  )}
                 />
-              </div>
-            </form>
+
+                <FormItem
+                  label={(_) => <Label text="Internal Notes" />}
+                  field={(_) => (
+                    <FieldArray
+                      name="notes"
+                      component={NotesFieldArray}
+                      showLinkedAccountOpt={true}
+                    />
+                  )}
+                />
+
+                <Alert type="error" message={this.state.errors} />
+                <div class="btn-toolbar text-center">
+                  {typeof this.props.onClose === 'function' && (
+                    <button
+                      type="button"
+                      class="btn btn-default btn-half"
+                      onClick={() => {
+                        this.context
+                          .confirm({
+                            header: 'Do you want to close this panel?',
+                            message: 'Changes that you made may not be saved',
+                            affirmativeLabel: 'Leave',
+                            abortLabel: 'Stay',
+                            action: () => this.props.onClose(),
+                          })
+                          .catch(() => {});
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <AsyncButton
+                    type="submit"
+                    class="btn btn-primary btn-half"
+                    text="Create Transfer"
+                    pendingText="Creating..."
+                    onClick={handleSubmit(this.save)}
+                  />
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

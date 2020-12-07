@@ -44,3 +44,57 @@
     left: 50%
     transform: translate(-50%, 0)
     cursor: pointer
+
+.direct-transfer-banner
+  position: relative
+  &:before
+    content: ''
+    position: absolute
+    left: -2px
+    background: #29c24d
+    width: 2px
+    height: 90%
+    bottom: 5%
+    top: 5%
+
+  .alert
+    background: rgba(242, 246, 249, 0.8)
+    border: 1px solid #E2E8EA
+    border-radius: 3px
+    position relative
+    overflow hidden
+    &:after
+      content: ''
+      position: absolute
+      right: -10px
+      width: 200px
+      height: 201px
+      background: #fff
+      transform: rotate(-20deg)
+      z-index: 1
+      top: -63px
+
+  .content
+    display: flex
+    align-items: baseline
+
+  .desc
+    line-height: 20px
+    max-width: 261px
+
+  .i-route
+    font-size: 15px
+    margin-right: 8px
+    color #29c24d
+    line-height 1
+
+  .rzp-banner-text
+    display: flex
+    align-items: flex-end
+    z-index: 2
+    position: relative
+    justify-content: space-between
+
+  .btn-link
+    padding: 0
+    margin-left: 8px
