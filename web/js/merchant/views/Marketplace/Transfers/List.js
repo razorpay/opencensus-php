@@ -23,10 +23,10 @@ const baseUrl = {
 
 const source = {
   title: 'Source',
-  value: item => sourceId(item, baseUrl),
+  value: (item) => sourceId(item, baseUrl),
 };
 
-@connect(state => state.transfers, { fetchAll })
+@connect((state) => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
   render() {
     return (

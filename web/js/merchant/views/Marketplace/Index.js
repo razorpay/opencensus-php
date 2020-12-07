@@ -14,8 +14,9 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { fetchTransfers } from 'merchant/reducers/collection';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
+import DocsLink from 'merchant/components/DocsLink';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import ReversalsList from 'merchant/views/Marketplace/Reversals/List';
@@ -25,16 +26,13 @@ import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       mode: state.session.mode,
       transfers: state.transfers,
       accounts: state.accounts,
-      routeProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.ROUTE
-      ),
+      routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
     };
   },
   {
@@ -44,7 +42,7 @@ import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
     showNotification,
     fetchTransfers,
     handleProductQuickGuide,
-  }
+  },
 )
 export default class MarketplaceContainer extends React.Component {
   componentDidMount() {
@@ -112,10 +110,7 @@ export default class MarketplaceContainer extends React.Component {
   };
 
   render() {
-    const {
-      isQuickGuideOpen,
-      showOnboarding,
-    } = this.props.routeProductOnBoarding;
+    const { isQuickGuideOpen, showOnboarding } = this.props.routeProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -123,6 +118,19 @@ export default class MarketplaceContainer extends React.Component {
 
     return (
       <div class="Marketplace-Container">
+        {this.props.user.isDirectTransferEnabled && (
+          <AnnouncementBanner
+            title="Introducing Direct Transfers"
+            theme="primary"
+            canBeClosed={true}
+          >
+            <span className="support-tagline">
+              Now start creating Direct Transfers to your linked accounts directly
+            </span>
+            <DocsLink url="https://razorpay.com/docs/route/dashboard/" title="Learn more" />
+          </AnnouncementBanner>
+        )}
+
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
 
@@ -149,6 +157,6 @@ export default class MarketplaceContainer extends React.Component {
   }
 }
 
-const ClonedPaymentsList = props => (
+const ClonedPaymentsList = (props) => (
   <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
 );
