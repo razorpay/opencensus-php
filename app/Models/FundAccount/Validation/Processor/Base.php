@@ -97,6 +97,8 @@ abstract class Base extends Core
 
         $this->repo->saveOrFail($this->validation);
 
+        $this->dispatchValidationCompletedEvent();
+
         $this->triggerValidationFailedWebhook();
     }
 
