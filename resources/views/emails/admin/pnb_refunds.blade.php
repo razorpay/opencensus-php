@@ -16,23 +16,40 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
       <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
-<p>PFA Claims and Refund file.</p>
+<p>PFA Claims and Refund summary for Punjab National Bank.</p>
             <table style="border: 1px solid grey;">
                 <thead>
                     <tr style="border: 1px solid grey">
-                        <th style="border: 1px solid grey">Date</th>
-                        <th style="border: 1px solid grey">Refund Amt</th>
-                        <th style="border: 1px solid grey">Claim Amt</th>
+                        <th style="border: 1px solid grey">Sr. No.</th>
+                        <th style="border: 1px solid grey">Particulars</th>
+                        <th style="border: 1px solid grey">Amount (Rs.)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">{{{$date}}}</td>
-                        <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
+                        <td style="border: 1px solid grey">1</td>
+                        <td style="border: 1px solid grey">Claims</td>
                         <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">2</td>
+                        <td style="border: 1px solid grey">Refunds</td>
+                        <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey"></td>
+                        <td style="border: 1px solid grey">Amount to be remitted to Nodal A/c</td>
+                        <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
                     </tr>
                 </tbody>
             </table>
+            <p>
+                Nodal A/c:<br>
+                Account Name - {{{$account['accountName']}}}<br>
+                Account No. - {{{$account['accountNumber']}}}<br>
+                IFSC Code - {{{$account['ifsc']}}}<br>
+                Bank Name- {{{$account['bank']}}}<br>
+            </p>
           </td>
         </tr></table>
 </div>

@@ -8,12 +8,13 @@ use Queue;
 
 use Carbon\Carbon;
 
-use RZP\Encryption\PGPEncryption;
-use RZP\Gateway\Netbanking\Pnb\ReconFields;
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Encryption\PGPEncryption;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Pnb\ReconFields;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -221,9 +222,28 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        $refundTransaction = $this->getLastEntity('transaction', true);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $payment2) {
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $this->assertNotNull($refundTransaction['reconciled_at']);
+            $testData = [
+                'subject' => 'Pnb Netbanking claims and refund files for '.$today,
+                'amount' => [
+                    'claims'  =>  "2000.00",
+                    'refunds' =>  "2000.00",
+                    'total'   =>  "0.00"
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertCount(0, $mail->attachments);
+
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
+            return true;
+        });
 
         Queue::assertPushed(BeamJob::class, 1);
 

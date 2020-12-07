@@ -219,7 +219,7 @@ class Constants
             self::SCBL        => ['scb.netbanking.claims@razorpay.com'],
             self::SVC         => ['svc-netbanking-refunds@razorpay.com'],
             self::JSB         => ['jsb-netbanking.refunds@razorpay.com'],
-            self::PNB         => [],
+            self::PNB         => ['pnb-netbanking-claims@razorpay.com'],
             self::IOB         => ['iob-netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::JKB         => ['jkb-netbanking-claims@razorpay.com'],
             self::FSB         => ['fsb-netbanking-refunds@razorpay.com'],
