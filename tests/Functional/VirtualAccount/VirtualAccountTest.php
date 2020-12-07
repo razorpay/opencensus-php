@@ -177,6 +177,8 @@ class VirtualAccountTest extends TestCase
 
     public function testVaOfflineBharatQrPaymentProcess()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->addFeatures(['offline_payments']);
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');

@@ -1760,6 +1760,19 @@ class Processor
             ]);
         }
 
+        if ((empty($publicKey) === true) and
+            (isset($data['razorpay_order_id']) === true))
+        {
+            $order = $this->repo->order->find(Order\Entity::stripDefaultSign($data['razorpay_order_id']));
+
+            $publicKey = $order->getPublicKey();
+
+            $this->trace->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_TRACE, [
+                'order_id'     => $data['razorpay_order_id'],
+                'merchant_id'  => $order->getMerchantId(),
+            ]);
+        }
+
         ksort($data);
 
         $str = implode('|', $data);

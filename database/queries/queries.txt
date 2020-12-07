@@ -6056,5 +6056,8 @@ ALTER table banking_account_activation_details
 ALTER TABLE `merchant_details`
     MODIFY COLUMN shop_establishment_number varchar(100) DEFAULT NULL;
 
+ALTER TABLE orders
+    CHANGE COLUMN reference10 public_key VARCHAR(255) DEFAULT null;
+
 ALTER TABLE settlement_ondemand_payouts
     ADD COLUMN entity_type VARCHAR(255);

@@ -114,7 +114,7 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
-            $table->string(Order::REFERENCE10)
+            $table->string(Order::PUBLIC_KEY)
                   ->nullable()
                   ->default(null);
 

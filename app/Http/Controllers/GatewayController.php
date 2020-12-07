@@ -1370,6 +1370,37 @@ class GatewayController extends Controller
 
     protected function getMerchantKeyForPayment(Payment\Entity $payment, string $mode)
     {
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            RazorxTreatment::PUBLIC_KEY_SIGNATURE_GENERATION,
+            $mode);
+
+        if (strtolower($variant) === 'on')
+        {
+            $this->app['trace']->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX, [
+                'merchant_id'   => $payment->getMerchantId(),
+                'variant'    => $variant,
+            ]);
+
+            $publicKey = $payment->getPublicKey();
+
+            if (empty($publicKey) === false)
+            {
+                return $publicKey;
+            }
+
+            if ($payment->getOrderId() !== null)
+            {
+                $order = $this->repo->order->findOrFailPublic($payment->getOrderId());
+
+                $publicKey = $order->getPublicKey();
+
+                if (empty($publicKey) === false)
+                {
+                    return $publicKey;
+                }
+            }
+        }
+
         $key = $this->repo->key->getFirstActiveKeyForMerchant($payment->getMerchantId());
 
         if (empty($key) === false)

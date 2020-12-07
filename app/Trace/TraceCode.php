@@ -3699,6 +3699,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';
     const REWARD_ACTIVATE_DEACTIVATE_REQUEST                             = 'REWARD_ACTIVATE_DEACTIVATE_REQUEST';
     const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';
+    const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

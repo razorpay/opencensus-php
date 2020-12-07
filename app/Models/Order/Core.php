@@ -55,6 +55,8 @@ class Core extends Base\Core
 
         $order->build($input);
 
+        $order->setPublicKey(App::getFacadeRoot()['basicauth']->getPublicKey());
+
         $order->generateId();
 
         $this->validateReceiptUniqueness($order);

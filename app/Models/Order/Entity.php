@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE6        = 'reference6';
     const REFERENCE7        = 'reference7';
     const REFERENCE8        = 'reference8';
-    const REFERENCE10       = 'reference10';
+    const PUBLIC_KEY        = 'public_key';
 
     const METHOD            = 'method';
     const BANK              = 'bank';
@@ -490,6 +490,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::LATE_AUTH_CONFIG_ID, $lateAuthConfigId);
     }
 
+    public function setPublicKey($publicKey)
+    {
+        $this->setAttribute(self::PUBLIC_KEY, $publicKey);
+    }
+
     public function getLateAuthConfigId()
     {
         return $this->getAttribute(self::LATE_AUTH_CONFIG_ID);
@@ -688,6 +693,16 @@ class Entity extends Base\PublicEntity
     public function getOfferId()
     {
         return $this->getAttribute(self::OFFER_ID);
+    }
+
+    public function getPublicKey()
+    {
+        return $this->getAttribute(self::PUBLIC_KEY);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function hasOffers(): bool
