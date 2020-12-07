@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use Mail;
 use Config;
 use ApiResponse;
@@ -1615,6 +1616,22 @@ class Core extends Base\Core
      */
     public function markAsPartner(Entity $merchant, string $partnerType): Entity
     {
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = Constants::MARK_AS_PARTNER_IN_PROGRESS.$merchant->getId();
+
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchant, $partnerType)
+            {
+                return $this->processMarkAsPartner($merchant, $partnerType);
+            },
+            Constants::MARK_AS_PARTNER_LOCK_TIME_OUT,
+            ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
+    }
+
+    protected function processMarkAsPartner(Entity $merchant, string $partnerType): Entity {
+
         $validator = new Validator;
 
         $validator->validateIfAlreadyPartner($merchant);

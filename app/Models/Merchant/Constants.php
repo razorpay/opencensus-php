@@ -47,6 +47,9 @@ final class Constants
     const MERCHANT_ID                             = 'merchant_id';
     const SUBMERCHANT_ID                          = 'submerchant_id';
     const PARTNER_ID                              = 'partner_id';
+    const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';
+    const MARK_AS_PARTNER_LOCK_TIME_OUT           = 30; //seconds
+
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
