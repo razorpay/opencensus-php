@@ -1504,6 +1504,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UFH_SERVICE_API_RESPONSE                              = 'UFH_SERVICE_API_RESPONSE';
     const UFH_INTEGRATION_ERROR                                 = 'UFH_INTEGRATION_ERROR';
 
+    // Temporary, will be removed
+    // Added to get UserRole <-> fetched FileType mapping
+    const UFH_FILE_FETCH                                        = 'UFH_FILE_FETCH';
+
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';

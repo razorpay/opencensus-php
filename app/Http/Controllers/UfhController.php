@@ -19,6 +19,17 @@ class UfhController extends Controller
     {
         $response = $this->ufhClient()->getSignedUrl($fileId, []);
 
+        try
+        {
+            $ufhService = new UfhService($this->app, $this->ba->getMerchantId());
+
+            $ufhService->validateUserRoleForAccess($response['type']);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
         return ApiResponse::json($response);
     }
 

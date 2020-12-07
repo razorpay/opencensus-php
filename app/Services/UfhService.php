@@ -7,9 +7,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Role;
 use RZP\Models\Base\Entity;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Exception\BadRequestException;
 
 use Razorpay\Ufh\Client as UfhClient;
 
@@ -43,6 +45,28 @@ class UfhService
 
     const METADATA          = 'metadata';
 
+    const INVOICES          = 'invoices';
+
+    const PAYMENTS          = 'payments';
+
+    const ORDERS            = 'orders';
+
+    const REFUNDS           = 'refunds';
+
+    const SETTLEMENTS       = 'settlements';
+
+    const WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS = [
+        Role::SELLERAPP => [
+            self::INVOICES,
+        ],
+        Role::SUPPORT =>  [
+            self::PAYMENTS,
+            self::ORDERS,
+            self::REFUNDS,
+            self::SETTLEMENTS,
+            self::INVOICES,
+        ],
+    ];
 
     protected $config;
 
@@ -232,6 +256,51 @@ class UfhService
         }
 
         return $this->ufhClient->getSignedUrl($fileId, $params);
+    }
+
+    /**
+     * validates if user is allowed to fetch file based on user role and file type
+     * @param $fileType
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateUserRoleForAccess($fileType)
+    {
+        $userRole = $this->ba->getUserRole();
+
+        // logging the decision only
+        $this->isRestrictedFileTypeForUserRole($fileType, $userRole);
+
+        /*
+        if ($this->isRestrictedFileTypeForUserRole($fileType, $userRole) === true)
+        {
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid access');
+        }
+        */
+    }
+
+    protected function isRestrictedFileTypeForUserRole($fileType, $userRole):bool
+    {
+        $traceData = [
+            'user_role'         => $userRole,
+            'file_type'         => $fileType,
+            'access_validation' => 'passed'
+        ];
+
+        if ((key_exists($userRole, self::WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS) === true) and
+            (in_array($fileType, self::WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS[$userRole], true) === false))
+        {
+            $traceData['access_validation'] = 'failed';
+
+            $this->trace->info(TraceCode::UFH_FILE_FETCH, $traceData);
+
+            return true;
+        }
+
+        $this->trace->info(TraceCode::UFH_FILE_FETCH, $traceData);
+
+        return false;
     }
 
     protected function validateResponse(array $res = null)
