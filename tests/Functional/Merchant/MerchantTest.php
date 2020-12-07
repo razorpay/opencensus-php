@@ -1374,6 +1374,23 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigSellerAppRoleFail()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'sellerapp');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
     public function testEditMerchantInvalidBrandColor()
     {
         $this->createMerchant();
@@ -9320,6 +9337,18 @@ class MerchantTest extends TestCase
         $this->app['basicauth']->setMerchant(((new Merchant\Repository())->findOrFail('10000000000000')));
 
         $this->app['workflow']->initWorkflowMaker();
+    }
+
+    protected function createMerchantUserMapping(string $userId, string $merchantId, string $role, $mode = 'test')
+    {
+        DB::connection($mode)->table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'role'        => $role,
+                'created_at'  => 1493805150,
+                'updated_at'  => 1493805150
+            ]);
     }
 
     private function getBankAccountsCount($merchantId)

@@ -1116,6 +1116,28 @@ return [
         ]
     ],
 
+    'testEditMerchantConfigSellerAppRoleFail' => [
+        'request'  => [
+            'content' => [
+                'display_name'        => 'Display',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testEditMerchantInvalidBrandColor' => [
         'request' => [
             'content' => [

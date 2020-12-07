@@ -121,6 +121,13 @@ class Role
         return (in_array($role, $productRoles, true) === true);
     }
 
+    public static function allExceptSellerAppRole()
+    {
+        $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
+
+        return array_diff($allRoles, [self::SELLERAPP]);
+    }
+    
     public static function allExceptPaymentLinkRoles()
     {
         $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
