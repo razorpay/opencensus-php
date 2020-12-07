@@ -208,6 +208,10 @@ export function createPaymentLinkV2(payload) {
     reqPayload.accept_partial = reqPayload.accept_partial === '1';
   }
 
+  if (reqPayload.hasOwnProperty('first_payment_min_amount')) {
+    reqPayload.first_payment_min_amount = Math.round(reqPayload.first_payment_min_amount * 100);
+  }
+
   return merchantFetch({
     url: 'payment_links',
     method: 'post',

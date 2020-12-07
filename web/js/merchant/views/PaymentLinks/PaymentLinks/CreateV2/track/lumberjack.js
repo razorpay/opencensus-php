@@ -36,6 +36,7 @@ function _track() {
       amount: () => send('amount'),
       paymentFor: () => send('description'),
       partialPayment: () => send('partial_payment'),
+      firstPaymentMinAmount: () => send('first_payment_min_amount'),
       contact: () => send('mobile'),
       email: () => send('email'),
       notifySms: () => send('notify_sms'),

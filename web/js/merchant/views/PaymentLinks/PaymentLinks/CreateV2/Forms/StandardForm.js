@@ -64,7 +64,13 @@ export default class StandardForm extends React.Component {
           hasNoExpiry={!props.formData.expire_by}
           checked={formData.reminder_enable}
         />
-        <PartialPayment disabled={props.disabled} defaultValue={formData.partial_payment} />
+        <PartialPayment
+          currency={formData.currency}
+          amount={formData.amount}
+          disabled={props.disabled}
+          defaultValue={formData.accept_partial}
+          defaultFirstMinAmount={formData.first_payment_min_amount}
+        />
         <Notes
           onChange={props.onChangeNotes}
           disabled={props.disabled}
