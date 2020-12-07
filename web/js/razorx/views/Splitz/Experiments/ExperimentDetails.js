@@ -375,14 +375,16 @@ class ExperimentDetails extends React.Component {
                   <div>
                     <span className="square-pills label-semi-muted">{variant.name}</span>
                   </div>
-                  <div className="sub-segment" style={{ paddingLeft: '13px' }}>
-                    {variant.variables.map((variable, i) => (
-                      <div key={i}>
-                        <span className="label">{variable.key}: &nbsp;</span>
-                        <span className="sub-segment-group">{variable.value}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {variant.variables ? (
+                    <div className="sub-segment" style={{ paddingLeft: '13px' }}>
+                      {variant.variables.map((variable, i) => (
+                        <div key={i}>
+                          <span className="label">{variable.key}: &nbsp;</span>
+                          <span className="sub-segment-group">{variable.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                   {whitelistedIds.length ? (
                     <div className="sub-segment" style={{ paddingLeft: '13px' }}>
                       <br />
