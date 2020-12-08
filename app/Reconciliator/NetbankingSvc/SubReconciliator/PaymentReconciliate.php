@@ -50,6 +50,11 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         return $row[Reconciliate::PAYMENT_DATE] ?? null;
     }
 
+    protected function getArn($row)
+    {
+        return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
     protected function getInputForForceAuthorize($row)
     {
         return [
