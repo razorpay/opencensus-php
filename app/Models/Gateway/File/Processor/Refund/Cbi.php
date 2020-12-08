@@ -8,8 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Batch\Processor\Refund;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Mozart\NetbankingCbi\RefundFields;
 
@@ -40,7 +39,7 @@ class Cbi extends Base
         {
             $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('dmY');
 
-            $account_number = str_pad(substr($row['gateway']['data']['account_number'], 3), 17, "0", STR_PAD_LEFT);
+            $account_number = str_pad(substr($this->fetchBankAccountNumber($row), 3), 17, "0", STR_PAD_LEFT);
 
             $narration_text = str_pad($row['merchant']->getFilteredDba(), 50, " ", STR_PAD_RIGHT);
 
@@ -79,6 +78,15 @@ class Cbi extends Base
         $formattedData = $this->getTextData($formattedData, "", "");
 
         return $formattedData;
+    }
+
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER];
+        }
+        return $data['gateway']['data']['account_number'];
     }
 
     protected function getFileToWriteNameWithoutExt()
