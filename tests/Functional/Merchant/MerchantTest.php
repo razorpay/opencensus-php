@@ -8941,6 +8941,31 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // tests that even if a method is blacklisted in the listed, its not returned if its in ignoreBlacklisted list
+    public function testGetAutoDisabledMethodsForMerchantWithIgnoreBlacklistedForInstrument()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            MerchantEntity::CATEGORY          => '6211',
+            MerchantEntity::CATEGORY2         => 'mutual_funds',
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetAutoDisabledMethodsForBlacklistedCategoryMerchant()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            MerchantEntity::CATEGORY          => '6051',
+            MerchantEntity::CATEGORY2         => 'cryptocurrency',
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testTrimMerchantData()
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
