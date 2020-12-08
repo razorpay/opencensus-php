@@ -36,7 +36,10 @@ class Core extends Base\Core
 
     public function edit(Entity $downtime, array $input): Entity
     {
-        $this->trace->info(TraceCode::PAYMENT_DOWNTIME_EDIT, $input);
+        $this->trace->info(TraceCode::PAYMENT_DOWNTIME_EDIT, [
+            'Input'     => $input,
+            'Downtime'  => $downtime->toArray(),
+        ]);
 
         $downtime->edit($input);
 
