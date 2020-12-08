@@ -9,7 +9,9 @@ use RZP\Http\BasicAuth\Type;
 use RZP\Trace\ApiTraceProcessor;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Tests\Functional\TestCase;
+use RZP\Http\Middleware\UserAccess;
 use \RZP\Gateway\Utility as RZPUtility;
+use RZP\Tests\Unit\Request\Traits\MocksRequest;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
@@ -19,6 +21,7 @@ class CardRedactionTest extends TestCase
     use PrivateMethodTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use MocksRequest;
 
     public function setUp()
     {
@@ -1203,6 +1206,39 @@ class CardRedactionTest extends TestCase
         $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY, Type::PRIVATE_AUTH);
 
         $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+    }
+
+    public function testPrimaryProductPresentInTraceDashboardAppAuth()
+    {
+        // Given
+        // BasicAuth resolves to Dashboard app
+        $authMock = $this->getMockBuilder(BasicAuth::class)
+                         ->setConstructorArgs([$this->app])
+                         ->setMethods(['isDashboardApp','setProduct'])
+                         ->getMock();
+
+        $authMock->method('isDashboardApp')
+                 ->willReturn(true);
+
+        // Then
+        // expecting product to be set to primary
+        $authMock->expects($this->once())
+                 ->method('setProduct')
+                 ->with('primary');
+        $this->app->instance('basicauth', $authMock);
+
+        // When
+        // request origin is dashboard.razorpay.com
+        $requestMock = $this->mockRouteRequest('user_fetch',
+            'users/20000000000000', [], [], [], [],
+            ['HTTP_X-Request-Origin' => config('applications.dashboard.url')]
+        );
+
+        $userAccess = new UserAccess($this->app);
+        $userAccessReflectionObj = new \ReflectionObject($userAccess);
+        $method = $userAccessReflectionObj->getMethod('setProduct');
+        $method->setAccessible(true);
+        $method->invoke($userAccess, $requestMock);
     }
 
     protected function getUpdatedTrace(string $routeName,

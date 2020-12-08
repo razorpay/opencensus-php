@@ -224,7 +224,7 @@ class UserAccess
     {
         $product = $this->getRequestOriginProductFromRequest($request);
 
-        $isProxyAuth = $this->ba->isProxyAuth();
+        $isDashboardRoute = $this->ba->isDashboardApp();
 
         $routeName = $this->router->currentRouteName();
 
@@ -233,8 +233,9 @@ class UserAccess
 
         $bankingRoutes = array_flip(array_merge($bankingRoutes1, $bankingRoutes2));
 
-        // If route is a banking_route and auth is not proxy auth, tag it as banking
-        if (($isProxyAuth === false) and
+        // If route is a banking_route, tag it as banking
+        // Excluding dashboard routes as in that case, the requestOriginProduct is the source of truth
+        if (($isDashboardRoute === false) and
             (array_key_exists($routeName, $bankingRoutes) === true))
         {
             $product = ProductType::BANKING;
