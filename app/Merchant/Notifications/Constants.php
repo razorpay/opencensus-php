@@ -158,6 +158,8 @@ class Constants
         //     'start_ts'    => 1605160337,
         //     'end_ts'      => 1607752337,
         //     'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
+        //     'track_event' => true,
+        //     'id'          => 'DEC20-PayPal-GTM',
         //     'buttons'     => [
         //         [
         //             'type'  => 'button',
@@ -180,6 +182,8 @@ class Constants
             'start_ts'    => 1607409081,
             'end_ts'      => 1609417824,
             'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
+            'track_event' => true,
+            'id'          => 'DEC20-PayPal-GTM',
             'buttons'     => [
                 [
                     'type'  => 'button',
