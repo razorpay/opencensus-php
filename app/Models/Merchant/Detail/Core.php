@@ -1137,6 +1137,19 @@ class Core extends Base\Core
             //
             $existingReasons = $existingReasons ?? [];
 
+            foreach ($existingReasons as $key => $values)
+            {
+                foreach ($values as &$val)
+                {
+                    if ($val[Merchant\Constants::NC_COUNT] !== $ncCount)
+                    {
+                        $val[Merchant\Constants::IS_CURRENT] = false;
+                    }
+                }
+
+                $existingReasons[$key] = $values;
+            }
+
             foreach ($newReasons as $key => $values)
             {
                 foreach ($values as &$val)
@@ -1144,6 +1157,7 @@ class Core extends Base\Core
                     $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
                     $val[Entity::CREATED_AT]              = Carbon::now(Timezone::IST)->getTimestamp();
                     $val[Merchant\Constants::NC_COUNT]    = $ncCount;
+                    $val[Merchant\Constants::IS_CURRENT]  = true;
                 }
 
                 if (isset($existingReasons[$key]) === true)

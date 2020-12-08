@@ -126,6 +126,7 @@ final class Constants
     const DOCUMENT               = 'document';
     const REASON_FROM            = 'from';
     const NC_COUNT               = 'nc_count';
+    const IS_CURRENT             = 'is_current';
 
     const  ADDITIONAL_WEBSITE       = 'additional_website';
     const  ENABLE_INTERNATIONAL     = 'enable_international';
