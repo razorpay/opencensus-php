@@ -312,7 +312,7 @@ return [
             'content' => [
                 // 'id'            => 'txn_G1T4sGEJmwIj4w',
                 'entity'        => 'transaction',
-                'entity_id'     => 'crdt_rpy_G1SRTbSC6fQOHo',
+                'entity_id'     => 'repay_G1SRTbSC6fQOHo',
                 'type'          => 'credit_repayment',
                 'debit'         => 10000,
                 'credit'        => 0,

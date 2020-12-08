@@ -762,7 +762,7 @@ class TransactionTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         $this->assertArraySelectiveEquals([
-            'entity_id'         => 'crdt_rpy_G1SRTbSC6fQOHo',
+            'entity_id'         => 'repay_G1SRTbSC6fQOHo',
             'type'              => 'credit_repayment',
             'merchant_id'       => '10000000000000',
             'amount'            => 10000,

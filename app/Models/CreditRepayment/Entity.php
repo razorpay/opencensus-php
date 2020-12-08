@@ -6,7 +6,7 @@ use RZP\Models\Base\PublicEntity;
 
 class Entity extends PublicEntity
 {
-    protected static $sign = 'crdt_rpy';
+    protected static $sign = 'repay';
 
     protected $entity = 'credit_repayment';
 
