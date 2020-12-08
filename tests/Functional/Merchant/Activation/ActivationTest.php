@@ -246,7 +246,7 @@ class ActivationTest extends OAuthTestCase
         $expectedMethods = [
             'credit_card'   => true,
             'debit_card'    => true,
-            'amex'          => true,
+            'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
             'emi'           => ['credit', 'debit'],
@@ -268,7 +268,7 @@ class ActivationTest extends OAuthTestCase
         $cardNetworks = $methodsArray['card_networks'];
 
         $expectedCardNetworks =  [
-            Network::AMEX   =>  1,
+            Network::AMEX   =>  0,
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
@@ -380,7 +380,7 @@ class ActivationTest extends OAuthTestCase
         $expectedMethods = [
             'credit_card'   => true,
             'debit_card'    => true,
-            'amex'          => true,
+            'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
             'emi'           => ['credit', 'debit'],
@@ -402,7 +402,7 @@ class ActivationTest extends OAuthTestCase
         $cardNetworks = $methodsArray['card_networks'];
 
         $expectedCardNetworks =  [
-            Network::AMEX   =>  1,
+            Network::AMEX   =>  0,
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
