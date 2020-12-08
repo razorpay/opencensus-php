@@ -2060,9 +2060,12 @@ class BasicAuth
         {
             $key = $this->repo->key->findNotExpired($matches[2]);
 
-            $secret = Crypt::decrypt($key->getSecret());
+            if (isset($key) === true)
+            {
+                $secret = Crypt::decrypt($key->getSecret());
 
-            return $secret;
+                return $secret;
+            }
         }
 
         return $secret;
