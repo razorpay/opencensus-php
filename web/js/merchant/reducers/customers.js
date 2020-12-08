@@ -33,12 +33,16 @@ export const fetchCustomer = id => {
   };
 };
 
-export const fetchCustomersForAutocomplete = () => {
+export const fetchCustomersApi = (params) => {
   let customer = new Customer();
 
+  return customer.fetchForAutocomplete(params);
+};
+
+export const fetchCustomersForAutocomplete = (params) => {
   return {
     type: CUSTOMERS_AUTOCOMPLETE_FETCH,
-    payload: customer.fetchForAutocomplete(),
+    payload: fetchCustomersApi(params),
   };
 };
 

@@ -264,7 +264,7 @@ export default class TransferNew extends Component {
                 <FormItem
                   label={() => <Label text="Account" required />}
                   field={() => (
-                    <div class="custom-select transfers-accounts" style={{ position: 'relative' }}>
+                    <div class="custom-select auto-complete-search">
                       <TypeAhead
                         options={accountsList}
                         disabled={!accountsList}

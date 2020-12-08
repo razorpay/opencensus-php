@@ -9,7 +9,8 @@ import moment from 'moment';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
-import TypeAhead from 'common/ui/Select/TypeAhead';
+import { TypeAhead } from 'react-power-select';
+
 import Spinner from 'common/ui/Spinner';
 import InlineField from 'common/ui/Forms/InlineField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -23,6 +24,7 @@ import {
   calculateTax,
   isBlank,
   getURLQueryParams,
+  titleCase,
 } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -35,6 +37,7 @@ import InvoiceInfo from 'merchant/views/Invoices/Invoices/components//InvoiceInf
 import InvoiceNotes from 'merchant/views/Invoices/Invoices/components/InvoiceNotes';
 import InvoiceLogo from 'merchant/views/Invoices/Invoices/components/InvoiceLogo';
 import {
+  fetchCustomersApi,
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
 } from 'merchant/reducers/customers';
@@ -65,6 +68,7 @@ import {
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import { classList } from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
 
 function validate(values) {
   let errors = {
@@ -108,12 +112,12 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.items;
+    let customers = state.customers;
     return {
       session: state.session,
-      customers,
+      customers: state.customers,
       items: state.items.items,
-      customer: findBy(customers, 'id', selector(state, 'customer.id')),
+      customer: findBy(customers.items, 'id', selector(state, 'customer.id')),
       invoice: state.invoice.invoice,
       invoice_line_items: selector(state, 'line_items'),
       state_of_supply: selector(state, 'state_of_supply'),
@@ -168,6 +172,7 @@ export default class InvoicesNewContainer extends Component {
       status: {},
       issue_date,
       today: issue_date,
+      selectedCustomerDisplay: null,
       isFetchingAddresses: false,
       invoiceCurrency: this.props.invoice.currency || 'INR',
     };
@@ -262,10 +267,14 @@ export default class InvoicesNewContainer extends Component {
 
     if (customerDetails) {
       let customer =
-        this.props.customers &&
-        this.props.customers.find(c => c.id == customerDetails.id);
+        this.props.customers.items &&
+        this.props.customers.items.find(c => c.id == customerDetails.id);
 
       if (customer) {
+        this.setState({
+          selectedCustomerDisplay: customer
+        });
+
         let billingAddress, shippingAddress;
 
         billingAddress = customerDetails.billing_address_id;
@@ -1588,8 +1597,75 @@ export default class InvoicesNewContainer extends Component {
     this.trackCreateInvoice(event.target.name);
   };
 
+
+  handleSelectCustomer = ({ option }) => {
+    this.typeAheadSkin.classList.remove('hide');
+
+    if (option) {
+      this.props.change('customer.id', option.id);
+    } else {
+      this.props.change('customer.id', null);
+      this.props.untouch('customer.id');
+    }
+
+    // For display purpose only in TypeAhead
+    this.setState({ selectedCustomerDisplay: option });
+
+    const customerDetails = option;
+
+    if (customerDetails) {
+      let customer =
+        this.props.customers.items &&
+        this.props.customers.items.find(c => c.id == customerDetails.id);
+
+      if (customer) {
+        let billingAddress, shippingAddress;
+
+        billingAddress = customerDetails.billing_address_id;
+        shippingAddress = customerDetails.shipping_address_id;
+
+        this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
+      }
+    }
+  };
+
+  searchInCustomers(val) {
+    fetchCustomersApi({ q: val, search_hits: 1 })
+      .then((resp) => {
+        let customersList = null;
+        if (resp.data && resp.data.items && resp.data.items.length) {
+          customersList = resp.data.items;
+        }
+
+        this.setState({ customersList });
+      })
+      .catch((err) => {
+        this.setState({ customersList: null });
+      });
+  }
+
+  debounce_searchInCustomers = debounce(this.searchInCustomers.bind(this), 50);
+
+  handleKeyDown = (e) => {
+    const target = e.target;
+
+    setTimeout(() => {
+      const val = target.value;
+
+      if (val.length < 2) {
+        this.setState({ accountsList: null });
+        return;
+      }
+
+      this.debounce_searchInCustomers(val);
+    }, 5);
+  };
+
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
+    let { selectedCustomerDisplay } = this.state;
+
+    const hasCustomerSelected = customer && customer.id;
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
@@ -1674,6 +1750,12 @@ export default class InvoicesNewContainer extends Component {
           </div>
         </NavLink>
       );
+
+    let customersList;
+
+    if (!this.props.customers.loading) {
+      customersList = this.state.customersList || this.props.customers.items;
+    }
 
     return (
       <div class="react-root">
@@ -1790,52 +1872,42 @@ export default class InvoicesNewContainer extends Component {
                           <div>
                             <label>BILLING TO</label>
                             <div>
-                              {customer &&
-                                customer.id &&
-                                !isDisabled && (
-                                  <button
-                                    class="btn btn-sm btn-link edit-in-input"
-                                    onClick={this.quickEditCustomer}
-                                    type="button"
-                                  >
-                                    Edit
-                                  </button>
-                                )}
-                              <InlineField
-                                formName="newInvoice"
-                                name="customer.id"
-                                class="material-input"
-                                component={TypeAhead}
-                                options={this.props.customers}
-                                selected={this.props.customer.id}
-                                optionLabelPath="displayName"
-                                selectedOptionLabelPath="selectedDisplayName"
-                                placeholder="Select a customer"
-                                onQuickAdd={this.quickCreateCustomer}
-                                disabled={isDisabled}
-                                labelWhenSearchTermBlank="Create new Customer"
-                                labelWhenSearchTermValid="Add ':_searchTerm_:' as a Customer"
-                                maxSearchTermLength="12"
-                                keepValueInBG={false}
-                                onOptionChange={this.onSelectCustomer}
-                                onOpen={() => {
-                                  this.trackCreateInvoice('choose_customer');
-                                }}
-                                normalizeValue={value => {
-                                  let selected = findBy(
-                                    this.props.customers || [],
-                                    'id',
-                                    value
-                                  );
-                                  if (selected) {
-                                    return selected.selectedDisplayName;
-                                  }
-                                  return value;
-                                }}
-                              />
+                              <div class="custom-select auto-complete-search">
+                                <TypeAhead
+                                  options={customersList}
+                                  disabled={!customersList}
+                                  class="ps-in-modal"
+                                  searchIndices={['id', 'name', 'email']}
+                                  placeholder={`${
+                                    !customersList ? 'Loading...' : 'Select a customer'
+                                  }`}
+                                  showClear={true}
+                                  selected={selectedCustomerDisplay}
+                                  selectedOptionLabelPath="name"
+                                  optionComponent={({option}) => {
+                                    return (
+                                      <div class="custom-powerselect-options">
+                                        <div>
+                                          <b>{titleCase(option.name)}</b> ({option.code || option.id})
+                                        </div>
+                                        {option.email}
+                                      </div>
+                                    );
+                                  }}
+                                  beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                                  onChange={this.handleSelectCustomer}
+                                  onKeyDown={this.handleKeyDown}
+                                />
+                                <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
+                                  {selectedCustomerDisplay ? (
+                                    <div>
+                                      {selectedCustomerDisplay.name}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
                             </div>
-                            {customer &&
-                              customer.id && (
+                            {hasCustomerSelected && (
                                 <div class="inv__customerdetails">
                                   {customer.name && (
                                     <div>{customer.contact}</div>
@@ -1856,6 +1928,18 @@ export default class InvoicesNewContainer extends Component {
                                     )}
                                 </div>
                               )}
+                              <div>
+                                {hasCustomerSelected &&
+                                !isDisabled && (
+                                  <button
+                                    class="btn btn-link no-padding"
+                                    onClick={this.quickEditCustomer}
+                                    type="button"
+                                  >
+                                    Edit Customer
+                                  </button>
+                                )}
+                              </div>
                           </div>
 
                           <div class="inv__dates-container hidden-sm">
@@ -2296,7 +2380,7 @@ export default class InvoicesNewContainer extends Component {
                               type="button"
                               class="btn btn-primary btn-block btn-lg"
                               disabled={
-                                this.state.isSaving || this.props.invalid
+                                this.state.isSaving || this.props.invalid || !hasCustomerSelected
                               }
                               onClick={handleSubmit(props => {
                                 return this.saveAndIssue({
