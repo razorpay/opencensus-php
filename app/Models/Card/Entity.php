@@ -184,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::COUNTRY        => null,
         self::TRIVIA         => null,
         self::CATEGORY       => null,
+        self::NAME           => '',
     ];
 
     protected $casts = [
