@@ -1341,15 +1341,15 @@ class Gateway extends Base\Gateway
         // We are saving the gateway entity even if txn was failed
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        if ($status !== Status::SUCCESS)
+        // For few merchants ICICI has started sending ResponseCode and we need to utilize that
+        // Now for merchants where it is not send, we can add custom response code
+        if (isset($content[Fields::RESPONSE_CODE]) === false)
         {
-            $message = 'Payment Failed during callback';
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $status,
-                $message);
+            // Response Code 1 will result in BAD_REQUEST_PAYMENT_FAILED
+            $content[Fields::RESPONSE_CODE] = 1;
         }
+
+        $this->checkCallbackResponseStatus($content);
 
         $response  = [
             'acquirer' => [
@@ -1700,7 +1700,7 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($response[Fields::RESPONSE_CODE]),
-                $response[Fields::TXN_STATUS],
+                $response[Fields::RESPONSE_CODE],
                 $errorMessage);
         }
     }

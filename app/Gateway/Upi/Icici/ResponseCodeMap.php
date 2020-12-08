@@ -4,6 +4,8 @@ namespace RZP\Gateway\Upi\Icici;
 
 use RZP\Error\ErrorCode;
 
+use RZP\Gateway\Base\ErrorCodes\Upi\ErrorCodes;
+
 class ResponseCodeMap
 {
     const ERROR_CODES = array(
@@ -57,22 +59,38 @@ class ResponseCodeMap
 
     public static function getResponseMessage($code)
     {
-        if (isset(self::ERROR_CODES[$code]) === true)
+        // Return Gateway Specific Error Code
+        if (isset(self::ERROR_CODES[(int) $code]) === true)
         {
             return self::ERROR_CODES[$code];
         }
 
+        // Return NPCI Error Code No need to type cast since it's a string
+        if (isset(ErrorCodes::$errorCodeMap[$code]) === true)
+        {
+            return ErrorCodes::$errorCodeMap[$code];
+        }
+
+        // Return Unmapped Error Code Description
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
     public static function getApiErrorCode($code)
     {
+        // Return NPCI Error Code, No Need to Type Case to string and check this.
+        if (isset(ErrorCodes::$errorCodeMap[$code]) === true)
+        {
+            return ErrorCodes::$errorCodeMap[$code];
+        }
+
+        // self:ERROR_CODES
         if ((empty($code) === true) or
-            (isset(self::ERROR_CODES[$code]) === false))
+            (isset(self::ERROR_CODES[(int) $code]) === false))
         {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
 
+        // Return Gateway Specific Error Code Description
         return self::ERROR_CODES[$code];
     }
 }

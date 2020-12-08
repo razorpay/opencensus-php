@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use RZP\Error;
-
+use RZP\Gateway\Base\ErrorCodes\Upi\ErrorCodeDescriptions;
 class ResponseCode
 {
     const CODES = array(
@@ -52,11 +52,21 @@ class ResponseCode
 
     public static function getResponseMessage($code)
     {
-        if (isset(self::CODES[$code]) === true)
+        // Check if the Error Code Description is in own Gateway Error Map
+        // Then Type Cast it into int and return the Description
+        if (isset(self::CODES[(int) $code]) === true)
         {
             return self::CODES[$code];
         }
 
+        // Check if it's in the NPCI Error Code Description Associative Array
+        // No need to Type Cast since all the NPCI Error Codes are String
+        if (isset(ErrorCodeDescriptions::$errorDescriptionMap[$code]) === true)
+        {
+            return ErrorCodeDescriptions::$errorDescriptionMap[$code];
+        }
+
+        // If not found then return Unknown Response Code Message
         return 'Unknown Gateway Response Code';
     }
 }

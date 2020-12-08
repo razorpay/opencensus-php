@@ -16,6 +16,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Exception\AssertionException;
 use RZP\Exception\ServerErrorException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1353,5 +1354,48 @@ EOT;
             },
             AssertionException::class,
             'Assert error occurred');
+    }
+
+    function testNpciErrorCodeForCallback()
+    {
+        // Do an Auth Payment
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Fetch the last payment entity
+        $payment = $this->getDbLastPayment();
+
+        // Fetch the last UPI Entity
+        $upiEntity = $this->getDbLastEntity('upi')->toArray();
+
+        // Set ResponseCode in Mock Server Content Function to NPCI Error Code
+        $server = $this->mockServerContentFunction(function (& $content)
+        {
+            $content['ResponseCode'] = 'U03';
+            $content['TxnStatus'] = 'FAILURE';
+        });
+
+        // Get the callback content
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment->toArray());
+
+        // Now the callback will throw assertion error as the callback payment id is not same as actual payment id
+        $this->makeRequestAndCatchException(
+            function() use ($content)
+            {
+                $this->makeS2sCallbackAndGetContent($content);
+            },
+            GatewayErrorException::class,
+            'Payment failed because Transaction amount limit has exceeded'.PHP_EOL.
+            'Gateway Error Code: U03'.PHP_EOL.
+            'Gateway Error Desc: Net debit CAP is exceeded'
+        );
+
+        // Fetch the last payment
+        $payment = $this->getDbLastPayment();
+
+        // Assert Payment INTERNAL_ERROR_CODE
+        $this->assertSame(
+            'BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED',
+            $payment['internal_error_code']
+        );
     }
 }
