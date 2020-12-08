@@ -280,6 +280,15 @@ class Gateway extends Base\Gateway
                 $ex->markSafeRetryTrue();
             }
 
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::VPA_VALIDATION_GATEWAY_RESPONSE,
+                [
+                    'status' => $status
+                ]
+            );
+
             throw $ex;
         }
     }

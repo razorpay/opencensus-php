@@ -55,6 +55,15 @@ class Core extends Base\Core
         // because it needs the association to figure out the destination type.
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
+        $this->trace->info(
+            TraceCode::FUND_TRANSFER_ATTEMPT_CREATED,
+            [
+                'id'     => $fundTransferAttempt->getId(),
+                'is_fts' => $fundTransferAttempt->getIsFTS(),
+                'status' => $fundTransferAttempt->getStatus()
+            ]
+        );
+
         $this->repo->saveOrFail($fundTransferAttempt);
 
         if ($fundTransferAttempt->getIsFTS() === true)
@@ -114,6 +123,13 @@ class Core extends Base\Core
         $isEligibleForInstantDispatch = (!(($fta->getSourceType() === Type::REFUND) and
                                           (in_array($this->env, [Constants\Environment::FUNC], true) === true)) and
                                          ($isEligibleForInitiation === true));
+
+        $this->trace->info(
+            TraceCode::FTA_IS_INSTANT_DISPATCH,
+            [
+              'isInstantDispatch' => $isEligibleForInstantDispatch,
+            ]
+        );
 
         if ($isEligibleForInstantDispatch === false)
         {
@@ -298,6 +314,11 @@ class Core extends Base\Core
         ];
 
         $values = array_merge($defaultValues, $values);
+
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_VALIDATION_CREATE_VALUES,
+            $values
+        );
 
         $fundTransferAttempt->fillAndGenerateId($values);
 

@@ -54,6 +54,14 @@ class FaVpaValidation extends Job
 
             $fundAccount = $faValidation->fundAccount;
 
+            $this->trace->info(
+                TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
+                [
+                    'account_type' => $fundAccount->getAccountType(),
+                    'id'           => $fundAccount->getId()
+                ]
+            );
+
             if ($fundAccount->getAccountType() !== Type::VPA)
             {
                 throw new LogicException("Invalid fund account type");
@@ -64,6 +72,11 @@ class FaVpaValidation extends Job
                 'merchant_id' => $fundAccount->getMerchantId(),
             ];
 
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_FAILED,
+                $vpaInput
+            );
+
             $data = $this->getVpaValidateResponse($vpaInput);
 
             $faValidation->setRegisteredName($data['name']);
@@ -71,6 +84,7 @@ class FaVpaValidation extends Job
             $vpaProcessor->markValidationAsCompleted($data['account_status']);
         }
         catch (RuntimeException $e) {
+
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
@@ -111,6 +125,17 @@ class FaVpaValidation extends Job
             $paymentService = new PaymentService();
 
             $response = $paymentService->validateVpa($vpaInput);
+
+            $customerName = $response['customer_name'] ?? null;
+
+            $success= $response['success'] ?? null;
+
+            $tracable = [
+                'customer_name' => $customerName,
+                'success'       => $success,
+            ];
+
+            $this->trace->info(TraceCode::VALIDATE_VPA_RESPONSE, $tracable);
 
             if (($response === null) or
                 ($response['customer_name'] === null) or

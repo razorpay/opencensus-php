@@ -73,6 +73,11 @@ class BankAccount extends Base
             // can still have names from $benificiaryNameNotAllowedArray
             if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
             {
+                $this->trace->info(
+                    TraceCode::FUND_ACCOUNT_ALREADY_VALIDATED,
+                    $result->toArrayPublic()
+                );
+
                 $this->copyFundAccountDetailsAndMarkAsCompleted($result);
 
                 return;

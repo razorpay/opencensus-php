@@ -31,6 +31,11 @@ trait Vpa
 
         if (empty($existing) === false)
         {
+            $this->trace->info(
+                TraceCode::VPA_ALREADY_VALIDATED,
+                $existing
+            );
+
             return $existing;
         }
 
@@ -95,7 +100,10 @@ trait Vpa
                 $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
 
                 $tracable['time'] = Carbon::now()->diffInRealSeconds($startTime);
+
                 $tracable['success'] = true;
+
+                $tracable['gatewayResponse'] = $gatewayResponse;
 
                 $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $tracable);
 

@@ -890,6 +890,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_SPLIT_ERROR                                = 'ADJUSTMENT_SPLIT_ERROR';
 
     const VPA_PAYOUT_GATEWAY_RESPONSE                           = 'VPA_PAYOUT_GATEWAY_RESPONSE';
+    const VPA_VALIDATION_GATEWAY_RESPONSE                       = 'VPA_VALIDATION_GATEWAY_RESPONSE';
 
     const VERIFY_LOCKED_PAYMENTS                                = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_ACTION                                         = 'VERIFY_ACTION';
@@ -2119,10 +2120,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_BULK_PATCH_FAILED             = 'FUND_ACCOUNT_VALIDATION_BULK_PATCH_FAILED';
     const FUND_ACCOUNT_VALIDATION_STATUS_CHANGE_FAILED          = 'FUND_ACCOUNT_VALIDATION_STATUS_CHANGE_FAILED';
     const FUND_ACCOUNT_VALIDATION_FTA_HOOK_FAILED               = 'FUND_ACCOUNT_VALIDATION_FTA_HOOK_FAILED';
-
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX               = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX';
-
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED     = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED';
+    const FUND_ACCOUNT_ALREADY_VALIDATED                        = 'FUND_ACCOUNT_ALREADY_VALIDATED';
+    const FUND_ACCOUNT_VALIDATION_CREATE_VALUES                 = 'FUND_ACCOUNT_VALIDATION_CREATE_VALUES';
+    const VALIDATE_VPA_REQUEST                                  = 'VALIDATE_VPA_REQUEST';
+    const VPA_ALREADY_VALIDATED                                 = 'VPA_ALREADY_VALIDATED';
+    const VALIDATE_VPA_RESPONSE                                 = 'VALIDATE_VPA_RESPONSE';
+    const VALIDATE_VPA_STATUS_FAILED                            = 'VALIDATE_VPA_STATUS_FAILED';
+    const VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE            = 'VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
@@ -2615,6 +2621,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_INIT                          = 'FTA_DISPATCH_FOR_PAYOUT_INIT';
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE                      = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED                       = 'FTA_RECONCILIATION_JOB_RELEASED';
+    const FTA_IS_INSTANT_DISPATCH                               = 'FTA_IS_INSTANT_DISPATCH';
 
     // Commission trace codes
     const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
@@ -2851,7 +2858,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NBPLUS_PAYMENT_SERVICE_RESPONSE                       = 'NBPLUS_PAYMENT_SERVICE_RESPONSE';
     const NBPLUS_PAYMENT_SERVICE_ERROR                          = 'NBPLUS_PAYMENT_SERVICE_ERROR';
 
-    const VALIDATE_VPA_REQUEST                                  = 'VALIDATE_VPA_REQUEST';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
