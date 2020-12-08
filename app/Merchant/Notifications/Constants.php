@@ -176,8 +176,8 @@ class Constants
         // ],
         [
             'title'       => 'Get ₹10,000 PayPal FREE Credits',
-            'description' => 'Get ₹10K International Free Credits on PayPal.Enjoy 20% higher conversion, T+1 settlement and activation within 24hrs. TnCs apply.',
-            'start_ts'    => 1606998624,
+            'description' => 'Get ₹10K International Free Credits on PayPal. Enjoy 20% higher conversion, T+1 settlement and activation within 24hrs. TnCs apply.',
+            'start_ts'    => 1607409081,
             'end_ts'      => 1609417824,
             'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
             'buttons'     => [
