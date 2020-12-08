@@ -2,10 +2,8 @@
 
 namespace RZP\Reconciliator\NetbankingRbl\SubReconciliator;
 
-use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
@@ -82,6 +80,11 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         }
 
         return null;
+    }
+
+    protected function getArn($row)
+    {
+        return $row[ClaimFields::PGI_REFERENCE] ?? null;
     }
 
     protected function getInputForForceAuthorize($row)
