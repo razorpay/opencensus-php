@@ -2508,6 +2508,11 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        // crons for autoKYC'd merchants who have not been verified manually yet
+        'merchant_autokyc_soft_limit',
+        'merchant_autokyc_hard_limit',
+        'merchant_autokyc_escalation',
+
         'settlement_ondemand_process',
         'internal_balance_fetch',
         'merchant_balance_create',
