@@ -611,8 +611,8 @@ export default class User {
 
   // Tempororily disabling the calls, have plans to enable it back later
   get isSupportCallEnabled() {
-    // return false;
-    return this.getExpStatus('support_call') && this.isActivated;
+    return false;
+    // return this.getExpStatus('support_call') && this.isActivated;
   }
 
   get isRouteCodeSupportEnabled() {
