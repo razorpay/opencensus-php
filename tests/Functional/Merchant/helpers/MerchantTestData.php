@@ -7039,55 +7039,6 @@ return [
         ],
     ],
 
-    'testGetAutoDisabledMethodsForMerchantWithIgnoreBlacklistedForInstrument' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
-        ],
-        'response' => [
-            'status_code' => 200,
-            'content' => [
-                'auto_disabled_methods' => 
-                    [   "credit_card",
-                        "emi",
-                        "prepaid_card",
-                        "paylater",
-                    ]
-            ],
-        ],
-    ],
-
-    'testGetAutoDisabledMethodsForBlacklistedCategoryMerchant' => [
-        'request' => [
-            'url'      => '/internal/auto_disabled_methods/10000000000000',
-            'method'   => 'get',
-        ],
-        'response' => [
-            'status_code' => 200,
-            'content' => [
-                'auto_disabled_methods' => [
-                    'credit_card',
-                    'debit_card',
-                    'amex',
-                    'netbanking',
-                    'upi',
-                    'emi',
-                    'prepaid_card',
-                    'paylater',
-                    'airtelmoney',
-                    'freecharge',
-                    'jiomoney',
-                    'mobikwik',
-                    'mpesa',
-                    'olamoney',
-                    'payumoney',
-                    'payzapp',
-                    'sbibuddy',
-                ]
-            ],
-        ],
-    ],
-
     'testTrimMerchantData' => [
         'request'  => [
             'method'  => 'PATCH',
