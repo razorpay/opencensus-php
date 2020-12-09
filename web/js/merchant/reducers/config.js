@@ -19,6 +19,8 @@ const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
 const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
 const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
 
+export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
+
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
@@ -28,7 +30,8 @@ export const FetchSupportTickets = (params) => {
   if (params) {
     query = param_to_qs(params);
   }
-  return merchantFetch(query ? `fd/tickets?${query}` : 'fd/tickets').then((res) => {
+
+  return merchantFetch(query ? `${TICKET_BASE_URL}?${query}` : TICKET_BASE_URL).then((res) => {
     return {
       data: res.data.results,
       query: params,
@@ -41,10 +44,11 @@ export const FetchRefundPricing = () => {
 };
 
 export const ReplyToConversation = (ticket_id, body) => {
-  let params = {
-    url: `fd/tickets/${ticket_id}/reply`,
+  const params = {
+    url: `${TICKET_BASE_URL}/${ticket_id}/reply`,
     method: 'post',
     data: body,
+    headers: { 'Content-Type': 'multipart/form-data' },
   };
 
   return merchantFetch(params);
@@ -52,8 +56,8 @@ export const ReplyToConversation = (ticket_id, body) => {
 
 export const FetchActiveTickets = () => {
   return merchantFetch(
-    `fd/tickets?${['2', '3', '6', '8', '9', '10', '11']
-      .map((s) => 'status[]=' + s + '&')
+    `${TICKET_BASE_URL}?${['2', '3', '6', '8', '9', '10', '11']
+      .map((s) => `status[]=${s}&`)
       .join('')}`,
   ).then((res) => res.data.results);
 };

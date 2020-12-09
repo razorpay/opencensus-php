@@ -1,14 +1,18 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
-import { param_to_qs, SAMPLE_TICKET } from './data.js';
+import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION } from './data.js';
 import Ticket from './Ticket';
 import * as axios from 'axios';
 import { withRouter } from 'react-router-dom';
 import Message from './Message.js';
 import { merchantFetch } from 'merchant/utils/ajax.js';
 import Spinner from 'common/ui/Spinner';
-import { fetchSupportTickets, replyToConversation } from 'merchant/reducers/config.js';
+import {
+  fetchSupportTickets,
+  replyToConversation,
+  TICKET_BASE_URL,
+} from 'merchant/reducers/config.js';
 import Reply from './Reply.js';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -34,23 +38,25 @@ export default class Conversations extends React.Component {
       data: { 1: [] },
       loading: false,
     },
-    size: 5,
+    size: MAX_CONVERSATION,
     current_page: 1,
   };
 
   goNext = (page) => {
     if (!(this.state.conversations.data[page] && this.state.conversations.data[page].length)) {
+      const TICKET_ID = this.props.match.params.id;
       const c = this.state.conversations;
       c.loading = true;
       this.setState({ conversations: c });
+
       const params = {
         page: page,
         per_page: this.state.size,
-        ticket_id: this.props.match.params.id,
         fd_instance: this.props.match.params.instance,
       };
       const query = param_to_qs(params);
-      merchantFetch(`fd/conversations?${query}`)
+
+      merchantFetch(`${TICKET_BASE_URL}/${TICKET_ID}/conversations?${query}`)
         .then((e) => {
           const conversations = this.state.conversations;
           conversations.loading = false;
@@ -58,7 +64,7 @@ export default class Conversations extends React.Component {
           this.setState({ conversations: conversations });
         })
         .catch(() => {
-          const c = this.state.conversations;
+          const conversations = this.state.conversations;
           c.loading = false;
           this.setState({ conversations: c });
         });
@@ -68,7 +74,7 @@ export default class Conversations extends React.Component {
   componentDidMount() {
     this.goNext(1);
     merchantFetch(
-      `fd/tickets/${this.props.match.params.id}?fd_instance=${this.props.match.params.instance}`,
+      `${TICKET_BASE_URL}/${this.props.match.params.id}?fd_instance=${this.props.match.params.instance}`,
     ).then((e) => {
       this.setState({ ticket: e.data });
     });
@@ -114,27 +120,6 @@ export default class Conversations extends React.Component {
               <Ticket logo_url={this.props.user.logo_url} ticket={this.state.ticket} />
               <div className="panel">
                 <div className="panel-body message-panel-body" style={{ padding: 0 }}>
-                  <Reply
-                    email={this.props.user.contact_email}
-                    last={total_conversations.length === 0}
-                    logo_url={this.props.user.logo_url}
-                    replyToConversation={this.props.replyToConversation}
-                    ticket={this.state.ticket}
-                    onSuccess={(reply) => {
-                      const data = { ...this.state.conversations.data };
-                      let k = Object.keys(this.state.conversations.data);
-                      const last = k[k.length - 1];
-                      if (data[last].length < this.state.size) {
-                        data[last].push(reply);
-                      }
-                      this.setState({ data });
-                      this.props.showNotification({
-                        type: 'success',
-                        message: 'Reply has been sent',
-                        closeTimeout: 5000,
-                      });
-                    }}
-                  />
                   <div>
                     {total_conversations
                       // .filter(m => !m.private)
@@ -153,25 +138,45 @@ export default class Conversations extends React.Component {
                         <Spinner />
                       </div>
                     ) : null}
+                    {last_page && (
+                      <div className="panel">
+                        <div className="panel-body message-panel-body text-center">
+                          <button
+                            onClick={() => {
+                              const current_page = this.state.current_page + 1;
+                              this.setState({ current_page }, () => this.goNext(current_page));
+                            }}
+                            className="btn btn-link"
+                          >
+                            View More
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <Reply
+                      email={this.props.user.contact_email}
+                      last={total_conversations.length === 0}
+                      logo_url={this.props.user.logo_url}
+                      replyToConversation={this.props.replyToConversation}
+                      ticket={this.state.ticket}
+                      onSuccess={(reply) => {
+                        const data = { ...this.state.conversations.data };
+                        let k = Object.keys(this.state.conversations.data);
+                        const last = k[k.length - 1];
+                        if (data[last].length < this.state.size) {
+                          data[last].push(reply);
+                        }
+                        this.setState({ data });
+                        this.props.showNotification({
+                          type: 'success',
+                          message: 'Reply has been sent',
+                          closeTimeout: 5000,
+                        });
+                      }}
+                    />
                   </div>
                 </div>
               </div>
-              {/* ) : null} */}
-              {last_page && (
-                <div className="panel">
-                  <div className="panel-body message-panel-body text-center">
-                    <button
-                      onClick={() => {
-                        const current_page = this.state.current_page + 1;
-                        this.setState({ current_page }, () => this.goNext(current_page));
-                      }}
-                      className="btn btn-link"
-                    >
-                      View More
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

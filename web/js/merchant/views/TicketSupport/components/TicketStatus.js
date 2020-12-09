@@ -1,8 +1,4 @@
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
-
-import { statuses, getActiveTicket } from './data.js';
-import { titleCase } from 'common/utils/rzp-utils.js';
+import { statuses } from './data';
 
 export default class TicketStatus extends React.Component {
   componentDidMount() {}

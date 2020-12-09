@@ -1091,3 +1091,17 @@ export function checkIsObjectEmpty(obj) {
   }
   return true;
 }
+
+/**
+ *
+ * @param {String} fileName - name of the file
+ * @return {String}
+ * Returns the file type of the filename passed.
+ */
+export function getFileTypeIcon(fileName) {
+  const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
+  let fileType = fileName.split('.');
+  fileType = fileType[fileType.length - 1];
+
+  return avlblFileTypeIcons.indexOf(fileType) > -1 ? fileType : 'misc';
+}

@@ -27,7 +27,7 @@ export default class Support extends Component {
         this.handleVisibility(false);
       });
 
-      window.fcWidget.on('unreadCount:notify', response => {
+      window.fcWidget.on('unreadCount:notify', (response) => {
         this.setState({ notifyCount: response.count });
       });
     }
@@ -45,7 +45,7 @@ export default class Support extends Component {
     });
   };
 
-  handleVisibility = shouldHide => {
+  handleVisibility = (shouldHide) => {
     this.setState({ isHidden: shouldHide });
   };
 
@@ -61,17 +61,15 @@ export default class Support extends Component {
     const { user } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
 
-    if (location.hostname !== 'dashboard.razorpay.com') {
+    const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
+
+    if (!DASHBOARD_HOST_REGEX.test(location.hostname)) {
       return null;
     }
 
     return (
       <div class={classList('support', isHidden && 'hidden')}>
-        <SupportHeader
-          onToggle={this.handleToggle}
-          isOpened={isOpened}
-          notifyCount={notifyCount}
-        />
+        <SupportHeader onToggle={this.handleToggle} isOpened={isOpened} notifyCount={notifyCount} />
         <SupportBody
           onToggle={this.handleToggle}
           isOpened={isOpened}

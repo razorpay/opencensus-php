@@ -1,4 +1,6 @@
 .ticket-support {
+    padding: 30px 20px;
+
     .img-round {
         display: block;
         margin: auto;
@@ -12,8 +14,9 @@
     }
 
     .label {
-        padding: 2px 6px;
-        font-size: 12px;
+        padding: 4px;
+        font-size: 10px;
+        text-transform: uppercase;
     }
 
     .message-owner {
@@ -31,6 +34,28 @@
         img {
             max-width: 100%;
         }
+
+        .file-attachment {
+            display: inline-block;
+            color: #162F56;
+            font-size: 12px;
+            margin: 0 12px 12px 0;
+            background: rgba(22, 47, 86, 0.02);
+            border: 1px solid rgba(22, 47, 86, 0.12);
+            border-radius: 50px;
+            padding: 0 16px;
+            line-height: 30px;
+
+            &:hover {
+                cursor: pointer;
+                background: rgba(22, 47, 86, 0.12);
+            }
+
+            img {
+                height: 16px;
+                margin-right: 10px;
+            }
+        }
     }
 
     .message {
@@ -38,6 +63,33 @@
 
         .row {
             overflow: hidden;
+        }
+
+        .Dropzone-content {
+            font-size: 12px;
+        }
+
+        .Dropzone-file-icon {
+            display: none !important;
+        }
+
+        .Dropzone-file-icon + .Dropzone-content-desc {
+            padding-left: 0;
+        }
+
+        .Dropzone .Dropzone-cavity {
+            border-radius: 0 0 2px 2px;
+            border-color: #cfdadd;
+            border-style: solid;
+            border-top-color: transparent;
+        }
+
+        .Dropzone-cavity--staged .Dropzone-close {
+            margin-top: 0;
+        }
+
+        .reply-text {
+            border-radius: 2px 2px 0 0;
         }
     }
 
@@ -63,6 +115,11 @@
         .label-active {
             background: #1F890E;
         }
+
+        .ticket-detail-separator {
+            padding: 0 9px;
+        }
+
     }
 
     .ticket-reply-btn {
@@ -100,6 +157,13 @@
         z-index: 9999;
         text-align: center;
     }
+
+    .tickets-list-title {
+        font-weight: bold;
+        margin-bottom: 22px;
+        font-size: 16px;
+    }
+
 }
 
 // .active-ticket-label {

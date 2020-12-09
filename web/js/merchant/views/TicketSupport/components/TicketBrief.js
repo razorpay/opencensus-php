@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
 
-import { statuses, getActiveTicket } from './data.js';
+import { statuses } from './data.js';
 import { titleCase } from 'common/utils/rzp-utils.js';
 import TicketStatus from './TicketStatus.js';
 
@@ -40,6 +40,8 @@ export default class TicketBrief extends React.Component {
     // }
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
+
+    const formattedDate = moment(ticket.created_at).fromNow();
     return (
       <div className="panel ticket-row-panel">
         <div
@@ -57,8 +59,9 @@ export default class TicketBrief extends React.Component {
                       </Link>
 
                       <p>
-                        Ticket ID #{ticket.id} |{' '}
-                        <span>{moment(ticket.created_at).format('LLLL')}</span>
+                        <span>Ticket ID #{ticket.id}</span>
+                        <span className="ticket-detail-separator">•</span>
+                        <span>Raised {formattedDate}</span>
                       </p>
                     </div>
                     <div className="col-xs-4">

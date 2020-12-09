@@ -1,11 +1,12 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
+import * as axios from 'axios';
 import { Fragment } from 'react';
 import { tickets, statuses, conversations } from './data.js';
 import { titleCase } from 'common/utils/rzp-utils.js';
 import Ticket from './Ticket';
 import Reply from './Reply';
-import * as axios from 'axios';
+import Attachment from './Attachment.js';
 import { withRouter } from 'react-router-dom';
 
 @withRouter
@@ -41,6 +42,9 @@ export default class Message extends React.Component {
     let d = document.createElement('div');
     d.innerHTML = this.props.message.body;
     body = d.innerHTML;
+
+    const attachments = this.props.message.attachments;
+
     return (
       <Fragment>
         <div>
@@ -75,6 +79,13 @@ export default class Message extends React.Component {
                         }}
                       />
                     </div>
+                    {attachments && attachments.length !== 0 && (
+                      <div className="message-body body">
+                        {attachments.map((file, index) => (
+                          <Attachment key={file.id} file={file} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

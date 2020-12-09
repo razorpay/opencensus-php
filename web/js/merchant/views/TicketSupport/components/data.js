@@ -16,7 +16,7 @@ export const statuses = {
     class: 'danger',
   },
   '6': {
-    name: 'Awaiting your response',
+    name: 'Awaiting Your Reply',
     class: 'info',
   },
   '8': {
@@ -241,3 +241,7 @@ export const SAMPLE_TICKET = {
   nr_due_by: null,
   nr_escalated: false,
 };
+
+export const MAX_SIZE_LIMIT = 15 * 1024 * 1024; // 15MB limit
+export const MAX_PAGE_SIZE = 100;
+export const MAX_CONVERSATION = 100;

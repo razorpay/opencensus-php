@@ -4,6 +4,8 @@ import { Fragment } from 'react';
 import { tickets, statuses, conversations } from './data.js';
 import { titleCase } from 'common/utils/rzp-utils.js';
 import TicketStatus from './TicketStatus.js';
+import Attachment from './Attachment.js';
+
 @connect((state) => {
   return {
     ...state.session,
@@ -21,6 +23,7 @@ export default class Ticket extends React.Component {
   }
 
   render() {
+    const { ticket } = this.props;
     let img = this.props.logo_url ? (
       <img style={{ marginLeft: '2px' }} class="img-round user-image" src={this.props.logo_url} />
     ) : (
@@ -38,24 +41,24 @@ export default class Ticket extends React.Component {
                     <div className="row" style={{ paddingRight: '10px' }}>
                       <div className="col-xs-8 message-owner">
                         <b>
-                          TICKET ID #{this.props.ticket.id}
-                          {/* {this.props.ticket.custom_fields.cf_category
-                            ? ` | Category: ${this.props.ticket.custom_fields.cf_category}`
+                          TICKET ID #{ticket.id}
+                          {/* {ticket.custom_fields.cf_category
+                            ? ` | Category: ${ticket.custom_fields.cf_category}`
                             : null} */}
                         </b>
                       </div>
                       <div className="col-xs-4 text-right" style={{ height: '20px' }}>
-                        <TicketStatus ticket={this.props.ticket} />
+                        <TicketStatus ticket={ticket} />
                       </div>
                     </div>
                   </h5>
                   <p class="message-to">
-                    Created {moment(this.props.ticket.created_at).fromNow()} (
-                    {moment(this.props.ticket.created_at).format('LLL')} )
+                    Created {moment(ticket.created_at).fromNow()} (
+                    {moment(ticket.created_at).format('LLL')} )
                   </p>
-                  {this.props.ticket.cc_emails.length ? (
+                  {ticket.cc_emails.length !== 0 ? (
                     <p class="message-to" style={{ marginTop: '3px' }}>
-                      Cc - {this.props.ticket.cc_emails.join(', ')}
+                      CC - {ticket.cc_emails.join(', ')}
                     </p>
                   ) : null}
                 </div>
@@ -66,9 +69,16 @@ export default class Ticket extends React.Component {
                   <div
                     className="message-body body"
                     dangerouslySetInnerHTML={{
-                      __html: this.props.ticket.description,
+                      __html: ticket.description,
                     }}
                   />
+                  {ticket.attachments && ticket.attachments.length !== 0 && (
+                    <div className="message-body body">
+                      {ticket.attachments.map((file, index) => (
+                        <Attachment key={file.id} file={file} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
