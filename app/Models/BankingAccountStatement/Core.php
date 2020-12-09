@@ -474,31 +474,93 @@ class Core extends Base\Core
 
     protected function processSourceEntity(Entity $basEntity)
     {
-        // to ensure duplicate webhook doesn't get fired
+        // this flag helps to identify whether we found an existing reversal or
+        // we created a reversal while processing reversal. Based on this flag we would
+        // decide whether to send payout.reversed webhook or not
+        // ensuring duplicate webhook doesn't get fired
         $isSourceAlreadyCreated = true;
+
+        // when we are not able to map source as payout or reversal due to some reason like
+        // duplicate utr found , that time we create external entity with remarks with reason of
+        // failure and map this external with bas record
+        $remarks = null;
 
         if ($basEntity->isTypeCredit() === true)
         {
-            list($sourceEntity, $isSourceAlreadyCreated) = $this->processReversal($basEntity);
+            list($sourceEntity, $isSourceAlreadyCreated) = $this->processReversal($basEntity, $remarks);
         }
         else
         {
-            $sourceEntity = $this->processPayout($basEntity);
+            $sourceEntity = $this->processPayout($basEntity, $remarks);
         }
 
-        if ($sourceEntity === null)
+        if (($remarks != null) or
+            ($sourceEntity === null))
         {
-            $sourceEntity = $this->processExternal($basEntity);
+            $sourceEntity = $this->processExternal($basEntity, $remarks);
         }
+
+        $this->trace->info(TraceCode::BAS_ENTRY_SOURCE_MAPPING_DETAILS,
+                   [
+                       'source_id'   => $sourceEntity->getId(),
+                       'source_type' => $sourceEntity->getEntityName(),
+                       'bas_id'      => $basEntity->getId(),
+                       'remarks'     => $remarks
+                   ]);
 
         $this->validateBalance($basEntity, $sourceEntity);
+
 
         return [$sourceEntity, $isSourceAlreadyCreated];
     }
 
-    protected function processReversal(Entity $basEntity)
+    /**
+     * @param Entity $basEntity
+     * @param        $remarks
+     * This function tries to map given bas record with reversal in our system or creates a reversal in case we
+     * are not able to find the reversal but found a corresponding payout
+     *
+     * if while processing reversal we are unable to uniquely identify source , instead of failing the
+     * account statement we will create external entity with remarks as failure reason and
+     * map this record to given basEntity and raise a slack alert
+     *
+     * @return array|null
+     * first variable in array is reversal entity and second is a flag which helps to identify whether we
+     * found an existing reversal or we created a reversal while processing . Based on this flag we would
+     * decide whether to send payout.reversed webhook or not
+     * @throws Exception\LogicException
+     */
+    protected function processReversal(Entity $basEntity, & $remarks)
     {
-        $reversal = $this->fetchExistingReversalIfPresent($basEntity);
+        // order of fetching:
+        // 1. try to find existing reversal using utr.
+        // 2. if not found , then try to find payout with given return utr and utr
+        // 3. if no payout is found using utr , then try finding payout with given cms ref no
+
+        // Cases for mapping bas record:
+        // *  No existing reversal with the UTR
+        //    1.Search for payout ((SEARCHING IN PAYOUT TABLE)with same UTR/ RETURN UTR/CMS REF NO
+        //      If more than 1 payout with the same UTR ,then raise alert and link with external.
+        //      Same for CMS REF NO  and IFT cases
+        //    2.If single payout is found then use this payout and create reversal and reversal transaction
+        // * Found Only 1 existing reversal with the UTR(SEARCHING IN REVERSAL TABLE)
+        //    1.Create a credit transaction and link with reversal. (use $isalreadyCreated)
+        // * Found More than 1 existing reversal with same UTR(SEARCHING IN REVERSAL TABLE)
+        //    1.With same UTR, if we get more than 1 unlinked reversal(it does not have a txn yet),
+        //      then raise alert on slack and create external entity with remarks -
+        //      More than one reversal with same UTR - UTR’s value
+
+        // create external source is a flag that is used by caller to identify whether to create an external
+        // source or not. remarks is set when external entity is to be created and is also passed to caller
+        // as reference
+        $createExternalSource = false;
+
+        $reversal = $this->fetchExistingReversalIfPresent($basEntity, $createExternalSource, $remarks);
+
+        if ($createExternalSource === true)
+        {
+            return [null, true];
+        }
 
         // this is to ensure that payout.reversed webhook does not get fired twice. i.e
         // it only gets fired in this flow if a new reversal entity is created and we are not
@@ -520,7 +582,14 @@ class Core extends Base\Core
             // reversed, if not we will update the payout as reversed
             //
             /** @var Payout\Entity $existingPayout */
-            $existingPayout = $this->fetchExistingPayoutForAccountStatement($basEntity);
+            $existingPayout = $this->fetchExistingPayoutForAccountStatementForMappingCredits($basEntity,
+                                                                                             $createExternalSource,
+                                                                                             $remarks);
+
+            if ($createExternalSource === true)
+            {
+                return [null, true];
+            }
 
             if ($existingPayout === null)
             {
@@ -542,9 +611,18 @@ class Core extends Base\Core
                     'payout_id'     => $existingPayout->getId(),
                     'reversal_id'   => $reversal->getId(),
                 ]);
+
+            $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
+
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
+                               [
+                                   'reversal_id'       => $reversal->getId(),
+                                   'transaction_id'    => $reversal->transaction->getId(),
+                               ]);
         }
 
-        if (($reversal !== null) and
+        if (($isReversalAlreadyCreated === true) and
+            ($reversal !== null) and
             ($reversal->transaction === null))
         {
             $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
@@ -559,9 +637,16 @@ class Core extends Base\Core
         return [$reversal, $isReversalAlreadyCreated];
     }
 
-    protected function processPayout(Entity $basEntity)
+    protected function processPayout(Entity $basEntity, & $remarks)
     {
-        $payout = $this->fetchExistingPayoutForAccountStatement($basEntity);
+        $createExternalSource = false;
+
+        $payout = $this->fetchExistingPayoutForAccountStatement($basEntity, $createExternalSource, $remarks);
+
+        if ($createExternalSource === true)
+        {
+            return null;
+        }
 
         if ($payout === null)
         {
@@ -591,16 +676,46 @@ class Core extends Base\Core
         return $payout;
     }
 
-    protected function processExternal(Entity $basEntity)
+    protected function processExternal(Entity $basEntity, $remarks)
     {
         $external = (new External\Core)->create($basEntity);
+
+        if ($remarks != null)
+        {
+            $external->setRemarks($remarks);
+
+            $this->trace->info(TraceCode::EXTERNAL_SAVE_WITH_REMARKS_NOT_NULL, $external->toArray());
+
+            $this->repo->saveOrFail($external);
+        }
 
         return $external;
     }
 
-    protected function fetchExistingReversalIfPresent(Entity $basEntity)
+    /**
+     * @param Entity $basEntity
+     * @param false  $createExternalSource
+     * @param null   $remarks
+     *
+     * if while fetching reversal we get multiple reversals with duplicate utr , instead of failing the
+     * account statement we will create external entity with remarks as multiple unlinked reversals with
+     * same utr and map this record to given basEntity and raise a slack alert
+     *
+     * Usage of create_external_source and remarks:
+     * create external source is a flag that is used by caller to identify whether to create an external
+     * source or not. remarks is set when external entity is to be created and is also passed to caller
+     * as reference
+     *
+     *
+     * @return mixed|null
+     */
+    protected function fetchExistingReversalIfPresent(Entity $basEntity,
+                                                      & $createExternalSource = false,
+                                                      & $remarks = null)
     {
         $utr = $basEntity->getUtr();
+
+        $unlinkedReversals = [];
 
         if (empty($utr) === true)
         {
@@ -609,12 +724,86 @@ class Core extends Base\Core
 
         $balance = $this->getBalance($basEntity);
 
-        $reversal = $this->repo
+        $reversals = $this->repo
                          ->reversal
-                         ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId())
-                         ->first();
+                         ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
-        return $reversal;
+        $this->trace->info(TraceCode::BAS_REVERSALS_FETCHED_VIA_UTR,
+                           [
+                               'utr'          => $utr,
+                               'reversal_ids' => $reversals->getQueueableIds(),
+                               'bas_id'       => $basEntity->getId()
+                           ]);
+
+        foreach ($reversals as $key => $reversal)
+        {
+            if ($reversal->getTransactionId() !== null)
+            {
+                $data = [
+                    'channel'                    => $basEntity->getChannel(),
+                    'amount'                     => $basEntity->getAmount(),
+                    'current_reversal_id'        => $reversal->getId(),
+                    'reversal_ids_with_same_utr' => $reversals->getQueueableIds(),
+                    'utr'                        => $utr
+                ];
+
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR_FOR_REVERSAL, [
+                    'data' => $data,
+                ]);
+
+                $operation = 'duplicate UTR in account statement fetch for a linked reversal';
+
+                (new SlackNotification)->send(
+                    $operation,
+                    $data,
+                    null,
+                    1,
+                    'rx_ca_rbl_alerts');
+
+                unset($reversals[$key]);
+            }
+            else
+            {
+                $unlinkedReversals[] = $reversal;
+            }
+        }
+
+        if (count($unlinkedReversals) === 1)
+        {
+            return $unlinkedReversals[0];
+        }
+        // RBL has confirmed that UTR will be unique across all transactions
+        // of RBL and so we not process this account statement record
+        if (count($unlinkedReversals) > 1)
+        {
+            $createExternalSource = true;
+            $remarks              = 'multiple unlinked reversals with same utr ' . $utr;
+
+            $data = [
+                'channel'      => $basEntity->getChannel(),
+                'amount'       => $basEntity->getAmount(),
+                'reversal_ids' => $reversals->getQueueableIds(),
+                'utr'          => $utr
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_MULTIPLE_UNLINKED_REVERSALS_WITH_SAME_UTR, [
+                'data' => $data,
+            ]);
+
+            $operation = 'multiple unlinked reversals found with same utr ' . $utr .
+                         ' in account statement fetch for credit mapping';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            return null;
+        }
+
+        return null;
     }
 
     /**
@@ -627,7 +816,242 @@ class Core extends Base\Core
      * @throws Exception\LogicException
      */
 
-    protected function fetchExistingPayoutForAccountStatement(Entity $basEntity)
+    protected function fetchExistingPayoutForAccountStatementForMappingCredits(Entity $basEntity,
+                                                                               & $createExternalSource = false,
+                                                                               & $remarks = null)
+    {
+        $payouts = new Base\Collection;
+
+        $balance = $this->getBalance($basEntity);
+
+        $utr = $basEntity->getUtr();
+
+        if (empty($utr) === false)
+        {
+            if ($basEntity->getType() === Type::CREDIT)
+            {
+                /** @var Base\Collection $payouts */
+                $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_RETURN_UTR,
+                                   [
+                                       'return_utr' => $utr,
+                                       'payout_ids' => $payouts->getQueueableIds()
+                                   ]);
+
+                if ($payouts->count() === 1)
+                {
+                    return $payouts->first();
+                }
+
+                // TODO: remove unique constraint from utr fields in db .
+                // https://razorpay.atlassian.net/browse/RX-2390
+                if ($payouts->count() > 1)
+                {
+                    $createExternalSource = true;
+                    $remarks                = 'multiple payouts found with same return utr '. $utr .
+                                              ' for credit mapping';
+
+                    $data = [
+                        'channel'    => $basEntity->getChannel(),
+                        'amount'     => $basEntity->getAmount(),
+                        'payout_ids' => $payouts->getQueueableIds(),
+                        'return_utr' => $utr
+                    ];
+
+                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_RETURN_UTR, [
+                        'data' => $data,
+                    ]);
+
+                    $operation = 'multiple payouts found with same return utr for credit mapping';
+
+                    (new SlackNotification)->send(
+                        $operation,
+                        $data,
+                        null,
+                        1,
+                        'rx_ca_rbl_alerts');
+
+                    return null;
+                }
+            }
+
+            $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_CREDIT_MAPPING,
+                               [
+                                   'utr'        => $utr,
+                                   'payout_ids' => $payouts->getQueueableIds()
+                               ]);
+
+            if ($basEntity->getType() === Type::CREDIT)
+            {
+                if ($payouts->count() === 1)
+                {
+                    return $payouts->first();
+                }
+                else
+                {
+                    if ($payouts->count() > 1)
+                    {
+                        $createExternalSource = true;
+                        $remarks                = 'multiple payouts found with same utr for credit mapping';
+
+                        $data = [
+                            'channel'    => $basEntity->getChannel(),
+                            'amount'     => $basEntity->getAmount(),
+                            'payout_ids' => $payouts->getQueueableIds(),
+                            'utr'        => $utr
+                        ];
+
+                        $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_UTR_FOR_CREDIT_MAPPING, [
+                            'data' => $data,
+                        ]);
+
+                        $operation = 'multiple payouts found with same utr for credit mapping in account statement fetch';
+
+                        (new SlackNotification)->send(
+                            $operation,
+                            $data,
+                            null,
+                            1,
+                            'rx_ca_rbl_alerts');
+
+                        return null;
+                    }
+                }
+            }
+        }
+
+        if ($payouts->count() === 0)
+        {
+            $bankTxnId = $basEntity->getBankTransactionId();
+
+            $bankTimeBeforePostedDate = Carbon::createFromTimestamp(
+                $basEntity->getPostedDate(), Timezone::IST)
+                                              ->subHours(4)
+                                              ->getTimestamp();
+
+            // we are checking both linked and unlinked payouts because debit row might have already been
+            // processed.
+            $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+                $bankTxnId,
+                $basEntity->getPostedDate(),
+                $bankTimeBeforePostedDate,
+                $basEntity->getAmount(),
+                $balance->getId());
+        }
+
+        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
+                           [
+                               'cms_ref_no' => $bankTxnId,
+                               'payout_ids' => $payouts->getQueueableIds()
+                           ]);
+
+        if ($payouts->count() === 1)
+        {
+            return $payouts->first();
+        }
+
+        if ($payouts->count() > 1)
+        {
+            $createExternalSource = true;
+            $remarks                = 'multiple payouts found with same cms ref no for IFT for credit mapping';
+
+            $data = [
+                'channel'    => $basEntity->getChannel(),
+                'amount'     => $basEntity->getAmount(),
+                'payout_ids' => $payouts->getQueueableIds(),
+                'cms_ref_no' => $bankTxnId
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING, [
+                'data' => $data,
+            ]);
+
+            $operation = 'multiple payouts found with same cms ref no for IFT for credit mapping in account statement fetch';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            return null;
+        }
+
+        // we are checking both linked and unlinked payouts because debit row might have already been
+        // processed.
+        $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumber(
+            $bankTxnId,
+            $basEntity->getAmount(),
+            $balance->getId());
+
+        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING,
+                           [
+                               'cms_ref_no' => $bankTxnId,
+                               'payout_ids' => $payouts->getQueueableIds()
+                           ]);
+
+        if ($payouts->count() > 1)
+        {
+            $createExternalSource = true;
+
+            $remarks = 'multiple payouts found with same cms ref no for non IFT for credit mapping';
+
+            $data = [
+                'channel'    => $basEntity->getChannel(),
+                'amount'     => $basEntity->getAmount(),
+                'payout_ids' => $payouts->getQueueableIds(),
+                'cms_ref_no' => $bankTxnId
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
+                'data' => $data,
+            ]);
+
+            $operation = 'multiple payouts found with same cms ref no for non IFT for credit mapping in account statement fetch';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            return null;
+
+        }
+
+        return $payouts->first();
+    }
+
+    /**
+     * TODO: The logic would be different based on the channel.
+     * Refactor this when adding more banks here.
+     *
+     * @param Entity $basEntity
+     *
+     *  order of fetching:
+     * 1. try to find existing Payout using utr.
+     * 2. if not found , then try to find unlinked payout using CmsRefNumber Within some time range for ift
+     * 3. if still no payout is found, then try to find unlinked payout using CmsRefNumber
+     *
+     * Cases for mapping bas record:
+     *    1.Search for payout ((SEARCHING IN PAYOUT TABLE)with same UTR/CMS REF NO
+     *      If more than 1 unlinked payout with the same UTR is found ,then raise alert
+     *      and link with external with remarks as reason of failure (duplicate utr in this case).
+     *      Same for CMS REF NO  and IFT cases
+     *    2.If single payout is found then use this payout and return it
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+
+    protected function fetchExistingPayoutForAccountStatement(Entity $basEntity,
+                                                              & $createExternalSource,
+                                                              & $remarks)
     {
         $payouts = new Base\Collection;
 
@@ -639,50 +1063,13 @@ class Core extends Base\Core
 
         if (empty($utr) === false)
         {
-            if ($basEntity->getType() === Type::CREDIT)
-            {
-                /** @var Base\Collection $payouts */
-                $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
-
-                if ($payouts->count() === 1)
-                {
-                    return $payouts->first();
-                }
-
-                // TODO: remove unique constraint from utr fields in db .
-                // https://razorpay.atlassian.net/browse/RX-2390
-                if ($payouts->count() > 1)
-                {
-                    throw new Exception\LogicException(
-                        'Too many payouts found after scrapping via return utr',
-                        ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_RETURN_UTR,
-                        [
-                            'bas_id'        => $basEntity->getId(),
-                            'balance_id'    => $balance->getId(),
-                            'utr'           => $utr,
-                            'count'         => $payouts->count()
-                        ]);
-                }
-            }
-
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
-            if ($basEntity->getType() === Type::CREDIT)
-            {
-                if ($payouts->count() === 1)
-                {
-                    return $payouts->first();
-                }
-                else if ($payouts->count() > 1)
-                {
-                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR_TYPE_CREDIT, [
-                        'payout_ids' => $payouts->getQueueableIds(),
-                        'bas_id'     => $basEntity->getId(),
-                        'channel'    => $basEntity->getChannel(),
-                        'amount'     => $basEntity->getAmount(),
-                    ]);
-                }
-            }
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_DEBIT_MAPPING,
+                               [
+                                   'utr'        => $utr,
+                                   'payout_ids' => $payouts->getQueueableIds()
+                               ]);
 
             foreach ($payouts as $key => $payout)
             {
@@ -695,7 +1082,7 @@ class Core extends Base\Core
                         'payout_ids_with_same_utr' => $payouts->getQueueableIds(),
                     ];
 
-                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR, [
+                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR_FOR_PAYOUT, [
                         'data' => $data,
                     ]);
 
@@ -724,15 +1111,31 @@ class Core extends Base\Core
             // of RBL and so we not process this account statement record
             if (count($unlinkedPayouts) > 1)
             {
-                throw new Exception\LogicException(
-                    'Too many unlinked payouts found after utr match',
-                    ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_UTR,
-                    [
-                        'bas_id'        => $basEntity->getId(),
-                        'balance_id'    => $balance->getId(),
-                        'utr'           => $utr,
-                        'count'         => $payouts->count()
-                    ]);
+                $createExternalSource = true;
+
+                $remarks = 'multiple unlinked payouts found with same utr for debit mapping';
+
+                $data = [
+                    'channel'    => $basEntity->getChannel(),
+                    'amount'     => $basEntity->getAmount(),
+                    'payout_ids' => $payouts->getQueueableIds(),
+                    'utr'        => $utr
+                ];
+
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_MULTIPLE_UNLINKED_PAYOUTS_WITH_SAME_UTR, [
+                    'data' => $data,
+                ]);
+
+                $operation = 'multiple unlinked payouts found with same utr for debit mapping in account statement fetch';
+
+                (new SlackNotification)->send(
+                    $operation,
+                    $data,
+                    null,
+                    1,
+                    'rx_ca_rbl_alerts');
+
+                return null;
             }
         }
 
@@ -745,12 +1148,20 @@ class Core extends Base\Core
                                                         ->subHours(4)
                                                         ->getTimestamp();
 
+            // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
+            // record with payout.
             $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
                                                                                        $bankTxnId,
                                                                                        $basEntity->getPostedDate(),
                                                                                        $bankTimeBeforePostedDate,
                                                                                        $basEntity->getAmount(),
                                                                                        $balance->getId());
+
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
+                               [
+                                   'cms_ref_no' => $bankTxnId,
+                                   'payout_ids' => $payouts->getQueueableIds()
+                               ]);
         }
 
         if ($payouts->count() === 1)
@@ -760,33 +1171,71 @@ class Core extends Base\Core
 
         if ($payouts->count() > 1)
         {
-            throw new Exception\LogicException(
-                'Too many unlinked payouts found after scrapping via cms ref number for IFT',
-                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_IFT,
-                [
-                    'bas_id'        => $basEntity->getId(),
-                    'balance_id'    => $balance->getId(),
-                    'utr'           => $utr,
-                    'count'         => $payouts->count()
-                ]);
+            $createExternalSource = true;
+            $remarks                = 'multiple payouts found with same cms ref no for IFT for debit mapping';
+
+            $data = [
+                'channel'    => $basEntity->getChannel(),
+                'amount'     => $basEntity->getAmount(),
+                'payout_ids' => $payouts->getQueueableIds(),
+                'return_utr' => $utr
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING, [
+                'data' => $data,
+            ]);
+
+            $operation = 'multiple payouts found with same cms ref no for IFT for debit mapping in account statement fetch';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            return null;
         }
 
+        // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
+        // record with payout.
         $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumber(
                                                                         $bankTxnId,
                                                                         $basEntity->getAmount(),
                                                                         $balance->getId());
 
+        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING,
+                           [
+                               'cms_ref_no' => $bankTxnId,
+                               'payout_ids' => $payouts->getQueueableIds()
+                           ]);
+
         if ($payouts->count() > 1)
         {
-            throw new Exception\LogicException(
-                'Too many unlinked payouts found after scrapping via cms ref number for non IFT',
-                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_NON_IFT,
-                [
-                    'bas_id'        => $basEntity->getId(),
-                    'balance_id'    => $balance->getId(),
-                    'utr'           => $utr,
-                    'count'         => $payouts->count(),
-                ]);
+            $createExternalSource = true;
+            $remarks                = 'multiple payouts found with same cms ref no for non IFT for debit mapping';
+
+            $data = [
+                'channel'    => $basEntity->getChannel(),
+                'amount'     => $basEntity->getAmount(),
+                'payout_ids' => $payouts->getQueueableIds(),
+                'return_utr' => $utr
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
+                'data' => $data,
+            ]);
+
+            $operation = 'multiple payouts found with same cms ref no for non IFT for debit mapping in account statement fetch';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            return null;
         }
 
         return $payouts->first();

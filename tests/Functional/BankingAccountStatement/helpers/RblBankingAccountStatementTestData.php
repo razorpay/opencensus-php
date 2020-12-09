@@ -523,55 +523,6 @@ return [
             'content' => [],
         ],
     ],
-
-    'testAccountStatementFetchWithTwoPayoutsWithSameCmsRefNoForIFT' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/banking_account_statement/process',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'channel'         => 'rbl',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\LogicException',
-            'internal_error_code' => 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_IFT',
-        ],
-    ],
-
-    'testAccountStatementFetchWithTwoPayoutsWithSameCmsRefNoForNonIFT' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/banking_account_statement/process',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'channel'         => 'rbl',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\LogicException',
-            'internal_error_code' => 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_NON_IFT',
-        ],
-    ],
-
     'testStatementGenerationWithValidChannelAndFormat' => [
         'request' => [
             'method' => 'POST',

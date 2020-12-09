@@ -106,6 +106,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPayoutsFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
+    {
+        $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
+        $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutModeColumn           = $this->repo->payout->dbColumn(Entity::MODE);
+        $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
+                    ->whereNotIn($payoutModeColumn, [Mode::IFT])
+                    ->get();
+    }
+
     public function fetchUnlinkedPayoutsFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
@@ -128,6 +151,36 @@ class Repository extends Base\Repository
                     ->where($payoutsAmountColumn, $amount)
                     ->whereNull($payoutsTransactionIdColumn)
                     ->whereNotIn($payoutModeColumn, [Mode::IFT])
+                    ->get();
+    }
+
+    public function fetchPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+        $cmsRefNumber,
+        $txnDateTime,
+        $txnDateTimeBefore,
+        $amount,
+        $balanceId)
+    {
+        $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
+        $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutInitiatedAtColumn    = $this->repo->payout->dbColumn(Payout\Entity::INITIATED_AT);
+        $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutsMethodColumn        = $this->repo->payout->dbColumn(Entity::MODE);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
+                    ->where($payoutsMethodColumn, Mode::IFT)
+                    ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
                     ->get();
     }
 

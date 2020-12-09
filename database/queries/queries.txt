@@ -6041,6 +6041,15 @@ ALTER TABLE payouts
 ALTER TABLE p2p_bank_accounts
     ADD COLUMN type VARCHAR(50) DEFAULT NULL;
 
+ALTER TABLE fund_transfer_attempts
+    DROP INDEX fund_transfer_attempts_utr_unique;
+
+ALTER TABLE payouts
+    DROP INDEX payouts_return_utr_unique;
+
+ALTER TABLE external
+    ADD COLUMN remarks VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE merchant_details
     ADD COLUMN shop_establishment_number varchar(30) DEFAULT NULL;
 

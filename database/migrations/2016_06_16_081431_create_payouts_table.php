@@ -122,8 +122,7 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->string(Payout::RETURN_UTR)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->string(Payout::REMARKS)
                   ->nullable();

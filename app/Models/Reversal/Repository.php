@@ -110,18 +110,6 @@ class Repository extends Base\Repository
                           ->where(Entity::AMOUNT, $amount)
                           ->get();
 
-        if ($reversals->count() > 1)
-        {
-            throw new LogicException(
-                'Found too many reversals for a given UTR',
-                ErrorCode::SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR,
-                [
-                    'balance_id'    => $balanceId,
-                    'utr'           => $utr,
-                    'count'         => $reversals->count()
-                ]);
-        }
-
         return $reversals;
     }
 

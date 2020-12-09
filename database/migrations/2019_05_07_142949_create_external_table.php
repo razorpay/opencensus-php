@@ -40,6 +40,9 @@ class CreateExternalTable extends Migration
 
             $table->string(Entity::TYPE, 255);
 
+            $table->string(Entity::REMARKS)
+                  ->nullable();
+
             $table->bigInteger(Entity::AMOUNT)
                   ->unsigned();
 

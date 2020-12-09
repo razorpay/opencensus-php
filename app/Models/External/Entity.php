@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                    = 'amount';
     const CURRENCY                  = 'currency';
     const BALANCE_ID                = 'balance_id';
+    const REMARKS                   = 'remarks';
 
     protected static $sign = 'ext';
 
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::UTR,
+        self::REMARKS,
     ];
 
     protected $visible = [
@@ -46,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::UTR,
+        self::REMARKS,
         self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
@@ -64,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
+        self::REMARKS,
         self::ENTITY,
     ];
 
@@ -115,6 +119,11 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setRemarks($remarks)
+    {
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function getChannel()
