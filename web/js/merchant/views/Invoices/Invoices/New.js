@@ -1883,7 +1883,7 @@ export default class InvoicesNewContainer extends Component {
                                   }`}
                                   showClear={true}
                                   selected={selectedCustomerDisplay}
-                                  selectedOptionLabelPath="name"
+                                  selectedOptionLabelPath="id"
                                   optionComponent={({option}) => {
                                     return (
                                       <div class="custom-powerselect-options">
@@ -1901,7 +1901,7 @@ export default class InvoicesNewContainer extends Component {
                                 <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
                                   {selectedCustomerDisplay ? (
                                     <div>
-                                      {selectedCustomerDisplay.name}
+                                      {selectedCustomerDisplay.name ? titleCase(selectedCustomerDisplay.name) : selectedCustomerDisplay.id}
                                     </div>
                                   ) : null}
                                 </div>
