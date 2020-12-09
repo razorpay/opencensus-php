@@ -45,10 +45,6 @@ return [
             Permission::RAZORX_APPROVERS => 'Approve workflows for activation of razorx experiments',
         ],
 
-        PermissionCategory::SPLITZ => [
-            Permission::MANAGE_SPLITZ_OPERATIONS => 'Requests to Splitz Service',
-        ],
-
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',

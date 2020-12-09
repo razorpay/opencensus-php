@@ -207,7 +207,6 @@ class Name
     const MANAGE_IINS                         = 'manage_iins';
     const MANAGE_EMI_PLANS                    = 'manage_emi_plans';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
-    const MANAGE_SPLITZ_OPERATIONS            = 'manage_splitz_operations';
     const GENERATE_REFUND_EXCEL               = 'generate_refund_excel';
     const GENERATE_EMI_EXCEL                  = 'generate_emi_excel';
     const CONFIRM_USER                        = 'confirm_user';
