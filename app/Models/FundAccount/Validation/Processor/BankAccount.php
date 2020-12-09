@@ -13,10 +13,12 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Models\BankAccount\OldNewIfscMapping;
 use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
+
 
 class BankAccount extends Base
 {
@@ -57,12 +59,17 @@ class BankAccount extends Base
                            $this->account->getAccountNumber(),
                            Carbon::now()->subMonth(1)->getTimestamp());
 
-        $doNotRetry = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
-
         // If merchant is expecting utr, we can not return same utr, so no retry
         // Now, If same account detail was already processed and it is active account
         // copy and return
-        if (($doNotRetry === false) and
+        //also when there is a merger in banks the ifsc changes
+        // if the ifsc is in the list of old ifsc mappings then we will do a fresh fav rather than retruning the same response
+
+        $ifscCode = $this->account->getIfscCode();
+
+        $retryRequired = $this->isRetryRequired($ifscCode);
+
+        if (($retryRequired === false) and
             ($result != null) and
             ($result->getAccountStatus() === AccountStatus::ACTIVE))
         {
@@ -86,6 +93,29 @@ class BankAccount extends Base
 
         // initiate a fund transfer if this account number is new.
         $this->initiateFundTransfer();
+    }
+
+    protected function isRetryRequired(string $ifsc)
+    {
+        $isRetryRequired = false;
+
+        $isUtrExposeEnabled = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
+
+        if ((array_key_exists($ifsc, OldNewIfscMapping::$oldToNewIfscMapping) === true) or
+            ($isUtrExposeEnabled === true))
+        {
+            $isRetryRequired = true;
+        }
+
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_VALIDATION_INVALIDATE_CACHE,
+            [
+                'is_retry'              => $isRetryRequired,
+                'is_utr_expose_feature' => $isUtrExposeEnabled
+            ]
+        );
+
+        return $isRetryRequired;
     }
 
     protected function copyFundAccountDetailsAndMarkAsCompleted(Entity $result)

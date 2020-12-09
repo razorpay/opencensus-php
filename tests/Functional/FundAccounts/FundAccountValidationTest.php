@@ -7,6 +7,7 @@ use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
@@ -18,7 +19,6 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -526,6 +526,43 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
         $this->assertNotNull($fav['utr']);
+    }
+
+    //when ifsc is in the list of oldnewifscmapping and also there is already a completed fav within 30 days present,
+    //it should not pick the fav status from cache..instead it should call fts and do a fresh validation
+    public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessedWithOldIfsc()
+    {
+        $this->createValidationWithFundAccountEntity();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'ORBC0101753',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ]
+        ];
+
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(1, $fav['attempts']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals($fav['id'], $fta['source']);
     }
 
     public function testFundAccValidationWithAccountNumberAndVpa()
