@@ -1117,6 +1117,16 @@ class Constants
             'display_name'  => 'paypal gtm notification',
             'documentation' => '',
         ],
+        self::INVOICE_NO_RECEIPT_UNIQUE => [
+            'feature'       => self::INVOICE_NO_RECEIPT_UNIQUE,
+            'display_name'  => 'Bypass Receipt Unique Check for payment links',
+            'documentation' => '',
+        ],
+        self::BLOCK_PL_PAY_POST_EXPIRY => [
+            'feature'       => self::BLOCK_PL_PAY_POST_EXPIRY,
+            'display_name'  => 'Block payment past expiry for partially paid links',
+            'documentation' => '',
+        ],
     ];
 
     /**
