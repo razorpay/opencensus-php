@@ -15,7 +15,7 @@ class RateLimitBatch extends Base\Core
 
     const RATE_LIMIT_TTL = 86400; // 24 hours
 
-    const THRESHOLD_RATE_LIMIT_COUNT = 100000;
+    const THRESHOLD_RATE_LIMIT_COUNT = 10000;
 
 
     public function __construct()

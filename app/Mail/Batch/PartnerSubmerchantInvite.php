@@ -21,4 +21,14 @@ class PartnerSubmerchantInvite extends Base
 
         return $this;
     }
+
+    // Adding OPS team emails for tracking the submerchant invite file.
+    protected function addBcc()
+    {
+        $emails = Constants::MAIL_ADDRESSES[Constants::PARTNER_SUBMERCHANT_INVITE_INTERNAL];
+
+        $this->bcc($emails);
+
+        return $this;
+    }
 }

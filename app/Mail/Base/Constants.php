@@ -55,6 +55,7 @@ class Constants
     const PG_NOTIFICATION_NETBANKING    = 'pg_notification_netbanking';
     const PG_NOTIFICATION_WALLET        = 'PG_NOTIFICATION_WALLET';
     const PARTNER_SUBMERCHANT_INVITE    = 'partner_submerchant_invite';
+    const PARTNER_SUBMERCHANT_INVITE_INTERNAL    = 'partner_submerchant_invite_internal';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -109,6 +110,7 @@ class Constants
         self::PG_NOTIFICATION_WALLET    => 'pg-notifications-wallets@razorpay.com',
         self::BANKING_ACCOUNT           => 'x.support@razorpay.com',
         self::PARTNER_SUBMERCHANT_INVITE => 'partnercommunication@razorpay.com',
+        self::PARTNER_SUBMERCHANT_INVITE_INTERNAL => ['tarun.rajaputhran@razorpay.com', 'arun.rajendran@razorpay.com', 'satyajit.paul@razorpay.com']
     ];
 
     const MERCHANT_CUSTOM_MAIL_ADDRESSES = [
