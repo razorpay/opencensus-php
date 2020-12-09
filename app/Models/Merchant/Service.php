@@ -1634,7 +1634,7 @@ class Service extends Base\Service
 
         $category2 = $merchant->getCategory2();
 
-        return DefaultMethodsForCategory::getDefaultDisabledMethodsFromMerchantCategories($category, $category2);
+        return DefaultMethodsForCategory::getDefaultDisabledMethodsForInstrumentRequestFromMerchantCategories($category, $category2);
     }
 
     public function getGSTDetails(): array
