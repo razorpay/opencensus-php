@@ -152,6 +152,21 @@ class SalesForceClient
         );
     }
 
+    public function sendCouponInfo(Merchant\Entity $merchant, array $input)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $data = [
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+            'promotion_code'             => $input['coupon_code'],
+        ];
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_COUPON_REQUEST,
+                                  TraceCode::SALESFORCE_COUPON_RESPONSE,
+                                  TraceCode::SALESFORCE_COUPON_EXCEPTION
+        );
+    }
+
     public function payloadGenerationForPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
         $data = [
@@ -170,6 +185,7 @@ class SalesForceClient
             'first_utm_campaign' => 'Traffic_Campaign',
             'first_utm_medium'   => 'Traffic_Medium',
             'first_utm_source'   => 'Traffic_Source',
+            'first_utm_term'     => 'final_click_attribution_term',
         ];
 
         foreach ($keyMap as $key => $value)

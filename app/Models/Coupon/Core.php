@@ -129,6 +129,8 @@ class Core extends Base\Core
 
         $this->app->hubspot->trackPreSignupEvent($hubspotInput, $merchant);
 
+        $this->app->salesforce->sendCouponInfo($merchant, $hubspotInput);
+
         return [
             'message' => self::SUCCESS_MESSAGE
         ];

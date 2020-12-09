@@ -1872,13 +1872,7 @@ class Core extends Base\Core
 
     protected function sendPartnerInfoToSalesForce(Entity $partner)
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::PARTNER_TYPE_TO_SALESFORCE,
-                                                    $this->mode);
-        if ($variant === 'on')
-        {
-            $this->app->salesforce->sendPartnerInfo($partner);
-        }
+        $this->app->salesforce->sendPartnerInfo($partner);
     }
 
     /**
