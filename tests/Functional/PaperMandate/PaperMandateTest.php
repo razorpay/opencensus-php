@@ -147,6 +147,8 @@ class PaperMandateTest extends TestCase
 
     public function testAuthenticatePaperMandateWithWrongAccountNumber()
     {
+        $this->markTestSkipped("until account number validation enabled back");
+
         $this->ba->publicAuth();
 
         $this->mockExtractNACHWithWrongAccountNumber();

@@ -221,13 +221,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fieldsToBeValidated = [
-        self::UTILITY_CODE,
-        self::AMOUNT_IN_NUMBER,
         self::FORM_CHECKSUM,
         self::SIGNATURE_PRESENT_PRIMARY,
-        self::ACCOUNT_NUMBER,
-        self::IFSC_CODE,
-        self::ACCOUNT_TYPE,
     ];
 
     public function getEnhancedFileId()
