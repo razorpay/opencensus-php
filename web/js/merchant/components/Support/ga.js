@@ -11,7 +11,7 @@ export const trackSupportButton = () => {
   });
 };
 
-export const trackSupportOptions = type => {
+export const trackSupportOptions = (type) => {
   track({
     eventAction: 'Click - Support Options',
     eventLabel: type,

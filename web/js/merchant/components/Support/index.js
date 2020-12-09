@@ -1,11 +1,23 @@
+import { connect } from 'react-redux';
 import { Component } from 'react';
+import { trackSupportButton } from './ga';
 
+import { checkCallEligibility } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
 
-import { trackSupportButton } from './ga';
 import { classList } from 'common/utils/rzp-utils';
 
+@connect(
+  (state) => {
+    return {
+      isCallEnabled: state.config.isCallEnabled,
+    };
+  },
+  {
+    checkCallEligibility,
+  },
+)
 export default class Support extends Component {
   state = {
     isOpened: false,
@@ -14,6 +26,7 @@ export default class Support extends Component {
   };
 
   componentDidMount() {
+    this.props.checkCallEligibility();
     this.bindEvents();
   }
 
@@ -60,6 +73,7 @@ export default class Support extends Component {
   render() {
     const { user } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
+    const isCallEnabled = user.isActivated && this.props.isCallEnabled;
 
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
@@ -75,7 +89,7 @@ export default class Support extends Component {
           isOpened={isOpened}
           onChat={this.handleChat}
           notifyCount={notifyCount}
-          isSupportCallEnabled={user.isSupportCallEnabled}
+          isCallEnabled={isCallEnabled}
         />
       </div>
     );

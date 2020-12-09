@@ -13,6 +13,7 @@ const FETCH_LATE_AUTH_CONFIG = 'FETCH_LATE_AUTH_CONFIG';
 const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
+const FETCH_CALL_ELIGIBILITY = 'FETCH_CALL_ELIGIBILITY';
 const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
 const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
@@ -62,6 +63,12 @@ export const FetchActiveTickets = () => {
   ).then((res) => res.data.results);
 };
 
+export const CheckCallEligibility = () => {
+  return merchantFetch('merchants/support_call/can_submit').then(
+    (res) => res && res.success && res.data && res.data.response === true,
+  );
+};
+
 export const fetchFeaturesAjax = (currentUserId, mode) => {
   let params = {
     url: `merchants/me/features`,
@@ -96,6 +103,13 @@ export const fetchRefundPricing = () => {
   return {
     type: FETCH_REFUND_PRICING,
     payload: FetchRefundPricing(),
+  };
+};
+
+export const checkCallEligibility = () => {
+  return {
+    type: FETCH_CALL_ELIGIBILITY,
+    payload: CheckCallEligibility(),
   };
 };
 
@@ -274,6 +288,7 @@ let initialState = {
     data: {},
     error: null,
   },
+  isCallEnabled: false,
 };
 
 export default function (state = initialState, action) {
@@ -294,6 +309,9 @@ export default function (state = initialState, action) {
         refund_pricing: action.payload.data,
         error: null,
       });
+
+    case `${FETCH_CALL_ELIGIBILITY}::SUCCESS`:
+      return set(state, 'isCallEnabled', !!action.payload);
 
     case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {

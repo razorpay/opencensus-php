@@ -64,7 +64,7 @@ export default class SupportBody extends Component {
   };
 
   render() {
-    const { notifyCount, isOpened, onToggle, isSupportCallEnabled } = this.props;
+    const { notifyCount, isOpened, onToggle, isCallEnabled } = this.props;
     const { handleClick, openDashboardGuide } = this;
     let shouldDisable = !isWorkingDay();
 
@@ -117,7 +117,7 @@ export default class SupportBody extends Component {
               </li>
             ) : null
           ) : null}
-          {isSupportCallEnabled ? (
+          {isCallEnabled ? (
             <li
               class={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
               onClick={() => handleClick('call')}
