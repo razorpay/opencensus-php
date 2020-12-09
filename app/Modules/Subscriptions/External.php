@@ -86,7 +86,7 @@ class External extends Base
     /**
      * Call Subscription Payment Processed
      **/
-    public function paymentProcess(array $paymentPayload)
+    public function paymentProcess(array $paymentPayload, string $mode)
     {
         $shouldCallEndpoint = $this->shouldCallEndpoint();
 
@@ -98,11 +98,11 @@ class External extends Base
 
         if ($shouldCallEndpoint === true)
         {
-            $this->paymentProcessSync($paymentPayload);
+            $this->paymentProcessSync($paymentPayload, $mode);
         }
         else
         {
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $mode);
         }
     }
 
@@ -117,10 +117,10 @@ class External extends Base
     /**
      * Call Subscription Payment Processed, if queue is sync
      **/
-    private function paymentProcessSync($paymentPayload)
+    private function paymentProcessSync($paymentPayload, $mode)
     {
         $headers = [
-            self::MODE_HEADER_KEY     => $this->mode ?? 'test',
+            self::MODE_HEADER_KEY     => $mode ?? 'test',
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 

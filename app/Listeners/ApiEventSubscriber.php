@@ -280,7 +280,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            $this->app['module']->subscription->paymentProcess($paymentPayload);
+            $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
         $this->dispatchEventToStork($payload);
@@ -294,7 +294,7 @@ class ApiEventSubscriber extends Base\Core
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            $this->app['module']->subscription->paymentProcess($paymentPayload);
+            $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
         $this->dispatchEventToStork($payload);

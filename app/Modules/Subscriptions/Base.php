@@ -9,5 +9,5 @@ abstract class Base extends BaseModule
 {
     abstract public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false, $appTokenPresent = false);
 
-    abstract public function paymentProcess(array $paymentPayload);
+    abstract public function paymentProcess(array $paymentPayload, string $mode);
 }
