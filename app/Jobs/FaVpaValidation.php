@@ -81,6 +81,25 @@ class FaVpaValidation extends Job
 
             $faValidation->setRegisteredName($data['name']);
 
+            $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
+
+            $name = array_key_exists('name', $data) ? $data['name'] : null;
+
+            $success = array_key_exists('success', $data) ? $data['success'] : null;
+
+            $traceable = [
+                'account_status'   =>  $accountStatus,
+                'customer_name'    =>  $name,
+                'fav_status'       =>  'completed',
+                'id'               =>  $faValidation->getId(),
+                'success'          =>  $success
+            ];
+
+            $this->trace->info(
+                TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
+                $traceable
+            );
+
             $vpaProcessor->markValidationAsCompleted($data['account_status']);
         }
         catch (RuntimeException $e) {
@@ -138,8 +157,8 @@ class FaVpaValidation extends Job
             $this->trace->info(TraceCode::VALIDATE_VPA_RESPONSE, $tracable);
 
             if (($response === null) or
-                ($response['customer_name'] === null) or
-                ($response['success'] === null))
+                (($response['customer_name'] === null) and
+                ($response['success'] === null)))
             {
                 throw new LogicException("Mismatch in expected and returned array in vpa validate");
             }
@@ -147,9 +166,14 @@ class FaVpaValidation extends Job
             $data['account_status'] = $response['success'] === true ? AccountStatus::ACTIVE : AccountStatus::INVALID;
 
             $data['name'] = $response['customer_name'];
+
+            $data['success'] = $response['success'];
+
         }
         catch (GatewayErrorException $e)
         {
+            //gateway error as per payments api can mean some gateway error or also invalid vpa for some gateways
+            //So currently we dont have a clarity on fav status in case of gateway exception
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
@@ -160,6 +184,7 @@ class FaVpaValidation extends Job
             );
 
             $data['account_status'] = AccountStatus::INVALID;
+
         }
 
         return $data;

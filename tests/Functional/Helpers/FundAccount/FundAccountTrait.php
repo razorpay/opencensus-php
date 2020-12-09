@@ -19,11 +19,11 @@ trait FundAccountTrait
         ];
     }
 
-    protected function buildFundAccountRequest($type = Type::BANK_ACCOUNT)
+    protected function buildFundAccountRequest($type = Type::BANK_ACCOUNT, $vpaId = null)
     {
         if ($type === Type::VPA)
         {
-            $fundAccount = $this->getDefaultFundAccountVPAArray();
+            $fundAccount = $this->getDefaultFundAccountVPAArray($vpaId);
         }
         elseif ($type === Type::CARD)
         {
@@ -60,17 +60,17 @@ trait FundAccountTrait
         return $content;
     }
 
-    protected function createFundAccountVpa($key = null)
+    protected function createFundAccountVpa($key = null, $vpaId = 'withname@razorpay')
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $request = $this->buildFundAccountRequest(Type::VPA);
+        $request = $this->buildFundAccountRequest(Type::VPA, $vpaId);
 
         $this->ba->privateAuth($key);
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $expectedFundAccount = $this->getDefaultFundAccountVPAArray();
+        $expectedFundAccount = $this->getDefaultFundAccountVPAArray($vpaId);
 
         $this->assertArraySelectiveEquals($expectedFundAccount, $content);
 
@@ -96,13 +96,13 @@ trait FundAccountTrait
         return $content;
     }
 
-    protected function getDefaultFundAccountVPAArray()
+    protected function getDefaultFundAccountVPAArray($vpaId = 'withname@razorpay')
     {
         return [
             'account_type' => 'vpa',
             'contact_id'   => 'cont_1000000contact',
             'vpa'      => [
-                "address" => "withname@razorpay"
+                "address" => $vpaId
             ],
         ];
     }
