@@ -15,7 +15,7 @@ pipeline:
     group: build
     # TODO: Get the source for this image and push it
     # to razorpay
-    image: node:12.18.2
+    image: node:12.19.0
     pull: false
     environment:
       VERSION: ${DRONE_COMMIT_SHA}
@@ -32,7 +32,7 @@ pipeline:
         event: push
   test-js:
     group: test
-    image: node:12.18.2
+    image: node:12.19.0
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
@@ -46,7 +46,7 @@ pipeline:
       event: push
   validate-js:
     group: test
-    image: node:12.18.2
+    image: node:12.19.0
     pull: false
     commands:
       - npx eslint web/v2 --ext .js,.jsx,.ts,.tsx
@@ -102,7 +102,7 @@ pipeline:
     when:
       event: deployment
   upload-sentry-sourcemaps:
-    image: node:12.18.2
+    image: node:12.19.0
     secrets: [ sentry_auth_token ]
     commands:
       - curl -sL https://sentry.io/get-cli/ | bash
