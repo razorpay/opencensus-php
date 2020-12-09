@@ -249,6 +249,18 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    public function fetchInstrumentCommentList()
+    {
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/instrument_request_comment_list',
+            [],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
     public function setMIRInstrument()
     {
         $input = Request::all();

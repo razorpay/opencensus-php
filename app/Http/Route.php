@@ -2087,7 +2087,7 @@ class Route
         'fetch_internal_instrument_requests'      => ['post',      'internal_instrument_request_fetch',                         'InstrumentRequestController@fetchInternalInstrumentRequests'    ],
         'patch_internal_instrument_requests'      => ['patch',     'internal_instrument_request',                               'InstrumentRequestController@patchInternalInstrumentRequests'    ],
         'instrument_request_razorx_admin'         => ['get',       'instrument_request/razorx/admin',                           'InstrumentRequestController@getRazorxForAdminDashboard'         ],
-
+        'fetch_instrument_comment_list'           => ['get',       'instrument_request_comment_list',                           'InstrumentRequestController@fetchInstrumentCommentList'         ],
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
@@ -3982,6 +3982,7 @@ class Route
         'patch_internal_instrument_requests',
         'merchant_instrument_request_create_bulk',
         'instrument_request_razorx_admin',
+        'fetch_instrument_comment_list',
         'fetch_merchant_instrument_requests',
         'wfs_config_create',
         'wfs_config_update',
@@ -4810,6 +4811,7 @@ class Route
         'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => '*',
+        'fetch_instrument_comment_list'               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
