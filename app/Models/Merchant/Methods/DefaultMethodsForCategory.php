@@ -6,9 +6,6 @@ use RZP\Models\Terminal\Category;
 
 class DefaultMethodsForCategory
 {
-        const BLACKLISTED_METHODS = 'blacklisted_methods';
-        const IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS = 'ignore_blacklisted_for_instrument_requests_methods'; // methods are blacklisted for auto enablement at the time of merchant activation but merchant should be able to request it via insttruments(Payment Methods) dashboard
-
         // map of category to auto prohibited methods i.e. methods which should not be enabled automatically by default
         // for the merchant belonging to that category, however can be enabled by admins 
         // key is currently merchant category concatanated by category2, (in future business type etc can also come)
@@ -18,561 +15,323 @@ class DefaultMethodsForCategory
             // Financial Services
             '6211'    => [
                 Category::MUTUAL_FUNDS => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
+                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
                 ],
                 Category::SECURITIES => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
+                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
                 ],
             ],
             '6051' => [
-                Category::CRYPTOCURRENCY => [
-                    self::BLACKLISTED_METHODS =>  self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => []
-                ],    
+                Category::CRYPTOCURRENCY => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
             '6012' => [
                 Category::LENDING => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                   
+                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
                 ],
                 Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
-                ],
+                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
+                ]
             ],
             '6300' => [
-                Category::INSURANCE => [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
-                ]
+                Category::INSURANCE => []
             ],
             '6010'  =>  [
                 Category::FOREX =>  [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ],
+                    Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER
+                ]
             ],
             '8931'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ],
+                    Entity::AMEX, Entity::EMI
+                ]
             ],
             '6050'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI
                 ]
             ],
             '7801'  =>  [
-                Category::OTHERS    => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]  
+                Category::OTHERS    =>  self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
             '7361'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]
+                Category::OTHERS    =>  self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
     
             // Education
             '8220'  =>  [
-                Category::PVT_EDUCATION => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::PVT_EDUCATION => []
             ],
             '8211'  =>  [
-                Category::PVT_EDUCATION => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::PVT_EDUCATION => []
             ],
             '8299'  =>  [
-                Category::PVT_EDUCATION => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::PVT_EDUCATION => []
             ],
             '8351'  =>  [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS => []
             ],
     
             // Healthcare
             '5912'  =>  [
-                Category::PHARMA    =>  [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS,
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]
+                Category::PHARMA    =>  self::CATEGORY_DEPENDENT_METHODS
             ],
             '8062'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8071'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '7298'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5499'  =>  [
-                Category::ECOMMERCE =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE =>  []
             ],
     
             // Utilities
             '4900'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4814'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4899'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4816'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4814'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
     
             // Government Bodies
             '9399'  =>  [
-                Category::GOVERNMENT    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::GOVERNMENT    =>  []
             ],
     
             // Logistics
             '4214'  =>  [
-                Category::LOGISTICS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::LOGISTICS    =>  []
             ],
             '4215'  =>  [
-                Category::LOGISTICS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::LOGISTICS    =>  []
             ],
             '4225'  =>  [
-                Category::OTHERS       =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS       =>  []
             ],
     
             // Tours and Travel
             '4511'  =>  [
                 Category::TRAVEL_AGENCY     =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::AMEX
                 ]
             ],
             '7011'  =>  [
-                Category::HOSPITALITY       =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::HOSPITALITY       =>  []
             ],
             '4722'  =>  [
                 Category::TRAVEL_AGENCY     =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::AMEX
                 ]
             ],
     
             // Transport
             '4121'  =>  [
-                Category::OTHERS  =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS  =>  []
             ],
             '4131'  =>  [
-                Category::OTHERS  =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS  =>  []
             ],
             '4112'  =>  [
-                Category::OTHERS  =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS  =>  []
             ],
     
             // Ecommerce
             // 5399, ecommerce is in Healthcare as well, but have same value
             '5399'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5193'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5942'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5732'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '7311'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '7394'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5691'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5193'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5411'  =>  [
-                Category::GROCERY   => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::GROCERY   => []
             ],
             '5945'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5111'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5300'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5973'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5995'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5941'  =>  [
-                Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::ECOMMERCE => []
             ],
             '5971'  =>  [
                 Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI
                 ]
             ],
             '5999'  => [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS => []
             ],
             '5993'  => [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]
+                Category::OTHERS => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
     
     
             // Food and Beverage
             '5811'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5812'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5814'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5813'  =>  [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-
-                ]
+                Category::OTHERS => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
             '7299'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
     
             // IT and Software
             '5817'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '7372'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '7379'  => [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]
+                Category::OTHERS => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
     
             // Games
             '5816'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::FREECHARGE],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI, Entity::FREECHARGE
                 ]
             ],
             '7801'  =>  [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ]
+                Category::OTHERS => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
             
             // Media and Entertainment
             '5815'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '7832'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '2741'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5994'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
     
             // Services
             '7531'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8911'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4214'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8111'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8999'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5511'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             // 7392, others is in 'IT and Software' as well, have same value
             '7392'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '7311'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '5964'  =>  [
-                Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS, // cateogory is blacklisted
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
-                ],
+                Category::OTHERS => self::CATEGORY_DEPENDENT_METHODS // blacklisted
             ],
     
             // Housing and Real Estate
             '6513'  =>  [
                 Category::HOUSING   =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::AMEX
                 ]
             ],
             '7349'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '6513'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
     
             // Not for profit
             '8398'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI
                 ]
             ],
             '8661'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI
                 ]
             ],
     
             // Social
             '7273'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8641'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '4821'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
             '8699'  =>  [
-                Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
+                Category::OTHERS    =>  []
             ],
     
             // Others
             '5399'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
-                ]
-            ],
-
-            // if category, category2 does not matches with any of above, add methods which are wo be blacklised for all category merchants in this
-            'default'  =>  [
-                'default'    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                    Entity::EMI
                 ]
             ],
         ];
@@ -601,12 +360,17 @@ class DefaultMethodsForCategory
 
     public static function getDefaultMethodsFromMerchantCategories($category, $category2)
     {
-        $prohibitedMethods = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2][self::BLACKLISTED_METHODS] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS][self::BLACKLISTED_METHODS] ?? null);
+        if ((empty($category) === true) or (empty($category2) === true))
+        {
+            return null;
+        }
+
+        $prohibitedMethods = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS] ?? null);
         
-        // If $prohibitedMethods is null, it means category is not there in the above map in which case we need to block methods which are disabled for all
+        // If $prohibitedMethods is null, it means category is not there in the above map
         if ($prohibitedMethods === null)
         {
-            $prohibitedMethods = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP['default']['default'][self::BLACKLISTED_METHODS];
+            return null;
         }
 
         $methodData = [];
@@ -619,30 +383,14 @@ class DefaultMethodsForCategory
         foreach($prohibitedMethods as $prohibitedMethod)
         {
             $methodData[$prohibitedMethod] = false;
+
         }
 
         return $methodData;
     }
 
-    // This is being used in get_auto_disabled_methods/<merchant_id> which TS calls to validate if we should create instrument or not
     public static function getDefaultDisabledMethodsFromMerchantCategories($category, $category2)
     {
-        $disabledMethods = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2][self::BLACKLISTED_METHODS] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS][self::BLACKLISTED_METHODS] ?? null);
-
-        $ignoreMethods = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2][self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS][self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS] ?? null);
-
-        if (is_array($ignoreMethods) === true)
-        {
-            $disabledMethods = array_diff($disabledMethods, $ignoreMethods);
-        }
-
-        // array_diff makes the disabledMethods as indexed key->value map, we need to return array
-        $disabledMethodsArray = [];
-        foreach($disabledMethods as $key => $value)
-        {
-            array_push($disabledMethodsArray, $value);
-        }
-
-        return $disabledMethodsArray;
+        return self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][$category2] ?? (self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$category][Category::OTHERS] ?? null);
     }
 }
