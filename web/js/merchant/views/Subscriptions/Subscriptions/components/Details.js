@@ -31,6 +31,7 @@ export default (props) => {
   const {
     mode,
     plan,
+    selectedOffer,
     customer,
     invoices,
     goToLink,
@@ -46,6 +47,7 @@ export default (props) => {
     onTestChargeAttempt,
     cancelUpdateSubscription,
     onClickPauseAndResume,
+    isSubscriptionOffersEnabled,
   } = props;
 
   let showTestChargeBtn =
@@ -85,6 +87,7 @@ export default (props) => {
   const showPauseAndResumeBtn =
     ['active', 'paused'].indexOf(subscription.status) !== -1 &&
     props.isSubscriptionPauseAndResumeEnabled;
+
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
@@ -172,6 +175,22 @@ export default (props) => {
                   </span>
                 </div>
               </EntityDetailRow>
+
+              {isSubscriptionOffersEnabled && (
+                <EntityDetailRow label="Offer">
+                  {/* TODO: Add offers full details */}
+                  {subscription.offer_id ? (
+                    <>
+                      <Link to={`/offers/${subscription.offer_id}`}>{subscription.offer_id}</Link>
+                      <div class="label--primary">{selectedOffer.name}</div>
+                      <div class="label--secondary">{selectedOffer.display_text}</div>
+                      <div class="label--secondary">{selectedOffer.terms}</div>
+                    </>
+                  ) : (
+                    '--'
+                  )}
+                </EntityDetailRow>
+              )}
 
               <EntityDetailRow label="Created At">
                 <Time value={subscription.created_at} format="DD MMM YYYY, hh:mm:ss a" />

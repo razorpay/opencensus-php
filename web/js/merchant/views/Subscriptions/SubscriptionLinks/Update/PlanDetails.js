@@ -2,11 +2,15 @@ import React from 'react';
 import PlanDetails from '../components/PlanDetails';
 import Input from 'common/new-ui/Input';
 
+const CHANGES_OPTIONS = [
+  { label: 'Immediately', value: 'now' },
+  { label: 'End of Cycle', value: 'cycle_end' },
+];
+
 export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
   render() {
-    const props = this.props,
-      showScheduleChange =
-        props.status !== 'created' && props.status !== 'authenticated';
+    const { props } = this;
+    const showScheduleChange = props.status !== 'created' && props.status !== 'authenticated';
 
     return (
       <React.Fragment>
@@ -19,6 +23,9 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           onDateChange={props.onDateChange}
           onTimeChange={props.onTimeChange}
           onChangeInPlan={props.onChangeInPlan}
+          offers={props.offers}
+          showOffers={props.showOffers}
+          onChangeInOffer={props.onChangeInOffer}
         />
 
         <Input.Check
@@ -43,8 +50,3 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
     );
   }
 }
-
-const CHANGES_OPTIONS = [
-  { label: 'Immediately', value: 'now' },
-  { label: 'End of Cycle', value: 'cycle_end' },
-];

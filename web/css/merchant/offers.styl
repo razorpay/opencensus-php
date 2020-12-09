@@ -12,11 +12,6 @@
         padding-right: 15px;
         text-transform: capitalize;
 
-.no-cost-emi-loader
-    display : flex
-    align-content: center
-    justify-items: center
-
 .no-cost-emi-footnote
     font-family: Lato;
     font-style: normal;
@@ -51,36 +46,6 @@
             margin-left: 1px;
             top: 0;
             color: #f05050;
-
-.offers-api-note
-    margin-left: 156px;
-    color: #838383;
-    font-size: 13px;
-    
-.offers-emi-options-container
-    border-width: 1px;
-    border-color: #e2e2e2;
-    border-style: solid;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    margin-left: 156px;
-
-    > div:nth-of-type(even)
-        background: #FFFFFF;
-
-.offers-emi-options-row
-    display: flex;
-    flex-direction: row;
-    justify-content:flex-start;
-    align-items: center;
-    padding-left: 15px;
-
-    .emi-checkfield
-        width: 110px;
-
-    .Input-content
-        margin-left: 0px !important;
-
 
 .announcement-sidebar
     display: flex;
@@ -120,4 +85,117 @@
 
 .btn-border
     border: 1px solid #528ff0 !important;
-          
+
+.disable-offer-alert
+    line-height: 17px
+
+    .heading
+        font-weight bold
+        margin-bottom 12px
+
+    div
+        margin-bottom 16px
+
+.Offers--Details
+    .download-report
+        margin-bottom 20px
+        .rzp-banner-text
+            display flex
+            align-items: center
+            justify-content: space-around
+        .Button
+            margin-left: 20px
+            min-width: 150px
+
+    .subscription-details
+        border: 1px solid #EAEFF0
+        padding 16px 20px
+        display: flex
+        align-items: center
+        text-align: center
+        margin: 0 20px
+        > div
+            width 50%
+            &:not(:last-child)
+                border-right 1px solid #EAEFF0
+                margin-right 20px
+
+        .hading
+            font-size: 13px
+            color: #515978
+
+        .count
+            font-size: 18px
+            color: #58666E
+            font-weight: bold
+            span
+                font-weight: bold
+
+.Modal-mask.Modal-mask.Modal-mask--Offers--TypeSelection
+    background: rgba(22, 47, 86, 0.74)
+
+.Offers--TypeSelection
+    text-align: center
+
+    .heading
+        font-size: 24px
+        font-weight: bold
+
+.Offers--Create
+    > div:nth-child(2)
+        filter: blur(4px)
+
+    .StandAloneContainer .TemplateCard-list
+        width: auto
+
+    .emi-options
+        border-width: 1px
+        border-color: #e2e2e2
+        border-style: solid
+        margin-top: 10px
+        margin-bottom: 10px
+        margin-left: 156px
+        max-height: 200px
+        overflow: scroll
+        position relative
+
+        > div:nth-of-type(even)
+            background: #FFFFFF
+
+    .emi-option.heading
+        padding: 13px
+        font-weight: bold
+        position absolute
+        width: 100%
+        background: #fafafa
+        z-index: 1
+
+    .emi-option
+        display: flex
+        flex-direction: row
+        justify-content:flex-start
+        align-items: center
+        padding-left: 15px
+        z-index: 0
+
+        &:nth-child(2)
+            margin-top 46px
+
+        .emi-check-field
+            width: 110px
+
+        .Input-content
+            margin-left: 0px !important
+
+    .Input-label
+        white-space: normal
+
+    .offers-api-note
+        margin-left: 156px
+        color: #838383
+        font-size: 13px
+
+        .btn
+            padding: 0
+            margin-left: 4px
+            line-height: 1

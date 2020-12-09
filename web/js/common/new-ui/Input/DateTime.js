@@ -44,10 +44,10 @@ export default class DateTime extends React.Component {
       required = false,
       isInline,
       description,
-      defaultValue = moment(value),
       disabled,
       autoRender,
       dateTimeInputClass,
+      defaultValue,
     } = this.props;
     return (
       <React.Fragment>
@@ -92,9 +92,10 @@ export default class DateTime extends React.Component {
         >
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
+              autoRender
               data-name="date"
               placeholder="DD-MM-YYYY"
-              defaultValue={defaultValue}
+              defaultValue={defaultValue && moment(defaultValue)}
               disabled={hasNoDate}
               readOnly={true}
               onChange={this.onDateChange}

@@ -1,33 +1,44 @@
+import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
-import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-import { classList } from 'common/utils/rzp-utils';
-
-import Amount from 'common/ui/Amount';
-import Input, { Label, Description } from 'common/new-ui/Input';
-
-import { getIntervalCycle } from 'common/utils/rzp-utils';
 
 import QuantitySelector from '../New/QuantitySelector';
 import UPIBanner from './UPIBanner';
+
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+
+import Amount from 'common/ui/Amount';
+import QuickAdd from 'common/ui/Select/QuickAdd';
+import Input, { Label, Description } from 'common/new-ui/Input';
+
+import { getIntervalCycle, classList } from 'common/utils/rzp-utils';
+
+const planPeriodToMaxCycleMap = {
+  daily: 36500,
+  weekly: 5200,
+  monthly: 1200,
+  yearly: 100,
+};
 
 export default class NewSubscriptionLinkPlanDetails extends React.Component {
   static defaultProps = {
     isEdit: false,
   };
 
-  constructor({ plans, fields }) {
+  constructor({ plans, fields, offers }) {
     super();
 
     this.plans = getPlans(plans);
     this.selectedPlan = getSelectedPlan(this.plans, fields);
+    this.selectedOffer = getSelectedOffer(offers.items, fields);
   }
 
-  componentWillReceiveProps({ plans, fields }) {
+  componentWillReceiveProps({ plans, fields, offers }) {
     this.plans = getPlans(plans);
     this.selectedPlan = getSelectedPlan(this.plans, fields);
+    this.selectedOffer = getSelectedOffer(offers.items, fields);
   }
 
-  validateTotalCount = val => {
+  validateTotalCount = (val) => {
     if (!val) {
       if (this.props.isEdit) {
         return 'No of remaining cycles';
@@ -41,28 +52,42 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     }
   };
 
+  removeSelectedOffer = () => {
+    this.props.onChangeInOffer();
+  };
+
+  getAfterOffersOptionComponent = (props) => {
+    return (
+      <QuickAdd
+        {...props}
+        onClick={() => {
+          this.props.history.push('/offers/new?offer_creation_modal_type=subscription');
+        }}
+      />
+    );
+  };
+
   render() {
-    const { fields, internals, ...props } = this.props,
-      plans = this.plans,
-      selectedPlan = this.selectedPlan;
+    const { fields, internals, ...props } = this.props;
+    const plans = this.plans;
+    const selectedPlan = this.selectedPlan;
 
-    const dateInMoment = !!fields.start_at
-      ? moment(fields.start_at, 'X')
-      : undefined;
+    const dateInMoment = !!fields.start_at ? moment(fields.start_at, 'X') : undefined;
 
-    let showStartDate = !props.isEdit,
-      totalCountLabel = 'No of remaining cycles';
+    let showStartDate = !props.isEdit;
+    const totalCountLabel = 'No of remaining cycles';
 
-    const isAuthenticatedSubscription =
-      props.isEdit && props.status === 'authenticated';
+    const isAuthenticatedSubscription = props.isEdit && props.status === 'authenticated';
 
     if (isAuthenticatedSubscription) {
       showStartDate = true;
     }
 
-    const planPlaceholder = props.plans.loading
+    const planPlaceholder = props.plans.loading ? 'Loading...' : 'Select a plan';
+
+    const offerPlaceholder = props.offers.loading
       ? 'Loading...'
-      : 'Select a plan';
+      : 'Select an offer to provide discounts to consumers';
 
     const showUPIUnAvlBanner = selectedPlan.amount > UPI_AVL_LIMIT;
 
@@ -151,15 +176,45 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           description="No. of billing cycles to be charged"
           max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
           name={props.isEdit ? 'remaining_count' : 'total_count'}
-          label={
-            props.isEdit && !isAuthenticatedSubscription
-              ? totalCountLabel
-              : 'Total Count'
-          }
-          defaultValue={
-            props.isEdit ? fields.remaining_count : fields.total_count
-          }
+          const
+          label={props.isEdit && !isAuthenticatedSubscription ? totalCountLabel : 'Total Count'}
+          defaultValue={props.isEdit ? fields.remaining_count : fields.total_count}
         />
+
+        {props.showOffers && (
+          <div class="Input offer-selector">
+            <Label text="Offer" />
+            <div class="Input-content">
+              <div class="Input-elWrapper">
+                <TypeAhead
+                  showClear={true}
+                  options={props.offers.items}
+                  selected={this.selectedOffer}
+                  optionComponent={OfferOption}
+                  placeholder={offerPlaceholder}
+                  disabled={props.offers.loading}
+                  onChange={props.onChangeInOffer}
+                  selectedOptionLabelPath="name"
+                  searchIndices={['id', 'name', 'terms']}
+                  afterOptionsComponent={this.getAfterOffersOptionComponent}
+                />
+
+                {fields.offer_id && (
+                  <button onClick={this.removeSelectedOffer} class="btn btn-link">
+                    {' '}
+                    Remove{' '}
+                  </button>
+                )}
+              </div>
+              {fields.offer_id && (
+                <div class="m-t terms">
+                  {this.selectedOffer.display_text}
+                  <p>{this.selectedOffer.terms}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {showUPIUnAvlBanner && <UPIBanner />}
       </>
@@ -176,8 +231,16 @@ function PlanOption({ option }) {
   );
 }
 
+function OfferOption({ option }) {
+  return (
+    <div class="custom-powerselect-options">
+      <p>{option.display_text}</p>
+    </div>
+  );
+}
+
 function getInformativeMessage({ interval, period, currency }) {
-  return totalAmount => (
+  return (totalAmount) => (
     <>
       {getIntervalCycle(interval, period)} customer will be charged{' '}
       <Amount value={totalAmount} currency={currency} />
@@ -189,17 +252,14 @@ function getSelectedPlan(plans = [], fields = {}) {
   return plans.find(({ id }) => id === fields.plan_id) || {};
 }
 
+function getSelectedOffer(offers = [], fields = {}) {
+  return offers.find(({ id }) => id === fields.offer_id) || {};
+}
+
 function getPlans(plans) {
-  return plans.items.map(plan => ({
+  return plans.items.map((plan) => ({
     ...plan.item,
     ...plan,
     item: undefined,
   }));
 }
-
-const planPeriodToMaxCycleMap = {
-  daily: 36500,
-  weekly: 5200,
-  monthly: 1200,
-  yearly: 100,
-};

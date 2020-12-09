@@ -5,44 +5,34 @@ import UPIBanner from '../components/UPIBanner';
 
 import { getIntervalCycle } from 'common/utils/rzp-utils';
 
-export default function NewSubscriptionLinkReview({
-  fields,
-  internals,
-  ...props
-}) {
+export default function NewSubscriptionLinkReview({ fields, internals, ...props }) {
   const selectedPlan = props.plans.find(({ id }) => id === fields.plan_id);
 
   const { amount: planAmount, currency } = selectedPlan.item;
   const planQuantity = fields.quantity;
 
   const addOnAmount = fields.addons
-    .filter(addon => addon.item && !!addon.item.amount) // Filter out empty addon
-    .reduce(
-      (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
-      0
-    );
+    .filter((addon) => addon.item && !!addon.item.amount) // Filter out empty addon
+    .reduce((totalAmount, { item, quantity }) => totalAmount + item.amount * quantity, 0);
   const subscriptionAmount = planAmount * planQuantity;
   const minAuthAmount =
-    currency === 'INR'
-      ? 500
-      : (props.getCurrencyList[currency] || {}).min_auth_value;
+    currency === 'INR' ? 500 : (props.getCurrencyList[currency] || {}).min_auth_value;
   const authorizationAmount = getAuthorizationAmount(
     subscriptionAmount,
     addOnAmount,
     internals._startsImmediately,
-    minAuthAmount
+    minAuthAmount,
   );
 
-  const intervalCycle = getIntervalCycle(
-    selectedPlan.interval,
-    selectedPlan.period
-  );
+  const intervalCycle = getIntervalCycle(selectedPlan.interval, selectedPlan.period);
 
   let showUPIUnAvlBanner = authorizationAmount > UPI_AVL_LIMIT;
 
   if (!showUPIUnAvlBanner) {
     showUPIUnAvlBanner = subscriptionAmount > UPI_AVL_LIMIT;
   }
+
+  const selectedOffer = props.offers.find(({ id }) => id === fields.offer_id) || {};
 
   return (
     <div class="Subscription--New-review">
@@ -78,7 +68,8 @@ export default function NewSubscriptionLinkReview({
                   value={planAmount}
                   currency={selectedPlan.item.currency}
                   parentQuerySelector=".Modal-body"
-                />&nbsp;x&nbsp;{planQuantity}&nbsp;(quantity)
+                />
+                &nbsp;x&nbsp;{planQuantity}&nbsp;(quantity)
               </EntityDetailRow>
               {!!addOnAmount && (
                 <EntityDetailRow label="Upfront Amount">
@@ -105,13 +96,22 @@ export default function NewSubscriptionLinkReview({
               />
             </p>
             <div>
-              <EntityDetailRow
-                label="No. of cycles"
-                value={fields.total_count}
-              />
+              <EntityDetailRow label="No. of cycles" value={fields.total_count} />
             </div>
           </div>
         </div>
+
+        {selectedOffer.id && (
+          <div class="Payments--item offer-details">
+            <div class="Payments--item-inner">
+              <div class="heading">Offer Applied</div>
+
+              <div class="display_text">{selectedOffer.display_text}</div>
+
+              <div class="terms">{selectedOffer.terms}</div>
+            </div>
+          </div>
+        )}
 
         {showUPIUnAvlBanner && <UPIBanner />}
       </div>

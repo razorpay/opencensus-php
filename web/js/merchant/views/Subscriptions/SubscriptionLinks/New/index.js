@@ -7,10 +7,12 @@ import {
   fetchSubscriptionItems,
   fetchSubscription,
   saveSubscription,
+  fetchSubscriptionOffers,
 } from 'merchant/reducers/subscriptions';
 import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { fetchSettings } from 'merchant/reducers/subscriptions';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -32,18 +34,15 @@ import Review from './Review';
 import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
-import {
-  trackSaveDuplicateSubscription,
-  trackAddAddon,
-  trackAddPlans,
-} from '../ga';
+import { trackSaveDuplicateSubscription, trackAddAddon, trackAddPlans } from '../ga';
 
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     plans: state.plans,
     items: state.items,
     user: state.session.user,
+    subscriptionOffers: state.subscriptions.offers,
   }),
   {
     fetchSubscription,
@@ -52,7 +51,9 @@ import {
     fetchSubscriptionItems,
     saveSubscription,
     showNotification,
-  }
+    fetchSettings,
+    fetchSubscriptionOffers,
+  },
 )
 export default class NewSubscriptionLink extends Component {
   state = {
@@ -66,25 +67,53 @@ export default class NewSubscriptionLink extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchPlans({ count: 100 }).then(_ => this.initializePlan());
-
-    this.props.fetchSubscriptionItems({ count: 100, type: 'addon' });
-
-    this.fetchIfIntentDuplicate();
+    this.fetchDataForSubscription();
   }
 
-  initializePlan() {
+  fetchDataForSubscription = async () => {
+    await this.props.fetchPlans({ count: 100 }).then(() => this.initializePlan());
     if (
-      this.state.fields.plan_id &&
-      this.props.plans.items &&
-      this.props.plans.items.length
+      this.props.user.isSubscriptionOffersEnabled &&
+      this.props.subscriptionOffers.items.length === 0
     ) {
+      this.props.fetchSettings().then((resp) => {
+        const paymentMethods = [];
+        resp.data.items.forEach((setting) => {
+          if (setting.setting_enabled === '1') {
+            paymentMethods.push(setting.name);
+          }
+        });
+
+        this.props
+          .fetchSubscriptionOffers(['card', ...paymentMethods])
+          .then((resp) => this.initializeOffer(resp.data));
+      });
+    }
+
+    this.fetchIfIntentDuplicate();
+    this.props.fetchSubscriptionItems({ count: 100, type: 'addon' });
+  };
+
+  initializePlan() {
+    if (this.state.fields.plan_id && this.props.plans.items && this.props.plans.items.length) {
       const currencyOfSelectedPlan = this.props.plans.items.filter(
-        p => p.id === this.state.fields.plan_id
+        (p) => p.id === this.state.fields.plan_id,
       )[0].item.currency;
 
       this.setState({
         currencyOfSelectedPlan,
+      });
+    }
+  }
+
+  initializeOffer(offers) {
+    if (this.state.fields.offer_id && offers.items && offers.items.length) {
+      const currencyOfSelectedOffer = offers.items.filter(
+        (offer) => offer.id === this.state.fields.offer_id,
+      ).id;
+
+      this.setState({
+        currencyOfSelectedOffer,
         isFetchingSubscription: false,
       });
     }
@@ -98,7 +127,7 @@ export default class NewSubscriptionLink extends Component {
         isFetchingSubscription: true,
       });
 
-      this.props.fetchSubscription(searchQuery.duplicate_id).then(data => {
+      this.props.fetchSubscription(searchQuery.duplicate_id).then((data) => {
         this.isIntentDuplicate = true;
 
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
@@ -127,7 +156,7 @@ export default class NewSubscriptionLink extends Component {
           expire_by,
         };
 
-        newSubscription.notes = Object.keys(data.notes).map(key => ({
+        newSubscription.notes = Object.keys(data.notes).map((key) => ({
           key,
           value: data.notes[key],
         }));
@@ -140,14 +169,14 @@ export default class NewSubscriptionLink extends Component {
               _isNonExpiringLink: !expire_by,
             },
           },
-          _ => this.initializePlan()
+          (_) => this.initializePlan(),
         );
 
         // Fetch addons
         fetchAddOns({
           subscription_id: searchQuery.duplicate_id,
         }).then(({ data }) => {
-          const addons = data.items.map(a => ({
+          const addons = data.items.map((a) => ({
             item_id: a.item.id,
             quantity: a.quantity,
             item: {
@@ -173,7 +202,7 @@ export default class NewSubscriptionLink extends Component {
 
         // Fetch customer details
         if (data.customer_notify) {
-          this.props.fetchCustomer(data.customer_id).then(data => {
+          this.props.fetchCustomer(data.customer_id).then((data) => {
             this.setState({
               fields: {
                 ...this.state.fields,
@@ -222,6 +251,15 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
+  handleChangeInOffer = ({ option = {} } = {}) => {
+    this.setState({
+      fields: {
+        ...this.state.fields,
+        offer_id: option.id,
+      },
+    });
+  };
+
   handleChangeInPlan = ({ option }) => {
     const { currencyOfSelectedPlan, fields, internals } = this.state;
 
@@ -229,15 +267,11 @@ export default class NewSubscriptionLink extends Component {
 
     const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
 
-    if (
-      currSelectedPlan &&
-      currSelectedPlan.item.currency !== currencyOfSelectedPlan
-    ) {
+    if (currSelectedPlan && currSelectedPlan.item.currency !== currencyOfSelectedPlan) {
       if (internals._addOnPresent) {
         this.props.showNotification({
           type: 'neutral',
-          message:
-            'Currency of Plan is changed. Please select the Add Ons again',
+          message: 'Currency of Plan is changed. Please select the Add Ons again',
           closeTimeout: 8000,
         });
 
@@ -273,7 +307,7 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
-  handleSelectAddonItem = addonIndex => ({ option }) => {
+  handleSelectAddonItem = (addonIndex) => ({ option }) => {
     trackAddAddon(option.currency);
 
     const fields = { ...this.state.fields };
@@ -293,12 +327,10 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
-  handleDateChange = fieldName => selectedDate => {
+  handleDateChange = (fieldName) => (selectedDate) => {
     selectedDate.startOf('day');
 
-    const current = this.state.fields[fieldName]
-      ? moment(this.state.fields[fieldName], 'X')
-      : 0;
+    const current = this.state.fields[fieldName] ? moment(this.state.fields[fieldName], 'X') : 0;
     const time = current
       ? Number(current.format('X')) - Number(current.startOf('day').format('X'))
       : 0;
@@ -310,20 +342,14 @@ export default class NewSubscriptionLink extends Component {
     this.handleChangeIn({ target });
   };
 
-  handleTimeChange = fieldName => selectedDate => {
-    const time =
-      Number(selectedDate.format('X')) -
-      Number(selectedDate.startOf('day').format('X'));
+  handleTimeChange = (fieldName) => (selectedDate) => {
+    const time = Number(selectedDate.format('X')) - Number(selectedDate.startOf('day').format('X'));
     fieldName = fieldName.replace('_time', '');
 
     let current = this.state.fields[fieldName];
 
     // adding time to current day
-    current = Number(
-      moment(current, 'X')
-        .startOf('day')
-        .format('X')
-    );
+    current = Number(moment(current, 'X').startOf('day').format('X'));
     const target = {
       name: fieldName,
       value: current + time,
@@ -361,10 +387,10 @@ export default class NewSubscriptionLink extends Component {
     // formatting notes, from [key: key1, value: value1] => {key1: value1}
     data.notes = (data.notes || []).reduce(
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
-      {}
+      {},
     );
 
-    data.addons = data.addons.map(addon => {
+    data.addons = data.addons.map((addon) => {
       delete addon.item;
 
       return addon;
@@ -372,7 +398,7 @@ export default class NewSubscriptionLink extends Component {
 
     return this.props
       .saveSubscription(data)
-      .then(data => {
+      .then((data) => {
         if (data) {
           this.props.showNotification({
             type: 'success',
@@ -396,10 +422,8 @@ export default class NewSubscriptionLink extends Component {
       });
   };
 
-  handleRemoveBtn = addonIndex => () => {
-    const addons = this.state.fields.addons.filter(
-      (_, index) => addonIndex !== index
-    );
+  handleRemoveBtn = (addonIndex) => () => {
+    const addons = this.state.fields.addons.filter((_, index) => addonIndex !== index);
 
     const fields = {
       ...this.state.fields,
@@ -414,7 +438,7 @@ export default class NewSubscriptionLink extends Component {
     this.setState({ fields, internals });
   };
 
-  changeTab = step => () => {
+  changeTab = (step) => () => {
     const currentTab = this.state.currentTab + step;
 
     const validTabs = [...this.state.validTabs];
@@ -426,13 +450,7 @@ export default class NewSubscriptionLink extends Component {
   isFormValid = () => {
     const { currentTab, fields, internals } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
-    return isFormValid(
-      currentTab,
-      fields,
-      internals,
-      validateTotalCount,
-      this.props.isEdit
-    );
+    return isFormValid(currentTab, fields, internals, validateTotalCount, this.props.isEdit);
   };
 
   renderForm() {
@@ -441,12 +459,16 @@ export default class NewSubscriptionLink extends Component {
         return (
           <PlanDetails
             plans={this.props.plans}
+            offers={this.props.subscriptionOffers}
+            showOffers={this.props.user.isSubscriptionOffersEnabled}
             onChangeInPlan={this.handleChangeInPlan}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
+            onChangeInOffer={this.handleChangeInOffer}
             fields={this.state.fields}
             internals={this.state.internals}
-            ref={form => (this.planDetailsForm = form)}
+            ref={(form) => (this.planDetailsForm = form)}
+            history={this.props.history}
           />
         );
       case 1:
@@ -476,6 +498,7 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             plans={this.props.plans.items}
+            offers={this.props.subscriptionOffers.items}
             getCurrencyList={this.props.user.getCurrencyList}
           />
         );
@@ -483,13 +506,8 @@ export default class NewSubscriptionLink extends Component {
   }
 
   renderWizard() {
-    const { isFetchingSubscription, currentTab, fields } = this.state;
+    const { isFetchingSubscription, currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
-
-    const selectedPlan =
-      fields.plan_id &&
-      this.props.plans.items.filter(({ id }) => id === fields.plan_id)[0];
-    const showUPIUnAvlBanner = selectedPlan && selectedPlan.item.isUPIUnAvl;
 
     return (
       // need to improve this css styling
@@ -502,9 +520,7 @@ export default class NewSubscriptionLink extends Component {
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
           tabsValidity={this.state.validTabs}
-          disableTabCondition={tabIndex =>
-            tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
-          }
+          disableTabCondition={(tabIndex) => tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]}
         />
         {isFetchingSubscription ? (
           <div class="page-center">
@@ -556,35 +572,22 @@ export default class NewSubscriptionLink extends Component {
     const isModalView = this.props.onClose;
 
     return isModalView ? (
-      <Modal
-        class="NewSubscriptionLink animate-down"
-        onClose={this.props.onClose}
-      >
+      <Modal class="NewSubscriptionLink animate-down" onClose={this.props.onClose}>
         <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">
-        {this.renderWizard({ isModalView })}
-      </div>
+      <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>
     );
   }
 }
 
-function isFormValid(
-  formIndex,
-  fields,
-  internals,
-  validateTotalCount = () => {},
-  isEdit
-) {
+function isFormValid(formIndex, fields, internals, validateTotalCount = () => {}, isEdit) {
   switch (formIndex) {
     case 0: {
       return (
         !!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
-        !validateTotalCount(
-          isEdit ? fields.remaining_count : fields.total_count
-        )
+        !validateTotalCount(isEdit ? fields.remaining_count : fields.total_count)
       );
     }
 
@@ -595,8 +598,7 @@ function isFormValid(
     case 2: {
       const notify_info = fields.notify_info || {};
       return (
-        (!fields.customer_notify ||
-          (!!notify_info.notify_email || !!notify_info.notify_phone)) &&
+        (!fields.customer_notify || !!notify_info.notify_email || !!notify_info.notify_phone) &&
         (internals._isNonExpiringLink || !!fields.expire_by)
       );
     }

@@ -1,5 +1,3 @@
-import Amount from 'common/ui/Amount';
-
 export default function UpdateSubscriptionLinkReview(props) {
   const changes = changeData(props);
 
@@ -24,7 +22,9 @@ export default function UpdateSubscriptionLinkReview(props) {
 
   return (
     <div class="SubscriptionLinks--Update-review">
-      {changes.map(e => <ChangeValue {...e} />)}
+      {changes.map((e) => (
+        <ChangeValue key={e.heading} {...e} />
+      ))}
       {updateSubsStatusDesc}
     </div>
   );
@@ -40,8 +40,8 @@ export function changeData({
 }) {
   const changes = [];
 
-  let currSelectedPlan = updatedPlan,
-    prevSelectedPlan = prevPlan;
+  let currSelectedPlan = updatedPlan;
+  let prevSelectedPlan = prevPlan;
 
   if (!updatedPlan) {
     currSelectedPlan = plans.find(({ id }) => id === fields.plan_id);
@@ -116,6 +116,18 @@ export function changeData({
     });
   }
 
+  if (prevSubscription.offer_id !== fields.offer_id) {
+    changes.push({
+      heading: 'Offer',
+      changes: [
+        {
+          current: prevSubscription.offer_id,
+          change: fields.offer_id || 'Offer Removed',
+        },
+      ],
+    });
+  }
+
   return changes;
 }
 
@@ -124,7 +136,7 @@ const ChangeValue = ({ heading, changes }) => (
     <span class="big-dot-separator" />
     <div>
       <strong>{heading}</strong>
-      {changes.map(change => (
+      {changes.map((change) => (
         <div class="current-change" key={change.current}>
           {change.current}
           <b>
@@ -137,5 +149,6 @@ const ChangeValue = ({ heading, changes }) => (
   </div>
 );
 
-const getTimeInFormat = date =>
-  moment.unix(date).format('DD MMM, YYYY, hh:mm a');
+function getTimeInFormat(date) {
+  return moment.unix(date).format('DD MMM, YYYY, hh:mm a');
+}

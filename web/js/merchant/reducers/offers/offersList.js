@@ -14,7 +14,7 @@ export const OFFERS_AUTOCOMPLETE_FETCH = 'OFFERS_AUTOCOMPLETE_FETCH';
 export const OFFER_APPEND = 'OFFER_APPEND';
 export const OFFER_UPDATE = 'OFFER_UPDATE';
 
-export const fetchOffers = params => {
+export const fetchOffers = (params) => {
   let offer = new Offer();
 
   return {
@@ -23,7 +23,7 @@ export const fetchOffers = params => {
   };
 };
 
-export const fetchOffer = id => {
+export const fetchOffer = (id) => {
   let offer = new Offer();
 
   return {
@@ -33,14 +33,15 @@ export const fetchOffer = id => {
 };
 
 /* Hook to update newly-created/edited payment link in redux list*/
-export const appendOfferInReduxList = offer => {
+export const appendOfferInReduxList = (offer) => {
+  const newOffer = new Offer(offer);
   return {
     type: OFFER_APPEND,
-    payload: offer,
+    payload: newOffer,
   };
 };
 
-export const updateOfferInReduxList = offer => {
+export const updateOfferInReduxList = (offer) => {
   return {
     type: OFFER_UPDATE,
     payload: offer,

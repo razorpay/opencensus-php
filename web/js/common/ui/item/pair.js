@@ -236,3 +236,18 @@ export const offerStatus = {
   title: 'Status',
   value: (item) => <OfferStatusLabel status={item.active ? 'enabled' : 'disabled'} />,
 };
+
+export const promotionType = {
+  title: 'Promotion Type',
+  value: (item) => {
+    if (item.emi_subvention) return 'No Cost EMI';
+    if (item.product_type === 'subscription') return 'Subscription';
+
+    return 'Discounts & Cash Back';
+  },
+};
+
+export const paymentMethod = {
+  title: 'Payment Method',
+  value: (item) => item.payment_method,
+};

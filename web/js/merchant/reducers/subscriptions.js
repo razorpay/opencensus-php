@@ -5,6 +5,8 @@ import {
   makeActionCollectionReducer,
   fetchAll,
   updateEntityInList,
+  listFetchSuccessState,
+  listFetchErrorState,
 } from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity';
 
@@ -20,13 +22,14 @@ const SUBSCRIPTION_UPDATE = 'SUBSCRIPTION_UPDATE';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
+const SUBSCRIPTION_OFFER_FETCH = 'SUBSCRIPTION_OFFER_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
 const SUBSCRIPTION_SETTINGS = 'SUBSCRIPTION_SETTINGS';
 const SUBSCRIPTION_SETTINGS_UPDATE = 'SUBSCRIPTION_SETTINGS_UPDATE';
 const CHECKOUT_INFO = 'CHECKOUT_INFO';
 
 export const fetchSubscriptionItems = (params) => {
-  let item = new SubscriptionItem();
+  const item = new SubscriptionItem();
 
   return {
     type: ITEMS_FETCH,
@@ -34,8 +37,21 @@ export const fetchSubscriptionItems = (params) => {
   };
 };
 
+export const fetchSubscriptionOffers = (payment_methods) => {
+  return {
+    type: SUBSCRIPTION_OFFER_FETCH,
+    payload: merchantFetch({
+      url: `offers/subscription`,
+      method: 'get',
+      data: {
+        payment_methods,
+      },
+    }),
+  };
+};
+
 export const saveSubscriptionItem = (params) => {
-  let item = new SubscriptionItem(params);
+  const item = new SubscriptionItem(params);
 
   return {
     type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
@@ -56,7 +72,7 @@ export const fetchSubscriptionCreditNotes = (id) => {
 export const fetchSubscriptions = (params) => fetchAll(params, Subscription, 'SUBSCRIPTIONS');
 
 export const fetchSubscription = (id) => {
-  let subscription = new Subscription();
+  const subscription = new Subscription();
   return {
     type: SUBSCRIPTION_FETCH,
     payload: subscription.fetch(id),
@@ -70,7 +86,7 @@ export const fetchSubscriptionsOverview = (before) => {
 };
 
 export const fetchInvoices = (subs_id) => {
-  let subscription = new Subscription();
+  const subscription = new Subscription();
   subs_id = subs_id.replace(/\/$/, '');
 
   return {
@@ -80,7 +96,7 @@ export const fetchInvoices = (subs_id) => {
 };
 
 export const fetchScheduledChanges = (id) => {
-  let subscription = new Subscription({ id });
+  const subscription = new Subscription({ id });
 
   return subscription.fetchScheduledChanges();
 };
@@ -184,7 +200,7 @@ export const paymentManualAttempt = (subscriptionId, invoiceId) =>
     method: 'post',
   });
 
-let entityListInitialState = {
+const entityListInitialState = {
   loading: true,
   items: [],
   error: null,
@@ -192,6 +208,10 @@ let entityListInitialState = {
     loading: true,
     items: [],
     error: null,
+  },
+  offers: {
+    loading: true,
+    items: [],
   },
 };
 
@@ -241,6 +261,10 @@ export const subscriptionsReducer = makeActionCollectionReducer(
         },
       };
     },
+    [`${SUBSCRIPTION_OFFER_FETCH}::SUCCESS`]: (state, action) =>
+      set(state, 'offers', listFetchSuccessState(state.offers, action)),
+    [`${SUBSCRIPTION_OFFER_FETCH}::ERROR`]: (state, action) =>
+      set(state, 'offers', listFetchErrorState(state.offers, action)),
   },
   entityListInitialState,
 );
@@ -261,11 +285,14 @@ const updateInvoicesEntity = (status) => (state, action) => {
         items: [],
         error: action.payload.errors,
       });
+    default: {
+      return state;
+    }
   }
 };
 
 // Details Reducer
-let entityInitialState = {
+const entityInitialState = {
   loading: true,
   entity: {},
   plan: {

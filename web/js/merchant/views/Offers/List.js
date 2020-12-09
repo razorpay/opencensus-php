@@ -6,7 +6,15 @@ import EmptyList from 'merchant/components/EmptyList';
 import DataTable from 'common/ui/Table/DataTable';
 
 import { fetchOffers as fetchAll } from 'merchant/reducers/offers/offersList';
-import { offerId, offerTitle, offerStatus, startOn, endsOn } from 'common/ui/item/pair';
+import {
+  offerId,
+  offerTitle,
+  promotionType,
+  paymentMethod,
+  offerStatus,
+  startOn,
+  endsOn,
+} from 'common/ui/item/pair';
 
 @connect((state) => ({ ...state.offers }), {
   fetchAll,
@@ -17,7 +25,15 @@ export default class OffersList extends ListContainer {
       <>
         <DataTable
           title="Offers"
-          columns={[offerId, offerTitle, startOn, endsOn, offerStatus]}
+          columns={[
+            offerId,
+            offerTitle,
+            promotionType,
+            paymentMethod,
+            startOn,
+            endsOn,
+            offerStatus,
+          ]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

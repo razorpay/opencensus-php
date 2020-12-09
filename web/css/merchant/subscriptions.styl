@@ -260,7 +260,8 @@
     .panel-body
       padding: 0 12px 12px
 
-.SubscriptionLinks--new
+.SubscriptionLinks--new,
+.SubscriptionLinks--update
   .upi-banner
     border: 1px solid #E0E0E0
     padding: 8px
@@ -269,6 +270,25 @@
     width: 100%
     left: 0
     background: white
+
+  .terms
+    font-size: 12px
+    color: #777777
+
+  .Payments--item.offer-details
+    margin-top 30px
+    &:before
+      margin-left 8px
+      background: url('https://cdn.razorpay.com/static/assets/offers/offers-icon.svg')
+      border: none
+
+  .offer-selector
+    .Input-elWrapper
+      display: flex
+      align-items: center
+
+    .TypeAhead
+      width 500px
 
 .Subscription--Manual-charge
   .billing-details

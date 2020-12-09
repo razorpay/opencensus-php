@@ -15,10 +15,7 @@ import RTracking from 'react-tracking';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
-import OnBoarding, {
-  getIsOffersEnabled,
-  getIsAllowedResetOffersOnBoarding,
-} from './OnBoarding';
+import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
 
 import {
   handleProductQuickGuide,
@@ -26,26 +23,21 @@ import {
 } from 'merchant/reducers/onboarding';
 
 @connect(
-  state => {
+  (state) => {
     return {
       offers: state.offers,
       user: state.session.user,
-      offersProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.OFFERS
-      ),
+      offersProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.OFFERS),
     };
   },
   {
     handleProductQuickGuide,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
   componentDidMount() {
-    this.props.tracking.trackEvent(
-      window.rzpQ.merchantActions().success('Offer_rendered')
-    );
+    this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -87,6 +79,11 @@ export default class OfferIndex extends Component {
     if (showOnboarding) {
       return <OnBoarding />;
     }
+
+    const createOfferRoute = this.props.user.isSubscriptionOffersEnabled
+      ? '/offers/new' // '/offers/new?offer_creation_modal_type=subscription'
+      : '/offers/new?offer_creation_modal_type=basic';
+
     return (
       <tabbed-container>
         <header id="link-header">
@@ -105,23 +102,17 @@ export default class OfferIndex extends Component {
                     <TakeATourButton feature={RZPFeatures.OFFERS} />
                     <DocsLink url="https://razorpay.com/docs/offers/" />
                     <ShowWhen
-                      additionalCondition={user =>
+                      additionalCondition={(user) =>
                         (this.props.mode !== 'live' || !user.isRejected) &&
                         user.isAllowedEdit('offers')
                       }
                     >
-                      <NavLink
-                        class="btn btn-primary"
-                        exact
-                        to="/offers/new?offer_creation_modal_type=basic"
-                      >
+                      <NavLink class="btn btn-primary" exact to={createOfferRoute}>
                         <i className="i i-plus" />
                         <span
                           onClick={() => {
                             this.props.tracking.trackEvent(
-                              window.rzpQ
-                                .merchantActions()
-                                .initiated('Offer_create')
+                              window.rzpQ.merchantActions().initiated('Offer_create'),
                             );
                           }}
                         >
@@ -137,9 +128,7 @@ export default class OfferIndex extends Component {
                         <span
                           onClick={() => {
                             this.props.tracking.trackEvent(
-                              window.rzpQ
-                                .merchantActions()
-                                .initiated('nocostemi_create')
+                              window.rzpQ.merchantActions().initiated('nocostemi_create'),
                             );
                           }}
                         >

@@ -1379,6 +1379,8 @@ class Service extends Base\Service
             'rx_payout_links_ms',
             'upi_subscription',
             'rx_bulk_approvals',
+            'offer_on_subscription',
+            'subscription_offers_reports',
             'project_nitro',
             'project_nitro_1',
             'rx_payout_links_onboarding_revamp',

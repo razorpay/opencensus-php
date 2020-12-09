@@ -570,6 +570,14 @@ export default class User {
     return this.getExpStatus('upi_subscription');
   }
 
+  get isSubscriptionOffersEnabled() {
+    return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
+  }
+
+  get isSubscriptionOffersReportsEnabled() {
+    return this.isSubscriptionOffersEnabled && this.getExpStatus('subscription_offers_reports');
+  }
+
   // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonEnabledByRazorX() {
     return true;

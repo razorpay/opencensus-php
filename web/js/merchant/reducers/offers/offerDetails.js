@@ -6,7 +6,7 @@ const OFFER_CREATE = 'OFFER_CREATE';
 const OFFER_EDIT = 'OFFER_EDIT';
 const OFFER_INIT = 'OFFER_INIT';
 
-export const fetchOffer = id => {
+export const fetchOffer = (id) => {
   let offer = new Offer();
 
   return {
@@ -15,13 +15,22 @@ export const fetchOffer = id => {
   };
 };
 
+export const saveOffer = (formData) => {
+  const offer = new Offer(formData);
+  return offer.save(formData, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 let initialState = {
   loading: true,
   offer: {},
   error: null,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${OFFER_FETCH}::PENDING`:
       return set(state, 'loading', true);

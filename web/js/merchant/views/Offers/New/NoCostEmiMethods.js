@@ -1,7 +1,7 @@
 import React from 'react';
 import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { ISSUERS, PAYMENT_NETWORK_MAP } from 'merchant/views/Offers/Entity';
+import { ISSUERS, PAYMENT_NETWORK_MAP } from '../constants';
 import { deepClone } from '../../../../common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import Amount from '../../../../common/ui/Amount';
@@ -21,14 +21,14 @@ export default class NoCostEmiMethods extends React.Component {
   componentDidMount() {
     let methodsReq = merchantFetch('merchant/methods');
     methodsReq
-      .then(res => {
+      .then((res) => {
         this.setState({
           emiOptions: (res.data && res.data.emi_plans) || null,
           emiOptionsDetails: (res.data && res.data.emi_options) || null,
           isLoading: false,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         //todo show error message in the header
       });
     this.setState({
@@ -40,15 +40,13 @@ export default class NoCostEmiMethods extends React.Component {
     });
   }
 
-  onChange = event => {
+  onChange = (event) => {
     event.persist();
-    this.props.getFormOnChangeHandler('stateResetter')(['emi_durations'])(
-      event
-    );
+    this.props.getFormOnChangeHandler('stateResetter')(['emi_durations'])(event);
     this.setState({ selectedIssuer: event.target.value });
   };
 
-  onSelectTenure = tenure => event => {
+  onSelectTenure = (tenure) => (event) => {
     let tenureState = deepClone(this.state.tenure);
     if (event.target.value === '1' && !tenureState[tenure]) {
       tenureState[tenure] = true;
@@ -61,9 +59,7 @@ export default class NoCostEmiMethods extends React.Component {
         let pseudoEvent = {
           target: {
             name: 'emi_durations',
-            value: Object.keys(this.state.tenure).map(stringTenure =>
-              parseInt(stringTenure)
-            ),
+            value: Object.keys(this.state.tenure).map((stringTenure) => parseInt(stringTenure)),
           },
         };
         this.props.getFormOnChangeHandler()(pseudoEvent);
@@ -81,16 +77,17 @@ export default class NoCostEmiMethods extends React.Component {
         plans: [],
       };
 
-      let emiMerchantPaybacks = this.state.emiOptionsDetails[
-        this.state.selectedIssuer
-      ].reduce((acc, item) => {
-        if (acc[item.duration]) {
-          return acc;
-        } else {
-          acc[item.duration] = item;
-          return acc;
-        }
-      }, {});
+      let emiMerchantPaybacks = this.state.emiOptionsDetails[this.state.selectedIssuer].reduce(
+        (acc, item) => {
+          if (acc[item.duration]) {
+            return acc;
+          } else {
+            acc[item.duration] = item;
+            return acc;
+          }
+        },
+        {},
+      );
 
       for (let duration in emiPlans.plans) {
         let text = `${duration} Months`;
@@ -108,20 +105,17 @@ export default class NoCostEmiMethods extends React.Component {
               />
             </div>
             <p>{emiMerchantPaybacks[duration].merchant_payback} %</p>
-          </div>
+          </div>,
         );
       }
 
       planFields.unshift(
-        <div
-          class="offers-emi-options-row"
-          style={{ padding: '13px', fontWeight: 'bold' }}
-        >
+        <div class="offers-emi-options-row" style={{ padding: '13px', fontWeight: 'bold' }}>
           <div class="emi-checkfield">
             <p>EMI tenure</p>
           </div>
           <p>Discount borne by merchant</p>
-        </div>
+        </div>,
       );
     }
     if (planFields.length > 0) {
@@ -136,15 +130,14 @@ export default class NoCostEmiMethods extends React.Component {
   }
 
   render() {
-    let issuers =
-      (this.state.emiOptions && Object.keys(this.state.emiOptions)) || [];
+    let issuers = (this.state.emiOptions && Object.keys(this.state.emiOptions)) || [];
     let networksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
     issuers = issuers
-      .filter(issuer => {
+      .filter((issuer) => {
         let issuerData = this.state.emiOptions[issuer];
         return issuerData.min_amount <= this.props.minAmount * 100;
       })
-      .map(issuer => ({
+      .map((issuer) => ({
         name: issuer,
         label: networksAndIssuers[issuer] || issuer,
       }));
@@ -171,12 +164,9 @@ export default class NoCostEmiMethods extends React.Component {
               <Amount value={this.props.minAmount * 100} /> are being displayed.
             </li>
             <li>
-              In No-Cost-EMI, the interest charged by bank is given as a
-              discount to the customer. To know more about how this works, click{' '}
-              <a
-                target="_blank"
-                href={'https://razorpay.com/docs/offers/no-cost-emi/'}
-              >
+              In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
+              To know more about how this works, click{' '}
+              <a target="_blank" href={'https://razorpay.com/docs/offers/no-cost-emi/'}>
                 here
               </a>
               .

@@ -8,6 +8,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 
 import { findBy, stringToObj } from 'common/utils/rzp-utils';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import Plan from 'merchant/models/Plan';
 import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
@@ -17,6 +18,7 @@ import {
   updateSubscription,
   fetchScheduledChanges,
 } from 'merchant/reducers/subscriptions';
+import { fetchSettings } from 'merchant/reducers/subscriptions';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -29,6 +31,7 @@ import PlanDetails from './PlanDetails';
     plans: state.plans,
     items: state.items,
     subscription: state.subscription,
+    user: state.session.user,
   }),
   {
     fetchPlan,
@@ -38,6 +41,7 @@ import PlanDetails from './PlanDetails';
     updateSubscription,
     showNotification,
     fetchSubscription,
+    fetchSettings,
   },
 )
 export default class UpdateSubscription extends React.Component {
@@ -52,6 +56,10 @@ export default class UpdateSubscription extends React.Component {
       isLoading: true,
       prevSubscription: {},
       validTabs: [false, false],
+      subscriptionOffers: {
+        items: [],
+        loading: this.props.user.isSubscriptionOffersEnabled,
+      },
     };
   }
 
@@ -59,16 +67,18 @@ export default class UpdateSubscription extends React.Component {
     const plans = await this.props.fetchPlans({ count: 100 });
     await this.props.fetchItems({ count: 100, type: 'addon' });
 
+    const { entity: subscription } = this.props.subscription;
+
     let isPlanExists = false;
     plans.data.items.forEach((plan) => {
-      if (plan.id === this.props.subscription.entity.plan_id) {
+      if (plan.id === subscription.plan_id) {
         isPlanExists = true;
       }
     });
 
     if (!isPlanExists) {
       try {
-        const resp = await this.props.fetchPlan(this.props.subscription.entity.plan_id);
+        const resp = await this.props.fetchPlan(subscription.plan_id);
         const plan = new Plan(resp);
         const updatedPlans = {
           ...this.props.plans,
@@ -79,17 +89,25 @@ export default class UpdateSubscription extends React.Component {
       } catch (e) {}
     }
 
-    if (this.props.subscription.entity.id !== this.props.id) {
+    if (this.props.user.isSubscriptionOffersEnabled) {
+      fetchSubscriptionOffers([subscription.payment_method]).then((resp) => {
+        this.setState({
+          subscriptionOffers: resp.data,
+        });
+      });
+    }
+
+    if (subscription.id !== this.props.id) {
       await this.fetchSubscription(this.props.id);
 
       return;
     }
 
-    if (this.props.subscription.entity.has_scheduled_changes) {
+    if (subscription.has_scheduled_changes) {
       return this.fetchScheduledChanges(this.props.id);
     }
 
-    this.initUpdateSubscription(this.props.subscription.entity);
+    this.initUpdateSubscription(subscription);
   };
 
   initUpdateSubscription = (subscription) => {
@@ -101,6 +119,7 @@ export default class UpdateSubscription extends React.Component {
       quantity: subscription.quantity,
       start_at: subscription.start_at,
       customer_notify: subscription.customer_notify,
+      offer_id: subscription.offer_id,
     };
 
     if (['active'].includes(subscription.status)) {
@@ -183,7 +202,8 @@ export default class UpdateSubscription extends React.Component {
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
       (fields.remaining_count && prevSubscription.remaining_count !== fields.remaining_count) ||
-      prevSubscription.customer_notify !== fields.customer_notify
+      prevSubscription.customer_notify !== fields.customer_notify ||
+      prevSubscription.offer_id !== fields.offer_id
     );
   }
 
@@ -298,6 +318,10 @@ export default class UpdateSubscription extends React.Component {
       data.customer_notify = fields.customer_notify ? '1' : '0';
     }
 
+    if (prevSubscription.offer_id != fields.offer_id) {
+      data.offer_id = fields.offer_id;
+    }
+
     return data;
   };
 
@@ -329,6 +353,15 @@ export default class UpdateSubscription extends React.Component {
       });
   };
 
+  handleChangeInOffer = ({ option = {} } = {}) => {
+    this.setState({
+      fields: {
+        ...this.state.fields,
+        offer_id: option.id,
+      },
+    });
+  };
+
   renderForm = () => {
     const { fields, currency, internals, isLoading, currentTab, prevSubscription } = this.state;
 
@@ -357,6 +390,9 @@ export default class UpdateSubscription extends React.Component {
             onRadioChange={this.handleRadioChange}
             onChangeInPlan={this.handleChangeInPlan}
             ref={(form) => (this.planDetailsForm = form)}
+            offers={this.state.subscriptionOffers}
+            showOffers={this.props.user.isSubscriptionOffersEnabled}
+            onChangeInOffer={this.handleChangeInOffer}
           />
         );
       }
@@ -469,3 +505,13 @@ const tabsMeta = {
 };
 
 const tabs = Object.keys(tabsMeta);
+
+const fetchSubscriptionOffers = (payment_methods) => {
+  return merchantFetch({
+    url: `offers/subscription`,
+    method: 'get',
+    data: {
+      payment_methods,
+    },
+  });
+};

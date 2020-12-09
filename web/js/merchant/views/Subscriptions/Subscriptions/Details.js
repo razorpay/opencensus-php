@@ -27,6 +27,7 @@ import {
   fetchSubscription as fetchItem,
   pauseAndResumeSubscription,
 } from 'merchant/reducers/subscriptions';
+import { fetchOffer } from 'merchant/reducers/offers/offerDetails';
 
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
@@ -57,8 +58,10 @@ const scheduledChangesInitValue = {
     ...state.session,
     ...state.subscription,
     ...state.app,
+    offer: state.offer,
   }),
   {
+    fetchOffer,
     fetchPlan,
     fetchItem,
     openModal,
@@ -89,6 +92,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         statusMsg: {},
       },
       scheduledChanges: scheduledChangesInitValue,
+      selectedOffer: {},
     };
   }
 
@@ -339,6 +343,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           fetchPlan(subscription.plan_id),
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
+          subscription.offer_id && this.props.fetchOffer(subscription.offer_id),
         ]).then((response) => {
           this.setState(
             {
@@ -356,6 +361,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
           );
 
           this.fetchInvoicesList(id, true);
+
+          this.setState({
+            selectedOffer: response[3],
+          });
         });
       })
       .catch(({ errors }) => {
@@ -719,6 +728,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       invoiceErrors,
       invoiceLoading,
       scheduledChanges,
+      selectedOffer,
     } = this.state;
 
     let invoicesList = invoices;
@@ -867,6 +877,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         <SubscriptionDetails
           plan={plan}
           subscription={entity}
+          selectedOffer={selectedOffer}
           isSideView={closeUrl}
           isLoading={isLoading}
           mode={this.props.mode}
@@ -888,6 +899,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           cancelUpdateSubscription={this.handleCancelUpdateSubscription}
           onClickPauseAndResume={this.onClickPauseAndResume}
           isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
+          isSubscriptionOffersEnabled={user.isSubscriptionOffersEnabled}
         />
 
         {invoice_id && invoiceSecView}
