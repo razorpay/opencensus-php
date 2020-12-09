@@ -4,6 +4,7 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Exception;
+use RZP\Models\Base\Collection;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -317,7 +318,7 @@ trait Migrate
 
         if (count($mismatchData) > 0)
         {
-            $app = App::getFacadeRoot();
+            $app = \App::getFacadeRoot();
 
             $data = ["api"=>$apiResponse["id"], "terminal"=>$terminalResponse["id"]];
 
@@ -334,7 +335,7 @@ trait Migrate
     public function compareArrayOfTerminalArrays(array $apiResponse, array $terminalResponse)
     {
         if (count($apiResponse) !== count($terminalResponse)){
-            $app = App::getFacadeRoot();
+            $app = \App::getFacadeRoot();
 
             $traceData = ["api_count"=> count($apiResponse), "terminals_count" => count($terminalResponse)];
 
@@ -393,7 +394,7 @@ trait Migrate
         }
         if (count($mismatchData) > 0)
         {
-            $app = App::getFacadeRoot();
+            $app = \App::getFacadeRoot();
 
             $data = ["attribute" => "id", "api" => $apiEntity->getId(), "terminals" => $terminalEntity->getId()];
 
@@ -445,5 +446,64 @@ trait Migrate
 
         return $terminal;
     }
+
+    public static function getEntityCollectionFromTerminalServiceResponse(array $response)
+    {
+        $terminals = [];
+
+        foreach ($response as $value)
+        {
+            $terminal = self::getEntityFromTerminalServiceResponse($value);
+
+            $terminals[] = $terminal;
+        }
+
+        $collection = new Collection($terminals);
+
+        return $collection;
+    }
+
+    public static function compareTerminalCollection(Collection $apiTerminals, Collection $terminals): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $data = [];
+
+        if ($apiTerminals->count() != $terminals->count())
+        {
+            $data["api_count"] = $apiTerminals->count();
+
+            $data["terminals_count"] = $terminals->count();
+
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_COUNT, $data);
+
+            return false;
+        }
+
+        $apiSorted = $apiTerminals->sortBy('id');
+
+        $terminalSorted = $terminals->sortBy('id');
+
+        $isEqual = true;
+
+        $count = $apiTerminals->count();
+
+        for ($x = 0; $x < $count; $x++) {
+
+            $item = $apiSorted[$x];
+
+            $itemToCompare = $terminalSorted[$x];
+
+            $isEntityEqual = self::compareTerminalEntity($item, $itemToCompare);
+
+            if ($isEntityEqual === false)
+            {
+                $isEqual = false;
+            }
+        }
+
+        return $isEqual;
+    }
+
 }
 

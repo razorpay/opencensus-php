@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -123,34 +124,6 @@ class Repository extends Base\Repository
             $payment->setRelation('terminal', $terminal);
         }
 
-        $variantFlag = $this->app->razorx->getTreatment($payment->getMerchantId(), "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
-
-        if ($variantFlag === 'proxy')
-        {
-            try
-            {
-                $path = "v1/terminals/" . $payment->getTerminalId();
-
-                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
-
-                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
-
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $data = ["function" => "fetchForPayment", "terminal_id" => $payment->getTerminalId()];
-
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-            }
-            catch (\Exception $ex)
-            {
-                $data['message'] = $ex->getMessage();
-                $data["function"] = "fetchForPayment";
-
-                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
-            }
-        }
-
         return $terminal;
     }
 
@@ -170,12 +143,53 @@ class Repository extends Base\Repository
         // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
         $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
 
-        return $this->newQuery()
+        $apiTerminals = $this->newQuery()
                     ->select($terminalAllColumn, DB::raw($queryDirectCol))
                     ->type([$type])
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->enabled()
                     ->get();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
+
+            $variantFlag = $this->app->razorx->getTreatment($merchantIds[0], "ROUTE_PROXY_TS",  $mode);
+
+            $data = ["function" => "getByTypeAndMerchantIds", "merchant_ids" => $merchantIds, "type" => $type];
+
+            if ($variantFlag === 'proxy')
+            {
+                $content = ["merchant_ids" => $merchantIds];
+
+                $content["status"] = Status::ACTIVATED;
+
+                $content["enabled"] = true;
+
+                $content["fetch_where_submerchant"] = false;
+
+                $content["api_type"] = $type;
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
+
+       return $apiTerminals;
     }
 
     protected function addQueryParamShared($query, $params)
@@ -190,11 +204,43 @@ class Repository extends Base\Repository
         }
     }
 
+
     public function getById($id)
     {
-        return $this->newQuery()
+        $terminal =  $this->newQuery()
                     ->withTrashed()
                     ->findOrFailPublic($id);
+
+        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
+
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID",  $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $data = ["function" => "getById", "terminal_id" => $id];
+
+            try
+            {
+                $path = "v1/terminals/" . $id;
+
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $data['message'] = $ex->getMessage();
+
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $terminal;
     }
 
     public function getByIdNonDeleted($id)

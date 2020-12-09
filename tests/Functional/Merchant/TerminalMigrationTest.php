@@ -259,6 +259,38 @@ class TerminalMigrationTest extends TestCase
         $this->assertTrue($isEqual);
     }
 
+    public function testTerminalCollectionCompareFunction()
+    {
+        $merchantIds = ['10000000000000'];
+
+        $terminals = $this->terminalRepository->getByTypeAndMerchantIds(Terminal\Type::NON_RECURRING, $merchantIds);
+
+        $arr = $terminals->toArray();
+
+        $newCollection = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($arr);
+
+        $isEqual = Terminal\Service::compareTerminalCollection($terminals, $newCollection);
+
+        $this->assertTrue($isEqual);
+    }
+
+    public function testTerminalCollectionCompareFunctionFailed()
+    {
+        $merchantIds = ['10000000000000'];
+
+        $terminals = $this->terminalRepository->getByTypeAndMerchantIds(Terminal\Type::NON_RECURRING, $merchantIds);
+
+        $arr = $terminals->toArray();
+
+        $arr[0]["id"] = "12345678901234";
+
+        $newCollection = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($arr);
+
+        $isEqual = Terminal\Service::compareTerminalCollection($terminals, $newCollection);
+
+        $this->assertFalse($isEqual);
+    }
+
     public function testAssignTerminalInternalAuthExistingId()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
