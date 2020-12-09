@@ -9,7 +9,9 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
 import useActivation from '../hooks/useActivation';
+import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
+import * as Messages from './Constants';
 
 const ViewWithBackground = styled(View)`
   background: url("${AcceptPaymentsIcon}") right no-repeat;
@@ -45,18 +47,63 @@ const SecondaryButton = ({ content }) => (
   </Button>
 );
 
-const getCardContent = (activationData, isWebsiteInWorkflow) => {
+const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkflowData) => {
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
+  const isAnyProductInReview =
+    internationalWorkflowData.payment_gateway === 'in_review' ||
+    internationalWorkflowData.payment_links === 'in_review';
+  const isAnyProductRejected =
+    internationalWorkflowData.payment_gateway === 'rejected' ||
+    internationalWorkflowData.payment_links === 'rejected';
+  const isPGIntlApproved = internationalWorkflowData.payment_gateway === 'approved';
 
-  if (activationData.international_activation_flow === 'blacklist') {
+  if (isAccepted) {
+    if (isAnyProductInReview) {
+      return (
+        <>
+          <Title content={Messages.INTERNATIONAL_REQUEST.in_review.title} />
+          <Description content={Messages.INTERNATIONAL_REQUEST.in_review.description} />
+          <LinkButton content="Okay, Got it" />
+        </>
+      );
+    }
+
+    if (isAnyProductRejected) {
+      return (
+        <>
+          <Title content={Messages.INTERNATIONAL_REQUEST.rejected.title} />
+          <Description content={Messages.INTERNATIONAL_REQUEST.rejected.description} />
+          <LinkButton content="Know More" />
+        </>
+      );
+    }
+  }
+
+  if (isUnregisteredBusiness(activationData.business_type)) {
+    if (isAccepted) {
+      return (
+        <>
+          <Title content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.title} />
+          <Description content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.description} />
+          <LinkButton content="Know more" />
+        </>
+      );
+    }
     return (
       <>
-        <Title content="Accept live payments!" />
-        <Description
-          content="You can start accepting domestic payments. International payments are currently not
-        supported for your business model."
-        />
+        <Title content={Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.title} />
+        <Description content={Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.description} />
+        <LinkButton content="Ok, Got it" />
+      </>
+    );
+  }
+
+  if (isAccepted && activationData.international_activation_flow === 'blacklist') {
+    return (
+      <>
+        <Title content={Messages.INTERNATIONAL_BLACKLIST.title} />
+        <Description content={Messages.INTERNATIONAL_BLACKLIST.description} />
         <LinkButton content="Know More" />
       </>
     );
@@ -67,8 +114,10 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
       if (isAccepted) {
         return (
           <>
-            <Title content="Accept International Payments!" />
-            <Description content="You can now enable international payments." />
+            <Title content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.title} />
+            <Description
+              content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.description}
+            />
             <Flex alignItems="center">
               <View>
                 <Space margin={[0, 1.5, 0, 0]}>
@@ -84,8 +133,10 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
       }
       return (
         <>
-          <Title content="Live Payments Enabled!" />
-          <Description content="You can accept domestic payments. To enable international payments complete activation." />
+          <Title content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.title} />
+          <Description
+            content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.description}
+          />
           <LinkButton content="Okay, Got it" />
         </>
       );
@@ -94,10 +145,9 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
         if (isWebsiteInWorkflow) {
           return (
             <>
-              <Title content="Accept Live Payments!" />
+              <Title content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website} />
               <Description
-                content="You can now start accepting domestic payments. Please raise a support ticket post
-              website review to start accepting international payments."
+                content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website}
               />
               <LinkButton content="Ok, Got it" />
             </>
@@ -106,7 +156,7 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
         return (
           <>
             <Title content="Accept Live Payments!" />
-            <Description content="You can accept domestic payments . To accept international payments update your website." />
+            <Description content="You can accept domestic payments. To accept international payments update your website." />
             <Flex alignItems="center">
               <View>
                 <Space margin={[0, 1.5, 0, 0]}>
@@ -120,11 +170,17 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
           </>
         );
       }
-      if (isAccepted) {
+      if (isAccepted && isPGIntlApproved) {
         return (
           <>
-            <Title content="Accept International Payments!" />
-            <Description content="You can accept international payments via payment gateway and can enable inernational payments for other products too." />
+            <Title
+              content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.title}
+            />
+            <Description
+              content={
+                Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.description
+              }
+            />
             <Flex alignItems="center">
               <View>
                 <Space margin={[0, 1.5, 0, 0]}>
@@ -138,21 +194,39 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
           </>
         );
       }
+      if (isPGIntlApproved) {
+        return (
+          <>
+            <Title
+              content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.title}
+            />
+            <Description
+              content={
+                Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.description
+              }
+            />
+            <LinkButton content="Okay, Got it" />
+          </>
+        );
+      }
       return (
         <>
           <Title content="Accept Live Payments!" />
-          <Description content="You can accept domestic and international payments via payment gateway." />
+          <Description content="You can accept domestic payments. Complete account activation to enable international payments." />
           <LinkButton content="Okay, Got it" />
         </>
       );
     }
   }
 
-  if (activationData.activation_flow === 'greylist') {
+  if (
+    activationData.activation_flow === 'greylist' &&
+    activationData.activation_status === 'activated'
+  ) {
     return (
       <>
-        <Title content="Accept live payments!" />
-        <Description content="You can start accepting domestic payments and can enable international payments." />
+        <Title content={Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.title} />
+        <Description content={Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.description} />
         <Flex alignItems="center">
           <View>
             <Space margin={[0, 1.5, 0, 0]}>
@@ -167,16 +241,18 @@ const getCardContent = (activationData, isWebsiteInWorkflow) => {
     );
   }
 
-  return (
-    <div>
-      You can start accepting domestic payments. International payments may be restricted for your
-      business model. Complete activation to know more.
-    </div>
-  );
+  return null;
 };
 
 const fetchInternationalProductStatus = () =>
-  axios.get('/merchants/product_international/workflow/status/all').then((res) => res.data.data);
+  axios
+    .get('http://localhost:6006/merchants/product_international/workflow/status/all')
+    .then((res) => res.data.data);
+
+const fetchWebsiteWorkflowStatus = () =>
+  axios
+    .get('http://localhost:6006/merchant/activation/websites/status')
+    .then((res) => res.data.data.data);
 
 const AcceptPaymentsCard: React.FC = () => {
   const { status: activationQueryStatus, data: activationData } = useActivation();
@@ -184,26 +260,43 @@ const AcceptPaymentsCard: React.FC = () => {
     'internationalWorkflowStatus',
     fetchInternationalProductStatus,
   );
+  const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery(
+    'websiteWorkflowStatus',
+    fetchWebsiteWorkflowStatus,
+  );
 
-  const isWebsiteInWorkflow = false;
+  const isLoading =
+    activationQueryStatus === 'loading' ||
+    internationalWorkflowQueryStatus === 'loading' ||
+    websiteWorkflowQueryStatus === 'loading';
 
-  if (activationQueryStatus === 'loading' || internationalWorkflowQueryStatus === 'loading') {
+  const isError =
+    activationQueryStatus === 'error' ||
+    internationalWorkflowQueryStatus === 'error' ||
+    websiteWorkflowQueryStatus === 'error';
+
+  if (isLoading) {
     return <div>Loading</div>;
   }
 
-  if (activationQueryStatus === 'error' || internationalWorkflowQueryStatus === 'error') {
+  if (isError) {
     return <div>Something Went Wrong</div>;
   }
 
-  console.log('workflowdata', internationalWorkflowData);
+  const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
 
-  const content = getCardContent(activationData, isWebsiteInWorkflow);
+  if (
+    activationData.onboarding_milestone === 'l1_submitted' ||
+    activationData.onboarding_milestone === 'l2_submitted'
+  ) {
+    return (
+      <Space padding={[2, 6, 2, 2]}>
+        <ViewWithBackground>{content}</ViewWithBackground>
+      </Space>
+    );
+  }
 
-  return (
-    <Space padding={[2, 6, 2, 2]}>
-      <ViewWithBackground>{content}</ViewWithBackground>
-    </Space>
-  );
+  return null;
 };
 
 export default AcceptPaymentsCard;

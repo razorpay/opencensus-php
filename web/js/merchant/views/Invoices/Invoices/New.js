@@ -75,8 +75,7 @@ function validate(values) {
     line_items: [],
   };
   let lineItems = values.line_items.filter(
-    item =>
-      !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name)
+    (item) => !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name),
   );
 
   /**
@@ -111,7 +110,7 @@ const selector = formValueSelector('newInvoice');
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     let customers = state.customers;
     return {
       session: state.session,
@@ -137,7 +136,7 @@ const selector = formValueSelector('newInvoice');
     ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
-  }
+  },
 )
 @reduxForm({
   form: 'newInvoice',
@@ -186,7 +185,7 @@ export default class InvoicesNewContainer extends Component {
         ...options,
         status: this.props.invoice.status,
         clone: this.isIntentDuplicate,
-      })
+      }),
     );
   };
 
@@ -198,14 +197,14 @@ export default class InvoicesNewContainer extends Component {
         ...options,
         status: this.props.invoice.status,
         clone: this.isIntentDuplicate,
-      })
+      }),
     );
   };
 
   fetchIfIntentDuplicate(invoiceId) {
     return this.props
       .fetchInvoice(invoiceId)
-      .then(data => {
+      .then((data) => {
         this.isIntentDuplicate = true;
 
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
@@ -227,7 +226,7 @@ export default class InvoicesNewContainer extends Component {
 
         return data;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -268,11 +267,11 @@ export default class InvoicesNewContainer extends Component {
     if (customerDetails) {
       let customer =
         this.props.customers.items &&
-        this.props.customers.items.find(c => c.id == customerDetails.id);
+        this.props.customers.items.find((c) => c.id == customerDetails.id);
 
       if (customer) {
         this.setState({
-          selectedCustomerDisplay: customer
+          selectedCustomerDisplay: customer,
         });
 
         let billingAddress, shippingAddress;
@@ -287,10 +286,7 @@ export default class InvoicesNewContainer extends Component {
     // Set State of Supply
     if (invoice.supply_state_code && this.state.states) {
       this.changeStateOfSupply({
-        option: this.findStateByCode(
-          invoice.supply_state_code,
-          this.state.states
-        ),
+        option: this.findStateByCode(invoice.supply_state_code, this.state.states),
       });
     }
 
@@ -321,7 +317,7 @@ export default class InvoicesNewContainer extends Component {
 
     if (invoiceId) {
       promises.push(
-        this.props.fetchInvoice(invoiceId).then(invoice => {
+        this.props.fetchInvoice(invoiceId).then((invoice) => {
           if (this.isPaymentLink(invoice)) {
             return;
           }
@@ -330,7 +326,7 @@ export default class InvoicesNewContainer extends Component {
             this.props.fetchInvoicePayments(invoiceId);
           }
           return invoice;
-        })
+        }),
       );
     } else if (searchQuery.duplicate_id) {
       promises.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
@@ -376,16 +372,9 @@ export default class InvoicesNewContainer extends Component {
         });
 
         // Set state of supply.
-        if (
-          statesList &&
-          statesList.length > 0 &&
-          this.props.supply_state_code
-        ) {
+        if (statesList && statesList.length > 0 && this.props.supply_state_code) {
           this.changeStateOfSupply({
-            option: this.findStateByCode(
-              this.props.supply_state_code,
-              statesList
-            ),
+            option: this.findStateByCode(this.props.supply_state_code, statesList),
           });
         }
       })
@@ -416,7 +405,9 @@ export default class InvoicesNewContainer extends Component {
     let gstin = user.gstin;
     let cin = user.company_cin;
 
-    let { config: { invoice_label_field } } = this.props;
+    let {
+      config: { invoice_label_field },
+    } = this.props;
     let merchantAltBillingLabel = user.business_name || user.business_dba;
 
     if (invoice_label_field && user[invoice_label_field]) {
@@ -424,11 +415,7 @@ export default class InvoicesNewContainer extends Component {
     }
 
     // Set label and GSTIN from the invoice.
-    if (
-      this.props.invoice &&
-      this.props.invoice.status &&
-      this.props.invoice.status !== 'draft'
-    ) {
+    if (this.props.invoice && this.props.invoice.status && this.props.invoice.status !== 'draft') {
       const { merchant_gstin, merchant_label } = this.props.invoice;
 
       if (typeof merchant_gstin !== 'undefined') {
@@ -457,14 +444,12 @@ export default class InvoicesNewContainer extends Component {
     let user = this.props.session.user;
     let merchantGstin = user.gstin || user.p_gstin;
 
-    const applyTaxes =
-      Boolean(merchantGstin) && Boolean(this.props.state_of_supply);
+    const applyTaxes = Boolean(merchantGstin) && Boolean(this.props.state_of_supply);
 
     // Get the cost of items without considering the tax on tax_exclusive items.
     let subtotal = lineItems
       .reduce((total, line_item) => {
-        let totalAmt =
-          Number(line_item.quantity) * Number(line_item.amountInINR);
+        let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
         return total + totalAmt;
       }, 0)
@@ -475,27 +460,18 @@ export default class InvoicesNewContainer extends Component {
     if (applyTaxes) {
       totalTax = lineItems
         .reduce((total, line_item) => {
-          let totalAmt =
-            Number(line_item.quantity) * Number(line_item.amountInINR);
+          let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
           // Add taxes
           let tax = 0;
           let cess = 0;
 
           if (line_item.tax_rate) {
-            tax = calculateTax(
-              totalAmt,
-              line_item.tax_rate / 100,
-              line_item.tax_inclusive
-            );
+            tax = calculateTax(totalAmt, line_item.tax_rate / 100, line_item.tax_inclusive);
           }
 
           if (applyTaxes && line_item.cess) {
-            cess = calculateTax(
-              totalAmt,
-              line_item.cess / 100,
-              line_item.tax_inclusive
-            );
+            cess = calculateTax(totalAmt, line_item.cess / 100, line_item.tax_inclusive);
           }
 
           return total + cess + tax;
@@ -505,8 +481,7 @@ export default class InvoicesNewContainer extends Component {
 
     let total = lineItems
       .reduce((_total, line_item) => {
-        let totalAmt =
-          Number(line_item.quantity) * Number(line_item.amountInINR);
+        let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
         let tax = 0;
         let cess = 0;
@@ -541,7 +516,7 @@ export default class InvoicesNewContainer extends Component {
    * Sets the customer in props.
    * @param {Customer} customer
    */
-  setCustomerInProps = customer => {
+  setCustomerInProps = (customer) => {
     this.props.change('customer.id', customer.id);
     this.props.change('customer.name', customer.name);
     this.props.change('customer.contact', customer.contact);
@@ -558,10 +533,10 @@ export default class InvoicesNewContainer extends Component {
    *    @param {Customer} customer Selected/Created customer.
    *    @param {Boolean} shippingSameAsBilling whether or not shipping address to be used is the same as billing address. To be used for new customers.
    */
-  selectCustomerAndCloseModal = (
-    updateAddress = false,
-    selectShippingAddress = false
-  ) => (customer, shippingSameAsBilling = false) => {
+  selectCustomerAndCloseModal = (updateAddress = false, selectShippingAddress = false) => (
+    customer,
+    shippingSameAsBilling = false,
+  ) => {
     this.setCustomerInProps(customer);
     this.props.closeModal();
 
@@ -571,7 +546,7 @@ export default class InvoicesNewContainer extends Component {
         undefined,
         undefined,
         selectShippingAddress,
-        shippingSameAsBilling
+        shippingSameAsBilling,
       );
     }
 
@@ -603,7 +578,7 @@ export default class InvoicesNewContainer extends Component {
     shippingAddressID,
     selectShippingAddress = false,
     shippingSameAsBilling = false,
-    autoselectPlaceOfSupply = true
+    autoselectPlaceOfSupply = true,
   ) => {
     // Set loading state.
     this.setState({
@@ -614,7 +589,7 @@ export default class InvoicesNewContainer extends Component {
       .fetchCustomerAddresses({
         id: customerID,
       })
-      .then(response => {
+      .then((response) => {
         if (!response.success) return;
 
         // Set shipping and billing addresses based on their types.
@@ -624,24 +599,18 @@ export default class InvoicesNewContainer extends Component {
 
         // If a billing address ID is given, try to set it as selected_billing.
         if (billingAddressID) {
-          selected_billing = addresses.find(
-            address => address.id == billingAddressID
-          );
+          selected_billing = addresses.find((address) => address.id == billingAddressID);
         }
 
         // If a shipping address ID is given, try to set it as selected_shipping.
         if (shippingAddressID) {
-          selected_shipping = addresses.find(
-            address => address.id == shippingAddressID
-          );
+          selected_shipping = addresses.find((address) => address.id == shippingAddressID);
         }
 
         if (billingAddressID !== null) {
           // Select the addresses which have primary=true
           if (!selected_billing) {
-            selected_billing = addresses.find(
-              address => address.type === 'billing_address'
-            );
+            selected_billing = addresses.find((address) => address.type === 'billing_address');
           }
         }
 
@@ -651,9 +620,7 @@ export default class InvoicesNewContainer extends Component {
           }
 
           if (!selected_shipping && selectShippingAddress) {
-            selected_shipping = addresses.find(
-              address => address.type === 'shipping_address'
-            );
+            selected_shipping = addresses.find((address) => address.type === 'shipping_address');
           }
         }
 
@@ -674,7 +641,7 @@ export default class InvoicesNewContainer extends Component {
         this.selectBillingAddress(selected_billing, autoselectPlaceOfSupply);
         this.selectShippingAddress(selected_shipping);
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: error.errors,
@@ -683,7 +650,7 @@ export default class InvoicesNewContainer extends Component {
       });
   };
 
-  setInvoiceCurrency = newCurrency => {
+  setInvoiceCurrency = (newCurrency) => {
     this.setState({
       invoiceCurrency: newCurrency,
     });
@@ -691,10 +658,7 @@ export default class InvoicesNewContainer extends Component {
     this.trackCreateInvoice('continue');
 
     // Show only for first time user
-    if (
-      !this.props.invoice.id &&
-      this.props.config.invoice_label_field === null
-    ) {
+    if (!this.props.invoice.id && this.props.config.invoice_label_field === null) {
       this.setState({
         highlightCurrencyChangeCTA: true,
       });
@@ -702,7 +666,7 @@ export default class InvoicesNewContainer extends Component {
       const el = document.getElementById('change-currency-cta');
       el && el.querySelector('.rzp-popover').classList.add('show');
 
-      setTimeout(_ => {
+      setTimeout((_) => {
         this.setState({ highlightCurrencyChangeCTA: false });
         el && el.querySelector('.rzp-popover').classList.remove('show');
       }, 4000);
@@ -744,7 +708,7 @@ export default class InvoicesNewContainer extends Component {
             name: searchTerm,
           }}
           showGSTN={this.state.invoiceCurrency === 'INR'}
-          onBlur={e => {
+          onBlur={(e) => {
             this.trackCreateInvoice(`newcustomer_${e.target.name}`);
           }}
           onCloseClick={() => {
@@ -759,7 +723,7 @@ export default class InvoicesNewContainer extends Component {
    * Shows the Edit Customer modal.
    * @param {DOMEvent} e
    */
-  quickEditCustomer = e => {
+  quickEditCustomer = (e) => {
     e && e.preventDefault();
 
     this.trackCreateInvoice('edit_customer');
@@ -772,7 +736,7 @@ export default class InvoicesNewContainer extends Component {
           onSave={this.selectCustomerAndCloseModal()}
           customer={this.props.customer}
           showGSTN={this.state.invoiceCurrency === 'INR'}
-          onBlur={e => {
+          onBlur={(e) => {
             this.trackCreateInvoice(`edit_customer_${e.target.name}`);
           }}
           onCloseClick={() => {
@@ -835,44 +799,41 @@ export default class InvoicesNewContainer extends Component {
             });
           }
         }
-      }
+      },
     );
 
     // Update billing address ID.
-    this.props.change(
-      'customer.billing_address_id',
-      address ? address.id : null
-    );
+    this.props.change('customer.billing_address_id', address ? address.id : null);
   };
 
   /**
    * Method to set the selected shipping address.
    * @param {Object} address
    */
-  selectShippingAddress = address => {
+  selectShippingAddress = (address) => {
     this.setState({
       selectedShippingAddress: address,
     });
 
     // Update shipping address ID.
-    this.props.change(
-      'customer.shipping_address_id',
-      address ? address.id : null
-    );
+    this.props.change('customer.shipping_address_id', address ? address.id : null);
   };
 
   /**
    * Shows the Edit Invoice Label modal.
    * @param {DOMEvent} e
    */
-  showEditInvoiceLabelModal = e => {
+  showEditInvoiceLabelModal = (e) => {
     e.preventDefault();
 
     track({
       eventAction: 'Change - Invoice Label',
     });
 
-    let { session: { user }, config: { invoice_label_field } } = this.props;
+    let {
+      session: { user },
+      config: { invoice_label_field },
+    } = this.props;
 
     const onSave = () => {
       this.props.closeModal();
@@ -887,11 +848,7 @@ export default class InvoicesNewContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <EditInvoiceLabelModal
-          merchant={user}
-          current={invoice_label_field}
-          onSave={onSave}
-        />
+        <EditInvoiceLabelModal merchant={user} current={invoice_label_field} onSave={onSave} />
       ),
     });
   };
@@ -900,7 +857,7 @@ export default class InvoicesNewContainer extends Component {
    * Returns a handler to show Address Selection Modal.
    * @param {String} type One of "billing" and "shipping".
    */
-  showSelectAddressModal = (type = 'billing') => e => {
+  showSelectAddressModal = (type = 'billing') => (e) => {
     e.preventDefault();
 
     track({
@@ -910,11 +867,7 @@ export default class InvoicesNewContainer extends Component {
 
     type = type.toLowerCase();
 
-    let {
-      selectedBillingAddress,
-      selectedShippingAddress,
-      addresses = [],
-    } = this.state;
+    let { selectedBillingAddress, selectedShippingAddress, addresses = [] } = this.state;
 
     let { customer } = this.props;
 
@@ -924,7 +877,7 @@ export default class InvoicesNewContainer extends Component {
     /**
      * Handler for when an address is created.
      */
-    const onSave = address => {
+    const onSave = (address) => {
       // Select address.
       if (type === 'billing') {
         this.trackCreateInvoice('billing_save');
@@ -961,19 +914,9 @@ export default class InvoicesNewContainer extends Component {
           header={`${actionText} ${capitalize(type)} Address`}
           customer={customer}
           addresses={addresses}
-          isInttCurrenciesEnabled={
-            this.props.session.user.isInttCurrenciesEnabled
-          }
-          selected={
-            type === 'billing'
-              ? selectedBillingAddress
-              : selectedShippingAddress
-          }
-          onSelect={
-            type === 'billing'
-              ? this.selectBillingAddress
-              : this.selectShippingAddress
-          }
+          isInttCurrenciesEnabled={this.props.session.user.isInttCurrenciesEnabled}
+          selected={type === 'billing' ? selectedBillingAddress : selectedShippingAddress}
+          onSelect={type === 'billing' ? this.selectBillingAddress : this.selectShippingAddress}
           onSave={onSave}
           addressType={type}
           trackSelectCountry={(...args) => {
@@ -983,24 +926,18 @@ export default class InvoicesNewContainer extends Component {
               trackSelectShippingAddress(...args);
             }
 
-            this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_county`
-            );
+            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_county`);
           }}
-          onBlur={e => {
+          onBlur={(e) => {
             this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_${e.target.value}`
+              `${type === 'billing' ? 'billing' : 'shipping'}_${e.target.value}`,
             );
           }}
           onClickClose={() => {
-            this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_leave`
-            );
+            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
           }}
           trackAddressSelection={() => {
-            this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_leave`
-            );
+            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
           }}
         />
       ),
@@ -1013,7 +950,7 @@ export default class InvoicesNewContainer extends Component {
    * Callback for when an address is selected as the Default Address
    * @param {Object} address
    */
-  onSetDefaultAddress = address => {
+  onSetDefaultAddress = (address) => {
     // Do something with the address, make a n/w request or something.
   };
 
@@ -1023,7 +960,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {Object} props
    * @return {Object}
    */
-  prepareForSave = props => {
+  prepareForSave = (props) => {
     const isExistingInvoice = props.id;
 
     /**
@@ -1043,10 +980,7 @@ export default class InvoicesNewContainer extends Component {
 
     // Set the expiry time to be at 23:59:59 on the day selected.
     if (props.expire_by) {
-      props.expire_by = moment
-        .unix(props.expire_by)
-        .endOf('day')
-        .unix();
+      props.expire_by = moment.unix(props.expire_by).endOf('day').unix();
     }
 
     if (this.state.invoiceCurrency !== 'INR') {
@@ -1069,9 +1003,9 @@ export default class InvoicesNewContainer extends Component {
         {
           'Content-Type': 'application/json',
         },
-        this.isIntentDuplicate
+        this.isIntentDuplicate,
       )
-      .then(invoice => {
+      .then((invoice) => {
         this.setState({
           isSaving: false,
         });
@@ -1080,7 +1014,7 @@ export default class InvoicesNewContainer extends Component {
         this.trackCreateInvoice('save');
         return invoice;
       })
-      .catch(error => {
+      .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: error.errors,
@@ -1092,14 +1026,14 @@ export default class InvoicesNewContainer extends Component {
       });
   }
 
-  save = props => {
+  save = (props) => {
     if (this.isIntentDuplicate) {
       trackSaveDuplicateInvoice();
     }
 
     props = removeTaxForNonINRItems(props, this.state.invoiceCurrency);
 
-    return this._save(props).then(invoice => {
+    return this._save(props).then((invoice) => {
       track({
         eventAction: 'Save - Invoice',
         eventLabel: getKeysSeparatedByPipe(props),
@@ -1123,16 +1057,16 @@ export default class InvoicesNewContainer extends Component {
       }
     }
 
-    return this.showIssueConfirmModal(notifyProps => {
+    return this.showIssueConfirmModal((notifyProps) => {
       const updatedProps = removeTaxForNonINRItems(
         {
           ...props,
           ...notifyProps,
         },
-        this.state.invoiceCurrency
+        this.state.invoiceCurrency,
       );
 
-      return this._save(updatedProps).then(invoice => {
+      return this._save(updatedProps).then((invoice) => {
         track({
           eventAction: 'Issue - Invoice',
           eventLabel: getKeysSeparatedByPipe(props),
@@ -1148,12 +1082,12 @@ export default class InvoicesNewContainer extends Component {
     });
   }
 
-  resendInvoice = props => {
-    this.showIssueConfirmModal(notifyProps => {
+  resendInvoice = (props) => {
+    this.showIssueConfirmModal((notifyProps) => {
       // Update invoice and then resend.
 
       return this._save(props)
-        .then(invoice => {
+        .then((invoice) => {
           let promises = [];
 
           if (notifyProps.email_notify) {
@@ -1197,7 +1131,7 @@ export default class InvoicesNewContainer extends Component {
         <IssueConfirmModal
           disableIssueOnEmptySelection={disableIssueOnEmptySelection}
           customer={this.props.customer}
-          onIssue={notifyProps => {
+          onIssue={(notifyProps) => {
             return onIssueCallback(notifyProps);
           }}
         />
@@ -1219,12 +1153,9 @@ export default class InvoicesNewContainer extends Component {
       header: 'Delete Invoice?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            The Invoice will be deleted. There is no coming back!. Are you sure?
-          </p>
+          <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p>
           <div>
-            If you have added any item or customer, you can still use them in
-            other invoices.
+            If you have added any item or customer, you can still use them in other invoices.
           </div>
         </div>
       ),
@@ -1263,10 +1194,7 @@ export default class InvoicesNewContainer extends Component {
       header: 'Cancel Invoice?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            The Invoice will be cancelled and the customer will not be able to
-            pay for it.
-          </p>
+          <p>The Invoice will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
       affirmativeLabel: 'Yes, Cancel',
@@ -1275,7 +1203,7 @@ export default class InvoicesNewContainer extends Component {
       action: () => {
         return this.props
           .cancelInvoice(invoice)
-          .then(invoice => {
+          .then((invoice) => {
             track({
               eventAction: 'Cancel - Invoice',
               eventLabel: `invoice_id=${invoice.id}`,
@@ -1296,13 +1224,13 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
-  addInternalNote = props => {
+  addInternalNote = (props) => {
     let invoice = this.props.invoice;
     this.props.openModal({
       size: 'small',
       component: (
         <AddInternalNoteModal
-          onSave={note => {
+          onSave={(note) => {
             return this._save({
               ...invoice,
               notes: {
@@ -1351,7 +1279,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {Array} states Array of state objects (this.state.states)
    * @return {Object}
    */
-  findStateByCode = (code, states) => states.find(o => o.code === code);
+  findStateByCode = (code, states) => states.find((o) => o.code === code);
 
   /**
    * Finds a state by it's name.
@@ -1359,7 +1287,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {Array} state Array of state objects (this.state.states)
    * @return {Object}
    */
-  findStateByName = (name, states) => states.find(o => o.name === name);
+  findStateByName = (name, states) => states.find((o) => o.name === name);
 
   /**
    * Sets Issue Date.
@@ -1425,7 +1353,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {MomentObj} date
    * @return {Boolean}
    */
-  issueDateRange = date => {
+  issueDateRange = (date) => {
     date = date.startOf('day');
 
     return this.isDateAfter(date, this.state.today);
@@ -1436,7 +1364,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {MomentObj} date
    * @return {Boolean}
    */
-  expiryDateRange = date => {
+  expiryDateRange = (date) => {
     date = date.startOf('day');
 
     return this.isDateBefore(date, this.state.today);
@@ -1513,7 +1441,7 @@ export default class InvoicesNewContainer extends Component {
    * Updates the GST slabs based on the state of supply.
    * @prop {State} stateOfSupply State of Supply
    */
-  updateGSTSlabs = stateOfSupply => {
+  updateGSTSlabs = (stateOfSupply) => {
     let { merchantGSTIN, gst } = this.state;
 
     // If the merchant doesn't have a GSTIN, stop.
@@ -1529,10 +1457,7 @@ export default class InvoicesNewContainer extends Component {
     }
 
     // Get the merchant's state.
-    let merchantState = this.findStateByCode(
-      merchantGSTIN.slice(0, 2),
-      this.state.states
-    );
+    let merchantState = this.findStateByCode(merchantGSTIN.slice(0, 2), this.state.states);
 
     // Get the applicable groups and slabs and set them in state.
     const gstSlabs = getGSTSlabs(
@@ -1540,7 +1465,7 @@ export default class InvoicesNewContainer extends Component {
       merchantState.code, // "29"
       stateOfSupply.code, // "29"
       gst.gst_tax_id_map_v2, // {CGST_0: "tax_1234", CGST_250: "tax_3456", ...}
-      stateOfSupply.is_ut || merchantState.is_ut // Whether or not any of the states is a Union Territory
+      stateOfSupply.is_ut || merchantState.is_ut, // Whether or not any of the states is a Union Territory
     );
     this.setState({
       gstSlabs,
@@ -1558,7 +1483,7 @@ export default class InvoicesNewContainer extends Component {
     selectedCustomer,
     billingAddressID,
     shippingAddressID,
-    autoselectPlaceOfSupply
+    autoselectPlaceOfSupply,
   ) => {
     if (!selectedCustomer) return;
 
@@ -1580,7 +1505,7 @@ export default class InvoicesNewContainer extends Component {
       shippingAddressID,
       false,
       false,
-      autoselectPlaceOfSupply
+      autoselectPlaceOfSupply,
     );
 
     this.trackCreateInvoice('existing_customer');
@@ -1593,10 +1518,9 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
-  onBlur = event => {
+  onBlur = (event) => {
     this.trackCreateInvoice(event.target.name);
   };
-
 
   handleSelectCustomer = ({ option }) => {
     this.typeAheadSkin.classList.remove('hide');
@@ -1616,7 +1540,7 @@ export default class InvoicesNewContainer extends Component {
     if (customerDetails) {
       let customer =
         this.props.customers.items &&
-        this.props.customers.items.find(c => c.id == customerDetails.id);
+        this.props.customers.items.find((c) => c.id == customerDetails.id);
 
       if (customer) {
         let billingAddress, shippingAddress;
@@ -1662,7 +1586,12 @@ export default class InvoicesNewContainer extends Component {
   };
 
   render() {
-    const { handleSubmit, customer, invoice, session: { user } } = this.props;
+    const {
+      handleSubmit,
+      customer,
+      invoice,
+      session: { user },
+    } = this.props;
     let { selectedCustomerDisplay } = this.state;
 
     const hasCustomerSelected = customer && customer.id;
@@ -1717,39 +1646,30 @@ export default class InvoicesNewContainer extends Component {
     const isDisabled = isIssued || locked;
 
     const areBillingAddressActionsVisible =
-      selectedBillingAddress &&
-      customer &&
-      customer.id &&
-      !isFetchingAddresses &&
-      !isDisabled;
+      selectedBillingAddress && customer && customer.id && !isFetchingAddresses && !isDisabled;
     const areShippingAddressActionsVisible =
-      selectedShippingAddress &&
-      customer &&
-      customer.id &&
-      !isFetchingAddresses &&
-      !isDisabled;
+      selectedShippingAddress && customer && customer.id && !isFetchingAddresses && !isDisabled;
 
     const showGstn = invoiceCurrency === 'INR';
 
-    const duplicateInvoiceButton = this.props.invoice.id &&
-      !this.props.invoice.subscription_id && (
-        <NavLink
-          class="btn btn-default btn-block btn-lg"
-          to={`/invoices/new?duplicate_id=${invoice.id}`}
-          onClick={() => {
-            this.trackUpdateInvoice('invoice.update.clone');
+    const duplicateInvoiceButton = this.props.invoice.id && !this.props.invoice.subscription_id && (
+      <NavLink
+        class="btn btn-default btn-block btn-lg"
+        to={`/invoices/new?duplicate_id=${invoice.id}`}
+        onClick={() => {
+          this.trackUpdateInvoice('invoice.update.clone');
 
-            trackClickDuplicateInvoice();
-          }}
-        >
-          <div class="row inv__optiongroupbutton">
-            <div class="col-xs-4">
-              <i class="i i-copy" />
-            </div>
-            <div class="col-xs-8">Duplicate Invoice</div>
+          trackClickDuplicateInvoice();
+        }}
+      >
+        <div class="row inv__optiongroupbutton">
+          <div class="col-xs-4">
+            <i class="i i-copy" />
           </div>
-        </NavLink>
-      );
+          <div class="col-xs-8">Duplicate Invoice</div>
+        </div>
+      </NavLink>
+    );
 
     let customersList;
 
@@ -1774,16 +1694,13 @@ export default class InvoicesNewContainer extends Component {
                       onBackNavClick={this.handleBackNavClick}
                     />
 
-                    <Alert
-                      type={this.state.status.type}
-                      message={this.state.status.message}
-                    />
+                    <Alert type={this.state.status.type} message={this.state.status.message} />
 
                     <div class="invoice">
                       {isTestMode && (
                         <div class="alert-sm alert-warning testmode-warning">
-                          Invoice is created in <b>Test Mode</b>
-                          . Only test payments can be made for this invoice
+                          Invoice is created in <b>Test Mode</b>. Only test payments can be made for
+                          this invoice
                         </div>
                       )}
                       <InvoiceLogo
@@ -1812,9 +1729,7 @@ export default class InvoicesNewContainer extends Component {
                                 name="receipt"
                                 component="input"
                                 class="material-input"
-                                placeholder={`${
-                                  !locked ? 'Enter ' : ''
-                                }Invoice Number`}
+                                placeholder={`${!locked ? 'Enter ' : ''}Invoice Number`}
                                 disabled={locked}
                                 keepValueInBG={false}
                                 onBlur={this.onBlur}
@@ -1841,15 +1756,11 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                       </div>
                       {(invoice.amount_due && invoice.amount_due > 0.0) ||
-                      (invoiceTotal &&
-                        invoiceTotal.total &&
-                        invoiceTotal.total > 0.0) ? (
+                      (invoiceTotal && invoiceTotal.total && invoiceTotal.total > 0.0) ? (
                         <div class="row">
                           <div class="col-md-12">
                             <div>
-                              <label class="inv__amountduetitle">
-                                AMOUNT DUE
-                              </label>
+                              <label class="inv__amountduetitle">AMOUNT DUE</label>
                               <h3 class="inv__amountdue">
                                 {invoice.amount_due ? (
                                   <Amount
@@ -1884,11 +1795,12 @@ export default class InvoicesNewContainer extends Component {
                                   showClear={true}
                                   selected={selectedCustomerDisplay}
                                   selectedOptionLabelPath="id"
-                                  optionComponent={({option}) => {
+                                  optionComponent={({ option }) => {
                                     return (
                                       <div class="custom-powerselect-options">
                                         <div>
-                                          <b>{titleCase(option.name)}</b> ({option.code || option.id})
+                                          <b>{titleCase(option.name)}</b> (
+                                          {option.code || option.id})
                                         </div>
                                         {option.email}
                                       </div>
@@ -1901,45 +1813,41 @@ export default class InvoicesNewContainer extends Component {
                                 <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
                                   {selectedCustomerDisplay ? (
                                     <div>
-                                      {selectedCustomerDisplay.name ? titleCase(selectedCustomerDisplay.name) : selectedCustomerDisplay.id}
+                                      {selectedCustomerDisplay.name
+                                        ? titleCase(selectedCustomerDisplay.name)
+                                        : selectedCustomerDisplay.id}
                                     </div>
                                   ) : null}
                                 </div>
                               </div>
                             </div>
                             {hasCustomerSelected && (
-                                <div class="inv__customerdetails">
-                                  {customer.name && (
-                                    <div>{customer.contact}</div>
-                                  )}
-                                  {customer.name || customer.contact ? (
-                                    <div>{customer.email}</div>
-                                  ) : (
-                                    ''
-                                  )}
-                                  {customer.gstin &&
-                                    showGstn && (
-                                      <div>
-                                        <span class="tax-heading">
-                                          GSTIN -{' '}
-                                        </span>
-                                        {customer.gstin}
-                                      </div>
-                                    )}
-                                </div>
-                              )}
-                              <div>
-                                {hasCustomerSelected &&
-                                !isDisabled && (
-                                  <button
-                                    class="btn btn-link no-padding"
-                                    onClick={this.quickEditCustomer}
-                                    type="button"
-                                  >
-                                    Edit Customer
-                                  </button>
+                              <div class="inv__customerdetails">
+                                {customer.name && <div>{customer.contact}</div>}
+                                {customer.name || customer.contact ? (
+                                  <div>{customer.email}</div>
+                                ) : (
+                                  ''
+                                )}
+                                {customer.gstin && showGstn && (
+                                  <div>
+                                    <span class="tax-heading">GSTIN - </span>
+                                    {customer.gstin}
+                                  </div>
                                 )}
                               </div>
+                            )}
+                            <div>
+                              {hasCustomerSelected && !isDisabled && (
+                                <button
+                                  class="btn btn-link no-padding"
+                                  onClick={this.quickEditCustomer}
+                                  type="button"
+                                >
+                                  Edit Customer
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           <div class="inv__dates-container hidden-sm">
@@ -1956,9 +1864,7 @@ export default class InvoicesNewContainer extends Component {
                                   }`}
                                 >
                                   <SingleDatePicker
-                                    customInputIcon={
-                                      <i class="i i-date-range" />
-                                    }
+                                    customInputIcon={<i class="i i-date-range" />}
                                     noBorder={true}
                                     disabled={isDisabled}
                                     placeholder="Issue Date"
@@ -1982,9 +1888,7 @@ export default class InvoicesNewContainer extends Component {
                             <div class="row">
                               <div>
                                 <div class="col-md-4">
-                                  <label class="text-uppercase">
-                                    Expiry Date
-                                  </label>
+                                  <label class="text-uppercase">Expiry Date</label>
                                 </div>
                                 <div class="col-md-8">
                                   <div
@@ -1995,9 +1899,7 @@ export default class InvoicesNewContainer extends Component {
                                     }`}
                                   >
                                     <SingleDatePicker
-                                      customInputIcon={
-                                        <i class="i i-date-range" />
-                                      }
+                                      customInputIcon={<i class="i i-date-range" />}
                                       noBorder={true}
                                       disabled={locked}
                                       placeholder="Expiry Date"
@@ -2017,14 +1919,11 @@ export default class InvoicesNewContainer extends Component {
                                     />
                                     <div
                                       class={`Input-info ${
-                                        this.state.expiry_date_focused
-                                          ? 'show-info'
-                                          : ''
+                                        this.state.expiry_date_focused ? 'show-info' : ''
                                       }`}
                                     >
-                                      Expiry Date is the date after which the
-                                      customer will be unable to pay for this
-                                      Invoice.
+                                      Expiry Date is the date after which the customer will be
+                                      unable to pay for this Invoice.
                                     </div>
                                   </div>
                                 </div>
@@ -2036,21 +1935,15 @@ export default class InvoicesNewContainer extends Component {
                           <div class="row">
                             <div class="col-md-12">
                               <div class="inv__address-container">
-                                <label class="text-uppercase">
-                                  Billing Address
-                                </label>
+                                <label class="text-uppercase">Billing Address</label>
                                 <span
                                   class={`two-btn-group ${
-                                    areBillingAddressActionsVisible
-                                      ? ''
-                                      : 'invisible'
+                                    areBillingAddressActionsVisible ? '' : 'invisible'
                                   }`}
                                 >
                                   <button
                                     class="btn btn-sm btn-link"
-                                    onClick={this.showSelectAddressModal(
-                                      'billing'
-                                    )}
+                                    onClick={this.showSelectAddressModal('billing')}
                                     type="button"
                                   >
                                     Change
@@ -2080,44 +1973,33 @@ export default class InvoicesNewContainer extends Component {
                                         customer && customer.id ? (
                                           <button
                                             class="btn btn-link"
-                                            onClick={this.showSelectAddressModal(
-                                              'billing'
-                                            )}
+                                            onClick={this.showSelectAddressModal('billing')}
                                             type="button"
                                           >
                                             + Add Billing Address
                                           </button>
                                         ) : (
                                           <Fragment>
-                                            Select customer to add Billing
-                                            Address
+                                            Select customer to add Billing Address
                                           </Fragment>
                                         )
                                       ) : (
-                                        <Fragment>
-                                          Billing Address not applicable.
-                                        </Fragment>
+                                        <Fragment>Billing Address not applicable.</Fragment>
                                       )}
                                     </div>
                                   )}
                                 </div>
                               </div>
                               <div class="inv__address-container inv__address-container-shipping">
-                                <label class="text-uppercase">
-                                  Shipping Address
-                                </label>
+                                <label class="text-uppercase">Shipping Address</label>
                                 <span
                                   class={`two-btn-group ${
-                                    areShippingAddressActionsVisible
-                                      ? ''
-                                      : 'invisible'
+                                    areShippingAddressActionsVisible ? '' : 'invisible'
                                   }`}
                                 >
                                   <button
                                     class="btn btn-sm btn-link"
-                                    onClick={this.showSelectAddressModal(
-                                      'shipping'
-                                    )}
+                                    onClick={this.showSelectAddressModal('shipping')}
                                     type="button"
                                   >
                                     Change
@@ -2147,75 +2029,61 @@ export default class InvoicesNewContainer extends Component {
                                         customer && customer.id ? (
                                           <button
                                             class="btn btn-link"
-                                            onClick={this.showSelectAddressModal(
-                                              'shipping'
-                                            )}
+                                            onClick={this.showSelectAddressModal('shipping')}
                                             type="button"
                                           >
                                             + Add Shipping Address
                                           </button>
                                         ) : (
                                           <Fragment>
-                                            Select customer to add Shipping
-                                            Address
+                                            Select customer to add Shipping Address
                                           </Fragment>
                                         )
                                       ) : (
-                                        <Fragment>
-                                          Shipping Address not applicable.
-                                        </Fragment>
+                                        <Fragment>Shipping Address not applicable.</Fragment>
                                       )}
                                     </div>
                                   )}
                                 </div>
                               </div>
-                              {merchantGSTIN &&
-                                showGstn && (
-                                  <div class="inv__place-of-supply-container">
-                                    <label class="text-uppercase">
-                                      Place of Supply
-                                    </label>
-                                    {!isDisabled ? (
-                                      <Fragment>
-                                        <div>
-                                          <PowerSelect
-                                            class="inv__state-of-delivery-list material-input"
-                                            placeholder="Select from Dropdown"
-                                            options={this.state.states || []}
-                                            selected={
-                                              this.props.state_of_supply
-                                            }
-                                            optionLabelPath="name"
-                                            onChange={this.changeStateOfSupply}
-                                            disabled={isDisabled}
-                                          />
-                                        </div>
-                                        {!this.props.state_of_supply && (
-                                          <div class="alert-sm alert-warning">
-                                            <i class="i i-info-circle" />
-                                            Add a Place of Supply to apply taxes
-                                          </div>
-                                        )}
-                                      </Fragment>
-                                    ) : this.props.state_of_supply ? (
+                              {merchantGSTIN && showGstn && (
+                                <div class="inv__place-of-supply-container">
+                                  <label class="text-uppercase">Place of Supply</label>
+                                  {!isDisabled ? (
+                                    <Fragment>
                                       <div>
-                                        {this.props.state_of_supply.name}
+                                        <PowerSelect
+                                          class="inv__state-of-delivery-list material-input"
+                                          placeholder="Select from Dropdown"
+                                          options={this.state.states || []}
+                                          selected={this.props.state_of_supply}
+                                          optionLabelPath="name"
+                                          onChange={this.changeStateOfSupply}
+                                          disabled={isDisabled}
+                                        />
                                       </div>
-                                    ) : (
-                                      <div class="light-placeholder">
-                                        Place of Supply not applicable.
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+                                      {!this.props.state_of_supply && (
+                                        <div class="alert-sm alert-warning">
+                                          <i class="i i-info-circle" />
+                                          Add a Place of Supply to apply taxes
+                                        </div>
+                                      )}
+                                    </Fragment>
+                                  ) : this.props.state_of_supply ? (
+                                    <div>{this.props.state_of_supply.name}</div>
+                                  ) : (
+                                    <div class="light-placeholder">
+                                      Place of Supply not applicable.
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div class="col-md-12 hidden-md visible-sm-block">
                               <div class="inv__dates-container">
                                 <div class="row">
                                   <div class="col-md-4">
-                                    <label class="text-uppercase">
-                                      Issue Date
-                                    </label>
+                                    <label class="text-uppercase">Issue Date</label>
                                   </div>
                                   <div class="col-md-8">
                                     <div
@@ -2226,9 +2094,7 @@ export default class InvoicesNewContainer extends Component {
                                       }`}
                                     >
                                       <SingleDatePicker
-                                        customInputIcon={
-                                          <i class="i i-date-range" />
-                                        }
+                                        customInputIcon={<i class="i i-date-range" />}
                                         noBorder={true}
                                         disabled={isDisabled}
                                         placeholder="Issue Date"
@@ -2236,9 +2102,7 @@ export default class InvoicesNewContainer extends Component {
                                         numberOfMonths={1}
                                         hideKeyboardShortcutsPanel={true}
                                         date={this.state.issue_date}
-                                        focused={
-                                          this.state.issue_date_mobile_focused
-                                        }
+                                        focused={this.state.issue_date_mobile_focused}
                                         onFocusChange={({ focused }) =>
                                           this.setState({
                                             issue_date_mobile_focused: focused,
@@ -2254,9 +2118,7 @@ export default class InvoicesNewContainer extends Component {
                                 <div class="row">
                                   <div>
                                     <div class="col-md-4">
-                                      <label class="text-uppercase">
-                                        Expiry Date
-                                      </label>
+                                      <label class="text-uppercase">Expiry Date</label>
                                     </div>
                                     <div class="col-md-8">
                                       <div
@@ -2267,19 +2129,14 @@ export default class InvoicesNewContainer extends Component {
                                         }`}
                                       >
                                         <SingleDatePicker
-                                          customInputIcon={
-                                            <i class="i i-date-range" />
-                                          }
+                                          customInputIcon={<i class="i i-date-range" />}
                                           noBorder={true}
                                           placeholder="Expiry Date"
                                           disabled={locked}
                                           numberOfMonths={1}
                                           hideKeyboardShortcutsPanel={true}
                                           date={this.state.expiry_date}
-                                          focused={
-                                            this.state
-                                              .expiry_date_mobile_focused
-                                          }
+                                          focused={this.state.expiry_date_mobile_focused}
                                           onFocusChange={({ focused }) =>
                                             this.setState({
                                               expiry_date_mobile_focused: focused,
@@ -2324,9 +2181,7 @@ export default class InvoicesNewContainer extends Component {
                             name="comment"
                             component={AutoResizeTextarea}
                             class="material-input"
-                            placeholder={`${
-                              !locked ? 'Add ' : ''
-                            }Customer Notes`}
+                            placeholder={`${!locked ? 'Add ' : ''}Customer Notes`}
                             rows="1"
                             keepValueInBG={false}
                             disabled={locked}
@@ -2336,17 +2191,13 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row">
                         <div class="col-md-12">
-                          <label class="text-uppercase">
-                            Terms and Conditions
-                          </label>
+                          <label class="text-uppercase">Terms and Conditions</label>
                           <InlineField
                             formName="newInvoice"
                             name="terms"
                             component={AutoResizeTextarea}
                             class="material-input"
-                            placeholder={`${
-                              !locked ? 'Add ' : ''
-                            }Terms and Conditions`}
+                            placeholder={`${!locked ? 'Add ' : ''}Terms and Conditions`}
                             rows="1"
                             keepValueInBG={false}
                             disabled={locked}
@@ -2368,9 +2219,7 @@ export default class InvoicesNewContainer extends Component {
                   </div>
                 </div>
 
-                <ShowWhen
-                  additionalCondition={user => user.isAllowedEdit('invoices')}
-                >
+                <ShowWhen additionalCondition={(user) => user.isAllowedEdit('invoices')}>
                   <div class="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
                       <div class="inv__cta">
@@ -2382,7 +2231,7 @@ export default class InvoicesNewContainer extends Component {
                               disabled={
                                 this.state.isSaving || this.props.invalid || !hasCustomerSelected
                               }
-                              onClick={handleSubmit(props => {
+                              onClick={handleSubmit((props) => {
                                 return this.saveAndIssue({
                                   ...props,
                                   ...{ draft: '0' },
@@ -2421,10 +2270,8 @@ export default class InvoicesNewContainer extends Component {
                               class="btn btn-default btn-block btn-lg"
                               text="Save Invoice"
                               pendingText="Saving..."
-                              disabled={
-                                this.state.isSaving || this.props.invalid
-                              }
-                              onClick={handleSubmit(props => {
+                              disabled={this.state.isSaving || this.props.invalid}
+                              onClick={handleSubmit((props) => {
                                 return this.save({
                                   ...props,
                                   ...{ draft: isIssued ? '0' : '1' },
@@ -2473,39 +2320,32 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
-                          {!merchantGSTIN &&
-                            (isNew || isDraft) && (
-                              <label
-                                class="btn btn-default btn-block btn-lg"
-                                for="gst_enabled"
-                              >
-                                <div class="row">
-                                  <div class="col-xs-10">
-                                    <h3>Create GST Enabled Invoices</h3>
-                                    <p>Add your GST number</p>
-                                  </div>
-                                  <div class="col-xs-2">
-                                    <div class="custom-checkbox">
-                                      <Field
-                                        name="gst_enabled"
-                                        id="gst_enabled"
-                                        component="input"
-                                        type="checkbox"
-                                        disabled={locked}
-                                        class="Input-el"
-                                        checked={!!merchantGSTIN}
-                                        onChange={this.showGSTModal}
-                                      />
-                                      <div class="Input-checkbox" />
-                                    </div>
+                          {!merchantGSTIN && (isNew || isDraft) && (
+                            <label class="btn btn-default btn-block btn-lg" for="gst_enabled">
+                              <div class="row">
+                                <div class="col-xs-10">
+                                  <h3>Create GST Enabled Invoices</h3>
+                                  <p>Add your GST number</p>
+                                </div>
+                                <div class="col-xs-2">
+                                  <div class="custom-checkbox">
+                                    <Field
+                                      name="gst_enabled"
+                                      id="gst_enabled"
+                                      component="input"
+                                      type="checkbox"
+                                      disabled={locked}
+                                      class="Input-el"
+                                      checked={!!merchantGSTIN}
+                                      onChange={this.showGSTModal}
+                                    />
+                                    <div class="Input-checkbox" />
                                   </div>
                                 </div>
-                              </label>
-                            )}
-                          <label
-                            class="btn btn-default btn-block btn-lg"
-                            for="partial_payment"
-                          >
+                              </div>
+                            </label>
+                          )}
+                          <label class="btn btn-default btn-block btn-lg" for="partial_payment">
                             <div class="row">
                               <div class="col-xs-10">
                                 <h3>Enable Partial Payments</h3>
@@ -2542,9 +2382,7 @@ export default class InvoicesNewContainer extends Component {
                               <div class="row">
                                 <div class="col-xs-10">
                                   <h3>Change Invoice Label</h3>
-                                  <p>
-                                    Invoices will be issued under this label
-                                  </p>
+                                  <p>Invoices will be issued under this label</p>
                                 </div>
                                 <i
                                   class="col-xs-2 i i-arrow-forward"
@@ -2553,60 +2391,50 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </button>
                           )}
-                          {!invoice.id &&
-                            this.props.session.user.isInttCurrenciesEnabled && (
-                              <div
-                                id="change-currency-cta"
-                                class={classList(
-                                  'change-currency-cta',
-                                  this.state.highlightCurrencyChangeCTA &&
-                                    'highlight'
-                                )}
+                          {!invoice.id && this.props.session.user.isInttCurrenciesEnabled && (
+                            <div
+                              id="change-currency-cta"
+                              class={classList(
+                                'change-currency-cta',
+                                this.state.highlightCurrencyChangeCTA && 'highlight',
+                              )}
+                            >
+                              <button
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.openInvoiceCurrencyChangeModal}
+                                type="button"
                               >
-                                <button
-                                  class="btn btn-default btn-block btn-lg"
-                                  onClick={this.openInvoiceCurrencyChangeModal}
-                                  type="button"
-                                >
-                                  <div class="row">
-                                    <div class="col-xs-10">
-                                      <h3>Change Currency</h3>
-                                      <p>Select different currency</p>
-                                    </div>
-                                    <i
-                                      class="col-xs-2 i i-arrow-forward"
-                                      style={{ marginTop: '0.5em' }}
-                                    />
+                                <div class="row">
+                                  <div class="col-xs-10">
+                                    <h3>Change Currency</h3>
+                                    <p>Select different currency</p>
                                   </div>
-                                </button>
-                                <Popover theme="dark" align="bottom">
-                                  <PopoverBody>
-                                    Going forward you can change the Invoice
-                                    currency here
-                                  </PopoverBody>
-                                </Popover>
-                              </div>
-                            )}
+                                  <i
+                                    class="col-xs-2 i i-arrow-forward"
+                                    style={{ marginTop: '0.5em' }}
+                                  />
+                                </div>
+                              </button>
+                              <Popover theme="dark" align="bottom">
+                                <PopoverBody>
+                                  Going forward you can change the Invoice currency here
+                                </PopoverBody>
+                              </Popover>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
 
                     <ShowWhen
-                      additionalCondition={user =>
-                        locked && user.isAllowedEdit('invoices')
-                      }
+                      additionalCondition={(user) => locked && user.isAllowedEdit('invoices')}
                     >
                       <div class="inv__cta">
-                        <div class="btn-group-vertical">
-                          {duplicateInvoiceButton}
-                        </div>
+                        <div class="btn-group-vertical">{duplicateInvoiceButton}</div>
                       </div>
                     </ShowWhen>
 
-                    <InvoiceInfo
-                      invoice={invoice}
-                      trackUpdateInvoice={this.trackUpdateInvoice}
-                    />
+                    <InvoiceInfo invoice={invoice} trackUpdateInvoice={this.trackUpdateInvoice} />
                     <InvoiceNotes
                       invoice={invoice}
                       isSaving={this.state.isSaving}
@@ -2629,7 +2457,7 @@ const removeTaxForNonINRItems = (props, invoiceCurrency) => {
   if (invoiceCurrency !== 'INR') {
     updatedProps.currency = invoiceCurrency;
 
-    updatedProps.line_items = updatedProps.line_items.map(item => {
+    updatedProps.line_items = updatedProps.line_items.map((item) => {
       delete item.taxes;
       delete item.tax_ids;
       delete item.tax_inclusive;
@@ -2639,9 +2467,8 @@ const removeTaxForNonINRItems = (props, invoiceCurrency) => {
     });
   }
 
-  updatedProps.line_items = updatedProps.line_items.map(item => {
-    const currency =
-      (item.selectedItem && item.selectedItem.currency) || item.currency;
+  updatedProps.line_items = updatedProps.line_items.map((item) => {
+    const currency = (item.selectedItem && item.selectedItem.currency) || item.currency;
 
     if (invoiceCurrency !== currency) {
       delete item.item_id;

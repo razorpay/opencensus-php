@@ -15,7 +15,7 @@ export const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
 export const CUSTOMER_ADDRESS_FETCH = 'CUSTOMER_ADDRESS_FETCH';
 export const CUSTOMER_ADDRESS_ADD = 'CUSTOMER_ADDRESS_ADD';
 
-export const fetchCustomers = params => {
+export const fetchCustomers = (params) => {
   let customer = new Customer();
 
   return {
@@ -24,7 +24,7 @@ export const fetchCustomers = params => {
   };
 };
 
-export const fetchCustomer = id => {
+export const fetchCustomer = (id) => {
   let customer = new Customer();
 
   return {
@@ -46,7 +46,7 @@ export const fetchCustomersForAutocomplete = (params) => {
   };
 };
 
-export const saveCustomer = params => {
+export const saveCustomer = (params) => {
   let customer = new Customer(params);
 
   return {
@@ -55,7 +55,7 @@ export const saveCustomer = params => {
   };
 };
 
-export const deleteCustomer = params => {
+export const deleteCustomer = (params) => {
   let customer = new Customer(params);
 
   return {
@@ -69,7 +69,7 @@ export const deleteCustomer = params => {
  * Fetches customer's addresses.
  * @param {Customer} params
  */
-export const fetchCustomerAddresses = params => {
+export const fetchCustomerAddresses = (params) => {
   let customer = new Customer(params);
 
   return {

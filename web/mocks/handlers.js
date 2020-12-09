@@ -1,6 +1,8 @@
 import { rest, graphql } from 'msw';
 import * as ActivationDB from '../v2/merchant/onboarding/mobile/services/data/ActivationDB';
 import * as PaymentsDB from '../v2/merchant/onboarding/mobile/services/data/PaymentsDB';
+import * as WebsiteWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/WebsiteWorkflowDB';
+import * as InternationalWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/InternationalWorkflowDB';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -93,12 +95,7 @@ export const handlers = [
         ctx.delay(50),
         ctx.json({
           status_code: 200,
-          data: {
-            payment_gateway: 'approved',
-            payment_links: 'rejected',
-            invoices: 'no_action_received',
-            payment_pages: 'no_action_received',
-          },
+          data: InternationalWorkflowDB.read(),
         }),
       );
     },
@@ -110,7 +107,7 @@ export const handlers = [
       ctx.delay(50),
       ctx.json({
         status_code: 200,
-        data: true,
+        data: WebsiteWorkflowDB.read(),
       }),
     );
   }),
