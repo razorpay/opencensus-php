@@ -137,7 +137,7 @@ class Core extends Base\Core
             $merchant->liveDisable();
             $merchant->setHoldFunds(true);
             $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
-            $this->repo->merchant->saveOrFail($this->merchant);
+            $this->repo->merchant->saveOrFail($merchant);
         }
 
         // finally raise escalations
