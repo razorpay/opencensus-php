@@ -1660,10 +1660,11 @@ class Gateway
     ];
 
     // This is to configure the threshold used to block gateways if we get timeout errors in verify.
+    // TODO: Revisit this once for correct numbers, high number can create issue by clogging cron
     public static $verifyBlockThresholdGateways = [
         self::UPI_AXIS       => 50,
-        self::UPI_ICICI      => 50,
-        self::UPI_MINDGATE   => 50,
+        self::UPI_ICICI      => 200,
+        self::UPI_MINDGATE   => 100,
     ];
 
     /**
