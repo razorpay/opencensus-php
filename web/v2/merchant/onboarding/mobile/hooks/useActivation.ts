@@ -1,19 +1,21 @@
 import { useEffect } from 'react';
+import axios from 'axios';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../../../../services/formatters/activation';
 
-const fetchActivationData = async () => {
-  const { data } = await fetch('/activation').then((res) => res.json());
+export const fetchActivationData = async () => {
+  const data = await axios.get('http://localhost:6006/activation').then((res) => res.data.data);
   const formattedData = activationFormatter(data);
   return formattedData;
 };
 
-const postActivation = (data) =>
-  fetch('/activation', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }).then((res) => res.json());
+export const postActivation = (data) =>
+  axios
+    .post('http://localhost:6006/activation', {
+      ...data,
+    })
+    .then((res) => res.data.data);
 
 export default function useActivation() {
   const { status, data } = useQuery('activation', fetchActivationData, {

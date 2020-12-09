@@ -1,11 +1,11 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0.d';
 import useActivation from '../hooks/useActivation';
-import BankDetails from './index';
+import ContactDetails from './index';
 
 export default {
-  title: 'Onboarding/BankDetails',
-  component: BankDetails,
+  title: 'Onboarding/ContactDetails',
+  component: ContactDetails,
   decorators: [
     (StoryFn) => {
       const { status } = useActivation();
@@ -20,6 +20,6 @@ export default {
   ],
 } as Meta;
 
-const Template: Story = () => <BankDetails />;
+const Template: Story = () => <ContactDetails />;
 
 export const Default = Template.bind({});

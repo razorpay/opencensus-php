@@ -41,6 +41,7 @@ type State = {
   isBusinessOverviewCompleted: boolean;
   isBusinessDetailsCompleted: boolean;
   isBankAndCompanyDetailsCompleted: boolean;
+  isDocumentsUploadCompleted: boolean;
   setContactDetailsCompleted: (value: boolean) => void;
   setBusinessOverviewCompleted: (value: boolean) => void;
   setBusinessDetailsCompleted: (value: boolean) => void;
@@ -56,6 +57,7 @@ const useActivationFormState = create<State>((set) => ({
   isBusinessOverviewCompleted: false,
   isBusinessDetailsCompleted: false,
   isBankAndCompanyDetailsCompleted: false,
+  isDocumentsUploadCompleted: false,
   setContactDetailsCompleted: (value) => set({ isContactDetailsCompleted: value }),
   setBusinessOverviewCompleted: (value) => set({ isBusinessOverviewCompleted: value }),
   setBusinessDetailsCompleted: (value) => set({ isBusinessDetailsCompleted: value }),

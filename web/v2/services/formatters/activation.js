@@ -1,5 +1,10 @@
 const contactDetailFields = ['contact_name', 'contact_mobile', 'contact_email'];
-const businessOverviewFields = ['business_type', 'business_dba', 'business_website'];
+const businessOverviewFields = [
+  'business_type',
+  'business_category',
+  'business_dba',
+  'business_website',
+];
 const businessDetailFields = [
   'company_pan',
   'business_name',
@@ -42,6 +47,7 @@ const activationFormatter = (data) => {
     business_overview: businessOverview,
     business_details: businessDetails,
     bank_and_company_details: bankAndCompanyDetails,
+    ...data,
   };
 };
 

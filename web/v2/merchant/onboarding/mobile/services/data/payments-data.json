@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "pay_G21I5Z6MZ25BGS",
+      "entity": "payment",
+      "amount": 200,
+      "currency": "INR",
+      "base_amount": 200
+    },
+    {
+      "id": "pay_G21I5Z6MZ25BGS",
+      "entity": "payment",
+      "amount": 200,
+      "currency": "INR",
+      "base_amount": 200
+    },
+    {
+      "id": "pay_G20JNz1x4aeTPy",
+      "entity": "payment",
+      "amount": 49900,
+      "currency": "INR",
+      "base_amount": 49900
+    }
+  ]
+}

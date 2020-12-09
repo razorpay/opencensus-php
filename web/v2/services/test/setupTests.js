@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom/extend-expect';
-import { server } from './server';
+import { queryCache } from '../../components/Bootstrap/Wrapper';
+import { server } from '../../../mocks/node';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
-afterEach(() => server.resetHandlers());
+beforeEach(() => server.resetHandlers());
+
+afterEach(() => {
+  queryCache.clear();
+});

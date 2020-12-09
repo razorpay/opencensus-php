@@ -6,7 +6,7 @@ import { AppProvider, AppContextTypes } from '../../context/App';
 import { LayerProvider } from '../Layer/LayerContext';
 import { fetchGraphQL } from '../../services/graphql/graphql-fetch';
 
-const queryCache = new QueryCache({
+export const queryCache = new QueryCache({
   defaultConfig: {
     queries: {
       queryFn: fetchGraphQL,

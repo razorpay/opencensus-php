@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Storyshots Onboarding/Home Default 1`] = `
+<div>
+  <div>
+    <div>
+      <div
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+      >
+        Loading...
+      </div>
+    </div>
+    <div
+      id="layerHost"
+    />
+  </div>
+  <div
+    id="layerHost"
+  />
+</div>
+`;
