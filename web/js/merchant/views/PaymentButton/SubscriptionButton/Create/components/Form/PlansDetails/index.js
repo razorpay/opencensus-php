@@ -76,7 +76,7 @@ export default class PlansDetails extends React.Component {
     fields.items.forEach((field, index) => {
       items.push(
         <EditableDisplayField
-          key={index}
+          key={field.id}
           indexInOrder={index}
           field={field}
           plansOptions={this.plans}

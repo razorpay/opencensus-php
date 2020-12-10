@@ -181,7 +181,7 @@ export default class EditableDisplayField extends React.Component {
             isEditExistingId={isEditExistingId}
             handleClose={this.handleToggleEditMode}
             onSubmit={this.onSubmitBaseForm}
-            handleDeleteField={this.handleDeleteField} // TODO: For email and phone cannot be deleted
+            handleDeleteField={this.handleDeleteField}
             validateSameTitleExists={this.props.validateSameTitleExists}
           />
         )}
