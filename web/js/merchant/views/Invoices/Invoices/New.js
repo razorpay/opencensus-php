@@ -537,6 +537,12 @@ export default class InvoicesNewContainer extends Component {
     customer,
     shippingSameAsBilling = false,
   ) => {
+    // Update for TypeAhead
+    this.setState({
+      selectedCustomerDisplay: customer
+    });
+
+    // Update in Redux form
     this.setCustomerInProps(customer);
     this.props.closeModal();
 
@@ -697,7 +703,9 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
-  quickCreateCustomer = ({ searchTerm = '' }) => {
+  quickCreateCustomer = ({ searchTerm = '', closeSelectCustomerDropdown }) => {
+    closeSelectCustomerDropdown();
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -1807,6 +1815,20 @@ export default class InvoicesNewContainer extends Component {
                                     );
                                   }}
                                   beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                                  afterOptionsComponent={({ select }) => {
+                                    return (
+                                      <div
+                                        class="quick-create"
+                                        onClick={() => this.quickCreateCustomer({
+                                          searchTerm: select.searchTerm,
+                                          closeSelectCustomerDropdown: select.actions.close
+                                        })}
+                                      >
+                                        <i class="i i-plus" />
+                                        <b>Create New Customer</b>
+                                      </div>
+                                    );
+                                  }}
                                   onChange={this.handleSelectCustomer}
                                   onKeyDown={this.handleKeyDown}
                                 />
