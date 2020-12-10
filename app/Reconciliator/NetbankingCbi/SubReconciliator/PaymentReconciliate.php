@@ -102,4 +102,18 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 
         $gatewayPayment->setRaw($raw);
     }
+
+    protected function getArn($row)
+    {
+        return $this->getReferenceNumber($row);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'  =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

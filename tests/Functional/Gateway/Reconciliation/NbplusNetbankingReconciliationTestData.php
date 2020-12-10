@@ -59,4 +59,12 @@ return [
         'Account Number'                        => '123456789',
         'Amount'                                => '500.00',
         ],
+    'testCbiSuccessRecon' => [
+        'Bank Code'                             => 'CBIN',
+        'payment reference number'              => '',
+        'Transaction Amount'                    => '500.00',
+        'date'                                  => Carbon::today()->format("Ymd"),
+        'Status of transaction'                 => 'Y',
+        'bank ref no.'                          => '123456'
+        ],
     ];
