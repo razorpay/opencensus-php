@@ -48,7 +48,7 @@ const PartialPayments = (props) => (
 
             <Input
               autoRender
-              name="first_payment_min_amount"
+              name="first_min_partial_amount"
               placeholder="0.00"
               size="half_big"
               defaultValue={props.defaultFirstMinAmount}
