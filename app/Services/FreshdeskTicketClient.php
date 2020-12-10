@@ -358,6 +358,18 @@ class FreshdeskTicketClient
             unset($content['attachments[]']);
         }
 
+        if (isset($content['cc_emails[]']) === true)
+        {
+            foreach ($content['cc_emails[]'] as $email)
+            {
+                $data .= "--" . $mime_boundary . $eol;
+                $data .= 'Content-Disposition: form-data; name="' . 'cc_emails[]' . '"' . $eol . $eol;
+                $data .= $email . $eol;
+            }
+
+            unset($content['cc_emails[]']);
+        }
+
         self::httpBuildQuery($content);
 
         foreach ($content as $key => $value)
@@ -497,12 +509,15 @@ class FreshdeskTicketClient
 
     private function processArrayRequestFields(array &$content)
     {
-        if (isset($content['attachments']) === true)
+        if (isset($content['attachments']) === false)
         {
-            $content['attachments[]'] = $content['attachments'];
+            return;
 
-            unset($content['attachments']);
         }
+
+        $content['attachments[]'] = $content['attachments'];
+
+        unset($content['attachments']);
 
         if (isset($content['cc_emails']) === true)
         {
@@ -511,13 +526,6 @@ class FreshdeskTicketClient
             unset($content['cc_emails']);
         }
 
-        if (isset($content['cc_emails[]']) === true)
-        {
-            foreach ($content['cc_emails[]'] as $ccEmail)
-            {
-                $content['cc_emails[]'] = $ccEmail;
-            }
-        }
     }
 
     private function getAuthKey($urlKey) : string

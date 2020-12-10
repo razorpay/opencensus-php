@@ -51,7 +51,6 @@ class SupportTicketDashboardTest extends TestCase
             ->with(Mockery::on(function ($request)  use ($expectedUrls, $expectedMethod, $expectedContent ) {
                 if (in_array($request['url'], $expectedUrls) === false)
                 {
-                    s($request['url']);
                     return false;
                 }
 
@@ -295,7 +294,7 @@ class SupportTicketDashboardTest extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails[]' => 'a@b.com',
+                'cc_emails' => ['a@b.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'activation',
@@ -332,7 +331,7 @@ class SupportTicketDashboardTest extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails[]' => 'a@b.com',
+                'cc_emails' => ['a@b.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Invalid',
                     'cf_requestor_subcategory' => 'activation',
