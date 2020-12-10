@@ -268,6 +268,8 @@ return array(
 
     'payment_link_hosted_base_url'        => env('PAYMENT_LINK_HOSTED_BASE_URL'),
 
+    'payment_page_axis_hosted_base_url'   => env('PAYMENT_PAGE_AXIS_HOSTED_BASE_URL'),
+
     'razorpay_website_url'                => env('PL_DEMO_RAZORPAY_WEBSITE_URL'),
 
     'cdn_v1_url'                          => env('CDN_V1_URL'),

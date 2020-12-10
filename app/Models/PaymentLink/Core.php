@@ -1158,7 +1158,24 @@ class Core extends Base\Core
     {
         // Following are default set of parameters, when there is no slug passed in input
         // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max30Slug
-        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $slug);
+
+        $hostedBaseUrl = $this->plHostedBaseUrl;
+
+        $merchant = $paymentLink->merchant;
+
+        $org = $merchant->org;
+
+        switch ($org->getCustomCode())
+        {
+            case 'axis':
+
+                $hostedBaseUrl = $this->app['config']->get('app.payment_page_axis_hosted_base_url');
+
+                break;
+        }
+
+        $url = $paymentLink->getHostedViewUrl($hostedBaseUrl, $slug);
+
         // Fail: In case not able to shorten URL, will keep above value itself as short URL and continue with creation
         $fail = false;
         // Ptype: Input request for Gimli
