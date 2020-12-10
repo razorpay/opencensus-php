@@ -221,6 +221,12 @@ app
         },
       };
 
+      if(window.location.hash.includes('/access/signup')){
+        window.analytics && window.analytics.init(
+          ['hubspot'],
+        );
+      }
+
       $scope.handleWhatsAppOpIn = function () {
         $scope.signup.isWhatsAppOptIn = !$scope.signup.isWhatsAppOptIn;
       };

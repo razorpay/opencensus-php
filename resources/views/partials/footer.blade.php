@@ -70,8 +70,13 @@
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
     if (window.analytics) {
+        let trackers = ['perf', 'ga', 'fb', 'twitter', 'twitterAgency', 'linkedin', 'bing', 'lj', 'quora', 'reddit']
+         if(window.loadHubspot){
+            trackers.push('hubspot');
+         }
+
         analytics.init(
-          ['perf', 'ga', 'fb', 'twitter', 'twitterAgency', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
+          trackers,
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
             fb: '697927486977350',
