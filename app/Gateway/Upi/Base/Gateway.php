@@ -33,6 +33,11 @@ class Gateway extends Base\Gateway
 
     protected $shouldRetryForAction = true;
 
+    /**
+     * @var string Hexadecimal for UPI
+     */
+    protected $gatewaySanitizeKey = '555049';
+
     public function isRunningOnDark(): bool
     {
         $url = $this->app['config']->get('applications.mozart.live.url');

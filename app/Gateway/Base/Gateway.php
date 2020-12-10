@@ -6,6 +6,7 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use phpseclib\Crypt\RC4;
 use RZP\Gateway\Mpi\Base as Mpi;
 use RZP\Models\Admin\ConfigKey;
 use Symfony\Component\DomCrawler\Crawler;
@@ -233,6 +234,14 @@ class Gateway
      * gateway as down or not.
      */
     protected $downtimeMetric;
+
+    /**
+     * Gateway Sanitize key is used to mask the gateway requests/responses where some
+     * sensitive information is getting being traced. This key can be set as secret from
+     * Gateway config and could be different for different gateways.
+     * @var string
+     */
+    protected $gatewaySanitizeKey = null;
 
     public function __construct()
     {
@@ -1946,6 +1955,50 @@ class Gateway
         }
 
         return $output;
+    }
+
+    /**
+     * Sanitize the text which may have sensitive data
+     *
+     * @param $text
+     * @return mixed
+     */
+    protected function sanitizeTextForTracing($text)
+    {
+        // If key is not set or unset, we will not sanitize the response
+        if (empty($this->gatewaySanitizeKey) === true)
+        {
+            return $text;
+        }
+
+        // We will only sanitize the texts, anything else will be returned as it is.
+        if (is_string($text) === false)
+        {
+            return $text;
+        }
+
+        try
+        {
+            $rc4 = new RC4();
+
+            $rc4->setKey($this->gatewaySanitizeKey);
+
+            $cipher = $rc4->encrypt($text);
+
+            $encoded = base64_encode($cipher);
+
+            return $encoded;
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                Trace::CRITICAL,
+                TraceCode::ERROR_INVALID_ARGUMENT);
+
+            // For any failure we will trace the issue and return the value as it is
+            return $text;
+        }
     }
 
     public function isMandateUpdateCallback($input)

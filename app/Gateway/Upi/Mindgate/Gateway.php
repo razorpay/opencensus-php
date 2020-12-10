@@ -473,10 +473,12 @@ class Gateway extends Base\Gateway
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
         $response = null;
+        $sanitized = null;
 
         try
         {
             $response = $this->decrypt($responseBody);
+            $sanitized = $this->sanitizeTextForTracing($response);
 
             $type = strtoupper($type);
 
@@ -510,7 +512,7 @@ class Gateway extends Base\Gateway
         {
             $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
                 'body'              => $responseBody,
-                'decrypted'         => $response,
+                'sanitized'         => $sanitized,
                 'gateway'           => $this->gateway,
                 'type'              => $type,
                 'error'             => $e->getMessage()
@@ -535,7 +537,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
-            'decrypted'         => $response,
+            'sanitized'         => $sanitized,
             'parsed'            => $traceResult,
             'gateway'           => $this->gateway,
             'type'              => $type
