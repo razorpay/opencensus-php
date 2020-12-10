@@ -293,10 +293,11 @@ class Preference extends Base\Core
         {
             $hour = Constants::ONE_PM;
         }
-        // matched merchant will have only one settlement per day (@ 1 PM)
+        // matched merchant will have only one settlement per day (@ 2 PM)
+        //Ref: https://razorpay.slack.com/archives/C49FL903W/p1607494426496100
         else if ($parentMerchantId === Merchant\Preferences::MID_PAISABAZAAR)
         {
-            $hour = Constants::ONE_PM;
+            $hour = Constants::TWO_PM;
         }
         else
         {

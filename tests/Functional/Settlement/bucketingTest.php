@@ -183,13 +183,13 @@ class BucketingTest extends TestCase
 
         $this->mockSettlementServiceRamp(false);
 
-        $this->createPaymentAndAssert(10000000000000, 1568871000, 1568878200);
+        $this->createPaymentAndAssert(10000000000000, 1568871000, 1568881800);
 
-        $timestamp = Carbon::create(2019, 9, 19, 13, 1, 0, Timezone::IST);
+        $timestamp = Carbon::create(2019, 9, 19, 14, 1, 0, Timezone::IST);
 
         $this->setTestTime($timestamp);
 
-        $this->createPaymentAndAssert(10000000000000, 1568881800, 1568964600);
+        $this->createPaymentAndAssert(10000000000000, 1568885400, 1568968200);
     }
 
     public function testOnlyTwoSettlementBucket()
