@@ -312,7 +312,7 @@ class Service extends Base\Service
 
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
-        (new Validator)->validateInput('create_support_dashboard_ticket', $input);
+        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -322,8 +322,8 @@ class Service extends Base\Service
 
         $ticketEntity = (new Core)->create([
             Entity::TICKET_ID       => stringify($ticketCreateResponse['id']),
-            Entity::TICKET_DETAILS  => Type::SUPPORT_DASHBOARD,
-            Entity::TYPE            => Type::SUPPORT_DASHBOARD,
+            Entity::TICKET_DETAILS  => [],
+            Entity::TYPE            => $type,
         ], $this->merchant->getId(), true);
 
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity->getId());

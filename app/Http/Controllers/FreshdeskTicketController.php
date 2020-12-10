@@ -105,11 +105,11 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getTickets()
+    public function getTickets($type)
     {
         $input = Request::all();
 
-        $response = (new FreshdeskTicketService)->getTickets($input, FreshdeskTicket\Type::SUPPORT_DASHBOARD);
+        $response = (new FreshdeskTicketService)->getTickets($input, $type);
 
         return ApiResponse::json($response);
     }

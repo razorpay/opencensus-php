@@ -9,7 +9,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::TICKET_ID       => 'required|string',
         Entity::TYPE            => 'required|string',
-        Entity::TICKET_DETAILS  => 'required|string',
+        Entity::TICKET_DETAILS  => 'sometimes',
         Entity::MERCHANT_ID     => 'required|string|alpha_num'
     ];
 
