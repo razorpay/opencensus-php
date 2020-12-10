@@ -1023,6 +1023,9 @@ return [
             Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE => [
                 'assignable' => true,
             ],
+            Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT => [
+                'assignable' => true,
+            ],
         ],
 
         PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [

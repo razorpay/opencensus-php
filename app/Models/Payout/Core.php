@@ -1433,7 +1433,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    protected function handlePayoutProcessed(Entity $payout)
+    public function handlePayoutProcessed(Entity $payout, $debit_bas = null)
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -1446,14 +1446,14 @@ class Core extends Base\Core
         }
 
         $this->repo->transaction(
-            function() use ($payout) {
+            function() use ($payout, $debit_bas) {
                 $payout->setStatus(Status::PROCESSED);
 
                 $this->repo->saveOrFail($payout);
 
                 if ($payout->isBalanceAccountTypeDirect() === true)
                 {
-                    $this->handlePayoutTransactionForDirectBanking($payout);
+                    $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
 
                     (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                 }
@@ -1467,63 +1467,61 @@ class Core extends Base\Core
      * JIRA: https://razorpay.atlassian.net/browse/RX-698
      *
      * @param Entity $payout
+     * @param null $debit_bas
+     * debit_bas is bas entity with which we want the payout to be linked. This is added for manual
+     * linking via admin action
      *
      * @throws Exception\LogicException
      */
-    protected function handlePayoutTransactionForDirectBanking(Entity $payout)
+    public function handlePayoutTransactionForDirectBanking(Entity $payout, $debit_bas = null)
     {
-        $bas = null;
-
         if ($payout->hasTransaction() === true)
         {
-            return ;
+            $this->trace->info(
+                TraceCode::TRANSACTION_ALREADY_LINKED_WITH_PAYOUT,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'transaction_id' => $payout->getTransactionId(),
+                    'debit_bas'      => optional($debit_bas)->getId()
+                ]);
+
+            return;
         }
 
-        try
-        {
-            // Fetch BAS for this payout
-            if (empty($payout->getUtr()) === false)
-            {
-                $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout);
-            }
-            if ($bas === null)
-            {
-                $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            // This happens when a payout is be mapped to multiple bas entities
-            // we do not want to throw an exception here, as this operation occurs in a db txn
-            $this->trace->traceException($e);
-        }
+        $bas = $debit_bas;
 
-        //
-        // For direct banking, it's possible we have figured out the transaction via account statement
-        // even before the payout is actually marked as processed via FTS recon. In that case, we don't have
-        // to try and figure out a transaction from an existing set of transactions.
-        //
-        if ($payout->hasTransaction() === true)
+        if ($bas === null)
         {
-            // If this payout has a txn linked, a BAS entity should always be present for this payout
+            try
+            {
+                // Fetch BAS for this payout
+                if (empty($payout->getUtr()) === false)
+                {
+                    $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout);
+                }
+                if ($bas === null)
+                {
+                    $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                // This happens when a payout is be mapped to multiple bas entities
+                // we do not want to throw an exception here, as this operation occurs in a db txn
+                $this->trace->traceException($e);
+            }
+
+            // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a payout
             if (empty($bas) === true)
             {
-                $this->trace->error(
-                    TraceCode::PAYOUT_HAS_TRANSACTION_BUT_NO_MAPPING_TO_BAS,
+                $this->trace->info(
+                    TraceCode::BAS_NOT_FOUND_FOR_DEBIT_MAPPING,
                     [
-                        'payout_id'         => $payout->getId(),
-                        'txn_id'            => $payout->getTransactionId(),
-                        'channel'           => $payout->getChannel(),
+                        'payout_id' => $payout->getId(),
                     ]);
+
+                return;
             }
-
-            return;
-        }
-
-        // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a payout
-        if (empty($bas) === true)
-        {
-            return;
         }
 
         $transaction = $bas->transaction;
@@ -1545,7 +1543,16 @@ class Core extends Base\Core
         $this->updateTransactionAndSourceToPayout($payout, $transaction);
     }
 
-    protected function handleReversalTransactionForDirectBanking(Reversal\Entity $reversal)
+    /**
+     * @param Reversal\Entity $reversal
+     * @param null            $credit_bas
+     *
+     * credit_bas is bas entity with which we want the reversal to be linked. This is added for manual
+     * linking via admin action
+     *
+     * @throws Exception\LogicException
+     */
+    public function handleReversalTransactionForDirectBanking(Reversal\Entity $reversal, $credit_bas = null)
     {
         $payoutTransaction = $this->handleProcessedPayoutViaReversedPayout($reversal);
 
@@ -1558,13 +1565,37 @@ class Core extends Base\Core
             return;
         }
 
-        $bas = $this->repo->banking_account_statement->fetchByUtrForReversal($reversal)->first() ??
-               $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first();
-
-        // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a reversal
-        if (empty($bas) === true)
+        if ($reversal->hasTransaction() === true)
         {
+            $this->trace->info(
+                TraceCode::TRANSACTION_ALREADY_LINKED_WITH_REVERSAL,
+                [
+                    'reversal_id'    => $reversal->getId(),
+                    'transaction_id' => $reversal->getTransactionId(),
+                    'credit_bas'     => $credit_bas->getId()
+                ]);
+
             return;
+        }
+
+        $bas = $credit_bas;
+
+        if ($bas === null)
+        {
+            $bas = $this->repo->banking_account_statement->fetchByUtrForReversal($reversal)->first() ??
+                   $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first();
+
+            // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a reversal
+            if (empty($bas) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BAS_NOT_FOUND_FOR_CREDIT_MAPPING,
+                    [
+                        'reversal_id' => $reversal->getId(),
+                    ]);
+
+                return;
+            }
         }
 
         $transaction = $bas->transaction;
@@ -1609,7 +1640,7 @@ class Core extends Base\Core
         return $payout->transaction;
     }
 
-    protected function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
+    public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
@@ -1643,7 +1674,7 @@ class Core extends Base\Core
         (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
     }
 
-    protected function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
+    public function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
@@ -1842,14 +1873,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($bas);
     }
 
-    protected function handlePayoutReversed(Entity $payout,
+    public function handlePayoutReversed(Entity $payout,
                                             string $ftaFailureReason = null,
-                                            string $ftaBankStatusCode = null)
+                                            string $ftaBankStatusCode = null,
+                                            $credit_bas = null)
     {
         // will be removed after new error object is released.
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
-        $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode);
+        $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
     }
@@ -1984,7 +2016,10 @@ class Core extends Base\Core
         }
     }
 
-    public function reversePayout(Entity $payout, string $reverseReason = null, $ftaBankStatusCode = null)
+    public function reversePayout(Entity $payout,
+                                  string $reverseReason = null,
+                                  $ftaBankStatusCode = null,
+                                  $credit_bas = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -2002,7 +2037,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason, $ftaBankStatusCode)
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas)
             {
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
@@ -2022,7 +2057,7 @@ class Core extends Base\Core
                 }
 
                 $reversal = $this->repo->transaction(
-                    function() use ($payout, $reverseReason, $ftaBankStatusCode) {
+                    function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
                         $payout->setFailureReason($reverseReason);
@@ -2031,7 +2066,7 @@ class Core extends Base\Core
 
                         if ($payout->isBalanceAccountTypeDirect() === true)
                         {
-                            $this->handleReversalTransactionForDirectBanking($reversal);
+                            $this->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
                         }
 
                         $previousStatus = $payout->getStatus();

@@ -3,12 +3,17 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Status;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
 
 class Validator extends Base\Validator
 {
     const ACCOUNT_STATEMENT_GENERATE = 'accountStatementGenerate';
+
+    const SOURCE_UPDATE = 'sourceUpdate';
 
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
@@ -41,6 +46,44 @@ class Validator extends Base\Validator
     protected static $accountStatementGenerateValidators = [
         'channel_format'
     ];
+
+    protected static $sourceUpdateRules = [
+        'payout_id'     => 'required|unsigned_id',
+        'debit_bas_id'  => 'required|unsigned_id',
+        'credit_bas_id' => 'sometimes|unsigned_id',
+        'end_status'    => 'required|in:processed,reversed'
+    ];
+
+    public function validateCreditBas($current_status, array $input)
+    {
+        // note current_status is status of payout currently
+        // end_status is something which is expected after manual linking
+
+        $end_status = array_pull($input, 'end_status');
+
+        // state machine doesn't allow reversed to reversed or processed to processed , so skipping that
+        if (($current_status !== $end_status))
+        {
+            // state machine doesn't allow reversed to failed, so skipping that
+            if (!(
+                    ($end_status === Status::REVERSED) and
+                    ($current_status === Status::FAILED)
+                 ))
+            {
+                Status::validateStatusUpdate($end_status, $current_status);
+            }
+        }
+
+        if ($end_status === Status::REVERSED)
+        {
+            if (isset($input['credit_bas_id']) === false)
+            {
+                throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_CREDIT_BAS_ID_MISSING,
+                                                               null,
+                                                               []);
+            }
+        }
+    }
 
     protected function validateChannelFormat($input)
     {

@@ -15,14 +15,17 @@ use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
+use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -1432,5 +1435,87 @@ class Core extends Base\Core
                                                  'channel'       => $channel,
                                                  'account_number' => $accountNumber
                                              ])->delay($delay);
+    }
+
+    protected function linkPayoutToDebitBas($payout, $debit_bas)
+    {
+        if (($payout->getId() === $debit_bas->source->getId()) and
+            ($debit_bas->source->getEntity() === 'payout'))
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_ALREADY_HAS_PAYOUT_LINKED,
+                [
+                    'payout_id'    => $payout->getId(),
+                    'debit_bas_id' => $debit_bas->getId(),
+                ]);
+
+            return;
+        }
+
+        if ($payout->getStatus() === Status::PROCESSED)
+        {
+            (new Payout\Core)->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
+        }
+        else
+        {
+            (new Payout\Core)->handlePayoutProcessed($payout, $debit_bas);
+        }
+    }
+
+    protected function linkCreditBas($payout, $credit_bas)
+    {
+        if ($payout->getStatus() === Status::REVERSED)
+        {
+            $reversal = $payout->reversal;
+
+            (new Payout\Core)->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
+        }
+        else
+        {
+            (new Payout\Core)->handlePayoutReversed($payout, null, null, $credit_bas);
+        }
+    }
+
+    public function updateSourceLinking(array $input)
+    {
+        // TODO: add validation for input
+        $validator = new Validator;
+
+        $validator->validateInput(Validator::SOURCE_UPDATE, $input);
+
+        /* @var \RZP\Models\Payout\Entity $payout */
+        $payout = $this->repo->payout->findOrFail($input['payout_id']);
+
+        $current_status = $payout->getStatus();
+
+        $validator->validateCreditBas($current_status, $input);
+
+        $debit_bas = $this->repo->banking_account_statement->findOrFail($input['debit_bas_id']);
+
+        $this->linkPayoutToDebitBas($payout, $debit_bas);
+
+        if (isset($input['credit_bas_id']) === true)
+        {
+            $credit_bas = $this->repo->banking_account_statement->findOrFail($input['credit_bas_id']);
+
+            $this->linkCreditBas($payout, $credit_bas);
+        }
+
+        $payout->reload();
+
+        $reversal = $payout->reversal;
+
+        $response = [
+            'payout'               => $payout->toArrayPublic(),
+            'reversal'             => optional($reversal)->toArrayPublic(),
+            'payout_transaction'   => $payout->transaction->toArrayPublic(),
+            'reversal_transaction' => optional(optional($reversal)->transaction)->toArrayPublic()
+        ];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_LIKING_UPDATE_RESPONSE,
+            $response);
+
+        return $response;
     }
 }

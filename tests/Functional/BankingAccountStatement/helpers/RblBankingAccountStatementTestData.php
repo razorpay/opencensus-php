@@ -759,5 +759,55 @@ return [
             'content' => ['accounts_processed' => ['2323230041626905', '2323230041626910', '2323230041626901',
                 '2323230041626902', '2323230041626903', '2323230041626904']]
         ]
-    ]
+    ],
+
+    'testRblSourceUpdateInvalidStateTransitionFromProcessedToFailed' => [
+        'request' => [
+            'url'     => '/banking_account_statement/source/update/validate',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id'    => 'randomid',
+                'debit_bas_id' => '100000000000po',
+                'end_status'   => 'failed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected end status is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testRblSourceUpdateInvalidStateTransitionFromFailedToProcessed' => [
+        'request' => [
+            'url'     => '/banking_account_statement/source/update/validate',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id'    => 'randomid',
+                'debit_bas_id' => '100000000000po',
+                'end_status'   => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Status change not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
 ];

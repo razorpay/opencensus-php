@@ -532,6 +532,8 @@ class Name
     const ACCOUNTING_PAYOUTS_SYNC                       = 'accounting_payouts_sync';
     const ACCOUNTING_PAYOUTS_WAITLIST                   = 'accounting_payouts_waitlist';
 
+    const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

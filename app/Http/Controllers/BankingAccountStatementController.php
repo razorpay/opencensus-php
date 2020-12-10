@@ -46,4 +46,22 @@ class BankingAccountStatementController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateSourceLinking()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateSourceLinking($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function validateSourceLinkingUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->validateSourceLinkingUpdate($input);
+
+        return ApiResponse::json($response);
+    }
 }

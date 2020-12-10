@@ -1905,6 +1905,9 @@ class Route
 
         'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
 
+        'banking_account_statement_source_update'            => ['post',   'banking_account_statement/source/update',                  'BankingAccountStatementController@updateSourceLinking'            ],
+        'banking_account_statement_source_update_validate'   => ['post',   'banking_account_statement/source/update/validate',         'BankingAccountStatementController@validateSourceLinkingUpdate'            ],
+
         'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
         'banking_accounts_auditor_daily_updates'  => ['post',     'banking_accounts/activation/{auditorType}/daily-updates',   'BankingAccountController@sendDailyUpdatesToAuditors'        ],
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
@@ -4047,8 +4050,14 @@ class Route
         'subscription_clear_feature',
 
         'fee_recovery_payout_manual_retry',
+
+        'banking_account_statement_source_update',
+
+        'banking_account_statement_source_update_validate',
+
         'reward_create',
         'reward_delete',
+
         // Admin merchant notification configs
         'create_merchant_notification_config_admin',
         'update_merchant_notification_config_admin',
@@ -4849,8 +4858,15 @@ class Route
         'salesforce_opportunity_details'              => '*',
 
         'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
+
+        'banking_account_statement_source_update'     => Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT,
+        //TODO: add permission if needed
+        'banking_account_statement_source_update_validate' => '*',
+
+
         'reward_create'                               => '*',
         'reward_delete'                               => '*',
+
         // merchant notification configs
         'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
         'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
