@@ -19,7 +19,7 @@ export default class ApplicableOn extends React.Component {
     ];
 
     Object.entries(props.emiData.emi_plans).forEach(([issuer, issuerData]) => {
-      if (issuerData.min_amount <= rupeesToPaise(props.min_amount)) {
+      if (issuerData.min_amount <= rupeesToPaise(props.minAmount)) {
         this.ISSUERS_OPTIONS.push({
           name: issuer,
           label: NetworksAndIssuers[issuer] || issuer,
