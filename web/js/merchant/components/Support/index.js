@@ -73,8 +73,7 @@ export default class Support extends Component {
   render() {
     const { user } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
-    // const isCallEnabled = !user.isActivated || this.props.isCallEnabled;
-    const isCallEnabled = false;
+    const isCallEnabled = !user.isActivated || this.props.isCallEnabled;
 
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
