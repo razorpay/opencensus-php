@@ -487,6 +487,7 @@ class Gateway
 
     const EMANDATE_REGISTRATION_DISABLED_BANKS = [
         IFSC::UTBI,
+        IFSC::IDIB,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
