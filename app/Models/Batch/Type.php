@@ -110,6 +110,8 @@ class Type
 
     const SUBMERCHANT_LINK      = 'submerchant_link';
 
+    const SUBMERCHANT_TYPE_UPDATE      = 'submerchant_type_update';
+
     const MERCHANT_STATUS_ACTION  = 'merchant_status_action';
 
     const ADJUSTMENT            = 'adjustment';
@@ -175,6 +177,7 @@ class Type
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
+        self::SUBMERCHANT_TYPE_UPDATE
     ];
 
     /**
@@ -377,6 +380,7 @@ class Type
         self::CAPTURE_SETTING,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::SUBMERCHANT_LINK,
+        self::SUBMERCHANT_TYPE_UPDATE,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
         self::REFUND,

@@ -465,6 +465,58 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantTypeUpdateViaBatch' => [
+        'request'  => [
+            'url'     => '/access_map/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'batch_action'  => 'submerchant_type_update',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '10000000000000',
+                    'merchant_id'   => '10000000000009',
+                    'idempotent_id' => 'random',
+                ],
+                [
+                    'batch_action'  => 'submerchant_type_update',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '10000000000000',
+                    'merchant_id'   => '10000000000019',
+                    'idempotent_id' => 'random',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'batch_action'  => 'submerchant_type_update',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '10000000000000',
+                        'merchant_id'   => '10000000000009',
+                        'idempotent_id' => 'random',
+                    ],
+                    [
+                        'batch_action'  => 'submerchant_type_update',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '10000000000000',
+                        'merchant_id'   => '10000000000019',
+                        'idempotent_id' => 'random',
+                        'http_status_code' => 400,
+                        'error' =>
+                            [
+                                'description' => 'Partner and merchant are not linked',
+                                'code'        => 'BAD_REQUEST_ERROR'
+                            ]
+                    ]
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPartnerLinkItselfAsSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000000/access_maps',

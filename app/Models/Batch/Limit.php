@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
@@ -63,6 +62,7 @@ class Limit
         Type::CAPTURE_SETTING                       => 1100000,
         Type::PARTNER_SUBMERCHANT_INVITE            => 500,
         Type::SUBMERCHANT_LINK                      => 50000,
+        Type::SUBMERCHANT_TYPE_UPDATE               => 50000,
         Type::NACH_MIGRATION                        => 500100,
         Type::LINKED_ACCOUNT_CREATE                 => 50000,
     ];

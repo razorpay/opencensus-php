@@ -1870,7 +1870,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->partnerAccessMapBulkBulkUpdate($input);
+        $response = $this->service()->partnerAccessMapBulkUpsert($input);
 
         return ApiResponse::json($response);
     }

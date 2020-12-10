@@ -900,6 +900,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                   = 'Partner cannot add himself as a submerchant';
+    const BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND                        = 'Partner and merchant are not linked';
     const BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS                       = 'Mark as partner is in progress for the merchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';

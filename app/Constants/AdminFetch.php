@@ -326,6 +326,7 @@ class AdminFetch
                         'admin_batch',
                         'merchant_activation',
                         'submerchant_link',
+                        'submerchant_type_update',
                         'banking_account_activation_comments',
                         'partner_submerchant_invite',
                     ],

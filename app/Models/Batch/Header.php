@@ -595,6 +595,7 @@ class Header
     const PARTNER_ID           = 'partner_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
     const ACCOUNT_NAME         = 'account_name';
+    const SUBMERCHANT_TYPE     = 'submerchant_type';
 
     // Entity Mapping headers
     const ENTITY_FROM_ID       = 'entity_from_id';
@@ -3218,6 +3219,21 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::SUBMERCHANT_TYPE_UPDATE => [
+            self::INPUT => [
+                self::PARTNER_ID,
+                self::MERCHANT_ID
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_ID,
+                self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION
             ]
         ],
 

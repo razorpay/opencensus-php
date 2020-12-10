@@ -8,12 +8,14 @@ class BatchAction
     const MERCHANT_ACTION          = 'merchant_action';
     const SUBMERCHANT_LINK         = 'submerchant_link';
     const BATCH_INSTANT_ACTIVATION = 'batch_instant_activation';
+    const SUBMERCHANT_TYPE_UPDATE   = 'submerchant_type_update';
 
     const BATCH_ACTIONS = [
         self::UPDATE_ENTITY,
         self::MERCHANT_ACTION,
         self::SUBMERCHANT_LINK,
         self::BATCH_INSTANT_ACTIVATION,
+        self::SUBMERCHANT_TYPE_UPDATE
     ];
 
     /**

@@ -515,6 +515,45 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals($accessMapEntity['merchant_id'], '10000000000009');
     }
 
+
+    public function testPartnerSubmerchantTypeUpdateViaBatch()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp( ['partner_type' => 'aggregator'], true);
+        $referralApp = $this->fixtures->merchant->createDummyReferredAppForManaged( ['partner_type' => 'reseller'], true);
+
+        $this->fixtures->create('user', ['id' => self::DEFAULT_MERCHANT_ID, 'email' => 'test@razorpay.com']);
+
+        DB::connection('test')->table('merchant_users')
+            ->insert([
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'user_id'     => self::DEFAULT_MERCHANT_ID,
+                'role'        => 'owner',
+                'created_at'  => 1793805150,
+                'updated_at'  => 1793805150
+            ]);
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+            'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_type'     => 'application',
+            'entity_id'       => $referralApp->getId()
+        ]);
+
+        $this->ba->batchAuth();
+
+        $this->startTest();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map');
+
+        $this->assertEquals($accessMapEntity['entity_id'], $managedApp->getId());
+    }
+
+
+
     public function testAddPartnerAccessMap()
     {
         $partner = $this->allowAdminToAccessPartnerMerchant();

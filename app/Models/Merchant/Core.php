@@ -4339,6 +4339,13 @@ class Core extends Base\Core
         return $output;
     }
 
+    public function submerchantTypeUpdate(Entity $partner, Entity $submerchant) {
+        $input = [];
+        $input['from_app_type'] = MerchantApplications\Entity::REFERRED;
+        $input['to_app_type'] = MerchantApplications\Entity::MANAGED;
+        $this->updatePartnerAccessMap($input, $partner, $submerchant);
+    }
+
     protected function validateCodeIfPresent(array $input, Entity $parentMerchant, bool $isLinkedAccount)
     {
         if (isset($input[Entity::CODE]) === true)

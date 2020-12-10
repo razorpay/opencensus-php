@@ -5182,7 +5182,7 @@ class Service extends Base\Service
         return $migrate->migrateAsync($sourceOpts, $targetOpts, false);
     }
 
-    public function partnerAccessMapBulkBulkUpdate(array $input)
+    public function partnerAccessMapBulkUpsert(array $input)
     {
         $response = new Base\PublicCollection();
 
