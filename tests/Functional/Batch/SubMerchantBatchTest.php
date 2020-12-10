@@ -479,6 +479,47 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
 
+    public function testProcessSubMerchantBatchForEditingSubMerchantDetails()
+    {
+        // create merchant and autofill details
+        $this->setUpForProcessing(__FUNCTION__, 'subMerchantEntry');
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(1, 1, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch1@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        // edit merchant details of the given merchant id
+        $this->setUpForProcessingAndEditMerchantDetails(__FUNCTION__, $merchant->getId());
+
+        $this->startTest();
+
+        $merchantUpdate = $this->getDbEntity('merchant', ['email' => 'merch1@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchantUpdate);
+
+        $merchantDetailUpdate = $merchantUpdate->merchantDetail;
+
+        // check if business name is updated
+        $this->assertNotEquals($merchantDetail->getBusinessName(), $merchantDetailUpdate->getBusinessName());
+
+        // check if contact name is updated
+        $this->assertNotEquals($merchantDetailUpdate->getContactName(), $merchantDetail->getContactName());
+
+        //check if contact mobile is not updated
+        $this->assertEquals($merchantDetailUpdate->getContactMobile(), $merchantDetail->getContactMobile());
+
+        // check if email id remains the same
+        $this->assertEquals($merchantUpdate->getEmail(), $merchant->getEmail());
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return $this->testData['defaultEntries'];
@@ -489,6 +530,19 @@ class SubMerchantBatchTest extends TestCase
         $this->markPartnerAndCreateApplication();
 
         $entries = $this->testData[$testData];
+
+        $this->createAndPutExcelFileInRequest($entries, $callee);
+
+        return $entries;
+    }
+
+    protected function setUpForProcessingAndEditMerchantDetails($callee, $merchantId): array
+    {
+        $testData = 'subMerchantUpdateEntry';
+
+        $entries = $this->testData[$testData];
+
+        $entries[0][Header::MERCHANT_ID] = $merchantId;
 
         $this->createAndPutExcelFileInRequest($entries, $callee);
 

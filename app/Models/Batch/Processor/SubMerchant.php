@@ -4,7 +4,6 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
@@ -18,6 +17,8 @@ use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
+use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 
@@ -210,7 +211,6 @@ class SubMerchant extends Base
             return null;
         }
 
-
         $status = Status::SUCCESS;
 
         if ($this->instantlyActivate === true)
@@ -250,6 +250,18 @@ class SubMerchant extends Base
                 $detailInput = Helper::sanitizeMerchantDetailInput($detailInput, Constants::BANK_DETAILS);
             }
 
+            if (empty($entry[Header::MERCHANT_ID]) === false)
+            {
+                $this->trace->info(
+                    TraceCode::EDIT_SUBMERCHANT_FROM_MERCHANT_ID,
+                    [
+                        'merchant_id'   => $subMerchant->getId(),
+                        'input'         => $entry,
+                        'upsert_fields' => $detailInput,
+                    ]
+                );
+            }
+
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
         }
 
@@ -273,7 +285,6 @@ class SubMerchant extends Base
 
                 $status                           = Status::FAILURE;
                 $entry[Header::ERROR_DESCRIPTION] = 'Activation details not submitted successfully';
-                
             }
 
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
@@ -388,8 +399,9 @@ class SubMerchant extends Base
     /**
      * @param array $entry
      *
-     * @return array
+     * @return Merchant\Entity
      * @throws \RZP\Exception\BadRequestException
+     * @throws BadRequestValidationFailureException
      */
     protected function createOrFetchSubMerchant(array &$entry)
     {
@@ -399,7 +411,6 @@ class SubMerchant extends Base
         {
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner, PartnerConstants::BULK_ONBOARDING_ADMIN);
 
-            /** @var ME $subMerchant */
             $subMerchant = $this->repo->merchant->findOrFailPublic(
                 Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
         }
@@ -407,12 +418,14 @@ class SubMerchant extends Base
         {
             $subMerchant = $this->repo->merchant->findOrFailPublic($entry[Header::MERCHANT_ID]);
 
-            if ($subMerchant->getEmail() !== $input[Merchant\Entity::EMAIL])
+            if (($entry[Header::MERCHANT_EMAIL] !== '') and ($subMerchant->getEmail() !== $input[Merchant\Entity::EMAIL]))
             {
                 $entry[Header::STATUS]            = Status::FAILURE;
-                $entry[Header::ERROR_DESCRIPTION] = PublicErrorDescription::MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
+                $entry[Header::ERROR_DESCRIPTION] = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
 
-                return null;
+                $msg = $entry[Header::ERROR_DESCRIPTION];
+
+                throw new BadRequestValidationFailureException($msg, Entity::FILE, $subMerchant->getEmail());
             }
         }
 

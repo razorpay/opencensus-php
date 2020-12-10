@@ -366,7 +366,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
-    const MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT                              = 'Merchant email and input email are different';
+    const BAD_REQUEST_MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT                  = 'Merchant email and input email are different';
     const BAD_REQUEST_MERCHANT_USER_NOT_PRESENT                                 = 'Merchant has no user to send Activation SMS';
     const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                     = 'The merchant has not been archived. This action can only be taken for archived merchants';
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                = 'The merchant has already been suspended';
