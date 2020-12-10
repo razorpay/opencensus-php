@@ -152,7 +152,7 @@ return [
             'url'     => '/fd/support_dashboard/ticket/razorpayid0012/grievance',
             'method'  => 'POST',
             'content' => [
-                'description'   => 'random grievance',
+                'description'   => 'random grievance'
             ],
         ],
         'response' => [
@@ -165,7 +165,7 @@ return [
         ],
     ],
 
-    'testCreateTicket' => [
+    'testCreateTicketRzp' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
             'method'  => 'POST',
@@ -176,6 +176,27 @@ return [
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
                     'cf_requestor_subcategory'    => 'activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testCreateTicketRzpSol' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Technical support'
                 ],
             ],
         ],

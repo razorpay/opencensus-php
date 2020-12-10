@@ -318,14 +318,14 @@ return [
     ],
 
     'freshdesk' => [
-        'url'           => env('FRESHDESK_URL'),
-        'url2'          => env('FRESHDESK_URL2'),
-        'sandbox'       => env('FRESHDESK_SANDBOX', false),
-        'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
-        'token'         => env('FRESHDESK_TOKEN'),
-        'token2'        => env('FRESHDESK_TOKEN2'),
-        'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
-        'mock'          => env('FRESHDESK_MOCK', false),
+        'url'                               => env('FRESHDESK_URL'),
+        'url2'                              => env('FRESHDESK_URL2'),
+        'sandbox'                           => env('FRESHDESK_SANDBOX', false),
+        'sandbox_url'                       => env('FRESHDESK_SANDBOX_URL'),
+        'token'                             => env('FRESHDESK_TOKEN'),
+        'token2'                            => env('FRESHDESK_TOKEN2'),
+        'sandbox_token'                     => env('FRESHDESK_SANDBOX_TOKEN'),
+        'mock'                              => env('FRESHDESK_MOCK', false),
 
         'customer' => [
             'dispute' => [

@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getTicketDetails() : string
+    public function getTicketDetails()
     {
         return $this->getAttribute(self::TICKET_DETAILS);
     }
@@ -82,8 +82,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
-    public function setTicketDetails(string $ticketDetails)
+    public function setTicketDetails($ticketDetails)
     {
         $this->setAttribute(self::TICKET_DETAILS, $ticketDetails);
+    }
+
+    public function getFdInstance()
+    {
+        $ticketDetails = $this->getAttribute(self::TICKET_DETAILS);
+
+        return $ticketDetails[Constants::FD_INSTANCE];
     }
 }

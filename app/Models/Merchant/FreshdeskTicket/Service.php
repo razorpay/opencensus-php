@@ -308,11 +308,13 @@ class Service extends Base\Service
 
         $input = $this->$function($input);
 
+        (new Validator)->validateInput('create_support_dashboard_ticket', $input);
+
         $fdInstance = $this->getFdInstance($input);
 
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
-        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
+        unset($input[Constants::FD_INSTANCE]);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -320,9 +322,13 @@ class Service extends Base\Service
 
         $this->validateTicketCreateResponse($ticketCreateResponse);
 
+        $ticketDetails =[];
+
+        $ticketDetails[Constants::FD_INSTANCE] = $fdInstance;
+
         $ticketEntity = (new Core)->create([
             Entity::TICKET_ID       => stringify($ticketCreateResponse['id']),
-            Entity::TICKET_DETAILS  => [],
+            Entity::TICKET_DETAILS  => $ticketDetails,
             Entity::TYPE            => $type,
         ], $this->merchant->getId(), true);
 
@@ -336,7 +342,7 @@ class Service extends Base\Service
             Entity::ID          => $id,
         ], $this->merchant->getId())->firstOrFail();
 
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+        $fdInstance = $ticketEntity->getFdInstance();
 
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
@@ -414,22 +420,21 @@ class Service extends Base\Service
 
         $input[Constants::PER_PAGE] = $input[Constants::PER_PAGE] ?? 10;
 
-        $input[Constants::FD_INSTANCE] = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
-
         (new Validator)->validateInput('get_' . studly_case($type) . '_conversations', $input);
-
-        $url = self::FRESKDESK_INSTANCES[$input[Constants::FD_INSTANCE]];
-
-        $queryParams = [
-            Constants::PAGE     => $input[Constants::PAGE],
-            Constants::PER_PAGE => $input[Constants::PER_PAGE]
-        ];
 
         $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
             Entity::TYPE        => $type,
             Entity::ID          => $id,
         ], $this->merchant->getId())->firstOrFail();
 
+        $fdInstance = $ticketEntity->getFdInstance();
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+
+        $queryParams = [
+            Constants::PAGE     => $input[Constants::PAGE],
+            Constants::PER_PAGE => $input[Constants::PER_PAGE]
+        ];
 
         $conversations = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($ticketEntity->getTicketId(), $queryParams, $url);
 
@@ -438,12 +443,6 @@ class Service extends Base\Service
 
     public function postTicketReply($id, array $input, $type): array
     {
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
-
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
-
-        unset($input[Constants::FD_INSTANCE]);
-
         // Converting user id to int - it comes as a string from FE sometimes
         if (isset($input[Constants::USER_ID]) === true)
         {
@@ -457,6 +456,9 @@ class Service extends Base\Service
             Entity::ID          => $id,
         ], $this->merchant->getId())->firstOrFail();
 
+        $fdInstance = $ticketEntity->getFdInstance();
+
+        $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
         $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $input, $url);
 
@@ -472,21 +474,27 @@ class Service extends Base\Service
             Entity::ID          => $id,
         ], $this->merchant->getId())->firstOrFail();
 
-
-        (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
-
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+        $fdInstance = $ticketEntity->getFdInstance();
 
         $url = self::FRESKDESK_INSTANCES[$fdInstance];
 
+        (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
+
         $data = [
-            'status'        => 2,
-            'priority'      => 4, //todo move to constants
+            Constants::TICKET_STATUS        => TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING),
+            Constants::TICKET_PRIORITY      => Priority::getValueForPriorityString(Priority::URGENT),
+            Constants::TICKET_TAGS          => Constants::GRIEVANCE_TAGS,
         ];
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketEntity->getTicketId(), $data, $url);
 
         $this->validateGrievanceResponse($ticket, $input['description']);
+
+        $replyRequest[Constants::BODY] = $input[Constants::DESCRIPTION];
+
+        $replyRequest[Constants::ATTACHMENTS] = $input[Constants::ATTACHMENTS] ?? [];
+
+        $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $replyRequest, $url);
 
         return $this->rewriteFreshdeskTicket($ticket, $ticketEntity->getId());
     }
@@ -618,8 +626,6 @@ class Service extends Base\Service
 
         return $statusGroupedAndOrderedTickets;
     }
-
-
 
     protected function preProcessInputCustomer(array &$input): string
     {

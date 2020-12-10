@@ -19,4 +19,16 @@ class TicketStatus
         6 => self::WAITING_ON_CUSTOMER,
         7 => self::WAITING_ON_THIRD_PARTY,
     ];
+
+    public static function getStatusMappingForStatusString($ticketStatusString)
+    {
+        $values = array_flip(self::$ticketStatusMapping);
+
+        return $values[$ticketStatusString];
+    }
+
+    public static function gettStatusStringForStatusMapping($ticketStatusTicketStatusMapping)
+    {
+        return self::$ticketStatusMapping[$ticketStatusTicketStatusMapping];
+    }
 }

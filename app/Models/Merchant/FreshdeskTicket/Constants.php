@@ -62,4 +62,17 @@ class Constants
 
     // Awaiting merchant's response
     const MERCHANT_ACTION_STATUSES = [6];
+
+    // Grievance related constants
+    const GRIEVANCE_TAGS = ['new_grievance_raised'];
+
+    //Freshdesk  Ticket Fields
+    const TICKET_PRIORITY   = 'priority';
+    const TICKET_STATUS     = 'status';
+    const TICKET_TAGS       = 'tags';
+
+    const ATTACHMENTS       = 'attachments';
+    const BODY              = 'body';
+    const DESCRIPTION       = 'description';
+
 }

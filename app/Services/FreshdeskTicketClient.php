@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Requests;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
+use RZP\Models\Merchant\FreshdeskTicket\Metric;
 use RZP\Models\Merchant\FreshdeskTicket\Constants;
 
 class FreshdeskTicketClient
@@ -12,6 +13,8 @@ class FreshdeskTicketClient
     protected $isSandbox;
 
     protected $isMock;
+
+    protected $route;
 
     const HTTP_GET     = 'GET';
     const HTTP_POST    = 'POST';
@@ -34,15 +37,17 @@ class FreshdeskTicketClient
 
     public function __construct(Application $app)
     {
-        $this->app    = $app;
+        $this->app          = $app;
 
-        $this->trace  = $app['trace'];
+        $this->trace        = $app['trace'];
 
-        $this->config = $app['config']->get('applications.freshdesk');
+        $this->config       = $app['config']->get('applications.freshdesk');
 
-        $this->isSandbox = $this->config['sandbox'];
+        $this->isSandbox    = $this->config['sandbox'];
 
-        $this->isMock    = $this->config['mock'];
+        $this->isMock       = $this->config['mock'];
+
+        $this->route        = $this->app['api.route'];
 
         return $this;
     }
@@ -303,6 +308,8 @@ class FreshdeskTicketClient
 
     protected function getResponse($request) : \Requests_Response
     {
+        $this->trace->count(Metric::FRESHDESK , $this->getDimension($this->route->getCurrentRouteName()));
+
         $response = Requests::request(
             $request['url'],
             $request['headers'],
@@ -405,6 +412,8 @@ class FreshdeskTicketClient
 
     protected function makeCurlRequest(array &$request)
     {
+        $this->trace->count(Metric::FRESHDESK , $this->getDimension($this->route->getCurrentRouteName()));
+
         $mime_boundary = md5(time());
 
         $curl = curl_init();
@@ -557,5 +566,10 @@ class FreshdeskTicketClient
                 $this->config['sandbox_token'] :
                 $this->config[$authKey]
             );
+    }
+
+    protected function getDimension($route){
+
+        return ['route' => $route];
     }
 }

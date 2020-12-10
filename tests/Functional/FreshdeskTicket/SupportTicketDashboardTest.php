@@ -27,11 +27,14 @@ class SupportTicketDashboardTest extends TestCase
 
         $this->fixtures->create('merchant_freshdesk_tickets');
 
+        $ticketDetails["fd_instance"] = "rzp";
+
         $this->fixtures->create('merchant_freshdesk_tickets', [
             'id'             => 'razorpayid0012',
             'ticket_id'      => '12',
             'merchant_id'    => '10000000000000',
             'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
             'created_at'     => '1600000000',
             'updated_at'     => '1600000000',
         ]);
@@ -54,29 +57,7 @@ class SupportTicketDashboardTest extends TestCase
                     return false;
                 }
 
-                if (strtolower($request['method']) !== strtolower($expectedMethod))
-                {
-                    return false;
-                }
-
-                if (is_string($request['content']) === true)
-                {
-                    $actualContent = json_decode($request['content'], true);
-                }
-
-                foreach ($expectedContent as $key => $value)
-                {
-                    if (isset($actualContent[$key]) === false)
-                    {
-                        return false;
-                    }
-
-                    if ($expectedContent[$key] !== $actualContent[$key])
-                    {
-                        return false;
-                    }
-                }
-                return true;
+                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent);
             }))
             ->andReturnUsing(function () use ($respondWith) {
                 $response = new \Requests_Response;
@@ -283,14 +264,14 @@ class SupportTicketDashboardTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateTicket()
+    public function testCreateTicketRzp()
     {
         $this->fixtures->create('merchant_detail', [
             'merchant_id'    => '10000000000000',
             'contact_mobile' => '9876543210',
         ]);
 
-        $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
@@ -313,11 +294,56 @@ class SupportTicketDashboardTest extends TestCase
 
         $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
 
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
         $this->assertNotEquals('razorpayid0012', $ticket['id']);
 
         $this->assertNotEquals('99', $response['id']);
 
         $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzp', $fdInstance);
+    }
+
+    public function testCreateTicketRzpSol()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => '10000000000000',
+            'contact_mobile' => '9876543210',
+        ]);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpsol',
+            [
+                'description' => 'ticket description',
+                'subject' => 'ticket subject',
+                'cc_emails' => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'email' =>  'test@razorpay.com',
+                'phone' => '9876543210',
+                'priority' =>  1,
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzpsol', $fdInstance);
+
     }
 
     public function testCreateTicketFreshdeskError()
@@ -352,5 +378,67 @@ class SupportTicketDashboardTest extends TestCase
             ]);
 
         $this->startTest();
+    }
+
+    protected function checkFreshdeskCorrectInstanceCallAndRespondWith($expectedPath, $expectedMethod, $fdInstance, $expectedContent, $respondWith = [],
+                                                                       $times = 1)
+    {
+        $expectedUrl1 = $this->app['config']->get('applications.freshdesk.url') . '/' . $expectedPath;
+
+        $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
+
+        $expectedUrls = [
+            'rzp'       => $expectedUrl1,
+            'rzpsol'    =>$expectedUrl2
+        ];
+
+        $this->freshdeskClientMock
+            ->shouldReceive('getResponse')
+            ->times($times)
+            ->with(Mockery::on(function ($request)  use ($fdInstance, $expectedUrls, $expectedMethod, $expectedContent )
+            {
+                if ($request['url'] !== $expectedUrls[$fdInstance])
+                {
+                    return false;
+                }
+
+                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent);
+            }))
+            ->andReturnUsing(function () use ($respondWith) {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode($respondWith);
+
+                return $response;
+            });
+
+    }
+
+    protected function validateMethodAndContent($request, $expectedMethod, $expectedContent) : bool
+    {
+        if (strtolower($request['method']) !== strtolower($expectedMethod))
+        {
+            return false;
+        }
+
+        if (is_string($request['content']) === true)
+        {
+            $actualContent = json_decode($request['content'], true);
+        }
+
+        foreach ($expectedContent as $key => $value)
+        {
+            if (isset($actualContent[$key]) === false)
+            {
+                return false;
+            }
+
+            if ($expectedContent[$key] !== $actualContent[$key])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -9,7 +9,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::TICKET_ID       => 'required|string',
         Entity::TYPE            => 'required|string',
-        Entity::TICKET_DETAILS  => 'sometimes',
+        Entity::TICKET_DETAILS  => 'required',
         Entity::MERCHANT_ID     => 'required|string|alpha_num'
     ];
 
@@ -22,7 +22,6 @@ class Validator extends Base\Validator
     protected static $getSupportDashboardConversationsRules = [
         Constants::PAGE         => 'required|integer|min:1',
         Constants::PER_PAGE     => 'required|integer|max:100',
-        Constants::FD_INSTANCE  => 'required|in:rzp,rzpsol',
     ];
 
     protected static $createSupportDashboardTicketRules = [
@@ -37,6 +36,7 @@ class Validator extends Base\Validator
         'custom_fields'                                          => 'required|array',
         'custom_fields.cf_requestor_subcategory'                 => 'required',
         'custom_fields.cf_merchant_id_dashboard'                 => 'required',
+        'fd_instance'                                            => 'sometimes',
     ];
 
     protected static $createSupportDashboardTicketReplyRules = [
