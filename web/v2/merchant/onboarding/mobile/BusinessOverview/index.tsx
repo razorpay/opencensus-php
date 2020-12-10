@@ -5,14 +5,9 @@ import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import Radio from '@razorpay/blade/src/atoms/Radio';
-import { FormSection, Field } from '../Form';
+import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
-import useActivation from '../hooks/useActivation';
-
-const businessOverviewSchema = Yup.object().shape({
-  business_type: Yup.string().required('Business Type is a required field'),
-  business_dba: Yup.string().required('Billing Label is a required field'),
-});
+import useActivation, { getRequestData } from '../hooks/useActivation';
 
 const BusinessOverview: React.FC = () => {
   const { data, postData } = useActivation();
@@ -20,32 +15,25 @@ const BusinessOverview: React.FC = () => {
   const setBusinessOverviewCompleted = useActivationFormState(
     (state) => state.setBusinessOverviewCompleted,
   );
-  const [websiteOption, setWebsiteOption] = useState('1');
+  const hasWebsite = useActivationFormState((state) => state.has_website);
+  const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
+  const [isBlurCalled, setIsBlurCalled] = useState(false);
 
   const handleBlur = (e, formikProps) => {
-    const updatedBusinessOverview = {
-      business_type: {
-        value: formikProps.values.business_type,
-        error: formikProps.errors.business_type,
-      },
-      business_dba: {
-        value: formikProps.values.business_dba,
-        error: formikProps.errors.business_dba,
-      },
-      business_website: {
-        value: formikProps.values.business_website,
-        error: formikProps.errors.business_website,
-      },
-    };
+    formikProps.handleBlur(e);
+    setIsBlurCalled(true);
+  };
+
+  const handleSubmit = (updatedDetails) => {
     const isComplete = isTabComplete(
-      { ...data, business_overview: updatedBusinessOverview },
+      { ...data, business_overview: { ...businessOverview, ...updatedDetails }, hasWebsite },
       'business_overview',
     );
     setBusinessOverviewCompleted(isComplete);
-    if (isComplete) {
-      postData(updatedBusinessOverview);
+    const reqData = getRequestData(businessOverview, updatedDetails);
+    if (Object.keys(reqData).length) {
+      postData(reqData);
     }
-    formikProps.handleBlur(e);
   };
 
   return (
@@ -54,20 +42,48 @@ const BusinessOverview: React.FC = () => {
         business_type: businessOverview.business_type.value,
         business_dba: businessOverview.business_dba.value,
         business_website: businessOverview.business_website.value,
+        business_category: businessOverview.business_category.value,
       }}
       initialErrors={{
         business_type: businessOverview.business_type.error,
         business_dba: businessOverview.business_dba.error,
         business_website: businessOverview.business_website.error,
+        business_category: businessOverview.business_category.error,
       }}
-      validationSchema={businessOverviewSchema}
-      validateOnMount={true}
+      validationSchema={() => {
+        const _schema = Yup.object().shape({
+          business_type: Yup.string()
+            .nullable()
+            .required('Business Type is a required field')
+            .nullable(),
+          business_dba: Yup.string()
+            .nullable()
+            .required('Billing Label is a required field')
+            .nullable(),
+          business_category: Yup.string()
+            .nullable()
+            .required('Please select your business category')
+            .nullable(),
+          business_website: Yup.lazy(() => {
+            if (hasWebsite) {
+              return Yup.string().required('Please provide website').nullable();
+            }
+            return Yup.string().nullable();
+          }),
+        });
+        return _schema;
+      }}
+      validateOnMount={false}
       onSubmit={() => {
         console.log('onSubmit');
       }}
     >
       {(formikProps) => (
-        <form onChange={formikProps.handleChange} onBlur={(e) => handleBlur(e, formikProps)}>
+        <form
+          onSubmit={formikProps.handleSubmit}
+          onChange={formikProps.handleChange}
+          onBlur={(e) => handleBlur(e, formikProps)}
+        >
           <FormSection title="About Your Business">
             <Field>
               <TextInput
@@ -75,7 +91,18 @@ const BusinessOverview: React.FC = () => {
                 name="business_type"
                 label="Business Type"
                 value={formikProps.values.business_type}
-                errorText={formikProps.errors.business_type}
+                errorText={formikProps.touched.business_type && formikProps.errors.business_type}
+              />
+            </Field>
+            <Field>
+              <TextInput
+                width="auto"
+                name="business_category"
+                label="Business Category"
+                value={formikProps.values.business_category}
+                errorText={
+                  formikProps.touched.business_category && formikProps.errors.business_category
+                }
               />
             </Field>
             <Field last>
@@ -85,7 +112,7 @@ const BusinessOverview: React.FC = () => {
                 label="Billing Label"
                 helpText="Something that your customers are familiar with"
                 value={formikProps.values.business_dba}
-                errorText={formikProps.errors.business_dba}
+                errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
               />
             </Field>
           </FormSection>
@@ -93,14 +120,19 @@ const BusinessOverview: React.FC = () => {
           <FormSection title="Website Details" last>
             <Field last>
               <Radio
-                defaultValue={websiteOption}
+                defaultValue={hasWebsite ? '0' : '1'}
                 size="medium"
                 onChange={(val) => {
-                  setWebsiteOption(val);
+                  const _hasWebsite = val === '0';
+                  setHasWebsite(_hasWebsite);
+                  if (!_hasWebsite) {
+                    formikProps.setFieldValue('business_website', '');
+                  }
+                  setIsBlurCalled(true);
                 }}
               >
                 <Radio.Option value="0" title="I have a live website/app" />
-                {websiteOption === '0' ? (
+                {hasWebsite ? (
                   <Space margin={[3.75, 0, 0, 3.5]}>
                     <View>
                       <TextInput
@@ -109,7 +141,10 @@ const BusinessOverview: React.FC = () => {
                         label="Website/App URL"
                         helpText="Click the help icon to view the mandatory sections required in your website/app for quick verification"
                         value={formikProps.values.business_website}
-                        errorText={formikProps.errors.business_website}
+                        errorText={
+                          formikProps.touched.business_website &&
+                          formikProps.errors.business_website
+                        }
                       />
                     </View>
                   </Space>
@@ -122,6 +157,11 @@ const BusinessOverview: React.FC = () => {
               </Radio>
             </Field>
           </FormSection>
+          <GetTouchedFields
+            handleSubmit={handleSubmit}
+            isBlurCalled={isBlurCalled}
+            setIsBlurCalled={setIsBlurCalled}
+          />
         </form>
       )}
     </Formik>

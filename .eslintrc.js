@@ -59,6 +59,7 @@ module.exports = {
             types: ['boolean'],
             format: ['PascalCase'],
             prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
+            leadingUnderscore: 'allow',
           },
         ],
         'no-use-before-define': 'off',

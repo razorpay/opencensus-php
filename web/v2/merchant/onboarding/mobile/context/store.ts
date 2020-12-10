@@ -2,6 +2,7 @@ import create from 'zustand';
 import {
   isUnregisteredBusiness,
   CIN_BusinessTypes,
+  LLPIN_BusinessTypes,
 } from '../../mobile/Constants/OnboardingConstants';
 
 const isVisible = (fieldName, context) => {
@@ -10,17 +11,25 @@ const isVisible = (fieldName, context) => {
       return !['11', '2', '1'].includes(context.business_overview.business_type.value);
     case 'business_name':
       return !isUnregisteredBusiness(context.business_overview.business_type.value);
+    case 'business_website':
+      return context.hasWebsite;
     case 'business_operation_address':
     case 'business_operation_state':
     case 'business_operation_city':
     case 'business_operation_pin':
-      return !isUnregisteredBusiness(context.business_overview.business_type.value);
+      return (
+        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+        !context.sameAddress
+      );
     case 'gstin':
       return (
-        !isUnregisteredBusiness(context.business_overview.business_type.value) && !context.noGSTIN
+        !isUnregisteredBusiness(context.business_overview.business_type.value) && !context.hasGSTIN
       );
     case 'company_cin':
-      return CIN_BusinessTypes.includes(context.business_overview.business_type.value);
+      return (
+        CIN_BusinessTypes.includes(Number(context.business_overview.business_type.value)) ||
+        LLPIN_BusinessTypes.includes(Number(context.business_overview.business_type.value))
+      );
     default:
       return true;
   }
@@ -36,7 +45,8 @@ const isTabComplete = (data, tab) => {
 
 type State = {
   same_address: boolean;
-  no_gstin: boolean;
+  has_gstin: boolean;
+  has_website: boolean;
   isContactDetailsCompleted: boolean;
   isBusinessOverviewCompleted: boolean;
   isBusinessDetailsCompleted: boolean;
@@ -47,12 +57,14 @@ type State = {
   setBusinessDetailsCompleted: (value: boolean) => void;
   setBankAndCompanyDetailsCompleted: (value: boolean) => void;
   setSameAddress: (value: boolean) => void;
-  setNoGSTIN: (value: boolean) => void;
+  setHasGSTIN: (value: boolean) => void;
+  setHasWebsite: (value: boolean) => void;
 };
 
 const useActivationFormState = create<State>((set) => ({
   same_address: false,
-  no_gstin: true,
+  has_gstin: false,
+  has_website: false,
   isContactDetailsCompleted: false,
   isBusinessOverviewCompleted: false,
   isBusinessDetailsCompleted: false,
@@ -63,7 +75,8 @@ const useActivationFormState = create<State>((set) => ({
   setBusinessDetailsCompleted: (value) => set({ isBusinessDetailsCompleted: value }),
   setBankAndCompanyDetailsCompleted: (value) => set({ isBankAndCompanyDetailsCompleted: value }),
   setSameAddress: (value) => set({ same_address: value }),
-  setNoGSTIN: (value) => set({ no_gstin: value }),
+  setHasGSTIN: (value) => set({ has_gstin: value }),
+  setHasWebsite: (value) => set({ has_website: value }),
 }));
 
 export { useActivationFormState, isVisible, isTabComplete };

@@ -1,57 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
-import { FormSection, Field } from '../Form';
+import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
-import useActivation from '../hooks/useActivation';
-import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
+import useActivation, { getRequestData } from '../hooks/useActivation';
+import { CIN_BusinessTypes, isUnregisteredBusiness } from '../Constants/OnboardingConstants';
+import { getLabel } from '../services/utils';
 
 const BankDetails: React.FC = () => {
   const { data, postData } = useActivation();
   const bankAndCompanyDetails = data.bank_and_company_details;
   const businessOverviewDetails = data.business_overview;
-  const hasNoGSTIN = useActivationFormState((state) => state.no_gstin);
-  const setNoGSTIN = useActivationFormState((state) => state.setNoGSTIN);
+  const hasGSTIN = useActivationFormState((state) => state.has_gstin);
+  const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
   const setBankAndCompanyDetailsCompleted = useActivationFormState(
     (state) => state.setBankAndCompanyDetailsCompleted,
   );
+  const [isBlurCalled, setIsBlurCalled] = useState(false);
 
-  const handleBlur = (e, formikProps) => {
-    const updatedBankAndCompanyDetails = {
-      bank_account_name: {
-        value: formikProps.values.bank_account_name,
-        error: formikProps.errors.bank_account_name,
-      },
-      bank_account_number: {
-        value: formikProps.values.bank_account_number,
-        error: formikProps.errors.bank_account_number,
-      },
-      bank_branch_ifsc: {
-        value: formikProps.values.bank_branch_ifsc,
-        error: formikProps.errors.bank_branch_ifsc,
-      },
-      gstin: {
-        value: formikProps.values.gstin,
-        error: formikProps.errors.gstin,
-      },
-      company_cin: {
-        value: formikProps.values.company_cin,
-        error: formikProps.errors.company_cin,
-      },
-    };
+  const handleSubmit = (updatedDetails) => {
     const isComplete = isTabComplete(
-      { ...data, bank_and_company_details: updatedBankAndCompanyDetails, hasNoGSTIN },
+      {
+        ...data,
+        bank_and_company_details: { ...bankAndCompanyDetails, ...updatedDetails },
+        hasGSTIN,
+      },
       'bank_and_company_details',
     );
     setBankAndCompanyDetailsCompleted(isComplete);
-    if (isComplete) {
-      postData(updatedBankAndCompanyDetails);
+    const reqData = getRequestData(bankAndCompanyDetails, updatedDetails);
+    if (Object.keys(reqData).length) {
+      postData(reqData);
     }
+  };
+
+  const handleBlur = (e, formikProps) => {
     formikProps.handleBlur(e);
+    setIsBlurCalled(true);
   };
 
   return (
@@ -65,9 +54,13 @@ const BankDetails: React.FC = () => {
       }}
       validationSchema={() => {
         return Yup.object().shape({
-          bank_account_name: Yup.string().required('Bank Account Name is a required field'),
-          bank_account_number: Yup.string().required('Bank Account Number is a required field'),
-          bank_branch_ifsc: Yup.string().required('IFSC is a required field'),
+          bank_account_name: Yup.string()
+            .required('Bank Account Name is a required field')
+            .nullable(),
+          bank_account_number: Yup.string()
+            .required('Bank Account Number is a required field')
+            .nullable(),
+          bank_branch_ifsc: Yup.string().required('IFSC is a required field').nullable(),
           company_cin: Yup.lazy(() => {
             if (CIN_BusinessTypes.includes(Number(businessOverviewDetails.business_type.value))) {
               return Yup.string()
@@ -77,7 +70,8 @@ const BankDetails: React.FC = () => {
                   message: 'Invalid Format',
                   excludeEmptyString: true,
                 })
-                .required('Company CIN is required field');
+                .required('Company CIN is a required field')
+                .nullable();
             }
             return Yup.string()
               .trim()
@@ -85,15 +79,22 @@ const BankDetails: React.FC = () => {
                 message: 'Invalid Format',
                 excludeEmptyString: true,
               })
-              .required('Company CIN is required field');
+              .required('LLPIN is a required field')
+              .nullable();
           }),
-          gstin: Yup.string()
-            .trim()
-            .length(15, 'Please provide valid GSTIN')
-            .required('GSTIN is a required field'),
+          gstin: Yup.lazy(() => {
+            if (!hasGSTIN) {
+              return Yup.string()
+                .trim()
+                .length(15, 'Please provide valid GSTIN')
+                .required('GSTIN is a required field')
+                .nullable();
+            }
+            return Yup.string().trim().nullable();
+          }),
         });
       }}
-      onSubmit={() => console.log('onSubmit')}
+      onSubmit={() => {}}
     >
       {(formikProps) => (
         <form
@@ -112,7 +113,9 @@ const BankDetails: React.FC = () => {
                 name="bank_account_name"
                 label="Beneficiary Name"
                 value={formikProps.values.bank_account_name}
-                errorText={formikProps.errors.bank_account_name}
+                errorText={
+                  formikProps.touched.bank_account_name && formikProps.errors.bank_account_name
+                }
               />
             </Field>
             <Field>
@@ -121,7 +124,9 @@ const BankDetails: React.FC = () => {
                 name="bank_account_number"
                 label="Account Number"
                 value={formikProps.values.bank_account_number}
-                errorText={formikProps.errors.bank_account_number}
+                errorText={
+                  formikProps.touched.bank_account_number && formikProps.errors.bank_account_number
+                }
               />
             </Field>
             <Field last>
@@ -130,42 +135,61 @@ const BankDetails: React.FC = () => {
                 name="bank_branch_ifsc"
                 label="IFSC Code"
                 value={formikProps.values.bank_branch_ifsc}
-                errorText={formikProps.errors.bank_branch_ifsc}
+                errorText={
+                  formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc
+                }
               />
             </Field>
           </FormSection>
 
-          <FormSection title="Company Details" last>
-            <Field visible={isVisible('company_cin', data)}>
-              <TextInput
-                width="auto"
-                name="company_cin"
-                label="Company Identification Number (CIN)"
-                value={formikProps.values.company_cin}
-                errorText={formikProps.errors.company_cin}
-              />
-            </Field>
-            <Field visible={isVisible('gstin', data)} last>
-              <TextInput
-                width="auto"
-                name="gstin"
-                label="GST Identification Number (GSTIN)"
-                helpText="Should match either of your registered address or operational address"
-                value={formikProps.values.gstin}
-                errorText={formikProps.errors.gstin}
-              />
-            </Field>
-            <Space margin={[1.75, 0, 0, 0]}>
-              <View>
-                <Checkbox
-                  name="no_gstin"
-                  title="I don't have a GSTIN"
-                  checked={hasNoGSTIN}
-                  onChange={(value) => setNoGSTIN(value)}
+          {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
+            <FormSection title="Company Details" last>
+              <Field visible={isVisible('company_cin', data)}>
+                <TextInput
+                  width="auto"
+                  name="company_cin"
+                  label={getLabel('company_cin', data)}
+                  value={formikProps.values.company_cin}
+                  errorText={formikProps.touched.company_cin && formikProps.errors.company_cin}
                 />
-              </View>
-            </Space>
-          </FormSection>
+              </Field>
+              {!hasGSTIN ? (
+                <Field last>
+                  <TextInput
+                    width="auto"
+                    name="gstin"
+                    label="GST Identification Number (GSTIN)"
+                    helpText="Should match either of your registered address or operational address"
+                    value={formikProps.values.gstin}
+                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                  />
+                </Field>
+              ) : null}
+              {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
+                <Space margin={[1.75, 0, 0, 0]}>
+                  <View>
+                    <Checkbox
+                      name="no_gstin"
+                      title="I don't have a GSTIN"
+                      defaultChecked={hasGSTIN}
+                      onChange={(value) => {
+                        setHasGSTIN(value);
+                        if (!value) {
+                          formikProps.setFieldValue('gstin', '');
+                        }
+                        setIsBlurCalled(true);
+                      }}
+                    />
+                  </View>
+                </Space>
+              ) : null}
+            </FormSection>
+          ) : null}
+          <GetTouchedFields
+            handleSubmit={handleSubmit}
+            isBlurCalled={isBlurCalled}
+            setIsBlurCalled={setIsBlurCalled}
+          />
         </form>
       )}
     </Formik>
