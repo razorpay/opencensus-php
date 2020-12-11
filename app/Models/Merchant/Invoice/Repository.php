@@ -21,21 +21,28 @@ class Repository extends Base\Repository
     ];
 
     // Gets all invoice entities for a merchant for given month and year
-    public function fetchInvoiceReportData(string $merchantId, int $month, int $year)
+    public function fetchInvoiceReportData(string $merchantId, int $month, int $year, $type = null)
     {
         $balanceIdCol   = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeCol = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $merchantInvoiceBalanceIdCol = $this->dbColumn(Entity::BALANCE_ID);
+        $merchantInvoiceTypeCol      = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQuery()
+        $result = $this->newQuery()
                     ->selectRaw(Table::MERCHANT_INVOICE . '.*')
                     ->join(Table::BALANCE, $merchantInvoiceBalanceIdCol , '=', $balanceIdCol)
                     ->merchantId($merchantId)
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
-                    ->where($balanceTypeCol, '=', Product::PRIMARY)
-                    ->get();
+                    ->where($balanceTypeCol, '=', Product::PRIMARY);
+
+        if($type != null )
+        {
+            $result = $result->where($merchantInvoiceTypeCol, '=', $type);
+        }
+
+        return $result->get();
     }
 
     public function fetchBankingInvoiceReportData(string $merchantId, int $month, int $year)

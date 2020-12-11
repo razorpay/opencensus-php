@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Invoice;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -128,11 +127,16 @@ class Processor extends Base\Core
 
     protected function createInvoiceBreakup(Merchant\Balance\Entity $balance, array $details)
     {
-        $this->repo->transaction(function() use ($balance, $details){
+        [$invoiceBreakup, $generatePdf] =  $this->repo->transaction(function() use ($balance, $details){
 
             $feeBearer = $this->merchant->getFeeBearer();
 
-            foreach ($details as $type => $feeDetails) {
+            $amount = 0 ;
+
+            $invoiceBreakup = new Base\PublicCollection;
+
+            foreach ($details as $type => $feeDetails)
+            {
                 $params = [
                     Entity::MONTH  => $this->month,
                     Entity::YEAR   => $this->year,
@@ -154,9 +158,52 @@ class Processor extends Base\Core
                         ]);
                 }
 
-                (new Core)->create($params, $this->merchant, $balance);
+                $amount += $params[Entity::AMOUNT];
+
+                $lineItem = (new Core)->create($params, $this->merchant, $balance);
+
+                $invoiceBreakup->push($lineItem);
             }
+
+            if($amount > 0)
+            {
+                return [$invoiceBreakup, true];
+            }
+
+            return [$invoiceBreakup, false];
         });
+
+        if(($generatePdf === true) and ($balance->isTypePrimary() === true))
+        {
+            try
+            {
+                $adjustmentInvoiceData = $this->repo
+                                              ->merchant_invoice
+                                              ->fetchInvoiceReportData($this->merchantId, $this->month, $this->year, Type::ADJUSTMENT);
+
+                if ($adjustmentInvoiceData->isEmpty() != true)
+                {
+                    foreach ($adjustmentInvoiceData as $adjustmentInvoiceDatalineItem)
+                    {
+                        $invoiceBreakup->push($adjustmentInvoiceDatalineItem);
+                    }
+                }
+
+                (new PdfGenerator())->generatePgInvoice($this->merchantId, $this->month, $this->year, $invoiceBreakup);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'year'        => $this->year,
+                        'month'       => $this->month,
+                    ]);
+            }
+        }
     }
 
     protected function calculateFeesForPrimaryBalance($balanceId, array & $details)
@@ -295,7 +342,6 @@ class Processor extends Base\Core
                 'payment_fee_amount',
                 $paymentFeeAmount,
                 $balanceId);
-
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
@@ -571,21 +617,5 @@ class Processor extends Base\Core
                 }
             }
         }
-    }
-
-    public function getSignedUrlForPgInvoice()
-    {
-        $name = (new PdfGenerator)->getNameForMerchantPgInvoice($this->year, $this->month, $this->merchant->getId());
-
-        $file = $this->repo
-                     ->file_store
-                     ->getFileWithNameAndMerchantIdAndName($this->merchant->getId(), $name, FileStore\Type::MERCHANT_INVOICE);
-
-        if ($file === null)
-        {
-            $file = (new PdfGenerator)->generatePgInvoice($this->merchant, $this->month, $this->year);
-        }
-
-        return (new FileStore\Accessor)->getSignedUrlOfFile($file);
     }
 }

@@ -309,6 +309,7 @@ class Route
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_invoice_entities_verify'         => ['get',      'merchants/invoice/verify',                       'MerchantInvoiceController@verify'                                  ],
         'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
+        'merchant_invoice_pdf_control'             => ['post',     'merchants/invoice/pdf_control',                  'MerchantInvoiceController@pdfControl'                              ],
         'merchant_invoice_control'                 => ['post',     'merchants/invoice/control',                      'MerchantInvoiceController@generationControl'                       ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
@@ -3895,6 +3896,7 @@ class Route
         'user_account_lock_unlock_admin',
         'user_roles_mapping_bulk',
 
+        'merchant_invoice_pdf_control',
         'merchant_invoice_control',
 
         // P2p Routes
@@ -4781,6 +4783,8 @@ class Route
 
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
+
+        'merchant_invoice_pdf_control'              => Permission::MERCHANT_INVOICE_CONTROL,
 
         // Razorpay Capital
         // Financial Data Service

@@ -11,6 +11,7 @@ use Monolog\Logger;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -423,7 +424,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getTemplateDataForPgInvoice($merchant, $month, $year): array
+    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup): array
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
@@ -436,7 +437,7 @@ class Core extends Base\Core
             'merchant_id'     => $merchant->getId(),
         ];
 
-        $data = (new InvoiceReport)->getpgInvoiceTemplateDate($input);
+        $data = (new InvoiceReport())->getpgInvoiceTemplateDate($input, $merchant, $invoiceBreakup);
 
         $data['merchant'] = $merchant;
 
@@ -486,5 +487,25 @@ class Core extends Base\Core
         $yesIfsc = substr( $ifscCode, 0, 4 );
 
         return ((strcasecmp($yesIfsc, "YESB") === 0) === true) ;
+    }
+
+    public function getSignedUrlForPgInvoice($year, $month, $merchantId)
+    {
+        $name = (new PdfGenerator())->getNameForMerchantPgInvoice($year, $month, $merchantId);
+
+        $file = $this->repo
+                     ->file_store
+                     ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+
+        if (empty($file) === true)
+        {
+            $invoiceBreakup = $this->repo
+                                   ->merchant_invoice
+                                   ->fetchInvoiceReportData($merchantId, $month, $year);
+
+            $file = (new PdfGenerator())->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+        }
+
+        return (new FileStore\Accessor())->getSignedUrlOfFile($file);
     }
 }

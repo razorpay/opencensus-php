@@ -14,6 +14,10 @@ final class Constants
 
     const GST_PERCENTAGE = 0.18;
 
+    const ACTION_DELETE = 'delete';
+
+    const ACTION_CREATE = 'create';
+
     const MERCHANT_INVOICE_SKIPPED_MIDS_KEY = 'merchant_invoice_skipped_mids';
 
     const ADD_TO_SKIPPED_MIDS_LIST = 'add';

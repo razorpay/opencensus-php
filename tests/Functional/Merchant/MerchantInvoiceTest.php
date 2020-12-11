@@ -556,6 +556,93 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testInvoicePdfCreate()
+    {
+        $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData();
+
+        Carbon::setTestNow();
+
+        $this->ba->appAuth();
+
+        $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(5, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $amount = 0;
+
+        $tax = 0;
+
+        foreach ($entities as $e)
+        {
+            $amount  += $e[Invoice\Entity::AMOUNT];
+            $tax     += $e[Invoice\Entity::TAX];
+        }
+
+        //this is to verify the invoice created are of non zero amount
+        $this->assertNotEquals(0, $amount);
+        $this->assertNotEquals(0, $tax);
+
+        $result =  $this->merchantInvoicePdfControl(
+            'create',
+            ['10000000000000'],
+            1,
+            2018,
+            'creating new pdf'
+        );
+
+        // this is because in the merchant invoice creation flow the pdf is already created
+        $this->assertEquals('10000000000000', $result['failed_mids'][0]);
+        $this->assertEmpty($result['success_mids']);
+
+        $result = $this->merchantInvoicePdfControl(
+            'delete',
+            ['10000000000000'],
+            1,
+            2018,
+            'deleting old pdf'
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('10000000000000', $result['success_mids'][0]);
+        $file = $this->getLastEntity('file_store', true);
+        $this->assertEmpty($file);
+
+        $result =  $this->merchantInvoicePdfControl(
+            'create',
+            ['10000000000000'],
+            1,
+            2018,
+            'creating new pdf'
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('10000000000000', $result['success_mids'][0]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals('10000000000000', $file['merchant_id']);
+        $this->assertEquals('merchant_pg_invoices/2018/1/10000000000000', $file['name']);
+
+        Carbon::setTestNow();
+    }
+
     public function testMerchantInvoiceSkippedListEdit()
     {
         $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
@@ -723,6 +810,25 @@ class MerchantInvoiceTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    protected function merchantInvoicePdfControl($action, $merchantIds, $month, $year, $reason)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/pdf_control',
+            'method'  => 'POST',
+            'content' => [
+                'action'       => $action,
+                'merchant_ids' => $merchantIds,
+                'month'        => $month,
+                'year'         => $year,
+                'reason'       => $reason,
+            ]
+        ];
+
+        return  $this->makeRequestAndGetContent($request);
     }
 
     protected function merchantInvoiceControl($action, $reason = null, $merchantIds = [])

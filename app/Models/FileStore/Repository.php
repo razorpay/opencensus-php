@@ -30,4 +30,13 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }
+
+    public function removeFileStoreEntryWithMerchantIdAndName(string $merchantId, string $name, string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NAME, '=', $name)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->delete();
+    }
 }

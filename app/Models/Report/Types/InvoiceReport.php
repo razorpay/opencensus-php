@@ -96,10 +96,10 @@ class InvoiceReport extends BaseReport
         {
             try
             {
-                $signedUrl = (new Invoice\Processor(
-                    $this->merchant->getId(),
+                $signedUrl = (new Invoice\Core())->getSignedUrlForPgInvoice(
+                    $input['year'],
                     $input['month'],
-                    $input['year']))->getSignedUrlForPgInvoice();
+                    $this->merchant->getId());
 
                 return [
                     'signed_url' => $signedUrl,
@@ -131,7 +131,11 @@ class InvoiceReport extends BaseReport
             if ((isset($input['format']) === true) and
                 ($input['format'] === 'new'))
             {
-                $this->getInvoiceNew($input);
+                $invoiceBreakup = $this->repo
+                                       ->merchant_invoice
+                                       ->fetchInvoiceReportData($this->merchant->getId(), $this->month, $this->year);
+
+                $this->getInvoiceNew($input, $invoiceBreakup);
 
                 $this->groupData();
 
@@ -144,17 +148,17 @@ class InvoiceReport extends BaseReport
         }
     }
 
-    public function getpgInvoiceTemplateDate($data)
+    public function getpgInvoiceTemplateDate($data, $merchant, $invoiceBreakup)
     {
         $this->month = $data['month'];
 
         $this->year = $data['year'];
 
-        $this->setMerchant($data['merchant_id']);
+        $this->merchant = $merchant;
 
         if ($data['gst_applicable'] === true )
         {
-            $this->getInvoiceNew($data);
+            $this->getInvoiceNew($data, $invoiceBreakup);
 
             $this->groupData();
 
@@ -164,14 +168,11 @@ class InvoiceReport extends BaseReport
         return $this->getInvoiceV2($data);
     }
 
-    protected function setInvoiceVariables()
+    protected function setInvoiceVariables($invoiceBreakup)
     {
-        $this->invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
-                                    $this->merchant->getId(), $this->month, $this->year);
-
         $invoice = null;
 
-        if ($this->invoiceBreakup->count() === 0)
+        if ($invoiceBreakup->count() === 0)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invoice not generated yet for merchant ' . $this->merchant->getId() .
@@ -181,7 +182,7 @@ class InvoiceReport extends BaseReport
         // we don't consider adjustments to construct basic data of invoice.
         // finOps can create adjustment at any time. If the records comes first
         // then entire records will be invalid in terms of date and can create confusion
-        foreach ($this->invoiceBreakup as $invoiceItem)
+        foreach ($invoiceBreakup as $invoiceItem)
         {
             if ($invoiceItem->getType() !== Invoice\Type::ADJUSTMENT)
             {
@@ -215,12 +216,12 @@ class InvoiceReport extends BaseReport
         ];
     }
 
-    protected function getInvoiceNew(array $input)
+    protected function getInvoiceNew(array $input, $invoiceBreakup)
     {
-        $this->setInvoiceVariables();
+        $this->setInvoiceVariables($invoiceBreakup);
 
         // Different fee component rows
-        foreach ($this->invoiceBreakup as $index => $entity)
+        foreach ($invoiceBreakup as $index => $entity)
         {
             $type = $entity->getType();
 

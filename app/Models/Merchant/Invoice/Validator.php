@@ -56,6 +56,15 @@ class Validator extends Base\Validator
         Entity::TO_EMAILS . '.*'    => 'filled|email',
     ];
 
+    protected static $pdfControlRules = [
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|size:14',
+        Entity::YEAR     => 'required|digits:4',
+        Entity::MONTH    => 'required|digits_between:1,2',
+        'action'         => 'required|string|in:delete,create',
+        'reason'         => 'required|string',
+    ];
+
     protected static $generationControlRules = [
         'action'          => 'required|string|in:add,remove,show',
         'merchant_ids'    => 'required_if:action,add,remove|array',

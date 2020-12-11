@@ -52,6 +52,15 @@ class MerchantInvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function pdfControl()
+    {
+        $input = Request::all();
+
+        $result = $this->service()->pdfControl($input);
+
+        return ApiResponse::json($result);
+    }
+
     public function generationControl()
     {
         $input = Request::all();

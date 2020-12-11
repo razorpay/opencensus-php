@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
@@ -143,6 +144,132 @@ class Service extends Base\Service
         }
 
         return $invoiceData;
+    }
+
+    public function pdfControl($input)
+    {
+        (new Validator())->validateInput('pdf_control', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_PDF_CONTROL_REQUEST,
+            [
+               'input' => $input
+            ]);
+
+        $result = [];
+
+        switch ($input['action']){
+            case Constants::ACTION_CREATE:
+                $result =  $this->createPgMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
+                break;
+            case Constants::ACTION_DELETE:
+                $result = $this->removeMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
+                break;
+        }
+
+        return $result;
+    }
+
+    public function createPgMerchantInvoicePdf($merchantIds, $month, $year)
+    {
+        $result = [
+            'success_mids' => [],
+            'failed_mids'  => []
+        ];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $name = (new PdfGenerator)->getNameForMerchantPgInvoice($year, $month, $merchantId);
+
+            $file = $this->repo
+                         ->file_store
+                         ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+
+            if (empty($file) == false)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'year'        => $year,
+                        'month'       => $month,
+                        'reason'      => 'merchant invoice file store entry is already present'
+                    ]);
+
+                $result['failed_mids'][] = $merchantId;
+            }
+            else
+            {
+                try
+                {
+                    $invoiceBreakup = $this->repo
+                                           ->merchant_invoice
+                                           ->fetchInvoiceReportData($merchantId, $month, $year);
+
+                    (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+
+                    $result['success_mids'][] = $merchantId;
+                }
+                catch (\Throwable $e)
+                {
+                    $result['failed_mids'][] = $merchantId;
+
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'year'        => $year,
+                            'month'       => $month,
+                            'reason'      => $e->getMessage(),
+                        ]);
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function removeMerchantInvoicePdf($merchantIds, $month, $year)
+    {
+        $result = [
+            'success_mids' => [],
+            'failed_mids'  => []
+        ];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $name = (new PdfGenerator)->getNameForMerchantPgInvoice($year, $month, $merchantId);
+
+            $file = $this->repo
+                         ->file_store
+                         ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+
+            if (empty($file) === true)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_PDF_DELETION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'year'        => $year,
+                        'month'       => $month,
+                        'reason'      => 'merchant invoice file store entry is already deleted'
+                    ]);
+
+                $result['failed_mids'][] = $merchantId;
+            }
+            else
+            {
+                $this->repo
+                     ->file_store
+                     ->removeFileStoreEntryWithMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+
+                $result['success_mids'][] = $merchantId;
+            }
+        }
+
+        return $result;
     }
 
     public function generationControl($input)

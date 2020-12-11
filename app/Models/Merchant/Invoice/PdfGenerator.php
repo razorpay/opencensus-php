@@ -110,11 +110,13 @@ class PdfGenerator extends Base\Core
         return $pdfContent;
     }
 
-    public function generatePgInvoice($merchant, $month, $year): Filestore\Entity
+    public function generatePgInvoice($merchantId, $month, $year, $invoiceBreakup): Filestore\Entity
     {
-        $name = $this->getNameForMerchantPgInvoice($year, $month, $merchant->getId());
+        $name = $this->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
-        $html = $this->getHtml($merchant, $month, $year);
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
+
+        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup);
 
         $pdfContent = $this->getPdfContentForPgInvoice($html);
 
@@ -130,9 +132,9 @@ class PdfGenerator extends Base\Core
             ->getFileInstance();
     }
 
-    protected function getHtml($merchant, $month, $year) : string
+    protected function getHtml($merchant, $month, $year, $invoiceBreakup) : string
     {
-        $data = (new Core)->getTemplateDataForPgInvoice($merchant, $month, $year) ;
+        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup) ;
 
         $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
 
@@ -145,14 +147,9 @@ class PdfGenerator extends Base\Core
             'print-media-type',
             'footer-font-size'  => '9',
             'footer-center'     => 'Page [page] of [topage]',
-            'dpi'               => 290,
             'zoom'              => 1,
             'ignoreWarnings'    => false,
             'encoding'          => 'UTF-8',
-            'margin-top'        => 10,
-            'margin-right'      => 0,
-            'margin-bottom'     => 0,
-            'margin-left'       => 0,
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
