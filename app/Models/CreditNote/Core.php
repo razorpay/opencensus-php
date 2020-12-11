@@ -22,9 +22,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('pre_create', $input);
 
-        $customerId = $input[Entity::CUSTOMER_ID];
-
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
+        $customerId = array_pull($input, Entity::CUSTOMER_ID, null);
 
         $this->checkAndFillForSubscription($input);
 
@@ -32,7 +30,12 @@ class Core extends Base\Core
 
         $creditnote->merchant()->associate($merchant);
 
-        $creditnote->customer()->associate($customer);
+        if (empty($customerId) === false)
+        {
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
+
+            $creditnote->customer()->associate($customer);
+        }
 
         $this->repo->saveOrFail($creditnote);
 

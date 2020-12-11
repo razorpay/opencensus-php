@@ -24,7 +24,8 @@ class CreateCreditNoteTable extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH)
                   ->nullable();

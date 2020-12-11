@@ -6065,6 +6065,12 @@ ALTER table banking_account_activation_details
 ALTER TABLE `merchant_details`
     MODIFY COLUMN shop_establishment_number varchar(100) DEFAULT NULL;
 
+ALTER TABLE creditnote
+	MODIFY COLUMN customer_id char(14);
+
+ALTER TABLE creditnote_invoices
+	MODIFY COLUMN customer_id varchar(14);
+
 ALTER TABLE orders
     CHANGE COLUMN reference10 public_key VARCHAR(255) DEFAULT null;
 

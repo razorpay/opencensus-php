@@ -12,7 +12,6 @@ use RZP\Constants\Entity as PublicEntity;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'required|public_id|size:19',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|size:14|nullable',
         Entity::NAME            => 'required|string|max:255||utf8',
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|utf8',
@@ -21,7 +20,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $preCreateRules = [
-        Entity::CUSTOMER_ID     => 'required|public_id|size:19',
+        Entity::CUSTOMER_ID     => 'sometimes|public_id|size:19',
         Entity::SUBSCRIPTION_ID => 'sometimes|public_id|size:18|nullable',
         Entity::NAME            => 'required|string|max:255|utf8',
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|utf8',

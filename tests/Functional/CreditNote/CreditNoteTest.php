@@ -30,6 +30,11 @@ class CreditNoteTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCreditNoteWithoutCustomer()
+    {
+        $this->startTest();
+    }
+
     public function testApplyCreditNoteWithSingleInvoice()
     {
         $this->testCreateCreditNote();
@@ -39,6 +44,29 @@ class CreditNoteTest extends TestCase
         $order = $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
+
+        $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        $this->startTest();
+    }
+
+    public function testApplyCreditNoteWithSingleInvoiceWithoutCustomer()
+    {
+        $this->testCreateCreditNoteWithoutCustomer();
+
+        $creditNote = $this->getLastEntity('creditnote', true);
+
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice(['customer_id' => null]);
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
@@ -70,6 +98,37 @@ class CreditNoteTest extends TestCase
         $order = $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
+
+        $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        $this->startTest();
+    }
+
+    public function testApplyCreditNoteWithSingleInvoiceAndFullAmountWithoutCustomer()
+    {
+        $testDataCreate = &$this->testData['testCreateCreditNoteWithoutCustomer'];
+
+        $testDataCreate['request']['content']['amount'] = 1000;
+
+        $testDataCreate['response']['content']['amount'] = '1000';
+
+        $testDataCreate['response']['content']['amount_available'] = '1000';
+
+        $this->testCreateCreditNoteWithoutCustomer();
+
+        $creditNote = $this->getLastEntity('creditnote', true);
+
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice(['customer_id' => null]);
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 

@@ -23,7 +23,8 @@ class CreateCreditNoteInvoiceTable extends Migration
 
             $table->string(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->string(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->string(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::CREDITNOTE_ID, Entity::ID_LENGTH);
 
