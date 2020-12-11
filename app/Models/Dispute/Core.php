@@ -59,6 +59,8 @@ class Core extends Base\Core
         Reason\Entity::GATEWAY_DESCRIPTION,
     ];
 
+    const ELIGIBLE_CUSTOMER_TICKET_UPDATE_MIN_TS = 1598486400; // 27th Aug, 2020
+
     /**
      * @var Mutex
      */
@@ -861,6 +863,11 @@ class Core extends Base\Core
 
     private function updateCustomerTicketIfApplicable(Entity $dispute)
     {
+        if (self::ELIGIBLE_CUSTOMER_TICKET_UPDATE_MIN_TS > $dispute->getCreatedAt())
+        {
+            return;
+        }
+
         $gatewayDisputeId = $dispute->getGatewayDisputeId();
 
         if ((strlen($gatewayDisputeId) <= 7) || (substr($gatewayDisputeId, 0, 7) !== 'DISPUTE'))
@@ -877,8 +884,9 @@ class Core extends Base\Core
         array_push($ticketTags, Customer\FreshdeskTicket\Constants::FD_TAGS_TRIGGERED_BY_RZP_DISPUTE_FLOW);
 
         $updateTicketContent = [
-            'status' => Customer\FreshdeskTicket\Constants::FD_TICKET_STATUS_OPEN,
-            'tags'   => $ticketTags,
+            'status'       => Customer\FreshdeskTicket\Constants::FD_TICKET_STATUS_OPEN,
+            'tags'         => $ticketTags,
+            'responder_id' => null,
         ];
 
         $this->app['freshdesk_client']->updateTicket($customerSupportTicketID, $updateTicketContent);

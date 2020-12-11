@@ -22,6 +22,8 @@ trait Ticket
 
 	private function changeTicketGroupToCspWithRelevantTags() : array
     {
+        $agentId = (int) $this->freshdeskCustomerDisputeConfig['automation_agent_id'];
+
         $groupId = (int) $this->freshdeskCustomerDisputeConfig['customer_support_group_id'];
 
         $response = $this->app['freshdesk_client']->fetchTicketById($this->freshdeskTicket->getTicketId());
@@ -36,7 +38,7 @@ trait Ticket
         $content = [
             'group_id'     => $groupId,
             'status'       => Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
-            'responder_id' => null, // unsetting automation agent
+            'responder_id' => $agentId,
             'tags'         => $ticketTags,
         ];
 
