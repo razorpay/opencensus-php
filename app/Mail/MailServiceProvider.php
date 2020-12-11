@@ -16,12 +16,20 @@ class MailServiceProvider extends BaseMailServiceProvider
     {
         parent::register();
         $this->registerSwiftSesTransport();
+        $this->registerMailgunTransport();
     }
 
     protected function registerSwiftSesTransport()
     {
         $this->app->singleton('swift.ses_mailer', function ($app) {
             return new Swift_Mailer($app['swift.transport']->driver('ses'));
+        });
+    }
+
+    protected function registerMailgunTransport()
+    {
+        $this->app->singleton('swift.mailgun_mailer', function ($app) {
+            return new Swift_Mailer($app['swift.transport']->driver('mailgun'));
         });
     }
 }

@@ -200,4 +200,6 @@ final class RazorxTreatment
 
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
+
+    const API_EMAILS_MAILGUN_DRIVER = 'api_emails_mailgun_driver';
 }

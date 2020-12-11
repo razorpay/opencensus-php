@@ -39,6 +39,12 @@ class Mailable extends BaseMailable
 
     const MESSAGE_ID_TAG = 'X-SES-Message-ID';
 
+    protected $emailDriverName;
+    protected $defaultEmailDriverName;
+
+    const SES_EMAIL_DRIVER     = 'ses';
+    const MAILGUN_EMAIL_DRIVER = 'mailgun';
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -48,6 +54,8 @@ class Mailable extends BaseMailable
         $this->originProduct    = $app['basicauth']->getProduct();
         $this->queue            = $this->getQueueName();
         $this->mid              = $app['basicauth']->getMerchantId();
+
+        $this->defaultEmailDriverName  = config('mail.driver');
     }
 
     public function build()
@@ -86,7 +94,7 @@ class Mailable extends BaseMailable
 
             Container::getInstance()->call([$this, 'build']);
 
-            $this->replaceMailgunHeadersWithSesHeaders();
+            $this->evaluateAndSetMailDriver($mailer);
 
             if ($this->isValidRecipient() === false)
             {
@@ -98,6 +106,7 @@ class Mailable extends BaseMailable
             $eventProperties['text_template'] = $this->textView ?? '';
             $eventProperties['html_template'] = $this->view ?? '';
             $eventProperties['recipient_email'] = $toEmailHash;
+            $eventProperties['email_driver'] = $this->emailDriverName;
 
             $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
 
@@ -172,6 +181,121 @@ class Mailable extends BaseMailable
         return $queue
                 ->connection($connection)
                 ->pushOn($queueName ?: null, new SendQueuedMailable($this));
+    }
+
+    protected function evaluateAndSetMailDriver(MailerContract &$mailer)
+    {
+        $app = App::getFacadeRoot();
+        $trace = $app['trace'];
+
+        // if not production, route the mail via default
+        if ($app->environment(Environment::PRODUCTION) === false)
+        {
+            $this->emailDriverName = $this->defaultEmailDriverName;
+            $this->setDefaultDriver($mailer);
+            return;
+        }
+
+        // 1. custom logic for routing certain emails via an explicit gateway.
+        // checking if mail explicitly needs to be sent via mailgun.
+        if ($this->shouldRouteEmailViaMailgun() === true)
+        {
+            $this->emailDriverName = self::MAILGUN_EMAIL_DRIVER;
+
+            try
+            {
+                $this->setMailgunDriver($mailer);
+                return;
+            }
+            catch (\Throwable $e)
+            {
+                $trace->traceException($e, Trace::ERROR, TraceCode::MAILER_INVALID_DRIVER, ['driver' => self::MAILGUN_EMAIL_DRIVER]);
+            }
+        }
+
+        // 2. else it will be sent via the default driver
+        $this->emailDriverName = $this->defaultEmailDriverName;
+        $this->setDefaultDriver($mailer);
+    }
+
+    /**
+     * Returns true when
+     * 1. If the default is mailgun
+     * 2. If the env is production & razorx experiment returns 'on' &
+     *    template is whitelisted for mailgun
+     *
+     * @return bool
+     */
+    protected function shouldRouteEmailViaMailgun(): bool
+    {
+        // 1
+        if ($this->defaultEmailDriverName == self::MAILGUN_EMAIL_DRIVER)
+        {
+            return true;
+        }
+
+        $app = App::getFacadeRoot();
+        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
+            Merchant\RazorxTreatment::API_EMAILS_MAILGUN_DRIVER, $this->mode);
+
+        if (strtolower($variant) === 'on')
+        {
+            // 2
+            return ($this->isEmailTemplateWhitelistedForMailgun() === true);
+        }
+
+        return false;
+    }
+
+    /**
+     * Email driver is a transport layer wrapped inside Swift_Mailer.
+     * MailerContract contains this Swift_Mailer object. This method sets
+     * a swift mailer with ses driver on the passed MailerContract
+     *
+     * @param MailerContract &$mailerContract reference to the mailerContract object on which
+     *                       ses driver needs to be set.
+     *
+     * @throws \InvalidArgumentException if the driver is invalid (thrown by Illuminate\Support\Manager)
+     */
+    private function setMailgunDriver(MailerContract &$mailerContract)
+    {
+        $app = App::getFacadeRoot();
+        $mailer = $app['swift.mailgun_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver(self::MAILGUN_EMAIL_DRIVER));
+        $mailerContract->setSwiftMailer($mailer);
+    }
+
+    private function setSesDriver(MailerContract &$mailerContract)
+    {
+        $this->replaceMailgunHeadersWithSesHeaders();
+        $app = App::getFacadeRoot();
+        $mailer = $app['swift.ses_mailer'] ?? new Swift_Mailer($app['swift.transport']->driver(self::SES_EMAIL_DRIVER));
+        $mailerContract->setSwiftMailer($mailer);
+    }
+
+    private function setDefaultDriver(MailerContract &$mailerContract)
+    {
+        switch ($this->defaultEmailDriverName)
+        {
+            case self::SES_EMAIL_DRIVER:
+                $this->setSesDriver($mailerContract);
+                return;
+            case self::MAILGUN_EMAIL_DRIVER:
+                $this->setMailgunDriver($mailerContract);
+                return;
+        }
+
+        $app = App::getFacadeRoot();
+        $mailer = $app['swift.mailer'] ?? new Swift_Mailer($app['swift.transport']->driver());
+        $mailerContract->setSwiftMailer($mailer);
+    }
+
+    /**
+     * Checks the config if the template has been whitelisted for mailgun.
+     */
+    private function isEmailTemplateWhitelistedForMailgun(): bool
+    {
+        $whitelistedViews = config('mail_template.mailgun_whitelist');
+        return in_array($this->view ?? '', $whitelistedViews, true);
     }
 
     /**
