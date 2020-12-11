@@ -83,6 +83,9 @@ class CreateBankTransferRequests extends Migration
             $table->json(Entity::REQUEST_PAYLOAD)
                   ->nullable(false);
 
+            $table->json(Entity::REQUEST_SOURCE)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

@@ -6073,3 +6073,6 @@ ALTER TABLE settlement_ondemand_payouts
 
 ALTER TABLE offers
     ADD COLUMN product_type VARCHAR(20) DEFAULT NULL;
+
+ALTER TABLE bank_transfer_requests
+    ADD COLUMN request_source JSON DEFAULT NULL;

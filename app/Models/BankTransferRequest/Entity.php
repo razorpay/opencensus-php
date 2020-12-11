@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const NARRATION         = 'narration';
     const TIME              = 'time';
     const REQUEST_PAYLOAD   = 'request_payload';
+    const REQUEST_SOURCE    = 'request_source';
 
     const TRANSACTION_ID        = 'transaction_id';
     const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
@@ -68,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::TIME,
         self::REQUEST_PAYLOAD,
+        self::REQUEST_SOURCE,
         self::INTENDED_VIRTUAL_ACCOUNT_ID,
         self::ACTUAL_VIRTUAL_ACCOUNT_ID,
         self::BANK_TRANSFER_ID,
@@ -107,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::REQUEST_SOURCE,
     ];
 
     protected static $generators = [
@@ -166,6 +169,11 @@ class Entity extends Base\PublicEntity
     public function setRequestPayload($requestPayload)
     {
         $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
+    }
+
+    public function setRequestSource($requestSource)
+    {
+        $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
     }
 
     // -------------------- End Setters --------------------
