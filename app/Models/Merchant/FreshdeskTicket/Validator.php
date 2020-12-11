@@ -64,6 +64,17 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validatePriorityString($attribute, $priority)
+    {
+        if (Priority::isValidPriorityString($priority) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid priority string: ' . $priority,
+                Constants::PRIORITY
+            );
+        }
+    }
+
     public function validateCustomerFreshDeskTicketIdFromMerchantNotes($id)
     {
         $idRegex = '/^.*[0-9]+.*$/';

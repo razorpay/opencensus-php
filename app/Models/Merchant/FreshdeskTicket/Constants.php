@@ -41,9 +41,12 @@ class Constants
     const TOTAL   = 'total';
     const RESULTS = 'results';
 
-    const USER_ID    = 'user_id';
-    const TICKET_ID  = 'ticket_id';
-    const CREATED_AT = 'created_at';
+    const USER_ID       = 'user_id';
+    const TICKET_ID     = 'ticket_id';
+    const PRIORITY      = 'priority';
+    const CREATED_AT    = 'created_at';
+    const FROM_EMAIL    = 'from_email';
+    const FR_DUE_BY     = 'fr_due_by';
 
     const FD_INSTANCE      = 'fd_instance';
     const FRESHDESK_CLIENT = 'freshdesk_client';
@@ -62,6 +65,11 @@ class Constants
 
     // Awaiting merchant's response
     const MERCHANT_ACTION_STATUSES = [6];
+
+    // Cache keys
+    const CACHE_KEY_FIRST_RESPONSE_TIME_AVERAGE = 'support_dashboard_fr_time_average_cache_key_%s_%s';
+
+    const FRESHDESK_TIME_FORMAT = '%Y-%m-%dT%H:%I:%SZ';
 
     // Grievance related constants
     const GRIEVANCE_TAGS = ['new_grievance_raised'];

@@ -175,7 +175,7 @@ return [
                 'cc_emails'     => ['a@b.com'],
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
-                    'cf_requestor_subcategory'    => 'activation'
+                    'cf_requestor_subcategory'    => 'Activation'
                 ],
             ],
         ],
@@ -235,4 +235,79 @@ return [
             'internal_error_code' => 'BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED',
         ],
     ],
+
+    'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataDoesntExist' => [
+        'request'   => [
+            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'method'        => 'POST',
+            'content'       => [
+                'ticket_id'         =>  '12',
+                'priority'          =>  'Low',
+                'custom_fields'     => [
+                    'cf_requestor_subcategory'  => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+            ],
+        ],
+    ],
+    'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataExist' => [
+        'request'   => [
+            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'method'        => 'POST',
+            'content'       => [
+                'ticket_id'         =>  '12',
+                'priority'          =>  'Urgent',
+                'custom_fields'     => [
+                    'cf_requestor_subcategory'  => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+            ],
+        ],
+    ],
+
+    'testReceiveFreshdeskWebhookOnTicketReplyNoRazorpayResponseYet' => [
+        'request'   => [
+            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'method'        => 'POST',
+            'content'       => [
+                'ticket_id'         =>  '12',
+                'priority'          =>  'Urgent',
+                'custom_fields'     => [
+                    'cf_requestor_subcategory'  => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+            ],
+        ],
+    ],
+
+    'testCreateTicketWithRewrittenFrDueBy' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
 ];

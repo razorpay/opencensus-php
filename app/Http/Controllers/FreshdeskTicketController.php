@@ -150,4 +150,12 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postWebhook($event)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->processWebhook($event, $input);
+
+        return ApiResponse::json($response);
+    }
 }

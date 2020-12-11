@@ -2034,6 +2034,8 @@ class Route
         'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
         'fd_post_ticket_grievance'                => ['post',      'fd/{type}/ticket/{id}/grievance',                           'FreshdeskTicketController@postTicketGrievance'                ],
 
+        'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
+
         'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
         'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
 
@@ -2821,6 +2823,7 @@ class Route
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
         'fd_customer_dispute',
+        'fd_consume_webhook',
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
@@ -5836,6 +5839,7 @@ class Route
 
         'freshdesk_webhook' => [
             'fd_customer_dispute',
+            'fd_consume_webhook',
         ],
 
         'smart_routing' => [

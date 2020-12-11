@@ -16,6 +16,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
 use RZP\Models\Merchant\FreshdeskTicket\Validator as FreshdeskTicketValidator;
+use RZP\Models\Merchant\FreshdeskTicket\Processor as FreshdeskWebhookProcessor;
 
 class Service extends Base\Service
 {
@@ -322,9 +323,10 @@ class Service extends Base\Service
 
         $this->validateTicketCreateResponse($ticketCreateResponse);
 
-        $ticketDetails =[];
-
-        $ticketDetails[Constants::FD_INSTANCE] = $fdInstance;
+        $ticketDetails = [
+            Constants::FD_INSTANCE   => $fdInstance,
+            Constants::FR_DUE_BY     => $this->getExpectedFirstResponseDueBy($ticketCreateResponse),
+        ];
 
         $ticketEntity = (new Core)->create([
             Entity::TICKET_ID       => stringify($ticketCreateResponse['id']),
@@ -332,7 +334,7 @@ class Service extends Base\Service
             Entity::TYPE            => $type,
         ], $this->merchant->getId(), true);
 
-        return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity->getId());
+        return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity);
     }
 
     public function getTicket($id, array $input, $type): array
@@ -355,7 +357,7 @@ class Service extends Base\Service
 
         $response = $ticketWithStats ?? [];
 
-        return $this->rewriteFreshdeskTicket($response, $ticketEntity->getId());
+        return $this->rewriteFreshdeskTicket($response, $ticketEntity);
     }
 
     public function getTickets(array $input, $type)
@@ -481,14 +483,15 @@ class Service extends Base\Service
         (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
 
         $data = [
-            Constants::TICKET_STATUS        => TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING),
-            Constants::TICKET_PRIORITY      => Priority::getValueForPriorityString(Priority::URGENT),
-            Constants::TICKET_TAGS          => Constants::GRIEVANCE_TAGS,
+            Constants::TICKET_STATUS    => TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING),
+            Constants::TICKET_PRIORITY  => Priority::getValueForPriorityString(Priority::URGENT),
+            Constants::TICKET_TAGS      => Constants::GRIEVANCE_TAGS,
         ];
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketEntity->getTicketId(), $data, $url);
 
         $this->validateGrievanceResponse($ticket, $input['description']);
+
 
         $replyRequest[Constants::BODY] = $input[Constants::DESCRIPTION];
 
@@ -496,7 +499,13 @@ class Service extends Base\Service
 
         $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $replyRequest, $url);
 
-        return $this->rewriteFreshdeskTicket($ticket, $ticketEntity->getId());
+
+        return $this->rewriteFreshdeskTicket($ticket, $ticketEntity);
+    }
+
+    public function processWebhook($event, $input)
+    {
+        return FreshdeskWebhookProcessor\Base::getProcessor($event)->process($input);
     }
 
     protected function validateTicketCreateResponse($response)
@@ -797,11 +806,15 @@ class Service extends Base\Service
         return $queryString;
     }
 
-    protected function rewriteFreshdeskTicket(array $response, $newTicketId)
+    protected function rewriteFreshdeskTicket(array $response, Entity $ticket)
     {
-        if (isset($response['id']) === true)
+        if (isset($response[Entity::ID]) === true)
         {
-            $response['id'] = $newTicketId;
+            $response[Entity::ID] = $ticket->getId();
+
+            $response[Entity::TICKET_ID] = $ticket->getTicketId();
+
+            $response[Constants::FR_DUE_BY] = $ticket->getTicketDetails()[Constants::FR_DUE_BY] ?? $response[Constants::FR_DUE_BY];
         }
 
         return $response;
@@ -874,12 +887,12 @@ class Service extends Base\Service
 
 
 
-
-        $freshdeskTicketIdRazorpayTicketIdMap = [];
+        $freshdeskTicketIdRazorpayTicketMap = [];
 
         foreach($tickets as $ticket)
         {
-            $freshdeskTicketIdRazorpayTicketIdMap[$ticket->getTicketId()] = $ticket->getId();
+            $freshdeskTicketIdRazorpayTicketMap[$ticket->getTicketId()] = $ticket;
+
         }
 
         $response = [];
@@ -893,12 +906,14 @@ class Service extends Base\Service
 
             $ticket['id'] = stringify($ticket['id']);
 
-            if (array_key_exists($ticket['id'], $freshdeskTicketIdRazorpayTicketIdMap) === false)
+            if (array_key_exists($ticket['id'], $freshdeskTicketIdRazorpayTicketMap) === false)
+
             {
                 continue;
             }
 
-            $rewrittenTicket = $this->rewriteFreshdeskTicket($ticket, $freshdeskTicketIdRazorpayTicketIdMap[$ticket['id']]);
+            $rewrittenTicket = $this->rewriteFreshdeskTicket($ticket, $freshdeskTicketIdRazorpayTicketMap[$ticket['id']]);
+
 
             array_push($response, $rewrittenTicket);
         }
@@ -921,4 +936,46 @@ class Service extends Base\Service
 
         return $input;
     }
+
+    protected function getExpectedFirstResponseDueBy($freshdeskTicket)
+    {
+        $dimensions = $this->getFirstResponseTimeDimensions($freshdeskTicket);
+
+        $cacheKey = $this->getFirstResponseTimeAverageCacheKey($dimensions);
+
+        $averageFrResponseTime = $this->app['cache']->get($cacheKey);
+
+        if ($averageFrResponseTime !== null)
+        {
+            return $this->getTimeInFreshdeskFormat(time() + $averageFrResponseTime);
+        }
+
+        return $freshdeskTicket[Constants::FR_DUE_BY];
+    }
+
+    protected function getFirstResponseTimeAverageCacheKey($dimensions)
+    {
+        return sprintf(Constants::CACHE_KEY_FIRST_RESPONSE_TIME_AVERAGE, $dimensions[Constants::SUB_CATEGORY], $dimensions[Constants::PRIORITY]);
+    }
+
+    protected function getFirstResponseTimeDimensions($freshdeskTicket)
+    {
+        $dimensions = [
+            Constants::SUB_CATEGORY => $freshdeskTicket[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY],
+            Constants::PRIORITY     => $freshdeskTicket[Constants::PRIORITY],
+        ];
+
+        if (is_int($dimensions[Constants::PRIORITY]) === true)
+        {
+            $dimensions[Constants::PRIORITY] = Priority::getPriorityStringForValue($dimensions[Constants::PRIORITY]);
+        }
+
+        return $dimensions;
+    }
+
+    protected function getTimeInFreshdeskFormat($time)
+    {
+        return strftime(Constants::FRESHDESK_TIME_FORMAT, $time);
+    }
+
 }

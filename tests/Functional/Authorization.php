@@ -113,6 +113,15 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function freshdeskWebhookAuth($mode = 'test')
+    {
+        $config = \Config::get('applications.freshdesk_webhook');
+
+        $pwd = $config['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)
