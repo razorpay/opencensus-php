@@ -8,7 +8,7 @@ import Flex from '@razorpay/blade/src/atoms/Flex';
 import { Modal, ModalBody } from '../Modal';
 import toArray from '../../services/children/to-array';
 import { StatelessAccordion, Panel } from '../Accordian';
-import Loader from '../../merchant/onboarding/mobile/components/Loader';
+import Loader from '../Loader';
 import { OptionsPropsT } from './Option';
 import { OptionCheckIcon } from './Styled';
 
