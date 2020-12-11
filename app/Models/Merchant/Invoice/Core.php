@@ -290,7 +290,9 @@ class Core extends Base\Core
         // merchant_ids_excluded is an array of merchant ids coming from input,
         // for which invoice shouldn't be generated.
         //
-        $merchantIdsExcluded = MerchantPreferences::NO_MERCHANT_INVOICE_MIDS;
+        $redis = $this->app->redis->Connection('mutex_redis');
+
+        $merchantIdsExcluded = $redis->LRANGE(Constants::MERCHANT_INVOICE_SKIPPED_MIDS_KEY, 0, -1);
 
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,

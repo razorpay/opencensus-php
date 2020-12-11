@@ -556,6 +556,99 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testMerchantInvoiceSkippedListEdit()
+    {
+        $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData();
+
+        Carbon::setTestNow();
+
+        $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $result =  $this->merchantInvoiceControl(
+            'add',
+            'adding to skip automatic merchant invoice creation',
+            ['10000000000000']
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('10000000000000', $result['success_mids'][0]);
+
+        $result = $this->merchantInvoiceControl('show');
+        $this->assertEquals('10000000000000', $result[0]);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(0, $entities['count']);
+
+        $result =  $this->merchantInvoiceControl(
+            'remove',
+            'removing from automatic merchant invoice creation list',
+            ['10000000000000']
+        );
+
+        $this->assertEmpty($result['failed_mids']);
+        $this->assertEquals('10000000000000', $result['success_mids'][0]);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(5, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
+
+        $dateString = Carbon::createFromDate(
+            $entities[0]['year'],
+            $entities[0]['month'],
+            1,
+            Timezone::IST
+        )->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
+
+        Carbon::setTestNow();
+    }
+
     protected function createData()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -630,5 +723,32 @@ class MerchantInvoiceTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    protected function merchantInvoiceControl($action, $reason = null, $merchantIds = [])
+    {
+        $this->ba->adminAuth();
+
+        $content = [
+            'action'       => $action,
+        ];
+
+        if(empty($reason) == false)
+        {
+            $content['reason'] = $reason;
+        }
+
+        if(empty($merchantIds) == false)
+        {
+            $content['merchant_ids'] = $merchantIds;
+        }
+
+        $request = [
+            'url'     => '/merchants/invoice/control',
+            'method'  => 'POST',
+            'content' => $content,
+        ];
+
+       return  $this->makeRequestAndGetContent($request);
     }
 }

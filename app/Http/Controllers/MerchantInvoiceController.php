@@ -51,4 +51,13 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json($invoices);
     }
+
+    public function generationControl()
+    {
+        $input = Request::all();
+
+        $result = $this->service()->generationControl($input);
+
+        return ApiResponse::json($result);
+    }
 }

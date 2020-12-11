@@ -386,6 +386,7 @@ return [
             Permission::ADD_SETTLEMENT_RECONCILIATION       => '',
             Permission::RETRY_SETTLEMENT                    => '',
             Permission::MERCHANT_INVOICE_EDIT               => '',
+            Permission::MERCHANT_INVOICE_CONTROL            => '',
             Permission::SEND_NEWSLETTER                     => '',
             Permission::TRIGGER_DUMMY_ERROR                 => '',
             Permission::MAKE_API_CALL                       => '',

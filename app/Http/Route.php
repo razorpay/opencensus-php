@@ -309,6 +309,7 @@ class Route
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_invoice_entities_verify'         => ['get',      'merchants/invoice/verify',                       'MerchantInvoiceController@verify'                                  ],
         'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
+        'merchant_invoice_control'                 => ['post',     'merchants/invoice/control',                      'MerchantInvoiceController@generationControl'                       ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
@@ -3894,6 +3895,8 @@ class Route
         'user_account_lock_unlock_admin',
         'user_roles_mapping_bulk',
 
+        'merchant_invoice_control',
+
         // P2p Routes
         'p2p_admin_add_handle',
         'p2p_admin_update_handle',
@@ -4885,6 +4888,7 @@ class Route
         'delete_merchant_notification_config_admin'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
         'disable_merchant_notification_config_admin'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
         'enable_merchant_notification_config_admin'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'merchant_invoice_control'                            => Permission::MERCHANT_INVOICE_CONTROL,
     ];
 
     public static $bankingRoutePermissions = [

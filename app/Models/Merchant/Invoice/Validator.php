@@ -56,6 +56,13 @@ class Validator extends Base\Validator
         Entity::TO_EMAILS . '.*'    => 'filled|email',
     ];
 
+    protected static $generationControlRules = [
+        'action'          => 'required|string|in:add,remove,show',
+        'merchant_ids'    => 'required_if:action,add,remove|array',
+        'merchant_ids.*'  => 'required|string|size:14',
+        'reason'          => 'required_if:action,add,remove|string'
+    ];
+
     protected function validateType($input)
     {
         if (Type::isValid($input[Entity::TYPE]) === false)

@@ -84,6 +84,7 @@ class Name
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
     const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
+    const MERCHANT_INVOICE_CONTROL            = 'merchant_invoice_control';
     const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
     const MERCHANT_PRICING_PLANS              = 'merchant_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';

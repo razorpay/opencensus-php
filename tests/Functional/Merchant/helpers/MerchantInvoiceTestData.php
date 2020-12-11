@@ -232,4 +232,32 @@ return [
             'gstin'     => '29kjsngjk213922',
         ]
     ],
+
+    'testMerchantInvoiceSkippedListEdit' => [
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_gt_2k'    => [
+            'amount'    => 4680,
+            'tax'       => 842,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_lte_2k'    => [
+            'amount'    => 1000,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'validation'    => [
+            'amount'    => 300,
+            'tax'       => 54,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'instant_refunds' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ]
+    ],
 ];

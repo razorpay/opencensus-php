@@ -13,4 +13,12 @@ final class Constants
     const INVOICE_CODE_LENGTH_FOR_X = 11;
 
     const GST_PERCENTAGE = 0.18;
+
+    const MERCHANT_INVOICE_SKIPPED_MIDS_KEY = 'merchant_invoice_skipped_mids';
+
+    const ADD_TO_SKIPPED_MIDS_LIST = 'add';
+
+    const REMOVE_FROM_SKIPPED_MIDS_LIST = 'remove';
+
+    const SHOW_SKIPPED_MIDS_LIST = 'show';
 }
