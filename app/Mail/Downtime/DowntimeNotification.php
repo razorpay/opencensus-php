@@ -71,10 +71,12 @@ class DowntimeNotification extends Mailable
                 else if (isset($this->data[Entity::VPA_HANDLE]) && $this->data[Entity::VPA_HANDLE] != Entity::ALL)
                 {
                     $dimension = $this->data[Entity::VPA_HANDLE];
+                    $this->data[Entity::PSP] = 'GooglePay';
                 }
                 else
                 {
                     $dimension = 'All UPI instruments';
+                    $this->data[Entity::PSP] = 'NPCI';
                 }
                 break;
         }
@@ -125,21 +127,25 @@ class DowntimeNotification extends Mailable
 
         if ($scheduled === false)
         {
-            $subject = $subject . 'Unscheduled Downtime -- ' . strtoupper($method) ;
+            if (isset($this->data['dimension']) && $method === Method::CARD)
+            {
+                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " Debit & Credit Card services" ;
+            }
+            elseif (isset($this->data['dimension']) && $method === Method::UPI)
+            {
+                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " UPI services" ;
+            }
+            elseif (isset($this->data['dimension']) && $method === Method::NETBANKING)
+            {
+                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " Net Banking services" ;
+            }
         }
         else
         {
-            $subject = $subject . 'Scheduled Downtime -- ' . strtoupper($method);
+            $subject = $subject . ' ' . $this->data['dimension'] . ' has announced scheduled downtime';
         }
 
-        if (isset($this->data['dimension']) && $method === Method::CARD)
-        {
-            $subject = $subject . 's issued by ' . $this->data['dimension'];
-        }
-        elseif (isset($this->data['dimension']))
-        {
-            $subject = $subject . ' transactions by ' . $this->data['dimension'] ;
-        }
+        $this->data['subject'] = $subject;
 
         $this->subject($subject);
 
@@ -170,9 +176,9 @@ class DowntimeNotification extends Mailable
         if($this->data[Entity::SCHEDULED] === true && isset($this->data[Entity::BEGIN]) && isset($this->data[Entity::END]))
         {
             $this->data[Entity::BEGIN] = Carbon::createFromTimestamp($this->data[Entity::BEGIN], Timezone::IST)
-                ->format('d/m/Y H:i:s');
+                ->format('d-M-Y h:i:sa');
             $this->data[Entity::END] = Carbon::createFromTimestamp($this->data[Entity::END], Timezone::IST)
-                ->format('d/m/Y H:i:s');
+                ->format('d-M-Y h:i:sa');
         }
 
         $this->with($this->data);

@@ -164,7 +164,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366; text-transform: capitalize;"> {{ $method }} {{ $dimension }} Downtime </div></div>
+                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366; text-transform: capitalize;"> {{ $subject }} </div></div>
                                                 </div>
 
                                             </td>
@@ -232,16 +232,42 @@
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
 
-                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Dear Customer, <br> <br>We have observed a higher number of declines for
-                                                            @if($method == 'card')
-                                                                transactions made by cards issued by {{ $dimension }}
-                                                            @else
-                                                                {{ $method }} transactions made by {{ $dimension }}
-                                                            @endif                                                            @if($scheduled == true && isset($begin) && isset($end))
-                                                                as there is a scheduled downtime from {{ $begin }} to {{ $end }}
-                                                            @endif
-                                                            .</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">We are looking into this and will update you once the success rates are stable. <br><br> Thanks and best regards, <br> Razorpay Support</p> </div>
+                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Dear Customer, <br> <br>
 
+                                                            @if($scheduled == false)
+                                                                We have noticed a disruption in
+
+                                                                @if($method == 'card')
+                                                                    {{ $dimension }} services for Debit Cards & Credit Cards potentially impacting the payments experience for your customers. <br> <br>
+                                                                    Our team is in conversations with {{ $dimension }}
+
+                                                                @elseif($method == 'upi')
+                                                                     UPI payments via {{ $dimension }} potentially impacting the payments experience for your customers. <br> <br>
+                                                                    Our team is in conversations with {{ $psp }}
+
+                                                                @elseif($method == 'netbanking')
+                                                                    {{ $dimension }} Net Banking services potentially impacting the payments experience for your customers. <br> <br>
+                                                                    Our team is in conversations with {{ $dimension }}
+                                                                @else
+                                                                    {{ $dimension }} services potentially impacting the payments experience for your customers. <br> <br>
+                                                                    Our team is in conversations with {{ $dimension }}
+                                                                @endif
+
+                                                                and will get back to you at the earliest with an update. <br> <br>
+                                                            @else
+                                                                @if($method == 'card')
+                                                                    {{ $dimension }} has announced a scheduled down time for their Debit Cards & Credit Cards services from {{ $begin }} to {{ $end }}. <br> <br>
+                                                                @elseif($method == 'upi')
+                                                                    {{ $dimension }} has announced a scheduled down time for their UPI services from {{ $begin }} to {{ $end }}. <br> <br>
+                                                                @elseif($method == 'netbanking')
+                                                                    {{ $dimension }} Bank has announced a scheduled down time for their Net Banking services from {{ $begin }} to {{ $end }}. <br> <br>
+                                                                @else
+                                                                    {{ $dimension }} has announced a scheduled down time for their wallet services from {{ $begin }} to {{ $end }}.<br> <br>
+                                                                @endif
+                                                                This could potentially impact the payments experience for your customers.
+                                                            @endif
+                                                            We deeply regret the inconvenience caused. Please do contact us for any queries. <br> <br>
+                                                        </p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;"> You can also subscribe to our <a class="link" href="https://razorpay.com/docs/api/payments/downtime/" target="_blank" style="text-decoration: none; color: #528FF0;"> downtime API/webhook notifications </a> for real-time updates on outages. <br><br> Best, <br> Razorpay Support</p> </div>
                                                 </div>
 
                                             </td>
