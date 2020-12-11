@@ -12,7 +12,7 @@ initStoryshots({
   integrityOptions: { cwd: __dirname },
   enderer: render,
   snapshotSerializers: [reactTestingLibrarySerializer],
-  asyncJest: true, // this is the option that activates the async behaviour
+  asyncJest: true, // This is the option that activates the async behaviour
   test: ({
     story,
     context,
