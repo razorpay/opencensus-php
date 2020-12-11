@@ -6065,6 +6065,9 @@ ALTER table banking_account_activation_details
 ALTER TABLE `merchant_details`
     MODIFY COLUMN shop_establishment_number varchar(100) DEFAULT NULL;
 
+ALTER TABLE bank_transfer_requests
+	ADD INDEX bank_transfer_requests_created_at_index (created_at);
+
 ALTER TABLE creditnote
 	MODIFY COLUMN customer_id char(14);
 

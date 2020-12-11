@@ -92,6 +92,7 @@ class CreateBankTransferRequests extends Migration
 
             $table->index(Entity::UTR);
             $table->index(Entity::PAYEE_ACCOUNT);
+            $table->index(Entity::CREATED_AT);
         });
     }
 
