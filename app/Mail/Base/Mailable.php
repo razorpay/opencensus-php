@@ -5,6 +5,7 @@ namespace RZP\Mail\Base;
 use App;
 use \Swift_Mailer;
 use RZP\Diag\EventCode;
+use RZP\Constants\Mode;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
 use Illuminate\Bus\Queueable;
@@ -236,7 +237,7 @@ class Mailable extends BaseMailable
 
         $app = App::getFacadeRoot();
         $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-            Merchant\RazorxTreatment::API_EMAILS_MAILGUN_DRIVER, $this->mode);
+            Merchant\RazorxTreatment::API_EMAILS_MAILGUN_DRIVER, $this->mode ?? Mode::LIVE);
 
         if (strtolower($variant) === 'on')
         {
