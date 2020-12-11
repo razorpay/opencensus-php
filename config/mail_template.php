@@ -12,6 +12,7 @@ return [
         'emails.user.account_verification',
         'emails.user.password_reset',
         'emails.user.password_change',
+        'emails.user.otp_email_verify',
     ],
 
 ];
