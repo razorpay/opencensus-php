@@ -17,7 +17,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
     }
 
 	private function changeTicketGroupToCspWithRelevantTags() : array
@@ -44,7 +44,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
     }
 
 	private function changeTicketGroupToCustomerSupport() : array
@@ -58,7 +58,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
     }
 
 	private function closeTicket() : array
@@ -76,7 +76,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
     }
 
 	private function replyToTicket(string $renderedBody) : array

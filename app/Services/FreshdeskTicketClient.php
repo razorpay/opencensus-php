@@ -69,41 +69,6 @@ class FreshdeskTicketClient
         return $response;
     }
 
-    /**
-     * Update ticket for the given $ticketId and $content
-     *
-     * @param string $ticketId
-     * @return array $ticketDetails
-     */
-    public function updateTicket(string $ticketId, array $content) : array
-    {
-        $url = $this->getUrl('tickets/' . $ticketId);
-
-        $auth = $this->getAuth();
-
-        $request = $this->getRequest(self::HTTP_PUT, $url, $auth, $content);
-
-        $trace_request = $this->getRedactedRequest($request);
-
-        $this->trace->info(TraceCode::FRESHDESK_TICKET_UPDATE_REQUEST,
-            [
-                'request' => $trace_request
-            ]
-        );
-
-        $response = $this->getResponse($request);
-
-        $newResponse = [
-            'success'     => $response->success,
-            'status_code' => $response->status_code,
-            'body'        => json_decode($response->body, true),
-        ];
-
-        $this->trace->info(TraceCode::FRESHDESK_TICKET_UPDATE_RESPONSE, $newResponse);
-
-        return $newResponse;
-    }
-
     /*
      * Get tickets for the given $merchantID
      *

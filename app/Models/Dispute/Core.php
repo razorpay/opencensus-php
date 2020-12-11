@@ -889,6 +889,6 @@ class Core extends Base\Core
             'responder_id' => null,
         ];
 
-        $this->app['freshdesk_client']->updateTicket($customerSupportTicketID, $updateTicketContent);
+        $this->app['freshdesk_client']->updateTicketV2($customerSupportTicketID, $updateTicketContent);
     }
 }
