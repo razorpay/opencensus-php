@@ -6,24 +6,11 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
-    'testInitiateOnboarding' => [
+    'testInitiateOnboardingProxyRoute' => [
         'request' => [
             'method' => 'POST',
             'url' => '/terminals/onboard',
             'content' => ['gateway' => 'wallet_paypal']
-        ],
-        'response' => [
-            'content' => [
-            ],
-            'status_code'   => 200,
-        ],
-    ],
-
-    'testInitiateOnboardingPaysecureAxis' => [
-        'request' => [
-            'method' => 'POST',
-            'url' => '/terminals/onboard',
-            'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'axis']
         ],
         'response' => [
             'content' => [
@@ -37,6 +24,43 @@ return [
             'method' => 'POST',
             'url' => '/terminals/onboard',
             'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testInitiateOnboardingProxyRouteInvalidGateway' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/terminals/onboard',
+            'content' => ['gateway' => 'invalid_gateway']
+        ],
+        'response' => [
+            'response' => []
+        ],
+    ],
+
+    'testInitiateOnboardingAdminRoutePaysecureAxis' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'axis']
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testInitiateOnboardingAdminRouteInvalidGateway' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'invalid_gateway', 'gateway_acquirer' => 'axis']
         ],
         'response' => [
             'content' => [

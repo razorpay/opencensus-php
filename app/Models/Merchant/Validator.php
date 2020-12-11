@@ -338,6 +338,12 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL => 'required|boolean'
     ];
 
+    protected static $onboardMerchantInputRules = [
+        Terminal\Entity::GATEWAY               => 'required|in:hitachi,paysecure',
+        'gateway_input'                        => 'sometimes',
+        Terminal\Entity::GATEWAY_ACQUIRER      => 'sometimes',
+    ];
+
     protected static $restrictSettingsMerchantRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::ACTION      => 'required|in:add,remove',

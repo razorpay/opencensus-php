@@ -4804,8 +4804,24 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        return (new TerminalService)->onboardMerchant($merchant, $input, false)
-                                    ->toArrayAdmin();
+        $this->trace->info(
+            TraceCode::INITIATE_TERMINAL_ONBOARDING_REQUEST_ADMIN_ROUTE,
+            [
+                'merchant_id'    => $id,
+                'input'          => $input,
+            ]);
+
+        (new Validator)->validateInput('onboard_merchant_input', $input);
+
+        if ($input['gateway'] === Payment\Gateway::HITACHI)
+        {
+            return (new TerminalService)->onboardMerchant($merchant, $input, false)
+            ->toArrayAdmin();
+        }
+
+        $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], null, [], $input);
+
+        return $response;
     }
 
     public function applyRestrictedSettings(array $input): array

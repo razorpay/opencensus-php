@@ -22,26 +22,11 @@ class TerminalOnboardingTest extends TestCase
         parent::setUp();
     }
 
-    public function testInitiateOnboarding()
+    public function testInitiateOnboardingProxyRoute()
     {
         $this->ba->proxyAuth();
-
-        (new BaseFixture)->createEntity('merchant_detail', [
-            'merchant_id' => '10000000000000',
-            'submitted'   => true,
-            'business_registered_state' => 'KA',
-        ]);
 
         $response = $this->startTest();
-
-        $this->assertArrayHasKey('links', $response);
-    }
-
-    public function testInitiateOnboardingPaysecureAxis()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
     }
 
     public function testInitiateOnboardingWithNoGatewayInInput()
@@ -52,6 +37,43 @@ class TerminalOnboardingTest extends TestCase
 
         $this->expectExceptionMessage(
             'The gateway field is required.');
+
+        $this->startTest();
+    }
+
+    public function testInitiateOnboardingProxyRouteInvalidGateway()
+    {
+        $this->ba->proxyAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'The selected gateway is invalid.');
+
+        $this->startTest();
+    }
+
+    public function testInitiateOnboardingAdminRoutePaysecureAxis()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testInitiateOnboardingAdminRouteInvalidGateway()
+    {
+        $this->ba->adminAuth();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'The selected gateway is invalid.');
 
         $this->startTest();
     }
