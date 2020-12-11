@@ -4994,7 +4994,7 @@ class Service extends Base\Service
      * @param array $attribute
      * @param array $settings
      */
-    protected function segregateInputFieldsAndSettings(array $record, array & $attribute, array & $settings)
+    public function segregateInputFieldsAndSettings(array $record, array & $attribute, array & $settings)
     {
         $settings = array_only($record, Constants::$EntityBatchActionSettingParams);
 

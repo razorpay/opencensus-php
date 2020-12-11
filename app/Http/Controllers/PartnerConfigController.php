@@ -34,4 +34,11 @@ class PartnerConfigController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function bulkUpsert() {
+
+        $input = Request::all();
+
+        return $this->service()->bulkUpsertSubmerchantPartnerConfig($input);
+    }
 }

@@ -7,9 +7,9 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Plan;
+use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\AccessMap;
 
-use Razorpay\OAuth\Application;
 
 class Core extends Base\Core
 {
@@ -329,5 +329,127 @@ class Core extends Base\Core
         }
 
         return [$application, $subMerchant];
+    }
+
+    /**
+     * This function updates the submerchant partner configs associated with provided appIds
+     *
+     * @param Merchant\Entity $merchant  // Submerchant Entity
+     * @param array           $appIds    // Submerchant linked application ids
+     * @param array           $attribute // New attributes for partner config
+     *
+     * @return mixed
+     */
+    public function updatePartnerConfigForSubmerchant(Merchant\Entity $merchant, array $appIds, array $attribute)
+    {
+        $existingPartnerConfigsForMerchant = $this->repo->partner_config->fetchOverriddenConfigsByMerchantId($appIds, $merchant->getId());
+
+        $response = new Base\PublicCollection();
+
+        foreach ($existingPartnerConfigsForMerchant as $config)
+        {
+
+            $config->edit($attribute, 'edit');
+
+            $this->repo->saveOrFail($config);
+
+            $response->push($config->toArrayPublic());
+        }
+
+        return $response->toArrayWithItems();
+    }
+
+    /**
+     * The following function creates/updates partner configs associated with partner
+     *
+     * @param Merchant\Entity $merchant  // Submerchant entity
+     * @param Merchant\Entity $partner   // Partner entity
+     * @param array           $appIds    // Lists of appIds the submerchant is linked to
+     * @param array           $attribute // New attributes for partner config E.g.: implicit_plan_id
+     *
+     * @return mixed
+     * @throws Exception\BadRequestException
+     */
+    public function createPartnerConfigForSubmerchant(Merchant\Entity $merchant, Merchant\Entity $partner, array $appIds, array $attribute)
+    {
+        $response = new Base\PublicCollection();
+
+        $partnerConfigsForAppIds = $this->repo->partner_config->fetchDefaultConfigForAppIds($appIds);
+
+        $applicationByAppId = $this->getApplicationsForSubmerchantLinkedApps($partner, $appIds);
+
+        foreach ($partnerConfigsForAppIds as $config)
+        {
+
+            $application = $applicationByAppId[$config->getEntityId()];
+
+            $newConfig = $this->getClonedPartnerConfig($config, $attribute);
+
+            $newConfig = $this->create($application, $newConfig, $merchant);
+
+            $response->push($newConfig->toArrayPublic());
+        }
+
+        return $response->toArrayWithItems();
+    }
+
+    /**
+     * 1. Clones the config provided for AppId
+     * 2. Prepares input data with attributes provided and cloned data required for creating a new Partner config
+     *
+     * @param Entity $config    // Partner Config to be cloned
+     * @param        $attribute // New attributes for partner config
+     *
+     * @return array
+     */
+    private function getClonedPartnerConfig(Entity $config, $attribute)
+    {
+        $newConfig = $config->replicate();
+
+        $newConfig = $newConfig->toArray();
+
+        $newConfig = array_only($newConfig, $config->getFillable());
+
+        $newConfig[Constants::APPLICATION_ID] = $config->getEntityId();
+
+        $newConfig = array_merge($newConfig, $attribute);
+
+        if (empty($newConfig->defaultPaymentsMethods) === true)
+        {
+
+            unset($newConfig[Entity::DEFAULT_PAYMENT_METHODS]);
+        }
+
+        return $newConfig;
+    }
+
+    /**
+     * This function returns all the submerchant linked applications
+     *
+     * @param $partner // Partner entity
+     * @param $appIds  // ApplicationIds the submerchant linked to
+     *
+     * @return array
+     */
+    private function getApplicationsForSubmerchantLinkedApps(Merchant\Entity $partner, array $appIds)
+    {
+
+        $applicationById = [];
+
+        $appType = ($partner->isPurePlatformPartner() === true) ? null : Application\Type::PARTNER;
+
+        $partnerApplications = (new Application\Repository)->findActiveApplicationsByMerchantIdAndType($partner->getId(), $appType);
+
+        foreach ($partnerApplications as $application)
+        {
+
+            if (in_array($application->getId(), $appIds))
+            {
+
+                $applicationById[$application->getId()] = $application;
+            }
+        }
+
+        return $applicationById;
     }
 }

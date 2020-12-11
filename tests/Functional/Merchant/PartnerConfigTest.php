@@ -44,6 +44,50 @@ class PartnerConfigTest extends OAuthTestCase
         return $merchant;
     }
 
+    public function testSubmerchantPricingplanUpsertViaBatch() {
+
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->createImplicitPricingPlan();
+
+        $this->ba->batchAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+
+
+        $configsBeforeExecution = $this->getDbEntities('partner_config');
+
+        $this->startTest();
+
+        $configsAfterExecution = $this->getDbEntities('partner_config');
+
+        $upsertedSubmerchantPartnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertEquals(sizeof($configsAfterExecution) , sizeof($configsBeforeExecution) + 2);
+
+        $this->assertEquals('merchant', $upsertedSubmerchantPartnerConfig['entity_type']);
+
+        $this->assertEquals(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID, $upsertedSubmerchantPartnerConfig['entity_id']);
+
+        $this->assertEquals('application',$upsertedSubmerchantPartnerConfig['origin_type']);
+
+        $this->assertEquals(Constants::DEFAULT_NON_PLATFORM_APP_ID, $upsertedSubmerchantPartnerConfig['origin_id']);
+
+    }
+
     public function testAddingConfigForNonPartner()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_MERCHANT_ID);

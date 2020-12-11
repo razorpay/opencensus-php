@@ -1659,6 +1659,7 @@ class Route
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
         'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
+        'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
@@ -2829,7 +2830,7 @@ class Route
         'payment_meta_fetch_by_payment_id_action',
 
         'gateway_downtime_for_payment',
-
+        'partner_config_bulk_upsert',
         //Accounting Payouts
         'accounting_payouts_sync_internal',
         'payment_links_sign_payload_internal',
@@ -5771,6 +5772,7 @@ class Route
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
+            'partner_config_bulk_upsert'
         ],
 
         'stork' => [

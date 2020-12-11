@@ -100,4 +100,27 @@ class Repository extends Base\Repository
     {
         CommissionModel::validate($type);
     }
+
+
+    public function fetchOverriddenConfigsByMerchantId(array $appIds, string $subMerchantId) {
+        return $this->newQuery()
+                    ->whereIn(Entity::ORIGIN_ID, $appIds)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->where(Entity::ENTITY_ID, $subMerchantId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
+                    ->get();
+    }
+
+    public function fetchDefaultConfigForAppIds(array $appIds) {
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $appIds)
+                    ->where(Entity::ENTITY_TYPE, Constants::APPLICATION)
+                    ->whereNull(Entity::ORIGIN_ID)
+                    ->whereNull(Entity::ORIGIN_TYPE)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
+                    ->get();
+    }
+
 }

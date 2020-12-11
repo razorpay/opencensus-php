@@ -697,4 +697,86 @@ return [
             ],
         ],
     ],
+
+    'testSubmerchantPricingplanUpsertViaBatch' => [
+        'request'  => [
+            'url'     => '/partner_configs/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'batch_action'  => 'submerchant_partner_config_upsert',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '1000000000plat',
+                    'merchant_id'   => '100submerchant',
+                    'implicit_plan_id' => '10ImplicitPlan',
+                    'idempotent_id' => 'random',
+                ],
+                [
+                    'batch_action'  => 'submerchant_partner_config_upsert',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '1000000000plat',
+                    'merchant_id'   => '100submerchant',
+                    'implicit_plan_id' => 'SubmerchantPln',
+                    'idempotent_id' => 'random',
+                ],
+                [
+                    'batch_action'  => 'submerchant_partner_config_upsert',
+                    'entity'        => 'merchant',
+                    'partner_id'    => '100nonplatform',
+                    'merchant_id'   => '10submerchant1',
+                    'implicit_plan_id' => 'SubmerchantPln',
+                    'idempotent_id' => 'random',
+                ],
+                [
+                    'batch_action'  => 'submerchant_partner_config_upsert',
+                    'entity'        => 'merchant',
+                    'partner_id'    => 'abcd',
+                    'merchant_id'   => 'efg',
+                    'implicit_plan_id' => 'SubmerchantPln',
+                    'idempotent_id' => 'random',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 4,
+                'items'  => [
+                    [
+                        'batch_action'  => 'submerchant_partner_config_upsert',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '1000000000plat',
+                        'merchant_id'   => '100submerchant',
+                        'idempotent_id' => 'random',
+                    ],
+                    [
+                        'batch_action'  => 'submerchant_partner_config_upsert',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '1000000000plat',
+                        'merchant_id'   => '100submerchant',
+                        'idempotent_id' => 'random',
+                    ],
+                    [
+                        'batch_action'  => 'submerchant_partner_config_upsert',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '100nonplatform',
+                        'merchant_id'   => '10submerchant1',
+                        'idempotent_id' => 'random',
+                    ],
+                    [
+                        'batch_action' => 'submerchant_partner_config_upsert',
+                        'entity' => 'merchant',
+                        'partner_id' => 'abcd',
+                        'merchant_id' => 'efg',
+                        'implicit_plan_id' => 'SubmerchantPln',
+                        'idempotent_id' => 'random',
+                        'error' => ['description' => 'The partner id does not exist or invalid',
+                            'code' => 'BAD_REQUEST_ERROR'],
+                        'http_status_code' => 400
+                    ]
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
