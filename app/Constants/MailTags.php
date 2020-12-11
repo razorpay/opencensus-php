@@ -186,9 +186,6 @@ class MailTags
     // Fraud Notification tags
     const FRAUD_NOTIFICATION_DOMAIN_MISMATCH = 'fraud_notification_domain_mismatch';
 
-    // Customer Dispute Ticket tags
-    const CUSTOMER_DISPUTE_FRESHDESK       = 'customer_dispute_freshdesk';
-
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 

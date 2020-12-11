@@ -3,7 +3,6 @@
 namespace RZP\Models\Dispute\Customer\FreshdeskTicket;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;

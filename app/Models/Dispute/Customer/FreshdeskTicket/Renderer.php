@@ -2,18 +2,16 @@
 
 namespace RZP\Models\Dispute\Customer\FreshdeskTicket;
 
-use Mail;
+use View;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Mail\Dispute\Customer\Base as CustomerDisputeMailer;
 
-trait Mailer {
-	private function sendPaymentNotCapturedEmail()
+trait Renderer {
+	private function renderPaymentNotCapturedBody()
     {
         $data = [
             'customer' => [
                 'name'  => $this->freshdeskTicket->getCustomerName(),
-                'email' => $this->freshdeskTicket->getCustomerEmail(),
             ],
             'merchant' => [
                 'name' => $this->merchant->getName(),
@@ -29,12 +27,15 @@ trait Mailer {
                 'id'          => $this->freshdeskTicket->getTicketId(),
                 'subcategory' => $this->freshdeskTicket->getSubcategory(),
             ],
+            'partialView' => Constants::PARTIAL_VIEW_TEMPLATE_PREFIX . '.' . Constants::ACTION_PAYMENT_NOT_CAPTURED,
         ];
 
-        Mail::queue(new CustomerDisputeMailer($data, Constants::ACTION_PAYMENT_NOT_CAPTURED));
+        $renderedBody = View::make(Constants::BASE_VIEW_TEMPLATE)->with($data)->render();
+
+        return $renderedBody;
     }
 
-    private function sendPaymentFullyRefundedEmail()
+    private function renderPaymentFullyRefundedBody()
     {
         $refundIdList = [];
         $refunds = $this->payment->refunds;
@@ -47,26 +48,27 @@ trait Mailer {
         $data = [
             'customer' => [
                 'name'  => $this->freshdeskTicket->getCustomerName(),
-                'email' => $this->freshdeskTicket->getCustomerEmail(),
             ],
             'ticket' => [
                 'id'          => $this->freshdeskTicket->getTicketId(),
                 'subcategory' => $this->freshdeskTicket->getSubcategory(),
             ],
             'refundIdList' => $refundIdList,
+            'partialView' => Constants::PARTIAL_VIEW_TEMPLATE_PREFIX . '.' . Constants::ACTION_PAYMENT_FULLY_REFUNDED,
         ];
 
-        Mail::queue(new CustomerDisputeMailer($data, Constants::ACTION_PAYMENT_FULLY_REFUNDED));
+        $renderedBody = View::make(Constants::BASE_VIEW_TEMPLATE)->with($data)->render();
+
+        return $renderedBody;
     }
 
-    private function sendPaymentAlreadyDisputedEmail()
+    private function renderPaymentAlreadyDisputedBody()
     {
         $dispute = $this->repo->dispute->getOpenDisputeByPaymentId($this->payment->getId());
 
         $data = [
             'customer' => [
                 'name'  => $this->freshdeskTicket->getCustomerName(),
-                'email' => $this->freshdeskTicket->getCustomerEmail(),
             ],
             'payment' => [
                 'id' => $this->payment->getPublicId(),
@@ -77,18 +79,20 @@ trait Mailer {
             ],
             'dispute' => [
                 'id' => $dispute->getPublicId(),
-            ]
+            ],
+            'partialView' => Constants::PARTIAL_VIEW_TEMPLATE_PREFIX . '.' . Constants::ACTION_PAYMENT_DISPUTED,
         ];
 
-        Mail::queue(new CustomerDisputeMailer($data, Constants::ACTION_PAYMENT_DISPUTED));
+        $renderedBody = View::make(Constants::BASE_VIEW_TEMPLATE)->with($data)->render();
+
+        return $renderedBody;
     }
 
-    private function sendMerchantDisabledEmail()
+    private function renderMerchantDisabledBody()
     {
         $data = [
             'customer' => [
                 'name'  => $this->freshdeskTicket->getCustomerName(),
-                'email' => $this->freshdeskTicket->getCustomerEmail(),
             ],
             'merchant' => [
                 'name' => $this->merchant->getName(),
@@ -97,17 +101,19 @@ trait Mailer {
                 'id'          => $this->freshdeskTicket->getTicketId(),
                 'subcategory' => $this->freshdeskTicket->getSubcategory(),
             ],
+            'partialView' => Constants::PARTIAL_VIEW_TEMPLATE_PREFIX . '.' . Constants::ACTION_MERCHANT_DISABLED,
         ];
 
-        Mail::queue(new CustomerDisputeMailer($data, Constants::ACTION_MERCHANT_DISABLED));
+        $renderedBody = View::make(Constants::BASE_VIEW_TEMPLATE)->with($data)->render();
+
+        return $renderedBody;
     }
 
-    private function sendCreateDisputeEmail()
+    private function renderCreateDisputeBody()
     {
         $data = [
             'customer' => [
                 'name'  => $this->freshdeskTicket->getCustomerName(),
-                'email' => $this->freshdeskTicket->getCustomerEmail(),
             ],
             'merchant' => [
                 'name' => $this->merchant->getName(),
@@ -116,8 +122,11 @@ trait Mailer {
                 'id'          => $this->freshdeskTicket->getTicketId(),
                 'subcategory' => $this->freshdeskTicket->getSubcategory(),
             ],
+            'partialView' => Constants::PARTIAL_VIEW_TEMPLATE_PREFIX . '.' . Constants::ACTION_CREATE_DISPUTE,
         ];
 
-        Mail::queue(new CustomerDisputeMailer($data, Constants::ACTION_CREATE_DISPUTE));
+        $renderedBody = View::make(Constants::BASE_VIEW_TEMPLATE)->with($data)->render();
+
+        return $renderedBody;
     }
 }

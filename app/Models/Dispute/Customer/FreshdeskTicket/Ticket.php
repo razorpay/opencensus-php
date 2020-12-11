@@ -78,4 +78,11 @@ trait Ticket
 
         return $this->app['freshdesk_client']->updateTicket($ticketId, $content);
     }
+
+	private function replyToTicket(string $renderedBody) : array
+    {
+        $ticketId = strval($this->freshdeskTicket->getTicketId());
+
+        return $this->app['freshdesk_client']->postTicketReply($ticketId, ['body' => $renderedBody]);
+    }
 }

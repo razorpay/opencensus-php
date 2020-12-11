@@ -4,6 +4,9 @@ namespace RZP\Models\Dispute\Customer\FreshdeskTicket;
 
 class Constants
 {
+    const BASE_VIEW_TEMPLATE           = 'dispute.customer.base';
+    const PARTIAL_VIEW_TEMPLATE_PREFIX = 'partials.dispute.customer';
+
 	const ACTION_CREATE_DISPUTE         = 'create_dispute';
 	const ACTION_MERCHANT_DISABLED      = 'merchant_disabled';
 	const ACTION_PAYMENT_DISPUTED       = 'payment_disputed';

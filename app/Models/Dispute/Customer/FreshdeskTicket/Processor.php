@@ -16,7 +16,7 @@ use RZP\Models\Dispute\Reason\Service as DisputeReasonService;
 
 class Processor
 {
-	use Mailer, Ticket;
+	use Renderer, Ticket;
 
 	private $app;
 
@@ -132,28 +132,36 @@ class Processor
 
     private function handlePaymentNotCaptured()
     {
-        $this->sendPaymentNotCapturedEmail();
+        $renderedBody = $this->renderPaymentNotCapturedBody();
+
+        $this->replyToTicket($renderedBody);
 
         $this->closeTicket();
     }
 
     private function handlePaymentFullyRefunded()
     {
-        $this->sendPaymentFullyRefundedEmail();
+        $renderedBody = $this->renderPaymentFullyRefundedBody();
+
+        $this->replyToTicket($renderedBody);
 
         $this->closeTicket();
     }
 
     private function handlePaymentAlreadyDisputed()
     {
-        $this->sendPaymentAlreadyDisputedEmail();
+        $renderedBody = $this->renderPaymentAlreadyDisputedBody();
+
+        $this->replyToTicket($renderedBody);
 
         $this->closeTicket();
     }
 
     private function handleMerchantDisabled()
     {
-        $this->sendMerchantDisabledEmail();
+        $renderedBody = $this->renderMerchantDisabledBody();
+
+        $this->replyToTicket($renderedBody);
 
         $this->closeTicket();
     }
@@ -177,7 +185,9 @@ class Processor
 
         (new DisputeCore())->create($this->payment, $reason, $createDisputeInput);
 
-        $this->sendCreateDisputeEmail();
+        $renderedBody = $this->renderCreateDisputeBody();
+
+        $this->replyToTicket($renderedBody);
 
         $this->changeTicketGroupToCspWithRelevantTags();
     }
