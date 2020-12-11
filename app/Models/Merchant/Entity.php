@@ -1245,6 +1245,12 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Terminal\Entity');
     }
 
+    public function promotions()
+    {
+        return $this->hasMany(
+            'RZP\Models\Merchant\Promotion\Entity');
+    }
+
     public function org()
     {
         return $this->belongsTo(

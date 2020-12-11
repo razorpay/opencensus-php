@@ -1424,6 +1424,31 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchWithMerchantPromotion()
+    {
+        // Given
+        // merchant promotions created
+        $ba = $this->createBankingAccount();
+
+        $p = $this->fixtures->create('promotion', [
+            'name'          => 'RZPNEO',
+            'product'       => 'banking',
+            'credit_amount' => 0,
+            'iterations'    => 1
+        ]);
+        $this->fixtures->create('merchant_promotion', [
+            'merchant_id'           => $ba['merchant_id'],
+            'promotion_id'          => $p['id'],
+            'start_time'            => time(),
+            'remaining_iterations'  => 1,
+            'expired'               => 0
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testBankingAccountFetchForMerchantPocCity(string $dbName = 'Bangalore', string $searchName = "Bangalore")
     {
         $ba = $this->testCreateActivationDetail([

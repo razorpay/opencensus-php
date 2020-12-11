@@ -1017,6 +1017,38 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchWithMerchantPromotion' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'merchant_business_name' => '',
+                'expand'                 => ['merchant','merchant.promotions.promotion']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'merchant' => [
+                            'promotions' => [
+                                'items' => [
+                                    [
+                                        'promotion' => [
+                                            'name' => 'RZPNEO'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testBankingAccountFetchForMerchantNameMultipleMatch' => [
         'request' => [
             'url'     => '/admin/banking_account',
