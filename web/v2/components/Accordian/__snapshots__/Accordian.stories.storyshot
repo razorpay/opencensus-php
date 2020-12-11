@@ -12,7 +12,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
         >
           <div
             aria-expanded="true"
-            class="Styled__Header-sc-5l0601-2 SjRYv"
+            class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
             P1
@@ -32,7 +32,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             </svg>
           </div>
           <div
-            class="Styled__Content-sc-5l0601-3 caIcUn"
+            class="Styled__Content-sc-5l0601-3 fdmVsI"
           >
             Hola this is random content 1
           </div>
@@ -42,7 +42,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
         >
           <div
             aria-expanded="false"
-            class="Styled__Header-sc-5l0601-2 SjRYv"
+            class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
             P2
@@ -62,7 +62,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             </svg>
           </div>
           <div
-            class="Styled__Content-sc-5l0601-3 iZskEn"
+            class="Styled__Content-sc-5l0601-3 jRbAaA"
           />
         </li>
         <li
@@ -70,7 +70,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
         >
           <div
             aria-expanded="false"
-            class="Styled__Header-sc-5l0601-2 SjRYv"
+            class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
             P3
@@ -90,7 +90,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             </svg>
           </div>
           <div
-            class="Styled__Content-sc-5l0601-3 iZskEn"
+            class="Styled__Content-sc-5l0601-3 jRbAaA"
           />
         </li>
       </ul>

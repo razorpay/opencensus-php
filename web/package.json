@@ -5,6 +5,7 @@
   "dependencies": {
     "@commander/shield": "0.0.1136",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#be4dd48",
+    "@types/react-is": "17.0.0",
     "@universe/services": "1.0.30",
     "@universe/utils": "1.0.30",
     "axios": "0.19.2",
@@ -33,6 +34,7 @@
     "react-datetime": "2.16.3",
     "react-dom": "16.9.0",
     "react-dragula": "1.1.17",
+    "react-is": "17.0.1",
     "react-modal": "3.11.2",
     "react-motion": "0.5.2",
     "react-power-select": "1.0.0-beta.17",

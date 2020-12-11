@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import toArray from '../../services/children/to-array';
 import { Root } from './Styled';
 import { PanelPropsT } from './Panel';
 
@@ -8,7 +9,7 @@ export interface StatelessAccordionPropsT {
    * panels should be open at once */
   accordian?: boolean;
   /** Tab Panles */
-  children: React.ReactElement[];
+  children: React.ReactNode;
   /** Array of keys which corresponds to open panels */
   expanded: React.Key[];
   /** Children panels will be disabled from toggling if set ture */
@@ -26,7 +27,7 @@ const StatelessAccordian: React.FC<StatelessAccordionPropsT> = ({
 }) => {
   return (
     <Root>
-      {React.Children.map(children, (child: ReactElement<PanelPropsT>, index) => {
+      {toArray(children).map((child: ReactElement<PanelPropsT>, index) => {
         const key = child.key || String(index);
         return React.cloneElement(child, {
           disabled: disabled || child.props.disabled,
