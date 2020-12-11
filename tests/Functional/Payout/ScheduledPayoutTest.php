@@ -830,6 +830,58 @@ class ScheduledPayoutTest extends TestCase
         Mail::assertQueued(AutoRejectedPayout::class);
     }
 
+    public function testScheduledPayoutProcessingAutoRejectWithWfs()
+    {
+        Mail::fake();
+
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        // Calling this scheduled payout but it hasn't been approved yet
+        $scheduledPayout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $result = $this->startTest();
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'], 'live');
+
+        // Assert that the scheduled payout has now gone to the processing state
+        $this->assertEquals(Status::REJECTED, $updatedScheduledPayout['status']);
+
+        Mail::assertQueued(AutoRejectedPayout::class);
+    }
+
     public function testGetScheduleTimeSlotsForDashboard()
     {
         $this->ba->proxyAuth();

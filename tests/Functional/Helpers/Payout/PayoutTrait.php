@@ -216,7 +216,23 @@ trait PayoutTrait
 
         $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner','live');
 
+        // add pg mapping as well to catch edge cases
+        $this->fixtures->on('live')->create('user:user_merchant_mapping', [
+            'merchant_id' => '10000000000000',
+            'user_id'     => $this->ownerRoleUser->id,
+            'role'        => 'manager',
+            'product'     => 'primary',
+        ]);
+
         $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3','live');
+
+        // add pg mapping as well to catch edge cases
+        $this->fixtures->on('live')->create('user:user_merchant_mapping', [
+            'merchant_id' => '10000000000000',
+            'user_id'     => $this->finL3RoleUser->id,
+            'role'        => 'manager',
+            'product'     => 'primary',
+        ]);
 
         // The default bank account getting created has ifsc code prefix 'RAZR' even in live mode, which is modified here
         $this->fixtures->on('live')->edit(
@@ -654,5 +670,22 @@ trait PayoutTrait
         $this->disableWorkflowMocks();
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+    }
+
+    protected function setUpExperimentForNWFS()
+    {
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on' // just sey this on, leave everything as default
+        );
     }
 }

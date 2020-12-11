@@ -4,9 +4,9 @@ namespace RZP\Models\Workflow\Service\Adapter;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Jobs\Context;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
@@ -288,6 +288,12 @@ abstract class Base
         /** @var $ba BasicAuth */
         $ba = app('basicauth');
 
+        /** @var $repo RepositoryManager */
+        $repo = app('repo');
+
+        /** @var $workerCtx Context */
+        $workerCtx = app('worker.ctx');
+
         $actorPropertyKey = Constants::ROLE;
 
         $user       = $ba->getUser();
@@ -300,8 +306,9 @@ abstract class Base
             $actorType = Constants::ADMIN;
             $actorPropertyValue = Constants::ADMIN;
         }
-        else if ($ba->isCron() === true)
+        else if (empty($workerCtx->getJobName()) === false)
         {
+            // this is used for queue worker use cases like (scheduled payouts)
             $actorId = Constants::INTERNAL_ACTOR_NAME;
             $actorType = Constants::SERVICE;
             $actorPropertyKey = Constants::NAME;
@@ -319,7 +326,9 @@ abstract class Base
             {
                 $actorId = $user->getId();
                 $actorType = Constants::USER;
-                $actorPropertyValue = $ba->getUserRole();
+                $userMapping = $repo->merchant->getMerchantUserMapping(
+                    $merchant->getId(), $user->getId(), null, Product::BANKING); // todo: make this generic
+                $actorPropertyValue = $userMapping->pivot->role;
             }
             elseif (empty($merchant) === false)
             {

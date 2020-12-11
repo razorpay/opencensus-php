@@ -94,6 +94,11 @@ class WorkflowService
         {
             try
             {
+                $this->trace->info(TraceCode::WORKFLOW_SERVICE_REQUEST_DETAILS, [
+                    'path'      => $path,
+                    'payload'   => $payload,
+                ]);
+
                 $startAt = millitime();
 
                 $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
@@ -150,7 +155,7 @@ class WorkflowService
 
         $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS, $this->ba->getRequestMetricDimensions());
 
-        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, [
+        $this->trace->info(TraceCode::WORKFLOW_SERVICE_RESPONSE_DETAILS, [
             'status'    => $res->status_code,
             'content'   => $res->body
         ]);

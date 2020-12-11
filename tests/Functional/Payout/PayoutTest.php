@@ -2217,23 +2217,6 @@ class PayoutTest extends TestCase
         $this->assertEquals(1, count($payout->items));
     }
 
-    private function setUpExperimentForNWFS()
-    {
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'on' // just sey this on, leave everything as default
-        );
-    }
-
     public function testBulkApprovePayoutWithComment()
     {
         $this->liveSetUp();

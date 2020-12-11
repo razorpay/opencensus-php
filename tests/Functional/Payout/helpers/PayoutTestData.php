@@ -7582,6 +7582,17 @@ return [
         ],
     ],
 
+    'testScheduledPayoutProcessingAutoRejectWithWfs' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process'
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetScheduleTimeSlotsForDashboard' =>  [
         'request'  => [
             'method'  => 'GET',

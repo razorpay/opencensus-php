@@ -297,7 +297,7 @@ class Service extends Base\Service
      */
     public function bulkRetryWorkflowOnPayout(array $input)
     {
-        $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, ['input' => $input]);
+        $this->trace->info(TraceCode::PAYOUT_WORKFLOW_BULK_RETRY_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('bulk_retry_workflow', $input);
 

@@ -2656,14 +2656,14 @@ class Core extends Base\Core
 
         try
         {
-            // Admin / Cron(for scheduled payouts) actions
+            // Admin / Worker(for scheduled payouts) actions
             // On these auth, one can only reject a workflow
             if (($auth->isAdminAuth() === true) ||
-                ($auth->isCron() === true))
+                ($auth->isProxyAuth() === false))
             {
                 if ($input[Entity::FORCE_REJECT] === true)
                 {
-                    $this->processRejectPayout($payout);
+                    $this->rejectPendingPayout($payout);
                 }
 
                 return $this->workflowService->createDirectAction($payout, $input);
@@ -2699,7 +2699,7 @@ class Core extends Base\Core
         ]);
 
         if (($auth->isAdminAuth() === true) ||
-            ($auth->isCron() === true))
+            ($auth->isProxyAuth() === false))
         {
             throw new Exception\BadRequestValidationFailureException('Auth is not proxy for payout approval');
         }
