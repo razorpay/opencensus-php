@@ -366,15 +366,36 @@
     flex-grow: 0
     min-height: 62px
     margin-top 16px
+    cursor pointer
+    position relative
+
+    .i-close
+      position: absolute
+      right: 5px
+      top: 5px
+      color: #518ff0
 
     &:not(:last-child)
       margin-right 20px
+
+    &.active
+      border: 1px solid #528FF0
+      border-left-width 3px
+      &:after
+        content: ''
+        position: absolute
+        width: 0
+        height: 0
+        border-left: 10px solid transparent
+        border-right: 10px solid transparent
+        border-top: 10px solid #528FF0
+        left: 50%
+        bottom -10px
 
   .count
     font-size: 24px
     margin-right 20px
     color: #212121
-    min-width: 30px
     .PlaceholderLoader
       height 24px
 
@@ -383,3 +404,11 @@
     line-height 1.5
     color: #6E6E6E
     min-width 50%
+
+// Mobile
+@media (max-width: 768px)
+  .Subscription--Expiry .card
+    width 100%
+    margin-right 0
+    width: 100%
+    max-width: 100%

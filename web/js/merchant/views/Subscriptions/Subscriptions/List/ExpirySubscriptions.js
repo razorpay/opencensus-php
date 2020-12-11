@@ -2,6 +2,8 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Alert from 'common/ui/Forms/Alert';
 
 import { fetchSubscriptionsOverview } from 'merchant/reducers/subscriptions';
+import { classList } from 'common/utils/rzp-utils';
+import { stringifyQueryParams } from 'common/utils/rzp-utils';
 
 const next7Days = moment().add(7, 'days').unix();
 
@@ -13,64 +15,78 @@ const CARDS = [
       </span>
     ),
     color: '#2B83EA',
-    key: 'subscriptions_active',
+    key: 'active',
     filter: {
-      status: 'active',
+      key: 'status',
+      value: 'active',
     },
   },
   {
     getTitle: () => (
       <span>
-        Subscriptions with <br /> Failed Payments
+        Halted <br /> Subscriptions
       </span>
     ),
     color: '#D12D2D',
-    key: 'subscriptions_failed',
-    filter: { status: 'failed' },
-  },
-  {
-    getTitle: () => (
-      <span>
-        Subscriptions completing <br /> in 7 days{' '}
-      </span>
-    ),
-    color: '#5EBE5B',
-    key: 'subscriptions_completing',
+    key: 'failed',
     filter: {
-      subscriptions_completing: next7Days,
+      key: 'status',
+      value: 'halted',
     },
   },
   {
     getTitle: () => (
       <span>
-        Subscriptions with Cards <br /> Expiring in 7 days
+        Subscriptions <br /> completing in 7 days{' '}
+      </span>
+    ),
+    color: '#5EBE5B',
+    key: 'complete_before',
+    filter: {
+      key: 'complete_before',
+      value: next7Days,
+    },
+  },
+  {
+    getTitle: () => (
+      <span>
+        Subscriptions with <br /> Cards Expiring in 7 days
       </span>
     ),
     color: '#E38E35',
-    key: 'cards_expiring',
+    key: 'token_expire_before',
     filter: {
-      cards_expiring: next7Days,
+      key: 'token_expire_before',
+      value: next7Days,
     },
   },
 ];
 
 export default class ExpirySubscriptions extends React.Component {
   state = {
+    selectedQuickFilter: this.props.selectedQuickFilter,
     data: {
-      subscriptions_active: null,
-      subscriptions_failed: null,
-      subscriptions_completing: null,
-      cards_expiring: null,
+      active: null,
+      failed: null,
+      complete_before: null,
+      token_expire_before: null,
     },
     isLoading: true,
     error: null,
   };
 
+  lastAppliedFilter = null;
+
   componentDidMount() {
     fetchSubscriptionsOverview(next7Days)
-      .then((resp) => {
+      .then(({ data }) => {
         this.setState({
-          data: resp.data,
+          data: {
+            active: data.subscriptions_active,
+            failed: data.subscriptions_failed,
+            complete_before: data.subscriptions_completing,
+            token_expire_before: data.cards_expiring,
+          },
           isLoading: false,
         });
       })
@@ -85,8 +101,46 @@ export default class ExpirySubscriptions extends React.Component {
       });
   }
 
+  onClickQuickFilter = (card) => () => {
+    let selectedQuickFilter;
+
+    if (this.state.selectedQuickFilter) {
+      selectedQuickFilter = this.state.selectedQuickFilter !== card.key ? card.key : null;
+    } else {
+      selectedQuickFilter = card.key;
+    }
+
+    this.setState({
+      selectedQuickFilter,
+    });
+
+    this.props.changeFilterField(this.lastAppliedFilter, null);
+
+    if (!selectedQuickFilter) {
+      this.props.history.push({
+        pathname: this.props.location.pathname,
+        search: stringifyQueryParams({}),
+      });
+
+      return;
+    }
+
+    const { key, value } = card.filter;
+    const filter = {
+      [key]: value,
+    };
+    this.props.history.push({
+      pathname: this.props.location.pathname,
+      search: stringifyQueryParams(filter),
+    });
+
+    this.props.changeFilterField(key, value);
+
+    this.lastAppliedFilter = key;
+  };
+
   render() {
-    const { state } = this;
+    const { state, props } = this;
 
     if (state.error) return <Alert type="error" message={state.error} />;
 
@@ -97,12 +151,22 @@ export default class ExpirySubscriptions extends React.Component {
             borderLeftColor: card.color,
           };
 
+          const isActive = state.selectedQuickFilter === card.key;
+
           return (
-            <div class="card" style={style}>
+            <div
+              key={card.key}
+              class={classList('card', isActive && 'active')}
+              style={style}
+              onClick={this.onClickQuickFilter(card)}
+            >
               <div class="count">
                 {state.isLoading ? <PlaceholderLoader /> : state.data[card.key]}
               </div>
-              <div class="details">{card.getTitle()}</div>
+              <div class="details">
+                {isActive && <i class="i i-close" />}
+                {card.getTitle()}
+              </div>
             </div>
           );
         })}

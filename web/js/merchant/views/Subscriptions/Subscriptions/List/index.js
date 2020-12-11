@@ -1,5 +1,7 @@
 import { connect } from 'react-redux';
+import { change } from 'redux-form';
 import { NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -24,7 +26,6 @@ import {
   status,
 } from 'common/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ExpirySubscriptions from './ExpirySubscriptions';
 
@@ -33,9 +34,17 @@ import ExpirySubscriptions from './ExpirySubscriptions';
     ...state.subscriptions,
     user: state.session.user,
   }),
-  { fetchAll },
+  {
+    fetchAll,
+    changeListFilterField: (field, value) => (dispatch) => {
+      dispatch(change('subscriptionsListFilter', field, value));
+    },
+  },
 )
+@withRouter
 export default class SubscriptionsListContainer extends ListContainer {
+  filterEle = React.createRef();
+
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Subscriptions',
@@ -61,11 +70,25 @@ export default class SubscriptionsListContainer extends ListContainer {
     });
   };
 
+  onFilterChange = () => {
+    if (this.quickFilterEle.state.selectedQuickFilter) {
+      this.quickFilterEle.setState({ selectedQuickFilter: null });
+    }
+  };
+
   render() {
     const { user } = this.props;
     return (
       <>
-        {user.isSubscriptionExpiryEnabled && <ExpirySubscriptions />}
+        {user.isSubscriptionExpiryEnabled && (
+          <ExpirySubscriptions
+            location={this.props.location}
+            history={this.props.history}
+            selectedQuickFilter={this.selectedQuickFilter}
+            changeFilterField={this.props.changeListFilterField}
+            ref={(filter) => (this.quickFilterEle = filter)}
+          />
+        )}
 
         <div class="content-wrapper">
           <HeaderAction>
@@ -85,6 +108,7 @@ export default class SubscriptionsListContainer extends ListContainer {
             form="subscriptionsListFilter"
             count={this.state.count}
             onSubmit={this.search}
+            onFieldChange={this.onFilterChange}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
             showSubscriptionExpiryFilter={user.isSubscriptionExpiryEnabled}

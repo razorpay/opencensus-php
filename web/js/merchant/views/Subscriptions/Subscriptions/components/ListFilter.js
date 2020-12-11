@@ -14,7 +14,6 @@ const statusList = [
   'completed',
   'expired',
   'paused',
-  'failed',
 ];
 
 const next7DaysEpoch = moment().add(7, 'days').unix();
@@ -26,27 +25,42 @@ export default (props) => {
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Subscription Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field
+          name="id"
+          component="input"
+          class="form-control input-sm"
+          onChange={props.onFieldChange}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Plan ID</label>
-        <Field name="plan_id" component="input" class="form-control input-sm" />
+        <Field
+          name="plan_id"
+          component="input"
+          class="form-control input-sm"
+          onChange={props.onFieldChange}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Customer Email</label>
-        <Field name="customer_email" component="input" class="form-control input-sm" />
+        <Field
+          name="customer_email"
+          component="input"
+          class="form-control input-sm"
+          onChange={props.onFieldChange}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
-          component={(props) => (
+          component={(renderProps) => (
             <PowerSelect
               options={statusList}
-              selected={props.input.value}
+              selected={renderProps.input.value}
               showClear={false}
               class="custom-powerselect"
               selectedOptionComponent={({ option }) => <div>{humanize(option)}</div>}
@@ -55,7 +69,8 @@ export default (props) => {
               )}
               searchEnabled={false}
               onChange={({ option }) => {
-                props.input.onChange(option);
+                renderProps.input.onChange(option);
+                props.onFieldChange();
               }}
             />
           )}
@@ -71,6 +86,7 @@ export default (props) => {
           max={100}
           type="number"
           class="form-control input-sm"
+          onChange={props.onFieldChange}
         />
       </div>
 
@@ -78,7 +94,12 @@ export default (props) => {
         <>
           <div class="form-group list-filter-item">
             <label>Subscriptions Completing In</label>
-            <Field name="complete_before" component="select" class="form-control input-sm">
+            <Field
+              name="complete_before"
+              component="select"
+              class="form-control input-sm"
+              onChange={props.onFieldChange}
+            >
               <option value=""></option>
               <option value={next7DaysEpoch}>Next 7 days</option>
               <option value={next30DaysEpoch}>Next 30 days</option>
@@ -88,7 +109,12 @@ export default (props) => {
 
           <div class="form-group list-filter-item">
             <label>Cards Expiring In</label>
-            <Field name="token_expire_before" component="select" class="form-control input-sm">
+            <Field
+              name="token_expire_before"
+              component="select"
+              class="form-control input-sm"
+              onChange={props.onFieldChange}
+            >
               <option value=""></option>
               <option value={next7DaysEpoch}>Next 7 days</option>
               <option value={next30DaysEpoch}>Next 30 days</option>
