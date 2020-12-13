@@ -530,9 +530,10 @@ class Gateway extends Base\Gateway
         }
 
         $traceResult = $this->maskUpiDataForTracing($result, [
-            Entity::VPA             => ResponseFields::PAYER_VA,
-            Entity::CONTACT         => ResponseFields::PHONE_NUMBER,
-            Entity::ACCOUNT_NUMBER  => ResponseFields::ACCOUNT_NUMBER,
+            Entity::VPA                         => ResponseFields::PAYER_VA,
+            Entity::CONTACT                     => ResponseFields::PHONE_NUMBER,
+            Entity::ACCOUNT_NUMBER              => ResponseFields::ACCOUNT_NUMBER,
+            ResponseFields::BANK_REFERENCE      => ResponseFields::BANK_REFERENCE,
         ]);
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
