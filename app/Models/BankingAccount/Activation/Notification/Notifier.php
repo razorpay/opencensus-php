@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\OpsSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\SpocSubscriber;
+use RZP\Models\BankingAccount\Activation\Notification\Subscriber\HubspotSubscriber;
 
 class Notifier extends Base\Core
 {
@@ -30,11 +31,16 @@ class Notifier extends Base\Core
     {
         $spocSubscriber = new SpocSubscriber();
         $opsSubscriber = new OpsSubscriber();
+        $hubspotSubscriber = new HubspotSubscriber();
 
         return [
             Event::STATUS_CHANGE => [
                 $spocSubscriber,
-                $opsSubscriber
+                $opsSubscriber,
+                $hubspotSubscriber
+            ],
+            Event::SUBSTATUS_CHANGE => [
+                $hubspotSubscriber
             ],
             Event::ASSIGNEE_CHANGE => [
                 $spocSubscriber,
@@ -50,6 +56,10 @@ class Notifier extends Base\Core
             case Event::STATUS_CHANGE:
                 return [
                     Constants::NEW_STATUS => $bankingAccount->getStatus()
+                ];
+            case Event::SUBSTATUS_CHANGE:
+                return [
+                    Constants::NEW_SUBSTATUS => $bankingAccount->getSubStatus()
                 ];
             case Event::ASSIGNEE_CHANGE:
                 return [

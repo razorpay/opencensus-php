@@ -21,6 +21,7 @@ class Event
 
     // names
     const STATUS_CHANGE = 'status_change';
+    const SUBSTATUS_CHANGE = 'substatus_change';
     const ASSIGNEE_CHANGE = 'assignee_change';
 
     public function __construct(string $name, string $type, array $properties)

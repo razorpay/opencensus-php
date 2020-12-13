@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Contact;
+use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -49,11 +50,26 @@ class BankingAccountTest extends TestCase
         $this->ba->proxyAuth();
     }
 
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        return $hubSpotMock;
+    }
+
     public function testCreateBankingAccount()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         Mail::fake();
+
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
 
         $this->startTest();
 
@@ -64,6 +80,8 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
 
         Mail::assertQueued(XProActivation::class);
+
+        $this->assertTrue($expectedHubspotCall);
     }
 
     public function testCreateBankingAccountTwiceForSameMerchant()
@@ -391,6 +409,9 @@ class BankingAccountTest extends TestCase
 
         $this->mockFundAccountService();
 
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
         $this->mockCardVault(function ()
         {
             return [
@@ -415,6 +436,8 @@ class BankingAccountTest extends TestCase
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 
         $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+
+        $this->assertTrue($expectedHubspotCall);
 
         $balance = $this->getDbLastEntity('balance');
 
@@ -979,9 +1002,51 @@ class BankingAccountTest extends TestCase
             Status::NONE);
     }
 
+    public function mockHubspotAndAssertForChangeEvent(bool &$expectedHubspotCall, bool $isStatusChange = true, bool $isSubstatusChange = true)
+    {
+        $hubspotMock = $this->mockHubSpotClient('trackHubspotEvent');
+
+        $expectedStatusCall = false;
+        $expectedSubStatusCall = false;
+        if ($isStatusChange === true)
+        {
+            $hubspotMock->expects($this->atLeast(1))
+                ->method('trackHubspotEvent')
+                ->will($this->returnCallback(
+                    function(string $merchantEmail, array $payload) use (&$expectedSubStatusCall, &$expectedStatusCall, &$expectedHubspotCall)
+                    {
+                        if (isset($payload['ca_onboarding_status']) === true)
+                        {
+                            // asserting here within the callback does not fail the test case for some reason
+                            $expectedStatusCall = true;
+                            $expectedHubspotCall = ($expectedStatusCall && $expectedSubStatusCall);
+                        }
+                    }));
+        }
+
+        if ($isSubstatusChange === true)
+        {
+            $hubspotMock->expects($this->atLeast(1))
+                ->method('trackHubspotEvent')
+                ->will($this->returnCallback(
+                    function(string $merchantEmail, array $payload) use (&$expectedSubStatusCall, &$expectedStatusCall, &$expectedHubspotCall)
+                    {
+                        if (isset($payload['ca_onboarding_substatus']) === true)
+                        {
+                            // asserting here within the callback does not fail the test case for some reason
+                            $expectedSubStatusCall = true;
+                            $expectedHubspotCall = ($expectedStatusCall && $expectedSubStatusCall);
+                        }
+                    }));
+        }
+    }
+
     public function testUpdateBankingAccountStatusAsProcessed()
     {
         Mail::fake();
+
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
 
         $attribute = ['activation_status' => 'activated'];
 
@@ -1025,6 +1090,7 @@ class BankingAccountTest extends TestCase
 
             return $mail->hasTo($bankingAccountEntity->spocs()->first()['email']);
         });
+        $this->assertTrue($expectedHubspotCall);
     }
 
     public function testUpdateBankingAccountStatusAsProcessedFailed()

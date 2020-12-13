@@ -357,6 +357,10 @@ class Core extends Base\Core
 
         $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
+        $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+        $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+
+
         return $bankingAccount;
     }
 
@@ -591,6 +595,10 @@ class Core extends Base\Core
             {
                 $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
             }
+            if ($bankingAccountSubStatusChanged === true)
+            {
+                $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+            }
 
             // Updating BankingAccountActivation Details
             if (empty($activationDetailInput) === false)
@@ -702,6 +710,7 @@ class Core extends Base\Core
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
         $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+        $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
 
         return $bankingAccount;
     }
