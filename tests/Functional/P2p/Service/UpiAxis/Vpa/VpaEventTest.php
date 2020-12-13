@@ -81,11 +81,6 @@ class VpaEventTest extends TestCase
                     'entity'    => 'vpa',
                     'active'    => true,
                     'default'   => false,
-                    'bank_account' => [
-                        'id'     => 'ba_ALC01bankAc002',
-                        'entity' => 'bank_account',
-
-                    ],
                     'device'    => [
                         'id'     => 'device_ALC01device001',
                         'entity' => 'device',

@@ -139,6 +139,8 @@ class Fetch
 
         BasicAuth\Type::ADMIN_AUTH => [],
 
+        BasicAuth\Type::DEVICE_AUTH => [],
+
         self::ADMIN_RESTRICTED => [],
     ];
 
@@ -429,6 +431,17 @@ class Fetch
 
             $rules    = array_merge($rules, $adminRules);
             $accesses = array_merge($accesses, $adminAccesses);
+        }
+
+        if ($this->auth->isDeviceAuth() === true)
+        {
+            $defaultRules = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::DEVICE_AUTH]);
+
+            $deviceRules = array_get(static::RULES, BasicAuth\Type::DEVICE_AUTH, []);
+            $deviceAccesses = array_get(static::ACCESSES, BasicAuth\Type::DEVICE_AUTH, []);
+
+            $rules = array_merge($rules, $deviceRules);
+            $accesses = array_merge($accesses, $deviceAccesses);
         }
 
         // Finally get rules for keys to which access is allowed

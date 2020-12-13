@@ -233,6 +233,8 @@ class Processor extends Base\Processor
         {
             (new Transaction\Core)->deletePendingCollectForVpa($vpa);
 
+            $this->core->removeBankAccount($vpa);
+
             $this->core->delete($vpa);
         });
 

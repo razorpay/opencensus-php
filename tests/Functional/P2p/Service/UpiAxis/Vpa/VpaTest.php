@@ -116,6 +116,41 @@ class VpaTest extends TestCase
         $helper->fetchAllVpa();
     }
 
+    public function testFetchAllVpaWithDeleted()
+    {
+        $helper = $this->getVpaHelper();
+
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->fetchAllVpa();
+
+        $this->assertSame(2, $response['count']);
+
+        $this->assertArrayHasKey('deleted_at', $response['items'][0]);
+
+        $helper->deleteVpa($vpa->getPublicId());
+
+        $response = $helper->fetchAllVpa();
+
+        $this->assertSame(1, $response['count']);
+
+        $response = $helper->fetchAllVpa(['deleted' => 1]);
+
+        $vpas = $response['items'];
+
+        $this->assertSame(2, $response['count']);
+
+        $this->assertArrayHasKey('deleted_at', $vpas[0]);
+        $this->assertArrayHasKey('deleted_at', $vpas[1]);
+
+        $this->assertNull($vpas[0]['bank_account']);
+        $this->assertNotNull($vpas[1]['bank_account']);
+    }
+
     public function testInitiateVpaAvailability()
     {
         $helper = $this->getVpaHelper();

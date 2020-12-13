@@ -219,6 +219,15 @@ class Core extends Base\Core
         return $vpa;
     }
 
+    public function removeBankAccount(Entity $vpa): Entity
+    {
+        $vpa->dissociateBankAccount();
+
+        $this->repo->saveOrFail($vpa);
+
+        return $vpa;
+    }
+
     public function suggestUsername(BankAccount\Entity $bankAccount)
     {
         // Last 10 character of phone number

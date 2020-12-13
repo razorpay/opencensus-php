@@ -19,6 +19,11 @@ trait HasBankAccount
         return $this->bankAccount()->associate($handle);
     }
 
+    public function dissociateBankAccount()
+    {
+        return $this->bankAccount()->dissociate();
+    }
+
     public function scopeBankAccount(BuilderEx $query, BankAccount\Entity $bankAccount)
     {
         return $query->where(self::BANK, $bankAccount->getId());

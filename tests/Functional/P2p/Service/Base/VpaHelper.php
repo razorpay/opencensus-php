@@ -106,11 +106,13 @@ class VpaHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function fetchAllVpa()
+    public function fetchAllVpa(array $content = [])
     {
         $this->validationJsonSchemaPath = 'vpa/fetch_all';
 
         $request = $this->request('vpa');
+
+        $this->content($request, [], $content);
 
         return $this->get($request);
     }

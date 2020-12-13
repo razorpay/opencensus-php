@@ -104,6 +104,7 @@ class Entity extends Base\Entity
         Entity::VERIFIED,
         Entity::DEFAULT,
         Entity::CREATED_AT,
+        Entity::DELETED_AT,
     ];
 
     protected $defaults = [

@@ -65,6 +65,9 @@
         },
         "created_at": {
             "type": "integer"
+        },
+        "deleted_at": {
+            "type": ["integer", "null"]
         }
     }
 }
