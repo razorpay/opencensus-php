@@ -607,6 +607,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMAIL_SENDING_FAILED                                  = 'EMAIL_SENDING_FAILED';
     const INVOICE_SEND_NOTIFICATION                             = 'INVOICE_SEND_NOTIFICATION';
     const INVOICE_EMAIL_ISSUED_REQUEST                          = 'INVOICE_EMAIL_ISSUED_REQUEST';
+    const INVOICE_MERCHANT_EMAIL_ISSUED_REQUEST                 = 'INVOICE_MERCHANT_EMAIL_ISSUED_REQUEST';
     const INVOICE_EMAIL_EXPIRED_REQUEST                         = 'INVOICE_EMAIL_EXPIRED_REQUEST';
     const INVOICE_EMAIL_EXPIRING_REQUEST                        = 'INVOICE_EMAIL_EXPIRING_REQUEST';
     const INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET                  = 'INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET';

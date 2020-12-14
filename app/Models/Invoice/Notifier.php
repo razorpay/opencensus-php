@@ -1148,4 +1148,43 @@ class Notifier extends Base\Core
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
     }
+
+    public function emailInvoiceIssuedToMerchant(): bool
+    {
+        $merchant = $this->invoice->merchant;
+
+        $merchantEmails = $merchant->getTransactionReportEmail();
+
+        $this->trace->info(
+            TraceCode::INVOICE_MERCHANT_EMAIL_ISSUED_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'merchant_email' => $merchantEmails,
+            ]);
+
+        if (empty($merchantEmails) === true)
+        {
+            return false;
+        }
+
+        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+
+        $viewPayload['to'] = $merchantEmails;
+
+        if ($this->invoice->isPaymentPageInvoice() === true)
+        {
+            $viewPayload['pp_invoice'] = true;
+        }
+
+        $fileData = [
+            'name' => $this->invoice->getPdfDisplayName(),
+            'path' => $this->issuedPdfPath,
+        ];
+
+        $invoiceIssuedMail = new InvoiceMail\MerchantIssued($viewPayload, $fileData);
+
+        Mail::queue($invoiceIssuedMail);
+
+        return true;
+    }
 }

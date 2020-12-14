@@ -527,7 +527,7 @@ class Core extends Base\Core
         return $this->repo->loadRelations($invoice);
     }
 
-    public function sendNotification(Entity $invoice, string $medium): array
+    public function sendNotification(Entity $invoice, string $medium, bool $merchantEmail = false): array
     {
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
@@ -551,6 +551,13 @@ class Core extends Base\Core
         $response = (new Notifier($invoice, $pdfPath))->$func();
 
         $this->repo->saveOrFail($invoice);
+
+        if ($merchantEmail === true)
+        {
+            $func = studly_case($medium) . 'InvoiceIssuedToMerchant';
+
+            (new Notifier($invoice, $pdfPath))->$func();
+        }
 
         return ['success' => $response];
     }

@@ -745,7 +745,7 @@ class Core extends Base\Core
 
         $invoice->setRelation('entity', $invoice->entity);
 
-        return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+        return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
 
     }
 
@@ -902,7 +902,7 @@ class Core extends Base\Core
         {
             $invoice->setRelation('entity', $invoice->entity);
 
-            return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+            return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
         }
     }
 
