@@ -1179,4 +1179,56 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED,
         ],
     ],
+
+    'scroogeRetryWithVerify' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/refunds/retry/with_verify',
+            'content' => [
+                'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'scroogeRetryWithoutVerify' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/refunds/retry/without_verify',
+            'content' => [
+                'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'scroogeRetryViaSourceFundTransfers' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/refunds/retry/source_fund_transfers',
+            'content' => [
+                'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'scroogeRetryViaCustomFundTransfers' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/refunds/retry/custom_fund_transfers',
+            'content' => [
+                'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];

@@ -245,4 +245,84 @@ class Scrooge extends BaseScrooge
 
         return $scroogeResponse;
     }
+
+    public function retryRefundsWithVerify(array $input) : array
+    {
+        $scroogeResponseBody = [];
+
+        if (isset($input['refund_ids']) === true)
+        {
+            foreach ($input['refund_ids'] as $refundId)
+            {
+                $scroogeResponseBody[$refundId] = [
+                    'error' => null,
+                ];
+            }
+        }
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
+
+    public function retryRefundsWithoutVerify(array $input) : array
+    {
+        $scroogeResponseBody = [];
+
+        if (isset($input['refund_ids']) === true)
+        {
+            foreach ($input['refund_ids'] as $refundId)
+            {
+                $scroogeResponseBody[$refundId] = [
+                    'error' => null,
+                ];
+            }
+        }
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
+
+    public function retryRefundsViaSourceFundTransfers(array $input) : array
+    {
+        $scroogeResponseBody = [];
+
+        if (isset($input['refund_ids']) === true)
+        {
+            foreach ($input['refund_ids'] as $refundId)
+            {
+                $scroogeResponseBody[$refundId] = [
+                    'error' => null,
+                ];
+            }
+        }
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
+
+    public function retryRefundsViaCustomFundTransfers(array $input) : array
+    {
+        $scroogeResponseBody = [];
+
+        if (isset($input['refunds']) === true)
+        {
+            foreach ($input['refunds'] as $refundId => $retryBody)
+            {
+                $scroogeResponseBody[$refundId] = [
+                    'error' => null,
+                ];
+            }
+        }
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
 }

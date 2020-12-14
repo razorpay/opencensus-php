@@ -6170,4 +6170,124 @@ class RefundTest extends TestCase
         $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
         $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
+
+    public function testScroogeRetryWithVerify()
+    {
+        $this->ba->adminAuth();
+
+        $input = [
+            'refund_ids' => [
+                '12345678900987',
+                '12345678900981',
+            ],
+        ];
+
+        $expectedOutput = [
+            '12345678900987' => [
+                'error' => NULL
+            ],
+            '12345678900981' => [
+                'error' => NULL
+            ]
+        ];
+
+        $this->testData['scroogeRetryWithVerify']['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData['scroogeRetryWithVerify']);
+
+        $this->assertEquals($expectedOutput, $response);
+    }
+
+    public function testScroogeRetryWithoutVerify()
+    {
+        $this->ba->adminAuth();
+
+        $input = [
+            'refund_ids' => [
+                '12345678900987',
+                '12345678900981',
+            ],
+        ];
+
+        $expectedOutput = [
+            '12345678900987' => [
+                'error' => NULL
+            ],
+            '12345678900981' => [
+                'error' => NULL
+            ]
+        ];
+
+        $this->testData['scroogeRetryWithoutVerify']['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData['scroogeRetryWithoutVerify']);
+
+        $this->assertEquals($expectedOutput, $response);
+    }
+
+    public function testScroogeRetryViaSourceFundTransfers()
+    {
+        $this->ba->adminAuth();
+
+        $input = [
+            'refund_ids' => [
+                '12345678900987',
+                '12345678900981',
+            ],
+        ];
+
+        $expectedOutput = [
+            '12345678900987' => [
+                'error' => NULL
+            ],
+            '12345678900981' => [
+                'error' => NULL
+            ]
+        ];
+
+        $this->testData['scroogeRetryViaSourceFundTransfers']['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData['scroogeRetryViaSourceFundTransfers']);
+
+        $this->assertEquals($expectedOutput, $response);
+    }
+
+    public function testScroogeRetryViaCustomFundTransfers()
+    {
+        $this->ba->adminAuth();
+
+        $input = [
+            'refunds' => [
+                '12345678900987' => [
+                    'fta_data' => [
+                        'vpa' => [
+                            'address' => 'blocked@test'
+                        ]
+                    ]
+                ],
+                '12345678900981' => [
+                    'fta_data' => [
+                        'vpa' => [
+                            'address' => 'blocked@test'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $expectedOutput = [
+            '12345678900987' => [
+                'error' => NULL
+            ],
+            '12345678900981' => [
+                'error' => NULL
+            ]
+        ];
+
+        $this->testData['scroogeRetryViaCustomFundTransfers']['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData['scroogeRetryViaCustomFundTransfers']);
+
+        $this->assertEquals($expectedOutput, $response);
+    }
 }

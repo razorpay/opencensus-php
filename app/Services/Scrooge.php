@@ -58,6 +58,11 @@ class Scrooge
         'fetch_instant_refunds_modes'        => 'fetch/instant_refund_mode_configs',
         'instant-refunds-decisioning-helper' => 'instant-refunds-decisioning-helper',
         'fetch-from-gateway-reference-value' => 'fetch_from_gateway_reference_value',
+        // Retry routes
+        'retry_with_verify'                  => 'retry/with_verify',
+        'retry_without_verify'               => 'retry/without_verify',
+        'retry_source_fund_transfers'        => 'retry/source_fund_transfers',
+        'retry_custom_fund_transfers'        => 'retry/custom_fund_transfers',
     ];
 
     // Headers
@@ -419,6 +424,54 @@ class Scrooge
     public function getRefundsFromPaymentIdAndGatewayId(array $input)
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['fetch-from-gateway-reference-value'], Requests::POST, $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function retryRefundsWithVerify(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['retry_with_verify'],
+            Requests::POST,
+            $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function retryRefundsWithoutVerify(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['retry_without_verify'],
+            Requests::POST,
+            $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function retryRefundsViaSourceFundTransfers(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['retry_source_fund_transfers'],
+            Requests::POST,
+            $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function retryRefundsViaCustomFundTransfers(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['retry_custom_fund_transfers'],
+            Requests::POST,
+            $input);
     }
 
     /**

@@ -2316,8 +2316,8 @@ trait Refund
         return $data;
     }
 
-    protected function loadFTADataForScroogeRefund(
-        array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
+    public function loadFTADataForScroogeRefund(
+        array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         // Shouldn't enter this flow once instant refund fails and load fta data from input
         if (($refund->isRefundSpeedInstant() === true) and ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))

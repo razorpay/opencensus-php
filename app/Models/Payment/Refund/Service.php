@@ -431,7 +431,8 @@ class Service extends Base\Service
      *       },
      *   "extra_data":[
      *       "ifsc_code",
-     *       "is_fta_only_refund"
+     *       "is_fta_only_refund",
+     *       "fta_data"
      *   ]
      *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
      * }
@@ -473,7 +474,17 @@ class Service extends Base\Service
      *        }
      *       "extra_data": {
      *           "ifsc_code": "HDFC0000001",
-     *           "is_fta_only_refund": true
+     *           "is_fta_only_refund": true,
+     *           "fta_data" : {
+     *               "error" : nil,
+     *               "fta_data" : {
+     *                    "bank_account": {
+     *                        "account_number": "12231223122312",
+     *                        "beneficiary_name": "ABCD",
+     *                        "ifsc_code": "HDFC0000001"
+     *                    }
+     *               }
+     *           }
      *       }
      *    }
      * }
@@ -609,6 +620,11 @@ class Service extends Base\Service
                             {
                                 $entity = $payment->$key;
 
+                                if ($key === Constants\Entity::IIN)
+                                {
+                                    $entity = $payment->card->iinRelation;
+                                }
+
                                 $map = [];
 
                                 foreach ($values as $value)
@@ -680,6 +696,24 @@ class Service extends Base\Service
     protected function getExtraDataIsFtaOnlyRefund(Entity $refund) : bool
     {
         return $this->getNewProcessor($refund->merchant)->refundViaFtaOnly($refund->payment);
+    }
+
+    protected function getExtraDataFtaData(Entity $refund) : array
+    {
+        $ftaData = [
+            RefundConstants::ERROR    => null,
+            RefundConstants::FTA_DATA => null,
+        ];
+
+        try {
+            $this->getNewProcessor($refund->merchant)->loadFTADataForScroogeRefund($ftaData, $refund, $refund->payment);
+        }
+        catch (\Exception $ex)
+        {
+            $ftaData[RefundConstants::ERROR] = $ex->getCode();
+        }
+
+        return $ftaData;
     }
 
     public function fetchMultiple($input)

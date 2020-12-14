@@ -44,6 +44,7 @@ class ScroogeFetchEntitiesTest extends TestCase
         $subTestArgs = [
             'refund1' => $refund1,
             'refund2' => $refund2,
+            'payment' => $payment,
         ];
 
         // To test more cases add a new function with prefix scroogeFetchEntitiesSubTest appended by test number
@@ -421,6 +422,126 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'ifsc_code' => 'HDFC0000001',
                     'is_fta_only_refund' => true
                 ]
+            ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test iin fetch for payment card
+    public function scroogeFetchEntitiesSubTest10($subTestArgs) : array
+    {
+        $input = [
+            'refund_ids' => [
+                substr($subTestArgs['refund1']['id'], 5),
+            ],
+            'payment' => ['card_id'],
+            'entities' => [
+                'card' => ['iin'],
+                'iin'  => ['iin', 'type'],
+            ]
+        ];
+
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'entities' => [
+                    'iin' => [
+                        'iin'  => '401200',
+                        'type' => 'credit'
+                    ],
+                    'card' => [
+                        'iin' => '401200',
+                    ],
+                    'payment' => [
+                        'card_id' => substr($subTestArgs['payment']['card_id'], 5)
+                    ]
+                ]
+            ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test iin fetch for payment card when iin relation doesnt exist
+    public function scroogeFetchEntitiesSubTest11($subTestArgs) : array
+    {
+        $this->fixtures->card->edit(substr($subTestArgs['payment']['card_id'], 5), [
+            'iin' => '998761'
+        ]);
+
+        $input = [
+            'refund_ids' => [
+                substr($subTestArgs['refund1']['id'], 5),
+            ],
+            'payment' => ['card_id'],
+            'entities' => [
+                'card' => ['iin'],
+                'iin'  => ['iin', 'type'],
+            ]
+        ];
+
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'entities' => [
+                    'iin' => [
+                        'iin'  => NULL,
+                        'type' => NULL
+                    ],
+                    'card' => [
+                        'iin' => '998761',
+                    ],
+                    'payment' => [
+                        'card_id' => substr($subTestArgs['payment']['card_id'], 5)
+                    ]
+                ]
+            ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test fta_data fetch
+    public function scroogeFetchEntitiesSubTest12($subTestArgs) : array
+    {
+        // set back from previous test edit
+        $this->fixtures->card->edit(substr($subTestArgs['payment']['card_id'], 5), [
+            'iin' => '401200'
+        ]);
+
+        $this->fixtures->payment->edit(substr($subTestArgs['refund1']['payment_id'], 4), [
+            'method'    => 'upi',
+            'gateway'   => 'upi_mindgate',
+            'recurring' => TRUE,
+            'vpa'       => 'abc@rzp'
+        ]);
+
+        $input = [
+            'refund_ids' => [
+                substr($subTestArgs['refund1']['id'], 5),
+            ],
+            'payment' => ['method'],
+            'extra_data' => [
+                'fta_data',
+            ]
+        ];
+
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'entities' => [
+                    'payment' => [
+                        'method' => 'upi'
+                    ]
+                ],
+                'extra_data' => [
+                    'fta_data' => [
+                        'error' => NULL,
+                        'fta_data' => [
+                            'vpa' => [
+                                'address' => 'abc@rzp'
+                            ]
+                        ]
+                    ]
+                ],
             ]
         ];
 

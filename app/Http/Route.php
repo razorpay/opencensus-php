@@ -204,7 +204,7 @@ class Route
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
-        'scrooge_refunds_retry_without_verify'     => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
+        'api_refunds_retry_without_verify'         => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
         'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
@@ -1452,6 +1452,12 @@ class Route
         'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                             'ScroogeController@enqueue'                                  ],
         'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',               'ScroogeController@downloadGatewayRefundsFile'               ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change',      'ScroogeController@bulkStatusUpdate'                         ],
+
+        // Scrooge retry routes
+        'scrooge_refunds_retry_with_verify'           => ['post',     'scrooge/refunds/retry/with_verify',                  'ScroogeController@retryRefundsWithVerify'                   ],
+        'scrooge_refunds_retry_without_verify'        => ['post',     'scrooge/refunds/retry/without_verify',               'ScroogeController@retryRefundsWithoutVerify'                ],
+        'scrooge_refunds_retry_source_fund_transfers' => ['post',     'scrooge/refunds/retry/source_fund_transfers',        'ScroogeController@retryRefundsViaSourceFundTransfers'       ],
+        'scrooge_refunds_retry_custom_fund_transfers' => ['post',     'scrooge/refunds/retry/custom_fund_transfers',        'ScroogeController@retryRefundsViaCustomFundTransfers'       ],
 
         // Scrooge - Instant Refunds Mode Config related routes
         'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                                 'ScroogeController@refreshFtaModes'                           ],
@@ -2719,6 +2725,7 @@ class Route
         'fund_transfer_attempts_process_fts',
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
+        'scrooge_refunds_retry_custom_fund_transfers',
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
@@ -3533,7 +3540,7 @@ class Route
         'refund_verify_multiple',
         'refund_verify_failed',
         'refund_retry_bulk_via_fta',
-        'scrooge_refunds_retry_without_verify',
+        'api_refunds_retry_without_verify',
         'refund_verify_failed_bulk',
         'refund_without_verify_bulk',
         'merchant_edit_bank_account',
@@ -3748,6 +3755,11 @@ class Route
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
+
+        'scrooge_refunds_retry_with_verify',
+        'scrooge_refunds_retry_without_verify',
+        'scrooge_refunds_retry_source_fund_transfers',
+        'scrooge_refunds_retry_custom_fund_transfers',
 
         // Reporting
         'reporting_log_create_admin',
@@ -4460,11 +4472,17 @@ class Route
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,
         'scrooge_refund_create_bulk'               => Permission::RETRY_REFUND,
-        'scrooge_refunds_retry_without_verify'     => Permission::RETRY_REFUNDS_WITHOUT_VERIFY,
+        'api_refunds_retry_without_verify'         => Permission::RETRY_REFUNDS_WITHOUT_VERIFY,
         'scrooge_refresh_fta_modes_cache'          => Permission::REFRESH_SCROOGE_FTA_MODES_CACHE,
         'scrooge_set_instant_refund_mode_config'   => Permission::EDIT_INSTANT_REFUNDS_MODE_CONFIG,
         'scrooge_expire_instant_refund_mode_config'=> Permission::EDIT_INSTANT_REFUNDS_MODE_CONFIG,
         'scrooge_fetch_instant_refund_mode_config' => Permission::VIEW_SCROOGE_REFUNDS,
+
+        'scrooge_refunds_retry_with_verify'           => Permission::RETRY_REFUND_FAILED,
+        'scrooge_refunds_retry_without_verify'        => Permission::RETRY_REFUNDS_WITHOUT_VERIFY,
+        'scrooge_refunds_retry_source_fund_transfers' => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
+        'scrooge_refunds_retry_custom_fund_transfers' => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
+
         'schedule_fetch'                           => '*',
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
@@ -5772,7 +5790,8 @@ class Route
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
-            'partner_config_bulk_upsert'
+            'scrooge_refunds_retry_custom_fund_transfers',
+            'partner_config_bulk_upsert',
         ],
 
         'stork' => [

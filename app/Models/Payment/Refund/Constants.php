@@ -164,6 +164,9 @@ class Constants
     // Set tentatively to 100 rupees since no modes are restricted for this amount
     const DEFAULT_REFUND_AMOUNT_FOR_MODE_DECISIONING = 10000;
 
+    const ERROR    = 'error';
+    const FTA_DATA = 'fta_data';
+
     // Dynamic error messages for refund creation blocking
     // type 0 for neither instant nor gateway refund supported
     // type 1 for only instant refund supported
