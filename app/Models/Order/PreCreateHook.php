@@ -17,6 +17,13 @@ class PreCreateHook extends Hook
         ExtraParams::TRANSFERS => 'validateTransferParams'
     ];
 
+    public function process()
+    {
+        (new Validator())->validateInput('preCreateHook', array_only($this->orderInput, array_keys($this->hooks)));
+
+        parent::process();
+    }
+
     public function validateTokenParams(array $paramInput)
     {
         if ((isset($this->orderInput[Entity::METHOD]) === true) and

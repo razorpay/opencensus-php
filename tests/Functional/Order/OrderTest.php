@@ -116,6 +116,38 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithNullTransfersParam()
+    {
+        $request = $this->testData['testCreateOrder']['request'];
+
+        $request['content']['transfers'] = null;
+
+        $this->makeRequestAndCatchException(
+            function () use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            Exception\BadRequestValidationFailureException::class,
+            'The transfers field is required.'
+        );
+    }
+
+    public function testCreateOrderWithNonArrayTokenParam()
+    {
+        $request = $this->testData['testCreateOrder']['request'];
+
+        $request['content']['token'] = "random";
+
+        $this->makeRequestAndCatchException(
+            function () use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            Exception\BadRequestValidationFailureException::class,
+            'The token must be an array.'
+        );
+    }
+
     public function testUniqueReceiptFeatureWithNoReceipt()
     {
         $this->fixtures->merchant->addFeatures(['order_receipt_unique']);

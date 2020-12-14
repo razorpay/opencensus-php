@@ -68,6 +68,11 @@ class Validator extends Base\Validator
         Entity::PRODUCTS                           => 'sometimes|array|max:128',
     ];
 
+    protected static $preCreateHookRules = [
+        ExtraParams::TOKEN                      => 'filled|array',
+        ExtraParams::TRANSFERS                  => 'filled|array',
+    ];
+
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
         Entity::BANK,
