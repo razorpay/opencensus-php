@@ -179,7 +179,8 @@
 
     var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
-    var isIntentFlow = CheckoutBridge && data.type === 'intent';
+    var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
+    var isIntentFlow = (CheckoutBridge || iosBridge) && data.type === 'intent';
 
     if (data.type === 'async' && data.method === 'app' && data.provider === 'cred') {
         $('message-txt').innerText = 'Please complete the payment on the CRED app';
@@ -262,6 +263,34 @@
       })
     }
 
+    function paymentCallback(data) {
+      if (window.CheckoutBridge) {
+        CheckoutBridge.oncomplete(JSON.stringify(data));
+      } else if (iosBridge) {
+        iosBridge.postMessage({
+          action: 'success',
+          body: data
+        });
+      } else {
+        try { window.opener.onComplete(data) } catch(e){}
+        try { (window.opener || window.parent).postMessage(data, '*') } catch(e){}
+        setTimeout(close, 999);
+      }
+    }
+
+    function openIntentUrl(intentUrl) {
+      if (window.CheckoutBridge) {
+        CheckoutBridge.callNativeIntent(intentUrl);
+      } else if (iosBridge) {
+        iosBridge.postMessage({
+          action: 'callNativeIntent',
+          body: {
+            intent_url: intentUrl,
+          }
+        });
+      }
+    }
+
     {{--
       submit form redirects to callback_url
       or, in case of anrdoid app, call CheckoutBridge.oncomplete
@@ -279,7 +308,7 @@
         }
       }, 10000);
       if (isIntentFlow) {
-        CheckoutBridge.oncomplete(JSON.stringify(response));
+        paymentCallback(response);
       } else {
         if (response && response.type === 'return') {
           var req = response.request;
@@ -373,7 +402,7 @@
 
       function initUpiActivity() {
         try {
-          CheckoutBridge.callNativeIntent(intent_url);
+          openIntentUrl(intent_url);
           $('spinner').className = 'hide';
           $('retry-btn').className = 'hide';
           $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
