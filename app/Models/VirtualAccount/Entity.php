@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
     const RECEIVERS            = 'receivers';
     const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
+    const VPA                  = 'vpa';
+    const QR_CODE              = 'qr_code';
     const NUMERIC              = 'numeric';
     const CLOSE_BY             = 'close_by';
     const CLOSED_AT            = 'closed_at';

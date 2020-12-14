@@ -379,16 +379,14 @@ trait VirtualAccountTrait
     private function addReceiverToVirtualAccount(string $virtualAccountId, string $receiverType, $input = [])
     {
         $content = [
-            "receivers" => [
-                'types'       => [
-                    $receiverType
-                ],
-                $receiverType => $input
-            ]
+            'types'       => [
+                $receiverType
+            ],
+            $receiverType => $input
         ];
         $request = [
-            'method'  => 'PATCH',
-            'url'     => '/virtual_accounts/' . $virtualAccountId . '/receiver',
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/' . $virtualAccountId . '/receivers',
             'content' => $content,
         ];
 

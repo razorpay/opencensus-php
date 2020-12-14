@@ -8,6 +8,7 @@ use Lib\Formatters\Xml;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\VirtualAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\VirtualAccount\Validator;
 
@@ -47,11 +48,20 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function addReceivers(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addReceivers($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function addReceiver(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service()->addReceiver($id, $input);
+        $data = $this->service()->addReceivers($id, $input);
 
         return ApiResponse::json($data);
     }

@@ -688,11 +688,11 @@ class Core extends Base\Core
         $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
     }
 
-    public function addReceiver(Entity $virtualAccount, array $input)
+    public function addReceivers(Entity $virtualAccount, array $input)
     {
         $virtualAccount = $this->repo->transaction(function () use ($virtualAccount, $input)
         {
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+            $this->buildReceivers($virtualAccount, $input);
 
             if ($this->repo->virtual_account_tpv->isTpvEnabledForVa($virtualAccount->getId()) === true)
             {

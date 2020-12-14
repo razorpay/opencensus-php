@@ -79,9 +79,11 @@ class Validator extends Base\Validator
         'MerchantKey'  => 'nullable|string',
     ];
 
-    public static $addReceiverRules = [
-        Entity::RECEIVERS                       => 'bail|required|array|custom',
-        Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array|min:1',
+    public static $addReceiversRules = [
+        Entity::TYPES                                   => 'required|array|in:bank_account,vpa,qr_code',
+        Entity::BANK_ACCOUNT                            => 'sometimes',
+        Entity::VPA                                     => 'sometimes',
+        Entity::QR_CODE                                 => 'sometimes',
     ];
 
     protected static $createValidators = [

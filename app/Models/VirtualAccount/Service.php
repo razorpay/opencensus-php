@@ -443,11 +443,13 @@ class Service extends Base\Service
         return $processor;
     }
 
-    public function addReceiver(string $id, array $input)
+    public function addReceivers(string $id, array $input)
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
 
-        (new Validator())->validateInput('addReceiver', $input);
+        $this->modifyAddReceiversInputOldToNew($input);
+
+        (new Validator())->validateInput('addReceivers', $input);
 
         $virtualAccount = $this->repo
                                ->virtual_account
@@ -473,7 +475,7 @@ class Service extends Base\Service
             self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
             function() use ($input, $virtualAccount)
             {
-                return $this->core->addReceiver($virtualAccount, $input);
+                return $this->core->addReceivers($virtualAccount, $input);
             },
             10,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
@@ -483,6 +485,14 @@ class Service extends Base\Service
         );
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    private function modifyAddReceiversInputOldToNew(&$input)
+    {
+        if (isset($input[Entity::RECEIVERS]) === true)
+        {
+            $input = $input[Entity::RECEIVERS];
+        }
     }
 
     public function createOfflineQr($input = [])
