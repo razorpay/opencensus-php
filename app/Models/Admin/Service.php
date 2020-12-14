@@ -150,7 +150,7 @@ class Service extends Base\Service
 
         if ($sync === true)
         {
-            (new Terminal\Service)->runTerminalComparison($entity);
+            (new Terminal\Service)->runTerminalComparison($entity, $subMerchantFlag);
         }
 
         return $entity->toArrayAdmin($subMerchantFlag);

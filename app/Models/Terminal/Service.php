@@ -69,7 +69,8 @@ class Service extends Base\Service
 
         $sync = $this->app['config']->get('applications.terminals_service.sync');
 
-        if ($sync === true) {
+        if ($sync === true)
+        {
             $this->runGetTerminalsForMerchantComparison($terminals, $merchant, $subMerchantFlag);
         }
 
@@ -1009,14 +1010,14 @@ class Service extends Base\Service
 
             $fetchedTerminals = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
 
-            $this->compareFetchedTerminals($terminals, $fetchedTerminals);
+            $this->compareFetchedTerminals($terminals, $fetchedTerminals, $submerchantFlag);
         }
         catch (\Exception $exception)
         {
         }
     }
 
-    protected function compareFetchedTerminals($terminals, $fetchedTerminals)
+    protected function compareFetchedTerminals($terminals, $fetchedTerminals, $submerchantFlag)
     {
         if ($this->compareFetchedTerminalIds($terminals, $fetchedTerminals) === false)
         {
@@ -1026,7 +1027,7 @@ class Service extends Base\Service
         {
             $terminal = $terminals->find($fetchedTerminal[Terminal\Entity::ID]);
 
-            $this->compareFetchedTerminal($terminal, $fetchedTerminal);
+            $this->compareFetchedTerminal($terminal, $fetchedTerminal, $submerchantFlag);
         }
     }
 

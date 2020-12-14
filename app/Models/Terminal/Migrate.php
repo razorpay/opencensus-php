@@ -17,7 +17,7 @@ trait Migrate
      * BEWARE: it fails silently in case on any exception
      * @param Entity $terminal
      */
-    public function runTerminalComparison(Entity $terminal)
+    public function runTerminalComparison(Entity $terminal, bool $compareSubmerchant = false)
     {
 
         $data[Entity::TERMINAL_ID] = $terminal->getId();
@@ -27,7 +27,7 @@ trait Migrate
         {
             $fetchedTerminal = $this->app['terminals_service']->fetchTerminalById($terminal->getId());
 
-            $this->compareFetchedTerminal($terminal, $fetchedTerminal);
+            $this->compareFetchedTerminal($terminal, $fetchedTerminal, $compareSubmerchant);
 
         }
         catch (\Exception $exception)
@@ -57,7 +57,7 @@ trait Migrate
         $this->app['trace']->count($metric, $data);
     }
 
-    public function compareFetchedTerminal(Entity $terminal, $fetchedTerminal)
+    public function compareFetchedTerminal(Entity $terminal, $fetchedTerminal, $compareSubmerchant)
     {
         $data = [
             'route' => $this->app['request.ctx']->getRoute(),
@@ -65,7 +65,7 @@ trait Migrate
             Terminal\Entity::TERMINAL_ID => $terminal->getId(),
         ];
 
-        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, false) === true)
+        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, true, $compareSubmerchant) === true)
         {
             $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
         }
@@ -77,11 +77,16 @@ trait Migrate
         }
     }
 
-    public function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse, bool $ignoreSecrets = false)
+    public function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse, bool $ignoreSecrets = false, bool $compareSubmerchant = true)
     {
         $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse, $ignoreSecrets);
 
-        $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
+        $areFetchedSubmerchantsSame = true;
+
+        if ($compareSubmerchant === true)
+        {
+            $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
+        }
 
         return (($isFetchTerminalSuccess === true) and
                 ($areFetchedSubmerchantsSame === true));
@@ -176,7 +181,7 @@ trait Migrate
                 'fetched'   => $fetchedTerminalSubmerchantIds,
             ];
 
-            $this->trace->debug(TraceCode::TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH, $data);
+            $this->trace->debug(TraceCode::TERMINALS_SERVICE_TERMINAL_SUBMERCHANT_MISMATCH, $data);
         }
 
         return $success;
