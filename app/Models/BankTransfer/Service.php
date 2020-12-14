@@ -59,9 +59,16 @@ class Service extends Base\Service
         $requestPayload = null
     )
     {
+        $bankTransferRequest = null;
+
         try
         {
-            (new BankTransferRequest\Core())->create(
+            if ($checkForIfsc === true)
+            {
+                $this->checkAndReplaceForIfsc($input, $provider ?? $this->provider);
+            }
+
+            $bankTransferRequest = (new BankTransferRequest\Core())->create(
                 $input,
                 $provider ?? $this->provider,
                 $requestPayload ?? $input
@@ -72,7 +79,34 @@ class Service extends Base\Service
             $this->trace->traceException($ex);
         }
 
+        if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null)
+        {
+            return $this->processBankTransfer($bankTransferRequest);
+        }
+
         return $this->process($input, $provider, $checkForIfsc);
+    }
+
+    private function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            $bankTransferRequest->toArrayTrace()
+        );
+
+        $this->provider = $bankTransferRequest->getGateway();
+
+        $this->validateProvider($bankTransferRequest->getUtr());
+
+        $this->checkBlocksAndUpdateRequest($bankTransferRequest);
+
+        $valid = $this->core->processBankTransfer($bankTransferRequest);
+
+        return [
+            'valid'          => $valid,
+            'message'        => null,
+            'transaction_id' => $bankTransferRequest->getUtr() ?? '',
+        ];
     }
 
     /**
@@ -102,11 +136,6 @@ class Service extends Base\Service
         $this->validateProvider($input[Entity::REQ_UTR]);
 
         $this->checkBlocks($input);
-
-        if ($checkForIfsc === true)
-        {
-            $this->checkAndReplaceForIfsc($input, $provider);
-        }
 
         $valid = $this->core->process($input, $this->provider);
 
@@ -265,13 +294,7 @@ class Service extends Base\Service
             Provider::validateLiveProvider($provider);
         }
 
-        $valid = $this->core->process($input, $provider);
-
-        return [
-            'valid'          => $valid,
-            'message'        => null,
-            'transaction_id' => $input[Entity::REQ_UTR],
-        ];
+        return $this->saveRequestAndProcess($input, $provider);
     }
 
     /**
@@ -459,5 +482,17 @@ class Service extends Base\Service
         $requestProcessor = 'RZP\\Reconciliator\\RequestProcessor\\' . $source;
 
         return new $requestProcessor();
+    }
+
+    protected function checkBlocksAndUpdateRequest(BankTransferRequest\Entity $bankTransferInput)
+    {
+        $input = [];
+
+        $this->checkBlocks($input);
+
+        if (isset($input[Entity::PAYEE_ACCOUNT]) === true)
+        {
+            $bankTransferInput->setPayeeAccount($input[Entity::PAYEE_ACCOUNT]);
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use Config;
 
 use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -130,6 +131,76 @@ class Core extends Base\Core
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
 
             $this->pushBankTransferSourceToLake($bankTransfer);
+        }
+
+        return true;
+    }
+
+    public function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESSING,
+            $bankTransferRequest->toArrayTrace()
+        );
+
+        $bankTransferInput = $bankTransferRequest->getBankTransferProcessInput();
+        $provider          = $bankTransferRequest->getGateway();
+
+        $bankTransfer   = null;
+        $paymentSuccess = false;
+        $errorMessage   = null;
+
+        try
+        {
+            $bankTransfer = $this->create($bankTransferInput, $provider);
+
+            $processor = new Processor();
+
+            $mutexKey = sprintf(self::MUTEX_KEY, $bankTransferInput[Entity::REQ_UTR], $bankTransferInput[Entity::PAYEE_ACCOUNT]);
+
+            $bankTransfer = $this->mutex->acquireAndRelease(
+                $mutexKey,
+                function() use ($processor, $bankTransfer)
+                {
+                    return $processor->process($bankTransfer);
+                },
+                60,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                10,
+                200,
+                400);
+
+            $paymentSuccess = ($bankTransfer !== null);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $bankTransferRequest->toArrayTrace());
+
+            $errorMessage = $ex->getMessage();
+
+            switch ($errorMessage)
+            {
+                case TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+        finally
+        {
+            $isExpected = null;
+
+            if ($bankTransfer !== null)
+            {
+                $isExpected = $bankTransfer->isExpected();
+
+                $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
+            }
+
+            $this->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
+
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
         }
 
         return true;
@@ -660,18 +731,33 @@ class Core extends Base\Core
         return $array;
     }
 
-    protected function updateBankTransferRequest(string $utr, bool $isCreated, string $errorMessage = null)
+    protected function updateBankTransferRequest(
+        string $utr,
+        bool $isCreated,
+        string $errorMessage = null,
+        BankTransferRequest\Entity $bankTransferRequest = null
+    )
     {
-        $data = [
-            BankTransferRequest\Entity::IS_CREATED      => $isCreated,
-            BankTransferRequest\Entity::ERROR_MESSAGE   => substr($errorMessage, 0, 255),
-        ];
-
         try
         {
-            $this->repo
-                 ->bank_transfer_request
-                 ->updateByUtr($utr, $data);
+            if ($bankTransferRequest !== null)
+            {
+                $bankTransferRequest->setIsCreated($isCreated);
+                $bankTransferRequest->setErrorMessage(substr($errorMessage, 0, 255));
+
+                $bankTransferRequest->save();
+            }
+            else
+            {
+                $data = [
+                    BankTransferRequest\Entity::IS_CREATED => $isCreated,
+                    BankTransferRequest\Entity::ERROR_MESSAGE => substr($errorMessage, 0, 255),
+                ];
+
+                $this->repo
+                     ->bank_transfer_request
+                     ->updateByUtr($utr, $data);
+            }
         }
         catch (\Exception $ex)
         {

@@ -3,10 +3,10 @@
 
 namespace RZP\Models\BankTransferRequest;
 
+use App;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\BankTransfer;
-use RZP\Models\VirtualAccount;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::IS_CREATED,
         self::ERROR_MESSAGE,
         self::UTR,
+        self::TRANSACTION_ID,
         self::MODE,
         self::PAYEE_NAME,
         self::PAYEE_ACCOUNT,
@@ -109,7 +110,33 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::REQUEST_PAYLOAD,
         self::REQUEST_SOURCE,
+    ];
+
+    protected $bankTransferProcess = [
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
+        self::PAYER_IFSC,
+        self::PAYEE_NAME,
+        self::PAYEE_ACCOUNT,
+        self::PAYEE_IFSC,
+        self::MODE,
+        self::TRANSACTION_ID,
+        self::TIME,
+        self::AMOUNT,
+        self::DESCRIPTION,
+        self::NARRATION,
+    ];
+
+    protected $appends = [
+        self::TRANSACTION_ID,
+    ];
+
+    protected $pii = [
+        self::PAYEE_ACCOUNT,
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
     ];
 
     protected static $generators = [
@@ -145,6 +172,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYEE_ACCOUNT);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     // -------------------- End Getters --------------------
 
     // -------------------- Setters --------------------
@@ -166,9 +203,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $utr);
     }
 
+    public function setPayeeAccount($payeeAccount)
+    {
+        $this->setAttribute(self::PAYEE_ACCOUNT, $payeeAccount);
+    }
+
     public function setRequestPayload($requestPayload)
     {
         $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
+    }
+
+    public function setErrorMessage($errorMessage)
+    {
+        $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
+    public function setIsCreated($isCreated)
+    {
+        $this->setAttribute(self::IS_CREATED, $isCreated);
     }
 
     public function setRequestSource($requestSource)
@@ -177,4 +229,118 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Setters --------------------
+
+    public function getTransactionIdAttribute()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function findAndSetRequestSource()
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        $requestSource = [];
+
+        switch ($routeName)
+        {
+            case 'bank_transfer_process':
+            case 'bank_transfer_process_rbl':
+            case 'bank_transfer_process_icici':
+                $requestSource = [
+                    'source'        => 'callback',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_process_rbl_internal':
+            case 'bank_transfer_process_icici_internal':
+                $requestSource = [
+                    'source'        => 'file',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_insert':
+                $requestSource = [
+                    'source'        => 'admin_dashboard',
+                    'request_from'  => 'admin',
+                ];
+
+                break;
+
+            case 'batch_create_admin':
+                $requestSource = [
+                    'source'        => 'file',
+                    'request_from'  => 'admin',
+                ];
+
+                break;
+
+            case 'bank_transfer_process_test':
+            case 'bank_transfer_process_rbl_test':
+                $requestSource = [
+                    'source'       => 'test',
+                    'request_from' => 'test',
+                ];
+
+                break;
+
+            default:
+                $this->trace->info(
+                    TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,
+                    [
+                        'route_name'    => $routeName,
+                        'utr'           => $this->getUtr(),
+                    ]
+                );
+
+                break;
+        }
+
+        $this->setRequestSource(json_encode($requestSource));
+    }
+
+    public function getBankTransferProcessInput()
+    {
+        $array = $this->attributesToArray();
+
+        $array[self::AMOUNT] = $this->getAmount() / 100;
+
+        return array_only($array, $this->bankTransferProcess);
+    }
+
+    public function toArrayTrace(): array
+    {
+        $data = $this->toArray();
+
+        foreach ($this->pii as $piiField)
+        {
+            if (isset($data[$piiField]) === false)
+            {
+                continue;
+            }
+
+            switch ($piiField)
+            {
+                case self::PAYEE_ACCOUNT:
+                    $payeeAccount = $data[Entity::PAYEE_ACCOUNT];
+
+                    $data[Entity::PAYEE_ACCOUNT . '_prefix']        = substr($payeeAccount, 0, 8);
+                    $data[Entity::PAYEE_ACCOUNT . '_descriptor']    = substr($payeeAccount, 8, strlen($payeeAccount));
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            unset($data[$piiField]);
+        }
+
+        return $data;
+    }
 }

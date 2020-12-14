@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -85,6 +86,11 @@ abstract class Processor extends Base\Core
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do nothing.
             //
+
+            if ($entity->getEntityName() === Constants\Entity::BANK_TRANSFER)
+            {
+                throw new LogicException(TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR);
+            }
 
             return null;
         }
