@@ -23,6 +23,11 @@ class PersonalisationService
                     "instrument" : "phonepay",
                     "method"     : "wallet",
                     "score"      :  0.54
+                },
+                {
+                    "instrument" : "100000002lcard",
+                    "method"     : "card",
+                    "score"      : 0.54
                 }
             ]
         }';

@@ -68,6 +68,9 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE = 'network_code';
 
+    const CREATE_NEW_CARD_ENTITY_FEATURE = 'create_new_card_entity';
+    const CREATE_NEW_CARD_ENTITY_FEATURE_RC = 0;
+
     protected static $sign = 'card';
 
     protected $entity = 'card';
@@ -496,6 +499,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
+    public function setIssuer($issuer)
+    {
+        $this->setAttribute(self::ISSUER, $issuer);
+    }
+
     public function setCategory($category)
     {
         $this->setAttribute(self::CATEGORY, $category);
@@ -863,6 +871,15 @@ class Entity extends Base\PublicEntity
         }
 
         return array_only($attributes, $this->fundAccount);
+    }
+
+    public function overrideIINDetails()
+    {
+        if (is_null($this->iinRelation) ===  false) {
+            $this->setNetwork($this->iinRelation->getNetwork());
+            $this->setType($this->iinRelation->getType());
+            $this->setIssuer($this->iinRelation->getIssuer());
+        }
     }
 
     public static function getDummyCvv(string $network = null)

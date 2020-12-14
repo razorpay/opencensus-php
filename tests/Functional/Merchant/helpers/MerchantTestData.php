@@ -7242,4 +7242,48 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesIINDetails' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'customer_id'      => 'cust_1000ggcustomer',
+                'personalisation'  => '1',
+                'currency'         => 'INR',
+                'amount'           => '10000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'tokens' => [
+                        'items' => [
+                            [
+                                'card' => [
+                                    'type'      => 'credit',
+                                    'issuer'    => 'SBIN',
+                                    'network'   => 'Mastercard',
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'preferred_methods' => [
+                    '+919955555555' => [
+                        'instruments' => [
+                            [],
+                            [],
+                            [
+                                'method'   => 'card',
+                                'issuer'   => 'SBIN',
+                                'type'     => 'credit',
+                                'network'  => 'Mastercard',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
 ];

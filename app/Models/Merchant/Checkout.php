@@ -1167,6 +1167,12 @@ class Checkout
                 {
                     $card = (new Card\Repository())->find($preference['instrument']);
 
+                    // adding this check to insure it doesn't break on local
+                    if (is_null($card) === false)
+                    {
+                        $card->overrideIINDetails();
+                    }
+
                     $preference['issuer'] = $card->issuer;
 
                     $preference['type'] = $card->type;

@@ -3621,6 +3621,44 @@ class MerchantTest extends TestCase
         $this->assertEquals($response['contact']['fund_accounts'][0]['id'], 'fa_100000000000fa');
     }
 
+    public function testGetCheckoutPreferencesIINDetails()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->iin->create(
+            [
+                'iin'           => '411140',
+                'network'       => 'Mastercard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'SBIN',
+            ]
+        );
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919955555555',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardtoken',
+                'customer_id'   => '1000ggcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000002lcard',
+                'used_at'       =>  10,
+            ]
+        );
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist()
     {
         $this->ba->publicAuth();

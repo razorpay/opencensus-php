@@ -1374,6 +1374,33 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals('10000000rucard', $card->getId());
     }
 
+    /**
+     * test payment and save new card entity on every request
+     */
+    public function testPaymentNewCardCreation()
+    {
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $card1 = $this->getLastEntity('card', true);
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $card2 = $this->getLastEntity('card', true);
+
+        $this->assertNotEquals($card1['id'], $card2['id']);
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];

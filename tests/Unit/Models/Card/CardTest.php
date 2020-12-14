@@ -133,4 +133,36 @@ class ValidationTest extends TestCase
         $this->assertEquals('411111XXXXXX1111', $result);
 
     }
+
+    public function testStaleIINDetails()
+    {
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 485123,
+                'network' => 'Mastercard',
+                'type' => 'credit',
+                'issuer' => 'SBI',
+                'country' => 'US'
+            ]
+        );
+
+        $cardId = $this->fixtures->create(
+            'card',
+            [
+                'iin'                => '485123',
+                'network'            => 'Visa',
+                'type'               => 'debit',
+                'issuer'             => 'HDFC'
+            ]
+        )['id'];
+
+        $card = (new Card\Repository())->find($cardId);
+        $card->overrideIINDetails();
+        $iinRelation = $card->iinRelation;
+
+        $this->assertEquals($iinRelation->getNetwork(), $card->getNetwork());
+        $this->assertEquals($iinRelation->getType(), $card->getType());
+        $this->assertEquals($iinRelation->getIssuer(), $card->getIssuer());
+    }
 }

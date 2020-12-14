@@ -55,6 +55,18 @@ class Card extends Base
             'iin'               =>  '462846',
             'last4'             =>  '1111',
             'issuer'            =>  'ICIC',
+        ),
+        array(
+            'id'                =>  '100000002lcard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'iin'               =>  '411140',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'issuer'            =>  'HDFC',
+            'network'           =>  'Visa',
+            'last4'             =>  '1111',
+            'type'              =>  'debit',
         )
     );
 

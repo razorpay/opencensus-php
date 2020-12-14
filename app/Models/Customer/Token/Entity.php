@@ -641,6 +641,7 @@ class Entity extends Base\PublicEntity
     {
         if ($this->hasCard())
         {
+            $this->card->overrideIINDetails();
             $array[self::CARD] = $this->card->toArrayToken();
         }
     }

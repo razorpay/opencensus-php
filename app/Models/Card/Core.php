@@ -144,50 +144,54 @@ class Core extends Base\Core
         Card\Entity::modifyBajajFinserv($input);
 
         $card = null;
+        $newCardVariant = $this->app->razorx->getTreatment(
+            Base\UniqueIdEntity::generateUniqueId(),
+            Card\Entity::CREATE_NEW_CARD_ENTITY_FEATURE,
+            $this->mode,
+            Card\Entity::CREATE_NEW_CARD_ENTITY_FEATURE_RC
+        );
 
-        if (isset($input[Entity::VAULT]) === true)
-        {
-            $newCard = (new Card\Entity)->build($input);
-
-            $this->setVaultTokenAndFingerPrint($newCard, $input, $recurring);
-
-            if (($newCard->getVaultToken() !== null) and
-                ($newCard->getVault() === Card\Vault::RZP_VAULT))
-            {
-                $card = $this->findOneExistingCards($newCard, $merchant);
-
-                // temproary code
-                if ($card != null)
-                {
-                    if ((empty($card->getGlobalFingerprint()) === true) and
-                        (empty($newCard->getGlobalFingerprint()) === false))
-                    {
-                        $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
-                    }
-
-                    if (($card->iinRelation !== null) and
-                        ($card->isAmex() === false) and
-                        ($card->isInternational() !== $card->iinRelation->isInternational()))
-                    {
-                        $card->setInternational($card->iinRelation->isInternational());
-                    }
-
-                    if (($card->iinRelation !== null) &&
-                       ($card->getSubType() !== $card->iinRelation->getSubType()))
-                    {
-                        $card->setSubtype($card->iinRelation->getSubType());
-                    }
-
-                    $this->repo->saveOrFail($card);
-                }
-
-                $this->card = $card;
-            }
-        }
-
-        if ($card === null)
-        {
+        if ($newCardVariant === 'on') {
             $card = $this->create($input, $merchant, $recurring);
+        } else {
+            if (isset($input[Entity::VAULT]) === true) {
+                $newCard = (new Card\Entity)->build($input);
+
+                $this->setVaultTokenAndFingerPrint($newCard, $input, $recurring);
+
+                if (($newCard->getVaultToken() !== null) and
+                    ($newCard->getVault() === Card\Vault::RZP_VAULT)) {
+                    $card = $this->findOneExistingCards($newCard, $merchant);
+
+                    // temproary code
+                    if ($card != null) {
+                        if ((empty($card->getGlobalFingerprint()) === true) and
+                            (empty($newCard->getGlobalFingerprint()) === false)) {
+                            $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
+                        }
+
+                        if (($card->iinRelation !== null) and
+                            ($card->isAmex() === false) and
+                            ($card->isInternational() !== $card->iinRelation->isInternational())) {
+                            $card->setInternational($card->iinRelation->isInternational());
+                        }
+
+                        if (($card->iinRelation !== null) &&
+                            ($card->getSubType() !== $card->iinRelation->getSubType())) {
+                            $card->setSubtype($card->iinRelation->getSubType());
+                        }
+
+                        $this->repo->saveOrFail($card);
+                    }
+
+                    $this->card = $card;
+                }
+            }
+
+            if ($card === null) 
+            {
+                $card = $this->create($input, $merchant, $recurring);
+            }
         }
 
         $messageType = $card->iinRelation ? $card->iinRelation['message_type'] : null;
