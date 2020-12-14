@@ -9,6 +9,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Mozart\NetbankingYesb\ClaimFields;
 
 class Yesb extends NetbankingBase
@@ -40,6 +41,23 @@ class Yesb extends NetbankingBase
         }
 
         return $formattedData;
+    }
+
+    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $claims = $this->repo->payment->fetchPaymentsWithStatus(
+                    $begin,
+                    $end,
+                    static::GATEWAY,
+                    $statuses
+                );
+
+        $claims = $claims->reject(function($claim)
+        {
+            return ($claim->terminal->isDirectSettlement() === true);
+        });
+
+        return $claims;
     }
 
     protected function getFileToWriteNameWithoutExt()
