@@ -372,4 +372,11 @@ class Service extends Base\Service
     {
         return (new Core)->fetchOrdersAndSync($input);
     }
+
+    public function fetchProductDetailsForOrder(string $orderId)
+    {
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        return (new Core)->fetchProductDetailsForOrder($order, $this->merchant);
+    }
 }

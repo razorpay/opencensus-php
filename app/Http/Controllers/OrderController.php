@@ -60,4 +60,11 @@ class OrderController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchProductDetailsForOrder($id)
+    {
+        $data = $this->service()->fetchProductDetailsForOrder($id);
+
+        return ApiResponse::json($data);
+    }
 }

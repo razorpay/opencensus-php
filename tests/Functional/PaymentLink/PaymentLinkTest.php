@@ -1081,6 +1081,21 @@ class PaymentLinkTest extends TestCase
         $this->assertNull($invoice);
     }
 
+    public function testCreateOrderForPaymentLinkAndFetchProductType()
+    {
+        $this->testCreateOrderForPaymentLink();
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v1/orders/order_'.$order->getId().'/product_details';
+
+        $response = $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity

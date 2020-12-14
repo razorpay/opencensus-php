@@ -493,4 +493,33 @@ class Core extends Base\Core
             return ['sync_failure_ids' => $input['order_ids']];
         }
     }
+
+    public function fetchProductDetailsForOrder(Entity $order, Merchant\Entity $merchant)
+    {
+        $productType = $order->getProductType();
+
+        switch ($productType)
+        {
+            case ProductType::PAYMENT_PAGE:
+            case ProductType::PAYMENT_BUTTON:
+
+                $productId = $order->getProductId();
+
+                $paymentPage = $this->repo->payment_link->findByIdAndMerchant($productId, $merchant);
+
+                $serializedData = $order->toArrayPublic();
+
+                $serializedData[Entity::PRODUCT_TYPE] = $productType;
+
+                $serializedData[$productType] = $paymentPage->toArrayPublic();
+
+                return $serializedData;
+
+            default:
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid product type / Product type not implemented'
+                );
+        }
+    }
 }

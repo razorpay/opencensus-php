@@ -1877,4 +1877,22 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateOrderForPaymentLinkAndFetchProductType' => [
+        'request' => [
+            'url'    => '/v1/orders/',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'order',
+                'amount' => 10000,
+                'product_type' => 'payment_page',
+                'payment_page' => [
+                    'id'  => 'pl_100000000000pl',
+                ]
+            ]
+        ],
+    ],
 ];

@@ -723,7 +723,8 @@ class Route
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
-        'fetch_order_line_items'                   => ['get',      'orders/{id}/line_items',                         'OrderController@fetchLineItems'                                     ],
+        'fetch_order_line_items'                   => ['get',      'orders/{id}/line_items',                         'OrderController@fetchLineItems'                                    ],
+        'fetch_product_details_for_order'          => ['get',      'orders/{id}/product_details',                    'OrderController@fetchProductDetailsForOrder'                       ],
 
         'reports_transaction_broking'              => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_transaction_dsp'                  => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
@@ -2925,6 +2926,7 @@ class Route
     ];
 
     public static $proxy = [
+        'fetch_product_details_for_order',
         'fetch_order_line_items',
         'salesforce_event',
         'salesforce_opportunity_details',
