@@ -72,6 +72,11 @@ trait DbEntityFetchTrait
         return $this->getDbLastEntity('payment');
     }
 
+    protected function getDbLastOrder(): Models\Order\Entity
+    {
+        return $this->getDbLastEntity('order');
+    }
+
     protected function getDbLastUpi(): Gateway\Upi\Base\Entity
     {
         return $this->getDbLastEntity('upi');

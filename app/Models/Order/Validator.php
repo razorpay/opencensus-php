@@ -5,20 +5,26 @@ namespace RZP\Models\Order;
 use App;
 
 use RZP\Base;
-use RZP\Models\Payment;
-use RZP\Models\BankAccount;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
     protected $trace;
+
+    /**
+     * @var Merchant\Entity
+     */
+    protected $merchant;
 
     public function __construct($entity = null)
     {
@@ -27,6 +33,8 @@ class Validator extends Base\Validator
         $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->merchant = $app['basicauth']->getMerchant();
     }
 
     protected static $createRules = [
@@ -479,8 +487,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        $supportedBanks = [];
-
         $method = isset($input['method']) ? $input['method'] : null;
 
         switch ($method)
@@ -499,11 +505,21 @@ class Validator extends Base\Validator
                 break;
 
             case Payment\Method::NETBANKING:
+                $supportedBanks = $this->merchant->methods->getSupportedBanks();
+                break;
             default:
                 $supportedBanks = Netbanking::getSupportedBanks();
         }
 
         $bank = $input[Entity::BANK];
+
+        if (($method === Payment\Method::NETBANKING) and
+            (in_array($bank, $supportedBanks, true) === false) and
+            ((Netbanking::isSupportedBank($bank) === true)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_BANK_NOT_ENABLED_FOR_MERCHANT);
+        }
 
         if (in_array($bank, $supportedBanks, true) === false)
         {

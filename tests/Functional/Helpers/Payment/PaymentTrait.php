@@ -2509,6 +2509,21 @@ trait PaymentTrait
         $this->fixtures->merchant->enableCard();
     }
 
+    protected function setMerchantBanks(array $banks)
+    {
+        $request = [
+            'url'     => '/merchants/10000000000000/banks',
+            'method'  => 'post',
+            'content' => [
+                'banks' => $banks,
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function createPricingPlan($pricingPlan = [])
     {
         $defaultPricingPlan = [

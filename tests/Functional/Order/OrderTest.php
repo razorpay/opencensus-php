@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Order;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Entity;
@@ -2006,5 +2007,34 @@ class OrderTest extends TestCase
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
         $this->startTest();
+    }
+
+    public function testOrderForMerchantDisabledBank()
+    {
+        $this->setMerchantBanks(['SBIN']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $this->setMerchantBanks(['ICIC']);
+
+        $orderData = [
+            Order\Entity::METHOD => 'netbanking',
+            Order\Entity::BANK   => 'ICIC',
+            Order\Entity::AMOUNT => 10000,
+        ];
+
+        $this->createOrder($orderData);
+
+        $orderEntity = $this->getDbLastOrder()->toArray();
+
+        $this->assertNotNull($orderEntity['id']);
+        $this->assertEquals('created', $orderEntity['status']);
+        $this->assertEquals($orderData[Order\Entity::METHOD], $orderEntity['method']);
+        $this->assertEquals($orderData[Order\Entity::BANK], $orderEntity['bank']);
+        $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
     }
 }

@@ -1705,4 +1705,30 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testOrderForMerchantDisabledBank' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'method'   => 'netbanking',
+                'bank'     => 'ICIC'
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested bank is not enabled for the merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_BANK_NOT_ENABLED_FOR_MERCHANT
+        ],
+    ],
 ];

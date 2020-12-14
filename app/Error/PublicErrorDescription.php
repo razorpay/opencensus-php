@@ -486,6 +486,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED                              = 'Currency is not supported';
     const BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another order operation is in progress';
+    const BAD_REQUEST_ORDER_BANK_NOT_ENABLED_FOR_MERCHANT                       = 'The requested bank is not enabled for the merchant';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
