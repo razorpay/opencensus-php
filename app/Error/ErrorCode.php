@@ -1984,9 +1984,12 @@ class ErrorCode
 
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED';
 
+    const BAD_REQUEST_PAYOUT_META_ALREADY_EXISTS                                    = 'BAD_REQUEST_PAYOUT_META_ALREADY_EXISTS';
+
     const BAD_REQUEST_INVALID_REWARD_DURATION                                       = 'BAD_REQUEST_INVALID_REWARD_DURATION';
 
     const BAD_REQUEST_REWARD_ACTIVATE                                               = 'BAD_REQUEST_REWARD_ACTIVATE';
 
     const BAD_REQUEST_REWARD_DEACTIVATE                                             = 'BAD_REQUEST_REWARD_DEACTIVATE';
+
 }

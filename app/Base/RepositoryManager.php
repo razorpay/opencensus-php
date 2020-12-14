@@ -105,6 +105,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\UpiTransfer\Repository                       $upi_transfer
  * @property Models\UpiTransferRequest\Repository                $upi_transfer_request
  * @property Models\PayoutSource\Repository                      $payout_source
+ * @property Models\PayoutMeta\Repository                        $payouts_meta
  * @property Models\Promotion\Repository                         $promotion
  * @property Models\RequestLog\Repository                        $request_log
  * @property Models\Merchant\MerchantApplications\Repository     $merchant_application

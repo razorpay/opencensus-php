@@ -46,6 +46,7 @@ use RZP\Models\Merchant\Balance as Balance;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -55,7 +56,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
-class PayoutTest extends TestCase
+class PayoutTest extends OAuthTestCase
 {
 
     use PayoutTrait;
@@ -268,6 +269,56 @@ class PayoutTest extends TestCase
         $payoutTwo = $this->testCreatePayout();
 
         $this->assertNotEquals($payoutTwo['id'], $payoutOne['id']);
+    }
+
+    public function testCreatePartnerPayout()
+    {
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->app['basicauth']->setOAuthApplicationId('8ckeirnw84ifke');
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => '10000000000009']);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->ba->privateAuth();
+
+        $payout =  $this->startTest();
+
+        $this->assertEquals($payout['meta']['partner_application']['merchant_id'], '10000000000000');
+
+        $this->assertEquals($payout['meta']['partner_application']['id'], '8ckeirnw84ifke');
+
+        $this->assertEquals($payout['meta']['partner_application']['name'], 'Internal');
+
+        return $payout;
+    }
+
+    public function testPayoutFetchByIdCreatedByPartner()
+    {
+        $payout = $this->testCreatePartnerPayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/' . $payout['id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout['id'], $response['id']);
+
+        $this->assertEquals($payout['mode'], $response['mode']);
+
+        $this->assertEquals($payout['fees'], $response['fees']);
+
+        $this->assertEquals($payout['meta']['partner_application']['merchant_id'], '10000000000000');
+
+        $this->assertEquals($payout['meta']['partner_application']['id'], '8ckeirnw84ifke');
+
+        $this->assertEquals($payout['meta']['partner_application']['name'], 'Internal');
     }
 
     public function testCreateTwoPayoutsWithSameIKey()
@@ -2683,6 +2734,8 @@ class PayoutTest extends TestCase
         $this->testCreatePayout();
 
         $payout = $this->getLastEntity('payout', true);
+
+        $payout['meta'] = null;
 
         $this->ba->privateAuth();
 

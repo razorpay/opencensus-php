@@ -36,6 +36,7 @@ use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -143,6 +144,8 @@ class Base extends BaseCore
             }, $skipWorkflow, $input);
 
             $sourceDetails = $payout->getInputSourceDetails();
+
+            $this->isPayoutInitiatedByPartner($payout);
 
             if ($this->workflowActivated === true)
             {
@@ -1430,6 +1433,19 @@ class Base extends BaseCore
         foreach ($sourceDetails as $sourceDetail)
         {
             (new PayoutSource\Core)->create($sourceDetail, $payout);
+        }
+    }
+
+    protected function isPayoutInitiatedByPartner(Entity $payout)
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        $applicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+        if (empty($partnerMerchantId) === false and
+            empty($applicationId) === false)
+        {
+            (new PayoutMetaCore())->create($partnerMerchantId, $applicationId, $payout);
         }
     }
 }

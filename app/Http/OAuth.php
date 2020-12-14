@@ -5,6 +5,7 @@ namespace RZP\Http;
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
 use Illuminate\Support\Facades\App;
+use Razorpay\OAuth\Application\Repository;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
@@ -371,6 +372,10 @@ class OAuth
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
         $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION_ID]);
+
+        //Fetches partnerMerchantId from applicationId and adds to ba.
+        $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);
+        $this->ba->setPartnerMerchantId($application->getMerchantId());
     }
 
     /**

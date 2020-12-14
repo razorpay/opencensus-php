@@ -54,6 +54,8 @@ class Table
     const PAYMENT_PAGE_ITEM            = 'payment_page_items';
     const LOW_BALANCE_CONFIG           = 'low_balance_configs';
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_configs';
+    const PAYOUTS_META                 = 'payouts_meta';
+
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
     // sub-merchants as well as linked accounts. For more information, please

@@ -3745,6 +3745,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTHORIZATION_REQUEST                       = 'PAYMENT_AUTHORIZATION_REQUEST';
     const PAYMENT_AUTHORIZATION_REQUEST_FAILURE               = 'PAYMENT_AUTHORIZATION_REQUEST_FAILURE';
 
+    const PAYOUT_META_ENTITY_CREATE_REQUEST                   = 'PAYOUT_META_ENTITY_CREATE_REQUEST';
+    const PAYOUT_META_ENTITY_CREATED                          = 'PAYOUT_META_ENTITY_CREATED';
+
     // Logs for increment, decrement, reset operations on counter entity
     const FREE_PAYOUTS_CONSUMED_INCREMENT       = 'FREE_PAYOUTS_CONSUMED_INCREMENT';
     const FREE_PAYOUTS_CONSUMED_DECREMENT       = 'FREE_PAYOUTS_CONSUMED_DECREMENT';

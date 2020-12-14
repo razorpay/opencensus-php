@@ -37,7 +37,9 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
+use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
+use Razorpay\OAuth\Application\Repository as AppRepo;
 
 /**
  * @property Customer\Entity        $customer
@@ -104,6 +106,7 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_FEATURE                      = 'workflow_feature';
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
+    const META                                  = 'meta';
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
     const CANCELLATION_USER                     = 'cancellation_user';
 
@@ -421,6 +424,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_DETAILS,
         self::TRANSFERRED_AT,
         self::STATUS_CODE,
+        self::META,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
     ];
@@ -466,6 +470,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::SOURCE_DETAILS,
+        self::META,
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
@@ -529,6 +534,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::SOURCE_DETAILS,
+        self::META,
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
@@ -686,6 +692,11 @@ class Entity extends Base\PublicEntity
     public function payoutSources()
     {
         return $this->hasMany(PayoutSource\Entity::class);
+    }
+
+    public function payoutMeta()
+    {
+        return $this->hasOne(PayoutMetaEntity::class);
     }
 
     // ============================= END RELATIONS =============================
@@ -1519,6 +1530,24 @@ class Entity extends Base\PublicEntity
         return $sourceDetails;
     }
 
+    public function getPayoutMeta()
+    {
+        $appId = $this->payoutMeta()->pluck(PayoutMetaEntity::APPLICATION_ID)->toArray();
+
+        if (empty($appId) === false)
+        {
+            $application = (new AppRepo())->findOrFail($appId)->first()->toArrayPublic();
+
+            $allowedKeys = ['id', 'merchant_id', 'name'];
+
+            $appInfo  = array_intersect_key($application, array_flip($allowedKeys));
+
+            return [
+                'partner_application' => $appInfo
+            ];
+        }
+    }
+
     // ============================= END ACCESSORS =============================
 
     // ============================= PUBLIC SETTERS =============================
@@ -1925,6 +1954,14 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicMetaAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isPrivateAuth() === true)
+        {
+            $attributes[self::META] = $this->getPayoutMeta();
+        }
+    }
+  
     public function setPublicRemarksAttribute(array & $attributes)
     {
         if (app('basicauth')->isStrictPrivateAuth() === false)

@@ -406,6 +406,8 @@ class Entity
     //payout downtime
     const PAYOUT_DOWNTIMES              = Table::PAYOUT_DOWNTIMES;
 
+    const PAYOUTS_META                  = Table::PAYOUTS_META;
+
     //merchant on-boarding
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
@@ -767,6 +769,8 @@ class Entity
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
         self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
+
+        self::PAYOUTS_META                  => \RZP\Models\PayoutMeta::class,
 
         self::WORKFLOW_CONFIG               => \RZP\Models\Workflow\Service\Config::class,
         self::WORKFLOW_ENTITY_MAP           => \RZP\Models\Workflow\Service\EntityMap::class,
