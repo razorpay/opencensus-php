@@ -1499,6 +1499,34 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditNetbankingSBITerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_sbi',
+            'gateway_merchant_id'       => 'netbanking_sbi_merchant_id',
+            'gateway_secure_secret'     => 'random_secret',
+            'netbanking'                => '1',
+            'tpv'                       => '1',
+            'network_category'          => 'ecommerce',
+            'gateway_terminal_password' => 'random',
+            'enabled'                   => 1,
+            'corporate'                 => 0,
+        ];
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = ['corporate' => '1', 'tpv' => '0',];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['corporate'], 1);
+
+        $this->assertEquals($content['tpv'], '0');
+    }
+
     public function testAssignUpiYesbankTerminal()
     {
         $merchant = $this->fixtures->create('merchant');
