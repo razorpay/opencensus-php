@@ -87,7 +87,7 @@ export default class BatchValidateModal extends Component {
                   </a>
                   &nbsp;for the template.
                 </li>
-                <li>The number of accounts in the file should not exceed 5000.</li>
+                <li>The number of accounts in the file should not exceed 500.</li>
                 <li>Once the file is processed email invite will be sent to all accounts.</li>
                 <li>These accounts will be listed under affiliate accounts on your dashboard.</li>
               </ol>

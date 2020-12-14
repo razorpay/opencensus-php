@@ -183,7 +183,7 @@ export default class AddMerchant extends Component {
               sampleUrl={this.sampleUrl}
               gaEvents={gaEvents}
               validateBatch={this.props.validateBatch}
-              maxRows={5000}
+              maxRows={500}
               maxFileSize={52428800}
               onFileRemove={this.onValidation}
               batchClass={'batch-upload-modal'}
