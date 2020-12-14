@@ -222,7 +222,7 @@ export const SAMPLE_TICKET = {
   association_type: null,
   to_emails: [],
   product_id: null,
-  id: '#######',
+  id: 'ID',
   type: null,
   due_by: '2020-07-07T21:18:52Z',
   fr_due_by: '2020-07-07T13:18:52Z',

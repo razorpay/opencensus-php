@@ -49,14 +49,7 @@ export default class Conversations extends React.Component {
       c.loading = true;
       this.setState({ conversations: c });
 
-      const params = {
-        page: page,
-        per_page: this.state.size,
-        fd_instance: this.props.match.params.instance,
-      };
-      const query = param_to_qs(params);
-
-      merchantFetch(`${TICKET_BASE_URL}/${TICKET_ID}/conversations?${query}`)
+      merchantFetch(`${TICKET_BASE_URL}/${TICKET_ID}/conversations`)
         .then((e) => {
           const conversations = this.state.conversations;
           conversations.loading = false;
@@ -71,18 +64,36 @@ export default class Conversations extends React.Component {
     }
   };
 
+  track(action, label) {
+    window.rzpAnalytics({
+      eventCategory: 'Ticket Dashboard',
+      eventAction: action,
+      eventLabel: label,
+    });
+  }
+
   componentDidMount() {
     this.goNext(1);
-    merchantFetch(
-      `${TICKET_BASE_URL}/${this.props.match.params.id}?fd_instance=${this.props.match.params.instance}`,
-    ).then((e) => {
-      this.setState({ ticket: e.data });
-    });
+    merchantFetch(`${TICKET_BASE_URL}/${this.props.match.params.id}`)
+      .then((e) => {
+        this.setState({ ticket: e.data });
+      })
+      .catch((e) => {
+        this.track('conversation loading failed', 'Conversation | Status: Failed');
+        this.props.showNotification({
+          type: 'error',
+          message: `Failed to load conversation, please try later! Status CODE: ${
+            e.code || 'UNKNOWN'
+          }`,
+        });
+      });
   }
 
   render() {
     let conversations = [];
     let total_conversations = [];
+    const TICKET_ID = this.props.match.params.id;
+
     Object.keys(this.state.conversations.data).forEach((k) => {
       total_conversations.push(...this.state.conversations.data[k]);
     });
@@ -117,7 +128,11 @@ export default class Conversations extends React.Component {
                   </div>
                 </div>
               </h3>
-              <Ticket logo_url={this.props.user.logo_url} ticket={this.state.ticket} />
+              <Ticket
+                logo_url={this.props.user.logo_url}
+                ticket={this.state.ticket}
+                ticketID={TICKET_ID}
+              />
               <div className="panel">
                 <div className="panel-body message-panel-body" style={{ padding: 0 }}>
                   <div>
@@ -159,6 +174,7 @@ export default class Conversations extends React.Component {
                       logo_url={this.props.user.logo_url}
                       replyToConversation={this.props.replyToConversation}
                       ticket={this.state.ticket}
+                      ticketID={TICKET_ID}
                       onSuccess={(reply) => {
                         const data = { ...this.state.conversations.data };
                         let k = Object.keys(this.state.conversations.data);

@@ -52,13 +52,11 @@ export default class Reply extends React.Component {
     const body = {
       body: this.state.body,
       user_id: this.props.ticket.requester_id,
-      fd_instance: this.props.ticket.fd_instance,
     };
 
     const bodyFormData = new FormData();
     bodyFormData.append('body', this.state.body);
     bodyFormData.append('user_id', this.props.ticket.requester_id);
-    bodyFormData.append('fd_instance', this.props.ticket.fd_instance);
 
     if (this.state.attachments && this.state.attachments.length) {
       this.state.attachments.forEach((attachment) => {
@@ -68,7 +66,7 @@ export default class Reply extends React.Component {
 
     this.setState({ loading: true });
     this.props
-      .replyToConversation(this.props.ticket.id, bodyFormData)
+      .replyToConversation(this.props.ticketID, bodyFormData)
       .then((r) => {
         this.setState({ loading: false, body: null });
 
@@ -79,12 +77,18 @@ export default class Reply extends React.Component {
 
         if (this.props.onSuccess) {
           this.props.onSuccess(r.data);
+          this.track('reply delivered', 'Tickets | Status: Success');
+        } else {
+          this.track('reply undelivered', 'Tickets | Status: Failed');
         }
-
-        this.track('reply delivered', 'Tickets | Status: Success');
       })
       .catch((e) => {
         this.setState({ loading: false });
+        this.track('reply undelivered', 'Tickets | Status: Failed');
+        this.props.showNotification({
+          type: 'error',
+          message: `Failed to reply, please try later! Status CODE: ${e.code || 'UNKNOWN'}`,
+        });
       });
   };
 

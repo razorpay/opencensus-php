@@ -32,7 +32,7 @@ export const FetchSupportTickets = (params) => {
     query = param_to_qs(params);
   }
 
-  return merchantFetch(query ? `${TICKET_BASE_URL}?${query}` : TICKET_BASE_URL).then((res) => {
+  return merchantFetch(TICKET_BASE_URL).then((res) => {
     return {
       data: res.data.results,
       query: params,

@@ -24,6 +24,7 @@ export default class Ticket extends React.Component {
 
   render() {
     const { ticket } = this.props;
+    const { ticketID } = this.props;
     let img = this.props.logo_url ? (
       <img style={{ marginLeft: '2px' }} class="img-round user-image" src={this.props.logo_url} />
     ) : (
@@ -41,7 +42,7 @@ export default class Ticket extends React.Component {
                     <div className="row" style={{ paddingRight: '10px' }}>
                       <div className="col-xs-8 message-owner">
                         <b>
-                          TICKET ID #{ticket.id}
+                          TICKET ID #{ticketID}
                           {/* {ticket.custom_fields.cf_category
                             ? ` | Category: ${ticket.custom_fields.cf_category}`
                             : null} */}
