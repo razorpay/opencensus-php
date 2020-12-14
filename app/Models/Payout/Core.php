@@ -939,6 +939,12 @@ class Core extends Base\Core
 
                 $payout->setRemarks($remarks);
 
+                $cancellationUser = app('basicauth')->getUser();
+
+                $cancellationUserId = (empty($cancellationUser) === false) ? $cancellationUser->getId() : null;
+
+                $payout->setCancellationUserId($cancellationUserId);
+
                 $this->repo->saveOrFail($payout);
 
                 return $payout;

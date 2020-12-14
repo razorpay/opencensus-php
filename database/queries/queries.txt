@@ -6085,3 +6085,6 @@ ALTER TABLE offers
 
 ALTER TABLE bank_transfer_requests
     ADD COLUMN request_source JSON DEFAULT NULL;
+
+ALTER TABLE payouts
+    ADD COLUMN cancellation_user_id CHAR (14) DEFAULT NULL;

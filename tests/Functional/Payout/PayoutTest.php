@@ -1382,8 +1382,13 @@ class PayoutTest extends TestCase
 
         $queuedPayout = $this->getDbLastEntity('payout');
 
+        $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
+        $testData['response']['content']['cancellation_user'] = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -1394,6 +1399,9 @@ class PayoutTest extends TestCase
         // Assert that payout got cancelled
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
     }
 
     public function testCancelQueuedPayoutPrivateAuth()
@@ -1405,6 +1413,8 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
 
+        $this->app->forgetInstance('basicauth');
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -1414,6 +1424,9 @@ class PayoutTest extends TestCase
         // Assert that payout got cancelled
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals(null, $cancelledPayout['cancellation_user_id']);
     }
 
     public function testCancelQueuedPayoutWithComments()
@@ -1422,11 +1435,17 @@ class PayoutTest extends TestCase
 
         $queuedPayout = $this->getDbLastEntity('payout');
 
+        $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
+
         $userComment = "Payout cancelled by Mehul";
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
         $testData['request']['content']['remarks'] = $userComment;
+
+        $testData['response']['content']['remarks'] = $userComment;
+        $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
+        $testData['response']['content']['cancellation_user'] = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -1438,6 +1457,9 @@ class PayoutTest extends TestCase
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
         $this->assertEquals($userComment, $cancelledPayout['remarks']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
     }
 
     public function testCreatePayoutToInactiveFundAccount()
@@ -9315,6 +9337,50 @@ class PayoutTest extends TestCase
             'source_type'   => 'contact',
             'source_id'     => $contact->getId(),
         ]);
+
+        $this->startTest();
+    }
+
+    public function testCancelQueuedPayoutWithCommentsGreaterThanMaxRange()
+    {
+        $this->testCreateQueuedPayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout');
+
+        $userComment = "Payout cancelled";
+
+        for ($i = 0; $i < 5; $i++)
+        {
+            $userComment = $userComment . ' | ' . $userComment;
+        }
+
+        // Assert that comment length is greater than 255 which is the current max limit in the validations.
+        $this->assertGreaterThanOrEqual(255, strlen($userComment));
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+        $testData['request']['content']['remarks'] = $userComment;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCancelQueuedPayoutPrivateAuthAndCheckDataAfterFetchingItAgain()
+    {
+        $this->testCancelQueuedPayoutPrivateAuth();
+
+        $queuedPayout = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId();
+
+        $testData['response']['content']['cancellation_user_id'] = null;
+        $testData['response']['content']['cancellation_user'] = [];
+
+        $this->app->forgetInstance('basicauth');
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

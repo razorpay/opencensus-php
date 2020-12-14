@@ -10664,6 +10664,39 @@ return [
         ],
     ],
 
+
+    'testCancelQueuedPayoutWithCommentsGreaterThanMaxRange' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The remarks may not be greater than 255 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCancelQueuedPayoutPrivateAuthAndCheckDataAfterFetchingItAgain' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payouts/{id}',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreatePayoutViaDashboardAndAssertMetricsSent' => [
         'request' => [
             'url'    => '/payouts_with_otp',

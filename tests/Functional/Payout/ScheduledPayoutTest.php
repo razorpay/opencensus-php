@@ -441,8 +441,13 @@ class ScheduledPayoutTest extends TestCase
 
         $scheduledPayout = $this->getDbLastEntity('payout');
 
+        $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $scheduledPayout->getPublicId() . '/cancel';
+
+        $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
+        $testData['response']['content']['cancellation_user'] = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -453,6 +458,9 @@ class ScheduledPayoutTest extends TestCase
         // Assert that payout got cancelled
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
     }
 
     public function testCancelScheduledPayoutWithComments()
@@ -463,9 +471,15 @@ class ScheduledPayoutTest extends TestCase
 
         $userComment = "Payout cancelled by Mehul";
 
+        $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $scheduledPayout->getPublicId() . '/cancel';
         $testData['request']['content']['remarks'] = $userComment;
+
+        $testData['response']['content']['remarks'] = $userComment;
+        $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
+        $testData['response']['content']['cancellation_user'] = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -477,6 +491,9 @@ class ScheduledPayoutTest extends TestCase
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
         $this->assertEquals($userComment, $cancelledPayout['remarks']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
     }
 
     public function testCancelScheduledPayoutPrivateAuth()

@@ -104,6 +104,8 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_FEATURE                      = 'workflow_feature';
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
+    const CANCELLATION_USER_ID                  = 'cancellation_user_id';
+    const CANCELLATION_USER                     = 'cancellation_user';
 
     // status code send from bank side
     const STATUS_CODE            = 'status_code';
@@ -419,6 +421,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE_DETAILS,
         self::TRANSFERRED_AT,
         self::STATUS_CODE,
+        self::CANCELLATION_USER_ID,
+        self::CANCELLATION_USER,
     ];
 
     protected $public = [
@@ -462,6 +466,9 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::SOURCE_DETAILS,
+        self::REMARKS,
+        self::CANCELLATION_USER_ID,
+        self::CANCELLATION_USER,
     ];
 
     protected $webhook = [
@@ -522,30 +529,34 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::SOURCE_DETAILS,
+        self::REMARKS,
+        self::CANCELLATION_USER_ID,
+        self::CANCELLATION_USER,
     ];
 
     protected $defaults = [
-        self::USER_ID           => null,
-        self::PURPOSE           => Purpose::REFUND,
-        self::FUND_ACCOUNT_ID   => null,
-        self::BATCH_ID          => null,
-        self::NOTES             => [],
-        self::ATTEMPTS          => 1,
-        self::TYPE              => self::DEFAULT,
-        self::MODE              => null,
-        self::UTR               => null,
-        self::RETURN_UTR        => null,
-        self::FAILURE_REASON    => null,
-        self::REFERENCE_ID      => null,
-        self::NARRATION         => null,
-        self::FEES              => 0,
-        self::TAX               => 0,
-        self::IDEMPOTENCY_KEY   => null,
-        self::PRICING_RULE_ID   => null,
-        self::FEE_TYPE          => null,
-        self::WORKFLOW_FEATURE  => null,
-        self::ORIGIN            => self::API,
-        self::STATUS_CODE       => null,
+        self::USER_ID              => null,
+        self::PURPOSE              => Purpose::REFUND,
+        self::FUND_ACCOUNT_ID      => null,
+        self::BATCH_ID             => null,
+        self::NOTES                => [],
+        self::ATTEMPTS             => 1,
+        self::TYPE                 => self::DEFAULT,
+        self::MODE                 => null,
+        self::UTR                  => null,
+        self::RETURN_UTR           => null,
+        self::FAILURE_REASON       => null,
+        self::REFERENCE_ID         => null,
+        self::NARRATION            => null,
+        self::FEES                 => 0,
+        self::TAX                  => 0,
+        self::IDEMPOTENCY_KEY      => null,
+        self::PRICING_RULE_ID      => null,
+        self::FEE_TYPE             => null,
+        self::WORKFLOW_FEATURE     => null,
+        self::ORIGIN               => self::API,
+        self::STATUS_CODE          => null,
+        self::CANCELLATION_USER_ID => null,
     ];
 
     protected $amounts = [
@@ -1111,6 +1122,10 @@ class Entity extends Base\PublicEntity
         return $this->queuePayoutCreateRequest;
     }
 
+    public function getCancellationUserId()
+    {
+        return $this->getAttribute(self::CANCELLATION_USER_ID);
+    }
 
     // ============================= END GETTERS =============================
 
@@ -1397,6 +1412,11 @@ class Entity extends Base\PublicEntity
         $this->queuePayoutCreateRequest = $queuePayoutCreateRequest;
 
         return $this;
+    }
+
+    public function setCancellationUserId($cancellationUserId)
+    {
+        $this->setAttribute(self::CANCELLATION_USER_ID, $cancellationUserId);
     }
 
     // ============================= END SETTERS =============================
@@ -1902,6 +1922,44 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isStrictPrivateAuth() === false)
         {
             $attributes[self::SOURCE_DETAILS] = $this->getSourceDetailsAttribute();
+        }
+    }
+
+    public function setPublicRemarksAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === false)
+        {
+            $attributes[self::REMARKS] = $this->getRemarks();
+        }
+    }
+
+    public function setPublicCancellationUserIdAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === false)
+        {
+            $attributes[self::CANCELLATION_USER_ID] = $this->getCancellationUserId();
+        }
+        else
+        {
+            unset($attributes[self::CANCELLATION_USER_ID]);
+        }
+    }
+
+    public function setPublicCancellationUserAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === false)
+        {
+            $cancellationUserId = $this->getCancellationUserId();
+
+            $attributes[self::CANCELLATION_USER] = [];
+
+            if (empty($cancellationUserId) === false)
+            {
+                /** @var User\Entity $cancellationUser */
+                $cancellationUser = (new User\Repository)->findOrFail($cancellationUserId);
+
+                $attributes[self::CANCELLATION_USER] = $cancellationUser->toArrayPublic();
+            }
         }
     }
 
