@@ -95,6 +95,15 @@ class LeafListItem extends React.Component {
       .catch((e) => {});
   };
 
+  handleRaiseRequest = () => {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+    rzpTicketSystem.openModal('#ticket');
+    setTimeout(() => {
+      rzpTicketSystem.modal.next();
+    }, 0);
+  };
+
   render() {
     let { instrument, intermediateInstrument } = this.props;
     let ctaClass = {
@@ -186,11 +195,18 @@ class LeafListItem extends React.Component {
                   display: 'flex',
                   width: '210px',
                   justifyContent: 'flex-end',
+                  alignItems: 'center',
                 }}
               >
-                {!['pending', 'activated'].includes(instrument.status) && (
+                {!['pending', 'activated', 'rejected'].includes(instrument.status) && (
                   <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                     Cancel
+                  </button>
+                )}
+
+                {['rejected', 'action_required'].includes(instrument.status) && (
+                  <button class="btn btn-link" onClick={this.handleRaiseRequest}>
+                    Raise Request
                   </button>
                 )}
                 <div class={ctaClass[instrument.status]}>
