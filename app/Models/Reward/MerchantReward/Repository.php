@@ -42,6 +42,23 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function fetchExpiredMerchantReward()
+    {
+        $now = $now = Carbon::now()->getTimestamp();
+
+        $merchantRewardId = $this->repo->merchant_reward->dbColumn(Entity::REWARD_ID);
+
+        $rewardId = $this->repo->reward->dbColumn(RewardEntity::ID);
+
+        $query = $this->newQuery()
+            ->select(Table::MERCHANT_REWARD.'.*')
+            ->join(Table::REWARD, $merchantRewardId, '=', $rewardId)
+            ->where(RewardEntity::ENDS_AT, '<=', $now)
+            ->whereNotIn(Entity::STATUS, [Entity::EXPIRED, Entity::DELETED]);
+
+        return $query->get();
+    }
+
     public function fetchMerchantRewardByRewardId($rewardId)
     {
         $query = $this->newQuery()
@@ -94,5 +111,13 @@ class Repository extends Base\Repository
             ->where(Entity::REWARD_ID, '=', $merchantReward->getRewardId())
             ->where(Entity::MERCHANT_ID, '=', $merchantReward->getMerchantId())
             ->update($params);
+    }
+
+    public function fetchQueueMerchantRewards()
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::STATUS, '=', Entity::QUEUE);
+
+        return $query->get();
     }
 }

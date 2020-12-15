@@ -189,4 +189,44 @@ class RewardsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testExpireRewardCron()
+    {
+        $callback = null;
+
+        $this->ba->cronAuth();
+
+        $expiredReward = $this->fixtures->create('reward',
+            ['starts_at' => Carbon::now()->addDays(-2)->getTimestamp(), 'ends_at' => Carbon::yesterday()->getTimestamp()]);
+
+        $expiredMerchantReward = $this->fixtures->create('merchant_reward', ['reward_id' => $expiredReward->id, 'status' => 'live',
+            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $reward4 = $this->fixtures->create('reward', ['name' => 'Test Reward 4']);
+
+        $queueMerchantReward = $this->fixtures->create('merchant_reward', ['reward_id' => $reward4->id, 'status' => 'queue',
+            'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $request = array(
+            'url'     => '/rewards/expire',
+            'method'  => 'POST');
+
+        $response = $this->makeRequestAndGetContent($request, $callback);
+
+        $this->assertEquals(1, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        $fetchRequest = [
+            'method' => 'GET',
+            'url' => '/rewards',
+            'content' => []
+        ];
+
+        $fetchResponse = $this->makeRequestAndGetContent($fetchRequest, $callback);
+
+        $this->assertEquals('expired', $fetchResponse[0]['status']);
+
+        $this->assertEquals('live', $fetchResponse[1]['status']);
+    }
 }

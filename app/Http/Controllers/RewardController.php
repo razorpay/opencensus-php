@@ -40,4 +40,11 @@ class RewardController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function expireRewards()
+    {
+        $data = $this->service()->expireRewards();
+
+        return ApiResponse::json($data);
+    }
 }

@@ -243,4 +243,83 @@ class Core extends Base\Core
             $this->repo->merchant_reward->update($queueMerchantReward, $columnsToUpdate);
         }
     }
+
+    public function expireRewards()
+    {
+        $expiredMerchantRewards = $this->repo->merchant_reward->fetchExpiredMerchantReward();
+
+        $columnsToUpdate = [];
+
+        $columnsToUpdate[Entity::STATUS] = Entity::EXPIRED;
+
+        $summary = [];
+
+        $successCount = 0;
+        $failedRewardIds = [];
+
+        foreach ($expiredMerchantRewards as $expiredMerchantReward)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::REWARD_TO_EXPIRE,
+                    ['reward_id' => $expiredMerchantReward->getRewardId(),
+                        'merchant_id' => $expiredMerchantReward->getMerchantId()]);
+
+                $this->repo->merchant_reward->update($expiredMerchantReward, $columnsToUpdate);
+
+                $successCount += 1;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failedRewardIds[] = $expiredMerchantReward->getRewardId();
+            }
+
+        }
+
+        $summary['success'] = $successCount;
+
+        $summary['failures'] = $failedRewardIds;
+
+        $this->moveQueuedRewardToLive($summary);
+
+        return $summary;
+    }
+
+    /**
+     * @param array $summary
+     */
+    public function moveQueuedRewardToLive(array & $summary)
+    {
+        $successQueueToLiveCountReward = 0;
+        $failedQueueToLiveRewardIds = [];
+
+        $queueMerchantRewards = $this->repo->merchant_reward->fetchQueueMerchantRewards();
+
+        foreach ($queueMerchantRewards as $queueMerchantReward) {
+            try {
+                $this->trace->info(TraceCode::REWARD_QUEUE_TO_LIVE,
+                    ['reward_id' => $queueMerchantReward->getRewardId(),
+                        'merchant_id' => $queueMerchantReward->getMerchantId()]);
+
+                $liveRewardCount = $this->repo->merchant_reward->fetchCountOfLiveRewardByMerchantId(
+                    $queueMerchantReward->getMerchantId());
+
+                if ($liveRewardCount < Entity::MAX_LIVE_REWARD_ALLOWED) {
+                    $this->moveQueueRewardToLive($queueMerchantReward->getMerchantId());
+
+                    $successQueueToLiveCountReward += 1;
+                }
+            } catch (\Exception $e) {
+                $this->trace->traceException($e);
+
+                $failedQueueToLiveRewardIds[] = $queueMerchantReward->getRewardId();
+            }
+        }
+
+        $summary['success_queue_live'] = $successQueueToLiveCountReward;
+
+        $summary['failures_queue_live'] = $failedQueueToLiveRewardIds;
+    }
 }

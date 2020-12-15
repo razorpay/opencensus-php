@@ -2142,6 +2142,7 @@ class Route
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
+        'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
 
     ];
 
@@ -2838,7 +2839,7 @@ class Route
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
-
+        'reward_expire_cron',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
         //Accounting Payouts
@@ -5553,6 +5554,7 @@ class Route
             'banking_accounts_auditor_daily_updates',
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
+            'reward_expire_cron',
         ],
 
         'subscriptions' => [
@@ -6682,6 +6684,7 @@ class Route
         'payment_page_list'                                 => HeartbeatLagChecker::SLAVE,
         'reminder_next_run'                                 => HeartbeatLagChecker::SLAVE,
         'user_fetch_for_merchant'                           => HeartbeatLagChecker::SLAVE,
+        'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
     ];
 
     /**

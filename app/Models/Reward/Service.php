@@ -78,4 +78,8 @@ class Service extends Base\Service
         return (new Core())->fetchReward($this->merchant->getId());
     }
 
+    public function expireRewards()
+    {
+        return (new MerchantReward\Core())->expireRewards();
+    }
 }
