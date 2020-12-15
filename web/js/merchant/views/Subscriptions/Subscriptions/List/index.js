@@ -71,7 +71,7 @@ export default class SubscriptionsListContainer extends ListContainer {
   };
 
   onFilterChange = () => {
-    if (this.quickFilterEle.state.selectedQuickFilter) {
+    if (this.quickFilterEle && this.quickFilterEle.state.selectedQuickFilter) {
       this.quickFilterEle.setState({ selectedQuickFilter: null });
     }
   };
