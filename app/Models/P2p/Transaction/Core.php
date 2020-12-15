@@ -132,6 +132,26 @@ class Core extends Base\Core
                ->sum(Entity::AMOUNT);
     }
 
+    /**
+     * @param int $day Time in which collect requests are fetched upto
+     * @param string $payee_id PayeeID entity
+     * @param string $flow Flow entity
+     * @param string $type Type entity
+     * @param int $limit Number of records to fetch
+     * @return mixed Query result
+     */
+    public function getCollectRequestsWithCreatedAtAndPayee($day, $payee_id, $flow, $type, $limit)
+    {
+        return $this->repo->newP2pQuery()
+                    ->where(Entity::CREATED_AT, '>=', $day)
+                    ->where(Entity::PAYEE_ID, $payee_id)
+                    ->where(Entity::FLOW, $flow)
+                    ->where(Entity::TYPE, $type)
+                    ->oldest()
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function deletePendingCollectForVpa(Vpa\Entity $vpa)
     {
         $query = $this->repo->newP2pQuery();

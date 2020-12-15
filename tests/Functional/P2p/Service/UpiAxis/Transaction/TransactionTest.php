@@ -172,6 +172,31 @@ class TransactionTest extends TestCase
         ], $transaction->toArray());
     }
 
+    public function testInitiateCollectWithPerDayLimitSuccess()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $allowedCollectRequestsPerDay = 5;
+
+        // initiating allowed number of collect requests
+        for ($i = 0; $i < $allowedCollectRequestsPerDay; $i++)
+        {
+            $helper->initiateCollect();
+        }
+
+        // Asserting allowed number of collect requests initiated successfully
+        $this->assertSame($allowedCollectRequestsPerDay, $this->fixtures->getDbTransactions([])->count());
+
+        $this->withFailureResponse($helper, function ($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'BAD_REQUEST_ERROR',
+            ], $error);
+        });
+
+        $helper->initiateCollect();
+    }
+
     public function testPayAccept()
     {
         $helper = $this->getTransactionHelper();

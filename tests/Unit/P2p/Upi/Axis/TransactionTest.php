@@ -286,6 +286,32 @@ class TransactionTest extends TestCase
         ]);
     }
 
+    public function testCollectRequestsPerDayExceed()
+    {
+        $maxCollectRequestsAllowedPerDay = 5;
+
+        // Creating allowed number of collect requests first
+        for ($i = 0; $i < $maxCollectRequestsAllowedPerDay; $i++)
+        {
+            $this->createCollectTransaction([
+                Entity::AMOUNT => 100000,
+            ]);
+        }
+
+        // Expecting exception for next collect request
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('You have exceeded the allowable limit of collect request generation. Please try after 24 hours');
+
+        $transaction = $this->createCollectTransaction([
+            Entity::AMOUNT => 100000,
+        ]);
+
+        $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+    }
+
     protected function getService()
     {
         return new Service();

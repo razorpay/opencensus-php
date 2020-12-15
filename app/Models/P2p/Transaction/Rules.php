@@ -11,6 +11,7 @@ class Rules
     const FIRST_TRANSACTION_AMOUNT  = 'first_transaction_amount';
     const FIRST_TRANSACTION_TIME    = 'first_transaction_time';
     const TOTAL_TRANSACTION_AMOUNT  = 'total_transaction_amount';
+    const COLLECT_REQUESTS_CREATED_COUNT = 'collect_requests_created_count';
 
     // In Paisa
     const MAX_AMOUNT_ALLOWED_IN_COOLDOWN = 500000;
@@ -24,11 +25,15 @@ class Rules
     // In Seconds
     const MAX_COOLDOWN_PERIOD = 86400;
 
+    // Number of collect requests
+    const MAX_COLLECT_REQUESTS_ALLOWED_PER_DAY = 5;
+
     protected $data = [
         'first_transaction_exists'  => null,
         'first_transaction_amount'  => null,
         'first_transaction_time'    => null,
         'total_transaction_amount'  => null,
+        'collect_requests_created_count' => null,
     ];
 
     protected $rules = [
@@ -76,6 +81,28 @@ class Rules
                 ],
             ],
         ],
+        'collect_per_day_check' =>[
+            'function' => 'collect_request_check',
+            'values' => [
+                0 => true,
+                1=> [
+                    'function' => 'collect_request_per_day_check_applicable',
+                    'values' =>[
+                        0 => true,
+                        1 => [
+                            'function' => 'collect_requests_per_day_check',
+                            'values' => [
+                                0 => 'You have exceeded the allowable limit of collect request generation. Please try after 24 hours.',
+                                1 => true,
+                            ],
+                        ]
+                    ]
+
+                ],
+            ],
+
+        ],
+
     ];
 
     /**
@@ -174,6 +201,20 @@ class Rules
         return ($this->transaction->getAmount() <= self::MAX_AMOUNT_ALLOWED_IN_COLLECT_REQUEST);
     }
 
+    protected function collectRequestPerDayCheckApplicable():bool
+    {
+        return true;
+    }
+
+    protected function collectRequestsPerDayCheck():bool
+    {
+        $this->fillMessages([self::MAX_COLLECT_REQUESTS_ALLOWED_PER_DAY]);
+
+        $collectRequestCount = $this->retrieveDataValue(self::COLLECT_REQUESTS_CREATED_COUNT);
+
+        return $collectRequestCount < self::MAX_COLLECT_REQUESTS_ALLOWED_PER_DAY;
+    }
+
     private function retrieveDataValue(string $key)
     {
         if ($this->data[$key] === null)
@@ -216,6 +257,17 @@ class Rules
                     Status::COMPLETED
                 ], Flow::DEBIT);
                 $this->data[self::TOTAL_TRANSACTION_AMOUNT] = $totalAmount;
+                break;
+
+            case self::COLLECT_REQUESTS_CREATED_COUNT:
+                $collectRequestsEntities = (new Core)->getCollectRequestsWithCreatedAtAndPayee(
+                    Carbon::today()->timezone('Asia/Kolkata')->getTimestamp(),
+                    $this->transaction->getPayeeId(),
+                    Flow::CREDIT,
+                    Type::COLLECT,
+                    self::MAX_COLLECT_REQUESTS_ALLOWED_PER_DAY);
+
+                $this->data[self::COLLECT_REQUESTS_CREATED_COUNT] = $collectRequestsEntities->count();
                 break;
         }
     }
