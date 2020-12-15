@@ -17,7 +17,7 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput('create_capital_balance_input', $input);
 
-        $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         unset($input[Entity::MERCHANT_ID]);
 
         $initialBalance = $input[Entity::BALANCE] ?? 0;

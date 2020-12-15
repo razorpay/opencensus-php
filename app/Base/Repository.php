@@ -404,7 +404,7 @@ class Repository extends \Razorpay\Spine\Repository
      * TODO: Move this to spine
      * @param  string $id
      * @param  array  $columns
-     * @return RZP\Models\Base\Entity
+     * @return \RZP\Models\Base\Entity
      */
     public function findOrFail($id, $columns = array('*'))
     {

@@ -83,13 +83,13 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Merchant\Entity $merchant
+     * @param Base\Entity $merchant
      * @param array $input
      * @param string $mode
      * @param int $initialBalance
      * @return Entity
      */
-    public function createWithInitialBalance(Merchant\Entity $merchant,
+    public function createWithInitialBalance(Base\Entity $merchant,
                                              array $input,
                                              string $mode,
                                              int $initialBalance): Entity
