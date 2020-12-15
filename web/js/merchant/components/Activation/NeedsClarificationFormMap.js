@@ -1,11 +1,20 @@
 import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
+import { LLPIN_BusinessTypes } from './ActivationFormMap';
 
-export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
+export const getNeedsClarificationTabsData = (allFieldsMap, activationDetails) => {
   const allFieldsHash = {};
   const kycFieldsMap = {};
   const kycTabContent = [];
+  const needsKyc = activationDetails.kyc_clarification_reasons;
+
+  const hasLLPINActive =
+    activationDetails.business_type &&
+    LLPIN_BusinessTypes.indexOf(Number(activationDetails.business_type)) !== -1;
 
   const addField = (f) => {
+    if (!hasLLPINActive && f.label === 'LLPIN') {
+      return;
+    }
     allFieldsHash[f.name || f._name] = f;
   };
   const addToKYCTab = (field) => {
@@ -35,7 +44,10 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     if (allFieldsHash[field]) {
       if (latestNc) {
         clarificationDetails[origKey].map((key) => {
-          if ((key.from === 'admin' || key.from === 'system') && key.nc_count === latestNc) {
+          if (
+            ((key.from === 'admin' || key.from === 'system') && key.nc_count === latestNc) ||
+            forceMap
+          ) {
             if (key.reason_type === 'predefined') {
               try {
                 reasons.push(predefinedReasons[origKey].reasons[key.reason_code].description);
@@ -86,7 +98,9 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
         });
       } else {
         //Add reasons to main field if there are no dependent fields
-        allFieldsHash[field].reasons = reasons;
+        if (reasons.length > 0) {
+          allFieldsHash[field].reasons = reasons;
+        }
       }
       if (reasons.length > 0) {
         addToKYCTab(field);
@@ -403,6 +417,23 @@ const predefinedReasons = {
       },
       submit_proprietor_pan: {
         description: 'Please submit a copy of the Proprietor PAN Card',
+      },
+    },
+  },
+  company_cin: {
+    reasons: {
+      invalid_cin_number: {
+        description: 'The CIN number you have entered is invalid, please enter valid details.',
+      },
+      cin_data_unavailable: {
+        description: "We weren't able to validate your CIN number, please check and edit the same.",
+      },
+      invalid_llpin_number: {
+        description: 'The LLPIN number you have entered is invalid, please enter valid details.',
+      },
+      llpin_data_unavailable: {
+        description:
+          "We weren't able to validate your LLPIN number, please check and edit the same.",
       },
     },
   },

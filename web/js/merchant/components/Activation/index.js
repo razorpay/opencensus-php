@@ -228,11 +228,7 @@ export default class ActivationWizard extends React.Component {
         if (FORM_TABS.indexOf('Needs Clarification') === -1) {
           FORM_TABS.push('Needs Clarification');
         }
-        const ndcFields =
-          getNeedsClarificationTabsData(
-            mainFormTabsContent,
-            props.data.kyc_clarification_reasons,
-          ) || [];
+        const ndcFields = getNeedsClarificationTabsData(mainFormTabsContent, props.data) || [];
         FORM_TABS_CONTENT.push(ndcFields);
         FORM_TABS_NAMES.push(ndcFields.map((f) => f.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
