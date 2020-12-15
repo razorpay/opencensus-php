@@ -1,5 +1,4 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
-
 export const EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT = 'Dashboard - Instant Settlement';
 
 const EVENTS = {

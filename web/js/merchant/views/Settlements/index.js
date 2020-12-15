@@ -1,24 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import { Route, Switch, NavLink, Link } from 'react-router-dom';
+import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import SettlementsListContainer from './Settlements/List';
 import InstantSettlements from './InstantSettlements/InstantSettlements';
-import ShowWhen from 'merchant/components/ShowWhen';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
+import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 
+const onInstantSettlementsClick = () => {
+  trackIS.goToTabIS();
+};
+
 const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
-  const onInstantSettlementsClick = () => {
-    trackIS.goToTabIS();
-  };
   return (
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">
+        <CashAdvanceOrNitroBanner />
         {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
         {current_balance.data.balance < 0 && (
           <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
@@ -40,15 +41,6 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
             </Link>
           </AnnouncementBanner>
         )}
-
-        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
-          <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
-            <ScheduledNitroBanner
-              fromWhere="settlements"
-              url="https://lp.razorpay.com/razorpayxca-sttlmnts1"
-            />
-          </AnnouncementBanner>
-        </ShowWhen>
       </div>
 
       <tabbed-container>
