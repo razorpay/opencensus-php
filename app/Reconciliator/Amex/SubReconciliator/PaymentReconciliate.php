@@ -79,6 +79,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $settledAt = $row[self::COLUMN_SETTLED_AT_DATE];
 
+        if (strpos($settledAt, '-') !== false)
+        {
+            $settledAt = str_replace('-', '/', $settledAt);
+        }
+
         try
         {
             $gatewaySettledAt = Carbon::createFromFormat('d/m/Y', $settledAt, Timezone::IST)->getTimestamp();

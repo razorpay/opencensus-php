@@ -4197,6 +4197,8 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $paymentData;
 
+        $entries[0]['Settlement date'] = '3-10-2018';
+
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
                                         ['Sheet 1'], 'xls');
 
