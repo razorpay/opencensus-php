@@ -7,7 +7,6 @@ import UPIBanner from './UPIBanner';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 
 import Amount from 'common/ui/Amount';
-import QuickAdd from 'common/ui/Select/QuickAdd';
 import Input, { Label, Description } from 'common/new-ui/Input';
 
 import { getIntervalCycle, classList } from 'common/utils/rzp-utils';
@@ -54,17 +53,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
 
   removeSelectedOffer = () => {
     this.props.onChangeInOffer();
-  };
-
-  getAfterOffersOptionComponent = (props) => {
-    return (
-      <QuickAdd
-        {...props}
-        onClick={() => {
-          this.props.history.push('/offers/new?offer_creation_modal_type=subscription');
-        }}
-      />
-    );
   };
 
   render() {
@@ -196,7 +184,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                   onChange={props.onChangeInOffer}
                   selectedOptionLabelPath="name"
                   searchIndices={['id', 'name', 'terms']}
-                  afterOptionsComponent={this.getAfterOffersOptionComponent}
                 />
 
                 {fields.offer_id && (

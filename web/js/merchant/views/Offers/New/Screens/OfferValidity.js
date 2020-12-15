@@ -29,7 +29,6 @@ export default class OfferValidity extends React.Component {
       <div class="offers-duration-container">
         <Input.DateTime
           isInline
-          name="starts_at"
           label="Starting On"
           description="Start date for offer"
           defaultValue={formData.starts_at}
@@ -42,7 +41,6 @@ export default class OfferValidity extends React.Component {
         <Input.DateTime
           isInline
           required
-          name="ends_at"
           label="Expires On"
           description="Expiry date for offer"
           class="Input--vTop"

@@ -27,6 +27,9 @@ export default class BaseForm extends React.Component {
     let invalidateTabs = false;
 
     let { name: fieldName, value: fieldValue } = event.target;
+
+    if (fieldName.length === 0) return;
+
     if (fieldName === 'iins') {
       fieldValue = fieldValue
         .split(',')

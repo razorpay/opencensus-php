@@ -25,6 +25,8 @@ export function prepareDataForSubmit(formData) {
     'max_order_amount',
     'min_amount',
     'default_offer',
+    'starts_at',
+    'ends_at',
   ];
 
   const fieldsToBeDeleted = ['discount_type', 'redemption_type', 'applicable_on', 'no_of_cycles'];

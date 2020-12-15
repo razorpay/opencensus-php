@@ -468,7 +468,6 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             ref={(form) => (this.planDetailsForm = form)}
-            history={this.props.history}
           />
         );
       case 1:
