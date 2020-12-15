@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Org;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
@@ -22,6 +23,8 @@ class Entity extends Base\Entity
     const LOGIN_LOGO_URL          = 'login_logo_url';
     const MAIN_LOGO_URL           = 'main_logo_url';
     const INVOICE_LOGO_URL        = 'invoice_logo_url';
+    const CHECKOUT_LOGO_URL       = 'checkout_logo_url';
+    const EMAIL_LOGO_URL          = 'email_logo_url';
     const DELETED_AT              = 'deleted_at';
     const CUSTOM_CODE             = 'custom_code';
     const ADMIN                   = 'admin';
@@ -29,6 +32,12 @@ class Entity extends Base\Entity
     const SIGNATURE_EMAIL         = 'signature_email';
     const CROSS_ORG_ACCESS        = 'cross_org_access';
     const DEFAULT_PRICING_PLAN_ID = 'default_pricing_plan_id';
+    const BACKGROUND_IMAGE_URL    = 'background_image_url';
+
+    /**
+     * Org level features
+     */
+    const FEATURES                 = 'features';
     /**
      * Added to distinguish between regular heimdall orgs and restricted ones like SBI
      * which need a custom admin view of transaction entities and some file upload
@@ -57,6 +66,14 @@ class Entity extends Base\Entity
      */
     const RESTRICTED      = 'restricted';
 
+    /**
+     * Org features, saved to this variable once fetched to avoid
+     * repeated DB calls.
+     *
+     * @var null
+     */
+    protected $loadedFeatures = null;
+
     protected static $sign = 'org';
 
     protected $entity = 'org';
@@ -82,12 +99,16 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
+        self::CHECKOUT_LOGO_URL,
+        self::EMAIL_LOGO_URL,
         self::CROSS_ORG_ACCESS,
         self::CUSTOM_CODE,
         self::FROM_EMAIL,
         self::SIGNATURE_EMAIL,
         self::DEFAULT_PRICING_PLAN_ID,
         self::TYPE,
+        self::FEATURES,
+        self::BACKGROUND_IMAGE_URL,
     ];
 
     protected $visible = [
@@ -101,6 +122,8 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
+        self::CHECKOUT_LOGO_URL,
+        self::EMAIL_LOGO_URL,
         self::DELETED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -111,6 +134,7 @@ class Entity extends Base\Entity
         self::WORKFLOW_PERMISSIONS,
         self::DEFAULT_PRICING_PLAN_ID,
         self::TYPE,
+        self::BACKGROUND_IMAGE_URL,
     ];
 
     protected $public = [
@@ -124,6 +148,8 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
+        self::CHECKOUT_LOGO_URL,
+        self::EMAIL_LOGO_URL,
         self::AUTH_TYPE,
         self::CREATED_AT,
         self::CUSTOM_CODE,
@@ -132,6 +158,7 @@ class Entity extends Base\Entity
         self::PERMISSIONS,
         self::WORKFLOW_PERMISSIONS,
         self::DEFAULT_PRICING_PLAN_ID,
+        self::BACKGROUND_IMAGE_URL,
     ];
 
     protected $guarded = [
@@ -208,6 +235,11 @@ class Entity extends Base\Entity
     public function permissions()
     {
         return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
+    }
+
+    public function features()
+    {
+        return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
     }
 
     public function workflow_permissions()
@@ -300,5 +332,73 @@ class Entity extends Base\Entity
     public function getPrimaryHostName()
     {
         return $this->hostnames()->first()->getHostName();
+    }
+
+    public function isFeatureEnabled(string $featureName): bool
+    {
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        return (in_array($featureName, $assignedFeatures, true) === true);
+    }
+
+    public function getMainLogo()
+    {
+        return $this->getAttribute(self::MAIN_LOGO_URL);
+    }
+
+    public function getInvoiceLogo()
+    {
+        return $this->getAttribute(self::INVOICE_LOGO_URL);
+    }
+
+    public function getLoginLogo()
+    {
+        return $this->getAttribute(self::LOGIN_LOGO_URL);
+    }
+
+    public function getCheckoutLogo()
+    {
+        return $this->getAttribute(self::CHECKOUT_LOGO_URL);
+    }
+
+    /**
+     * Return an array of features enabled for the merchant entity
+     *
+     * @return array
+     */
+    public function getEnabledFeatures(): array
+    {
+        // If we've already loaded features for the merchant object, return that
+        if ($this->loadedFeatures !== null)
+        {
+            return $this->loadedFeatures;
+        }
+
+        $cacheTtl = app('repo')->feature->getCacheTtl(Feature\Entity::FEATURE);
+
+        $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
+
+        $this->loadedFeatures = $this->features()
+            ->remember($cacheTtl)
+            ->cacheTags($cacheTags)
+            ->pluck(Feature\Entity::NAME)
+            ->toArray();
+
+        return $this->loadedFeatures;
+    }
+
+    public function setLoadedFeaturesNull()
+    {
+        $this->loadedFeatures = null;
+    }
+
+    public function getEmailLogo()
+    {
+        return $this->attributes[self::EMAIL_LOGO_URL];
+    }
+
+    public function getBackgroundImage()
+    {
+        return $this->attributes[self::BACKGROUND_IMAGE_URL];
     }
 }

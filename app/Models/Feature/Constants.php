@@ -521,6 +521,11 @@ class Constants
      */
     const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
 
+    /**
+     * Enables custom branding at org level.
+     */
+    const ORG_CUSTOM_BRANDING = 'org_custom_branding';
+
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
 
     public static $recurringFeatures = [
@@ -790,6 +795,7 @@ class Constants
         self::REFUND_ARN_WEBHOOK              => true,
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
+        self::ORG_CUSTOM_BRANDING             => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
@@ -799,6 +805,7 @@ class Constants
     const ACCOUNT                       = 'account';
     const MERCHANT                      = 'merchant';
     const APPLICATION                   = 'application';
+    const ORG                           = 'org';
 
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';
@@ -1106,6 +1113,10 @@ class Constants
             'feature'       => self::SETTLEMENTS_SMS_STOP,
             'display_name'  => 'Disable SMS notifications for settlements',
             'documentation' => '',
+        ],
+        self::ORG_CUSTOM_BRANDING => [
+            'feature' => self::ORG_CUSTOM_BRANDING,
+            'display_name' => 'Custom Branding feature for an org',
         ],
         self::TRANSFER_SETTLED_WEBHOOK => [
             'feature'       => self::TRANSFER_SETTLED_WEBHOOK,

@@ -20,13 +20,16 @@ class Validator extends Base\Validator
         Entity::LOGIN_LOGO_URL       => 'sometimes|url',
         Entity::MAIN_LOGO_URL        => 'sometimes|url',
         Entity::INVOICE_LOGO_URL     => 'sometimes|url',
+        Entity::CHECKOUT_LOGO_URL    => 'sometimes|url',
+        Entity::EMAIL_LOGO_URL       => 'sometimes|url',
         Entity::ADMIN                => 'required|array',
         Entity::CUSTOM_CODE          => 'required',
         Entity::FROM_EMAIL           => 'sometimes|email',
         Entity::SIGNATURE_EMAIL      => 'sometimes|email',
         Entity::PERMISSIONS          => 'required|array',
         Entity::WORKFLOW_PERMISSIONS => 'sometimes|array',
-        Entity::TYPE                 => 'filled|in:restricted',
+        Entity::TYPE                  => 'filled|in:restricted',
+        Entity::BACKGROUND_IMAGE_URL => 'sometimes|url',
     ];
 
     protected static $editRules = [
@@ -40,12 +43,15 @@ class Validator extends Base\Validator
         Entity::LOGIN_LOGO_URL           => 'sometimes|url',
         Entity::MAIN_LOGO_URL            => 'sometimes|url',
         Entity::INVOICE_LOGO_URL         => 'sometimes|url',
+        Entity::CHECKOUT_LOGO_URL        => 'sometimes|url',
+        Entity::EMAIL_LOGO_URL           => 'sometimes|url',
         Entity::CUSTOM_CODE              => 'sometimes',
         Entity::FROM_EMAIL               => 'sometimes|email',
         Entity::SIGNATURE_EMAIL          => 'sometimes|email',
         Entity::PERMISSIONS              => 'sometimes|array',
         Entity::WORKFLOW_PERMISSIONS     => 'sometimes|array',
         Entity::DEFAULT_PRICING_PLAN_ID  => 'sometimes|alpha_num|size:14',
+        Entity::BACKGROUND_IMAGE_URL     => 'sometimes|url',
     ];
 
     protected function validateEmailDomains($attribute, $domains)

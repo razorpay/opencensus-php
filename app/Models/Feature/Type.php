@@ -17,6 +17,7 @@ class Type
     const ACCOUNTS      = 'accounts';
     const MERCHANTS     = 'merchants';
     const APPLICATIONS  = 'applications';
+    const ORG            = 'org';
 
     // Application ids
     const TEST_APP_ID    = '10000TestAppId';
@@ -37,6 +38,7 @@ class Type
     protected static $routeToEntityTypeMap = [
         self::ACCOUNTS     => Constants::MERCHANT,
         self::APPLICATIONS => Constants::APPLICATION,
+        self::ORG          => Constants::ORG,
     ];
 
     /**

@@ -94,6 +94,30 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testOrgFeatures()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $orgId = $org->getId();
+
+        $dummy = 'dummy';
+
+        $this->addFeatures(
+            Mode::TEST,
+            true,
+            [$dummy],
+            Constants::ORG,
+            $orgId);
+
+        $org = $this->getDbEntityById('org', $orgId);
+
+        $features = $org->getEnabledFeatures();
+
+        $this->assertTrue(in_array($dummy, $features, true));
+
+        $this->assertFalse(in_array('dummy1', $features, true));
+    }
+
     public function testAccountFeatures()
     {
         $accountId = '10000000000000';

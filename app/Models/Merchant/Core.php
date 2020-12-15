@@ -4427,4 +4427,22 @@ class Core extends Base\Core
 
         return $this->app['events']->fire('api.banking_accounts.issued', $eventPayload);
     }
+
+
+    public function isOrgCustomBranding(Entity $merchant) : bool
+    {
+        if ($merchant->isRazorpayOrgId() === true )
+        {
+            return false;
+        }
+
+        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::ORG_CUSTOM_BRANDING);
+    }
+
+    protected function isOrgFeatureEnabled(Entity $merchant, string $featureName)
+    {
+        $org = $this->repo->org->find($merchant->getOrgId());
+
+        return $org->isFeatureEnabled($featureName);
+    }
 }
