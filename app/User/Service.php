@@ -381,8 +381,6 @@ class Service extends Base\Service
 
         list($error, $genericUser) = $this->loginOnApi($input);
 
-        app('trace')->info(TraceCode::USER_LOGIN_CREDS, [$genericUser ? $genericUser->toArray() : null, $error]);
-
         return $this->handleLoginResponse($error, $genericUser);
     }
 

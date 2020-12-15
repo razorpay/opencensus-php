@@ -6,11 +6,9 @@ use EE\Exception\InvalidArgumentException;
 
 class TraceCode
 {
-    const USER_LOGIN_CREDS                          = 'USER_LOGIN_CREDS';
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
-    const USER_COOKIES_KEYS                         = 'USER_COOKIES_KEYS';
     const USER_CONTEXT_LOG                          = 'USER_CONTEXT_LOG';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';

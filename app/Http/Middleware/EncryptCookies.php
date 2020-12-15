@@ -11,13 +11,7 @@ class EncryptCookies extends BaseEncrypter
 {
     protected function decrypt(Request $request)
     {
-        app('trace')->info(TraceCode::USER_COOKIES_KEYS, $request->cookies->keys());
-
-        $cookieSize = [];
-
         foreach ($request->cookies as $key => $c) {
-
-            $cookieSize[$key] = mb_strlen(serialize((array)$c), '8bit');
 
             if ($this->isDisabled($key)) {
                 continue;
@@ -31,8 +25,6 @@ class EncryptCookies extends BaseEncrypter
                 $request->cookies->remove($key);
             }
         }
-
-        app('trace')->info(TraceCode::USER_COOKIES_KEYS, $cookieSize);
 
         return $request;
     }

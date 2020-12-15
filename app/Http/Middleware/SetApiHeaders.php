@@ -56,13 +56,9 @@ class SetApiHeaders {
             Headers::CSRF_TOKEN => $csrfToken . ',' . $timeStamp,
         ];
 
-        app('trace')->info(TraceCode::USER_LOGIN_CREDS, ['session_id' => Session::getId()]);
-
         $response = $next($request);
 
         $response->withHeaders($csrfTokenHeader);
-
-        app('trace')->info(TraceCode::USER_LOGIN_CREDS, ['session_id' => Session::getId()]);
 
         return $response;
 	}
