@@ -438,32 +438,10 @@ class InternationalConfig extends Component {
     }
 
     const { pgProductStatus, otherProductsStatus, showStatusLabel } = this.state;
-    const { settlement, user } = this.props;
-
-    const settlementCycle = settlement.schedule.data.filter(
-      (item) => item.method === null && item.international === 1,
-    );
-    const pgDescription = (
-      <>
-        <span>
-          Transaction Size enabled:&nbsp;
-          <Amount value={user.merchant.max_payment_amount} currency={'INR'} />
-        </span>
-        &nbsp;&nbsp;
-        <span>
-          {settlementCycle.length && settlementCycle[0].delay ? (
-            <>|&nbsp;&nbsp;Settlement Cycle: T+{settlementCycle[0].delay} days</>
-          ) : (
-            ''
-          )}
-        </span>
-      </>
-    );
     return (
       <ul class="product-list">
         <ProductInfo
-          title="On Payment Gateway"
-          description={pgProductStatus === 'approved' ? pgDescription : ''}
+          title="Payment Gateway"
           status={StatusMap[pgProductStatus]}
           showRequestAccessBtn={!this.hasRequestedAccessForProduct('pg')}
           onRequestAccessClick={(e) => {
@@ -475,8 +453,6 @@ class InternationalConfig extends Component {
           product="pg"
           showStatusLabel={showStatusLabel}
         />
-
-        <div class="international__ProductSeparator" />
 
         <ProductInfo
           title="Payment Pages, Payment Links & Invoices"
@@ -527,18 +503,11 @@ class InternationalConfig extends Component {
     const internationalEnabled = this.props.user.international;
     const isTogglerVisible = this.isAnyProductIntlApproved;
     const description = this.description;
+    const { settlement, user } = this.props;
+    const { pgProductStatus, otherProductsStatus } = this.state;
 
-    const knowMoreLink = (
-      <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
-        <a
-          target="_blank"
-          class="m-l"
-          href="https://razorpay.com/payment-gateway/#go-international"
-        >
-          Know more
-          <i class="i i-external-link" />
-        </a>
-      </ShowWhen>
+    const settlementCycle = settlement.schedule.data.filter(
+      (item) => item.method === null && item.international === 1,
     );
 
     return (
@@ -546,7 +515,7 @@ class InternationalConfig extends Component {
         <div class="heading">
           <li class="title">International Card</li>
 
-          {isTogglerVisible ? (
+          {isTogglerVisible && (
             <span class="toggler-btn">
               <SwitchField
                 defaultChecked={internationalEnabled}
@@ -561,8 +530,6 @@ class InternationalConfig extends Component {
                 <b class="text-faded">Disabled</b>
               )}
             </span>
-          ) : (
-            <span style={{ float: 'left' }}>{knowMoreLink}</span>
           )}
 
           {this.renderInternationalAccessOrStatus()}
@@ -571,14 +538,30 @@ class InternationalConfig extends Component {
         <div class="body">
           <form class="form-horizontal">
             <div class="description">
-              {this.isInternationalPaymentsAllowed && (
-                <span>Card payments on payment gateway, payment pages, links & invoices</span>
-              )}
-              {isTogglerVisible && knowMoreLink}
-              <br />
-              <span>{description}</span>
+              <div>
+                {this.isInternationalPaymentsAllowed && (
+                  <span>Card payments on payment gateway, payment pages, links & invoices</span>
+                )}
+              </div>
+              <div>{description}</div>
             </div>
-            <div class="description">{this.renderProductsSection()}</div>
+            <div class="description" style={{ marginBottom: '20px' }}>
+              {this.renderProductsSection()}
+              {(pgProductStatus === 'approved' || otherProductsStatus === 'approved') && (
+                <div>
+                  <span>
+                    Limit per transaction:&nbsp;
+                    <Amount value={user.merchant.max_payment_amount} currency={'INR'} />
+                  </span>
+                  &nbsp;&nbsp;
+                  <span>
+                    {settlementCycle.length && settlementCycle[0].delay && (
+                      <>|&nbsp;&nbsp;Settlement Cycle: T+{settlementCycle[0].delay} days</>
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
           </form>
         </div>
       </div>

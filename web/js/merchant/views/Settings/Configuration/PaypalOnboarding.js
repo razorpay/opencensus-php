@@ -1,9 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
-import ShowWhen from 'merchant/components/ShowWhen';
-import SwitchField from 'common/ui/Forms/SwitchField';
-import { DisputeStatusLabel as StatusLabel } from 'merchant/components/StatusLabel';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -111,9 +108,9 @@ export default class PaypalOnboarding extends Component {
           <div class="heading">
             <li class="title">PayPal </li>
             <a
-              class={`highlight ${showStatus ? 'know-more' : ''}`}
+              class={`highlight ${showStatus ? 'know-more' : ''} know-more-link`}
               target="_blank"
-              style={{ marginLeft: '10px', borderColor: '#EBEFF0' }}
+              style={{ borderColor: '#EBEFF0' }}
               href="https://razorpay.com/docs/payment-methods/paypal"
             >
               Know more
@@ -121,7 +118,7 @@ export default class PaypalOnboarding extends Component {
             </a>
             {showStatus ? (
               <span
-                style={{ marginLeft: '20px' }}
+                style={{ marginLeft: '20px', float: 'right' }}
                 class={`status-pill status-pill-${(() => {
                   if (status === 'activated') {
                     return 'success';
@@ -196,5 +193,3 @@ export default class PaypalOnboarding extends Component {
     );
   }
 }
-
-const STATUSES = ['requested', 'created', 'activated', 'rejected', 'pending'];

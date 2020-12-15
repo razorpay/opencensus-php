@@ -94,7 +94,7 @@ const ProductInfo = ({
           showRequestAccessBtn={showRequestAccessBtn}
           onRequestAccessClick={onRequestAccessClick}
         />
-        {status !== 'disabled' && showStatusLabel && <InternationalStatusLabel status={status} />}
+        {showStatusLabel && <InternationalStatusLabel status={status} />}
       </div>
     </div>
   );

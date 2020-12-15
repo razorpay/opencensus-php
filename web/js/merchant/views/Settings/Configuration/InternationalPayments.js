@@ -7,6 +7,14 @@ const InternationalPayments = ({ mode, user, config }) => {
     <div class="panel panel-default international-payments">
       <div class="panel-heading">
         <span class="title">International Payments</span>
+        <a
+          target="_blank"
+          class="know-more-link"
+          href="https://razorpay.com/payment-gateway/#go-international"
+        >
+          Know more
+          <i class="i i-external-link" />
+        </a>
         <div class="description">
           Accept international payments in nearly 100 foreign currencies from your customers
         </div>
