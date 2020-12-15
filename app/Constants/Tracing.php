@@ -22,11 +22,15 @@ class Tracing
     // all routes which are to be included from distributed tracing
     public static function getRoutesToInclude(): array
     {
-        $routesToInclude = array_merge(Route::$public,  Route::$direct);
+        $routesToInclude = array_merge(Route::$public, Route::$direct);
 
-        return $routesToInclude;
+        return array_merge($routesToInclude, [
+                'user_fetch',
+                'capital_cards_service',
+                'capital_cards_admin',
+            ]);
     }
-    
+
     public static function getServiceName($app): string
     {
         $app_mode = $app['config']->get('applications.jaeger.app_mode');
