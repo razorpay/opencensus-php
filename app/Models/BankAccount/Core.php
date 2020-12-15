@@ -30,7 +30,10 @@ class Core extends Base\Core
 {
     use TrimSpace;
 
-    public function createOrChangeBankAccount($input, $merchant, $isWorkflowRequired = true)
+    public function createOrChangeBankAccount($input,
+                                              $merchant,
+                                              $isWorkflowRequired = true,
+                                              $sendAccountChangeRequestMail = true)
     {
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -60,7 +63,11 @@ class Core extends Base\Core
             return $oldBankAccount;
         }
 
-        $ba = $this->changeBankAccount($input, $merchant, $oldBankAccount, $isWorkflowRequired);
+        $ba = $this->changeBankAccount($input,
+            $merchant,
+            $oldBankAccount,
+            $isWorkflowRequired,
+            $sendAccountChangeRequestMail);
 
         if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
         {
@@ -170,7 +177,11 @@ class Core extends Base\Core
      * @return mixed
      * @throws Exception\ServerErrorException
      */
-    protected function changeBankAccount(array $input, MerchantEntity $merchant, BankAccount\Entity $oldBankAccount,  $isWorkflowRequired = true)
+    protected function changeBankAccount(array $input,
+                                         MerchantEntity $merchant,
+                                         BankAccount\Entity $oldBankAccount,
+                                         $isWorkflowRequired = true,
+                                         $sendAccountChangeRequestMail = true)
     {
         $detail = $this->formatBankAccountForMerchantDetail($input);
 
@@ -188,7 +199,14 @@ class Core extends Base\Core
         $this->fillAddressProofUrl($input, $merchant, $newBankAccountArray, $oldBankAccountArray);
 
         return $this->repo->transaction(
-            function() use ($merchant, $oldBankAccountArray, $newBankAccountArray, $oldBankAccount, $input, $detail, $isWorkflowRequired)
+            function() use ($merchant,
+                $oldBankAccountArray,
+                $newBankAccountArray,
+                $oldBankAccount,
+                $input,
+                $detail,
+                $isWorkflowRequired,
+                $sendAccountChangeRequestMail)
             {
                 //
                 // Creating a bank account entity to send email. This will be rolled back if workflow if enabled.
@@ -200,7 +218,8 @@ class Core extends Base\Core
                 // Send Email if it is not a workflow execution flow, since we want to send the request received
                 // email only once and not again after the workflow has been approved.
                 //
-                if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
+                if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false) and
+                    ($sendAccountChangeRequestMail === true))
                 {
                     $this->sendBankAccountChangeEmail($ba, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
                 }
@@ -635,7 +654,7 @@ class Core extends Base\Core
         {
             case Detail\BankDetailsVerificationStatus::VERIFIED:
             {
-                $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
+                $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
                 $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
 

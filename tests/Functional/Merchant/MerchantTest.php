@@ -2267,6 +2267,14 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
+        $changeRequestMailCount = 0;
+
+        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use (& $changeRequestMailCount) {
+            $changeRequestMailCount += 1;
+
+            return true;
+        });
+
         Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
             return true;
         });
@@ -2274,6 +2282,8 @@ class MerchantTest extends TestCase
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertEquals($changeRequestMailCount, 1);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
     }
