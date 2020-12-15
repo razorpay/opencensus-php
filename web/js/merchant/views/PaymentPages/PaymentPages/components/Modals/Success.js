@@ -192,19 +192,17 @@ export default class extends React.PureComponent {
             </div>
           </div>
 
-          {user.isSubscriptionButtonEnabled && (
-            <ProductCard
-              imgSrc="https://cdn.razorpay.com/static/assets/notifs/payment-button.svg"
-              title="Introducing Subscription Buttons"
-              description="Start accepting subscriptions from your consumers, right from your website or blog!"
-              primaryLink={
-                user.isAllowedEdit('subscription_buttons') && '/app/subscription_buttons/new'
-              }
-              secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
-              source="payment-pages"
-              trackerFn={window.rzpQ.subscriptionButtons}
-            />
-          )}
+          <ProductCard
+            imgSrc="https://cdn.razorpay.com/static/assets/notifs/payment-button.svg"
+            title="Introducing Subscription Buttons"
+            description="Start accepting subscriptions from your consumers, right from your website or blog!"
+            primaryLink={
+              user.isAllowedEdit('subscription_buttons') && '/app/subscription_buttons/new'
+            }
+            secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
+            source="payment-pages"
+            trackerFn={window.rzpQ.subscriptionButtons}
+          />
 
           {/* Footer */}
           <footer>

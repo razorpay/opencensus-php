@@ -781,9 +781,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           isPageReady={isPageReady}
           handleClose={this.handleClose}
         >
-          {user.isSubscriptionButtonEnabled && (
-            <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
-          )}
+          <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
         </Header>
         {content}
       </div>
