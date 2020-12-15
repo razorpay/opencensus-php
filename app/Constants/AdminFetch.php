@@ -1651,6 +1651,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::STAKEHOLDER => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::MERCHANT => [
                 'activated' => [
                     Fetch::LABEL  => 'Activated',

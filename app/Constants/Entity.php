@@ -412,6 +412,7 @@ class Entity
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
     const BVS_VALIDATION    = 'bvs_validation';
+    const STAKEHOLDER       = 'stakeholder';
     const REWARD            = 'reward';
     const MERCHANT_REWARD   = 'merchant_reward';
 
@@ -777,6 +778,7 @@ class Entity
         self::WORKFLOW_STATE_MAP            => \RZP\Models\Workflow\Service\StateMap::class,
 
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
+        self::STAKEHOLDER       => \RZP\Models\Merchant\Stakeholder::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
 

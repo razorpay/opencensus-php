@@ -114,6 +114,7 @@ class Table
     const MERCHANT_EMAIL             = 'merchant_emails';
     const VIRTUAL_ACCOUNT            = 'virtual_accounts';
     const MERCHANT_DETAIL            = 'merchant_details';
+    const STAKEHOLDER                = 'stakeholders';
     const CUSTOMER_BALANCE           = 'customer_balance';
     const MERCHANT_INVOICE           = 'merchant_invoice';
     const MERCHANT_REQUEST           = 'merchant_requests';
