@@ -32,7 +32,10 @@ export const FetchSupportTickets = (params) => {
     query = param_to_qs(params);
   }
 
-  return merchantFetch(TICKET_BASE_URL).then((res) => {
+  return merchantFetch({
+    url: TICKET_BASE_URL,
+    mode: 'live',
+  }).then((res) => {
     return {
       data: res.data.results,
       query: params,
@@ -47,6 +50,7 @@ export const FetchRefundPricing = () => {
 export const ReplyToConversation = (ticket_id, body) => {
   const params = {
     url: `${TICKET_BASE_URL}/${ticket_id}/reply`,
+    mode: 'live',
     method: 'post',
     data: body,
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -56,11 +60,11 @@ export const ReplyToConversation = (ticket_id, body) => {
 };
 
 export const FetchActiveTickets = () => {
-  return merchantFetch(
-    `${TICKET_BASE_URL}?${['2', '3', '6', '8', '9', '10', '11']
-      .map((s) => `status[]=${s}&`)
-      .join('')}`,
-  ).then((res) => res.data.results);
+  const url = TICKET_BASE_URL;
+  return merchantFetch({
+    url,
+    mode: 'live',
+  }).then((res) => res.data.results);
 };
 
 export const CheckCallEligibility = () => {
