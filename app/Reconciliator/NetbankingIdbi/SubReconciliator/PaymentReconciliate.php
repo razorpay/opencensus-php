@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\NetbankingIdbi\SubReconciliator;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Mozart\NetbankingIdbi\ReconFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS   = [];
     const COLUMN_PAYMENT_AMOUNT = ReconFields::PAYMENT_AMOUNT;

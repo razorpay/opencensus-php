@@ -143,9 +143,9 @@ class Service
         return $this->sendRequest('GET', $path, $input, false);
     }
 
-    public function fetchNetbankingData(array $input)
+    public function fetchNbplusData(array $input, string $entity)
     {
-        return $this->sendRequest('POST', 'entities/netbanking', $input, false);
+        return $this->sendRequest('POST', 'entities/' . $entity, $input, false);
     }
 
     public function sendRequest(string $method, string $url, array $data = [], bool $shouldTraceResponse = true)

@@ -1,20 +1,19 @@
 <?php
 
-namespace RZP\Reconciliator\Base\SubReconciliator;
+namespace RZP\Reconciliator\Base\SubReconciliator\NbPlus;
 
 use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
 use RZP\Reconciliator\RequestProcessor;
-use RZP\Jobs\NbPlusRecon\NetbankingRecon;
+use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class NetbankingServiceRecon extends PaymentReconciliate
+class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
 {
+    use NetbankingReconTrait;
     //
     // These are the attributes required from the netbanking entity on nbplus service
     //
@@ -47,13 +46,18 @@ class NetbankingServiceRecon extends PaymentReconciliate
         return parent::updateAndFetchGatewayPayment();
     }
 
-    protected function persistReconciliationData($rowDetails, $row)
+    protected function runPreReconciledAtCheckRecon($rowDetails)
     {
-        parent::persistReconciliationData($rowDetails, $row);
+       parent::runPreReconciledAtCheckRecon($rowDetails);
 
         if ($this->payment->isRoutedThroughNbPlus() === true)
         {
-            $this->nbPlusPaymentServiceDispatch($rowDetails);
+            switch ($this->payment->getMethod())
+            {
+                case Payment\Method::NETBANKING;
+                    $this->nbPlusPaymentServiceNetbankingDispatch($rowDetails);
+                    break;
+            }
         }
     }
 
@@ -178,49 +182,5 @@ class NetbankingServiceRecon extends PaymentReconciliate
         }
 
         return $authorizeSuccess;
-    }
-
-    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
-    {
-        $debitAccountNumber = null;
-
-        $creditAccountNumber = null;
-
-        $customerId = null;
-
-        if (isset($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true)
-        {
-            $debitAccountNumber  = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS][BaseReconciliate::ACCOUNT_NUMBER] ?? null;
-            $creditAccountNumber = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS][BaseReconciliate::CREDIT_ACCOUNT_NUMBER] ?? null;
-        }
-
-        if (isset($rowDetails[BaseReconciliate::CUSTOMER_DETAILS]) === true)
-        {
-            $customerId  = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS][Base\Reconciliate::CUSTOMER_ID] ?? null;
-        }
-
-        $data = [
-            'payment_id' => $this->payment->getId(),
-            'recon_file_data'     => [
-                NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
-                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
-                NetbankingService::BANK_ACCOUNT_NUMBER    => $debitAccountNumber,
-                NetbankingService::CREDIT_ACCOUNT_NUMBER  => $creditAccountNumber,
-                NetbankingService::CUSTOMER_ID            => $customerId
-            ],
-            'mode'       => $this->mode,
-            'gateway'    => $this->gateway,
-            'batch_id'   => $this->batchId,
-        ];
-
-        NetbankingRecon::dispatch($data);
-
-        $this->trace->info(
-            TraceCode::RECON_INFO,
-            [
-                'info_code'  => Base\InfoCode::RECON_NBPLUS_JOB_DISPATCH,
-                'payment_id' => $this->payment->getId(),
-            ]
-        );
     }
 }

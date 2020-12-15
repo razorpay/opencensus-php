@@ -39,7 +39,7 @@ class Netbanking extends NetbankingBase
         return [];
     }
 
-    public function fetchNetbankingData(array $request)
+    public function fetchNbplusData(array $request, string $entity)
     {
         $response = [
           'count'  => 1,

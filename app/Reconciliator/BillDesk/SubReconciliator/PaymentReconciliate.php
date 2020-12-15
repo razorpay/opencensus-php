@@ -7,7 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Constants\Timezone;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     /*******************
      * Row Header Names

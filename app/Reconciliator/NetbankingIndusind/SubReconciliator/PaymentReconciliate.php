@@ -8,7 +8,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Indusind\Constants;
 use RZP\Gateway\Netbanking\Indusind\ReconciliationFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

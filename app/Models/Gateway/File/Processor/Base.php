@@ -263,7 +263,7 @@ abstract class Base extends Core
         $this->refundCore->reconcileNetbankingRefunds($data);
     }
 
-    protected function fetchNbPlusGatewayEntities($paymentIds)
+    protected function fetchNbPlusGatewayEntities($paymentIds, $entity)
     {
         $shouldFetchEntities = true;
 
@@ -293,7 +293,7 @@ abstract class Base extends Core
                             'payment_ids'   => $requestPaymentIds,
                         ];
 
-                        $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
+                        $response = App::getFacadeRoot()['nbplus.payments']->fetchNbPlusData($request, $entity);
 
                         $start += $fetchLimit;
 

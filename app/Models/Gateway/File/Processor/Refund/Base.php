@@ -249,7 +249,7 @@ class Base extends BaseProcessor
             $data = $this->addGatewayEntitiesToData($data, $entities);
         }
 
-        $data = $this->addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $nbplusPaymentIds);
+        $data = $this->addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $nbplusPaymentIds, $payment->getMethod());
 
         $this->checkIfRefundsAreInValidDateRange($data);
 
@@ -389,12 +389,12 @@ class Base extends BaseProcessor
         return $data;
     }
 
-    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds)
+    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds, string $entity)
     {
         // Fetching NBPlus Payments Gateway Data from NBPlus
         if (empty($nbplusPaymentIds) === false)
         {
-            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbplusPaymentIds);
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbplusPaymentIds, $entity);
 
             // Throwing an error in case of NBPlus fetch failure
             if ($fetchSuccess === false)

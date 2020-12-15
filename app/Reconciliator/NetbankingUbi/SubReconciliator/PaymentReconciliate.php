@@ -6,7 +6,7 @@ use RZP\Reconciliator\Base;
 use RZP\Reconciliator\NetbankingIdfc\Constants;
 use RZP\Reconciliator\NetbankingUbi\Reconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
     const COLUMN_PAYMENT_AMOUNT = Reconciliate::AMOUNT;

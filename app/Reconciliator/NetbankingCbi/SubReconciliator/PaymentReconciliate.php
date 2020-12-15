@@ -2,14 +2,14 @@
 
 namespace RZP\Reconciliator\NetbankingCbi\SubReconciliator;
 
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Mozart\NetbankingCbi\ReconFields;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

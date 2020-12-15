@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\NetbankingJkb\SubReconciliator;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\NetbankingJkb\Reconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS   = [];
     const COLUMN_PAYMENT_AMOUNT = Reconciliate::AMOUNT;

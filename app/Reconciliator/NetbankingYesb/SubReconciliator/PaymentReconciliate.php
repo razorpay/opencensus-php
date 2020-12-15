@@ -11,7 +11,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Mozart\NetbankingYesb\Constants;
 use RZP\Gateway\Mozart\NetbankingYesb\ReconFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

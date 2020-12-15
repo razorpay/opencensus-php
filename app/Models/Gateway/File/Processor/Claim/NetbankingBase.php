@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 use App;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Payment\Entity as Payment;
@@ -50,7 +51,7 @@ class NetbankingBase extends Base
         {
             $nbPlusPayments = ($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE])->pluck('id')->toArray();
 
-            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbPlusPayments);
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbPlusPayments, Method::NETBANKING);
 
             // Throwing an error in case of scrooge fetch failure
             if ($fetchSuccess === false)

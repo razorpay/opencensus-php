@@ -10,14 +10,12 @@ use RZP\Reconciliator\Service;
 use RZP\Services\NbPlus\Netbanking;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
-use RZP\Reconciliator\Base\SubReconciliator\NetbankingServiceRecon;
+use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 
 class NetbankingRecon extends Job
 {
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
-
-    const ENTITY = 'netbanking';
 
     protected $data;
 
@@ -35,8 +33,8 @@ class NetbankingRecon extends Job
         parent::handle();
 
         $request = [
-            'fields'        => NetbankingServiceRecon::NETBANKING_ATTRIBUTES,
-            'payment_ids'   => [$this->data['payment_id']],
+            'fields'      => $this->data['attributes'],
+            'payment_ids' => [$this->data['payment_id']],
         ];
 
         $this->trace->info(
@@ -48,7 +46,7 @@ class NetbankingRecon extends Job
 
         try
         {
-            $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
+            $response = App::getFacadeRoot()['nbplus.payments']->fetchNbplusData($request, $this->data['entity']);
 
             if (empty($response) === false)
             {
@@ -59,11 +57,11 @@ class NetbankingRecon extends Job
                 $this->trace->info(
                     TraceCode::RECON_INFO,
                     [
-                        'info_code'     => InfoCode::NBPLUS_RESPONSE_DATA,
-                        'response'      => $redactedResponse,
+                        'info_code' => InfoCode::NBPLUS_RESPONSE_DATA,
+                        'response'  => $redactedResponse,
                     ]);
 
-                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data, self::ENTITY, NetbankingServiceRecon::NETBANKING_ATTRIBUTES, NetbankingServiceRecon::RECON_PARAMS);
+                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data, $this->data['entity'], $this->data['attributes'], NbPlusServiceRecon::RECON_PARAMS);
             }
 
             $this->trace->info(
@@ -89,9 +87,9 @@ class NetbankingRecon extends Job
                 [
                     'info_code' => InfoCode::PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION,
                     'request'   => $request,
-                    'mode'       => $this->data['mode'],
-                    'gateway'    => $this->data['gateway'],
-                    'batch_id'   => $this->data['batch_id']
+                    'mode'      => $this->data['mode'],
+                    'gateway'   => $this->data['gateway'],
+                    'batch_id'  => $this->data['batch_id']
                 ]);
 
             $this->handleReconJobRelease($batchId);

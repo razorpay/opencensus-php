@@ -10,7 +10,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const COLUMN_PAYMENT_ID          = 'merchant_txn_id';
     const COLUMN_AMOUNT              = 'gross_txn_amount';

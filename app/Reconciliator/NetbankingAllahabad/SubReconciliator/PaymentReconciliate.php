@@ -9,7 +9,7 @@ use RZP\Models\Payment\Status;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Reconciliator\NetbankingAllahabad\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 

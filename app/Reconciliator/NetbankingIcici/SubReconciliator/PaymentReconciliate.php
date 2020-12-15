@@ -11,7 +11,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Netbanking\Icici;
 
-class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
