@@ -21,6 +21,7 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 
 class SubMerchant extends Base
 {
@@ -418,7 +419,25 @@ class SubMerchant extends Base
         {
             $subMerchant = $this->repo->merchant->findOrFailPublic($entry[Header::MERCHANT_ID]);
 
-            if (($entry[Header::MERCHANT_EMAIL] !== '') and ($subMerchant->getEmail() !== $input[Merchant\Entity::EMAIL]))
+            $subMerchantEmail = strtolower($entry[Header::MERCHANT_EMAIL]);
+
+            $isMapped = (new Merchant\AccessMap\Core())->isMerchantMappedToPartnerWithAppType($this->partner, $subMerchant, MerchantApp::MANAGED);
+
+            //
+            // Do not update sub-merchant details if any one of the following conditions are true
+            // 1. If partner and sub-merchant are not mapped
+            // 2. If sub-merchant email is given in the input and is not same as the one in DB
+            //
+            if ($isMapped === false)
+            {
+                $entry[Header::STATUS]            = Status::FAILURE;
+                $entry[Header::ERROR_DESCRIPTION] = PublicErrorDescription::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND;
+
+                $msg = $entry[Header::ERROR_DESCRIPTION];
+
+                throw new BadRequestValidationFailureException($msg, Entity::FILE, $subMerchant->getEmail());
+            }
+            else if (($entry[Header::MERCHANT_EMAIL] !== '') and ($subMerchant->getEmail() !== $subMerchantEmail))
             {
                 $entry[Header::STATUS]            = Status::FAILURE;
                 $entry[Header::ERROR_DESCRIPTION] = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
