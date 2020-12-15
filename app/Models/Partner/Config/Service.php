@@ -206,11 +206,14 @@ class Service extends Base\Service
 
                 $this->processSubMerchantPartnerConfig($record);
 
+                $record['status'] = Constants::SUCCESS;
+
                 $response->push($record);
 
             }
             catch (Exception\BaseException $exception)
             {
+                $record['status'] = Constants::FAILURE;
 
                 (new Merchant\Service())->setErrorAttributesToResponse($record, $exception, $response);
 

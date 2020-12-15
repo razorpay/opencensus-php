@@ -82,6 +82,9 @@ final class Constants
     const MERCHANT_MUTEX_LOCK_TIMEOUT                 = '60';
     const MERCHANT_MUTEX_RETRY_COUNT                  = '2';
 
+    const SUCCESS                                 = 'Success';
+    const FAILURE                                 = 'Failure';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

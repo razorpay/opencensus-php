@@ -748,6 +748,7 @@ return [
                         'partner_id'    => '1000000000plat',
                         'merchant_id'   => '100submerchant',
                         'idempotent_id' => 'random',
+                        'status'        => 'Success'
                     ],
                     [
                         'batch_action'  => 'submerchant_partner_config_upsert',
@@ -755,6 +756,7 @@ return [
                         'partner_id'    => '1000000000plat',
                         'merchant_id'   => '100submerchant',
                         'idempotent_id' => 'random',
+                        'status'        => 'Success'
                     ],
                     [
                         'batch_action'  => 'submerchant_partner_config_upsert',
@@ -762,16 +764,18 @@ return [
                         'partner_id'    => '100nonplatform',
                         'merchant_id'   => '10submerchant1',
                         'idempotent_id' => 'random',
+                        'status'        => 'Success'
                     ],
                     [
-                        'batch_action' => 'submerchant_partner_config_upsert',
-                        'entity' => 'merchant',
-                        'partner_id' => 'abcd',
-                        'merchant_id' => 'efg',
+                        'batch_action'     => 'submerchant_partner_config_upsert',
+                        'entity'           => 'merchant',
+                        'partner_id'       => 'abcd',
+                        'merchant_id'      => 'efg',
                         'implicit_plan_id' => 'SubmerchantPln',
-                        'idempotent_id' => 'random',
-                        'error' => ['description' => 'The partner id does not exist or invalid',
-                            'code' => 'BAD_REQUEST_ERROR'],
+                        'idempotent_id'    => 'random',
+                        'status'           => 'Failure',
+                        'error'            => ['description' => 'The partner id does not exist or invalid',
+                                               'code'        => 'BAD_REQUEST_ERROR'],
                         'http_status_code' => 400
                     ]
                 ],
