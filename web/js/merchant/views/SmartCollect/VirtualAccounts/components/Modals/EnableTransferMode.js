@@ -33,7 +33,7 @@ import {
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
-@connect(state => ({ va_config: state.virtualaccounts.va_config }), {
+@connect((state) => ({ va_config: state.virtualaccounts.va_config }), {
   closeModal,
   ...NotificationsActions,
   fetchConfigForVirtualAccount,
@@ -46,33 +46,31 @@ export default class EnableTransferMode extends React.Component {
     }
   }
 
-  onSubmit = data => {
+  onSubmit = (data) => {
     const { isForBankAccount, isForUPIAddress } = this.props;
     const { descriptor } = data;
 
-    const receivers = {
+    const payload = {
       types: [],
     };
 
     if (isForUPIAddress) {
-      receivers.types.push('vpa');
+      payload.types.push('vpa');
 
       if (descriptor) {
-        receivers['vpa'] = {
+        payload['vpa'] = {
           descriptor: descriptor,
         };
       }
     } else if (isForBankAccount) {
-      receivers.types.push('bank_account');
+      payload.types.push('bank_account');
 
       if (descriptor) {
-        receivers['bank_account'] = {
+        payload['bank_account'] = {
           descriptor: descriptor,
         };
       }
     }
-
-    const payload = { receivers };
 
     return this.props.updateVirtualAccountDetails(payload);
   };
@@ -99,8 +97,7 @@ export default class EnableTransferMode extends React.Component {
         va_config.vpa.isDescriptorEnabled &&
         va_config.vpa.prefix
       ) {
-        let vpaHandle =
-          va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
+        let vpaHandle = va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
 
         descriptorLimit_VPA = DESCRIPTOR_LENGTH_VPA - vpaHandle.length;
       } else {
@@ -112,11 +109,7 @@ export default class EnableTransferMode extends React.Component {
       if (toAutoCreateDescriptor) {
         buttonLabel = 'Yes, Enable';
 
-        field = (
-          <div>
-            UPI ID will be auto generated. Are you sure you want to proceed?
-          </div>
-        );
+        field = <div>UPI ID will be auto generated. Are you sure you want to proceed?</div>;
       } else {
         buttonLabel = 'Enable UPI Transfer';
 
@@ -126,23 +119,17 @@ export default class EnableTransferMode extends React.Component {
             label="Virtual UPI ID"
             name="descriptor"
             description="If left blank, a UPI ID will be auto generated"
-            validator={val => {
-              if (
-                !validateAlphanumericWithStrictLength(val, descriptorLimit_VPA)
-              ) {
+            validator={(val) => {
+              if (!validateAlphanumericWithStrictLength(val, descriptorLimit_VPA)) {
                 return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
               }
             }}
             style={getStyle_DescriptorInput_VPA(va_config)}
             addonBefore={
-              <span style={getStyle_AddOnBefore_VPA(va_config)}>
-                {va_config.vpa.prefix}
-              </span>
+              <span style={getStyle_AddOnBefore_VPA(va_config)}>{va_config.vpa.prefix}</span>
             }
             addonAfter={
-              <span style={getStyle_AddOnAfter_VPA(va_config)}>
-                @{va_config.vpa.handle}
-              </span>
+              <span style={getStyle_AddOnAfter_VPA(va_config)}>@{va_config.vpa.handle}</span>
             }
           />
         );
@@ -154,8 +141,7 @@ export default class EnableTransferMode extends React.Component {
         va_config.bank_account.isDescriptorEnabled
       ) {
         let bankAccountHandle = va_config.bank_account.prefix;
-        descriptorLimit_BankAccount =
-          DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
+        descriptorLimit_BankAccount = DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
       } else {
         toAutoCreateDescriptor = true;
       }
@@ -166,10 +152,7 @@ export default class EnableTransferMode extends React.Component {
         buttonLabel = 'Yes, Enable';
 
         field = (
-          <div>
-            An account number will be auto generated. Are you sure you want to
-            proceed?
-          </div>
+          <div>An account number will be auto generated. Are you sure you want to proceed?</div>
         );
       } else {
         buttonLabel = 'Enable Account Transfer';
@@ -180,26 +163,16 @@ export default class EnableTransferMode extends React.Component {
             label="Account Number"
             name="descriptor"
             description="If left blank, an account number will be auto generated"
-            validator={val => {
-              if (
-                !validateAlphanumericWithMaxLength(
-                  val,
-                  descriptorLimit_BankAccount
-                )
-              ) {
+            validator={(val) => {
+              if (!validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                 return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
               }
             }}
             style={getStyle_DescriptorInput_BankAccount(va_config)}
-            onChange={e => {
+            onChange={(e) => {
               let val = e.target.value;
 
-              if (
-                validateAlphanumericWithMaxLength(
-                  val,
-                  descriptorLimit_BankAccount
-                )
-              ) {
+              if (validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                 e.target.value = val.toUpperCase();
               }
             }}
@@ -222,11 +195,7 @@ export default class EnableTransferMode extends React.Component {
             <br />
             <div class="Modal__actions">
               {toAutoCreateDescriptor && (
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={this.props.closeModal}
-                >
+                <button type="button" className="btn btn-default" onClick={this.props.closeModal}>
                   No, Cancel
                 </button>
               )}
@@ -234,7 +203,7 @@ export default class EnableTransferMode extends React.Component {
               <button
                 class={classList(
                   'btn btn-primary',
-                  toAutoCreateDescriptor ? 'pull-right' : 'btn-block'
+                  toAutoCreateDescriptor ? 'pull-right' : 'btn-block',
                 )}
               >
                 {buttonLabel}

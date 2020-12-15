@@ -29,10 +29,8 @@ export default class VirtualAccount extends GenericEntity {
 
   fetchPayments() {
     const url = `${this.resourceUrl}/${this.id}/payments`;
-    return this.makeGenericAjaxCall({ url }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Payment(item).deserialize()
-      );
+    return this.makeGenericAjaxCall({ url }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Payment(item).deserialize());
       return response;
     });
   }
@@ -47,17 +45,15 @@ export default class VirtualAccount extends GenericEntity {
 
   close() {
     const url = `${this.resourceUrl}/${this.id}/close`;
-    return this.makeGenericAjaxCall({ method: 'POST', url }).then(response => {
+    return this.makeGenericAjaxCall({ method: 'POST', url }).then((response) => {
       return new VirtualAccount(response.data).deserialize();
     });
   }
 
   updateAccountDetails(id, data) {
-    const url = `${this.resourceUrl}/${id}/receiver`;
-    return this.makeGenericAjaxCall({ method: 'PATCH', url, data }).then(
-      response => {
-        return new VirtualAccount(response.data).deserialize();
-      }
-    );
+    const url = `${this.resourceUrl}/${id}/receivers`;
+    return this.makeGenericAjaxCall({ method: 'POST', url, data }).then((response) => {
+      return new VirtualAccount(response.data).deserialize();
+    });
   }
 }

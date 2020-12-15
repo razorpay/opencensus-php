@@ -64,13 +64,10 @@ export default class extends React.Component {
         let accountDetails, modalTitle;
         let showUPIAddressDetails, showBankAccountDetails;
 
-        if (payload.receivers.types && payload.receivers.types.indexOf('vpa') > -1) {
+        if (payload.types && payload.types.indexOf('vpa') > -1) {
           modalTitle = 'UPI Transfer Enabled';
           showUPIAddressDetails = true;
-        } else if (
-          payload.receivers.types &&
-          payload.receivers.types.indexOf('bank_account') > -1
-        ) {
+        } else if (payload.types && payload.types.indexOf('bank_account') > -1) {
           modalTitle = 'Account Transfer Enabled';
           showBankAccountDetails = true;
         }
