@@ -38,7 +38,7 @@ function MerchantLAEntry() {
     script.async = true;
     script.defer = true;
     document.documentElement.appendChild(script);
-  
+
     window.loadHubspot = true;
   }
   return `${executeJS.toString()} executeJS()`;

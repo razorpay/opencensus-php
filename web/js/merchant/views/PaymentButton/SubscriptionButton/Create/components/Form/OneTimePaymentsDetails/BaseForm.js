@@ -5,7 +5,9 @@ import EditorModal from '../components/EditorModal';
 import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
-import FieldOptionsDropdown, { OptionsItem } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
+import FieldOptionsDropdown, {
+  OptionsItem,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import Button from 'common/new-ui/Button';
 
 // import track from '../../../track';
@@ -67,21 +69,23 @@ export default class BaseForm extends React.Component {
 
     const showDeleteOption = typeof indexInOrder !== 'undefined' && handleDeleteField;
 
-    return showDeleteOption && (
-      <FieldOptionsDropdown
-        trigger={
-          <Button.Transparent>
-            <i class="i i-ellipsis-v" />
-          </Button.Transparent>
-        }
-      >
-        <OptionsItem>
-          <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
-            <i class="i i-delete" />
-            <div>Delete Field</div>
-          </div>
-        </OptionsItem>
-      </FieldOptionsDropdown>
+    return (
+      showDeleteOption && (
+        <FieldOptionsDropdown
+          trigger={
+            <Button.Transparent>
+              <i class="i i-ellipsis-v" />
+            </Button.Transparent>
+          }
+        >
+          <OptionsItem>
+            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
+              <i class="i i-delete" />
+              <div>Delete Field</div>
+            </div>
+          </OptionsItem>
+        </FieldOptionsDropdown>
+      )
     );
   }
 

@@ -104,7 +104,11 @@ export default class ProfileDropdown extends Component {
 
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
-        <DropdownTrigger class="dropdown-toggle">
+        <DropdownTrigger
+          class={`dropdown-toggle${
+            user.isAnnouncementIconEnabled ? ' dropdown-toggle--large-icon' : ''
+          }`}
+        >
           <i className="i i-profile" />
         </DropdownTrigger>
         <DropdownContent>

@@ -64,7 +64,14 @@ export default class NotificationsDropdown extends Component {
 
     this.props.tracking.trackEvent(
       window.rzpQ &&
-        window.rzpQ.merchantActions().success('merchant_dashboard.display_notification'),
+        window.rzpQ.merchantActions().success(
+          'merchant_dashboard.display_notification',
+          this.props.user.isAnnouncementIconEnabled
+            ? {
+                experimentVersion: 2,
+              }
+            : null,
+        ),
     );
   }
 
@@ -99,6 +106,7 @@ export default class NotificationsDropdown extends Component {
           ID,
           readID,
           unreadID,
+          ...(this.props.user.isAnnouncementIconEnabled && { experimentVersion: 2 }),
         }),
       );
     }
@@ -140,6 +148,7 @@ export default class NotificationsDropdown extends Component {
         ID,
         readID,
         unreadID,
+        ...(this.props.user.isAnnouncementIconEnabled && { experimentVersion: 2 }),
       }),
     );
 
@@ -267,10 +276,19 @@ export default class NotificationsDropdown extends Component {
 
     return (
       <Dropdown closeOnClick={false} onShow={this.onShow} onHide={this.onHide}>
-        <DropdownTrigger class="dropdown-toggle Dropdown--Notifications-toggle">
+        <DropdownTrigger
+          class={`dropdown-toggle Dropdown--Notifications-toggle${
+            user.isAnnouncementIconEnabled ? ' dropdown-toggle--large-icon' : ''
+          }`}
+        >
           {showMobileNav ? (
             <React.Fragment>
               <i class="i i-bell">{hasUnread && <span class="red-bubble" />}</i>
+            </React.Fragment>
+          ) : user.isAnnouncementIconEnabled ? (
+            <React.Fragment>
+              <i class="i i-horn"></i>
+              {hasUnread && <span class="new-bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           ) : (
             <React.Fragment>

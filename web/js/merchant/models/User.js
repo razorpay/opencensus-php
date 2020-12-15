@@ -434,6 +434,10 @@ export default class User {
     return this.getExpStatus('view_fd_tickets');
   }
 
+  get isAnnouncementIconEnabled() {
+    return this.getExpStatus('AnnouncementIconDec2020');
+  }
+
   get isUxRevampPhase2Enabled() {
     return this.getExpStatus('settlement_ux_revamp_p2');
   }

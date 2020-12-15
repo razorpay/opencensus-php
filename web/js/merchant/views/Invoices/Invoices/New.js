@@ -539,7 +539,7 @@ export default class InvoicesNewContainer extends Component {
   ) => {
     // Update for TypeAhead
     this.setState({
-      selectedCustomerDisplay: customer
+      selectedCustomerDisplay: customer,
     });
 
     // Update in Redux form
@@ -1819,10 +1819,12 @@ export default class InvoicesNewContainer extends Component {
                                     return (
                                       <div
                                         class="quick-create"
-                                        onClick={() => this.quickCreateCustomer({
-                                          searchTerm: select.searchTerm,
-                                          closeSelectCustomerDropdown: select.actions.close
-                                        })}
+                                        onClick={() =>
+                                          this.quickCreateCustomer({
+                                            searchTerm: select.searchTerm,
+                                            closeSelectCustomerDropdown: select.actions.close,
+                                          })
+                                        }
                                       >
                                         <i class="i i-plus" />
                                         <b>Create New Customer</b>

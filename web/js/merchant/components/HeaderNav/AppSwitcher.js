@@ -97,9 +97,14 @@ class AppSwitcher extends Component {
   };
 
   render() {
+    const { user } = this.props;
     return (
       <Dropdown closeButtonClass={closeButtonClass} onShow={this.handleShow} closeOnClick={false}>
-        <DropdownTrigger className="dropdown-toggle">
+        <DropdownTrigger
+          className={`dropdown-toggle${
+            user.isAnnouncementIconEnabled ? ' dropdown-toggle--large-icon' : ''
+          }`}
+        >
           <i className="i i-widget" />
         </DropdownTrigger>
         <DropdownContent>

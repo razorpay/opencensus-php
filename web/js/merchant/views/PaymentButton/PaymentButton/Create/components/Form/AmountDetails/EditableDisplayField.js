@@ -2,11 +2,7 @@ import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import BaseForm from './BaseForm';
-import {
-  DynamicAmount,
-  FixedAmount,
-  FixedAmountWithQuantity,
-} from './FieldTypesRepresentations';
+import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
 
 import { classList } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
@@ -35,9 +31,7 @@ export default class EditableDisplayField extends React.Component {
     isEditModeOpened: this.props.isEditModeOpened || false,
   };
 
-  fieldType = this.props.field
-    ? mapFieldToAmountFieldType(this.props.field)
-    : null;
+  fieldType = this.props.field ? mapFieldToAmountFieldType(this.props.field) : null;
 
   componentDidUpdate(prevProps) {
     // This scenario is for while adding new amount field
@@ -76,9 +70,7 @@ export default class EditableDisplayField extends React.Component {
     switch (this.fieldType) {
       case FIELD_TYPES.fixed_price.key:
         return (
-          <FixedAmount isMandatory={field.mandatory}>
-            {this.getDummyAmountInputField()}
-          </FixedAmount>
+          <FixedAmount isMandatory={field.mandatory}>{this.getDummyAmountInputField()}</FixedAmount>
         );
 
       case FIELD_TYPES.dynamic_price.key:
@@ -133,24 +125,16 @@ export default class EditableDisplayField extends React.Component {
   };
 
   render() {
-    const {
-      field,
-      currency,
-      indexInOrder,
-      isEditExistingId,
-      children,
-    } = this.props;
+    const { field, currency, indexInOrder, isEditExistingId, children } = this.props;
     const { isEditModeOpened } = this.state;
 
     return (
       <div
-        onClick={
-          !children && !isEditModeOpened ? this.handleToggleEditMode : () => {}
-        }
+        onClick={!children && !isEditModeOpened ? this.handleToggleEditMode : () => {}}
         class={classList(
           'EditableAmount EditableDisplayField',
           children && 'EditableDisplayField--disabled',
-          isEditModeOpened && 'EditableDisplayField--editMode'
+          isEditModeOpened && 'EditableDisplayField--editMode',
         )}
       >
         {children || (
@@ -191,7 +175,5 @@ export default class EditableDisplayField extends React.Component {
 }
 
 function getPaddingClassForCurrencyLength(currencySymbol) {
-  return `Input--CurrencyPadding-${
-    currencySymbol.length > 4 ? 'long' : currencySymbol.length
-  }`;
+  return `Input--CurrencyPadding-${currencySymbol.length > 4 ? 'long' : currencySymbol.length}`;
 }
