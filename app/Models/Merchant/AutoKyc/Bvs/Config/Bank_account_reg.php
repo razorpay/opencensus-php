@@ -14,8 +14,8 @@ class Bank_account_reg extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
+    protected $rule_v2 = [
+        'version'    => 'v2',
         'rules_list' => [
             '0' => [
                 'rule_type' => 'string_comparison_rule',
@@ -71,7 +71,7 @@ class Bank_account_reg extends BaseConfig
                                     'var' => 'enrichments.online_provider.details.account_holder_names',
                                 ],
                                 [
-                                    'fuzzy_suzzy' => [
+                                    'fuzzy_wuzzy' => [
                                         [
                                             'var' => "each_array_element.value",
                                         ],
@@ -79,6 +79,13 @@ class Bank_account_reg extends BaseConfig
                                             'var' => 'artefact.details.account_holder_names.1.value'
                                         ],
                                         51,
+                                        [
+                                            "private limited",
+                                            "limited liability partnership",
+                                            "pvt",
+                                            "ltd",
+                                            "."
+                                        ],
                                     ],
                                 ]
                             ]

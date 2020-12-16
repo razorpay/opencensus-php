@@ -12,26 +12,6 @@ class Personal_pan extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
-        'rules_list' => [
-            '0' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  => [
-                    'fuzzy_wuzzy' => [
-                        [
-                            'var' => 'artefact.details.name.value'
-                        ],
-                        [
-                            'var' => 'enrichments.online_provider.details.name.value'
-                        ],
-                        81,
-                    ],
-                ],
-            ],
-        ],
-    ];
-
     protected $rule_v2 = [
         'version'    => 'v2',
         'rules_list' => [

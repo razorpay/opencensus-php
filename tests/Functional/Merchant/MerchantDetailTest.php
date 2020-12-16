@@ -104,17 +104,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testSubmitWithOcrStatusVerified()
-    {
-        $this->validatePoaStatusOnL2Submission('verified');
-    }
-
-
-    public function testSubmitWithOcrStatusIncorrectDetails()
-    {
-        $this->validatePoaStatusOnL2Submission('incorrect_details');
-    }
-
     public function testSubmitAutoActivate()
     {
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
@@ -2533,7 +2522,9 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $mid = '1cXSLlUU8V9sXl';
 
-        $input = ['merchant_id' => $mid];
+        $input = ['merchant_id'               => $mid,
+                  'gstin_verification_status' => 'verified',
+        ];
 
         $this->mockRazorX('testSubmit', 'bvs_penny_testing', 'on');
 
@@ -2593,79 +2584,6 @@ class MerchantDetailTest extends OAuthTestCase
         $testdata = $this->testData[$test];
 
         $this->startTest($testdata);
-    }
-
-    public function testGSTINVerification()
-    {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '1', 'gstin_verification_status' => '',]);
-
-        $this->gstinVerification('gstinVerification', 'success', 'verified', [
-            'promoter_pan_name' => 'Shashank Kumar',
-            'business_name'     => 'RELIANCE INDUSTRIES LIMITED',
-            'gstin'             => '07AADCB2230M1ZA',
-        ]);
-
-        $this->gstinVerification('gstinVerification', 'legal_name_as_signatory', 'verified', [
-            'promoter_pan_name' => 'Shashank Kumar',
-            'business_name'     => 'RELIANCE INDUSTRIES LIMITED',
-            'gstin'             => '07AADCB2230M1ZA',]);
-
-        $this->gstinVerification('gstinVerification', 'incorrect_details', 'incorrect_details', [
-            'promoter_pan_name' => 'Shashank Kumar',
-            'business_name'     => 'xyz',
-            'gstin'             => '07AADCB2230M1ZA',]);
-
-        $this->gstinVerification('gstinVerification', 'failure', 'failed', [
-            'promoter_pan_name' => 'Shashank Kumar',
-            'business_name'     => 'xyz',
-            'gstin'             => '07AADCB2230M1ZA',]);
-
-        $this->gstinVerification('gstinVerification', 'success', 'not_matched', [
-            'promoter_pan_name' => 'random name',
-            'business_name'     => 'xyz',
-            'gstin'             => '07AADCB2230M1ZA',]);
-
-        $this->gstinVerification('gstinVerification', 'success', 'verified', [
-            'promoter_pan_name'         => 'Shashank Kumar',
-            'business_name'             => 'RELIANCE INDUSTRIES LIMITED',
-            'gstin'                     => '07AADCB2230M1ZV',
-            'gstin_verification_status' => 'failed']);
-
-        $this->gstinVerification('gstinVerification', 'success', 'verified', [
-            'promoter_pan_name'         => 'Shashank Kumar',
-            'business_name'             => 'RELIANCE INDUSTRIES LIMITED',
-            'gstin'                     => '07AADCB2230M1ZV',
-            'gstin_verification_status' => '',
-        ]);
-    }
-
-    public function testGSTINVerificationFuzzyMatchFailureOnBusinessName()
-    {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '1']);
-
-        $this->gstinVerification('testGSTINVerificationFuzzyMatchFailureOnBusinessName', 'success', 'not_matched', [
-            'promoter_pan_name' => 'Shashank Kumar',
-            'business_name'     => 'xyz',]);
-    }
-
-    protected function gstinVerification($test, string $mockStatus, string $gstinVerificationStatus, array $input)
-    {
-        Config::set('applications.kyc.gstin_authentication', $mockStatus);
-
-        Config::set('applications.kyc.mock', true);
-
-        $this->fixtures->on('live')->edit('merchant_detail','10000000000000', $input);
-        $this->fixtures->on('test')->edit('merchant_detail','10000000000000', $input);
-
-        $this->ba->proxyAuth();
-
-        $testData = $this->testData[$test];
-
-        $this->startTest($testData);
-
-        $merchantDetails = $this->getDbEntityById('merchant_detail', '10000000000000');
-
-        $this->assertEquals($gstinVerificationStatus, $merchantDetails->getGstinVerificationStatus());
     }
 
     public function testCanSubmitAutoKycVerificationStatusGstinIncorrect()

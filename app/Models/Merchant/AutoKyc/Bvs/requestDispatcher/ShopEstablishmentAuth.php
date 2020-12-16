@@ -21,8 +21,7 @@ class ShopEstablishmentAuth extends Base
         return (
             ($this->merchantDetails->getShopEstbVerificationStatus() === BvsValidationConstants::PENDING) and
             (empty($this->merchantDetails->getShopEstbNumber()) === false) and
-            (empty($this->areaCode) === false) and
-            ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_SHOP_ESTB_AUTH) === true));
+            (empty($this->areaCode) === false));
     }
 
     public function getRequestPayload(): array

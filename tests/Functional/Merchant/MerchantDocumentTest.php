@@ -153,36 +153,6 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
-    public function testDocUploadAndCheckOcrStatusSuccessForRegistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(1, 'success', 'verified');
-    }
-
-    public function testDocUploadAndCheckOcrStatusSuccessForUnregistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(2, 'success', 'verified');
-    }
-
-    public function testDocUploadAndCheckOcrStatusNotMatchedForRegistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(1, 'success', 'not_matched', 'random name');
-    }
-
-    public function testDocUploadAndCheckOcrStatusNotMatchedForUnregistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(2, 'success', 'not_matched', 'random name');
-    }
-
-    public function testDocUploadAndCheckOcrStatusIncorrectDetailsForRegistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(1, 'incorrect_details', 'incorrect_details');
-    }
-
-    public function testDocUploadAndCheckOcrStatusIncorrectDetailsForUnregistered()
-    {
-        $this->uploadDocAndCheckOcrSuccess(2, 'incorrect_details', 'incorrect_details');
-    }
-
     public function uploadDocAndCheckOcrSuccess(int $businessType,
                                                 string $octResponseStatus,
                                                 string $ocrVerificationStatus,
@@ -227,41 +197,6 @@ class MerchantDocumentTest Extends TestCase
 
             $this->assertEquals($merchantDocumentDb['ocr_verify'], $ocrVerificationStatus);
         }
-    }
-
-    public function testDocumentUploadAndCheckOcrVerificationStatusFailedForException()
-    {
-
-        $testDataKeyName = 'testDocumentUploadAndCheckOcrVerificationStatusSuccess';
-
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
-
-        $this->fixtures->create(
-            'merchant_detail',
-            [
-                'merchant_id'       => '10000000000000',
-                'promoter_pan_name' => 'ABCDE FGHIJ',
-                'business_type'     => 2,
-            ]);
-
-        $this->updateUploadDocumentData($testDataKeyName);
-
-        Config::set('applications.kyc.mock', false);
-        Config::set('applications.kyc.poa_ocr_response_status', Constants::FAILURE);
-
-        $testData = &$this->testData[$testDataKeyName];
-
-        $documentType = Constants::VOTER_ID_FRONT;
-
-        $testData['request']['content']['document_type'] = $documentType;
-
-        $testData['response']['content']['documents'][$documentType] = [];
-
-        $response = $this->startTest($testData);
-
-        $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
-
-        $this->assertEquals($merchantDocumentDb['ocr_verify'], 'failed');
     }
 
     protected function updateUploadDocumentData(string $callee)

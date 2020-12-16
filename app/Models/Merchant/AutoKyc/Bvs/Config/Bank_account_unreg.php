@@ -14,8 +14,8 @@ class Bank_account_unreg extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
+    protected $rule_v2 = [
+        'version'    => 'v2',
         'rules_list' => [
             '0' => [
                 'rule_type' => 'string_comparison_rule',

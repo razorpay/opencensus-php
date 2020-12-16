@@ -22,8 +22,7 @@ class CompanyPanOcr extends Base
         return (($businessType !== Detail\BusinessType::PROPRIETORSHIP) and
                 (Detail\BusinessType::isUnregisteredBusiness($businessType) === false) and
                 ($this->merchantDetails->getCompanyPanDocVerificationStatus() === BvsValidationConstants::PENDING) and
-                ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::BUSINESS_PAN_URL) !== null) and
-                ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_BUSINESS_PAN_OCR) === true));
+                ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::BUSINESS_PAN_URL) !== null));
     }
 
     /**

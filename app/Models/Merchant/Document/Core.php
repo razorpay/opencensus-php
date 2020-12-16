@@ -264,67 +264,13 @@ class Core extends Base\Core
             return;
         }
 
-        $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_AUTO_KYC_OCR);
-
-        if ($isPoaBvsRazorxExperimentEnabled === true)
-        {
-            $this->performOcrWithBvs($document, $merchantDetails);
-        }
-        else
-        {
-            $this->verifyPOA($document, $merchantDetails);
-        }
+        $this->performOcrWithBvs($document, $merchantDetails);
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
                                 Entity::DOCUMENT_TYPE        => $document->getDocumentType(),
                                 Detail\Entity::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
                             ]);
-    }
-
-    /**
-     * @param Entity        $document
-     * @param Detail\Entity $merchantDetails
-     *
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
-     */
-    protected function verifyPOA(Entity $document, Merchant\Detail\Entity $merchantDetails)
-    {
-        $signedUrl = (new Detail\Service())->getSignedUrl(
-            $document->getFileStoreId(),
-            $document->getMerchantId()
-        );
-
-        $input = [
-            DetailConstant::SIGNED_URL        => $signedUrl,
-            DetailConstant::DOCUMENT_TYPE     => $this->mapToKycDocType($document->getDocumentType()),
-            DetailConstant::DOCUMENT_FILE_ID  => $document->getFileStoreId(),
-            DetailConstant::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
-            DetailConstant::DOCUMENT_SOURCE   => $document->getFileStoreSource(),
-        ];
-
-        $verificationStatus = OcrVerificationStatus::FAILED;
-
-        try
-        {
-            $verificationStatus = (new AutoKyc\Core())->verifyPOA($merchantDetails, $input);
-        }
-        catch (\Throwable $exception)
-        {
-            $data = [
-                Entity::FILE_STORE_ID => $document->getFileStoreId(),
-            ];
-
-            $this->trace->traceException($exception,
-                                         null,
-                                         TraceCode::MERCHANT_POA_VERIFICATION_FAILED,
-                                         $data);
-        }
-
-        $document->setOcrVerify($verificationStatus);
     }
 
     protected function mapToKycDocType(string $document_type): ?string

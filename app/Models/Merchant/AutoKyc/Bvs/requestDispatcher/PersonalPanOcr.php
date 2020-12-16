@@ -19,9 +19,7 @@ class PersonalPanOcr extends Base
     {
         return (($this->merchantDetails->getBusinessType() === Merchant\Detail\BusinessType::PROPRIETORSHIP) and
                 ($this->merchantDetails->getPersonalPanDocVerificationStatus() === BvsValidationConstants::PENDING) and
-                ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::PERSONAL_PAN) !== null) and
-                ($this->merchantCore->isRazorxExperimentEnable($this->merchant->getId(), RazorxTreatment::BVS_PERSONAL_PAN_OCR) === true));
-
+                ($this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::PERSONAL_PAN) !== null));
     }
 
     /**

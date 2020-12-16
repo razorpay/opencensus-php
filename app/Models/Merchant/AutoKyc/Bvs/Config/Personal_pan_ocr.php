@@ -13,8 +13,8 @@ class Personal_pan_ocr extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
+    protected $rule_v2 = [
+        'version'    => 'v2',
         'rules_list' => [
             '0' => [
                 'rule_type' => 'string_comparison_rule',
@@ -32,7 +32,7 @@ class Personal_pan_ocr extends BaseConfig
             '1' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'fuzzy_wuzzy' => [
+                    'fuzzy_suzzy' => [
                         [
                             'var' => 'artefact.details.name.value',
                         ],

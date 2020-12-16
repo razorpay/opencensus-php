@@ -14,63 +14,6 @@ class Gstin extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
-        'rules_list' => [
-            '0' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  =>
-                    [
-                        'or' => [
-                            [
-                                'fuzzy_wuzzy' => [
-                                    [
-                                        'var' => 'artefact.details.legal_name.value',
-                                    ],
-                                    [
-                                        'var' => 'enrichments.online_provider.details.legal_name.value',
-                                    ],
-                                    70,
-                                ],
-                            ],
-                            [
-                                'fuzzy_wuzzy' => [
-                                    [
-                                        'var' => 'artefact.details.trade_name.value',
-                                    ],
-                                    [
-                                        'var' => 'enrichments.online_provider.details.trade_name.value',
-                                    ],
-                                    70,
-                                ]
-                            ],
-                        ],
-                    ],
-            ],
-            '1' => [
-                'rule_type' => 'array_comparison_rule',
-                'rule_def'  => [
-                    "some" => [
-                        [
-                            'var' => 'enrichments.online_provider.details.signatory_names',
-                        ],
-                        [
-                            'fuzzy_wuzzy' => [
-                                [
-                                    'var' => "each_array_element",
-                                ],
-                                [
-                                    'var' => 'artefact.details.legal_name.value',
-                                ],
-                                70,
-                            ],
-                        ]
-                    ]
-                ],
-            ]
-        ],
-    ];
-
     protected $rule_v2 = [
         'version'    => 'v2',
         'rules_list' => [

@@ -151,16 +151,10 @@ class Constant
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
-        Type::BUSINESS_PAN_URL            => [
-            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_BUSINESS_PAN_OCR,
-        ],
-        Type::PERSONAL_PAN                => [
-            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PERSONAL_PAN_OCR,
-        ],
+        Type::BUSINESS_PAN_URL            => [],
+        Type::PERSONAL_PAN                => [],
         Type::CANCELLED_CHEQUE            => [],
-        Entity::SHOP_ESTABLISHMENT_NUMBER => [
-            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_SHOP_ESTB_AUTH,
-        ],
+        Entity::SHOP_ESTABLISHMENT_NUMBER => [],
         Constant::GSTIN                   => [],
         self::LLPIN                       => [],
         self::CIN                         => [],

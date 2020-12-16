@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\BvsValidation\Entity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use Rzp\Bvs\Validation\V1\ValidationResponse;
 
 class ValidationBaseResponse implements Response

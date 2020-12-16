@@ -14,8 +14,8 @@ class Cancelled_cheque_ocr_unreg extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        'version'    => 'v1',
+    protected $rule_v2 = [
+        'version'    => 'v2',
         'rules_list' => [
             '0' => [
                 'rule_type' => 'string_comparison_rule',
@@ -51,7 +51,7 @@ class Cancelled_cheque_ocr_unreg extends BaseConfig
                             'var' => 'enrichments.ocr.details.1.account_holder_names',
                         ],
                         [
-                            'fuzzy_wuzzy' => [
+                            'fuzzy_suzzy' => [
                                 [
                                     'var' => "each_array_element.value",
                                 ],

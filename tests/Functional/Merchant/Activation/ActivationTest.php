@@ -1261,11 +1261,6 @@ class ActivationTest extends OAuthTestCase
         $this->assertTrue($response['can_submit']);
     }
 
-    public function testKycSubmissionWhenPoaIsOcrYetTobeVerified()
-    {
-        $this->kycSubmissionWithSuccessCases(null, 'verified');
-    }
-
     public function kycSubmissionWithSuccessCases($poaVerificationStatus, $bankDetailsVerificationStatus = null)
     {
         $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_front');

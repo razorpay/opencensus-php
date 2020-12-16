@@ -37,17 +37,7 @@ final class RazorxTreatment
     //
     const BVS_AUTO_KYC = 'bvs_auto_kyc';
 
-    const BVS_AUTO_KYC_OCR         = 'bvs_auto_kyc_ocr';
-    const BVS_GSTIN_VALIDATION     = 'bvs_gstin_validation';
-    const BVS_CIN_VALIDATION       = 'bvs_cin_validation';
-    const BVS_PERSONAL_PAN_OCR     = 'bvs_personal_pan_ocr';
-    const BVS_BUSINESS_PAN_OCR     = 'bvs_business_pan_ocr';
-    const BVS_SHOP_ESTB_AUTH       = 'bvs_shop_estb_auth';
     const BVS_PENNY_TESTING        = 'bvs_penny_testing';
-
-    // this experiment is used to route merchant to BVS with new RuleDef
-
-    const BVS_RULE_NEW_VERSION = "bvs_rule_new_version";
 
     // this experiment is used to enable/disable company search
 

@@ -326,8 +326,6 @@ class Core extends Base\Core
 
         $this->autoUpdateMerchantActivationFlows($merchant, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
 
-        $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
-
         // If a merchant does not have website or app, we would need to activate them
         // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
         // should be set to true only if one submits website details, there by will be able to
@@ -419,78 +417,6 @@ class Core extends Base\Core
         }
 
         (new Merchant\Core)->upsertLegalEntity($merchant, $legalEntityInput);
-    }
-
-    /**
-     * Updates merchant detail poa status to verified if any one
-     * of the document uploaded by merchant is verified
-     *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
-     */
-    public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant) : void
-    {
-        $isPoaBvsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_AUTO_KYC_OCR);
-
-        if (((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false) or
-            ($isPoaBvsRazorxExperimentEnabled === true))
-        {
-            return;
-        }
-
-        //
-        // No poa verification for linked accounts
-        //
-        if ($merchant->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        $documents = $merchant->merchantDocuments;
-
-        $documentType = '';
-
-        $poaVerificationStatus = null;
-
-        //
-        // Update PoaVerificationStatus to Verified if poa document uploaded has OCR Verified status.
-        //
-        foreach ($documents as $document)
-        {
-            if (Document\Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
-            {
-                continue;
-            }
-
-            $documentType = $document[Document\Entity::DOCUMENT_TYPE];
-
-            $poaVerificationStatus = $document[Document\Entity::OCR_VERIFY] ?? null;
-
-            if ($poaVerificationStatus === OcrVerificationStatus::VERIFIED)
-            {
-                $this->trace->info(
-                    TraceCode::MERCHANT_VERIFY_POA,
-                    [
-                        DEConstants::DOCUMENT_TYPE => $documentType,
-                    ]);
-
-                break;
-            }
-
-        }
-
-        $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
-                            [
-                                Detail\Constants::POA_STATUS    => $poaVerificationStatus ?? DEConstants::NOT_AVAILABLE,
-                                Detail\Constants::DOCUMENT_TYPE => $documentType,
-                                Detail\Constants::BUSINESS_TYPE => $merchantDetails->getBusinessType()
-                            ]);
-
-        $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
-
-        $this->repo->saveOrFail($merchantDetails);
     }
 
     /**
@@ -2891,51 +2817,7 @@ class Core extends Base\Core
             return;
         }
 
-        $shouldVerifyGstinFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_GSTIN_VALIDATION);
-
-        if ($shouldVerifyGstinFromBVS === true)
-        {
-            $this->updateDocumentVerificationStatus($merchant, Constant::GSTIN);
-        }
-        else
-        {
-            $this->verifyGstinFromKycService($merchantDetails);
-        }
-    }
-
-    /**
-     * Verifies Gstin from KYC Service
-     *
-     * @param Entity $merchantDetails
-     */
-    protected function verifyGstinFromKycService(Entity $merchantDetails): void
-    {
-        $verificationStatus = GSTINVerificationStatus::FAILED;
-        try
-        {
-            $input = [
-                DEConstants::GSTIN               => $merchantDetails->getGstin(),
-                DEConstants::COMPANY_NAME        => $merchantDetails->getBusinessName() ?? '',
-                DEConstants::PROMOTER_PAN_NAME   => $merchantDetails->getPromoterPanName() ?? '',
-                DEConstants::OPERATIONAL_ADDRESS => $merchantDetails->getBusinessOperationAddress() ?? '',
-            ];
-
-            $verificationStatus = (new AutoKyc\Core())->verifyGSTIN($merchantDetails, $input);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                                         null,
-                                         TraceCode::MERCHANT_GSTIN_VERIFICATION_FAILED);
-        }
-
-        $merchantDetails->setGstinVerificationStatus($verificationStatus);
-
-        $dimension = $this->fetchGSTINMetricDimensions($merchantDetails);
-
-        $this->trace->count(DetailMetric::GSTIN_VERIFICATION_STATUS_TOTAL, $dimension);
+        $this->updateDocumentVerificationStatus($merchant, Constant::GSTIN);
     }
 
     /**

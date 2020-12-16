@@ -12,26 +12,6 @@ class Aadhaar extends BaseConfig
         ],
     ];
 
-    protected $rule_v1 = [
-        "version"    => "v1",
-        "rules_list" => [
-            "0" => [
-                "rule_type" => "string_comparison_rule",
-                "rule_def"  => [
-                    "fuzzy_wuzzy" => [
-                        [
-                            "var" => "artefact.details.name.value",
-                        ],
-                        [
-                            "var" => "enrichments.ocr.details.3.name.value",
-                        ],
-                        70
-                    ],
-                ],
-            ],
-        ],
-    ];
-
     protected $rule_v2 = [
         "version"    => "v2",
         "rules_list" => [
