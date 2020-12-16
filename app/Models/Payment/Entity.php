@@ -3122,6 +3122,33 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (isset($array[self::INVOICE_ID]))
         {
             $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($array[self::INVOICE_ID]);
+
+            return;
+        }
+
+        // Adding the below code for compatibility reasons.
+        // For new pl service, invoice_id column is deprecated.
+        // But there are some merchants using old invoices contract that depend on invoice_id value in payments fetch.
+        // Since they were silently migrated to new service, we have to provide invoice_id till they switch their integrations to the new contract.
+        $order = $this->order;
+
+        $merchant = $this->merchant;
+
+        if ($order === null or $merchant === null)
+        {
+            return;
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PAYMENTLINKS_COMPATIBILITY_V2) === false)
+        {
+            return;
+        }
+
+        if ($order->getProductType() === Order\ProductType::PAYMENT_LINK_V2)
+        {
+           $productId =  $order->getProductId();
+
+           $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($productId);
         }
     }
 
