@@ -697,7 +697,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     protected function makeDebitPayment($amount = 300000)
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
+        $payment = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
 
         $payment['bank_account'] = [
             'account_number' => '1111111111111',
@@ -706,7 +706,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'account_type'   => 'savings',
         ];
 
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
 
         $payment['order_id'] = $order->getPublicId();
 
@@ -730,9 +730,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ]);
 
         $payment             = $this->getEmandatePaymentArray('UTIB', null, $amount);
-
         $payment['token']    = $tokenId;
-
         $payment['order_id'] = $order->getPublicId();
 
         unset($payment['auth_type']);
@@ -1025,6 +1023,41 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
+    }
+
+    public function testDebitCancel()
+    {
+        $this->makeDebitPayment();
+
+        $debitPayment = $this->getLastPayment();
+
+        $this->fixtures->stripSign($debitPayment['id']);
+
+        $data['payment_id'] = [
+            'payment_id' => $debitPayment['id'],
+        ];
+
+        $excel = Excel::create("test_cancel", function($excel) use ($data) {
+                    $excel->sheet('Sheet1', function($sheet) use ($data) {
+                        $sheet->fromArray($data);
+                    });
+                 });
+
+        $data = $excel->string('xlsx');
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile('cancel data.xlsx', $handle));
+
+        $data = $this->testData['testDebitCancel'];
+
+        $data['request']['files']['file'] = $file;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($data);
     }
 
     protected function createPaymentFailed()

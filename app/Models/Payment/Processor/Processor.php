@@ -1871,6 +1871,39 @@ class Processor
             });
     }
 
+    public function cancelEmandatePayment(Payment\Entity $payment)
+    {
+        if ($payment->getMethod() != Payment\Method::EMANDATE)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED, null,
+                [
+                    'payment_id' => $payment->getPublicId(),
+                    'order_id'   => $payment->getPublicOrderId(),
+                    'method'     => $payment->getMethod(),
+                ]);
+        }
+
+        $input = [];
+
+        $this->setPayment($payment);
+
+        $errorCode = $this->repo->transaction(function() use ($payment, $input)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            $errorCode = $this->cancelPayment($payment, $input);
+
+            return $errorCode;
+        });
+
+        throw new Exception\BadRequestException($errorCode, null,
+            [
+                'payment_id' => $payment->getPublicId(),
+                'order_id'   => $payment->getPublicOrderId(),
+                'method'     => $payment->getMethod(),
+            ]);
+    }
+
     /**
      * Cancels a previously created payment
      *

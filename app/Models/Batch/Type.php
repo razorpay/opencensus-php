@@ -135,6 +135,7 @@ class Type
 
     const PAYOUT_APPROVAL = 'payout_approval';
 
+    const CANCEL_DEBIT = 'cancel_debit';
 
     public static $disabledTypes = [
         //
@@ -277,6 +278,7 @@ class Type
         CardlessEmi::ZESTMONEY,
         CardlessEmi::FLEXMONEY,
         CardlessEmi::EARLYSALARY,
+        self::CANCEL_DEBIT,
     ];
 
     /**

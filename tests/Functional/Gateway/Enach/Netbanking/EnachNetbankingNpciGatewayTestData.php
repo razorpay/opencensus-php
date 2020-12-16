@@ -73,6 +73,32 @@ return [
             ]
         ]
     ],
+    'testDebitCancel' => [
+        'request' => [
+            'url' => '/admin/batches',
+            'method' => 'POST',
+            'content' => [
+                'type'     => 'emandate',
+                'sub_type' => 'cancel_debit',
+                'gateway'  => 'all',
+            ],
+            'files' => [
+                'file' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'batch',
+                'type'                 => 'emandate',
+                'status'               => 'created',
+                'total_count'          => 1,
+                'success_count'        => 0,
+                'failure_count'        => 0,
+                'processed_count'      => 0,
+                'processed_percentage' => 0,
+            ]
+        ]
+    ],
 
     'testDebitFileGenerationOnNonWorkingDay' => [
         'request' => [

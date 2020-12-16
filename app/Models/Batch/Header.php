@@ -1844,6 +1844,12 @@ class Header
             ]
         ],
 
+        'emandate_cancel_debit_all' => [
+            self::INPUT => [
+                'payment_id',
+            ]
+        ],
+
         'emandate_register_sbi' => [
             self::INPUT => [
                 'success' => [
