@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { useActivationFormState, isTabComplete } from '../context/store';
-import activationFormatter from '../../../../services/formatters/activation';
+import activationFormatter from '../services/formatters/activation';
 import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
 
 export const fetchActivationData = async () => {
@@ -20,7 +20,10 @@ export const postActivation = (data) =>
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
-    (key) => !updatedDetails[key].error && prevDetails[key].value !== updatedDetails[key].value,
+    (key) =>
+      key !== 'undefined' &&
+      !updatedDetails[key].error &&
+      prevDetails[key].value !== updatedDetails[key].value,
   );
   const reqData = filteredFields.reduce((prev, cur) => {
     delete updatedDetails[cur].error;

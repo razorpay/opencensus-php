@@ -26,6 +26,7 @@ const bankAndCompanyDetailFields = [
   'bank_account_name',
   'bank_branch_ifsc',
 ];
+const onboardingCardFields = ['business_type', 'business_subcategory', 'business_model'];
 
 const getFieldObjects = (fields, data) => {
   let fieldObjects = {};
@@ -42,11 +43,13 @@ const activationFormatter = (data) => {
   const businessOverview = getFieldObjects(businessOverviewFields, data);
   const businessDetails = getFieldObjects(businessDetailFields, data);
   const bankAndCompanyDetails = getFieldObjects(bankAndCompanyDetailFields, data);
+  const onboardingCardDetails = getFieldObjects(onboardingCardFields, data);
   return {
     contact_details: contactDetails,
     business_overview: businessOverview,
     business_details: businessDetails,
     bank_and_company_details: bankAndCompanyDetails,
+    onboarding_card_details: onboardingCardDetails,
     ...data,
   };
 };

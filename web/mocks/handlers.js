@@ -3,6 +3,7 @@ import * as ActivationDB from '../v2/merchant/onboarding/mobile/services/data/Ac
 import * as PaymentsDB from '../v2/merchant/onboarding/mobile/services/data/PaymentsDB';
 import * as WebsiteWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/WebsiteWorkflowDB';
 import * as InternationalWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/InternationalWorkflowDB';
+import * as BusinessCategoryDB from '../v2/merchant/onboarding/mobile/services/data/BusinessCategoryDB';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -42,6 +43,30 @@ export const handlers = [
           username: authenticatedUser,
           firstName: 'John',
         },
+      }),
+    );
+  }),
+
+  rest.get('http://localhost:6006/activation/business_details', (req, res, ctx) => {
+    const search_string = req.url.searchParams.get('search_string');
+    return res(
+      ctx.status(200),
+      ctx.delay(500),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: BusinessCategoryDB.read().filter((item) => {
+          let matched = false;
+          item.matches.forEach((_item) => {
+            if (_item.subcategory_name.includes(search_string)) {
+              matched = true;
+            }
+          });
+          if (matched) {
+            return true;
+          }
+          return false;
+        }),
       }),
     );
   }),

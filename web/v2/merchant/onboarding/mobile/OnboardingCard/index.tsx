@@ -55,7 +55,7 @@ const OnboardingCard: React.FC = () => {
 
         <Separator $onboardingMilestone={activationData.onboarding_milestone} />
 
-        <BusinessModelDetails data={activationData} />
+        <BusinessModelDetails />
 
         <CurrentActivationProgress data={activationData} payments={paymentsData} />
       </Card>

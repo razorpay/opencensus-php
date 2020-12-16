@@ -5,12 +5,13 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import Space from '@razorpay/blade/src/atoms/Space';
 import Icon from '@razorpay/blade/src/atoms/Icon';
 import Flex from '@razorpay/blade/src/atoms/Flex';
+import { FormikErrors } from 'formik';
 import { Modal, ModalBody } from '../Modal';
 import toArray from '../../services/children/to-array';
 import { StatelessAccordion, Panel } from '../Accordian';
 import Loader from '../Loader';
 import { OptionsPropsT } from './Option';
-import { OptionCheckIcon } from './Styled';
+import { OptionCheckIcon, OptionContainer } from './Styled';
 
 export interface SelectPropsT {
   label: string;
@@ -19,6 +20,7 @@ export interface SelectPropsT {
   inputPlaceholder?: string;
   children: ReactNode;
   onInputChange?: (value: string) => void;
+  errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   onChange?: (value: string, option?: ReactElement<OptionsPropsT>) => void;
   value?: string;
   disabled?: boolean;
@@ -36,6 +38,7 @@ const Select: React.FC<SelectPropsT> = ({
   searchable = false,
   filterOptions = true,
   loading = false,
+  errorText,
   onChange,
   onInputChange,
 }) => {
@@ -77,6 +80,9 @@ const Select: React.FC<SelectPropsT> = ({
   };
 
   const onSelect = (child: ReactElement<OptionsPropsT>) => {
+    if (child.props.disabled) {
+      return;
+    }
     onModalClose();
     setSelectedValue(child.props.value);
     setInputValue(child.props.label);
@@ -97,7 +103,7 @@ const Select: React.FC<SelectPropsT> = ({
         return (
           <Flex key={index} flexDirection="row">
             <Space margin={[0, 0, 2, 0]}>
-              <View onClick={() => onSelect(child)}>
+              <OptionContainer $disabled={child.props.disabled} onClick={() => onSelect(child)}>
                 <Text size="medium" color="shade.980">
                   {child}
                 </Text>
@@ -108,7 +114,7 @@ const Select: React.FC<SelectPropsT> = ({
                     </OptionCheckIcon>
                   </Flex>
                 ) : null}
-              </View>
+              </OptionContainer>
             </Space>
           </Flex>
         );
@@ -164,6 +170,7 @@ const Select: React.FC<SelectPropsT> = ({
           variant="outlined"
           value={selctedLabel}
           disabled={disabled || isSelectInputDisabled}
+          errorText={errorText}
         />
       </View>
       <Modal isOpen={isModalOpen} onClose={onModalClose} bottomsheet={true}>

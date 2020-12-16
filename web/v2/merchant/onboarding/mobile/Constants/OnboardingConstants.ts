@@ -17,6 +17,57 @@ const UNREGISTERED_TYPES = {
   2: true,
 };
 
+export const BusinessTypes = {
+  [PROPRIETORSHIP]: 'Proprietorship',
+  [PARTNERSHIP]: 'Partnership',
+  [PRIVATE]: 'Private Limited',
+  [PUBLIC]: 'Public Limited',
+  [LLP]: 'LLP',
+  [NGO]: 'NGO',
+  [TRUST]: 'Trust',
+  [SOCIETY]: 'Society',
+  [NOT_REGISTERED]: 'Not Registered',
+};
+
 export function isUnregisteredBusiness(businessType): boolean {
   return !!UNREGISTERED_TYPES[Number(businessType)];
 }
+
+export const states = {
+  AN: 'Andaman And Nicobar',
+  AP: 'Andhra Pradesh',
+  AR: 'Arunachal Pradesh',
+  AS: 'Assam',
+  BI: 'Bihar',
+  CH: 'Chandigarh (UT)',
+  CT: 'Chattisgarh',
+  DN: 'Dadra And Nagar Haveli',
+  DD: 'Daman And Diu (UT)',
+  DL: 'Delhi',
+  GO: 'Goa',
+  GJ: 'Gujarat',
+  HA: 'Haryana',
+  HP: 'Himachal Pradesh',
+  JK: 'Jammu And Kashmir',
+  JH: 'Jharkhand',
+  KA: 'Karnataka',
+  KE: 'Kerala',
+  LD: 'Lakshadweep',
+  MP: 'Madhya Pradesh',
+  MH: 'Maharashtra',
+  MA: 'Manipur',
+  ME: 'Meghalaya',
+  MI: 'Mizoram',
+  NA: 'Nagaland',
+  OR: 'Orissa',
+  PO: 'Pondicherry(UT)',
+  PB: 'Punjab',
+  RJ: 'Rajasthan',
+  SK: 'Sikkim',
+  TG: 'Telangana',
+  TN: 'Tamilnadu',
+  TR: 'Tripura',
+  UP: 'Uttar Pradesh',
+  UT: 'Uttranchal',
+  WB: 'West Bengal',
+};

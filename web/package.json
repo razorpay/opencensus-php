@@ -6,6 +6,7 @@
     "@commander/shield": "0.0.1136",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#be4dd48",
     "@types/react-is": "17.0.0",
+    "@types/yup": "0.29.10",
     "@universe/services": "1.0.30",
     "@universe/utils": "1.0.30",
     "axios": "0.19.2",

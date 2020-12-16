@@ -9,10 +9,12 @@ import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import TextArea from '@razorpay/blade/src/atoms/TextArea';
 import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
 import Link from '@commander/shield/src/shared/Link';
+import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { getLabel, getHelpText } from '../services/utils';
+import { states } from '../Constants/OnboardingConstants';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -28,11 +30,12 @@ const businessDetailsSchema = Yup.object().shape({
       message: 'Invalid PAN Card',
       excludeEmptyString: true,
     })
-    .test(
-      'companypan',
-      'Invalid PAN format.',
-      (value) => value && ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3]) !== -1,
-    )
+    .test('companypan', 'Invalid PAN format.', (value) => {
+      if (!value) {
+        return true;
+      }
+      return ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3].toUpperCase()) !== -1;
+    })
     .required('Company PAN is a required field')
     .nullable(),
   business_name: Yup.string().required('Business Name is a required field').nullable(),
@@ -43,7 +46,12 @@ const businessDetailsSchema = Yup.object().shape({
       message: 'Invalid PAN Card.',
       excludeEmptyString: true,
     })
-    .test('promoter_pan', 'Invalid PAN Card', (value) => value && value[3] === 'P')
+    .test('promoter_pan', 'Invalid PAN Card', (value) => {
+      if (!value) {
+        return true;
+      }
+      return value[3].toLowerCase() === 'p';
+    })
     .required('Promoter PAN is a required field')
     .nullable(),
   promoter_pan_name: Yup.string().required('Promoter PAN Name is a required field').nullable(),
@@ -121,15 +129,16 @@ const BusinessDetails: React.FC = () => {
   };
 
   const handleSubmit = (updatedDetails) => {
+    let reqData;
     const isComplete = isTabComplete(
       { ...data, business_details: { ...businessDetails, ...updatedDetails }, hasSameAdress },
       'business_details',
     );
     setBusinessDetailsCompleted(isComplete);
-    let reqData = getRequestData(businessDetails, updatedDetails);
     if (hasSameAdress) {
       reqData = copySameAddress(reqData, updatedDetails);
     }
+    reqData = getRequestData(businessDetails, updatedDetails);
     if (Object.keys(reqData).length) {
       postData(reqData);
     }
@@ -252,16 +261,26 @@ const BusinessDetails: React.FC = () => {
               />
             </Field>
             <Field>
-              <TextInput
-                width="auto"
-                name="business_registered_state"
+              <Select
                 label="Select State"
-                value={formikProps.values.business_registered_state}
+                searchable={true}
                 errorText={
-                  formikProps.touched.business_registered_city &&
+                  formikProps.touched.business_registered_state &&
                   formikProps.errors.business_registered_state
                 }
-              />
+                value={formikProps.values.business_registered_state}
+                onChange={(value) => {
+                  formikProps.setFieldTouched('business_registered_state');
+                  formikProps.setFieldValue('business_registered_state', value);
+                  setIsBlurCalled(true);
+                }}
+              >
+                {Object.keys(states).map((state_code) => (
+                  <Option key={state_code} value={state_code} label={states[state_code]}>
+                    {states[state_code]}
+                  </Option>
+                ))}
+              </Select>
             </Field>
             <Field visible={isVisible('business_operation_address', data)} last>
               <Checkbox
@@ -313,16 +332,26 @@ const BusinessDetails: React.FC = () => {
                 />
               </Field>
               <Field last>
-                <TextInput
-                  width="auto"
-                  name="business_operation_state"
+                <Select
                   label="Select State"
-                  value={formikProps.values.business_operation_state}
+                  searchable={true}
                   errorText={
                     formikProps.touched.business_operation_state &&
                     formikProps.errors.business_operation_state
                   }
-                />
+                  value={formikProps.values.business_operation_state}
+                  onChange={(value) => {
+                    formikProps.setFieldTouched('business_operation_state');
+                    formikProps.setFieldValue('business_operation_state', value);
+                    setIsBlurCalled(true);
+                  }}
+                >
+                  {Object.keys(states).map((state_code) => (
+                    <Option key={state_code} value={state_code} label={states[state_code]}>
+                      {states[state_code]}
+                    </Option>
+                  ))}
+                </Select>
               </Field>
             </FormSection>
           ) : null}
