@@ -4,15 +4,18 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\Tracer;
 use Illuminate\Support\Str;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Requests;
 use RZP\Models\Admin\Permission\Name;
 use Psr\Http\Message\RequestInterface;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 class CapitalCardsController extends Controller
 {
@@ -196,6 +199,14 @@ RequestInterface
             'method'  => $method,
         ]);
 
+        $span = Tracer::startSpan(Requests::getRequestSpanOptions($url));
+        $scope = Tracer::withSpan($span);
+        $span->addAttribute('http.method', $method);
+
+        $arrHeaders = new ArrayHeaders($headers);
+        Tracer::injectContext($arrHeaders);
+        $headers = $arrHeaders->toArray();
+
         $req = $this->newRequest($headers, $url, $method, $body , 'application/json');
 
         $httpClient = Psr18ClientDiscovery::find();
@@ -205,6 +216,14 @@ RequestInterface
         $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_RESPONSE, [
             'status_code'   => $resp->getStatusCode(),
         ]);
+
+        $span->addAttribute('http.status_code', $resp->getStatusCode());
+        if ($resp->getStatusCode() >= 400)
+        {
+            $span->addAttribute('error', 'true');
+        }
+
+        $scope->close();
 
         return $this->parseResponse($resp->getStatusCode(), $resp->getBody());
     }

@@ -71,7 +71,7 @@ class Requests
 
     const TRACE_REQUEST_FEATURE = 'request_trace';
 
-    private static function getRequestSpanOptions(string $url)
+    public static function getRequestSpanOptions(string $url)
     {
         $urlInfo = parse_url($url);
 
