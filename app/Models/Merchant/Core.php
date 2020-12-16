@@ -68,7 +68,6 @@ use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
-use RZP\Models\Merchant\MerchantApplications\Validator as MerchantAppValidator;
 
 
 class Core extends Base\Core
@@ -2075,7 +2074,7 @@ class Core extends Base\Core
 
             (new PartnerValidator())->validateIfAggregatorOrFullyManagedPartner($partner);
 
-            (new MerchantAppValidator())->validateAppTypeChange($fromAppType, $toAppType);
+            (new PartnerValidator())->validateAppTypeChange($fromAppType, $toAppType);
 
             $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $submerchant, $fromAppType);
 
