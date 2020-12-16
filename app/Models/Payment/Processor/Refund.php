@@ -168,6 +168,16 @@ trait Refund
         }
 
         $dashboardEntity[RefundConstants::DIRECT_SETTLEMENT_REFUND] = $payment->isDirectSettlementRefund();
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FETCH_REFUND_CREATE_DATA,
+            [
+                Payment\Refund\Entity::PAYMENT_ID                     => $payment->getId(),
+                RefundConstants::INSTANT_REFUND_SUPPORT               => $dashboardEntity[RefundConstants::INSTANT_REFUND_SUPPORT],
+                RefundConstants::GATEWAY_REFUND_SUPPORT               => $dashboardEntity[RefundConstants::GATEWAY_REFUND_SUPPORT],
+                RefundConstants::DIRECT_SETTLEMENT_REFUND             => $dashboardEntity[RefundConstants::DIRECT_SETTLEMENT_REFUND],
+            ]
+        );
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
