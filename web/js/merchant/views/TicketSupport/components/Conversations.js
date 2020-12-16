@@ -49,7 +49,10 @@ export default class Conversations extends React.Component {
       c.loading = true;
       this.setState({ conversations: c });
 
-      merchantFetch(`${TICKET_BASE_URL}/${TICKET_ID}/conversations`)
+      merchantFetch({
+        url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations`,
+        mode: 'live',
+      })
         .then((e) => {
           const conversations = this.state.conversations;
           conversations.loading = false;
@@ -74,7 +77,7 @@ export default class Conversations extends React.Component {
 
   componentDidMount() {
     this.goNext(1);
-    merchantFetch(`${TICKET_BASE_URL}/${this.props.match.params.id}`)
+    merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
       .then((e) => {
         this.setState({ ticket: e.data });
       })
