@@ -520,6 +520,8 @@ class Name
 
     const DEBUG_VIRTUAL_ACCOUNT               = 'debug_virtual_account';
 
+    const PAYMENT_LINKS_V2_ADMIN              = 'payment_links_v2_admin';
+
     // Permission for merchants to view free payouts attributes
     const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';
 

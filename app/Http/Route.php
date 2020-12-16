@@ -869,6 +869,7 @@ class Route
         'payment_links_sign_payload'               => ['post',     'payment_links_sign_payload',                     'PlinkController@signPayload'                                       ],
         'payment_links_sign_payload_internal'      => ['post',     'payment_links_sign_payload_internal',            'PlinkController@signPayloadInternal'                               ],
         'payment_links_payment_by_id'              => ['get',      'payment_links_payment/{id}',                     'PlinkController@fetchPaymentDetails'                               ],
+        'payment_links_v2_admin'                   => ['post',     'payment_links_admin',                            'PlinkController@sendRequest'                                       ],
         // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -3381,6 +3382,7 @@ class Route
     public static $admin = [
         'mir_instrument_set',
         'virtual_account_debug',
+        'payment_links_v2_admin',
         'transfer_debug',
         'setl_ondemand_pricing',
         'setl_ondemand_fund_accounts',
@@ -4098,6 +4100,7 @@ class Route
     public static $routePermission = [
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
+        'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
         'capital_cards_service'                    => Permission::CAPITAL_DEVELOPER,
         'capital_collections_admin'                => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,

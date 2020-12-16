@@ -1124,6 +1124,13 @@ return [
             Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN => 'Disable Merchant Notification Config Request as Admin',
             Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Enable Merchant Notification Config Request as Admin',
         ],
+
+        PermissionCategory::PAYMENT_LINK_V2 => [
+            Permission::PAYMENT_LINKS_V2_ADMIN => [
+                'description' => 'Admin actions for payment links v2 service',
+                'assignable'  => true
+            ]
+        ],
     ],
 
     'workflows' => [

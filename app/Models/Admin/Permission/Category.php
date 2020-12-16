@@ -47,4 +47,5 @@ class Category
     const ROUTE                         = 'route';
     const VIRTUAL_ACCOUNT               = 'virtual_account';
     const MERCHANT_NOTIFICATION_CONFIG  = 'merchant_notification_config';
+    const PAYMENT_LINK_V2               = 'payment_links_v2';
 }
