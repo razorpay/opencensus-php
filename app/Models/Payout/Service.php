@@ -738,67 +738,58 @@ class Service extends Base\Service
                         'input'          => $item
                     ]);
 
-                $this->repo->transaction(function() use ($createDuplicate,
-                                                         & $item,
-                                                         & $payoutBatch,
-                                                         & $batchId,
-                                                         & $idempotencyKey,
-                                                         $validator)
+                $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+
+                $validator->validateIdempotencyKey($idempotencyKey, $batchId);
+
+                $result = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
+                                                                    $this->merchant->getId(),
+                                                                    $batchId);
+
+                if ($result !== null)
                 {
-                    $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+                    $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                        [
+                            'input' => $result->toArrayPublic(),
+                            Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
+                        ]);
 
-                    $validator->validateIdempotencyKey($idempotencyKey, $batchId);
+                    $payoutBatch->push($result->toArrayPublic() +
+                        [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
+                }
+                else
+                {
+                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
-                    $result = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
-                                                                        $this->merchant->getId(),
-                                                                        $batchId);
+                    $fundAccount = null;
 
-                    if ($result !== null)
+                    //
+                    // Check if fund_id is present in input and exists in DB
+                    // If yes skip contact and fund_account creation step
+                    //
+                    if (empty($fundAccountId) === false)
                     {
-                        $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
-                            [
-                                'input' => $result->toArrayPublic(),
-                                Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
-                            ]);
-
-                        $payoutBatch->push($result->toArrayPublic() +
-                            [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
+                        $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
                     }
                     else
                     {
-                        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
-                        $fundAccount = null;
-
-                        //
-                        // Check if fund_id is present in input and exists in DB
-                        // If yes skip contact and fund_account creation step
-                        //
-                        if (empty($fundAccountId) === false)
-                        {
-                            $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
-                        }
-                        else
-                        {
-                            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
-
-                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                $contact,
-                                $batchId,
-                                $createDuplicate);
-                        }
-
-                        $payout = $this->processEntryForPayoutForFundAccount($item,
-                                                                             $fundAccount,
-                                                                             $batchId
-                        );
-
-                        $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-
-                        $payoutBatch->push($payoutArr);
+                        $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                            $contact,
+                            $batchId,
+                            $createDuplicate);
                     }
-                });
 
+                    $payout = $this->processEntryForPayoutForFundAccount($item,
+                        $fundAccount,
+                        $batchId
+                    );
+
+                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                    $payoutBatch->push($payoutArr);
+                }
             }
             catch (Exception\BaseException $exception)
             {

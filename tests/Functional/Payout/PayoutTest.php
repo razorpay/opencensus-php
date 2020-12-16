@@ -3321,8 +3321,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testBulkPayout()
     {
-        $this->markTestSkipped('Only IMPS on Yesbank');
-
         $this->ba->batchAuth();
 
         $headers = [
@@ -9718,5 +9716,68 @@ class PayoutTest extends OAuthTestCase
                 }
                 return true;
             }));
+    }
+
+    public function testCreateBulkPayoutWithErrorInPayoutData()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $payout = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
+        $contact = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
+        $fundAccount = $this->getDbEntity('fund_account', ['idempotency_key' => 'batch_abc124']);
+
+        $this->assertEquals(null, $payout);
+
+        // Adding below assertion to assert that although the second payout was not created, the contact got
+        // created nonetheless. This is happening because we don't have any transaction at service layer.
+        $this->assertEquals('abcd1234', $contact['reference_id']);
+        $this->assertEquals('Mehul Kaushik', $contact['name']);
+        $this->assertEquals('9988776655', $contact['contact']);
+        $this->assertEquals('testemail@example.com', $contact['email']);
+        $this->assertEquals('batch_abc124', $contact['idempotency_key']);
+
+        // Adding below assertion to assert that although the second payout was not created, the fund account got
+        // created nonetheless. This is happening because we don't have any transaction at service layer.
+        $this->assertEquals($contact['id'], $fundAccount['source_id']);
+        $this->assertEquals('vpa', $fundAccount['account_type']);
+        $this->assertEquals('batch_abc124', $fundAccount['idempotency_key']);
+    }
+
+    public function testCreateBulkPayoutWithErrorInFundAccountData()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $payout = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
+        $contact = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
+        $fundAccount = $this->getDbEntity('fund_account', ['idempotency_key' => 'batch_abc124']);
+
+        $this->assertEquals(null, $payout);
+        $this->assertEquals(null, $fundAccount);
+
+        // Adding below assertion to assert that although the second payout or fund account was not created, the
+        // contact got created nonetheless. This is happening because we don't have any transaction at service layer.
+        $this->assertEquals('abcd1234', $contact['reference_id']);
+        $this->assertEquals('Mehul Kaushik', $contact['name']);
+        $this->assertEquals('9988776655', $contact['contact']);
+        $this->assertEquals('testemail@example.com', $contact['email']);
+        $this->assertEquals('batch_abc124', $contact['idempotency_key']);
     }
 }
