@@ -1665,7 +1665,7 @@ class Gateway
     // TODO: Revisit this once for correct numbers, high number can create issue by clogging cron
     public static $verifyBlockThresholdGateways = [
         self::UPI_AXIS       => 50,
-        self::UPI_ICICI      => 200,
+        self::UPI_ICICI      => 350,
         self::UPI_MINDGATE   => 100,
     ];
 
