@@ -609,7 +609,7 @@ class Repository extends Base\Repository
                 $input = [
                     'gateway' => $gateway,
                     'merchant_ids' => [$mid],
-                    'api_type' => Terminal\Type::RECURRING_3DS,
+                    'api_type' => [Terminal\Type::RECURRING_3DS],
                     'enabled' => true,
                 ];
 
@@ -660,7 +660,7 @@ class Repository extends Base\Repository
                 $input = [
                     'gateways' => Payment\Gateway::$upiRecurringGateways,
                     'merchant_ids' => [$mid, Account::SHARED_ACCOUNT],
-                    'api_type' => Terminal\Type::RECURRING_3DS,
+                    'api_type' => [Terminal\Type::RECURRING_3DS],
                     'enabled' => true,
                 ];
 
