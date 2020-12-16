@@ -346,6 +346,8 @@ class Core extends Base\Core
 
         $response = new Base\PublicCollection();
 
+        $this->validatePricingPlans($attribute);
+
         foreach ($existingPartnerConfigsForMerchant as $config)
         {
 

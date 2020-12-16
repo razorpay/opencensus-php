@@ -722,6 +722,14 @@ return [
                 [
                     'batch_action'  => 'submerchant_partner_config_upsert',
                     'entity'        => 'merchant',
+                    'partner_id'    => '1000000000plat',
+                    'merchant_id'   => '100submerchant',
+                    'implicit_plan_id' => 'SubmerchanUPlX',
+                    'idempotent_id' => 'random',
+                ],
+                [
+                    'batch_action'  => 'submerchant_partner_config_upsert',
+                    'entity'        => 'merchant',
                     'partner_id'    => '100nonplatform',
                     'merchant_id'   => '10submerchant1',
                     'implicit_plan_id' => 'SubmerchantPln',
@@ -740,7 +748,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 4,
+                'count'  => 5,
                 'items'  => [
                     [
                         'batch_action'  => 'submerchant_partner_config_upsert',
@@ -757,6 +765,19 @@ return [
                         'merchant_id'   => '100submerchant',
                         'idempotent_id' => 'random',
                         'status'        => 'Success'
+                    ],
+                    [
+                        'batch_action'  => 'submerchant_partner_config_upsert',
+                        'entity'        => 'merchant',
+                        'partner_id'    => '1000000000plat',
+                        'merchant_id'   => '100submerchant',
+                        'implicit_plan_id' => 'SubmerchanUPlX',
+                        'idempotent_id' => 'random',
+                        'status'        => 'Failure',
+                        'error'         => ['description' => 'The id provided does not exist',
+                                            'code'        => 'BAD_REQUEST_ERROR'
+                        ],
+                        'http_status_code' => 400
                     ],
                     [
                         'batch_action'  => 'submerchant_partner_config_upsert',
