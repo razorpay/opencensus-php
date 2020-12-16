@@ -138,6 +138,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals('-11.8 INR' , $viewData['balance']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
             return true;
@@ -195,6 +201,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals(50, $viewData['percentage']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
@@ -260,6 +272,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals(80, $viewData['percentage']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
@@ -348,6 +366,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals('-11.8 INR' , $viewData['balance']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
@@ -532,6 +556,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(80, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -590,6 +620,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(50, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -647,6 +683,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals('-11.8 INR' , $viewData['balance']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
@@ -730,6 +772,12 @@ class CaptureWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals('-11.8 INR' , $viewData['balance']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 

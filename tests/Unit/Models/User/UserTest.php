@@ -8,6 +8,7 @@ use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Support\Facades\Mail as Mail;
 
 use RZP\Exception\LogicException;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use Tests\Unit\TestCase;
 use RZP\Models\User\Core;
 use RZP\Models\User\Entity;
@@ -32,6 +33,8 @@ class UserTest extends TestCase
     protected $repoMock;
 
     protected $userRepoMock;
+
+    protected $orgRepoMock;
 
     protected $merchantRepoMock;
 
@@ -1072,6 +1075,20 @@ class UserTest extends TestCase
         $this->basicAuthMock->shouldReceive('isProductBanking')->withAnyArgs()->andReturn(true);
 
         $this->userEntityMock->shouldReceive('getRestricted')->withAnyArgs()->andReturn(false);
+
+        $this->merchantEntityMock->shouldReceive('isRazorpayOrgId')->withAnyArgs()->andReturn(true);
+
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($this->orgRepoMock);
+
+        $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
+
+        $org->shouldReceive('getMainLogo')->andReturn('razorpay.png');
+
+        $org->shouldReceive('getCheckoutLogo')->andReturn('razorpay.png');
+
+        $org->shouldReceive('getDisplayName')->andReturn('razorpay');
+
+        $this->orgRepoMock->shouldReceive('find')->withAnyArgs()->andReturn($org);
 
         //token service
         $token = Mockery::mock('\RZP\Services\TokenService', [$this->app]);
@@ -2628,6 +2645,9 @@ class UserTest extends TestCase
 
         // Merchant Service Mocking
         $this->merchantServiceMock = Mockery::mock('RZP\Models\Merchant\Service');
+
+        // Org Repo Mocking
+        $this->orgRepoMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
         // BasicAuth mocking
 //        $this->basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth');

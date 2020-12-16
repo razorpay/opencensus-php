@@ -16,7 +16,9 @@ class Base extends Mailable
     {
         parent::__construct();
 
-        $this->data = $data;
+        parent::addMailData();
+
+        $this->data = array_merge($this->data, $data);
 
         $this->isMerchantEmail = $isMerchantEmail;
     }

@@ -62,6 +62,12 @@ class ReminderTest extends TestCase
 
             $this->assertEquals('-10 INR' , $viewData['balance']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_breach_reminder', $mail->view);
 
             return true;
@@ -87,6 +93,12 @@ class ReminderTest extends TestCase
             $this->assertEquals('100ghi000ghi00', $viewData['merchant_id']);
 
             $this->assertEquals('-10 INR' , $viewData['balance']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_breach_reminder', $mail->view);
 

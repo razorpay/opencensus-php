@@ -2,6 +2,9 @@
 
 namespace RZP\Mail\Base;
 
+use App;
+use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Feature\Constants as Features;
 
@@ -79,5 +82,45 @@ class OrgWiseConfig
 
         // If merchant has the blocking feature return false, otherwise return true and let the mail be sent
         return (($orgRestricted && $hasBlockingFeature) === false);
+    }
+
+    public static function getOrgDataForEmail($merchant = null) : array
+    {
+        $app = App::getFacadeRoot();
+
+        $repo = $app['repo'];
+
+        $data = [];
+
+        $customBranding = isset($merchant) ?
+                            (new MerchantCore())->isOrgCustomBranding($merchant):
+                            false;
+
+        if ($customBranding === true)
+        {
+            $orgId = $merchant->getOrgId();
+
+            $orgDetails = $repo->org->find($orgId);
+
+            $data['email_logo'] = $orgDetails->getEmailLogo();
+
+            $data['org_name'] = $orgDetails->getDisplayName();
+
+            $data['checkout_logo'] = $orgDetails->getCheckoutLogo();
+        }
+        else
+        {
+            $razorpayOrg = $repo->org->find(Org\Entity::RAZORPAY_ORG_ID);
+
+            $data['email_logo'] = $razorpayOrg->getMainLogo();
+
+            $data['org_name'] = $razorpayOrg->getDisplayName();
+
+            $data['checkout_logo'] = $razorpayOrg->getCheckoutLogo();
+        }
+
+        $data['custom_branding'] = $customBranding;
+
+        return $data;
     }
 }

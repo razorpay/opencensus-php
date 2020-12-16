@@ -14,7 +14,9 @@ class NegativeBalanceBreachReminder extends Mailable
     {
         parent::__construct();
 
-        $this->data = $data;
+        parent::addMailData();
+
+        $this->data = array_merge($this->data, $data);
     }
 
     protected function addSender()
@@ -36,9 +38,7 @@ class NegativeBalanceBreachReminder extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->data);
-
-        $this->with($data);
+        $this->with($this->data);
 
         return $this;
     }

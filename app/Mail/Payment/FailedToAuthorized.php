@@ -42,9 +42,11 @@ class FailedToAuthorized extends Base
 
     protected function addMailData()
     {
+        parent::addMailData();
+
         $this->data['data'] = $this->getCustomerSupportText();
 
-        return parent::addMailData();
+        return $this;
     }
 
     protected function addReplyTo()

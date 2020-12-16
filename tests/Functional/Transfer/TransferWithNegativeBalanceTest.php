@@ -73,6 +73,12 @@ class TransferWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(80, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -116,6 +122,12 @@ class TransferWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals(80, $viewData['percentage']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 

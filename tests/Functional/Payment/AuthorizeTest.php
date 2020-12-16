@@ -84,6 +84,15 @@ class AuthorizeTest extends TestCase
         Mail::assertQueued(AuthorizedMail::class, function ($mail)
         {
             $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             return true;
         });
     }

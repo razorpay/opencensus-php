@@ -68,6 +68,8 @@ class RefundRrnUpdated extends Base
 
     protected function addMailData()
     {
+        parent::addMailData();
+
         if ($this->isMerchantEmail() === true)
         {
             $this->data['type'] = 'merchant_transaction';

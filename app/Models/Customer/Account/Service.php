@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Service extends Base\Service
 {
@@ -262,6 +263,13 @@ class Service extends Base\Service
 
                 $otpInput = ['contact' => $contact];
 
+                $customBranding = (new MerchantCore())->isOrgCustomBranding($this->merchant);
+
+                if ($customBranding === true)
+                {
+                    $otpInput['org_id'] = $this->merchant->getOrgId();
+                }
+
                 if (isset($input['sms_hash']) === true)
                 {
                     $otpInput = array_merge($otpInput, ['sms_hash' => $input['sms_hash']]);
@@ -319,6 +327,13 @@ class Service extends Base\Service
             if ($sendOtp === true)
             {
                 $otpInput = ['contact' => $contact];
+
+                $customBranding = (new MerchantCore())->isOrgCustomBranding($this->merchant);
+
+                if ($customBranding === true)
+                {
+                    $otpInput['org_id'] = $this->merchant->getOrgId();
+                }
 
                 if (isset($input['sms_hash']) === true)
                 {

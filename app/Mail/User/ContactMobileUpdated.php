@@ -7,14 +7,13 @@ use RZP\Mail\Base\Mailable;
 
 class ContactMobileUpdated extends Mailable
 {
-  protected $data;
+    protected $data;
 
   public function __construct($data)
   {
     parent::__construct();
 
     $this->data = $data;
-
   }
 
   protected function addRecipients()
@@ -35,9 +34,9 @@ class ContactMobileUpdated extends Mailable
 
   protected function addMailData()
   {
-    $this->with($this->data);
+      $this->with($this->data);
 
-    return $this;
+      return $this;
   }
 
   protected function addHeaders()

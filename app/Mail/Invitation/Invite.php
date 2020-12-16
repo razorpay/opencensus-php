@@ -9,7 +9,7 @@ use RZP\Mail\Base\Mailable;
 class Invite extends Mailable
 {
     protected $data;
-
+    
     public function __construct(array $data)
     {
         parent::__construct();

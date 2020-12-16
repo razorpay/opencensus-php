@@ -103,6 +103,12 @@ class RefundWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(100, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -201,6 +207,12 @@ class RefundWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(100, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -274,6 +286,12 @@ class RefundWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(70, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -309,6 +327,12 @@ class RefundWithNegativeBalanceTest extends TestCase
 
             $this->assertEquals(70, $viewData['percentage']);
 
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
             return true;
@@ -341,6 +365,12 @@ class RefundWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals(70, $viewData['percentage']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
@@ -376,6 +406,12 @@ class RefundWithNegativeBalanceTest extends TestCase
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
             $this->assertEquals('-20 INR', $viewData['balance']);
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 

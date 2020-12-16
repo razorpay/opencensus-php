@@ -38,6 +38,8 @@ class Mailable extends BaseMailable
 
     protected $mid;
 
+    protected $data;
+
     const MESSAGE_ID_TAG = 'X-SES-Message-ID';
 
     protected $emailDriverName;
@@ -132,7 +134,12 @@ class Mailable extends BaseMailable
             $eventProperties['message_id'] = $msgID;
             $app['diag']->trackEmailEvent(EventCode::EMAIL_SUCCESS, $eventProperties);
 
-            $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL, ['email' => $toEmailHash, 'message_id' => $msgID]);
+            $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
+                [
+                    'email' => $toEmailHash,
+                    'message_id' => $msgID,
+                ]
+            );
         }
         catch (\Throwable $e)
         {
@@ -377,6 +384,14 @@ class Mailable extends BaseMailable
      */
     protected function addMailData()
     {
+        $app = App::getFacadeRoot();
+
+        $merchant  = $app['basicauth']->getMerchant();
+
+        $this->data = [];
+
+        $this->data = OrgWiseConfig::getOrgDataForEmail($merchant);
+
         return $this;
     }
 
