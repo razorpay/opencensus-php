@@ -105,7 +105,7 @@ class InstrumentRequestController extends BaseController
                 $input,
                 \Requests::PATCH,
                 'v2/internal_instrument_request_v2',
-                ['timeout' => 300],
+                ['timeout' => 30],
                 $this->getAdminHeadersForInstrumentRequest());
         }
         else
