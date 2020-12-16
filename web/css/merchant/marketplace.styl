@@ -45,6 +45,80 @@
     transform: translate(-50%, 0)
     cursor: pointer
 
+
+$formHeight = 568px
+
+.Modal-container.Modal-container--Transfers--DirectTransfer
+  width: 90%
+  max-width: 400px
+  height: $formHeight
+  overflow: initial
+
+.StandAloneContainer
+  .Transfers--DirectTransfer
+    max-height: $formHeight
+    background: white
+    position: relative
+    height: 80vh
+    max-width: 400px
+
+.Transfers--DirectTransfer
+  .Form
+    height: $formHeight;
+    overflow-y: scroll
+
+  .title
+    padding: 24px
+    font-weight: 600
+    font-size: 18px
+    position: absolute
+    top: 0
+    left: 0
+    background: white
+    z-index: 3
+    width: 100%
+
+  main
+    padding: 70px 24px 132px 24px
+    overflow: auto
+
+  footer
+    position: absolute
+    left: 0
+    right: 0
+    bottom: 0
+    padding: 24px
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    .Button
+      width: 168px
+      padding: 9px 12px
+
+      &:first-child
+        margin: 0 16px 0 0
+
+      &:last-child
+        margin: 0
+
+  .rzp-whole
+    color: black
+
+  .settlement-schedule
+    .Input-inlineLabel
+      .Input-label
+        font-weight normal
+
+      .Input--Calendar
+        margin 0
+
+    .Input--radioLabels > label:not(:last-child)
+      margin-bottom 8px
+
+  .PlaceholderLoader
+    max-width: 100px
+
 .direct-transfer-banner
   position: relative
   &:before

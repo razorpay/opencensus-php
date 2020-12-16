@@ -86,6 +86,14 @@ export const createTransfer = ({ id, ...data }) => {
   return payment.transfer(data);
 };
 
+export const createDirectTransfer = (data) => {
+  return merchantFetch({
+    url: 'transfers',
+    method: 'post',
+    data,
+  });
+};
+
 export const resetPayment = () => {
   return {
     type: PAYMENT_RESET,

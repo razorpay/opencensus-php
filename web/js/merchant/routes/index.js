@@ -85,6 +85,11 @@ const SubscriptionDetails = lazy(() =>
 const TransferDetails = lazy(() =>
   import(/* webpackChunkName: "TransfersDetails" */ 'merchant/views/Marketplace/Transfers/Details'),
 );
+const DirectTransfers = lazy(() =>
+  import(
+    /* webpackChunkName: "DirectTransfers" */ 'merchant/views/Marketplace/Transfers/DirectTransfers'
+  ),
+);
 const ReversalDetails = lazy(() =>
   import(/* webpackChunkName: "ReversalsDetails" */ 'merchant/views/Marketplace/Reversals/Details'),
 );
@@ -352,6 +357,9 @@ const entityModalsMap = {
   },
   '/virtualaccounts/new': {
     component: VirtualAccountCreate,
+  },
+  '/route/transfers/direct_transfer': {
+    component: DirectTransfers,
   },
 };
 

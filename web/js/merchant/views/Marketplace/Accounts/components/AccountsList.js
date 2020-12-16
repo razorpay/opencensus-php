@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 
@@ -44,6 +44,7 @@ const AccountsListItem = ({
   onToggleDashboardAccess,
   onToggleAllowRefunds,
   isRouteCodeSupportEnabled,
+  isDirectTransferEnabled,
 }) => {
   let status = account.activation_details ? account.activation_details.status : account.activated;
   let timeStamp = account.activation_details
@@ -133,11 +134,20 @@ const AccountsListItem = ({
           }
         </td>
       )}
+
+      {isDirectTransferEnabled && (
+        <td style={{ textAlign: 'center' }}>
+          <NavLink class="btn btn-default btn-xs" to="/route/transfers/direct_transfer">
+            <i class="i i-plus" />
+            Create Direct Transfer
+          </NavLink>
+        </td>
+      )}
     </EntityItemRow>
   );
 };
 
-export default ({
+export default function AccountsList({
   accounts,
   isLoading,
   showEditAccountModal,
@@ -145,7 +155,8 @@ export default ({
   onToggleDashboardAccess,
   onToggleAllowRefunds,
   isRouteCodeSupportEnabled,
-}) => {
+  isDirectTransferEnabled,
+}) {
   return (
     <div class="table-responsive">
       <table class="table table-hover" id="accounts-list">
@@ -172,6 +183,7 @@ export default ({
                 </small>
               </th>
             )}
+            {isDirectTransferEnabled && <th> </th>}
           </tr>
         </thead>
         <TableBody
@@ -183,6 +195,7 @@ export default ({
           {accounts.map((account) => (
             <AccountsListItem
               key={account.id}
+              isDirectTransferEnabled={isDirectTransferEnabled}
               account={account}
               isRouteCodeSupportEnabled={isRouteCodeSupportEnabled}
               showEditAccountModal={showEditAccountModal}
@@ -203,4 +216,4 @@ export default ({
       </table>
     </div>
   );
-};
+}

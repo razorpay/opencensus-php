@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import ActivationForm from 'merchant/containers/Activation';
 import { fetchAccountApi } from 'merchant/reducers/marketplace/accounts';
 import Spinner from 'common/ui/Spinner';
@@ -350,6 +351,16 @@ export default class Details extends Component {
                       />
                     </ToggleField>
                   </EntityDetailRow>
+                )}
+
+                {user.isDirectTransferEnabled && (
+                  <>
+                    <br />
+                    <NavLink class="Button m-l" to="/route/transfers/direct_transfer">
+                      <i class="i i-plus" />
+                      Create Direct Transfer
+                    </NavLink>
+                  </>
                 )}
               </div>
             </div>

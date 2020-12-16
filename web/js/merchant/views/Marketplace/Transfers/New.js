@@ -29,6 +29,8 @@ import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import DirectTransferBanner from './components/DirectTransferBanner';
 
+// TODO: Use components/AccountSelector to for account search | selection input
+
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
 

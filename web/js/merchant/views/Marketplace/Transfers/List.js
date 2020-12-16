@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 
 import { transferId, recipient, amount, createdAt } from 'common/ui/item/pair';
 import { source as sourceId } from 'common/ui/item/id';
@@ -26,9 +27,16 @@ const source = {
   value: (item) => sourceId(item, baseUrl),
 };
 
-@connect((state) => state.transfers, { fetchAll })
+@connect(
+  (state) => ({
+    ...state.transfers,
+    isDirectTransferEnabled: state.session.user.isDirectTransferEnabled,
+  }),
+  { fetchAll },
+)
 export default class TransfersListContainer extends ListContainer {
   render() {
+    const { props } = this;
     return (
       <div class="content-wrapper">
         <HeaderAction>
@@ -36,8 +44,16 @@ export default class TransfersListContainer extends ListContainer {
             <TakeATourButton feature={RZPFeatures.ROUTE} />
 
             <DocsLink url="https://razorpay.com/docs/route/" />
+
+            {props.isDirectTransferEnabled && (
+              <NavLink class="btn btn-primary" to="/route/transfers/direct_transfer">
+                <i class="i i-plus" />
+                Create Direct Transfer
+              </NavLink>
+            )}
           </div>
         </HeaderAction>
+
         <TransfersListFilter
           form="transfersListFilter"
           count={this.state.count}

@@ -260,6 +260,7 @@ export default class AccountsListContainer extends ListContainer {
         <AccountsList
           accounts={accounts}
           isLoading={loading}
+          isDirectTransferEnabled={user.isDirectTransferEnabled}
           showEditAccountModal={this.showEditAccountModal}
           onEdit={this.showAccountDetailsModal}
           isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
