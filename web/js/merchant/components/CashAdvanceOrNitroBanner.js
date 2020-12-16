@@ -11,8 +11,10 @@ import { fetchProducts, getApplications } from 'merchant/reducers/capital';
 import { CAPITAL_PRODUCT_NAME_CODE_MAP } from 'merchant/views/Capital/Loans/constants';
 import { fetchWithdrawalConfigurationByMerchantID } from 'merchant/reducers/capital/withdrawals';
 
+const EVENT_CATEGORY_CA_BANNER = 'Cash Advance Banner - Settlements';
+
 const gaCABannerEventDispatcher = (eventObject) => {
-  eventObject.eventCategory = 'Cash Advance Banner - Settlements';
+  eventObject.eventCategory = EVENT_CATEGORY_CA_BANNER;
   window.rzpAnalytics(eventObject);
 };
 
@@ -81,12 +83,19 @@ const CashAdvanceOrNitroBanner = ({
     fetchApplications();
   }, [loanApplicationDetails.products.data]);
 
+  function goToCashAdvance() {
+    history.push({
+      pathname: '/capital/cash-advance',
+      state: { eventCategory: EVENT_CATEGORY_CA_BANNER },
+    });
+  }
+
   function handleApplyNowClick() {
     gaCABannerEventDispatcher({
       eventAction: 'Click Apply Now',
       eventLabel: 'Clicks | Apply Now',
     });
-    history.push('/capital/cash-advance/apply');
+    goToCashAdvance();
   }
 
   function handleWithdrawFundsClick() {
@@ -94,7 +103,7 @@ const CashAdvanceOrNitroBanner = ({
       eventAction: 'Click Withdraw Funds',
       eventLabel: 'Clicks | Withdraw Funds',
     });
-    history.push('/capital/cash-advance/withdrawals');
+    goToCashAdvance();
   }
 
   const hasWithdrawalConfiguration = !!withdrawalConfigurationDetails.data;
@@ -141,8 +150,8 @@ const CashAdvanceOrNitroBanner = ({
   } else if (showWithdrawNowBanner) {
     return (
       <AnnouncementBanner title="Need more money!" theme="primary">
-        You have <Amount value={internalCreditBalance} /> available in the withdrawable balance of
-        your credit line with Razorpay Cash Advance.
+        You have <Amount value={internalCreditBalance} className="ca-banner__withdraw-amount" />{' '}
+        available in the withdrawable balance of your credit line with Razorpay Cash Advance.
         <Button.Secondary
           className="btn-border scheduled-btn-act ml-16"
           onClick={handleWithdrawFundsClick}

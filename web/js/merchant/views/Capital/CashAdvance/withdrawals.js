@@ -38,7 +38,8 @@ class Withdrawals extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard CA - Withdraw';
+    const { state: { eventCategory = null } = {} } = this.props.location;
+    eventObject['eventCategory'] = eventCategory ? eventCategory : 'Dashboard CA - Withdraw';
     window.rzpAnalytics(eventObject);
   };
 
@@ -216,10 +217,8 @@ class Withdrawals extends Component {
 
   render() {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-
     const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
     if (!this.props.user.isWithdrawFeatureEnabled) return <Redirect to="/" />;
-
     return (
       <div class="FlashWithdrawals--Container">
         <AmountWithdraw repayDues={this.repay} />

@@ -79,7 +79,8 @@ class LoanApplicationOverview extends React.Component {
   }
 
   gaEventDispatcher = (eventObject) => {
-    eventObject.eventCategory = 'Dashboard - WCL LOS';
+    const { state: { eventCategory = null } = {} } = this.props.location;
+    eventObject.eventCategory = eventCategory ? eventCategory : 'Dashboard - WCL LOS';
     window.rzpAnalytics(eventObject);
   };
 
@@ -424,7 +425,6 @@ class LoanApplicationOverview extends React.Component {
 
   render() {
     const { loanApplicationDetails, user } = this.props;
-
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
         <div class="capital-landing-spinner-container">

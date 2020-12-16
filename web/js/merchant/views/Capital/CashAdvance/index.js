@@ -29,7 +29,8 @@ class WithdrawalsRoot extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard CA - Apply';
+    const { state: { eventCategory = null } = {} } = this.props.location;
+    eventObject['eventCategory'] = eventCategory ? eventCategory : 'Dashboard CA - Apply';
     window.rzpAnalytics(eventObject);
   };
 
