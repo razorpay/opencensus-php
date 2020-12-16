@@ -129,7 +129,13 @@ export const Sidebar = ({ user, handleLogout, isSplitz }) => (
       <div style={{ marginTop: 'auto' }}>
         {isSplitz ? (
           <React.Fragment>
-            <a className="main-nav" style={{ cursor: 'help' }} onClick={() => {}}>
+            <a
+              className="main-nav"
+              style={{ cursor: 'help' }}
+              href="https://docs.google.com/document/d/15KBvtGsy4qlPe9wuOUwLja9uFXXALPfK0pLIjQ1JmxA"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <i className="fa fa-question-circle" />
               How to use
             </a>
