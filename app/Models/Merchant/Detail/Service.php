@@ -37,16 +37,33 @@ class Service extends Base\Service
 {
     use NotifyTrait;
 
+    protected $core;
+
+    protected $methodsCore;
+
+    public function __construct(Core $core = null)
+    {
+        parent::__construct();
+
+        $this->core = $core ?? new Core();
+
+    }
+
     public function fetchMerchantDetails()
     {
-        $merchantDetails = (new Core)->getMerchantDetails($this->merchant);
+        $merchantDetails = $this->core->getMerchantDetails($this->merchant);
 
-        return (new Core)->createResponse($merchantDetails);
+        return $this->core->createResponse($merchantDetails);
+    }
+
+    public function getMerchantMethodsCore()
+    {
+        return new Merchant\Methods\Core();
     }
 
     public function getDisabledBanks()
     {
-        $methods = (new Merchant\Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
+        $methods = $this->getMerchantMethodsCore()->getEnabledAndDisabledBanks($this->merchant);
 
         return $methods['disabled'];
     }

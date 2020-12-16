@@ -2755,6 +2755,12 @@ class Core extends Base\Core
      *
      * @return array
      */
+
+    public function documentCore()
+    {
+        return new Document\Core();
+    }
+
     private function setVerificationDetails(Entity $merchantDetails, Merchant\Entity $merchant, array $response)
     {
         $requiredFields = [];
@@ -2765,7 +2771,7 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
 
-        $documentsResponse = (new Document\Core())->documentResponse($merchant);
+        $documentsResponse = $this->documentCore()->documentResponse($merchant);
 
         $response['documents'] = $documentsResponse;
 
