@@ -26,7 +26,7 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
           class="Styled__DialogContainer-sc-1kl130u-0 jydBJu"
         >
           <div
-            class="Styled__BottomSheet-sc-1kl130u-3 TFcR"
+            class="Styled__BottomSheet-sc-1kl130u-3 gMnhws"
           >
             <div
               class="Styled__BottomSheetHandle-sc-1kl130u-4 cZTaqx"
@@ -89,7 +89,7 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
           class="Styled__DialogContainer-sc-1kl130u-0 hKOvFI"
         >
           <div
-            class="Styled__Dialog-sc-1kl130u-1 cThbrY"
+            class="Styled__Dialog-sc-1kl130u-1 dSmgIp"
             role="dialog"
           >
             <div

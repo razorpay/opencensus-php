@@ -28,6 +28,8 @@ export const Dialog = styled.div`
   margin-right: ${({ theme }) => theme.spacings.medium};
   margin-bottom: ${({ theme }) => theme.spacings.medium};
   border-radius: ${({ theme }) => theme.spacings.xsmall};
+  max-height: 100%;
+  overflow: auto;
   max-width: 100%;
   width: 500px;
   opacity: ${({ $opacity }) => $opacity};
@@ -50,6 +52,8 @@ export const BottomSheet = styled.div`
   position: relative;
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
   max-width: 100%;
+  max-height: 90%;
+  overflow: auto;
   width: 100%;
   border-top-left-radius: ${({ theme }) => theme.spacings.small};
   border-top-right-radius: ${({ theme }) => theme.spacings.small};
