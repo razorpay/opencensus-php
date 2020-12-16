@@ -172,7 +172,7 @@ export default class ExperimentTester extends React.Component {
             </div>
             <div
               className="flex-row"
-              style={{ alignItems: 'center', opacity: isAssignBucket ? 1 : 0.35 }}
+              style={{ alignItems: 'center', opacity: isWhitelisting ? 1 : 0.35 }}
             >
               <i
                 style={{ height: '14px', width: '14px' }}
