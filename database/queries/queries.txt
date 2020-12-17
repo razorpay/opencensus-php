@@ -6080,6 +6080,12 @@ ALTER TABLE orders
 ALTER TABLE settlement_ondemand_payouts
     ADD COLUMN entity_type VARCHAR(255);
 
+ALTER TABLE entity_offer
+    ADD COLUMN entity_offer_type VARCHAR(50) DEFAULT 'offer';
+
+ALTER TABLE rewards
+    ADD COLUMN merchant_website_redirect_link VARCHAR(255) DEFAULT null;
+
 ALTER TABLE offers
     ADD COLUMN product_type VARCHAR(20) DEFAULT NULL;
 

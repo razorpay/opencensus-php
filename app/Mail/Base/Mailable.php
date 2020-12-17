@@ -134,6 +134,22 @@ class Mailable extends BaseMailable
             $eventProperties['message_id'] = $msgID;
             $app['diag']->trackEmailEvent(EventCode::EMAIL_SUCCESS, $eventProperties);
 
+            if (isset($this->data['rewards']) === true)
+            {
+                $rewards = $this->data['rewards'];
+
+                $rewardEventProperties = [];
+
+                $rewardEventProperties['merchant_id'] = $this->data['merchant']['id'];
+
+                foreach ($rewards as $reward)
+                {
+                    $rewardEventProperties['reward_ids'][] = $reward['id'];
+                }
+
+                $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
+            }
+
             $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
                 [
                     'email' => $toEmailHash,

@@ -27,10 +27,8 @@ class CreateEntityOffer extends Migration
 
             $table->char(EntityOffer::OFFER_ID, Offer::ID_LENGTH);
 
-            $table->foreign(EntityOffer::OFFER_ID)
-                  ->references(Offer::ID)
-                  ->on(Table::OFFER)
-                  ->onDelete('restrict');
+            $table->char(EntityOffer::ENTITY_OFFER_TYPE, 50)
+                  ->default('offer');
 
             $table->unique([EntityOffer::ENTITY_ID, EntityOffer::ENTITY_TYPE, EntityOffer::OFFER_ID]);
 
@@ -46,12 +44,6 @@ class CreateEntityOffer extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ENTITY_OFFER, function($table)
-        {
-            $table->dropForeign(
-                Table::ENTITY_OFFER . '_' . EntityOffer::OFFER_ID . '_foreign');
-        });
-
         Schema::drop(Table::ENTITY_OFFER);
     }
 }

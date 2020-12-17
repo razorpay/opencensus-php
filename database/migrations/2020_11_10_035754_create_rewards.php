@@ -61,6 +61,9 @@ class CreateRewards extends Migration
             $table->boolean(Reward::IS_DELETED)
                 ->default(false);
 
+            $table->string(Reward::MERCHANT_WEBSITE_REDIRECT_LINK)
+                ->nullable();
+
             $table->integer(Reward::CREATED_AT);
 
             $table->integer(Reward::UPDATED_AT);

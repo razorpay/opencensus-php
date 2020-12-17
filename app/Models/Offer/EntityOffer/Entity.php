@@ -11,11 +11,12 @@ use RZP\Constants\Table;
 //
 class Entity extends Pivot
 {
-    const ENTITY_ID   = 'entity_id';
-    const ENTITY_TYPE = 'entity_type';
-    const OFFER_ID    = 'offer_id';
-    const CREATED_AT  = 'created_at';
-    const UPDATED_AT  = 'updated_at';
+    const ENTITY_ID                = 'entity_id';
+    const ENTITY_TYPE              = 'entity_type';
+    const OFFER_ID                 = 'offer_id';
+    const CREATED_AT               = 'created_at';
+    const UPDATED_AT               = 'updated_at';
+    const ENTITY_OFFER_TYPE        = 'entity_offer_type';
 
     protected $table = Table::ENTITY_OFFER;
 

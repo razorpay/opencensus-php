@@ -102,8 +102,9 @@ class Core extends Base\Core
 
                 foreach ($merchantRewards as $merchantReward)
                 {
+                    $now = Carbon::now()->getTimestamp();
 
-                    $merchantReward->setStatus(Entity::DELETED);
+                    $columnsToUpdate[Entity::UPDATED_AT] = $now;
 
                     $this->repo->merchant_reward->update($merchantReward, $columnsToUpdate);
 
@@ -138,7 +139,7 @@ class Core extends Base\Core
     {
         $summary = [];
 
-        $now = $now = Carbon::now()->getTimestamp();
+        $now = Carbon::now()->getTimestamp();
 
         $merchantReward->setAcceptedAt($now);
 
@@ -264,6 +265,10 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::REWARD_TO_EXPIRE,
                     ['reward_id' => $expiredMerchantReward->getRewardId(),
                         'merchant_id' => $expiredMerchantReward->getMerchantId()]);
+
+                $now = Carbon::now()->getTimestamp();
+
+                $columnsToUpdate[Entity::UPDATED_AT] = $now;
 
                 $this->repo->merchant_reward->update($expiredMerchantReward, $columnsToUpdate);
 

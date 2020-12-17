@@ -26,4 +26,13 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
+
+    public function findByEntityIdAndType($entityId)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ENTITY_ID, '=', $entityId)
+                      ->where(Entity::ENTITY_OFFER_TYPE, '=', 'reward');
+
+        return $query->get();
+    }
 }

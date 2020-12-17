@@ -37,9 +37,16 @@ class Service extends Base\Service
         {
             try
             {
-                (new MerchantReward\Core())->create($merchantId, $reward->getId());
+                if ($merchantId === $input['reward']['advertiser_id'])
+                {
+                    $failures[] = $merchantId;
+                }
+                else
+                {
+                    (new MerchantReward\Core())->create($merchantId, $reward->getId());
 
-                $success +=1 ;
+                    $success +=1 ;
+                }
             }
             catch(\Exception $e)
             {
@@ -76,6 +83,26 @@ class Service extends Base\Service
     public function fetch()
     {
         return (new Core())->fetchReward($this->merchant->getId());
+    }
+
+    public function getRewardTerms($id)
+    {
+        try
+        {
+            $reward = $this->repo->reward->findOrFailPublic($id);
+
+            return $reward;
+        }
+        catch (\Exception $e)
+        {
+            $this->app['basicauth']->setModeAndDbConnection('test');
+
+            $reward = $this->repo->reward->findOrFailPublic($id);
+
+            return $reward;
+        }
+
+        return;
     }
 
     public function expireRewards()

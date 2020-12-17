@@ -2147,6 +2147,8 @@ class Route
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
+        'checkout_rewards'                        => ['get',     'checkout/rewards',                                        'MerchantController@getRewardsForCheckout'                     ],
+        'reward_terms'                            => ['get',     'reward/{id}/terms',                                       'RewardController@getRewardTerms'                              ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
 
         // GupShup Incoming Messages Webhook
@@ -2252,6 +2254,7 @@ class Route
         'payment_button_hosted_view',
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
+        'checkout_rewards',
     ];
 
     public static $device = [
@@ -5272,6 +5275,7 @@ class Route
 
         //Accounting Payouts Callback
         'accounting_payouts_callback',
+        'reward_terms',
     ];
 
     /**

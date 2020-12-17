@@ -3,6 +3,7 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use ApiResponse;
 
@@ -41,6 +42,12 @@ class RewardController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRewardTerms($id)
+    {
+        $data = $this->service()->getRewardTerms($id);
+
+        return View::make('reward.terms')->with('data', $data);
+    }
     public function expireRewards()
     {
         $data = $this->service()->expireRewards();

@@ -18,18 +18,19 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRewardRules = [
-        Entity::NAME                => 'sometimes|filled|string|max:50',
-        Entity::ADVERTISER_ID       => 'required|string|unsigned_id',
-        Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK        => 'filled|integer|min:0',
-        Entity::FLAT_CASHBACK       => 'filled|integer|min:0',
-        Entity::MIN_AMOUNT          => 'fille   d|integer|min:0',
-        Entity::STARTS_AT           => 'filled|epoch',
-        Entity::ENDS_AT             => 'required|epoch',
-        Entity::DISPLAY_TEXT        => 'filled|string|max:255',
-        Entity::TERMS               => 'filled|string',
-        Entity::COUPON_CODE         => 'required|string',
-        Entity::LOGO                => 'sometimes|string',
+        Entity::NAME                            => 'sometimes|filled|string|max:50',
+        Entity::ADVERTISER_ID                   => 'required|string|unsigned_id',
+        Entity::PERCENT_RATE                    => 'filled|integer|min:0|max:10000',
+        Entity::MAX_CASHBACK                    => 'filled|integer|min:0',
+        Entity::FLAT_CASHBACK                   => 'filled|integer|min:0',
+        Entity::MIN_AMOUNT                      => 'fille   d|integer|min:0',
+        Entity::STARTS_AT                       => 'filled|epoch',
+        Entity::ENDS_AT                         => 'required|epoch',
+        Entity::DISPLAY_TEXT                    => 'filled|string|max:255',
+        Entity::TERMS                           => 'filled|string',
+        Entity::COUPON_CODE                     => 'required|string',
+        Entity::LOGO                            => 'sometimes|string',
+        Entity::MERCHANT_WEBSITE_REDIRECT_LINK  => 'sometimes|string',
     ];
 
     public function validateRewardPeriod(array $input)

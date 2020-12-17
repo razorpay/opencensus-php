@@ -528,6 +528,8 @@ class Constants
 
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
 
+    const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -799,6 +801,7 @@ class Constants
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
+        self::REWARD_MERCHANT_DASHBOARD      => true,
     ];
 
     // Entity type constants
@@ -1136,6 +1139,11 @@ class Constants
         self::BLOCK_PL_PAY_POST_EXPIRY => [
             'feature'       => self::BLOCK_PL_PAY_POST_EXPIRY,
             'display_name'  => 'Block payment past expiry for partially paid links',
+            'documentation' => '',
+        ],
+        self::REWARD_MERCHANT_DASHBOARD => [
+            'feature'       => self::REWARD_MERCHANT_DASHBOARD,
+            'display_name'  => 'Checkout Reward on merchant dashboard',
             'documentation' => '',
         ],
     ];

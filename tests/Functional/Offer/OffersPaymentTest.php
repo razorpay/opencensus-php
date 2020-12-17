@@ -1047,4 +1047,32 @@ class OffersPaymentTest extends TestCase
         $this->assertArrayNotHasKey('offers', $response);
     }
 
+    public function testPaymentWithReward()
+    {
+        $reward = $this->fixtures->create('reward');
+
+        $this->fixtures->create('merchant_reward', ['reward_id' => $reward->id, 'status' => 'live',
+            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $order = $this->fixtures->order->create();
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['reward_ids'][] = 'reward_'.$reward->getId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        // Payment Offer row got created
+        $entityOffers = $this->getEntities('entity_offer', ['entity_type' => 'payment'], true);
+        $entityOffer = $entityOffers['items'][0];
+
+        $this->assertEquals($reward->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($payment['entity'], $entityOffer['entity_type']);
+        $this->assertEquals($payment['id'], 'pay_' . $entityOffer['entity_id']);
+    }
+
 }

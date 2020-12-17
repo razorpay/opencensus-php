@@ -113,11 +113,31 @@ class Repository extends Base\Repository
             ->update($params);
     }
 
+    public function fetchLiveRewardByMerchantId($merchantId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::STATUS, '=', Entity::LIVE)
+            ->limit(Entity::MAX_LIVE_REWARD_ALLOWED);
+
+        return $query->get();
+    }
+
     public function fetchQueueMerchantRewards()
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Entity::QUEUE);
 
         return $query->get();
+    }
+
+    public function fetchLiveMerchantRewardByRewardIdAndMerchantId($rewardId, $merchantId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::REWARD_ID, '=', $rewardId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::STATUS, '=', Entity::LIVE);
+
+        return $query->first();
     }
 }

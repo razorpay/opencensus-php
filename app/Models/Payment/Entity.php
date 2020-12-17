@@ -3665,6 +3665,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->offers()->attach($offer);
     }
 
+    public function associateReward($rewardId)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($rewardId, ['entity_offer_type' => 'reward']);
+    }
+
     public function dissociateOffer(Offer\Entity $offer)
     {
         $this->offers()->detach($offer->getId());

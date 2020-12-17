@@ -73,6 +73,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Reward\Entity as RewardEntity;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
@@ -147,6 +148,8 @@ trait Authorize
         $this->setAnalyticsLog($payment, $deviceId);
 
         $this->runPaymentInputValidations($payment, $input);
+
+        $this->storeRewards($payment, $input);
 
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
@@ -8160,5 +8163,36 @@ trait Authorize
                                                                               );
 
         return $returnData;
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param $input
+     */
+    protected function storeRewards(Payment\Entity $payment, $input)
+    {
+        if (isset($input['reward_ids']) === true)
+        {
+            $rewards = array_slice($input['reward_ids'], 0, 3);
+
+            foreach ($rewards as $rewardId)
+            {
+                try
+                {
+                    $merchantReward = $this->repo->merchant_reward->fetchLiveMerchantRewardByRewardIdAndMerchantId(
+                                             RewardEntity::verifyIdAndStripSign($rewardId), $payment->getMerchantId());
+
+                    if (isset($merchantReward) === true)
+                    {
+                        $payment->associateReward($merchantReward->getRewardId());
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+
     }
 }

@@ -128,6 +128,7 @@ class Validator extends Base\Validator
         'language_code'                 => 'sometimes|string',
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
+        'reward_ids'                    => 'sometimes|array',
         'authentication.cavv'                                        => 'required_if:application,visasafeclick|size:28|string',
         'authentication.cavv_algorithm'                              => 'required_if:application,visasafeclick|size:1|string',
         'authentication.eci'                                         => 'required_if:application,visasafeclick|size:2|string',

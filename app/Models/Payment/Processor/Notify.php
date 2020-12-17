@@ -18,6 +18,8 @@ use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Models\Currency\DCC as Dcc;
+use RZP\Models\Reward\Repository as RewardRepository;
+use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 
 class Notify
 {
@@ -490,6 +492,31 @@ class Notify
 
             $dccBaseAmount = $gatewayAmount - $fee;
             $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
+        }
+
+        $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($this->payment->getId());
+
+        if (isset($entityOffers) === true)
+        {
+            foreach ($entityOffers as $entityOffer)
+            {
+                $reward = (new RewardRepository())->find($entityOffer->offer_id);
+
+                $data['rewards'][] = array(
+                    'id'            => $reward->getId(),
+                    'logo'          => $reward->getLogo(),
+                    'ends_at'       => $reward->getEndsAt(),
+                    'stats_at'      => $reward->getStartsAt(),
+                    'coupon_code'   => $reward->getCouponCode(),
+                    'terms'         => $reward->getTerms(),
+                    'name'          => $reward->getName(),
+                    'display_text'  => $reward->getDisplayText(),
+                    'percent_rate'  => $reward->getPercentRate(),
+                    'flat_cashback' => $reward->getFlatCashback(),
+                    'max_cashback'  => $reward->getMaxCashback(),
+                    'min_amount'    => $reward->getMinAmount(),
+                );
+            }
         }
 
         return $data;

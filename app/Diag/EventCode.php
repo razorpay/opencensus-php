@@ -656,4 +656,9 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'bvs.consumed_validation.document_verification.results'
     ];
+
+    const EMAIL_REWARD_SENT = [
+        'group' => 'email',
+        'name'  => 'email.reward.sent',
+    ];
 }

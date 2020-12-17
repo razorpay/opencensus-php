@@ -457,6 +457,93 @@
       </table>
 
     </div>
+
+    @isset($rewards)
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                <div class="mj-column-per-100 outlook-group-fix"
+                  style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tbody>
+                      <tr>
+                        <td style="vertical-align:top;padding:0px;">
+
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+
+                            <tr>
+                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                <div
+                                  style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                  <div class="card merchant-highlight informative"
+                                    style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 25px; padding-right: 25px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
+                                    <div style="text-align: center; font-size: 15px; font-weight: 900; color: #525A76;">
+                                      Rewards from various brands successfully unlocked!
+                                    </div>
+                                    <div style="text-align: center; font-size: 15px; color: #525A76; margin-top: 7px;">
+                                      Use Coupon Codes below to avail discounts.
+                                    </div>
+                                    <div style="display: flex; justify-content: space-evenly; margin-top: 30px;">
+                                      
+                                      @foreach ($rewards as $reward)
+                                        <div style="display: inline-block; width: 112px;">
+                                          <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/terms" target="_blank" style="text-decoration: none;">
+                                            <div style="height: 136px; background: linear-gradient(199.72deg, #FFFFFF 1.23%, #F8F8F8 99.45%); box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.18); border-radius: 5px;">
+                                              <div>
+                                                <img src="https://cdn.razorpay.com/static/assets/email/ic-navigate.png"
+                                                  style="height: 13px; position: relative; left: 95px; padding-top: 5px; padding-right: 5px;" />
+                                              </div>
+                                              <div style="padding: 22px 38px 22px 37px;">
+                                                @isset($reward["logo"])
+                                                  <img src="{{$reward['logo']}}" title="logo" style="height: 36px; width: 36px;" />
+                                                @endisset
+                                              </div>
+                                              <div style="border: 0.6px dashed #CECECE; border-radius: 1px; opacity: 0.5; box-sizing: border-box;"></div>
+                                              <div style="text-align: center; padding-top: 10px; text-transform: uppercase; color: #2C54E3;">
+                                                {{$reward["coupon_code"]}}
+                                              </div>
+                                            </div>
+                                          </a>
+                                          <div style="color: #525A76; margin-top: 15px; text-align: center; line-height: 17px;">
+                                            {{$reward["display_text"]}}
+                                          </div>
+                                          <div style="text-align: center; font-size: 8px; line-height: 17px; text-shadow: 2px 3px 12px rgba(0, 0, 0, 0.1);">
+                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/terms" style="color: #525A76; text-decoration: underline; opacity: 0.5;">
+                                              View T&C
+                                            </a>
+                                          </div>
+                                        </div>
+                                      @endforeach
+
+                                    </div>
+                                  </div>
+                                </div>
+
+                              </td>
+                            </tr>
+
+                          </table>
+
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    @endisset
+
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
