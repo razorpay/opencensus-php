@@ -273,8 +273,6 @@ class FreshdeskTicketClient
 
     protected function getResponse($request) : \Requests_Response
     {
-        $this->trace->count(Metric::FRESHDESK , $this->getDimension($this->route->getCurrentRouteName()));
-
         $response = Requests::request(
             $request['url'],
             $request['headers'],
@@ -282,6 +280,8 @@ class FreshdeskTicketClient
             $request['method'],
             $request['options']
         );
+
+        $this->trace->count(Metric::FRESHDESK, $this->getDimension($this->route->getCurrentRouteName(), $response->status_code ?? 520) );
 
         return $response;
     }
@@ -377,8 +377,6 @@ class FreshdeskTicketClient
 
     protected function makeCurlRequest(array &$request)
     {
-        $this->trace->count(Metric::FRESHDESK , $this->getDimension($this->route->getCurrentRouteName()));
-
         $mime_boundary = md5(time());
 
         $curl = curl_init();
@@ -403,6 +401,10 @@ class FreshdeskTicketClient
         ));
 
         $response = curl_exec($curl);
+
+        $curlInfo = curl_getinfo($curl);
+
+        $this->trace->count(Metric::FRESHDESK, $this->getDimension($this->route->getCurrentRouteName(), $curlInfo['http_code'] ?? 520));
 
         curl_close($curl);
 
@@ -533,8 +535,11 @@ class FreshdeskTicketClient
             );
     }
 
-    protected function getDimension($route){
+    protected function getDimension($route, $responseCode){
 
-        return ['route' => $route];
+        return [
+            Constants::ROUTE            =>  $route,
+            Constants::RESPONSE_CODE    =>  $responseCode,
+            ];
     }
 }

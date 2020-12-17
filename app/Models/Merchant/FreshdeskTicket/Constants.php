@@ -83,4 +83,7 @@ class Constants
     const BODY              = 'body';
     const DESCRIPTION       = 'description';
 
+    const ROUTE             = 'route';
+    const RESPONSE_CODE     = 'response_code';
+
 }
