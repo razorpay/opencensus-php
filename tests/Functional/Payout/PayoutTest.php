@@ -287,13 +287,10 @@ class PayoutTest extends OAuthTestCase
 
         $payout =  $this->startTest();
 
-        $this->assertEquals($payout['meta']['partner_application']['merchant_id'], '10000000000000');
-
-        $this->assertEquals($payout['meta']['partner_application']['id'], '8ckeirnw84ifke');
-
-        $this->assertEquals($payout['meta']['partner_application']['name'], 'Internal');
+        $this->assertTrue(isset($payout['meta']) === false);
 
         return $payout;
+
     }
 
     public function testPayoutFetchByIdCreatedByPartner()
@@ -304,21 +301,15 @@ class PayoutTest extends OAuthTestCase
 
         $request['url'] = '/payouts/' . $payout['id'];
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->startTest();
 
-        $this->assertEquals($payout['id'], $response['id']);
+        $this->assertEquals($response['meta']['partner_application']['merchant_id'], '10000000000000');
 
-        $this->assertEquals($payout['mode'], $response['mode']);
+        $this->assertEquals($response['meta']['partner_application']['id'], '8ckeirnw84ifke');
 
-        $this->assertEquals($payout['fees'], $response['fees']);
-
-        $this->assertEquals($payout['meta']['partner_application']['merchant_id'], '10000000000000');
-
-        $this->assertEquals($payout['meta']['partner_application']['id'], '8ckeirnw84ifke');
-
-        $this->assertEquals($payout['meta']['partner_application']['name'], 'Internal');
+        $this->assertEquals($response['meta']['partner_application']['name'], 'Internal');
     }
 
     public function testCreateTwoPayoutsWithSameIKey()
@@ -2734,8 +2725,6 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
 
         $payout = $this->getLastEntity('payout', true);
-
-        $payout['meta'] = null;
 
         $this->ba->privateAuth();
 

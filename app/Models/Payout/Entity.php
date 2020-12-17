@@ -1956,12 +1956,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicMetaAttribute(array & $attributes)
     {
-        if (app('basicauth')->isPrivateAuth() === true)
+        if (app('basicauth')->isProxyAuth() === true)
         {
             $attributes[self::META] = $this->getPayoutMeta();
         }
     }
-  
+
     public function setPublicRemarksAttribute(array & $attributes)
     {
         if (app('basicauth')->isStrictPrivateAuth() === false)
