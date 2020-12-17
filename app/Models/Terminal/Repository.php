@@ -160,6 +160,8 @@ class Repository extends Base\Repository
 
             if ($variantFlag === 'proxy')
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $content = ["merchant_ids" => $merchantIds];
 
                 $content["status"] = Status::ACTIVATED;
@@ -221,6 +223,8 @@ class Repository extends Base\Repository
 
             try
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $path = "v1/terminals/" . $id;
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
