@@ -145,6 +145,7 @@ class Entity extends Base\PublicEntity
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
     const BANK_ACCOUNT_TYPE = 'bank_account_type';
     const ASSIGNEE_TEAM = 'assignee_team';
+    const SOURCE = 'source';
 
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';

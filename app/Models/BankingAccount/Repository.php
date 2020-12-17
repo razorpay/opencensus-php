@@ -333,6 +333,30 @@ class Repository extends Base\Repository
         $query->where($merchantEmailColumn, '=', $email);
     }
 
+    protected function joinMerchantPromotions(Base\BuilderEx $query)
+    {
+        $merchantPromotionsTable = $this->repo->merchant_promotion->getTableName();
+        $promotionsTable = $this->repo->promotion->getTableName();
+
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn = $this->repo->merchant_promotion->dbColumn(Merchant\Promotion\Entity::MERCHANT_ID);
+        $merchantPromotionIdColumn = $this->repo->merchant_promotion->dbColumn(Merchant\Promotion\Entity::PROMOTION_ID);
+        $promotionIdColumn = $this->repo->promotion->dbColumn(\RZP\Models\Promotion\Entity::ID);
+
+        $query->join($merchantPromotionsTable, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn);
+        $query->join($promotionsTable, $merchantPromotionIdColumn, '=', $promotionIdColumn);
+    }
+
+    public function addQueryParamSource(Base\BuilderEx $query, array $params)
+    {
+        $this->joinMerchantPromotions($query);
+
+        $source = $params[Entity::SOURCE];
+        $promotionNameColumn = $this->repo->promotion->dbColumn(\RZP\Models\Promotion\Entity::NAME);
+
+        $query->where($promotionNameColumn, '=', $source);
+    }
+
     public function addQueryParamMerchantPocCity(Base\BuilderEx $query, array $params)
     {
         $merchantCityColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::MERCHANT_CITY);

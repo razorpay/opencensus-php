@@ -30,6 +30,7 @@ class Fetch extends BaseFetch
             Entity::BANK_ACCOUNT_TYPE                   => 'sometimes|string',
             Entity::SALES_POC_ID                        => 'sometimes|string',
             Entity::ASSIGNEE_TEAM                       => 'sometimes|string',
+            Entity::SOURCE                              => 'sometimes|string',
         ],
     ];
 
@@ -53,6 +54,7 @@ class Fetch extends BaseFetch
             Entity::BANK_ACCOUNT_TYPE,
             Entity::SALES_POC_ID,
             Entity::ASSIGNEE_TEAM,
+            Entity::SOURCE,
             self::EXPAND_EACH,
         ],
     ];
