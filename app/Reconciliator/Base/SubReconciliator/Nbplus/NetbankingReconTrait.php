@@ -38,7 +38,7 @@ trait NetbankingReconTrait
                 NetbankingService::CUSTOMER_ID            => $customerId
             ],
             'attributes' => self::NETBANKING_ATTRIBUTES,
-            'method'     => Method::NETBANKING,
+            'entity'     => Method::NETBANKING,
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,
             'batch_id'   => $this->batchId,

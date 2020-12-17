@@ -14,7 +14,7 @@ use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 
 class NetbankingRecon extends Job
 {
-    const MAX_JOB_ATTEMPTS = 5;
+    const MAX_JOB_ATTEMPTS = 2;
     const JOB_RELEASE_WAIT = 300;
 
     protected $data;
