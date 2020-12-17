@@ -116,20 +116,9 @@ class OrderTest extends TestCase
         return $order;
     }
 
-    public function testCreateOrderWithNullTransfersParam()
+    public function testCreateOrderWithEmptyArrayTransfersParam()
     {
-        $request = $this->testData['testCreateOrder']['request'];
-
-        $request['content']['transfers'] = null;
-
-        $this->makeRequestAndCatchException(
-            function () use ($request)
-            {
-                $this->makeRequestAndGetContent($request);
-            },
-            Exception\BadRequestValidationFailureException::class,
-            'The transfers field is required.'
-        );
+        $this->startTest();
     }
 
     public function testCreateOrderWithNonArrayTokenParam()
@@ -144,7 +133,7 @@ class OrderTest extends TestCase
                 $this->makeRequestAndGetContent($request);
             },
             Exception\BadRequestValidationFailureException::class,
-            'The token must be an array.'
+            'token attribute must be an array.'
         );
     }
 

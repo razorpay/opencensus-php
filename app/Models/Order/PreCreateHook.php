@@ -19,13 +19,33 @@ class PreCreateHook extends Hook
 
     public function process()
     {
-        (new Validator())->validateInput('preCreateHook', array_only($this->orderInput, array_keys($this->hooks)));
+        foreach (array_keys($this->hooks) as $hook)
+        {
+            if (array_key_exists($hook, $this->orderInput) === false)
+            {
+                continue;
+            }
+
+            $value = $this->orderInput[$hook];
+
+            if (($value !== null) and
+                (is_array($value) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException($hook . ' attribute must be an array.');
+            }
+        }
 
         parent::process();
     }
 
-    public function validateTokenParams(array $paramInput)
+    public function validateTokenParams($paramInput)
     {
+        if (($paramInput === null) or
+            ($paramInput === []))
+        {
+            return;
+        }
+
         if ((isset($this->orderInput[Entity::METHOD]) === true) and
             ($this->orderInput[Entity::METHOD] === Methods\Entity::UPI))
         {
@@ -71,8 +91,14 @@ class PreCreateHook extends Hook
         }
     }
 
-    public function validateTransferParams(array $input)
+    public function validateTransferParams($input)
     {
+        if (($input === null) or
+            ($input === []))
+        {
+            return;
+        }
+
         try
         {
             $partialPayment = boolval($this->orderInput[Entity::PARTIAL_PAYMENT] ?? false);

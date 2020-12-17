@@ -72,6 +72,27 @@ return [
         ],
     ],
 
+    'testCreateOrderWithEmptyArrayTransfersParam' => [
+        'request' => [
+            'url'       => '/orders',
+            'method'    => 'POST',
+            'content'   => [
+                'amount'            => 50000,
+                'currency'          => 'INR',
+                'payment_capture'   => true,
+                'transfers'         => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'order',
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'status'        => 'created',
+            ],
+        ],
+    ],
+
     'testUniqueReceiptFeatureWithNoReceipt' => [
         'request'   => [
             'content' => [

@@ -28,8 +28,14 @@ class PostCreateHook extends Hook
         $this->order = $order;
     }
 
-    public function createRegistrationEntity(array $tokenParams)
+    public function createRegistrationEntity($tokenParams)
     {
+        if (($tokenParams === null) or
+            ($tokenParams === []))
+        {
+            return;
+        }
+
         $customerId = $this->orderInput[Entity::CUSTOMER_ID];
 
         $customer = $this->repo->customer->findByPublicId($customerId);
@@ -59,8 +65,14 @@ class PostCreateHook extends Hook
         (new TokenRegistrationCore())->createAuthLinkForOrder($tokenRegistrationInput, $this->order, $customer);
     }
 
-    public function createTransfers(array $input)
+    public function createTransfers($input)
     {
+        if (($input === null) or
+            ($input === []))
+        {
+            return;
+        }
+
         $order = $this->order;
 
         $this->app['trace']->info(
