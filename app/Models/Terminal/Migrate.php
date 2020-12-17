@@ -510,5 +510,76 @@ trait Migrate
         return $isEqual;
     }
 
+    public static function getTerminalServiceRequestFromParam(array $terminalData): array
+    {
+        $content = [];
+
+        if (empty($terminalData["merchant_id"]) === false)
+        {
+            $content["merchant_ids"] = [$terminalData["merchant_id"]];
+        }
+
+        if (empty($terminalData["gateway"]) === false)
+        {
+            $content["gateway"] = $terminalData["gateway"];
+        }
+
+        if (empty($terminalData["procurer"]) === false)
+        {
+            $content["procurer"] = $terminalData["procurer"];
+        }
+
+        if (empty($terminalData["gateway_acquirer"]) === false)
+        {
+            $content["gateway_acquirer"] = $terminalData["gateway_acquirer"];
+        }
+
+        $identifiers = [];
+
+        if (empty($terminalData["gateway_merchant_id"]) === false)
+        {
+            $identifiers["gateway_merchant_id"] = $terminalData["gateway_merchant_id"];
+        }
+        if (empty($terminalData["gateway_merchant_id2"]) === false)
+        {
+            $identifiers["gateway_merchant_id2"] = $terminalData["gateway_merchant_id2"];
+        }
+        if (empty($terminalData["gateway_terminal_id"]) === false)
+        {
+            $identifiers["gateway_terminal_id"] = $terminalData["gateway_terminal_id"];
+        }
+        if (empty($terminalData["gateway_terminal_id2"]) === false)
+        {
+            $identifiers["gateway_terminal_id2"] = $terminalData["gateway_terminal_id2"];
+        }
+
+        $mpans = [];
+
+        if (empty($terminalData["mc_mpan"]) === false)
+        {
+            $mpans["mc_mpan"] = $terminalData["mc_mpan"];
+        }
+        if (empty($terminalData["visa_mpan"]) === false)
+        {
+            $mpans["visa_mpan"] = $terminalData["visa_mpan"];
+        }
+        if (empty($terminalData["rupay_mpan"]) === false)
+        {
+            $mpans["rupay_mpan"] = $terminalData["rupay_mpan"];
+        }
+
+        if (count($mpans) > 0)
+        {
+            $identifiers["mpans"] = $mpans;
+        }
+
+        if (count($identifiers) > 0)
+        {
+            $content["identifiers"] = $identifiers;
+        }
+
+        return $content;
+    }
+
 }
 

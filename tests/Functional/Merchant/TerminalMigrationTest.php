@@ -274,6 +274,35 @@ class TerminalMigrationTest extends TestCase
         $this->assertTrue($isEqual);
     }
 
+    public function testTerminalParamToRequestConversion()
+    {
+        $param = [];
+
+        $param["merchant_id"]          = "10000000000000";
+        $param["gateway"]              = "hitachi";
+        $param["gateway_acquirer"]     = "ratn";
+        $param["procurer"]             = "razorpay";
+        $param["gateway_merchant_id"]  = "test1";
+        $param["gateway_merchant_id2"] = "test2";
+        $param["visa_mpan"]            = "visa_test";
+        $param["mc_mpan"]              = "mc_test";
+
+        $req = Terminal\Service::getTerminalServiceRequestFromParam($param);
+
+        $this->assertEquals(["10000000000000"], $req["merchant_ids"]);
+        $this->assertEquals("razorpay", $req["procurer"]);
+        $this->assertEquals("ratn", $req["gateway_acquirer"]);
+        $this->assertEquals("hitachi", $req["gateway"]);
+
+        $identifiers = $req["identifiers"];
+        $this->assertEquals("test1", $identifiers["gateway_merchant_id"]);
+        $this->assertEquals("test2", $identifiers["gateway_merchant_id2"]);
+
+        $mpans = $identifiers["mpans"];
+        $this->assertEquals("visa_test", $mpans["visa_mpan"]);
+        $this->assertEquals("mc_test", $mpans["mc_mpan"]);
+    }
+
     public function testTerminalCollectionCompareFunctionFailed()
     {
         $merchantIds = ['10000000000000'];
