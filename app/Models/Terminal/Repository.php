@@ -334,28 +334,166 @@ class Repository extends Base\Repository
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
-        return $this->newQuery()
+        $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+
+            if ($variantFlag === 'proxy')
+            {
+                $data = ["function" => "findByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $content["fetch_where_submerchant"] = false;
+
+                $identifiers = ["gateway_merchant_id" => $gatewayMerchantId];
+
+                $content["identifiers"] = $identifiers;
+
+                $content["gateway"] = $gateway;
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
+
+        return $terminal;
     }
 
     public function findActivatedTerminalByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
-        return $this->newQuery()
+        $terminal =  $this->newQuery()
             ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
             ->where(Entity::GATEWAY, '=', $gateway)
             ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
             ->first();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+
+            if ($variantFlag === 'proxy')
+            {
+                $data = ["function" => "findActivatedTerminalByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $content["fetch_where_submerchant"] = false;
+
+                $identifiers = ["gateway_merchant_id" => $gatewayMerchantId];
+
+                $content["identifiers"] = $identifiers;
+
+                $content["gateway"] = $gateway;
+
+                $content["status"] = Status::ACTIVATED;
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
+
+        return $terminal;
     }
 
     public function findTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
     {
-        return $this->newQuery()
+        $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+
+            if ($variantFlag === 'proxy')
+            {
+                $data = ["function" => "findTerminalByGatewayMerchantIdAndGatewayTerminalId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway_terminal_id"=> $gatewayTerminalId, "gateway"=> $gateway];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $identifiers["gateway_merchant_id"] = $gatewayMerchantId;
+
+                $identifiers["gateway_terminal_id"] = $gatewayTerminalId;
+
+                $content["identifiers"] = $identifiers;
+
+                $content["gateway"] = $gateway;
+
+                $content["status"] = Status::ACTIVATED;
+
+                $content["fetch_where_submerchant"] = false;
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
+
+        return $terminal;
     }
 
     public function findEnabledTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
