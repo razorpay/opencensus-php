@@ -49,6 +49,7 @@ import onboardingReducer from 'merchant/reducers/onboarding';
 import remindersReducer from 'merchant/reducers/reminders';
 import commissionInvoices from 'merchant/reducers/commissionInvoices/list';
 import commissionInvoice from 'merchant/reducers/commissionInvoices/details';
+import rewardsReducer from 'merchant/reducers/checkoutRewards';
 
 import {
   refundBatchesReducer,
@@ -180,4 +181,5 @@ export default combineReducers({
   withdrawals: WithdrawalsReducer,
   instrumentRequests: instrumentRequestsReducer,
   supportdetails: supportDetailReducer,
+  rewards: rewardsReducer,
 });

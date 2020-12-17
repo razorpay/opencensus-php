@@ -22,7 +22,7 @@ export default class GenericEntity extends Entity {
       : { ...queryParams };
 
     if (id) {
-      return this.fetch(id, data).then(response => {
+      return this.fetch(id, data).then((response) => {
         return {
           data: {
             items: [response],
@@ -32,10 +32,9 @@ export default class GenericEntity extends Entity {
     }
 
     data.route_name = this.listRouteName;
-    return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass(item).deserialize()
-      );
+    return this.makeGenericAjaxCall({ data }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Klass(item).deserialize());
+
       return response;
     });
   }
@@ -45,7 +44,7 @@ export default class GenericEntity extends Entity {
     const url = `${this.resourceUrl}/${id}`;
     data = { ...data, ...queryParams };
 
-    return this.makeGenericAjaxCall({ data, url }).then(response => {
+    return this.makeGenericAjaxCall({ data, url }).then((response) => {
       return new Klass(response.data).deserialize();
     });
   }
@@ -63,7 +62,7 @@ export default class GenericEntity extends Entity {
       method,
       data,
       httpData,
-    }).then(response => {
+    }).then((response) => {
       return new Klass(response.data).deserialize();
     });
   }
@@ -96,7 +95,7 @@ export default class GenericEntity extends Entity {
         ...httpData,
       },
       {},
-      data.route_name ? '' : '/merchant/api'
+      data.route_name ? '' : '/merchant/api',
     );
   }
 }

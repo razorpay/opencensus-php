@@ -10,10 +10,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import { fetchPlans } from 'merchant/reducers/plans';
-import {
-  fetchSubscriptions,
-  getCheckoutInfo,
-} from 'merchant/reducers/subscriptions';
+import { fetchSubscriptions, getCheckoutInfo } from 'merchant/reducers/subscriptions';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -36,14 +33,14 @@ import QuickGuide, {
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 
 @connect(
-  state => ({
+  (state) => ({
     mode: state.session.mode,
     user: state.session.user,
     plans: state.plans,
     subscriptions: state.subscriptions,
     subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
       state,
-      RZPFeatures.SUBSCRIPTIONS
+      RZPFeatures.SUBSCRIPTIONS,
     ),
     payments: state.payments,
   }),
@@ -52,7 +49,7 @@ import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
     getCheckoutInfo,
     fetchSubscriptions,
     handleProductQuickGuide,
-  }
+  },
 )
 export default class SubscriptionsController extends React.Component {
   componentDidMount() {
@@ -104,10 +101,7 @@ export default class SubscriptionsController extends React.Component {
   };
 
   initSubscriptions = (props = this.props) => {
-    if (
-      props.user.isChargeAtWillEnabled ||
-      props.subscriptionProductOnBoarding.isTour
-    ) {
+    if (props.user.isChargeAtWillEnabled || props.subscriptionProductOnBoarding.isTour) {
       return;
     }
 
@@ -150,13 +144,13 @@ export default class SubscriptionsController extends React.Component {
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 
           <header id="subscriptions-header">
-            <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
+            <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
               <NavLink exact to="/subscriptions">
                 Subscriptions
               </NavLink>
               <NavLink to="/plans">Plans</NavLink>
               <ShowWhen
-                additionalCondition={user =>
+                additionalCondition={(user) =>
                   !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
                 }
               >
@@ -166,11 +160,9 @@ export default class SubscriptionsController extends React.Component {
               </ShowWhen>
             </ShowWhen>
 
-            <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
+            <ShowWhen additionalCondition={(user) => user.isChargeAtWillEnabled}>
               <ShowWhen
-                additionalCondition={user =>
-                  user.isRegistrationLinkTokenAndPaymentsEnabled
-                }
+                additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
               >
                 <NavLink to="/recurring_payments">Payments</NavLink>
                 <NavLink to="/tokens">Tokens</NavLink>
@@ -180,17 +172,11 @@ export default class SubscriptionsController extends React.Component {
                 <span>
                   <i class="i i-info-circle" />
                   <Popover theme="dark">
-                    <PopoverBody>
-                      Authorization links are now called Registration links
-                    </PopoverBody>
+                    <PopoverBody>Authorization links are now called Registration links</PopoverBody>
                   </Popover>
                 </span>
               </NavLink>
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isRegistrationLinkBatchUploadEnabled
-                }
-              >
+              <ShowWhen additionalCondition={(user) => user.isRegistrationLinkBatchUploadEnabled}>
                 <NavLink exact to="/subscriptions/batchuploads">
                   Batch Upload
                 </NavLink>
@@ -205,13 +191,13 @@ export default class SubscriptionsController extends React.Component {
               <ShowWhenRoute
                 path="/subscriptions/batchuploads"
                 component={HostedEmanadateBatches}
-                additionalCondition={user => user.isChargeAtWillEnabled}
+                additionalCondition={(user) => user.isChargeAtWillEnabled}
               />
 
               <ShowWhenRoute
                 path="/subscriptions/settings"
                 component={SubscriptionSettings}
-                additionalCondition={user =>
+                additionalCondition={(user) =>
                   !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
                 }
               />
@@ -219,33 +205,26 @@ export default class SubscriptionsController extends React.Component {
               <ShowWhenRoute
                 path="/subscriptions"
                 component={SubscriptionsList}
-                additionalCondition={user => !user.isChargeAtWillEnabled}
+                additionalCondition={(user) => !user.isChargeAtWillEnabled}
               />
               <ShowWhenRoute
                 path="/plans"
                 component={ClonedPlanList}
-                additionalCondition={user => !user.isChargeAtWillEnabled}
+                additionalCondition={(user) => !user.isChargeAtWillEnabled}
               />
 
-              <Route
-                path="/registration_links"
-                component={RegistrationLinksList}
-              />
+              <Route path="/registration_links" component={RegistrationLinksList} />
 
               <Route
                 path="/recurring_payments"
                 component={RecurringPayments}
-                additionalCondition={user =>
-                  user.isRegistrationLinkTokenAndPaymentsEnabled
-                }
+                additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
               />
 
               <Route
                 path="/tokens"
                 component={TokensList}
-                additionalCondition={user =>
-                  user.isRegistrationLinkTokenAndPaymentsEnabled
-                }
+                additionalCondition={(user) => user.isRegistrationLinkTokenAndPaymentsEnabled}
               />
             </Switch>
           </content>
@@ -255,6 +234,6 @@ export default class SubscriptionsController extends React.Component {
   }
 }
 
-const ClonedPlanList = props => (
+const ClonedPlanList = (props) => (
   <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />
 );

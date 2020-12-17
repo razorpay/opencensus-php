@@ -114,6 +114,15 @@ export default function MerchantNavLinks(props) {
       />
 
       <MainNavLink
+        label="Checkout Rewards"
+        icon="i i-rewards text-danger"
+        to="/checkout-rewards"
+        additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
+        isNew
+        style={{ paddingRight: '3px' }}
+      />
+
+      <MainNavLink
         label="Loans"
         icon="i fa fa-inr text-warm"
         to="/capital/loans/apply"

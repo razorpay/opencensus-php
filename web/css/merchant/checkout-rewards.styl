@@ -1,0 +1,334 @@
+$activate-btn-bg-color = #2B83EA;
+$live-btn-bg-color = #1F890E;
+$remove-btn-color = #2B83EA;
+$next-btn-bg-color = rgba(22, 47, 86, 0.1);
+$next-btn-text-color = rgba(22, 47, 86, 0.87);
+
+.RewardsContainer {
+  .Rewards {
+    &--list-header {
+      padding: 25px 0 20px 0;
+      color: #58666E;
+      font-size: 14px;
+      line-height: 17px;
+      border-bottom: 1px solid #ddd;
+      font-weight: bold;
+      margin: 0;
+
+      small {
+        font-size: 100%;
+      }
+    }
+
+    &--queue-list-header {
+      padding-bottom: 12px;
+    }
+
+    &--header {
+      background-color: #F0F4F8;
+      color: $text-color;
+      padding: 24px;
+      height: 112px;
+
+      &--title {
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+
+      &--desc {
+        font-size: 14px;
+        line-height: 17px;
+
+        span {
+          color: #2b83ea;
+          text-decoration: underline;
+          cursor: pointer;
+        }
+      }
+    }
+
+    &--list {
+      background: #f9fbfe;
+      padding: 0 24px;
+      border-width: 0 1px 1px;
+      border-style: solid;
+      border-color: #EBEFF0;
+      height: calc(100vh - 350px);
+      overflow-y: auto;
+
+      &--item {
+        margin: 0;
+        padding: 20px 0;
+
+        .media-left {
+          padding-right: 24px;
+        }
+
+        .media-right {
+          vertical-align: middle;
+        }
+      }
+
+      &--item:not(:last-child) {
+        border-bottom: 1px solid #DDD;
+      }
+
+      .Rewards--list-header:not(:first-child) {
+        border-top: 1px solid #ddd;
+      }
+    }
+
+    &--empty {
+      padding: 40px 0px 35px 0px;
+      text-align: center;
+    }
+
+    &--empty-all-available {
+      text-align: center;
+      padding-top: 67px;
+
+      .empty-msg {
+        padding-top: 24px;
+      }
+    }
+
+    &--button-grp {
+      display: flex;
+      justify-content: space-between;
+      width: 111px;
+
+      &--extra-width {
+        width: 125px;
+      }
+    }
+  }
+
+  .Reward {
+    &--logo {
+      width: 50px;
+      height: 50px;
+    }
+
+    &--brand {
+      font-size: 12px;
+      color: #0A6FEB;
+      margin-bottom: 6px;
+      line-height: 14px;
+      font-weight: bold;
+
+      a, a:hover, a:focus, a:visited {
+        color: #0A6FEB;
+      }
+    }
+
+    &--desc {
+      color: #58666E;
+      font-size: 14px;
+      line-height: 17px;
+    }
+
+    &--time-duration {
+      font-size: 12px;
+      line-height: 14px;
+      margin-top: 4px;
+    }
+
+    &--starts-at {
+      time {
+        font-weight: bold;
+        margin-right: 0.3em;
+      }
+    }
+
+    &--ends-at {
+      time {
+        font-weight: bold;
+      }
+    }
+
+    &--activate-button {
+      font-weight: bold;
+      background-color: $activate-btn-bg-color;
+      margin-right: 0px;
+
+      &--disabled {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+    }
+
+    &--activate-button.Button--primary:not(:disabled):hover {
+      background-color: $activate-btn-bg-color;
+    }
+
+    &--activate-button.Button--primary:not(:disabled):active {
+      background-color: $activate-btn-bg-color;
+    }
+
+    &--remove-button {
+      font-weight: bold;
+      color: $remove-btn-color;
+      margin: 0px;
+
+      &--disabled {
+        pointer-events: none;
+      }
+    }
+
+    &--remove-button.Button--transparent:not(:disabled):hover {
+      opacity: 1;
+      color: $remove-btn-color;
+    }
+
+    &--remove-button.Button--transparent:not(:disabled):active {
+      color: $remove-btn-color;
+      background-color: transparent;
+    }
+
+    &--live-button {
+      background-color: $live-btn-bg-color;
+      border-radius: 15px;
+      font-size: 10px;
+      padding: 3px 12px;
+      font-weight: bold;
+      margin-right: 0px;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    &--live-button.Button--primary:not(:disabled):hover {
+      background-color: $live-btn-bg-color;
+    }
+
+    &--live-button.Button--primary:not(:disabled):active {
+      background-color: $live-btn-bg-color;
+    }
+
+    &--next-button {
+      background-color: $next-btn-bg-color;
+      color: $next-btn-text-color;
+      border-radius: 15px;
+      font-size: 10px;
+      padding: 3px 12px;
+      font-weight: bold;
+      margin-right: 0px;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    &--next-button.Button--primary:not(:disabled):hover {
+      background-color: $next-btn-bg-color;
+      color: $next-btn-text-color;
+    }
+
+    &--next-button.Button--primary:not(:disabled):active {
+      background-color: $next-btn-bg-color;
+      color: $next-btn-text-color;
+    }
+  }
+}
+
+.Rewards {
+  &--preview-checkout-modal {
+    background-color: #f1f1f1;
+
+    .preview-img-div {
+      text-align: center;
+      margin-top: 15px;
+
+      button.close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        opacity: 0.5;
+        color: #162F56;
+
+        i:not(.fa):before, .icon:after {
+          font-weight: 700 !important;
+        }
+      }
+
+      img {
+        max-width: 850px;
+      }
+    }
+  }
+}
+
+.reward-active-button-popover.rzp-popover.rzp-tooltip {
+  width: 293px;
+}
+
+.reward-live-now-label-popover.rzp-popover.rzp-tooltip {
+  width: 285px;
+}
+
+.reward-queue-label-popover.rzp-popover.rzp-tooltip {
+  width: 293px;
+}
+
+.reward-queue-confirm-modal {
+  .modal-title {
+    color: #0D2366;
+  }
+
+  .modal-body>p {
+    color: rgba(22, 47, 86, 0.74);
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .modal-body>button {
+    margin-top: 16px;
+    font-size: 17px;
+  }
+}
+
+.checkout-rewards-main-container .announcement-banner-container {
+  padding-bottom: 0px;
+
+  .content {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+}
+
+.rewards-anc {
+  .interested-btn {
+    font-weight: bold;
+    background: rgba(11, 112, 231, 0.05);
+    padding: 3px 8px;
+    font-size: 10px;
+    line-height: 14px;
+    margin-left: 1em;
+  }
+}
+
+.rewards-onboarding-anc {
+  .interested-btn {
+    font-weight: bold;
+    background: rgba(11, 112, 231, 0.05);
+    padding: 3px 8px;
+    font-size: 10px;
+    line-height: 14px;
+    margin-left: 1em;
+  }
+}
+
+.Checkout-Rewards-Disabled {
+  .announcement-banner-container {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  .rewards-onboarding-anc {
+    .grp-buttons {
+      float: right;
+    }
+    .know-more-link {
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+}

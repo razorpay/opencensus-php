@@ -1,0 +1,50 @@
+import { trackMarketingExperimentBanner } from '../ga';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { useState } from 'react';
+
+const RewardsOnBoardingAnnouncment = ({ userId }) => {
+  const [isInstrested, setIsInstrested] = useState(false);
+  const bannerID = `rewards-onboarding-banner-${userId}`;
+
+  const closeAnnoucement = () => {
+    setItem(bannerID, 1);
+    setIsInstrested(true);
+  };
+
+  trackMarketingExperimentBanner('Checkout Rewards OnBoarding', 'Appear');
+
+  if (!isInstrested && getItem(bannerID)) setIsInstrested(!!getItem(bannerID));
+
+  return (
+    <AnnouncementBanner class="rewards-onboarding-anc" theme="success" title="Coming Soon !">
+      <span class="display-inline">
+        {isInstrested
+          ? 'Your interest has been recorded! We are currently testing out the feature. We will notify you once it’s available.'
+          : 'Wouldn’t it be great if you could reward your customers for every purchase? Let us know if you are interested.'}
+      </span>{' '}
+      <span className="grp-buttons">
+        <a
+          href="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
+          target="_blank"
+          className="know-more-link"
+        >
+          Know More
+        </a>
+        {!isInstrested && (
+          <button
+            class="btn btn-outline interested-btn"
+            onClick={() => {
+              trackMarketingExperimentBanner('RewardsOnBoarding', 'Clicked Interested', userId);
+              closeAnnoucement();
+            }}
+          >
+            INTERESTED
+          </button>
+        )}
+      </span>
+    </AnnouncementBanner>
+  );
+};
+
+export default React.memo(RewardsOnBoardingAnnouncment);

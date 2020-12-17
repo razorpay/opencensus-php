@@ -47,8 +47,7 @@ export const roles = {
   },
   [rolesList.MANAGER]: {
     label: 'Manager',
-    desc:
-      'Allows access to all views except for Team Management and Key Generation.',
+    desc: 'Allows access to all views except for Team Management and Key Generation.',
   },
   [rolesList.OPERATIONS]: {
     label: 'Operations',
@@ -130,6 +129,7 @@ export const RZPFeatures = {
   PB: 'payment_buttons',
   INVOICE: 'invoices',
   OFFERS: 'offers',
+  REWARDS: 'rewards',
 };
 
 export const UPI_AVL_LIMIT = 200000;

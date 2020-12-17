@@ -80,6 +80,9 @@ const Navigator = lazy(() =>
 );
 
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
+const CheckoutRewards = lazy(() =>
+  import(/* webpackChunkName: "CheckoutRewards" */ 'merchant/views/CheckoutRewards'),
+);
 const PaypalOnboardRedirect = lazy(() =>
   import(
     /* webpackChunkName: "PaypalOnboardRedirect" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect'
@@ -454,7 +457,6 @@ export default class Content extends Component {
             component={MyAccount}
             additionalCondition={(user) => user.isAllowedView('team')}
           />
-
           <ShowWhenRoute
             path="/config"
             component={Settings}
@@ -485,6 +487,11 @@ export default class Content extends Component {
             path="/offers"
             component={Offers}
             additionalCondition={(user) => user.isAllowedView('offers')}
+          />
+          <ShowWhenRoute
+            path="/checkout-rewards"
+            component={CheckoutRewards}
+            additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
           />
           <ShowWhenRoute path="/navigator" component={Navigator} />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />

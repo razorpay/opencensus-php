@@ -340,6 +340,7 @@
 .OnBoarding--PaymentButtons,
 .OnBoarding--Invoices,
 .OnBoarding--Offers,
+.OnBoarding--Rewards,
 .OnBoarding--SmartCollect
   .Landing--Image
     overflow: hidden
@@ -380,7 +381,26 @@
   width: 80%;
   top:160px;
 
+.OnBoarding--Rewards
+  .Landing--Image
+    text-align: center;
 
+    img
+      right: unset;
+      min-width: 320px;
+      top: 160px;
+      width: 320px;
+      box-shadow: 2px 2px 11px 0px rgba(0,0,0,0.11);
+
+.OnBoarding.OnBoarding--Rewards.Checkout-Rewards-Disabled
+  .OnBoarding--Features .Button-Container
+    .Button--transparent.Button
+      margin-right: 0px;
+    .Button.Forward-Button
+      display: none;
+  
+  .SliderDots
+    display: none;
 
 .OnBoarding--Route
   .Landing--Image
@@ -417,6 +437,12 @@
       background: linear-gradient(101.32deg, #012980 2.2%, #0072AE 103%);
       box-shadow: 1px 1px 0 #012980, 2px 2px 0 #012980, 3px 3px 0 #012980, 4px 4px 0 #012980;
 
+.OnBoarding--Rewards
+  .Landing--Image
+    &:before
+      color: #7a47c2;
+      background: linear-gradient(101.32deg, #012980 2.2%, #0072AE 103%);
+      box-shadow: 1px 1px 0 #012980, 2px 2px 0 #012980, 3px 3px 0 #012980, 4px 4px 0 #012980;
 
 .OnBoarding--PaymentLinks
   .Landing--Image

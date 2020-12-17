@@ -272,10 +272,20 @@ export default class User {
     return isEnabled;
   }
 
+  get isRewardsEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.REWARDS);
+
+    return isEnabled;
+  }
+
   get isPaymentButtonsEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PB);
 
     return isEnabled;
+  }
+
+  get isRewardsPageEnabled() {
+    return this.isFeatureEnabled('reward_merchant_dashboard');
   }
 
   get isPaymentPageEmailOptional() {
