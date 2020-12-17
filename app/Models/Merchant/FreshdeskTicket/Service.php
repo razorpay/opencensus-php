@@ -309,7 +309,7 @@ class Service extends Base\Service
 
         $input = $this->$function($input);
 
-        (new Validator)->validateInput('create_support_dashboard_ticket', $input);
+        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
 
         $fdInstance = $this->getFdInstance($input);
 
