@@ -107,5 +107,11 @@ export function prepareDataForSubmit(formData) {
     }
   });
 
+  const issuers = ['AMEX', 'BAJAJ'];
+  if (issuers.includes(transformedFormData.issuer)) {
+    transformedFormData.payment_network = transformedFormData.issuer;
+    delete transformedFormData.issuer;
+  }
+
   return transformedFormData;
 }
