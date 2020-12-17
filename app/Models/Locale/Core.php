@@ -21,6 +21,13 @@ class Core extends Base\Core
         {
             $languageCode = $input['language_code'];
         }
+
+        else if ((isset($input['request']) === true) and
+            ((isset($input['request']['content']) === true)) and
+            ((isset($input['request']['content']['language_code']) === true)))
+        {
+            $languageCode = $input['request']['content']['language_code'];
+        }
         else
         {
             $config = (new PaymentConfig\Repository())->fetchDefaultConfigByMerchantIdAndType($merchantId, PaymentConfig\Type::LOCALE);

@@ -75,6 +75,9 @@ try{
   @foreach ($data['request']['content'] as $key => $value)
     <input type="hidden" name="{{$key}}" value="{{$value}}">
   @endforeach
+  @if (isset($data['language_code']) === true)
+      <input type="hidden" name="language_code" value="{{ $data['language_code'] }}"
+  @endif
   </form>
   <form id="form2" name="form2">
     <input type="hidden" name="type" value="{{$data['type']}}">
