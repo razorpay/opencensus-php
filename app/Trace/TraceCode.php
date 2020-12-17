@@ -3773,6 +3773,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_TO_EXPIRE                                               =  'REWARD_TO_EXPIRE';
     const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
 
+    // Logs for AppStore
+    const INSTALL_APP_ON_APPSTORE_REQUEST           = 'INSTALL_APP_ON_APPSTORE_REQUEST';
+    const INSTALL_APP_ON_APPSTORE_REQUEST_FAILURE   = 'INSTALL_APP_ON_APPSTORE_REQUEST_FAILURE';
+    const APPSTORE_PROCESS_MESSAGE_REQUEST          = 'APPSTORE_PROCESS_MESSAGE_REQUEST';
+    const APPSTORE_CREATE_PL_ON_WHATSAPP_REQUEST    = 'APPSTORE_CREATE_PL_ON_WHATSAPP_REQUEST';
+    const APPSTORE_CREATE_PL_REQUEST                = 'APPSTORE_CREATE_PL_REQUEST';
+    const APPSTORE_CREATE_PL_RESPONSE               = 'APPSTORE_CREATE_PL_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -5320,6 +5320,21 @@ class Service extends Base\Service
         return (new Escalations\Core())->handleEscalationsCron();
     }
 
+    public function installAppOnAppStoreForMerchant(array $input)
+    {
+        //Validate input
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        return (new \RZP\Models\AppStore\Core())->installAppOnAppStoreForMerchant($input, $merchant);
+    }
+
+    public function getInstalledAppsOnAppStore(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        return (new \RZP\Models\AppStore\Core())->getInstallAppsForMerchant($merchant);
+    }
+
     protected function extractSubmerchantInput(array $input)
     {
         return [

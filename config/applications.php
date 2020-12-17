@@ -744,4 +744,8 @@ return [
             'test' => env('UPI_PAYMENT_SERVICE_TEST_URL'),
         ],
     ],
+
+    'gupshup' => [
+        'secret' => env('GUPSHUP_CALLBACK_SECRET')
+    ]
 ];

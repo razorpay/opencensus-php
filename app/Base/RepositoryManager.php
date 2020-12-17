@@ -113,6 +113,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\MerchantNotificationConfig\Repository $merchant_notification_config
  * @property Models\Reward\Repository                              $reward;
  * @property Models\Reward\MerchantReward\Repository               $merchant_reward;
+ * @property Models\AppStore\Repository                            $app_store;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

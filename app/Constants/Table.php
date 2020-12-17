@@ -324,6 +324,9 @@ class Table
     // API Request Log
     const REQUEST_LOG = 'request_logs';
 
+    // AppStore
+    const APP_STORE = 'app_store';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                        => self::MIGS,
         Entity::AXIS_GENIUS                      => self::MIGS,

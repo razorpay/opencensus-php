@@ -255,6 +255,9 @@ class Route
         'merchant_billing_label_update'            => ['patch',    'merchants/billing_label/update',                 'MerchantController@patchMerchantBillingLabelAndDba'                ],
         // TODO : Remove this route after permanent fix is deployed.
         'correct_merchant_owners_products'         => ['put',      'merchants/{id}/correct_owner'   ,                'MerchantController@correctMerchantOwnerForBanking'                 ],
+        // Razorpay App Store APIs
+        'merchant_install_app_on_appstore'         => ['post',     'merchants/app_store/install',                    'MerchantController@postInstallAppOnAppStore'                       ],
+        'merchant_get_apps_on_appstore'            => ['get',      'merchants/{mid}/app_store/apps',                 'MerchantController@getInstalledAppsOnAppStore'                     ],
         'merchant_delete_additional_email'         => ['delete',   'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@deleteMerchantEmails'                      ],
         'merchant_fetch_additional_email'          => ['get',      'merchants/{id}/additionalemail/{type}',          'MerchantEmailController@fetchMerchantEmailByType'                  ],
         'merchant_create_additional_email'         => ['post',     'merchants/{id}/additionalemail',                 'MerchantEmailController@postMerchantEmails'                        ],
@@ -2146,6 +2149,8 @@ class Route
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
 
+        // GupShup Incoming Messages Webhook
+        'gupshup_incoming_messages_callback'      => ['post',    'gupshup/incoming_messages/callback',                      'GupShupController@handleIncomingMessagesCallback'             ],
     ];
 
     public static $public = [
@@ -2848,6 +2853,9 @@ class Route
         //Accounting Payouts
         'accounting_payouts_sync_internal',
         'payment_links_sign_payload_internal',
+
+        //GupShup Callbacks
+        'gupshup_incoming_messages_callback',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3375,6 +3383,10 @@ class Route
         'delete_merchant_notification_config',
         'disable_merchant_notification_config',
         'enable_merchant_notification_config',
+
+        //AppStore on Dashboard
+        'merchant_install_app_on_appstore',
+        'merchant_get_apps_on_appstore',
     ];
 
     //
@@ -5879,6 +5891,10 @@ class Route
         'smart_routing' => [
             'gateway_downtime_for_payment',
         ],
+
+        'gupshup' => [
+            'gupshup_incoming_messages_callback',
+        ]
     ];
 
     //

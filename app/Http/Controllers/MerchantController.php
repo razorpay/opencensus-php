@@ -1907,4 +1907,19 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postInstallAppOnAppStore()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->installAppOnAppStoreForMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getInstalledAppsOnAppStore(string $id)
+    {
+        $response = $this->service()->getInstalledAppsOnAppStore($id);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -422,6 +422,12 @@ class Entity
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
+    //AppStore
+    const APP_STORE = 'app_store';
+
+    //GupShup
+    const GUP_SHUP = 'gup_shup';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -790,6 +796,9 @@ class Entity
 
         self::REWARD            => \RZP\Models\Reward::class,
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
+
+        self::APP_STORE         => \RZP\Models\AppStore::class,
+        self::GUP_SHUP          => \RZP\Models\GupShup::class,
     ];
 
     protected static $repository = [
@@ -915,6 +924,7 @@ class Entity
         self::MERCHANT_ACCESS_MAP,
         self::BVS_VALIDATION,
         self::MERCHANT_APPLICATION,
+        self::APP_STORE,
     ];
 
     protected static $externalEntities = [
