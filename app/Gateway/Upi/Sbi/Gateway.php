@@ -815,7 +815,7 @@ class Gateway extends Base\Gateway
         $this->checkResponseStatus($status);
     }
 
-    public function authorizePush($input)
+    public function authorizePushOld($input)
     {
         list($paymentId , $callbackData) = $input;
 
@@ -845,6 +845,33 @@ class Gateway extends Base\Gateway
         $result = $callbackData['data']['gateway_response']['status'];
 
         $this->checkResponseStatus($result);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
+    public function authorizePush($input)
+    {
+        // Authorize push now have two implementations, one which calls mozart for
+        // pre processing of callback. In this case, the callback data parsed by mozart.
+        // Second approach where input is parsed according to new structure
+        list($paymentId , $callbackData) = $input;
+
+        // Older structure will have the gateway response
+        if (empty($callbackData['data']['gateway_response'] ?? null) === false)
+        {
+            return $this->authorizePushOld($input);
+        }
+
+        $callbackData['payment']['id'] = $paymentId;
+
+        parent::action($callbackData, Action::AUTHORIZE);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($callbackData['upi'], null, false);
 
         return [
             'acquirer' => [

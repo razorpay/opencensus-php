@@ -5,8 +5,11 @@ namespace RZP\Reconciliator\UpiSbi\SubReconciliator;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
+use Razorpay\Trace\Logger as Trace;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -20,9 +23,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const TRANSACTION_AMOUNT    = 'transaction_amount';
     const PAYER_VIRTUAL_ACCOUNT = 'payer_virtual_account';
     const PAYER_VIRTUAL_ADDRESS = 'payer_virtual_address';
+    const PAYEE_VIRTUAL_ADDRESS = 'payee_virtual_address';
     const PAYEE_VIRTUAL_ACCOUNT = 'payee_virtual_account';
     const PAYER_ACCOUNT_NAME    = 'payer_ac_name';
+    const PAYER_ACCOUNT_NO      = 'payer_ac_no';
     const CUSTOMER_REF_NO       = 'customer_ref_no';
+    const PG_MERCHANT_ID        = 'pg_merchant_id';
+    const PAYER_IFSC_CODE       = 'payer_ifsc_code';
 
     const BLACKLISTED_COLUMNS = [
         self::PAYER_VIRTUAL_ACCOUNT,
@@ -61,6 +68,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return $this->getPaymentIdForUnexpectedPayment($row);
+        }
+
         return $paymentId;
     }
 
@@ -79,6 +91,133 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $status = strtolower($row[self::TRANSACTION_STATUS]) ?? null;
 
         return Status::getPaymentStatus($status);
+    }
+
+    /**
+     * Sometimes we don't get payment id in the expected column.
+     * So, this function utilises the rrn received in the MIS,
+     * and fetches the payment id from the upi repo.
+     *
+     * @param $row
+     * @return null|string
+     */
+    protected function getPaymentIdForUnexpectedPayment($row)
+    {
+        $paymentId = null;
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $this->formatUpiRrn($referenceNumber);
+
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_SBI);
+
+        if (empty($upiEntity) === true)
+        {
+            $paymentId = $this->attemptToCreateUnexpectedPayment($referenceNumber, $row);
+        }
+        else
+        {
+            $paymentId = $upiEntity->getPaymentId();
+        }
+
+        return $paymentId;
+    }
+
+    /**
+     * Attempts to create unexpected payment
+     * Returns payment_id if attempt is successful,
+     * null otherwise.
+     * @param string $rrn
+     * @param array $input
+     * @return string|null
+     */
+    protected function attemptToCreateUnexpectedPayment(string $rrn, array $input)
+    {
+        $paymentId = null;
+        //
+        // Prepared callback input required for creating unexpected payment
+        //
+        $callbackInput['payment'] = [
+                        'method'    =>  'upi',
+                        'amount'    => $this->getReconPaymentAmount($input),
+                        'currency'  => 'INR',
+                        'vpa'       => $input[self::PAYER_VIRTUAL_ADDRESS],
+                        'contact'   => '+919999999999',
+                        'email'     => 'void@razorpay.com'
+        ];
+
+        $callbackInput['terminal'] = [
+                        'gateway_merchant_id'    =>  $input[self::PG_MERCHANT_ID]
+        ];
+
+        $callbackInput['upi'] = [
+                        'merchant_reference'    => $input[self::ORDER_NUMBER],
+                        'npci_reference_id'     => $input[self::CUSTOMER_REF_NO],
+                        'gateway_payment_id'    => $input[self::TRANS_REF_NUMBER],
+                        'status_code'           => $input[self::TRANSACTION_STATUS],
+                        'account_number'        => $input[self::PAYER_ACCOUNT_NO],
+                        'ifsc'                  => $input[self::PAYER_IFSC_CODE],
+                        'vpa'                   => $input[self::PAYER_VIRTUAL_ADDRESS],
+        ];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'                       => $input[self::CUSTOMER_REF_NO],
+                'unexpected_payment_ref_id' => $input[self::ORDER_NUMBER],
+                'gateway'                   => $this->gateway,
+                'batch_id'                  => $this->batchId,
+            ]);
+
+        try
+        {
+            $response = (new Payment\Service)->unexpectedCallback($callbackInput, $input[self::ORDER_NUMBER], Gateway::UPI_SBI);
+
+            if (empty($response['payment_id']) === false)
+            {
+                $paymentId = $response['payment_id'];
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                        'payment_id'            => $paymentId,
+                        'rrn'                   => $rrn,
+                        'gateway_payment_id'    => $input[self::ORDER_NUMBER],
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batchId,
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                        'rrn'                   => $rrn,
+                        'gateway_payment_id'    => $input[self::ORDER_NUMBER],
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batchId,
+                    ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                [
+                    'rrn'                       => $rrn,
+                    'gateway_payment_id'        => $input[self::ORDER_NUMBER],
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
+                ]
+            );
+        }
+
+        return $paymentId;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -39,7 +40,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->gateway = Payment\Gateway::UPI_SBI;
 
-        $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
 
         $this->gateway = Payment\Gateway::UPI_SBI;
 
@@ -83,6 +84,52 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
 
+    }
+
+    public function testUpiSbiUnexpectedPaymentFile()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiPaymentsSince(1, $createdAt);
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'sbi_recon')
+                {
+                    $content[0]['PG Merchant ID']           = $this->terminal->getGatewayMerchantId();
+                    $content[0]['Order No']                 = 'BB31121900923519425756';
+                    $content[0]['Customer Ref No']          = '034102928430';
+                    $content[0]['Payer Virtual Address']    = 'vishnu@icici';
+                }
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+        }
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+        }
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
     }
 
     public function testUpiSbiForceAuthorizePayment()

@@ -1248,9 +1248,18 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
-        $gatewayClass = $this->app['gateway']->gateway($gateway);
+        // If the input is already parsed to payment and terminal, we do not need parse again
+        if ((is_array($input['payment'] ?? null) === true) and
+            (is_array($input['terminal'] ?? null) === true))
+        {
+            $data = $input;
+        }
+        else
+        {
+            $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+            $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+        }
 
         $traceInput = $input;
 
