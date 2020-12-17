@@ -1784,6 +1784,23 @@ class ActivationTest extends OAuthTestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
+    public function testWhitelistInternationalNonInstantActivation()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
     /**
      * Validates that On L1 form submission for non rzp org(whitelist international activation flow) merchant,
      * international activation flow and international should not be set.

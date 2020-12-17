@@ -112,6 +112,16 @@ class InternationalCore extends Base\Core
             return InternationalActivationFlow::GREYLIST;
         }
 
+        //
+        // is the selected subcategory is coming as greylist for public business type, then make is whitelist
+        // #Experiment 1 for enablement of international activation flow
+        //
+        if($activationFlowFromCategoryDetails === InternationalActivationFlow::GREYLIST
+            && BusinessType::PUBLIC_LIMITED === $merchantDetails->getBusinessType())
+        {
+            return InternationalActivationFlow::WHITELIST;
+        }
+
         return $activationFlowFromCategoryDetails;
     }
 }

@@ -2695,6 +2695,37 @@ return [
         ],
         'status_code' => 200,
     ],
+    'testWhitelistInternationalNonInstantActivation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'consulting_and_outsourcing',
+                'promoter_pan'         => 'ABCPE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 5,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCPE0000Z',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'consulting_and_outsourcing',
+                'international'        => false,
+                'archived'             => 0,
+                'submitted_at'         => null,
+                'can_submit'           => false,
+                'activated'            => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
 
     'testWhitelistInternationalForNonRZPOrg' => [
         'request'     => [
@@ -3120,4 +3151,5 @@ return [
         ],
         'status_code' => 200,
     ],
+
 ];
