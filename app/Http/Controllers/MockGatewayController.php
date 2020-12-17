@@ -42,8 +42,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         if (isset($input['PaReq']) === false)
         {
            $data = $this->mockHdfcGatewayServer->debitPin($input);
@@ -91,8 +89,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('atom');
 
         $data = $server->bank($input);
@@ -103,8 +99,6 @@ class MockGatewayController extends Controller
     public function postAxisPayment()
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $server = $this->gateway->server('axis_migs');
 
@@ -117,8 +111,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('first_data');
 
         $url = $server->authorize($input);
@@ -129,8 +121,6 @@ class MockGatewayController extends Controller
     public function postAxisGeniusPayment()
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $server = $this->gateway->server('axis_genius');
 
@@ -154,8 +144,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('card_fss');
 
         $url = $server->authorize($input);
@@ -166,8 +154,6 @@ class MockGatewayController extends Controller
     public function postPaytmPayment()
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $server = $this->gateway->server('paytm');
 
@@ -180,8 +166,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('billdesk');
 
         $data = $server->bank($input);
@@ -193,8 +177,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('ebs');
 
         return $server->authorize($input);
@@ -203,8 +185,6 @@ class MockGatewayController extends Controller
     public function postAmexPayment()
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $server = new \RZP\Gateway\Amex\Mock\Server;
 
@@ -251,8 +231,6 @@ class MockGatewayController extends Controller
     public function postNetbankingPayment($bank)
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $driver = 'netbanking_'.$bank;
 
@@ -316,8 +294,6 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        unset($input['language_code']);
-
         $server = $this->gateway->server('mobikwik');
 
         $url = $server->authorize($input);
@@ -328,8 +304,6 @@ class MockGatewayController extends Controller
     public function walletPayment($wallet, $paymentId = null)
     {
         $input = Request::all();
-
-        unset($input['language_code']);
 
         $driver = 'wallet_' . $wallet;
 

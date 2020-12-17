@@ -16,7 +16,6 @@ use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\Locale\Core as LocaleCore;
@@ -165,8 +164,6 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $languageCode = LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
-
         $this->logPaymentRequestEvent($input);
 
         $startTime = microtime(true);
@@ -184,16 +181,6 @@ class PaymentCreateController extends Controller
         }
 
         $data = $this->service(E::PAYMENT)->process($input);
-
-        $variant  =  app('razorx')->getTreatment($this->app['request']->getTaskId(),
-            Merchant\RazorxTreatment::SEND_LANGUAGE_CODE_POST_AJAX_RESPONSE, $this->app['rzp.mode']);
-
-        if ((isset($data) === true) and
-            (is_array($data) === true) and
-            ($variant === 'on'))
-        {
-            $data['language_code'] = $languageCode;
-        }
 
         $response = $this->processCoprotoData($data);
 
@@ -243,8 +230,6 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $languageCode = LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
-
         unset($input['callback']);
 
         $this->logPaymentRequestEvent($input);
@@ -254,16 +239,6 @@ class PaymentCreateController extends Controller
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
         $data = $this->service(E::PAYMENT)->process($input);
-
-        $variant  =  app('razorx')->getTreatment($this->app['request']->getTaskId(),
-            Merchant\RazorxTreatment::SEND_LANGUAGE_CODE_POST_AJAX_RESPONSE, $this->app['rzp.mode']);
-
-        if ((isset($data) === true) and
-            (is_array($data) === true) and
-            ($variant === 'on'))
-        {
-            $data['language_code'] = $languageCode;
-        }
 
         return ApiResponse::json($data);
     }
