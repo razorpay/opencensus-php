@@ -1403,7 +1403,8 @@ class Service extends Base\Service
             'whatsapp_notification_enablement',
             'rx_manual_tax_payment',
             'rx_vp_inline_recommendation',
-            'AnnouncementIconDec2020',
+            'partner_app_store',
+            'AnnouncementIconDec2020'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

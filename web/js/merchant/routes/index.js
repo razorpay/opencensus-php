@@ -195,6 +195,14 @@ const RuleDetail = lazy(() =>
   ),
 );
 
+const PartnerAppStore = lazy(() =>
+  import(/* webpackChunkName: "PartnerAppStore" */ 'merchant/views/PartnerAppStore'),
+);
+
+const PartnerPage = lazy(() =>
+  import(/* webpackChunkName: "PartnerPage" */ 'merchant/views/PartnerAppStore/PartnerPage'),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -401,6 +409,12 @@ const fullPageViewsMap = {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
+  },
+  '/app-store/:partner': {
+    component: PartnerPage,
+  },
+  '/app-store': {
+    component: PartnerAppStore,
   },
 };
 

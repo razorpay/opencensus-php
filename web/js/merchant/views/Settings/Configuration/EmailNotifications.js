@@ -30,9 +30,9 @@ export default class EmailNotifications extends Component {
       objectName: 'documentation',
       actionName: 'clicked',
       screen: 'home page',
-      properties:{
-        ...getCommonAnalyticsProperties(window.rzp_user)
-      }
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 

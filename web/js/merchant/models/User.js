@@ -752,6 +752,10 @@ export default class User {
   isWhatsappNotificationEnabled() {
     return this.getExpStatus('whatsapp_notification_enablement');
   }
+
+  get isAppStoreEnabled() {
+    return this.getExpStatus('partner_app_store');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

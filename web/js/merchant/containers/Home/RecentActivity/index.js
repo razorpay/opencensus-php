@@ -96,7 +96,7 @@ export default class RecentActivity extends Component {
       properties: {
         tabName: tabName,
         location: 'recent activity',
-        ...getCommonAnalyticsProperties(window.rzp_user)
+        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
     this.setState({ selectedTab: tabName });

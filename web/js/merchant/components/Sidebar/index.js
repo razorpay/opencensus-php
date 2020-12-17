@@ -11,6 +11,7 @@ import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reduc
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
+import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
@@ -192,6 +193,16 @@ export default class Sidebar extends Component {
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
+
+                {user.isAppStoreEnabled ? (
+                  <div className="open">
+                    <MainNavLink
+                      label="App Store"
+                      icon="i i-app-store text-primary"
+                      to="/app-store"
+                    />
+                  </div>
+                ) : null}
               </div>
             )}
           </nav>
