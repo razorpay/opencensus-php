@@ -5513,6 +5513,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWithoutPreSignupSkipsOnboarding' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
         'request'  => [
             'url'     => '/merchants/product-switch',

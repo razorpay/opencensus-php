@@ -710,7 +710,11 @@ class Activate extends Base\Core
     {
         $experimentActive = $this->onBoardMerchantOnRazorpayx($merchant, Mode::TEST);
 
-        return ($experimentActive === true);
+        // presignup is a prerequisite to be completed because we use $merchant->name
+        // to create Banking entities on X
+        $isMerchantPreSignupCompleted = !(empty($merchant->getName()));
+
+        return (($experimentActive === true) && ($isMerchantPreSignupCompleted === true));
     }
 
     protected function onBoardMerchantOnRazorpayx(Entity $merchant, string $mode): bool

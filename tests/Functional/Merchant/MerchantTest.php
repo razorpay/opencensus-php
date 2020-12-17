@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
@@ -7335,6 +7336,55 @@ class MerchantTest extends TestCase
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+    }
+
+    public function testMerchantSwitchProductWithoutPreSignupSkipsOnboarding()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
+
+        $user = (new User())->createUserForMerchant();
+
+        // billing label/name - empty to signify no presignup filled.
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            [
+                'activated' => false,
+                'name' => '',
+                'business_banking' => false,
+                'billing_label' => ''
+            ]
+        );
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        // Assert Banking entities not created in test mode
+        $testBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'test');
+
+
+        $this->assertNull($testBankingAccount);
     }
 
     public function testBulkAssignPricing()
