@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import storage from 'common/utils/localStorage';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -14,10 +16,8 @@ class NavFragment extends Component {
   constructor(props) {
     super(props);
 
-    var hideModePopoverToken = (this.hideModePopoverToken =
-        'hide-mode-dd-popover'),
-      showModePopoverToken = (this.showModePopoverToken =
-        'show-mode-dd-popover');
+    var hideModePopoverToken = (this.hideModePopoverToken = 'hide-mode-dd-popover'),
+      showModePopoverToken = (this.showModePopoverToken = 'show-mode-dd-popover');
 
     const hideSwitchModeTooltip = storage.getItem(hideModePopoverToken),
       showSwitchModeTooltip = storage.getItem(showModePopoverToken);
@@ -43,24 +43,15 @@ class NavFragment extends Component {
   }
 
   render() {
-    const {
-      user,
-      mode,
-      showGSTModal,
-      modeFormatted,
-      onSwitchMode,
-      onSwitchMerchant,
-    } = this.props;
+    const { user, mode, showGSTModal, modeFormatted, onSwitchMode, onSwitchMerchant } = this.props;
 
     const { showSwitchModeTooltip } = this.state;
 
     return (
       <React.Fragment>
         <ShowWhen
-          additionalCondition={user =>
-            !!showGSTModal &&
-            user.isAllowedView('profile_gst') &&
-            !user.isUnregisteredBusiness
+          additionalCondition={(user) =>
+            !!showGSTModal && user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness
           }
         >
           <li>
@@ -68,23 +59,13 @@ class NavFragment extends Component {
           </li>
         </ShowWhen>
         <li>
-          <ModesDropdown
-            mode={mode}
-            modeFormatted={modeFormatted}
-            onSwitchMode={onSwitchMode}
-          />
+          <ModesDropdown mode={mode} modeFormatted={modeFormatted} onSwitchMode={onSwitchMode} />
           {showSwitchModeTooltip && (
             <Popover persistent={true} theme="dark">
               <PopoverBody>
-                <p>
-                  You can switch between Live Mode and Test Mode anytime from
-                  here.
-                </p>
+                <p>You can switch between Live Mode and Test Mode anytime from here.</p>
                 <div className="clearfix">
-                  <a
-                    className="pull-right"
-                    onClick={this.hideSwitchModeTooltip}
-                  >
+                  <a className="pull-right" onClick={this.hideSwitchModeTooltip}>
                     OK. Got it
                   </a>
                 </div>
@@ -97,16 +78,28 @@ class NavFragment extends Component {
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}
-        <ShowWhen
-          additionalCondition={user =>
-            user.isOrgAllowedFunctionality('external_links')
-          }
-        >
+        <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
           <li>
             <a
               target="_blank"
               href="https://razorpay.com/docs?utm-source=dashboard-navbar"
               onClick={() => {
+                analyticsService.track({
+                  objectName: 'top nav',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    itemName: 'documentation',
+                    location: 'top navigation',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                analyticsService.track({
+                  objectName: 'documentation',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  location: 'top navigation',
+                });
                 window.rzpAnalytics({
                   eventCategory: 'Dashboard - Header',
                   eventAction: 'Go To - Documentation',

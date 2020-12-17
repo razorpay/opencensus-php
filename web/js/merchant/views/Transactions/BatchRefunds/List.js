@@ -5,6 +5,8 @@ import BatchList from './components/BatchList';
 import { validateRefundBatch, createRefundBatch } from 'merchant/reducers/batches';
 import { fetchRefundBatches as fetchAll } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
@@ -28,7 +30,19 @@ export default class BatchListContainer extends ListContainer {
         batchType="refund"
         gaEvents={gaEvents}
         paginate={this.paginate}
-        onSubmit={this.search}
+        onSubmit={(args) => {
+          analyticsService.track({
+            objectName: 'batch refunds search',
+            actionName: 'clicked',
+            screen: 'transactions',
+            properties: {
+              ...args,
+              location: 'batch refunds',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          this.search(args);
+        }}
         sampleUrl={SAMPLE_BATCH_REFUND_FILE_WITH_SPEED}
         docUrl="https://razorpay.com/docs/refunds/batch-refunds/"
         uploadUrl="/refunds/batchupload"

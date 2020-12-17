@@ -34,6 +34,23 @@ export function humanize(sentence) {
   return titleCase(sentence.split('_').join(' '));
 }
 
+export function getCommonAnalyticsProperties(user) {
+  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+  const kycStatus = user.activated ? 'activated' : 'not activated';
+  const activatedAt = user.activated_at;
+
+  return {
+    userId: user.id,
+    emailId: user.email,
+    activatedAt,
+    mode,
+    userRole: user.role,
+    kycStatus,
+    merchantId: user.current,
+    businessCategory: user.businessCategory,
+  };
+}
+
 export function makeArray(obj) {
   if (!obj) {
     return [];

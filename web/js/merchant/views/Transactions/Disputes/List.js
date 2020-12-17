@@ -17,6 +17,8 @@ import {
   status,
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const type = {
   title: 'Type',
@@ -25,8 +27,7 @@ const type = {
 
 const respondIn = {
   title: 'Respond In',
-  value: item =>
-    item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--',
+  value: (item) => (item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--'),
 };
 
 const resolvedOn = {
@@ -39,7 +40,7 @@ const createdAt = {
   value: getTime('created_at', 'll'),
 };
 
-@connect(state => ({ mode: state.session.mode, ...state.disputes }), {
+@connect((state) => ({ mode: state.session.mode, ...state.disputes }), {
   fetchAll,
 })
 export default class Dispute extends ListContainer {
@@ -48,15 +49,9 @@ export default class Dispute extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <ShowWhen
-            additionalCondition={user =>
-              user.isOrgAllowedFunctionality('external_links')
-            }
+            additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
           >
-            <a
-              class="btn btn-link"
-              href="https://razorpay.com/docs/disputes/"
-              target="_blank"
-            >
+            <a class="btn btn-link" href="https://razorpay.com/docs/disputes/" target="_blank">
               Guide to Dispute
             </a>
           </ShowWhen>
@@ -65,22 +60,26 @@ export default class Dispute extends ListContainer {
           form="DisputeListFilter"
           type="link"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={(args) => {
+            analyticsService.track({
+              objectName: 'disputes search',
+              actionName: 'clicked',
+              screen: 'transactions',
+              properties: {
+                ...args,
+                location: 'disputes',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.search(args);
+          }}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable
           title="Disputes"
-          columns={[
-            disputeId,
-            paymentId,
-            amount,
-            type,
-            respondIn,
-            createdAt,
-            status,
-          ]}
+          columns={[disputeId, paymentId, amount, type, respondIn, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
@@ -90,10 +89,9 @@ export default class Dispute extends ListContainer {
         <div class="row">
           <div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
             <p>
-              A dispute is a situation that arises when your customer or the
-              issuing bank questions the validity of payment. It could arise due
-              to reasons such as unauthorised charges, failure to deliver
-              promised merchandise, excessive charges and so on.
+              A dispute is a situation that arises when your customer or the issuing bank questions
+              the validity of payment. It could arise due to reasons such as unauthorised charges,
+              failure to deliver promised merchandise, excessive charges and so on.
             </p>
           </div>
         </div>

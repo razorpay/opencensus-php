@@ -11,6 +11,8 @@ import { trackLoad, trackExpand, trackAnnouncement } from './ga';
 import HubspotCAForm from './HubspotCAForm';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncement from './components/OpfinAnnouncement';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -129,6 +131,15 @@ export default class NotificationsDropdown extends Component {
   };
 
   onShow = () => {
+    analyticsService.track({
+      objectName: 'announcements drop down',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        location: 'top navigation',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const tracking = this.props.tracking;
     const ID = [],
       readID = [],
@@ -244,7 +255,7 @@ export default class NotificationsDropdown extends Component {
   };
 
   render() {
-    let { user, showMobileNav, analytics = () => {} } = this.props;
+    let { user, showMobileNav } = this.props;
     const { showHubSpotCAForm } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
@@ -265,6 +276,7 @@ export default class NotificationsDropdown extends Component {
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
+          index={idx}
           user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
@@ -283,7 +295,24 @@ export default class NotificationsDropdown extends Component {
         >
           {showMobileNav ? (
             <React.Fragment>
-              <i class="i i-bell">{hasUnread && <span class="red-bubble" />}</i>
+              <i
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'top nav',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      itemName: 'Announcements',
+                      mobile: true,
+                      location: 'top navigation',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                class="i i-bell"
+              >
+                {hasUnread && <span class="red-bubble" />}
+              </i>
             </React.Fragment>
           ) : user.isAnnouncementIconEnabled ? (
             <React.Fragment>
@@ -292,7 +321,23 @@ export default class NotificationsDropdown extends Component {
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <span class={classList(hasUnread && 'highlight')}>Announcements</span>
+              <span
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'top nav',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      itemName: 'Announcements',
+                      location: 'top navigation',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                class={classList(hasUnread && 'highlight')}
+              >
+                Announcements
+              </span>
               {hasUnread && <span class="bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           )}
@@ -374,6 +419,7 @@ const NotificationCard = ({
   trackEvents,
   ga,
   id,
+  index,
   onCTAClick,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -433,6 +479,20 @@ const NotificationCard = ({
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => {
+                  analyticsService.track({
+                    objectName: 'announcements',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      new: isUnread,
+                      date: start_ts,
+                      sequence: index,
+                      actionName: btn.label,
+                      title: title,
+                      location: 'top navigation',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
                   trackAnnouncement(
                     ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,

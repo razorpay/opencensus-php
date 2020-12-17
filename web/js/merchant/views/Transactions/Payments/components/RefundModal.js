@@ -22,6 +22,8 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const isPartialPayment = (props) => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded,
@@ -156,6 +158,18 @@ export default class RefundModal extends Component {
   }
 
   componentDidMount() {
+    if (this.props.payment && this.props.payment.id) {
+      analyticsService.track({
+        objectName: 'refund amount popup',
+        actionName: 'rendered',
+        screen: 'home page',
+        properties: {
+          paymentId: this.props.payment.id,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+
     this.props.onMount && this.props.onMount(this.props.payment);
     this.props.fetchMerchantBalance();
     if (!this.hasEnoughFunds()) {
@@ -217,7 +231,11 @@ export default class RefundModal extends Component {
         this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
       } `,
     });
-
+    analyticsService.track({
+      objectName: 'issue refund',
+      actionName: 'clicked',
+      screen: 'transactions',
+    });
     return this.props
       .refundPayment(payment, data)
       .then(() => {

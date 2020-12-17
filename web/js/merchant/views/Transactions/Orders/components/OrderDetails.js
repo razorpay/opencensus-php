@@ -9,10 +9,22 @@ import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'common/ui/item/pair';
 import Definition from 'common/ui/Definition';
-
-export default props => {
+import React, { useEffect, useState } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+export default (props) => {
   let { order, payments, isLoading, statusMsg } = props;
-
+  useEffect(() => {
+    analyticsService.track({
+      objectName: 'order details',
+      actionName: 'fetched',
+      screen: 'transactions',
+      properties: {
+        order: order,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, []);
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -30,9 +42,7 @@ export default props => {
             <div class="panel-body">
               <EntityDetailRow
                 label="Amount"
-                value={() => (
-                  <Amount value={order.amount} currency={order.currency} />
-                )}
+                value={() => <Amount value={order.amount} currency={order.currency} />}
               />
 
               <EntityDetailRow label="Currency" value={order.currency} />
@@ -45,12 +55,7 @@ export default props => {
 
               <EntityDetailRow
                 label="Created At"
-                value={() => (
-                  <Time
-                    value={order.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
-                )}
+                value={() => <Time value={order.created_at} format="DD MMM YYYY, hh:mm:ss a" />}
               />
 
               {order.attempts > 0 ? (

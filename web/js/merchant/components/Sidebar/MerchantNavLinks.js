@@ -10,17 +10,20 @@ export default function MerchantNavLinks(props) {
         icon="i i-chart text-info"
         to="/dashboard"
         exact
+        type="general"
         additionalCondition={(user) => user.isAllowedView('home')}
       />
       <MainNavLink
         label="Transactions"
         icon="i i-repeat text-primary"
+        type="general"
         to={routes.transactions}
         additionalCondition={(user) => user.isAllowedMultiple('payments orders refunds')}
       />
       <MainNavLink
         label="Settlements"
         icon="i i-done-all text-success"
+        type="general"
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled}
         additionalCondition={(user) => user.isAllowedView('settlements')}
@@ -31,23 +34,27 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Invoices"
         icon="i i-notes text-warning"
+        type="product"
         to={routes.invoices}
         additionalCondition={(user) => user.isAllowedView('invoices')}
       />
       <MainNavLink
         label="Payment Links"
+        type="product"
         icon="i i-link text-primary"
         to={routes.paymentlinks}
         additionalCondition={(user) => user.isAllowedView('payment_links')}
       />
       <MainNavLink
         label="Payment Pages"
+        type="product"
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={(user) => user.isAllowedView('payment_pages')}
       />
       <MainNavLink
         isNew
+        type="product"
         label="Payment Button"
         icon="i i-payment-button"
         to={
@@ -61,18 +68,20 @@ export default function MerchantNavLinks(props) {
       />
       <MainNavLink
         label="Route"
-        icon="i i-route text-success"
+        type="product"
         to={routes.marketplace}
         additionalCondition={(user) => user.isAllowedView('marketplace')}
       />
       <MainNavLink
         label="Subscriptions"
+        type="product"
         icon="i i-refresh text-info"
         additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
       />
       <MainNavLink
         label="Smart Collect"
+        type="product"
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
         additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
@@ -81,6 +90,7 @@ export default function MerchantNavLinks(props) {
       <ShowWhen featureEnabled="raas">
         <MainNavLink
           label="Optimizer"
+          type="product"
           icon="i i-routing text-warm temp-icon-style"
           to="/navigator/rules"
         />
@@ -88,6 +98,7 @@ export default function MerchantNavLinks(props) {
 
       <MainNavLink
         label="Customers"
+        type="general"
         icon="i i-people text-warning"
         to="/customers"
         additionalCondition={(user) => user.isAllowedView('customers')}
@@ -96,6 +107,7 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Offers"
         icon="i i-offer text-success"
+        type="general"
         to="/offers"
         additionalCondition={(user) => user.isAllowedView('settlements')}
       />
@@ -124,12 +136,14 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Reports"
         icon="i i-books text-danger"
+        type="general"
         to="/reports"
         additionalCondition={(user) => user.isAllowedView('reports')}
         isPending={isReportsPending}
       />
       <MainNavLink
         label="My Account"
+        type="general"
         icon="i i-account text-primary"
         additionalCondition={(user) =>
           user.isAllowedMultiple('profile credits add_funds team referrals')
@@ -139,6 +153,7 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Settings"
         icon="i i-settings text-warning"
+        type="general"
         to={routes.settings}
         additionalCondition={(user) =>
           user.isAllowedMultiple('webhooks applications configuration api_keys')

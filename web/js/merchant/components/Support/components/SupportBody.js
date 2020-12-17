@@ -5,9 +5,21 @@ import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default class SupportBody extends Component {
   openDashboardGuide = (_) => {
+    analyticsService.track({
+      objectName: 'help and support',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        item: 'dashboard guide',
+        location: 'Help and Support',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     trackSupportOptions('dashboard_guide');
     window.open('https://razorpay.com/docs/payment-gateway/dashboard-guide/', '_blank');
   };
@@ -27,6 +39,16 @@ export default class SupportBody extends Component {
       }
 
       if (id === 'chat') {
+        analyticsService.track({
+          objectName: 'help and support',
+          actionName: 'clicked',
+          screen: 'home page',
+          properties: {
+            item: 'chat with us',
+            location: 'Help and Support',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         // if notifications pending, then enable chat
         if (!isWorkingDay() && notifyCount < 1) {
           return;
@@ -36,7 +58,16 @@ export default class SupportBody extends Component {
         onChat();
         return;
       }
-
+      analyticsService.track({
+        objectName: 'help and support',
+        actionName: 'clicked',
+        screen: 'home page',
+        properties: {
+          item: 'write to us',
+          location: 'Help and Support',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
       onToggle();
       rzpTicketSystem.openModal(`#${id}`);
     } else {
@@ -46,7 +77,16 @@ export default class SupportBody extends Component {
 
   handleFeedback = () => {
     const { onToggle } = this.props;
-
+    analyticsService.track({
+      objectName: 'help and support',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        item: 'share feedback',
+        location: 'Help and Support',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     trackSupportOptions('feedback');
 
     try {
@@ -59,6 +99,16 @@ export default class SupportBody extends Component {
   };
 
   handleFaqs = () => {
+    analyticsService.track({
+      objectName: 'help and support',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        item: "faq's",
+        location: 'Help and Support',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
     trackSupportOptions('faqs');
   };

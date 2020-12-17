@@ -42,6 +42,8 @@ import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { merchantFetch } from 'merchant/utils/ajax';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -81,6 +83,11 @@ class AnalyticsDesktop extends Component {
   }
 
   componentDidMount() {
+    analyticsService.track({
+      objectName: 'home page',
+      actionName: 'displayed',
+      screen: 'home page',
+    });
     this.props.fetchInternationalProductsStatus();
     merchantFetch({
       url: `users/whatsapp/opt_in_status`,
@@ -157,14 +164,46 @@ class AnalyticsDesktop extends Component {
       return (
         <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
           Receive account-related notifications on WhatsApp. &nbsp;
-          <Link to={'/config#whatsapp_enable_on'}>Enable Notifications</Link>
+          <Link
+            onClick={() => {
+              analyticsService.track({
+                objectName: 'banner',
+                actionName: 'clicked',
+                screen: 'home page',
+                properties: {
+                  hyperlinkClicked: 'Enable Notifications',
+                  title: 'WhatsApp Notifications',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+            }}
+            to={'/config#whatsapp_enable_on'}
+          >
+            Enable Notifications
+          </Link>
         </AnnouncementBanner>
       );
     else {
       return (
         <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
           You will now receive account-related notifications on WhatsApp. &nbsp;
-          <Link to={'/config#whatsapp_enable_control'}>Manage settings here</Link>
+          <Link
+            onClick={() => {
+              analyticsService.track({
+                objectName: 'banner',
+                actionName: 'clicked',
+                screen: 'home page',
+                properties: {
+                  hyperlinkClicked: 'Manage settings here',
+                  title: 'WhatsApp Notifications',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+            }}
+            to={'/config#whatsapp_enable_control'}
+          >
+            Manage settings here
+          </Link>
         </AnnouncementBanner>
       );
     }
@@ -259,7 +298,22 @@ class AnalyticsDesktop extends Component {
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
               Currently all payments with order id are being captured by default, click{' '}
-              <Link to={'/config'} target="_blank">
+              <Link
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: 'here',
+                      title: 'Capture Settings',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                to={'/config'}
+                target="_blank"
+              >
                 here
               </Link>{' '}
               to configure your capture setting.
@@ -269,7 +323,22 @@ class AnalyticsDesktop extends Component {
           {current_balance.data.balance < 0 && (
             <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
               Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
-              <Link to={'/addfunds'} target="_blank">
+              <Link
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: 'Add Funds',
+                      title: 'Add Funds',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                to={'/addfunds'}
+                target="_blank"
+              >
                 {' '}
                 Add Funds
               </Link>
@@ -280,7 +349,22 @@ class AnalyticsDesktop extends Component {
             <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
               Your current balance had reached the maximum negative limit. Transactions will start
               to fail now. Please add funds to avoid transaction failures.{' '}
-              <Link to={'/addfunds'} target="_blank">
+              <Link
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: 'Add Funds',
+                      title: 'On Hold!',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                to={'/addfunds'}
+                target="_blank"
+              >
                 {' '}
                 Add Funds
               </Link>
@@ -291,7 +375,21 @@ class AnalyticsDesktop extends Component {
               <span className="support-tagline">
                 Let your customers know how to reach you for any queries.
               </span>
-              <Link to={'/profile'}>
+              <Link
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: 'Add Details',
+                      title: 'Add Support Details',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                to={'/profile'}
+              >
                 <button
                   className="pull-right primary btn-support"
                   type="button"

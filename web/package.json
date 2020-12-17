@@ -3,6 +3,7 @@
   "author": "Team Razorpay",
   "private": true,
   "dependencies": {
+    "@commander/services": "1.0.3",
     "@commander/shield": "0.0.1136",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#be4dd48",
     "@types/react-is": "17.0.0",

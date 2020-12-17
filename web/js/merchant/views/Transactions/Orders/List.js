@@ -4,18 +4,12 @@ import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import OrdersListFilter from 'merchant/views/Transactions/Orders/components/OrdersListFilter';
 import { fetchOrders as fetchAll } from 'merchant/reducers/collection';
-import {
-  orderId,
-  attempts,
-  amount,
-  status,
-  receipt,
-  createdAt,
-} from 'common/ui/item/pair';
-
+import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui/item/pair';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-@connect(state => state.orders, { fetchAll })
+@connect((state) => state.orders, { fetchAll })
 export default class OrdersListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -24,7 +18,7 @@ export default class OrdersListContainer extends ListContainer {
     });
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
@@ -48,7 +42,48 @@ export default class OrdersListContainer extends ListContainer {
         <OrdersListFilter
           form="orderListFilter"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={(args) => {
+            analyticsService.track({
+              objectName: 'orders search',
+              actionName: 'clicked',
+              screen: 'transactions',
+              properties: {
+                ...args,
+                location: 'orders',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.search(args)
+              .then(() => {
+                analyticsService.track({
+                  objectName: 'orders search',
+                  actionName: 'result',
+                  screen: 'transactions',
+                  properties: {
+                    ...args,
+                    resultsReturned: true,
+                    requestStatus: 'success',
+                    location: 'orders',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              })
+              .catch((er) => {
+                analyticsService.track({
+                  objectName: 'orders search',
+                  actionName: 'result',
+                  screen: 'transactions',
+                  properties: {
+                    ...args,
+                    resultsReturned: true,
+                    status: 'failure',
+                    failureReason: er.errors[0],
+                    location: 'orders',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              });
+          }}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />

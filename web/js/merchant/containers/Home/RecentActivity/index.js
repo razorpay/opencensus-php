@@ -6,12 +6,9 @@ import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/comp
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
-
-import {
-  fetchPayments,
-  fetchRefunds,
-  fetchSettlements,
-} from 'merchant/reducers/collection';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
 import { titleCase } from 'common/utils/rzp-utils';
 
 import GenericPanel, {
@@ -23,7 +20,7 @@ import { tabs, tabsMeta } from './data';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const shouldDisplayCompact = windowWidth => {
+const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
 };
 
@@ -46,10 +43,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
 
         if (columnMeta.recordKey === 'id') {
           value = (
-            <value.type
-              {...value.props}
-              onClick={() => trackEntityClick(tabTitle, sectionTitle)}
-            >
+            <value.type {...value.props} onClick={() => trackEntityClick(tabTitle, sectionTitle)}>
               {value.props.children}
             </value.type>
           );
@@ -62,7 +56,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       payments: state.payments,
       default_refund_speed: state.config.config.default_refund_speed,
@@ -76,7 +70,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
     openModal,
     fetchRefunds,
     fetchSettlements,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('RecentActivity'))
 export default class RecentActivity extends Component {
@@ -95,7 +89,16 @@ export default class RecentActivity extends Component {
     e.preventDefault();
 
     const tabName = e.target.getAttribute('name');
-
+    analyticsService.track({
+      objectName: 'recent activity',
+      actionName: 'viewed',
+      screen: 'home page',
+      properties: {
+        tabName: tabName,
+        location: 'recent activity',
+        ...getCommonAnalyticsProperties(window.rzp_user)
+      },
+    });
     this.setState({ selectedTab: tabName });
     trackTabClick(titleCase(tabName), this.props.sectionTitle);
   }
@@ -107,11 +110,8 @@ export default class RecentActivity extends Component {
   }
 
   fetchData(params) {
-    this.props.fetchPayments(params).then(data => {
-      return (
-        this.props.onFetchPayments &&
-        this.props.onFetchPayments(data && data.data)
-      );
+    this.props.fetchPayments(params).then((data) => {
+      return this.props.onFetchPayments && this.props.onFetchPayments(data && data.data);
     });
     this.props.fetchRefunds(params);
     this.props.fetchSettlements(params);
@@ -133,12 +133,17 @@ export default class RecentActivity extends Component {
       eventAction: 'Enable Now',
       eventLabel: `Recent Activity | Enable Now`,
     });
+    analyticsService.track({
+      objectName: 'instant refund',
+      actionName: 'clicked',
+      screen: 'home page',
+    });
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`Click - Enable Now`, {
         label: 'Recent Activity',
         session_id: window.session_id,
         category: 'Merchant Dashboard - IR',
-      })
+      }),
     );
   };
 
@@ -147,16 +152,13 @@ export default class RecentActivity extends Component {
       selectedTabData = this.props[selectedTab],
       numColumns = tabsMeta[selectedTab].columns.length,
       selectedTabTitle = titleCase(selectedTab);
-
     let body = null;
 
     if (selectedTabData.loading || selectedTabData.items.length === 0) {
       body = (
         <tr>
           <td colSpan={numColumns}>
-            <center>
-              {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
-            </center>
+            <center>{selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}</center>
           </td>
         </tr>
       );
@@ -184,16 +186,10 @@ export default class RecentActivity extends Component {
           <tabbed-container>
             <div className="row">
               {tabs.map((tabName, index) => {
-                const className =
-                  (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
+                const className = (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
 
                 return (
-                  <a
-                    className={className}
-                    key={index}
-                    name={tabName}
-                    onClick={this.handleTabClick}
-                  >
+                  <a className={className} key={index} name={tabName} onClick={this.handleTabClick}>
                     {tabName.toUpperCase()}
                   </a>
                 );
@@ -214,14 +210,9 @@ export default class RecentActivity extends Component {
               <React.Fragment>
                 <span>
                   <i className="i i-early-settlement" />
-                  <span className="early-stl-label">
-                    You are eligible for instant settlements
-                  </span>
+                  <span className="early-stl-label">You are eligible for instant settlements</span>
                 </span>
-                <Button.Secondary
-                  class="settle-btn-act"
-                  onClick={this.props.onSelect}
-                >
+                <Button.Secondary class="settle-btn-act" onClick={this.props.onSelect}>
                   Settle Now
                 </Button.Secondary>
               </React.Fragment>
@@ -237,10 +228,7 @@ export default class RecentActivity extends Component {
                 <p>
                   <i class="i i-instant-refund" /> Process all refunds instantly
                   <Link to={`/config#instantrefunds`}>
-                    <button
-                      onClick={this.enableInstantRefunds}
-                      class="btn btn-outline"
-                    >
+                    <button onClick={this.enableInstantRefunds} class="btn btn-outline">
                       <b>Enable Now</b>
                     </button>
                   </Link>
@@ -251,9 +239,19 @@ export default class RecentActivity extends Component {
               <Link
                 target="_blank"
                 to={`/${selectedTab}`}
-                onClick={() =>
-                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)
-                }
+                onClick={() => {
+                  analyticsService.track({
+                    objectName: selectedTab,
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      tabName: selectedTab,
+                      location: 'recent activity',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                  return trackGoToLinks(selectedTabTitle, this.props.sectionTitle);
+                }}
               >
                 View all {selectedTabTitle} <i className="i i-chevron-right" />
               </Link>

@@ -6,14 +6,10 @@ import Definition from 'common/ui/Definition';
 import DataTable from 'common/ui/Table/DataTable';
 import LoaderDots from 'common/ui/LoaderDots';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import {
-  refundId,
-  amount,
-  createdAt,
-  refundSpeed,
-  refundStatus,
-} from 'common/ui/item/pair';
+import { refundId, amount, createdAt, refundSpeed, refundStatus } from 'common/ui/item/pair';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 /*
  * Design:
@@ -36,9 +32,7 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
   return (
     <span>
-      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{
-        refundSuffix
-      }
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{refundSuffix}
     </span>
   );
 };
@@ -71,12 +65,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   );
 };
 
-export default ({
-  payment,
-  refunds,
-  openRefundModal,
-  onToggleClick = () => {},
-}) => {
+export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
   const paymentStatus = payment.status,
     refundStatus = payment.refund_status,
     refundAmount = payment.amount_refunded,
@@ -93,16 +82,15 @@ export default ({
     const hasOpenNonFraudDisputes =
       payment.disputes &&
       payment.disputes.items.filter(
-        ({ status, phase }) =>
-          ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud'
+        ({ status, phase }) => ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud',
       ).length;
     return (
       <div>
         <ShowWhen
-          additionalCondition={user =>
+          additionalCondition={(user) =>
             !user.isRefundAllowed ||
-            (user.isOrgAllowedFunctionality('card_refunds') ||
-              !(['card', 'emi'].indexOf(payment.method) !== -1))
+            user.isOrgAllowedFunctionality('card_refunds') ||
+            !(['card', 'emi'].indexOf(payment.method) !== -1)
           }
         >
           <div class="m-b">
@@ -127,7 +115,7 @@ export default ({
           </div>
         </ShowWhen>
         <ShowWhen
-          additionalCondition={user =>
+          additionalCondition={(user) =>
             user.isRefundAllowed &&
             (user.isOrgAllowedFunctionality('card_refunds') ||
               ['card', 'emi'].indexOf(payment.method) === -1)
@@ -136,28 +124,32 @@ export default ({
           <p>
             <button
               class="btn btn-default"
-              onClick={openRefundModal}
+              onClick={() => {
+                analyticsService.track({
+                  objectName: 'action items on sidebar',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: payment.analyticsPayload(),
+                });
+                return openRefundModal();
+              }}
               disabled={hasOpenNonFraudDisputes}
             >
-              {refundStatus === 'partial'
-                ? 'Issue another Refund'
-                : 'Issue Refund'}
+              {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
             </button>
           </p>
           {hasOpenNonFraudDisputes ? (
             <span class="text-danger">
-              Refunds are disabled as there{' '}
-              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
-                1 && 's'}{' '}
-              on this payment
+              Refunds are disabled as there {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open
+              dispute{hasOpenNonFraudDisputes > 1 && 's'} on this payment
             </span>
           ) : null}
         </ShowWhen>
         <ShowWhen
-          additionalCondition={user =>
+          additionalCondition={(user) =>
             user.isRefundAllowed &&
-            (!user.isOrgAllowedFunctionality('card_refunds') &&
-              ['card', 'emi'].indexOf(payment.method) > -1)
+            !user.isOrgAllowedFunctionality('card_refunds') &&
+            ['card', 'emi'].indexOf(payment.method) > -1
           }
         >
           Refunds cannot be created for Card transactions
@@ -179,8 +171,7 @@ export default ({
         <Definition>
           <span>Auto Refunded</span>
           <span>
-            Payment was not captured within 5 days of creation, hence it was
-            automatically refunded.
+            Payment was not captured within 5 days of creation, hence it was automatically refunded.
           </span>
         </Definition>
       );
@@ -197,7 +188,7 @@ export default ({
           {
             <RefundsList
               refunds={refunds}
-              onToggleClick={speedRequested => {
+              onToggleClick={(speedRequested) => {
                 onToggleClick(payment, speedRequested);
               }}
             />

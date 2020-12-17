@@ -3,21 +3,17 @@ import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
-import {
-  refundId,
-  paymentId,
-  amount,
-  createdAt,
-  status,
-} from 'common/ui/item/pair';
+import { refundId, paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import EnableInstantRefundsModal from '../Payments/components/EnableInstantRefundsModal';
 import { withRouter } from 'react-router-dom';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
-@connect(state => state.refunds, { fetchAll, openModal })
+@connect((state) => state.refunds, { fetchAll, openModal })
 export default class RefundsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -26,7 +22,7 @@ export default class RefundsListContainer extends ListContainer {
     });
   }
 
-  onSearchAnalytics = params => {
+  onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
@@ -53,7 +49,46 @@ export default class RefundsListContainer extends ListContainer {
         <RefundsListFilter
           form="refundListFilter"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={(args) => {
+            analyticsService.track({
+              objectName: 'refunds search',
+              actionName: 'clicked',
+              screen: 'transactions',
+              properties: {
+                ...args,
+                location: 'refunds',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.search()
+              .then(() => {
+                analyticsService.track({
+                  objectName: 'refunds search',
+                  actionName: 'status',
+                  screen: 'transactions',
+                  properties: {
+                    ...args,
+                    requestStatus: 'success',
+                    location: 'refunds',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              })
+              .catch((e) => {
+                analyticsService.track({
+                  objectName: 'refunds search',
+                  actionName: 'status',
+                  screen: 'transactions',
+                  properties: {
+                    ...args,
+                    status: 'failure',
+                    failureReason: e.errors[0],
+                    location: 'refunds',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              });
+          }}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
         />

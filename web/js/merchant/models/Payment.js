@@ -10,10 +10,8 @@ export default class Payment extends GenericEntity {
 
   fetchRefunds() {
     const url = `${this.resourceUrl}/${this.id}/refunds`;
-    return this.makeGenericAjaxCall({ url }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Refund(item).deserialize()
-      );
+    return this.makeGenericAjaxCall({ url }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Refund(item).deserialize());
       return response;
     });
   }
@@ -27,9 +25,24 @@ export default class Payment extends GenericEntity {
       currency: this.currency,
     };
 
-    return this.makeGenericAjaxCall({ method, data, url }).then(response => {
+    return this.makeGenericAjaxCall({ method, data, url }).then((response) => {
       return new Klass(response.data);
     });
+  }
+
+  analyticsPayload() {
+    const payment = this;
+    return {
+      paymentId: payment.id,
+      paymentStatus: payment.status,
+      paymentMethod: payment.method,
+      paymentStatus: payment.status,
+      createdAt: payment.created_at,
+      description: payment.description,
+      totalFee: payment.fee,
+      orderId: payment.order_id,
+      amount: payment.amount,
+    };
   }
 
   refund(params) {

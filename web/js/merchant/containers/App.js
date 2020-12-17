@@ -6,7 +6,8 @@ import Loader from 'common/ui/Loader';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
-
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
@@ -41,7 +42,6 @@ import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'v2/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
-import { FetchActiveTickets } from '../reducers/config';
 
 @withRouter
 @connect(
@@ -115,7 +115,6 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-
     const { user } = props;
 
     const oldModeToken = 'rzp_mode';
@@ -156,7 +155,12 @@ export default class App extends Component {
   }
 
   componentWillMount() {
-    // Event Based method to lock dashboard screen
+    const user = window.rzp_user;
+
+    analyticsService.identify({
+      id: user.id,
+      properties: getCommonAnalyticsProperties(window.rzp_user),
+    });
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
       self.registerPendingRequests(e.detail.continueAjax);
@@ -449,6 +453,16 @@ export default class App extends Component {
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });
+    analyticsService.track({
+      objectName: 'mode',
+      actionName: 'selected',
+      screen: 'home page',
+      properties: {
+        current: mode,
+        new: 'test',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
@@ -471,9 +485,27 @@ export default class App extends Component {
   };
 
   switchMerchant = (merchant) => {
+    analyticsService.track({
+      objectName: 'switch merchant',
+      actionName: 'selected',
+      screen: 'home page',
+      properties: {
+        new_mid: merchant.id,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props
       .switchMerchant(merchant.id)
       .then(() => {
+        analyticsService.track({
+          objectName: 'switch merchant',
+          actionName: 'result',
+          screen: 'home page',
+          properties: {
+            new_mid: merchant.id,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         location.reload();
       })
       .catch(({ errors }) => {

@@ -20,6 +20,9 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default (props) => {
   let {
@@ -40,6 +43,29 @@ export default (props) => {
     user,
     merchantManualAction,
   } = props;
+
+  useEffect(() => {
+    if (payment.id) {
+      analyticsService.track({
+        objectName: 'payment details',
+        actionName: 'fetched',
+        screen: 'transactions',
+        properties: {
+          ...payment.analyticsPayload(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      analyticsService.track({
+        objectName: 'payment details sidebar',
+        actionName: 'rendered',
+        screen: 'transactions',
+        properties: {
+          ...payment.analyticsPayload(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }, [payment]);
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -65,6 +91,25 @@ export default (props) => {
                 {merchantManualAction.details.capture && isRoleAllowedEdit && (
                   <button
                     onClick={() => {
+                      analyticsService.track({
+                        objectName: 'capture payment',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          ...payment.analyticsPayload(),
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      analyticsService.track({
+                        objectName: 'action items on sidebar',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          ...payment.analyticsPayload(),
+                          location: 'payment sidebar',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
                       props.confirmCapture(payment);
                     }}
                     class="btn btn-primary"

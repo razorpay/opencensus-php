@@ -21,6 +21,7 @@ import SwitchMerchant, {
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
+import analyticsService from '@commander/services/analytics';
 
 @withRouter
 @connect(
@@ -52,15 +53,45 @@ export default class ProfileDropdown extends Component {
   };
 
   logout = () => {
+    analyticsService.track({
+      objectName: 'logout',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        location: 'top navigation',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     logoutGoogleAccount();
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
       .catch((e) => {
+        analyticsService.track({
+          objectName: 'logout',
+          actionName: 'result',
+          screen: 'home page',
+          properties: {
+            status: 'failure',
+            location: 'top navigation',
+            failureReason: e.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         console.error(e);
       })
       .then(() => {
-        window.location.reload();
+        analyticsService.track({
+          objectName: 'logout',
+          actionName: 'result',
+          screen: 'home page',
+          properties: {
+            status: 'success',
+            location: 'top navigation',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        return window.location.reload();
       });
   };
 
@@ -131,7 +162,19 @@ export default class ProfileDropdown extends Component {
                     <GroupItem>
                       <CustomClipboard
                         value={merchant.id}
-                        onCopy={() => analytics('Copy - Merchant ID')}
+                        onCopy={() => {
+                          analyticsService.track({
+                            objectName: 'user dropdown',
+                            actionName: 'clicked',
+                            screen: 'home page',
+                            properties: {
+                              action: 'Copy Merchant ID',
+                              location: 'top navigation',
+                              ...getCommonAnalyticsProperties(window.rzp_user),
+                            },
+                          });
+                          return analytics('Copy - Merchant ID');
+                        }}
                       >
                         <button class="btn btn-default btn-xs">Copy Merchant Id</button>
                       </CustomClipboard>
@@ -162,7 +205,21 @@ export default class ProfileDropdown extends Component {
                 >
                   <div class="media media-action">
                     <div class="media-body">
-                      <a target="_blank" href="https://razorpay.com/docs">
+                      <a
+                        target="_blank"
+                        onClick={() => {
+                          analyticsService.track({
+                            objectName: 'documentation',
+                            actionName: 'clicked',
+                            screen: 'home page',
+                            properties: {
+                              location: 'top navigation',
+                              ...getCommonAnalyticsProperties(window.rzp_user),
+                            },
+                          });
+                        }}
+                        href="https://razorpay.com/docs"
+                      >
                         Documentation
                       </a>
                     </div>
@@ -203,7 +260,22 @@ export default class ProfileDropdown extends Component {
                 <p className="account-details">
                   <i class="i i-account" /> <span title={user.user.email}>{user.user.email}</span>
                 </p>
-                <button class="btn btn-primary logout-btn" onClick={this.logout}>
+                <button
+                  class="btn btn-primary logout-btn"
+                  onClick={() => {
+                    analyticsService.track({
+                      objectName: 'user dropdown',
+                      actionName: 'clicked',
+                      screen: 'home page',
+                      properties: {
+                        action: 'Logout',
+                        location: 'top navigation',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    this.logout();
+                  }}
+                >
                   Log out
                 </button>
               </div>

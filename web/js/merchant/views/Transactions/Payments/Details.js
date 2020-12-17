@@ -17,6 +17,8 @@ import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -170,10 +172,29 @@ export default class PaymentDetailsContainer extends Component {
             eventAction: 'Capture - Payment',
             eventLabel: `payment_id=${payment.id}`,
           });
-
+          analyticsService.track({
+            objectName: 'capture payment confirmation popup',
+            actionName: 'clicked',
+            screen: 'home page',
+            properties: {
+              ...payment.analyticsPayload(),
+              action: 'yes',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           return this.props
             .capturePayment(payment)
             .then(() => {
+              analyticsService.track({
+                objectName: 'capture payment',
+                actionName: 'status',
+                screen: 'home page',
+                properties: {
+                  ...payment.analyticsPayload(),
+                  requestStatus: 'success',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
               this.props.showNotification({
                 type: 'success',
                 message: 'Payment Captured',
@@ -181,6 +202,17 @@ export default class PaymentDetailsContainer extends Component {
               });
             })
             .catch(({ errors }) => {
+              analyticsService.track({
+                objectName: 'capture payment',
+                actionName: 'status',
+                screen: 'home page',
+                properties: {
+                  ...payment.analyticsPayload(),
+                  status: 'failure',
+                  failureReason: errors[0],
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
               this.props.showNotification({
                 type: 'error',
                 message: errors,

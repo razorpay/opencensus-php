@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 import debounce from 'common/utils/debounce';
 import takeScreenshot from 'common/utils/screenshot';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
@@ -18,20 +19,12 @@ import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import {
-  API_ERROR,
-  API_INVALID_RESP,
-  getPlatformColor,
-} from 'merchant/components/Home/data';
-import {
-  trackError,
-  trackGoToLinks,
-  trackNoData,
-} from 'merchant/containers/Home/ga';
+import { API_ERROR, API_INVALID_RESP, getPlatformColor } from 'merchant/components/Home/data';
+import { trackError, trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
 
 import Mobile from 'merchant/containers/Home/Traffic/Mobile';
 
-const aggTypes = groupValues.map(value => groupMeta[value]);
+const aggTypes = groupValues.map((value) => groupMeta[value]);
 
 const chartOptions = {
     tooltips: {
@@ -60,7 +53,7 @@ class Traffic extends Component {
       windowWidth: window.innerWidth,
     };
 
-    groupValues.forEach(groupValue => {
+    groupValues.forEach((groupValue) => {
       this.state.groupsState[groupValue] = {
         loading: false,
         chartData: null,
@@ -103,13 +96,13 @@ class Traffic extends Component {
     this.setState(this.state);
 
     const downloadFileName = `Platform traffic split, ${startDate.format(
-      csvDateFormat
+      csvDateFormat,
     )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`;
 
     const requestId = ++this.requestId;
 
     (analyticsFetch || fetch)(query, this.props.mode)
-      .then(resp => {
+      .then((resp) => {
         if (requestId !== this.requestId) {
           return null;
         }
@@ -134,9 +127,9 @@ class Traffic extends Component {
 
         if (labels.length === 0) {
           trackNoData(
-            `${sectionTitle} from ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(csvDateFormat)}`
+            `${sectionTitle} from ${startDate.format(csvDateFormat)} to ${endDate.format(
+              csvDateFormat,
+            )}`,
           );
         }
 
@@ -154,7 +147,7 @@ class Traffic extends Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         if (requestId !== this.requestId) {
           return null;
         }
@@ -163,7 +156,7 @@ class Traffic extends Component {
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return null;
         }
@@ -175,11 +168,7 @@ class Traffic extends Component {
         groupState.loading = false;
 
         if (data.error) {
-          trackError(
-            `Error while fetching data for traffic section - ${
-              selectedGrouping.value
-            }`
-          );
+          trackError(`Error while fetching data for traffic section - ${selectedGrouping.value}`);
 
           this.props.showNotification({
             type: 'error',
@@ -205,7 +194,7 @@ class Traffic extends Component {
       },
       () => {
         return this.getData();
-      }
+      },
     );
   }
 
@@ -222,6 +211,17 @@ class Traffic extends Component {
   }
 
   handleImageExportClick(e) {
+    analyticsService.track({
+      objectName: 'download chart',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        downloadType: 'image',
+        graphType: '',
+        success: true,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const { selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping.value],
       anchor = e.target;
@@ -229,7 +229,7 @@ class Traffic extends Component {
     if (!groupState.pngData.url) {
       e.preventDefault();
 
-      takeScreenshot(this.panelBody).then(url => {
+      takeScreenshot(this.panelBody).then((url) => {
         groupState.pngData.url = url;
 
         this.setState(this.state, () => {
@@ -267,7 +267,7 @@ class Traffic extends Component {
           this.setChartSize();
           this.setState({ hideChart: false });
         });
-      }
+      },
     );
   }
 
@@ -341,34 +341,28 @@ class Traffic extends Component {
           </div>
         </PanelTopbar>
         <PanelBody>
-          <div className="chart-row" ref={node => (this.panelBody = node)}>
+          <div className="chart-row" ref={(node) => (this.panelBody = node)}>
             <div className="column">
-              <div
-                className="chart-content"
-                ref={node => (this.chartContent = node)}
-              >
-                {!groupState.loading &&
-                  chartData &&
-                  !this.state.hideChart && (
-                    <Doughnut
-                      ref={node => (this.chartInstance = node)}
-                      options={chartOptions}
-                      data={chartData}
-                      windowWidth={this.state.windowWidth}
-                    />
-                  )}
+              <div className="chart-content" ref={(node) => (this.chartContent = node)}>
+                {!groupState.loading && chartData && !this.state.hideChart && (
+                  <Doughnut
+                    ref={(node) => (this.chartInstance = node)}
+                    options={chartOptions}
+                    data={chartData}
+                    windowWidth={this.state.windowWidth}
+                  />
+                )}
               </div>
             </div>
             <div className="column">
-              {!groupState.loading &&
-                legendData && (
-                  <Legend
-                    data={groupState.legendData}
-                    alignment="vertical"
-                    isCurrency={isCurrency}
-                    tooltipAlign="right"
-                  />
-                )}
+              {!groupState.loading && legendData && (
+                <Legend
+                  data={groupState.legendData}
+                  alignment="vertical"
+                  isCurrency={isCurrency}
+                  tooltipAlign="right"
+                />
+              )}
             </div>
           </div>
         </PanelBody>

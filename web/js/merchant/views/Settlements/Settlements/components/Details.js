@@ -8,10 +8,19 @@ import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/compo
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import ShowWhen from 'merchant/components/ShowWhen';
+import React, { useEffect, useState } from 'react';
+import analyticsService from '@commander/services/analytics';
 
 export default (props) => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
-
+  useEffect(() => {
+    analyticsService.track({
+      objectName: 'settlement details',
+      actionName: 'fetched',
+      screen: 'transactions',
+      properties: settlement.analyticsPayload(),
+    });
+  }, []);
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (

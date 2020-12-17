@@ -5,6 +5,9 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
+import EasterEgg from 'merchant/components/EasterEgg';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect((state) => state.config, { showNotification })
 @reduxForm({})
@@ -22,6 +25,14 @@ export default class EmailNotifications extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Email Notifications Addresses',
+    });
+    analyticsService.track({
+      objectName: 'documentation',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties:{
+        ...getCommonAnalyticsProperties(window.rzp_user)
+      }
     });
   };
 
