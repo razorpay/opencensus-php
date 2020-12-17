@@ -22,6 +22,7 @@ import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
