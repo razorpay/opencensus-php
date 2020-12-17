@@ -144,6 +144,18 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    /*
+     * Support admin action for bulk retrying refunds via FTA to custom sources
+     */ 
+    public function retryRefundsViaCustomFundTransfersBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->retryRefundsViaCustomFundTransfersBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundRetryBulk()
     {
         $input = Request::all();

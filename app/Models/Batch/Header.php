@@ -48,6 +48,10 @@ class Header
     const STATUS            = 'Status';
     const ERROR_CODE        = 'Error Code';
     const ERROR_DESCRIPTION = 'Error Description';
+    const REFUND_BENEFICIARY_NAME   = 'Beneficiary Name';
+    const REFUND_ACCOUNT_NUMBER     = 'Account Number';
+    const REFUND_IFSC               = 'IFSC';
+    const REFUND_TRANSFER_MODE      = 'Transfer Mode';
 
     //
     // Payment Link Headers
@@ -1778,6 +1782,25 @@ class Header
                 self::DESCRIPTION,
                 self::NARRATION,
                 self::STATUS,
+            ],
+        ],
+
+        Type::RETRY_REFUNDS_TO_BA => [
+            self::INPUT => [
+                self::REFUND_ID,
+                self::REFUND_BENEFICIARY_NAME,
+                self::REFUND_ACCOUNT_NUMBER,
+                self::REFUND_IFSC,
+                self::REFUND_TRANSFER_MODE,
+            ],
+            self::OUTPUT => [
+                self::REFUND_ID,
+                self::REFUND_BENEFICIARY_NAME,
+                self::REFUND_ACCOUNT_NUMBER,
+                self::REFUND_IFSC,
+                self::REFUND_TRANSFER_MODE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

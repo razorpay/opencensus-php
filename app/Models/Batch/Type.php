@@ -135,6 +135,11 @@ class Type
 
     const PAYOUT_APPROVAL = 'payout_approval';
 
+    // 
+    // Support admin action for bulk retrying refunds via FTA to custom sources
+    // 
+    const RETRY_REFUNDS_TO_BA = 'retry_refunds_to_ba';
+
     const CANCEL_DEBIT = 'cancel_debit';
 
     public static $disabledTypes = [
@@ -182,6 +187,7 @@ class Type
         self::SUBMERCHANT_LINK,
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
+        self::RETRY_REFUNDS_TO_BA,
     ];
 
     /**
@@ -351,6 +357,7 @@ class Type
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
+        self::RETRY_REFUNDS_TO_BA,
     ];
 
     /**
@@ -391,6 +398,7 @@ class Type
         self::AUTH_LINK,
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
+        self::RETRY_REFUNDS_TO_BA,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -402,10 +410,11 @@ class Type
     ];
 
     public static $batchToAdminPermissionMapping = [
-        self::ADJUSTMENT     => Name::ADJUSTMENT_BATCH_UPLOAD,
-        self::REPORT         => Name::REPORTING_BATCH_UPLOAD,
-        self::CREDIT         => Name::CREDITS_BATCH_UPLOAD,
-        self::LOC_WITHDRAWAL => Name::LOC_WITHDRAWAL_EDIT,
+        self::ADJUSTMENT                    => Name::ADJUSTMENT_BATCH_UPLOAD,
+        self::REPORT                        => Name::REPORTING_BATCH_UPLOAD,
+        self::CREDIT                        => Name::CREDITS_BATCH_UPLOAD,
+        self::LOC_WITHDRAWAL                => Name::LOC_WITHDRAWAL_EDIT,
+        self::RETRY_REFUNDS_TO_BA           => Name::BULK_RETRY_REFUNDS_VIA_FTA,
     ];
 
     public static $workflowApplicableBatchTypes = [

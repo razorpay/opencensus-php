@@ -1461,6 +1461,7 @@ class Route
         'scrooge_refunds_retry_without_verify'        => ['post',     'scrooge/refunds/retry/without_verify',               'ScroogeController@retryRefundsWithoutVerify'                ],
         'scrooge_refunds_retry_source_fund_transfers' => ['post',     'scrooge/refunds/retry/source_fund_transfers',        'ScroogeController@retryRefundsViaSourceFundTransfers'       ],
         'scrooge_refunds_retry_custom_fund_transfers' => ['post',     'scrooge/refunds/retry/custom_fund_transfers',        'ScroogeController@retryRefundsViaCustomFundTransfers'       ],
+        'scrooge_refunds_retry_custom_fund_transfers_batch' => ['post',     'scrooge/refunds/retry/custom_fund_transfers/batch',        'RefundController@retryRefundsViaCustomFundTransfersBatch'       ],
 
         // Scrooge - Instant Refunds Mode Config related routes
         'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                                 'ScroogeController@refreshFtaModes'                           ],
@@ -2731,6 +2732,7 @@ class Route
         'cps_sync_gateway_entities_cron',
         'scrooge_refund_reference1_bulk_update',
         'scrooge_refunds_retry_custom_fund_transfers',
+        'scrooge_refunds_retry_custom_fund_transfers_batch',
         'iin_batch_process_record',
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
@@ -5801,6 +5803,7 @@ class Route
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
             'scrooge_refunds_retry_custom_fund_transfers',
+            'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',
         ],
 

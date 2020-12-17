@@ -1328,6 +1328,92 @@ class Service extends Base\Service
         ];
     }
 
+    // 
+    // Support admin action for bulk retrying refunds via FTA to custom sources
+    // 
+    public function retryRefundsViaCustomFundTransfersBatch(array  $input)
+    {
+       $tracePayload = [];
+
+        try
+        {
+            $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+            $refundId = array_keys($input['refunds'])[0];
+            $bankAccount = $input['refunds'][$refundId]['fta_data']['bank_account'];
+            $beneficiaryName = $bankAccount[RefundConstants::BENEFICIARY_NAME];
+            $accountNumber = $bankAccount[RefundConstants::ACCOUNT_NUMBER];
+            $ifsc = $bankAccount[RefundConstants::IFSC];
+            $transferMode = $bankAccount[RefundConstants::TRANSFER_MODE];
+            $batchType = $input[Batch\Constants::TYPE];
+
+            $tracePayload =[
+                RefundConstants::REFUND_ID           => $refundId,
+                RefundConstants::BENEFICIARY_NAME    => $beneficiaryName,
+                RefundConstants::ACCOUNT_NUMBER      => $accountNumber,
+                RefundConstants::IFSC                => $ifsc,
+                RefundConstants::TRANSFER_MODE       => $transferMode,
+                RequestHeader::X_Batch_Id            => $batchId,
+                Batch\Constants::TYPE                => $batchType,
+            ];
+
+            $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);
+
+            $bankAccountData =
+            [
+                'type'    => $batchType,
+                'refunds' => [
+                    $refundId => [
+                        'fta_data' => [
+                            'bank_account' => [
+                                'ifsc_code'        => $ifsc,
+                                'account_number'   => $accountNumber,
+                                'beneficiary_name' => $beneficiaryName,
+                                'transfer_mode'    => $transferMode,
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+            $response = $this->app['scrooge']->retryRefundsViaCustomFundTransfers($bankAccountData)['body'];
+
+            if (empty($response[$refundId]['error']) ==  false)
+            {
+                $code = $response[$refundId]['error']['code'];
+                $message = $response[$refundId]['error']['message'];
+                throw new Exception\BadRequestValidationFailureException($message);
+            }
+
+            $input[RefundConstants::REFUND_ID]         = $refundId;
+            $input[RefundConstants::BENEFICIARY_NAME]  = $beneficiaryName;
+            $input[RefundConstants::ACCOUNT_NUMBER]    = $accountNumber;
+            $input[RefundConstants::IFSC]              = $ifsc;
+            $input[RefundConstants::TRANSFER_MODE]     = $transferMode;
+            $input[RefundConstants::ERROR_CODE]        = null;
+            $input[RefundConstants::ERROR_DESCRIPTION] = null;
+
+        }
+        catch (\Exception $e)
+        {
+            // RZP Exceptions have public error code & description which can be exposed in the output file
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+
+            $error = $e->getError();
+
+            $input[RefundConstants::REFUND_ID]         = $refundId;
+            $input[RefundConstants::BENEFICIARY_NAME]  = $beneficiaryName;
+            $input[RefundConstants::ACCOUNT_NUMBER]    = $accountNumber;
+            $input[RefundConstants::IFSC]              = $ifsc;
+            $input[RefundConstants::TRANSFER_MODE]     = $transferMode;
+            $input[RefundConstants::ERROR_CODE]        = $code ?? $error->getPublicErrorCode();
+            $input[RefundConstants::ERROR_DESCRIPTION] = $error->getDescription();
+        }
+        finally
+        {
+            return $input;
+        }
+    }
+
     public function retryBulk(array $input)
     {
         RuntimeManager::setTimeLimit(300);

@@ -1231,4 +1231,17 @@ return [
             'content' => []
         ],
     ],
+
+    'scroogeRetryViaCustomFundTransfersBatch' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/refunds/retry/custom_fund_transfers/batch',
+            'content' => [
+                'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];

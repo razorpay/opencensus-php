@@ -6290,4 +6290,53 @@ class RefundTest extends TestCase
 
         $this->assertEquals($expectedOutput, $response);
     }
+
+    public function testScroogeRetryViaCustomFundTransfersBatch()
+    {
+        $this->ba->appAuth();
+
+        $input = [
+            "type" => "retry_refunds_to_ba",
+            "refunds" => [
+                "12345678900987" => [
+                    "fta_data" => [
+                        "bank_account" => [
+                            "beneficiary_name" => "Test",
+                            "account_number" => "457823901212",
+                            "ifsc" => "SBII0000012",
+                            "transfer_mode" => "neft"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $expectedOutput = [
+            "type" => "retry_refunds_to_ba",
+            "refunds" => [
+                "12345678900987" => [
+                    "fta_data" => [
+                        "bank_account" => [
+                            "beneficiary_name" => "Test",
+                            "account_number" => "457823901212",
+                            "ifsc" => "SBII0000012",
+                            "transfer_mode" => "neft"
+                        ]
+                    ]
+                ]
+            ],
+            "refund_id" => "12345678900987",
+            "beneficiary_name" => "Test",
+            "account_number" => "457823901212",
+            "ifsc" => "SBII0000012",
+            "transfer_mode" => "neft",
+            "error_code" => null,
+            "error_description" => null
+        ];
+
+        $this->testData['scroogeRetryViaCustomFundTransfersBatch']['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData['scroogeRetryViaCustomFundTransfersBatch']);
+        $this->assertEquals($expectedOutput, $response);
+    }
 }

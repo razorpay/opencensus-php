@@ -127,6 +127,10 @@ class Constants
     const ERROR_DESCRIPTION     = 'error_description';
     const FAILURE               = 'failure';
     const SPEED                 = 'speed';
+    const IFSC                  = 'ifsc';
+    const BENEFICIARY_NAME      = 'beneficiary_name';
+    const ACCOUNT_NUMBER        = 'account_number';
+    const TRANSFER_MODE         = 'transfer_mode';
 
     // FE refund creation data
     const FEES                          = 'fees';

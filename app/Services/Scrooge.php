@@ -463,6 +463,7 @@ class Scrooge
     }
 
     /**
+     * Support admin action for bulk retrying refunds via FTA to custom sources
      * @param array $input
      * @return array
      */
