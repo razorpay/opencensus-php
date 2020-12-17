@@ -86,6 +86,10 @@ class UpiMetadataTransformer extends UpiTransanformer
                 // successfully and now first debit is pending for the mandate
                 $this->item->setInternalStatus(InternalStatus::PENDING_FOR_AUTHORIZE);
             }
+            else
+            {
+                $this->item->setInternalStatus(InternalStatus::FAILED);
+            }
         }
         else if ($this->context->getAction() === Action::VERIFY)
         {
@@ -120,6 +124,10 @@ class UpiMetadataTransformer extends UpiTransanformer
                 // S2S response for authenticate with success means that now callback/verify is pending from gateway
                 $this->item->setInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
             }
+            else
+            {
+                $this->item->setInternalStatus(InternalStatus::FAILED);
+            }
         }
         else if ($this->context->getAction() === Action::CALLBACK)
         {
@@ -132,6 +140,9 @@ class UpiMetadataTransformer extends UpiTransanformer
                 // Callback on authorize entity with success means that the debit was successful
                 // For both First Debit and Auto debit this logic holds true
                 $this->item->setInternalStatus(InternalStatus::AUTHORIZED);
+            }
+            else {
+                $this->item->setInternalStatus(InternalStatus::FAILED);
             }
         }
         else if ($this->context->getAction() === Action::VERIFY)

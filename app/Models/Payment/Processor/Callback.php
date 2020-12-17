@@ -767,6 +767,8 @@ trait Callback
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
 
+        $previousExceptionData = $e->getData() ?? [];
+
         $e->setData(['payment_id'  => $this->payment->getPublicId(),
                      'order_id'    => $this->payment->getPublicOrderId(),
                      'method'      => $this->payment->getMethod(),
@@ -781,6 +783,8 @@ trait Callback
             else
             {
                 $this->updatePaymentAuthFailed($e);
+
+                $this->processUpiRecurringFailureIfApplicable($this->payment, $previousExceptionData);
             }
         }
         else

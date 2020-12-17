@@ -1103,6 +1103,14 @@ trait UpiRecurring
         {
             $newStatus = UpiMetadata\InternalStatus::AUTHORIZE_INITIATED;
         }
+        else if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
+        {
+            $newStatus = UpiMetadata\InternalStatus::AUTHORIZED;
+        }
+        else if ($internalStatus === UpiMetadata\InternalStatus::FAILED)
+        {
+            $newStatus = UpiMetadata\InternalStatus::FAILED;
+        }
 
         if ($tokenInitiated === true)
         {
@@ -1119,6 +1127,39 @@ trait UpiRecurring
 
             (new UpiMetadata\Core)->update($metadata);
         }
+    }
+
+    protected function processUpiRecurringFailureIfApplicable(Entity $payment, $data)
+    {
+        if ($payment->isUpiRecurring() === false)
+        {
+            return;
+        }
+
+        if ($payment->isUpiAutoRecurring() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);
+
+        }
+        catch(\Throwable $e)
+        {
+            if ($payment->getGateway() === Payment\Gateway::SHARP)
+            {
+                return;
+            }
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_UPI_METADATA_SAVE_FAILED,
+                $data);
+        }
+
     }
 
     protected function modifyRecurringDebitInputForUpi($mandate, array & $input, array $data)

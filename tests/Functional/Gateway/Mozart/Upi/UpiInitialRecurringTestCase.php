@@ -15,6 +15,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\Mock\Server;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\Payment\UpiMetadata\Entity as MetaData;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 
@@ -156,6 +157,12 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upi->reload();
 
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS => 'authorized'
+        ], $upiMetadata->toArray());
+
         $this->assertArraySubset([
             Token\Entity::RECURRING        => true,
             Token\Entity::RECURRING_STATUS => 'confirmed'
@@ -186,6 +193,8 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upiMandate = $this->getDbLastEntity('upi_mandate');
 
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
         $this->assertEquals('created', $upiMandate['status']);
 
         $this->mockServerContentFunction(function (& $content, $action)
@@ -204,6 +213,8 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upiMandate->reload();
 
+        $upiMetadata->reload();
+
         $payment = $this->assertUpiDbLastEntity('payment', [
             'status'                => 'failed',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
@@ -211,6 +222,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotEmpty($payment->getVerifyAt());
 
         $this->assertEquals('created', $upiMandate['status']);
+
+        $this->assertEquals('failed', $upiMetadata['internal_status']);
     }
 
     public function testRecurringMandateCreateDebitFailed()
@@ -226,6 +239,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $payment = $this->getDbLastPayment();
 
         $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
 
         $this->assertEquals('created', $upiMandate['status']);
 
@@ -245,6 +260,8 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upiMandate->reload();
 
+        $upiMetadata->reload();
+
         $payment = $this->assertUpiDbLastEntity('payment', [
             'status'                => 'failed',
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_BANK_OFFLINE,
@@ -252,6 +269,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotEmpty($payment->getVerifyAt());
 
         $this->assertEquals('confirmed', $upiMandate['status']);
+
+        $this->assertEquals('failed', $upiMetadata['internal_status']);
     }
 
     public function testRecurringMandateCreateDebitCallbackFailed()
@@ -297,6 +316,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotEmpty($payment->getVerifyAt());
 
         $this->assertEquals('confirmed', $upiMandate['status']);
+
+        $this->assertUpiMetadataStatus('failed');
     }
 
     public function testRevokeMandate()
