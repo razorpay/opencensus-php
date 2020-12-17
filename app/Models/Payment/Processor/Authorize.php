@@ -165,7 +165,14 @@ trait Authorize
      */
     public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
-        $response = Tracer::inSpan(['name' => 'payment.authorize'],
+        $attrs = [
+            'payment_id'       =>  $payment->getPublicId(),
+            'payment_method'   =>  $payment->getMethod(),
+            'merchant_id'      =>  $payment->getMerchantId(),
+            'task_id'          =>  $this->request->getTaskId()
+        ];
+
+        $response = Tracer::inSpan(['name' => 'payment.authorize', 'attributes' => $attrs],
             function() use ($payment, $input, $gatewayInput){
                 return $this->coreAuthorize($payment, $input, $gatewayInput);
             });
