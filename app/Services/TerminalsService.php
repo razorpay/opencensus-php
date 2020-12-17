@@ -161,7 +161,9 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH], $terminalId);
 
-        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        $options = [self::TIMEOUT=> 0.5];
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD], $options);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
