@@ -149,6 +149,7 @@ class Gateway
     const BT_ICICI           = 'bt_icici';
     const BT_DASHBOARD       = 'bt_dashboard';
     const BT_RBL             = 'bt_rbl';
+    const BT_HDFC_ECMS       = 'bt_hdfc_ecms';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
@@ -964,6 +965,7 @@ class Gateway
         Payment\Gateway::BT_KOTAK,
         Payment\Gateway::BT_ICICI,
         Payment\Gateway::BT_RBL,
+        Payment\Gateway::BT_HDFC_ECMS,
         Payment\Gateway::NETBANKING_JSB,
         Payment\Gateway::CRED,
         Payment\Gateway::ENACH_RBL,
@@ -1274,6 +1276,7 @@ class Gateway
         Provider::DASHBOARD => self::BT_DASHBOARD,
         Provider::ICICI     => self::BT_ICICI,
         Provider::RBL       => self::BT_RBL,
+        Provider::HDFC_ECMS => self::BT_HDFC_ECMS,
     ];
 
     //
@@ -1285,6 +1288,7 @@ class Gateway
         self::BT_DASHBOARD,
         self::BT_ICICI,
         self::BT_RBL,
+        self::BT_HDFC_ECMS,
     ];
 
     /**

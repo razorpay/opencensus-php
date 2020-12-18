@@ -35,6 +35,7 @@ class Provider
     const KOTAK     = 'kotak';
     const ICICI     = 'icici';
     const RBL       = 'rbl';
+    const HDFC_ECMS = 'hdfc_ecms';
 
     const UPI_ICICI = 'upi_icici';
 

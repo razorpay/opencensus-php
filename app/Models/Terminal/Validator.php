@@ -128,6 +128,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NACH_CITI,
         Payment\Gateway::HDFC_DEBIT_EMI,
         Payment\Gateway::BT_RBL,
+        Payment\Gateway::BT_HDFC_ECMS,
         Payment\Gateway::WORLDLINE,
         Payment\Gateway::CRED,
         Payment\Gateway::WALLET_PAYZAPP,
@@ -1359,8 +1360,25 @@ class Validator extends Base\Validator
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
     ];
 
+    protected static $btHdfcEcmsTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_hdfc_ecms',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
     protected static $btRblEditTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
+        Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+    ];
+
+    protected static $btHdfcEcmsEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_hdfc_ecms',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',

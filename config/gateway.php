@@ -105,6 +105,7 @@ return [
         'bt_kotak',
         'bt_icici',
         'bt_rbl',
+        'bt_hdfc_ecms',
         'bajajfinserv',
         'p2p_upi_sharp',
         'p2p_upi_axis',
