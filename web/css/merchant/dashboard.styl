@@ -1895,6 +1895,109 @@ $stepIndicatorSize = 36px;
     }
   }
 
+.rx-ca-home-container{
+  width: 100%;
+  height: 386px;
+  display: flex;
+  background-color: #fff;
+  border-radius: 2px;
+
+  .ca-container{
+    width: 63%;
+    padding: 24px;
+    margin-right: 4px;
+    position: relative;
+    box-shadow: 6px 0px 8px rgba(11, 112, 231, 0.07);
+
+    .spinner{
+      margin-left: 50%;
+      margin-top: 20%;
+    }
+
+    .separator{
+      margin-top: 24px;
+      margin-bottom: 24px;
+      border: 0;
+      border-top: 1px solid #eee;
+    }
+  }
+  .faq-container{
+    width: 36%;
+    padding: 24px;
+    background: #FEFEFE;
+
+    .rx-faq{
+      .faq-title-container{
+        display: flex;
+
+      .faq-title{
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 30px;
+        color: #8C9CBB;
+      }
+      
+      .t-n-c{
+        margin-left: auto;  
+        margin-top: 5px;
+      }
+
+      }
+      .open{
+        .Accordion__title {
+          font-weight: bold
+        }  
+      }
+      .Accordion__title {
+        background: transparent;
+        color: #647596;
+        font-weight: normal;
+        padding-top: 0px;
+        font-size: 12px;
+        line-height: 21px;
+      
+        .accordion__arrow{
+          top: 32%;  
+          right: 2px;
+        }
+        
+        .accordion__arrow:last-child {
+          top: 20%;
+        }
+
+        &:hover{
+          color: #2F3B53;
+
+          .accordion__arrow{
+            &:after{
+              background-color:  #2F3B53 !important;
+            } 
+            &:before{
+              background-color: #2F3B53 !important;
+            }  
+          }
+        }
+      }
+
+      .accordion__arrow{
+        &:after{
+          background-color:  #8C9CBB
+        } 
+        &:before{
+          background-color:  #8C9CBB
+        }  
+      }
+
+      .Accordion__content {
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 20px;
+        padding: 8px 10px;
+        color: #647596;
+      }
+    }
+  }
+  }
 
   .onboarding-card-instant-content {
 
