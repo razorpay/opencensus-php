@@ -815,7 +815,7 @@ class Creator extends Base\Core
         }
 
         exec(
-            $compressionCommand .
+            escapeshellcmd($compressionCommand) .
             " " .
             escapeshellarg($this->getCompressedFileFullPath()) .
             " " .

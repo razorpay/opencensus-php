@@ -31,7 +31,14 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
-        assert($type === self::PAYMENT);
+        if ($type !== self::PAYMENT)
+        {
+            throw new BadRequestValidationFailureException(
+                "invalid type",
+                'type',
+                $type
+            );
+        }
 
         //
         // We are returning an array directly instead of adding this array as a

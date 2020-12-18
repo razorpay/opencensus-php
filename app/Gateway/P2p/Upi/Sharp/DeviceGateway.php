@@ -206,17 +206,28 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $type      = $this->input->get(Fields::CALLBACK)->get(Npci\ClOutput::TYPE);
 
         $allowedType = [Npci\ClOutput::INITIAL, Npci\ClOutput::ROTATE];
-        assert(in_array($type, $allowedType, true), sprintf('Invalid type %s in callback', $type));
+        if (in_array($type, $allowedType, true) === false)
+        {
+            throw new Exception\LogicException(
+                sprintf('Invalid type %s in callback', $type));
+        }
 
         // Just to verify all the details only for sharp
         $parts = explode('|', base64_decode($challenge));
-
         $actualType = ($parts[1] ?? null);
-        assert($type === $actualType, sprintf('Type %s must match to %s', $actualType, $type));
+        if ($type !== $actualType)
+        {
+            throw new Exception\LogicException(
+                sprintf('Type %s must match to %s', $actualType, $type));
+        }
 
         $deviceId = $this->getContextDevice()->get(Entity::UUID);
         $actualDeviceId = ($parts[2] ?? null);
-        assert($deviceId === $actualDeviceId, sprintf('DeviceId %s must match to %s', $actualDeviceId, $deviceId));
+        if ($deviceId !== $actualDeviceId)
+        {
+            throw new Exception\LogicException(
+                sprintf('DeviceId %s must match to %s', $actualDeviceId, $deviceId));
+        }
 
         // Now the token is the first part of challenge
         return $parts[0];

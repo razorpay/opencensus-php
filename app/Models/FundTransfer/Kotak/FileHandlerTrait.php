@@ -709,7 +709,7 @@ trait FileHandlerTrait
             $zipCommand .= " --password " . $password;
         }
 
-        exec($zipCommand . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
+        exec(escapeshellcmd($zipCommand) . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
     }
 
     protected function getFileToWriteNameWithoutExt()

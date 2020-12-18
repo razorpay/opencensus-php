@@ -207,12 +207,12 @@ class Gateway extends Base\Gateway
         // These fields are available based on whether the transaction was success or not
         if ($response[ResponseFields::STATUS_CODE] === ResponseCodeMap::SUCCESS_CODE)
         {
-            assert($content[ResponseFields::EXTERNAL_TRANSACTION_ID] !== null);
-            assert($content[ResponseFields::TRANSACTION_ID] !== null);
+            $this->validateResponseAttributeNotNull($content, ResponseFields::EXTERNAL_TRANSACTION_ID);
+            $this->validateResponseAttributeNotNull($content, ResponseFields::TRANSACTION_ID);
         }
         else
         {
-            assert($content[ResponseFields::ERROR_DESCRIPTION] !== null);
+            $this->validateResponseAttributeNotNull($content, ResponseFields::ERROR_DESCRIPTION);
         }
 
         // Order ID in the wallet API is mapped to our payment ID
@@ -524,6 +524,18 @@ class Gateway extends Base\Gateway
     protected function isStatusCodeSuccess(array $content): bool
     {
         return in_array($content[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes, true);
+    }
+
+    protected function validateResponseAttributeNotNull(array $response, string $attr)
+    {
+        if (empty($response[$attr]) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $attr,
+                'invalid value'
+            );
+        }
     }
 
     protected function decryptResponse(array $input): array
