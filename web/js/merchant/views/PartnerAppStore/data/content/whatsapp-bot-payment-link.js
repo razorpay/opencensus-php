@@ -43,7 +43,7 @@ function Data(brandColor) {
                     Admin Account
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.jpeg" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.png" />
               </div>
             </li>
 
@@ -60,7 +60,7 @@ function Data(brandColor) {
                     eg: Create 100 will create a Payment Link for INR 100
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.jpeg" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.png" />
               </div>
             </li>
 
@@ -74,7 +74,7 @@ function Data(brandColor) {
                     customers
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.jpeg" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.png" />
               </div>
             </li>
           </ol>
