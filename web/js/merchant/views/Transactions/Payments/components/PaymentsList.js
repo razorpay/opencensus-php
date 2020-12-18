@@ -8,7 +8,6 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import EasterEgg from 'merchant/components/EasterEgg';
 import ListContainer from 'merchant/containers/ListContainer';
 
 const EmptyComponent = () => (
@@ -17,7 +16,6 @@ const EmptyComponent = () => (
       <React.Fragment>
         <div>There are no payments yet!!</div>
         <div>Create a linked account first to route payments.</div>
-        <EasterEgg extraClass="ftx-payments-page" />
       </React.Fragment>
     }
   />
@@ -129,7 +127,6 @@ export default class PaymentsListContainer extends ListContainer {
           EmptyComponent={isRoute && EmptyComponent}
           {...this.props}
         />
-        <EasterEgg extraClass="ftx-payments-page" />
       </div>
     );
   }

@@ -30,7 +30,6 @@ import SupportDetails from 'merchant/views/Account/Profile/components/SupportDet
 import User2FASettings from './components/User2FASettings';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import UpdateBillingLabel from './components/UpdateBillingLabel';
-import EasterEgg from 'merchant/components/EasterEgg';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
 @connect(
@@ -472,7 +471,6 @@ export default class Profile extends Component {
 
           {!user.isMerchantRestricted && !this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
           {<SettlementDetails />}
-          <EasterEgg extraClass="ftx-profile-page" />
         </div>
       </div>
     );

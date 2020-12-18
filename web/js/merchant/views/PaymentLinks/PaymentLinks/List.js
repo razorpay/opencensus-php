@@ -21,7 +21,6 @@ import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
-import EasterEgg from 'merchant/components/EasterEgg';
 import { trackSearchFilterForInternational } from './ga';
 
 @withRouter
@@ -212,7 +211,6 @@ export default class PaymentLinksContainer extends ListContainer {
             this.paginate(params);
           }}
         />
-        <EasterEgg extraClass="ftx-payment-links" />
       </div>
     );
   }

@@ -40,7 +40,6 @@ import SettlementDetail from 'merchant/views/Settlements/Settlements/components/
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
-import EasterEgg from 'merchant/components/EasterEgg';
 import { merchantFetch } from 'merchant/utils/ajax';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -147,8 +146,6 @@ class AnalyticsDesktop extends Component {
       showNcPopup: false,
     });
   };
-
-  showEasterEggOnAdmin = () => (window.location.href.indexOf('admin') > -1 ? false : true);
 
   isWhatsappNotificationEnabled = (user) => {
     return (
@@ -563,7 +560,6 @@ class AnalyticsDesktop extends Component {
           </div>
           <div className="row">
             <div className="col-md-12">
-              {this.showEasterEggOnAdmin() && <EasterEgg extraClass="ftx-home-page" />}
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>

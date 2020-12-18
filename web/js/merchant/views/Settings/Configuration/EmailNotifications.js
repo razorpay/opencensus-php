@@ -5,7 +5,6 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
-import EasterEgg from 'merchant/components/EasterEgg';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
