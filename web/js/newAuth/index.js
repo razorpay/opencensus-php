@@ -1,6 +1,3 @@
-import { getURLQueryParams } from '../common/utils/rzp-utils';
-
-__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
 import 'regenerator-runtime/runtime.js';
 import 'core-js/es/map';
 import 'core-js/es/set';
@@ -16,15 +13,17 @@ import Button from '@commander/shield/src/shared/Button';
 import Link from '@commander/shield/src/shared/Link';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import View from '@razorpay/blade/src/atoms/View';
+import { getURLQueryParams } from '../common/utils/rzp-utils';
 
-let BANNER_TEXT_DESK = 'Complete signup today to unlock free credits worth ₹35 lakhs!';
-let BANNER_TEXT_MOB = 'Complete signup to unlock ₹35 lakhs free credits!';
+__webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`;
+
+let BANNER_TEXT = 'Special NEO pricing plan has been applied. Complete your sign up now';
+
+const NEO_COUPON = 'NEORZP';
+const NEW_YEAR_COUPON = 'NEWYEAR21';
 
 const { r } = getURLQueryParams(window.location.search);
-if (r === 'partner') {
-  BANNER_TEXT_DESK = 'Complete signup today to start earning ₹1000 / referral & 0.15% commission!';
-  BANNER_TEXT_MOB = 'Complete signup to start earning ₹1000 / referral!';
-}
+const isPartner = r === 'partner';
 
 const Container = Styled(View)`
   overflow-y: auto;
@@ -191,23 +190,43 @@ const InlineText = Styled(Text)`
 
 const App = () => {
   const [showBanner, setShowBanner] = useState(false);
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts[1].split(';')[0];
+    return null;
+  };
+  const couponCode = getCookie('couponCode');
 
-  const isCampaignLive = () => {
-    const startDate = new Date('October 15, 2020 00:00:01').getTime();
-    const endDate = new Date('January 1, 2021 00:00:01').getTime();
-    const now = new Date().getTime();
-    return now > startDate && now < endDate;
+  const isNEOCouponApplied = () => {
+    return (
+      couponCode &&
+      (couponCode.toUpperCase() === NEO_COUPON || couponCode.toUpperCase() === NEW_YEAR_COUPON) &&
+      !isPartner
+    );
+  };
+
+  const handleRouteChange = () => {
+    if (!isNEOCouponApplied()) {
+      setShowBanner(false);
+    }
   };
 
   useEffect(() => {
-    if (!window.location.href.includes('coupon_code') && isCampaignLive()) {
+    if (!window.location.href.includes('coupon_code') && isNEOCouponApplied()) {
+      if (couponCode.toUpperCase() === NEW_YEAR_COUPON) {
+        BANNER_TEXT = 'Special new year pricing plan has been applied. Complete your sign up now';
+      }
       setShowBanner(true);
     }
-  }, [showBanner]);
+  });
 
   const handleContactUsClick = () => {
     window.rzpQ.push(
-      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Contact us' }),
+      window.rzpQ
+        .now()
+        .onbr()
+        .initiated('signup.secondary_links', { source: 'Contact us' }),
     );
     window.rzpAnalytics({
       eventCategory: 'Signup - Steps',
@@ -217,7 +236,10 @@ const App = () => {
 
   const handleLoginClick = () => {
     window.rzpQ.push(
-      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Login' }),
+      window.rzpQ
+        .now()
+        .onbr()
+        .initiated('signup.secondary_links', { source: 'Login' }),
     );
 
     window.rzpAnalytics({
@@ -234,7 +256,7 @@ const App = () => {
         <Space padding={[1.5, 4]}>
           <MobileBannerBg>
             <InlineText color="positive.900" size="small">
-              {BANNER_TEXT_MOB}
+              {BANNER_TEXT}
             </InlineText>
           </MobileBannerBg>
         </Space>
@@ -248,7 +270,7 @@ const App = () => {
         <Flex justifyContent="center">
           <Space padding={[1.75, 0, 1.75, 0]}>
             <DesktopBannerBg>
-              <InlineText color="background.100">{BANNER_TEXT_DESK}</InlineText>
+              <InlineText color="background.100">{BANNER_TEXT}</InlineText>
             </DesktopBannerBg>
           </Space>
         </Flex>
@@ -303,7 +325,11 @@ const App = () => {
 
                 <RelativeView>
                   <AbsoluteView>
-                    <SignUp appName="dashboard" header={showBanner && <MobileBanner />} />
+                    <SignUp
+                      appName="dashboard"
+                      header={showBanner && <MobileBanner />}
+                      onRouteChange={handleRouteChange}
+                    />
                   </AbsoluteView>
                   <DesktopOnlyView>
                     <Space padding={[8, 5.5, 4, 0]}>
