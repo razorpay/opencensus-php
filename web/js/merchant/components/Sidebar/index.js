@@ -194,15 +194,14 @@ export default class Sidebar extends Component {
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
 
-                {user.isAppStoreEnabled ? (
-                  <div className="open">
-                    <MainNavLink
-                      label="App Store"
-                      icon="i i-app-store text-primary"
-                      to="/app-store"
-                    />
-                  </div>
-                ) : null}
+                <div className="open">
+                  <MainNavLink
+                    label="App Store"
+                    icon="i i-app-store text-primary"
+                    to="/app-store"
+                    isNew
+                  />
+                </div>
               </div>
             )}
           </nav>

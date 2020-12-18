@@ -168,9 +168,13 @@ function PartnerAppStore(props) {
 
         {/* Main part that holds partner cards */}
         <div className="partner-products-container">
-          {Object.values(partnerProducts).map((product, index) => (
-            <PartnerAppCard key={'app-' + index} product={product} />
-          ))}
+          {Object.values(partnerProducts).map((product, index) => {
+            if (product.slug === 'whatsapp-bot-payment-link' && !props.user.isAppStoreEnabled) {
+              return null;
+            }
+
+            return <PartnerAppCard key={'app-' + index} product={product} />;
+          })}
         </div>
       </section>
       <section className="appstore-card become-partner">
