@@ -184,7 +184,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -236,7 +236,7 @@ class Repository extends Base\Repository
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
 
@@ -326,7 +326,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -378,7 +378,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -433,7 +433,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -490,7 +490,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -547,7 +547,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -594,7 +594,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $data['message'] = $ex->getMessage();
 
@@ -751,14 +751,17 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminal2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response)->first();
-
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                if (count($response) > 0)
                 {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $data["function"] = "getByIdAndMerchantId";
@@ -800,14 +803,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminal2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response)->first();
+                if (count($response) > 0) {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $data["function"] = "getByMerchantIdAndGateway";
@@ -870,14 +875,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminal2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response)->first();
+                if (count($response) > 0) {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $data["function"] = "getRecurringTerminalsByMidAndGateway";
@@ -921,14 +928,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminal2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response)->first();
+                if (count($response) > 0) {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $data["function"] = "getRecurringTerminalsByMidAndGateway";
@@ -1166,7 +1175,7 @@ class Repository extends Base\Repository
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
@@ -1212,7 +1221,7 @@ class Repository extends Base\Repository
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
@@ -1269,14 +1278,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminal2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response)->first();
+                if (count($response) > 0) {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
@@ -1325,7 +1336,7 @@ class Repository extends Base\Repository
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
