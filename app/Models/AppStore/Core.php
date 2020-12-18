@@ -2,6 +2,7 @@
 
 namespace RZP\Models\AppStore;
 
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use \RZP\Models\Merchant\Entity;
 use \RZP\Models\AppStore\Entity as AppStoreEntity;
@@ -175,9 +176,18 @@ class Core extends Base\Core
 
         $merchantId = $appEntity->getMerchantId();
 
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
         if (preg_match(self::CREATE_PL_REGEX_PATTERN, $message) != 1)
         {
             $plOnWhatsappCore->sendMessageForWrongTemplate($merchantId, $mobileNumber);
+
+            $eventProperties = [
+                Entity::MERCHANT_ID     => $merchantId,
+            ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIPS_APPSTORE_WA_PL_WRONG_TEMPLATE,
+                $merchant, null, $eventProperties);
 
             return [
                 'success' => false
@@ -185,8 +195,6 @@ class Core extends Base\Core
         }
 
         $amount = str_replace(self::CREATE_PL_TEMPLATE, '', $message);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $plOnWhatsappCore->sendPaymentLinkOnWhatsapp($merchant, $amount, $mobileNumber);
 

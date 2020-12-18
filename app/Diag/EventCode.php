@@ -661,4 +661,19 @@ class EventCode
         'group' => 'email',
         'name'  => 'email.reward.sent',
     ];
+
+    const PARTNERSHIPS_APPSTORE_WA_PL_CREATED = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.appstore.wa.pl.created'
+    ];
+
+    const PARTNERSHIPS_APPSTORE_WA_PL_WRONG_TEMPLATE = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.appstore.wa.pl.wrong_template'
+    ];
+
+    const PARTNERSHIPS_APPSTORE_WA_PL_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.appstore.wa.pl.failed'
+    ];
 }

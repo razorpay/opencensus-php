@@ -4,6 +4,7 @@ namespace RZP\Models\AppStore\PLOnWhatsapp;
 
 use Requests;
 use ApiResponse;
+use RZP\Diag\EventCode;
 use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use Illuminate\Http\Request;
@@ -20,6 +21,10 @@ class Core extends \RZP\Models\AppStore\Base\Core
     const PAYMENT_LINKS_PATH = 'v1/payment_links';
 
     const CONTENT_TYPE_JSON = 'application/json';
+
+    const PAYMENT_LINK_ID  = 'plink_id';
+
+    const PAYMENT_LINK_URL = 'payment_link_url';
 
     /**
      * @var mixed
@@ -88,20 +93,38 @@ class Core extends \RZP\Models\AppStore\Base\Core
                                'merchantId' => $merchant->getMerchantId()
                            ]);
 
-        $paymentLinkUrl = $this->createPaymentLink($merchant, $amount);
+        $paymentLinkDetails = $this->createPaymentLink($merchant, $amount);
 
         $templateName = Templates::PL_CREATION_FAILED_MESSAGE_TEMPLATE;
 
         $params = [];
 
-        if (empty($paymentLinkUrl) === false)
+        if (empty($paymentLinkDetails) === false)
         {
             $templateName = Templates::PL_CREATION_SUCCESS_MESSAGE_TEMPLATE;
 
             $params =
                 [
-                    'paymentLinkUrl' => $paymentLinkUrl,
+                    'paymentLinkUrl' => $paymentLinkDetails[self::PAYMENT_LINK_URL],
                 ];
+            //Using Onboarding Events, later this will be moved its respective.
+
+            $eventProperties = [
+                Entity::MERCHANT_ID     => $merchant->getMerchantId(),
+                self::PAYMENT_LINK_ID   => $paymentLinkDetails[self::PAYMENT_LINK_ID]
+                ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIPS_APPSTORE_WA_PL_CREATED,
+                                                     $merchant, null, $eventProperties);
+        }
+        else
+        {
+            $eventProperties = [
+                Entity::MERCHANT_ID     => $merchant->getMerchantId(),
+            ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIPS_APPSTORE_WA_PL_FAILED,
+                $merchant, null, $eventProperties);
         }
 
         $this->sendMessage($merchant->getId(), $templateName, $mobileNumber, $params);
@@ -168,8 +191,10 @@ class Core extends \RZP\Models\AppStore\Base\Core
 
             $headers = $this->getHeaders($merchant);
 
+            $amountInPaise = number_format((float)$amount*100, 0, '.', '');
+
             $data = [
-                'amount' => (int) $amount,
+                'amount' => (int) $amountInPaise,
             ];
 
             $options = [
@@ -185,8 +210,6 @@ class Core extends \RZP\Models\AppStore\Base\Core
                 'options' => $options,
                 'method'  => Request::METHOD_POST,
             ];
-
-            $this->trace->info(TraceCode::APPSTORE_CREATE_PL_ON_WHATSAPP_REQUEST, $params);
 
             $response = Requests::request(
                 $params['url'],
@@ -254,7 +277,10 @@ class Core extends \RZP\Models\AppStore\Base\Core
 
         $res = json_decode($res->body, true);
 
-        return $res['short_url'];
+        return [
+            self::PAYMENT_LINK_URL => $res['short_url'],
+            self::PAYMENT_LINK_ID  => $res['id'],
+            ];
     }
 
 }
