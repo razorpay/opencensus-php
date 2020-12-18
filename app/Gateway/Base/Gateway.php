@@ -1833,6 +1833,16 @@ class Gateway
             ]
         ];
 
+        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers']['X-RZP-TESTCASE-ID'] = $testCaseId;
+            }
+        }
+
         $response = $this->sendGatewayRequest($request);
 
         $responseBody = json_decode($response->body, true);
