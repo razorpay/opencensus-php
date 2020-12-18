@@ -93,7 +93,12 @@ class ConfigKey
     // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
     // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
     // last transaction mentioned to fetch more data.
-    const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT     = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
+    const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT         = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
+
+    // special attempt limit for merchants transacting more.
+    const RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT = self::PREFIX . 'rbl_statement_fetch_special_attempt_limit';
+
+    const RBL_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'rbl_statement_fetch_retry_limit';
 
     const BLOCK_YESBANK_WALLET_PAYOUTS          = self::PREFIX . 'block_yesbank_wallet_payouts';
 
@@ -177,6 +182,8 @@ class ConfigKey
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
+        self::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT,
+        self::RBL_STATEMENT_FETCH_RETRY_LIMIT,
         self::BLOCK_X_REGISTRATION,
         self::BLOCK_YESBANK_RX_FAV,
         self::REMOVE_SETTLEMENT_BA_COOL_OFF,

@@ -101,6 +101,8 @@ class Validator extends Base\Validator
         ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
+        ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT => 'filled|integer',
+        ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT    => 'filled|integer',
         ConfigKey::BLOCK_X_REGISTRATION               => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_RX_FAV               => 'filled|boolean',
         ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF      => 'filled|boolean',

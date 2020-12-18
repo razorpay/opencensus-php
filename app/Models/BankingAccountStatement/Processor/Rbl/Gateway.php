@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Models\Merchant;
 use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
@@ -31,6 +32,8 @@ class Gateway extends BaseProcessor
 
     const RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY = 120;
 
+    const DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT = 3;
+
     public function __construct(string $channel, string $accountNumber)
     {
         $this->setSource(Source::FETCH_API);
@@ -46,20 +49,63 @@ class Gateway extends BaseProcessor
         //
         $attemptCount = 0;
 
+        // Retry logic is placed to retry when gateway exceptions are caught. Retry limit is in place for upper bound.
+        $statementRetry = 0;
+
         $finalFormattedResponse = [];
 
         // get last bank transaction from banking account statement and set lastFormattedResponse
         // this is being used for pagination on RBL side.
         $lastBankTransaction = $this->getLastBankTransaction() ? $this->getLastBankTransaction()->toArray() : [];
 
+        if (array_key_exists(Entity::MERCHANT_ID, $lastBankTransaction) === true)
+        {
+            $merchantId = $lastBankTransaction[Entity::MERCHANT_ID];
+        }
+        else
+        {
+            $merchantId = "";
+        }
+
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
 
-        $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT,
+            $this->mode
+        );
+
+        if ($variant === 'on')
+        {
+            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT]);
+        }
+
+        if (empty($attemptLimit) === true)
+        {
+            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
+        }
 
         if (empty($attemptLimit) === true)
         {
             $attemptLimit = self::DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT;
         }
+
+        $statementRetryLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT]);
+
+        if (empty($statementRetryLimit) === true)
+        {
+            $statementRetryLimit = self::DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT;
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_ATTEMPT_AND_RETRY_LIMITS,
+            [
+                'merchant_id'         => $merchantId,
+                'channel'             => $this->channel,
+                'account_number'      => $this->accountNumber,
+                'attempt_limit'       => $attemptLimit,
+                'retry_limit'         => $statementRetryLimit,
+            ]);
 
         do
         {
@@ -91,7 +137,17 @@ class Gateway extends BaseProcessor
                             Entity::ACCOUNT_NUMBER      => $this->accountNumber,
                             Entity::CHANNEL             => $this->channel,
                         ]);
+
+                    $statementRetry ++ ;
+
+                    if ($statementRetry <= $statementRetryLimit )
+                    {
+                        $fetchMore = true;
+
+                        continue;
+                    }
                 }
+
                 if ($ex instanceof Exception\BadRequestValidationFailureException)
                 {
                     $this->trace->traceException(
@@ -114,8 +170,9 @@ class Gateway extends BaseProcessor
 
             $attemptCount++;
 
-        } while (($this->hasMoreData($bankResponse) === true) and
-                 ($attemptCount < $attemptLimit));
+            $fetchMore = (($this->hasMoreData($bankResponse) === true) and ($attemptCount < $attemptLimit));
+
+        } while ($fetchMore);
 
         // TODO: Thinking of moving the logic of dispatching job again in case of
         // more data in job itself. But not sure if this logic is generic for all
