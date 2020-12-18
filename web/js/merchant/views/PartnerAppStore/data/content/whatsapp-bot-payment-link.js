@@ -43,22 +43,24 @@ function Data(brandColor) {
                     Admin Account
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-1.png" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.jpeg" />
               </div>
             </li>
 
             <li>
               <div className="list-flex">
                 <p>
-                  <strong>Create Payment Links</strong>
+                  <strong>Create Payment Link</strong>
                   <br />
                   <span>
-                    To create a Payment Link, Send Create &lt;Amount&gt; to create a Payment Link
+                    To create a Payment Link,
+                    <br />
+                    Send Create &lt;Amount&gt; to create a Payment Link
                     <br />
                     eg: Create 100 will create a Payment Link for INR 100
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-1.png" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.jpeg" />
               </div>
             </li>
 
@@ -72,7 +74,7 @@ function Data(brandColor) {
                     customers
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-1.png" />
+                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.jpeg" />
               </div>
             </li>
           </ol>
