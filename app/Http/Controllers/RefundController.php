@@ -119,13 +119,6 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postGatewayValidateRefund(string $gateway)
-    {
-        $data = $this->service()->validateUnknownGatewayRefunds($gateway);
-
-        return ApiResponse::json($data);
-    }
-
     public function postRetryFailedRefunds()
     {
         $input = Request::all();

@@ -1127,24 +1127,6 @@ trait Refund
         }
     }
 
-    protected function callGatewayForRefundValidation(array $data)
-    {
-        try
-        {
-            return $this->callGatewayFunction(
-                Payment\Action::VALIDATE_UNKNOWN_REFUND, $data);
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->tracePaymentFailed(
-                $ex->getError(),
-                TraceCode::GATEWAY_REFUND_VALIDATION_FAILED
-            );
-
-            throw $ex;
-        }
-    }
-
     protected function refundOnGateway($data, $retry = false)
     {
         $gatewayRefunded = false;
@@ -2664,26 +2646,6 @@ trait Refund
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
-    }
-
-    public function validateUnknownGatewayRefund(Payment\Refund\Entity $refund)
-    {
-        $payment = $refund->payment;
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        assertTrue ($refund->getTransactionId() !== null);
-
-        assertTrue ($payment->getTransactionId() !== null);
-
-        $data = [
-            'payment'   => $payment->toArrayGateway(),
-            'refund'    => $refund->toArrayGateway(),
-            'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency()
-        ];
-
-        return $this->callGatewayForRefundValidation($data);
     }
 
     public function eventRefundProcessed(RefundEntity $refund)

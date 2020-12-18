@@ -1169,68 +1169,6 @@ class Service extends Base\Service
         return $processor;
     }
 
-    public function validateUnknownGatewayRefunds(string $gateway)
-    {
-        $supportedGateways = Payment\Gateway::UNKNOWN_REFUNDS_VALIDATION_GATEWAYS;
-
-        if (in_array($gateway, $supportedGateways, true) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
-                [
-                    'gateway' => $gateway,
-                ]);
-        }
-
-        $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';
-
-        $refunds = $this->repo->refund->$repoFunc();
-
-        $this->trace->info(
-            TraceCode::UNKNOWN_REFUND_VALIDATE_CRON_REFUNDS,
-            [
-                'gateway' => $gateway,
-                'refunds' => $refunds
-            ]);
-
-        $failed = $unknown = $success = 0;
-        $failedRefundData = [];
-
-        foreach ($refunds as $refund)
-        {
-            $refundData = $this->getNewProcessor($refund->merchant)
-                               ->validateUnknownGatewayRefund($refund);
-
-            if ($refundData['success'] === true)
-            {
-                $success++;
-            }
-            else if ($refundData['success'] === false)
-            {
-                $failed++;
-            }
-            else if ($refundData['success'] === 'unknown')
-            {
-                $unknown++;
-            }
-        }
-
-        $summary = [
-            'gateway'               => $gateway,
-            'total_refunds'         => count($refunds),
-            'total_failed_refunds'  => $failed,
-            'total_success_refunds' => $success,
-            'total_unknown_refunds' => $unknown,
-            'failed_refunds'        => $failedRefundData,
-        ];
-
-        $this->trace->info(
-            TraceCode::GATEWAY_VALIDATE_REFUND_SUMMARY,
-            $summary);
-
-        return $summary;
-    }
-
     public function retryFailedRefunds($input)
     {
         $this->trace->info(

@@ -207,7 +207,6 @@ class Route
         'api_refunds_retry_without_verify'         => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
         'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
-        'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
 
         // TODO: Add rate limiting on this route!
@@ -2599,7 +2598,6 @@ class Route
         'fund_transfer_attempt_reconcile',
         'fund_transfer_attempt_recon_report',
         'gateway_file_create',
-        'gateway_validate_unknown_refund',
         'geoip_update',
         'invitation_action',
         'invitation_fetch_by_token',
@@ -5478,7 +5476,6 @@ class Route
             'subscription_cancel_due',
             'payment_page_items_migrate',
             'refund_create_gateway_record',
-            'gateway_validate_unknown_refund',
             'currency_update_rates',
             'currency_update_rates_multiple',
             'refund_gateway_refunded_txns',
@@ -6603,7 +6600,6 @@ class Route
         'subscription_cancel_due'                           => HeartbeatLagChecker::HEARTBEAT,
         'payment_update_on_hold'                            => HeartbeatLagChecker::HEARTBEAT,
         'scrooge_refund_verify_bulk'                        => HeartbeatLagChecker::SLAVE,
-        'gateway_validate_unknown_refund'                   => HeartbeatLagChecker::SLAVE,
         'merchant_daily_report'                             => HeartbeatLagChecker::SLAVE,
         'merchant_post_beneficiary_file'                    => HeartbeatLagChecker::SLAVE,
         'merchant_post_beneficiary_api'                     => HeartbeatLagChecker::SLAVE,

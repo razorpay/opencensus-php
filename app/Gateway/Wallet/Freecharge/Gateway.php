@@ -481,77 +481,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * Validate if the refund was successfully processed on freecharge's end
-     *
-     * @param array $input
-     *
-     * @return array
-     * @throws Exception\GatewayErrorException
-     * @throws Exception\GatewayRequestException
-     * @throws Exception\GatewayTimeoutException
-     * @throws Exception\RuntimeException
-     */
-    public function validateUnknownRefund(array $input)
-    {
-        $this->action($input, Action::VERIFY);
-
-        $request = $this->getRefundVerifyRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->jsonToArray($response->body);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
-            [
-                'content'    => $content,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
-
-        $wallet = $this->repo->findByRefundId($input['refund']['id']);
-
-        $data = [
-            'success'    => null,
-            'refund_id'  => $input['refund']['id'],
-            'payment_id' => $input['payment']['id'],
-        ];
-
-        if (isset($content[ResponseFields::STATUS]) === false)
-        {
-            $data['success'] = false;
-
-            $this->handleRefundOnValidationFailure($input);
-
-            return $data;
-        }
-
-        switch ($content[ResponseFields::STATUS])
-        {
-            case Status::TRANSACTION_SUCCESS:
-                $data['success'] = $this->validateRefundOnSuccess($wallet);
-                break;
-
-            case Status::TRANSACTION_PENDING:
-            case Status::TRANSACTION_INITIATED:
-                $data['success'] = 'unknown';
-                break;
-
-            case Status::TRANSACTION_FAILED:
-                $data['success'] = false;
-
-                $this->handleRefundOnValidationFailure($input);
-
-                break;
-
-            default:
-                $data['success'] = 'unknown';
-        }
-
-        return $data;
-    }
-
     public function createRefundRecord(array $input)
     {
         $refundId = $input['refund']['id'];
@@ -1437,20 +1366,5 @@ class Gateway extends Base\Gateway
         // return success as true
         return true;
     }
-
-    public function handleRefundOnValidationFailure(array $input)
-    {
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_VALIDATION_FAILED,
-            [
-                'payment_id' => $input['payment']['id'],
-                'refund_id'  => $input['refund']['id'],
-                'gateway'    => $this->gateway,
-            ]);
-
-        //
-        // If the refund failed, attempt the refund again.
-        //
-        $this->refund($input);
-    }
+    
 }

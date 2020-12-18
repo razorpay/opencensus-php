@@ -759,52 +759,6 @@ class Repository extends Base\Repository
         return $response;
     }
 
-    public function fetchWalletFreechargeRefundsForValidation()
-    {
-        //
-        //    SELECT `refunds`.*
-        //    FROM `refunds`
-        //    INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
-        //    INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
-        //    WHERE `refunds`.`gateway` = 'wallet_freecharge'
-        //        AND `refunds`.`transaction_id` IS NOT NULL
-        //        AND `wallet`.`status_code` = 'INITIATED';
-        //
-
-        $gateway = Payment\Gateway::WALLET_FREECHARGE;
-        $gatewayTable = Table::getTableNameForEntity($gateway);
-        $paymentTable = Table::PAYMENT;
-
-        $refundIdAttr = $this->dbColumn(Entity::ID);
-        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
-        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
-        $refundGatewayAttr = $this->dbColumn(Refund\Entity::GATEWAY);
-
-        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $gatewayStatusCodeAttr = $this->repo
-                                      ->wallet
-                                      ->dbColumn(WalletEntity::STATUS_CODE);
-
-        $gatewayRefundIdAttr = $this->repo
-                                    ->wallet
-                                    ->dbColumn(WalletEntity::REFUND_ID);
-
-        $refundAttributes = $this->dbColumn('*');
-
-        $response = $this->newQuery()
-                         ->select($refundAttributes)
-                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                         ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
-                         ->where($refundGatewayAttr, '=', $gateway)
-                         ->whereNotNull($refundTransactionIdAttr)
-                         ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
-                         ->limit(300)
-                         ->get();
-
-        return $response;
-    }
-
     public function fetchRefundsByBatchAndPayment($batch, $payment)
     {
         return $this->newQuery()

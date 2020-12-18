@@ -1802,13 +1802,6 @@ class RefundTest extends TestCase
         $this->startTest($payment->getPublicId(), $payment->getAmount());
     }
 
-    public function testRefundValidationOnWrongGateway()
-    {
-        $this->ba->appAuth();
-
-        parent::startTest();
-    }
-
     public function testRefundIciciDebitCard()
     {
         Mail::fake();
