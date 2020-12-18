@@ -871,6 +871,8 @@ class Route
         'payment_links_sign_payload'               => ['post',     'payment_links_sign_payload',                     'PlinkController@signPayload'                                       ],
         'payment_links_sign_payload_internal'      => ['post',     'payment_links_sign_payload_internal',            'PlinkController@signPayloadInternal'                               ],
         'payment_links_payment_by_id'              => ['get',      'payment_links_payment/{id}',                     'PlinkController@fetchPaymentDetails'                               ],
+        //temporary route to enable merchants to switch to v2 endpoints from dashboard
+        'payment_links_switch_versions'            => ['post',     'payment_links_switch_versions',                  'InvoiceController@switchPlVersions'                                ],
         'payment_links_v2_admin'                   => ['post',     'payment_links_admin',                            'PlinkController@sendRequest'                                       ],
         // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
@@ -3369,6 +3371,7 @@ class Route
         'proxy_merchant_create_support_details',
         'proxy_merchant_edit_support_details',
         'virtual_account_create_for_internal',
+        'payment_links_switch_versions',
         'subscription_get_revenue_by_source',
         'payouts_bulk_sample_file',
 

@@ -633,6 +633,13 @@ class Service extends Base\Service
         return [];
     }
 
+    public function switchPlVersions(array $input): array
+    {
+        (new Validator)->validateInput('payment_link_switch_version', $input);
+
+        return $this->core->switchPlVersions($input, $this->merchant);
+    }
+
     protected function serializeOrgPropertiesForHostedForPaymentLinkService()
     {
         $org = $this->merchant->org;

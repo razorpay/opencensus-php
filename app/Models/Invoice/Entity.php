@@ -209,6 +209,8 @@ class Entity extends Base\PublicEntity
     const PAID_COUNT               = 'paid_count';
     const EXPIRED_COUNT            = 'expired_count';
 
+    const SWITCH_TO                = 'switch_to';
+
 
     // ------------------------ Other constants ----------------------
 

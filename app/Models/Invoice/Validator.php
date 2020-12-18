@@ -291,6 +291,10 @@ class Validator extends Base\Validator
         'subject'           => 'required|string',
     ];
 
+    protected static $paymentLinkSwitchVersionRules = [
+        Entity::SWITCH_TO => 'required|string|in:v1,v2',
+    ];
+
     //
     // Custom validators.
     //

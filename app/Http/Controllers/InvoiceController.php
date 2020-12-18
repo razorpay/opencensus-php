@@ -592,6 +592,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function switchPlVersions()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->switchPlVersions($input);
+
+        return ApiResponse::json($response);
+    }
+
     protected function shouldForwardToPaymentLinkService(
         array $input = [],
         bool $checkForInput = false,

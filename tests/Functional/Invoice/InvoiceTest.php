@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use Illuminate\Support\Facades\DB;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
@@ -3031,6 +3032,32 @@ class InvoiceTest extends TestCase
         $this->assertEquals(600, $invoice['amount_paid']);
 
         $this->assertEquals(999400, $invoice['amount_due']);
+    }
+
+    public function testSwitchPlVersionToV2()
+    {
+        $this->fixtures->merchant->addFeatures(['paymentlinks_v2_compat']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains('paymentlinks_v2', $liveFeaturesArray);
+
+        $this->assertNotContains('paymentlinks_v2_compat', $liveFeaturesArray);
+
+        $tags = DB::table('tagging_tagged')->where('taggable_id', '10000000000000')->get();
+
+        $tags = $tags->pluck('tag_name')->toArray();
+
+        $this->assertContains('Self_switched_to_v2', $tags);
     }
 
     protected function createInvoiceAndFailedPayment()

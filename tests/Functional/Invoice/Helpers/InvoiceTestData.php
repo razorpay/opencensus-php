@@ -5320,7 +5320,19 @@ return [
         'response' => [
             'content' => [],
         ],
-    ]
+    ],
 
+    'testSwitchPlVersionToV2' => [
+        'request'  => [
+            'url'     => '/payment_links_switch_versions',
+            'method'  => 'post',
+            'content' => [
+                'switch_to' => 'v2',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ]
     // ----------------------------------------------------------------------
 ];

@@ -11,6 +11,7 @@ use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Options;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -20,6 +21,7 @@ use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
@@ -1174,6 +1176,56 @@ class Core extends Base\Core
             Entity::PAID_COUNT    => $stats[Status::PAID] ?? 0,
             Entity::EXPIRED_COUNT => $stats[Status::EXPIRED] ?? 0,
         ];
+    }
+
+    public function switchPlVersions(array $input, Merchant\Entity $merchant)
+    {
+        $this->trace->info(TraceCode::PAYMENT_LINK_V2_SWITCH_REQUEST, $input);
+
+        $switchTo = $input[Entity::SWITCH_TO];
+
+        switch ($switchTo)
+        {
+            case 'v2':
+                $this->repo->transaction(
+                    function() use ($input, $merchant)
+                    {
+                        $isV2Enabled = $merchant->isFeatureEnabled(Features::PAYMENTLINKS_V2);
+
+                        if ($isV2Enabled === false)
+                        {
+                            (new Feature\Core)->create([
+                                Feature\Entity::ENTITY_TYPE => E::MERCHANT,
+                                Feature\Entity::ENTITY_ID => $merchant->getId(),
+                                Feature\Entity::NAME => Feature\Constants::PAYMENTLINKS_V2,
+                            ], $shouldSync = true);
+                        }
+
+                        $isCompatEnabled = $merchant->isFeatureEnabled(Features::PAYMENTLINKS_COMPATIBILITY_V2);
+
+                        if ($isCompatEnabled === true)
+                        {
+                            $compatFeature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                                E::MERCHANT,
+                                $merchant->getId(),
+                                Feature\Constants::PAYMENTLINKS_COMPATIBILITY_V2);
+
+                            (new Feature\Core)->delete($compatFeature, true);
+                        }
+
+                        // This tag is added to know whether merchant switched themselves.
+                        // If they did the action on their own, we are adding a form fill up on their dashboard
+                        // if they want to revert. Revert is still a manual process via ops. This tag is just to show the form.
+                        if ($merchant->isTagAdded('self_switched_to_v2') === false)
+                        {
+                            $merchant->tag('self_switched_to_v2');
+                        }
+                    });
+
+                break;
+        }
+
+        return [Entity::SWITCH_TO => true];
     }
 
     // -------------------- Protected methods --------------------
