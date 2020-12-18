@@ -395,27 +395,6 @@ pipeline:
       when:
           event: deployment
           environment: automation
-  trigger_x_regression_suite:
-    image: plugins/webhook
-    urls: 'https://deploy-api.razorpay.com/webhooks/webhook/rxuiregression'
-    content_type: application/json
-    template: >
-      {
-      "branch" : "{{build.branch}}",
-      "droneid": "{{build.number}}",
-      "status": "{{build.status}}",
-      "repo": "{{repo.name}}"
-      }
-    depends_on:
-      - generate-composer-auth-file
-      - build-js
-      - test-js
-      - upload-javascript-to-s3
-      - build-docker
-    when:
-      branch: master
-      event: push
-      status: success
   deploy-s3-axis:
     image: node:9-alpine
     environment:
