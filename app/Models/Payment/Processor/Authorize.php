@@ -31,6 +31,7 @@ use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
@@ -7152,6 +7153,12 @@ trait Authorize
 
     protected function updateAssociatedPaymentEntities(Payment\Entity $payment, array $data)
     {
+        // if subscription payment with offers applied => create a new invoice, associate with payment, order entities
+        if ($payment !== null and $payment->hasSubscription())
+        {
+            (new Invoice\Core)->addOfferDetails($payment->getInvoiceId(), $payment);
+        }
+
         $this->updateTokenOnAuthorized($payment, $data);
 
         //

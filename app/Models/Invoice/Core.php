@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Batch;
 use RZP\Models\Options;
 use RZP\Models\Payment;
@@ -26,6 +27,7 @@ use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Item\Type as LineItemType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -409,6 +411,72 @@ class Core extends Base\Core
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         return $this->repo->invoice->deleteOrFail($invoice);
+    }
+
+    public function addOfferDetails(
+        $invoiceId,
+        Payment\Entity $payment)
+    {
+        if ($invoiceId === null)
+        {
+            // Case: Subscription Payment for when No Invoice is created: eg Card Change
+            return;
+        }
+
+        $offer = $payment->getOffer();
+
+        $this->trace->info(
+            TraceCode::INVOICE_ADD_OFFER_DETAILS,
+            [
+                'invoice_id'     => $invoiceId,
+                'offer'          => $offer,
+            ]);
+
+        $invoiceEntity = $this->repo->invoice->findByIdAndMerchantId($invoiceId, $payment->getMerchantId());
+
+        if ($invoiceEntity === null)
+        {
+            return;
+        }
+
+        if ($offer !== null)
+        {
+            $this->repo->transaction(
+                function () use ($invoiceEntity, $offer, $payment) {
+
+                        $discountAmount = $offer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
+
+                        $invoiceEntity->setOfferAmount($discountAmount);
+
+                        $this->calculateAndSetAmountsOfInvoice($invoiceEntity);
+
+                        $template = '$offerName ;#$ $offerDesc';
+
+                        $vars = array(
+                            '$offerName' => $offer->getName(),
+                            '$offerDesc' => $offer->getDisplayText(),
+                        );
+
+                        // By this time, amount due attribute should be the offer amount
+                        if ($invoiceEntity->getAmountDueAttribute() === $discountAmount)
+                        {
+                            $invoiceEntity->setStatus(Status::PAID);
+                        }
+
+                        $invoiceEntity->setComment(strtr($template, $vars));
+
+                        $this->repo->saveOrFail($invoiceEntity);
+                });
+        }
+        else if($invoiceEntity->getComment() !== null and
+                $invoiceEntity->getOfferAmount() === null)
+        {
+            $invoiceEntity->setComment(null);
+
+            $this->repo->saveOrFail($invoiceEntity);
+        }
+
+        return $this->repo->loadRelations($invoiceEntity);
     }
 
     public function addLineItems(
@@ -1106,6 +1174,11 @@ class Core extends Base\Core
             $grossAmount += $amounts[0];
             $taxAmount   += $amounts[1];
             $amount      += $amounts[2];
+        }
+
+        if ($invoice->getOfferAmount() !== null and $invoice->getOfferAmount() > 0)
+        {
+            $amount -= $invoice->getOfferAmount();
         }
 
         $invoice->setGrossAmount($grossAmount);

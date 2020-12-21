@@ -20,6 +20,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoice:invoices.pdf.templates';
     const INVOICE_PDF_PP_TEMPLATES_KEY = 'invoice:invoices.pdf.pp.templates';
+    const INVOICE_PDF_SUB_TEMPLATES_KEY = 'invoice:invoices.pdf.subscription.templates';
 
     const CACHE_DEFAULT_TTL         = 15; // In minutes
 
@@ -33,6 +34,8 @@ class PdfGenerator extends Base\Core
     const INVOICE_PDF_CSS_PATH      = '/invoice.css';
     const INVOICE_PDF_PP_TEMPLATE_PATH = '/invoice_receipt.mustache';
     const INVOICE_PDF_PP_CSS_PATH      = '/invoice.css';
+    const INVOICE_PDF_SUB_TEMPLATE_PATH = '/invoice_subscription.mustache';
+    const INVOICE_PDF_SUB_CSS_PATH      = '/invoice.css';
 
     protected $invoicejsBaseUrl;
     protected $invoice;
@@ -135,6 +138,13 @@ class PdfGenerator extends Base\Core
             $templateType = self::INVOICE_PDF_PP_TEMPLATE_PATH;
             $templateKey = self::INVOICE_PDF_PP_TEMPLATES_KEY;
             $templateCss = self::INVOICE_PDF_PP_CSS_PATH;
+        }
+
+        if($this->invoice->isOfSubscription() === true)
+        {
+            $templateType = self::INVOICE_PDF_SUB_TEMPLATE_PATH;
+            $templateKey = self::INVOICE_PDF_SUB_TEMPLATES_KEY;
+            $templateCss = self::INVOICE_PDF_SUB_CSS_PATH;
         }
 
         $result = $this->cache->get($templateKey);

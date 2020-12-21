@@ -111,7 +111,8 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
         Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
         Entity::OPTIONS_KEY              => 'sometimes|array',
-        Entity::REMINDER_ENABLE          => 'sometimes|boolean'
+        Entity::REMINDER_ENABLE          => 'sometimes|boolean',
+        Entity::OFFER_AMOUNT             => 'sometimes|integer',
     ];
 
     //
@@ -147,6 +148,7 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
+        Entity::OFFER_AMOUNT             => 'sometimes|integer',
     ];
 
     protected static $createIssuedRules = [
@@ -180,7 +182,8 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
         Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
         Entity::OPTIONS_KEY              => 'sometimes|array',
-        Entity::REMINDER_ENABLE          => 'sometimes|bool'
+        Entity::REMINDER_ENABLE          => 'sometimes|bool',
+        Entity::OFFER_AMOUNT             => 'sometimes|integer',
     ];
 
     protected static $editDraftRules = [
@@ -1208,6 +1211,22 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validateOfferAmountIfSubscription($subscriptionId)
+    {
+        $invoice = $this->entity;
+
+        // Non International accounts should not create PL in other currencies.
+        if ($invoice->getOfferAmount() !== null and isset($subscriptionId) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PRODUCT_OFFER_AMOUNT_NOT_SUPPORTED,
+                null,
+                [
+                    'offerAmount' => $invoice->getOfferAmount()
+                ]);
         }
     }
 }

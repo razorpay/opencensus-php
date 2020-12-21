@@ -598,6 +598,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_UPDATE_REQUEST                                = 'INVOICE_UPDATE_REQUEST';
     const INVOICE_ISSUE_REQUEST                                 = 'INVOICE_ISSUE_REQUEST';
     const INVOICE_DELETE_REQUEST                                = 'INVOICE_DELETE_REQUEST';
+    const INVOICE_ADD_OFFER_DETAILS                             = 'INVOICE_ADD_OFFER_DETAILS';
     const INVOICE_ADD_LINE_ITEM_REQUEST                         = 'INVOICE_ADD_LINE_ITEM_REQUEST';
     const INVOICE_UPDATE_LINE_ITEM_REQUEST                      = 'INVOICE_UPDATE_LINE_ITEM_REQUEST';
     const INVOICE_REMOVE_LINE_ITEM_REQUEST                      = 'INVOICE_REMOVE_LINE_ITEM_REQUEST';

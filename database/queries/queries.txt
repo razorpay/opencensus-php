@@ -6089,6 +6089,9 @@ ALTER TABLE rewards
 ALTER TABLE offers
     ADD COLUMN product_type VARCHAR(20) DEFAULT NULL;
 
+ALTER TABLE invoices
+    ADD COLUMN offer_amount int(11) UNSIGNED DEFAULT NULL;
+
 ALTER TABLE bank_transfer_requests
     ADD COLUMN request_source JSON DEFAULT NULL;
 

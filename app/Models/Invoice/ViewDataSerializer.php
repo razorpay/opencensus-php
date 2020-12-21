@@ -555,6 +555,17 @@ class ViewDataSerializer extends Base\Core
                                  );
 
             $serialized[E::SUBSCRIPTION] = $subscription;
+
+            if ($this->invoice->getOfferAmount() !== null and $this->invoice->getOfferAmount() > 0)
+            {
+                $serialized[Entity::OFFER_AMOUNT . '_formatted'] = amount_format_IN($this->invoice->getOfferAmount());
+
+                $comment = explode(';#$', $this->invoice->getComment());
+
+                $serialized['offer_name'] = $comment[0];
+
+                $serialized['offer_display_text'] = $comment[1] ?? '';
+            }
         }
     }
 

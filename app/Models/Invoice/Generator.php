@@ -380,6 +380,10 @@ class Generator extends Base\Core
         //
         $validator->validateLineItemsCount();
 
+
+        // Validate Offer Amount for product type
+        $validator->validateOfferAmountIfSubscription($this->subscriptionId);
+
         //
         // This is being done so that we can do associations
         // without saving the invoice. Also, to generate a shortUrl,
@@ -506,8 +510,9 @@ class Generator extends Base\Core
 
                 if ($subscriptionOffers !== null)
                 {
-                    $orderInput[Order\Entity::OFFERS] = $subscriptionOffers;
-                    //$orderInput[Order\Entity::FORCE_OFFER] = true;
+                    $orderInput[Order\Entity::OFFERS] = $subscriptionOffers[Order\Entity::OFFER_ID];
+
+                    $orderInput[Order\Entity::FORCE_OFFER] = $subscriptionOffers[Order\Entity::FORCE_OFFER];
                 }
             }
 

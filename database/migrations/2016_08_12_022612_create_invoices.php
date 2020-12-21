@@ -112,6 +112,10 @@ class CreateInvoices extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Entity::OFFER_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->bigInteger(Entity::AMOUNT)
                   ->nullable();
 

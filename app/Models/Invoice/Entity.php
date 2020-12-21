@@ -83,6 +83,7 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTIONS             = 'subscriptions';
     const REMINDER_STATUS           = 'reminder_status';
     const BATCH_OFFSET              = 'batch_offset';
+    const OFFER_AMOUNT              = 'offer_amount';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -332,6 +333,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
         self::IDEMPOTENCY_KEY,
+        self::OFFER_AMOUNT,
     ];
 
     protected $visible = [
@@ -486,6 +488,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_STATUS,
         self::NACH_FORM_URL,
         self::CREATED_AT,
+        self::OFFER_AMOUNT,
     ];
 
     protected $appends = [
@@ -726,6 +729,11 @@ class Entity extends Base\PublicEntity
     public function getGrossAmount()
     {
         return $this->getAttribute(self::GROSS_AMOUNT);
+    }
+
+    public function getOfferAmount()
+    {
+        return $this->getAttribute(self::OFFER_AMOUNT);
     }
 
     public function getAmountPaid()
@@ -1217,6 +1225,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+    public function setComment($comment)
+    {
+        if ($this->hasSubscription() === true)
+        {
+            $this->setAttribute(self::COMMENT, $comment);
+        }
+    }
+
     public function setBatchId(string $batchId)
     {
         $this->setAttribute(self::BATCH_ID,$batchId);
@@ -1246,6 +1262,11 @@ class Entity extends Base\PublicEntity
     public function setGrossAmount(int $amount)
     {
         $this->setAttribute(self::GROSS_AMOUNT, $amount);
+    }
+
+    public function setOfferAmount(int $amount)
+    {
+        $this->setAttribute(self::OFFER_AMOUNT, $amount);
     }
 
     public function setTaxAmount(int $amount)
@@ -1422,6 +1443,12 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
+        if ($this->order->getProductType() === Order\ProductType::SUBSCRIPTION and
+            $this->isPaid() === true)
+        {
+            return 0;
+        }
+
         return $this->order->getAmountDue();
     }
 
@@ -1440,6 +1467,11 @@ class Entity extends Base\PublicEntity
         $taxableAmount = $this->lineItems()->get()->pluck(LineItem\Entity::TAXABLE_AMOUNT)->sum();
 
         return $taxableAmount;
+    }
+
+    public function getComment()
+    {
+        return $this->getAttribute(self::COMMENT);
     }
 
     // -------------------------------------- End Accessors ----------

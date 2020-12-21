@@ -542,7 +542,13 @@ class Core extends Base\Core
 
         $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $fetchActive, $fetchExpired);
 
-        $data = [ 'original_amount' => (int)$input['amount'], 'offer_valid' => 0, 'message' => null, 'offer_name' => ''];
+        $data = [
+            'original_amount' => (int)$input['amount'],
+            'offer_valid'     => 0,
+            'message'         => null,
+            'offer_name'      => '',
+            'offer_desc'      => '',
+        ];
 
         if ($offer === null)
         {
@@ -563,6 +569,7 @@ class Core extends Base\Core
             else
             {
                 $data['offer_name']  = $offer->getName();
+                $data['offer_desc']  = $offer->getDisplayText();
                 $data['offer_valid'] = 1;
             }
 

@@ -3,6 +3,7 @@
 namespace Functional\Payment;
 
 use RZP\Modules;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
@@ -43,6 +44,11 @@ class SubscriptionPaymentTest extends TestCase
      */
     protected $upiPayment;
 
+    /**
+     * @var Offer\Entity
+     */
+    protected $offer;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/SubscriptionPaymentTestData.php';
@@ -54,6 +60,8 @@ class SubscriptionPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures(['subscriptions']);
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->mockOffer();
 
         $this->subscriptionMock = $this->mockSubscription();
 
@@ -542,6 +550,31 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertNotEquals($token->getId(), $cardChangeToken->getId());
     }
 
+    public function testCreateInitialPaymentCardWithOffer()
+    {
+        $paymentBody = $this->cardPayment;
+
+        $paymentBody['offer_id'] = $this->offer->getPublicId();
+
+        $this->mockApplyOffer();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentBody,
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $invoice = $this->getDbLastEntity(Entity::INVOICE);
+
+        $this->assertEquals($this->subscription->getId(), $invoice->getSubscriptionId());
+        $this->assertNotNull($invoice->getOfferAmount());
+        $this->assertNotNull($invoice->getComment());
+    }
+
     protected function mockSubscription()
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
@@ -617,6 +650,7 @@ class SubscriptionPaymentTest extends TestCase
                         'id'              => $invoiceId,
                         'order_id'        => $order->getId(),
                         'amount'          => $subscription->getCurrentInvoiceAmount(),
+                        'subscription_id' => $subscription->getId()
                     ],
                     $overrideWith));
 
@@ -646,5 +680,37 @@ class SubscriptionPaymentTest extends TestCase
         );
 
         $this->session($data);
+    }
+
+    protected function mockOffer()
+    {
+        $this->offer = $this->fixtures->create('offer:live_card', [
+            'payment_method' => 'card',
+            'min_amount'     => 1000,
+            'flat_cashback'  => 600,
+            'type'           => 'instant',
+            'default_offer'  => 1,
+            'iins'           => ['401200'],
+            'product_type'   => 'subscription',
+            'display_text'   => 'subcription 1 rs discount description',
+            'name'           => 'subcription 1 rs discount name',
+        ]);
+
+        $subOffer = $this->fixtures->create('subscription_offers_master', [
+            'redemption_type' => 'cycle',
+            'applicable_on'   => 'both',
+            'no_of_cycles'    => 10,
+            'offer_id'        => $this->offer->getId(),
+        ]);
+    }
+
+    protected function mockApplyOffer()
+    {
+        // create entity_offer
+        $this->fixtures->create('entity_offer', [
+            'entity_id'   => '100000000order',
+            'entity_type' => 'order',
+            'offer_id'    => $this->offer->getId(),
+        ]);
     }
 }

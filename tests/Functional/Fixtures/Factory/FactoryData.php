@@ -1587,5 +1587,9 @@ final class FactoryData
             MerchantNotificationConfigEntity::CREATED_AT                  => $faker->timestamp,
             MerchantNotificationConfigEntity::UPDATED_AT                  => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Offer\SubscriptionOffer\Entity::class, [
+            'id'    => '10000000someid',
+        ]);
     }
 }

@@ -278,6 +278,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_WORKFLOW_TYPE                                     = 'Merchant workflow type is not supported';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
+    const BAD_REQUEST_PRODUCT_OFFER_AMOUNT_NOT_SUPPORTED                        = 'Offer Amount is not supported for this product';
     const BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN                       = 'Recurring payments are not supported on this iin';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
