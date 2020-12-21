@@ -10,7 +10,6 @@ import { Modal, ModalBody } from '../../../../components/Modal';
 export interface ExitPopupProps {
   onClose: () => void;
   isOpen: boolean;
-  onContinueFillingDetailsClick?: () => void;
   exitToDashBoardLink?: string;
 }
 
@@ -19,12 +18,7 @@ const Container = styled(View)`
   text-align: center;
 `;
 
-const ExitPopup: React.FC<ExitPopupProps> = ({
-  isOpen,
-  onClose,
-  onContinueFillingDetailsClick,
-  exitToDashBoardLink,
-}) => {
+const ExitPopup: React.FC<ExitPopupProps> = ({ isOpen, onClose, exitToDashBoardLink }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalBody>
@@ -44,10 +38,7 @@ const ExitPopup: React.FC<ExitPopupProps> = ({
               </Text>
             </View>
           </Space>
-          <Button
-            onClick={onContinueFillingDetailsClick ? onContinueFillingDetailsClick : onClose}
-            block
-          >
+          <Button onClick={onClose} block>
             Continue filling Details
           </Button>
           <Space margin={[2, 0, 0, 0]}>

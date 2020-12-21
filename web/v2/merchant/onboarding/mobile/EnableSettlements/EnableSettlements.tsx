@@ -8,11 +8,8 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import BannerModal from './Frame.svg';
 
-export interface SaveAndExitModalProps {
-  onClose: () => void;
+export interface EnableSettlementsModalPropsT {
   isOpen: boolean;
-  onEnableSettlementsClick: () => void;
-  exploreToAcceptPaymentsLink: string;
 }
 
 const Container = styled(View)`
@@ -20,14 +17,15 @@ const Container = styled(View)`
   text-align: center;
 `;
 
-const SaveAndExitModal: React.FC<SaveAndExitModalProps> = ({
-  onClose,
-  isOpen,
-  onEnableSettlementsClick,
-  exploreToAcceptPaymentsLink,
-}) => {
+const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen }) => {
+  const onEnableSettlementsClick = () => {
+    window.location.href = '/';
+  };
+  const onExploreToAcceptPaymentsLinkClick = () => {
+    window.location.href = '/onboarding/form';
+  };
   return (
-    <Modal onClose={onClose} isOpen={isOpen}>
+    <Modal onClose={() => {}} isOpen={isOpen} closeable={false}>
       <ModalBody>
         <Container>
           <img src={BannerModal} />
@@ -53,7 +51,7 @@ const SaveAndExitModal: React.FC<SaveAndExitModalProps> = ({
           </View>
           <Space margin={[2, 0, 0, 0]}>
             <View>
-              <Button onClick={onEnableSettlementsClick} block>
+              <Button onClick={() => onEnableSettlementsClick()} block>
                 Enable settlements
               </Button>
             </View>
@@ -61,7 +59,9 @@ const SaveAndExitModal: React.FC<SaveAndExitModalProps> = ({
 
           <Space margin={[2, 0, 2, 0]}>
             <View>
-              <Link href={exploreToAcceptPaymentsLink}>Explore products to accept payments</Link>
+              <Link onClick={() => onExploreToAcceptPaymentsLinkClick()}>
+                Explore products to accept payments
+              </Link>
             </View>
           </Space>
         </Container>
@@ -70,4 +70,4 @@ const SaveAndExitModal: React.FC<SaveAndExitModalProps> = ({
   );
 };
 
-export default SaveAndExitModal;
+export default EnableSettlementsModal;

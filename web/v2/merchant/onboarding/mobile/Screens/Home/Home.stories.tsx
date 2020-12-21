@@ -10,6 +10,7 @@ export default {
       default: 'bg.600',
       values: [{ name: 'bg.600', value: '#EDF0F5', default: true }],
     },
+    layout: 'fullscreen',
   },
 } as Meta;
 

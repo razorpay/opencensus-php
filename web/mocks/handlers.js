@@ -47,31 +47,34 @@ export const handlers = [
     );
   }),
 
-  rest.get('http://localhost:6006/activation/business_details', (req, res, ctx) => {
-    const search_string = req.url.searchParams.get('search_string');
-    return res(
-      ctx.status(200),
-      ctx.delay(500),
-      ctx.json({
-        status_code: 200,
-        success: true,
-        data: BusinessCategoryDB.read().filter((item) => {
-          let matched = false;
-          item.matches.forEach((_item) => {
-            if (_item.subcategory_name.includes(search_string)) {
-              matched = true;
+  rest.get(
+    'http://localhost:6006/merchant/api/test/merchant/activation/business_details',
+    (req, res, ctx) => {
+      const search_string = req.url.searchParams.get('search_string');
+      return res(
+        ctx.status(200),
+        ctx.delay(500),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: BusinessCategoryDB.read().filter((item) => {
+            let matched = false;
+            item.matches.forEach((_item) => {
+              if (_item.subcategory_name.includes(search_string)) {
+                matched = true;
+              }
+            });
+            if (matched) {
+              return true;
             }
-          });
-          if (matched) {
-            return true;
-          }
-          return false;
+            return false;
+          }),
         }),
-      }),
-    );
-  }),
+      );
+    },
+  ),
 
-  rest.get('http://localhost:6006/activation', (req, res, ctx) => {
+  rest.get('http://localhost:6006/merchant/api/test/merchant/activation', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.delay(50),
@@ -83,12 +86,9 @@ export const handlers = [
     );
   }),
 
-  rest.post('http://localhost:6006/activation', (req, res, ctx) => {
+  rest.post('http://localhost:6006/merchant/api/test/merchant/activation', (req, res, ctx) => {
     if (req.body) {
-      const updatedValues = Object.keys(req.body).reduce((prev, cur) => {
-        return (prev = { ...prev, [cur]: req.body[cur].value });
-      }, {});
-      ActivationDB.update(updatedValues);
+      ActivationDB.update(req.body);
     }
 
     return res(
@@ -101,7 +101,7 @@ export const handlers = [
     );
   }),
 
-  rest.get('http://localhost:6006/payments', (req, res, ctx) => {
+  rest.get('http://localhost:6006/merchant/api/test/payments', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.delay(50),
@@ -113,27 +113,30 @@ export const handlers = [
   }),
 
   rest.get(
-    'http://localhost:6006/merchants/product_international/workflow/status/all',
+    'http://localhost:6006/merchant/api/test/merchants/product_international/workflow/status/all',
     (req, res, ctx) => {
       return res(
         ctx.status(200),
         ctx.delay(50),
         ctx.json({
           status_code: 200,
-          data: InternationalWorkflowDB.read(),
+          data: { data: InternationalWorkflowDB.read() },
         }),
       );
     },
   ),
 
-  rest.get('http://localhost:6006/merchant/activation/websites/status', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.delay(50),
-      ctx.json({
-        status_code: 200,
-        data: WebsiteWorkflowDB.read(),
-      }),
-    );
-  }),
+  rest.get(
+    'http://localhost:6006/merchant/api/test/merchant/activation/websites/status',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          ...WebsiteWorkflowDB.read(),
+        }),
+      );
+    },
+  ),
 ];

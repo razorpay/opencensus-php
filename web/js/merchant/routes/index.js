@@ -195,6 +195,17 @@ const RuleDetail = lazy(() =>
   ),
 );
 
+const ActivationSteps = lazy(() =>
+  import(
+    /* webpackChunkName: "OnboardingForm" */ 'v2/merchant/onboarding/mobile/Screens/ActivationProgress'
+  ),
+);
+
+const ActivationForm = lazy(() =>
+  import(
+    /* webpackChunkName: "OnboardingForm" */ 'v2/merchant/onboarding/mobile/Screens/ActivationForm'
+  ),
+);
 const PartnerAppStore = lazy(() =>
   import(/* webpackChunkName: "PartnerAppStore" */ 'merchant/views/PartnerAppStore'),
 );
@@ -409,6 +420,12 @@ const fullPageViewsMap = {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
+  },
+  '/onboarding/steps': {
+    component: ActivationSteps,
+  },
+  '/onboarding/form': {
+    component: ActivationForm,
   },
   '/app-store/:partner': {
     component: PartnerPage,

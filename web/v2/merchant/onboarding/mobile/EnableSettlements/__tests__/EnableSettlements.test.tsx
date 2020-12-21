@@ -6,14 +6,7 @@ import { render, screen } from 'test-utils';
 test('save and exit modal', () => {
   const buttonText = 'Enable settlements';
   const linkText = 'Explore products to accept payments';
-  const App = () => (
-    <SaveAndExitModal
-      isOpen={true}
-      onClose={() => {}}
-      onEnableSettlementsClick={() => {}}
-      exploreToAcceptPaymentsLink={''}
-    />
-  );
+  const App = () => <SaveAndExitModal isOpen={true} />;
   render(<App />, {});
   expect(screen.getByText(buttonText)).toBeInTheDocument();
   expect(screen.getByText(linkText)).toBeInTheDocument();

@@ -1,13 +1,13 @@
 import { useQuery } from 'react-query';
-import axios from 'axios';
+import { fetch } from 'v2/services/rest/rest-fetch';
 
 export default function useBusinessCategory(query: string): any {
   const { status, data } = useQuery(
     `businessCategories_${query}`,
     async () => {
-      const businessCategoreis = await axios
-        .get(`http://localhost:6006/activation/business_details?search_string=${query}`)
-        .then((res) => res.data.data);
+      const businessCategoreis = await fetch({
+        url: `/merchant/activation/business_details?search_string=${query}`,
+      });
       return businessCategoreis;
     },
     {

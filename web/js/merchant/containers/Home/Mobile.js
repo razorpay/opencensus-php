@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import QueryString from 'query-string';
 
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
@@ -18,7 +19,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-
+import OnboardingCard from 'v2/merchant/onboarding/mobile/Screens/Home';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -93,6 +94,7 @@ class AnalyticsMobile extends Component {
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
+    const query = QueryString.parse(window.location.search);
 
     return (
       <div className="home-analytics-mobile">
@@ -102,18 +104,24 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
-          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-            {showOnboardingBanner && (
-              <NewUserOnboardingCard
-                payments={payments}
-                onClose={onHideOnboardingBanner}
-                onFirstStepClose={onFirstStepClose}
-                isFirstStep={showOnboardingBannerFirstStep}
-                showInstantActivation={showInstantActivation}
-              />
-            )}
-          </div>
+          {showInstantActivation && !query.onboarding_v2 ? (
+            <Announcement mode={mode} user={user} payments={payments} />
+          ) : null}
+          {!query.onboarding_v2 ? (
+            <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+              {showOnboardingBanner && (
+                <NewUserOnboardingCard
+                  payments={payments}
+                  onClose={onHideOnboardingBanner}
+                  onFirstStepClose={onFirstStepClose}
+                  isFirstStep={showOnboardingBannerFirstStep}
+                  showInstantActivation={showInstantActivation}
+                />
+              )}
+            </div>
+          ) : null}
+
+          {query.onboarding_v2 ? <OnboardingCard /> : null}
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

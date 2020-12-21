@@ -7,6 +7,7 @@ import Space from '@razorpay/blade/src/atoms/Space';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Icon from '@razorpay/blade/src/atoms/Icon';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { Select, Option, GrpOption } from 'v2/components/Select';
 import { Field, GetTouchedFields } from '../Form';
 import useActivation, { getRequestData } from '../hooks/useActivation';
@@ -21,14 +22,13 @@ function debounce(cb, time) {
     timeout = setTimeout(cb, time, ...args);
   };
 }
-
 interface BusinessModelDetailsI {
   business_type: string;
   business_subcategory: string;
   business_model: string;
 }
 
-const BusinessModelDetails: React.FC = () => {
+const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
   const { data, postData } = useActivation();
   const { onboarding_card_details: onboardingCardDetails, onboarding_milestone } = data;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -51,8 +51,16 @@ const BusinessModelDetails: React.FC = () => {
   };
   const handleStartActivation = () => {
     postData({
-      onboarding_milestone: { value: 'activation_flow' },
-    });
+      onboarding_milestone: 'activation_flow',
+    })
+      .then((res) => {
+        if (res.onboarding_milestone === 'activation_flow') {
+          props.history.push('/onboarding/steps');
+        }
+      })
+      .catch((e) => {
+        console.log('error with the API', e);
+      });
   };
   if (!onboarding_milestone) {
     return (
@@ -221,4 +229,4 @@ const BusinessModelDetails: React.FC = () => {
   return null;
 };
 
-export default BusinessModelDetails;
+export default withRouter(BusinessModelDetails);

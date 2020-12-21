@@ -1,22 +1,18 @@
 import { useEffect } from 'react';
-import axios from 'axios';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
+import { fetch } from 'v2/services/rest/rest-fetch';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
 import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
 
 export const fetchActivationData = async () => {
-  const data = await axios.get('http://localhost:6006/activation').then((res) => res.data.data);
+  const data = await fetch<any>({ url: '/merchant/activation' });
   const formattedData = activationFormatter(data);
   return formattedData;
 };
 
 export const postActivation = (data) =>
-  axios
-    .post('http://localhost:6006/activation', {
-      ...data,
-    })
-    .then((res) => res.data.data);
+  fetch<any>({ url: '/merchant/activation', method: 'POST', data });
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
@@ -26,10 +22,9 @@ export const getRequestData = (prevDetails, updatedDetails) => {
       prevDetails[key].value !== updatedDetails[key].value,
   );
   const reqData = filteredFields.reduce((prev, cur) => {
-    delete updatedDetails[cur].error;
     return {
       ...prev,
-      [cur]: updatedDetails[cur],
+      [cur]: updatedDetails[cur].value,
     };
   }, {});
   return reqData;

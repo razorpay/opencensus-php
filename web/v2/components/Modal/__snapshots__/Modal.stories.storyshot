@@ -26,7 +26,8 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
           class="Styled__DialogContainer-sc-1kl130u-0 jydBJu"
         >
           <div
-            class="Styled__BottomSheet-sc-1kl130u-3 gMnhws"
+            class="Styled__BottomSheet-sc-1kl130u-3 fpIRrA"
+            style="transform: translateY(100%);"
           >
             <div
               class="Styled__BottomSheetHandle-sc-1kl130u-4 cZTaqx"

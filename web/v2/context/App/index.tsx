@@ -1,5 +1,6 @@
-import React, { createContext, ReactNode, useState } from 'react';
+import React, { createContext, ReactNode, useEffect, useState } from 'react';
 import { axiosInstance } from '../../services/graphql/graphql-fetch';
+import { restInstance } from '../../services/rest/rest-fetch';
 
 interface orgT {
   id: string;
@@ -7,10 +8,10 @@ interface orgT {
 
 export interface AppContextTypes {
   pathname?: string;
-  query?: unknown;
-  params?: unknown;
-  user?: unknown;
-  experiments?: unknown;
+  query?: any;
+  params?: any;
+  user?: any;
+  experiments?: any;
   org: orgT;
   mode: string;
   setMode?: (mode: string) => void;
@@ -18,7 +19,7 @@ export interface AppContextTypes {
 
 const AppContext = createContext<AppContextTypes | undefined>(undefined);
 
-function useApp(): AppContextTypes | Error {
+function useApp(): AppContextTypes {
   const context = React.useContext(AppContext);
   if (!context) {
     throw new Error(`useApp must be used within a AppProvider`);
@@ -33,8 +34,14 @@ interface Props {
 
 const AppProvider: React.FC<Props> = ({ context, children }) => {
   const [mode, setMode] = useState(context.mode);
-  axiosInstance.defaults.headers.common['x-org-id'] = context.org.id;
-  axiosInstance.defaults.headers.common['x-app-mode'] = mode;
+  useEffect(() => {
+    axiosInstance.defaults.headers.common['x-org-id'] = context.org.id;
+    axiosInstance.defaults.headers.common['x-app-mode'] = mode;
+    // restInstance.defaults.headers.common['X-Razorpay-Account'] = context.user.id;
+    restInstance.defaults.baseURL = `${
+      process.env.hostName ? process.env.hostName : ''
+    }/merchant/api/${mode}`;
+  }, [context, mode]);
   return (
     <AppContext.Provider value={{ ...context, mode, setMode }}>{children}</AppContext.Provider>
   );

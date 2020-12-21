@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { useQuery } from 'react-query';
+import { fetch } from 'v2/services/rest/rest-fetch';
 import Space from '@razorpay/blade/src/atoms/Space';
 import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
+import { CenterLoader } from 'v2/components/Loader';
 import useActivation from '../hooks/useActivation';
 import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
@@ -51,12 +52,15 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
   const isAnyProductInReview =
-    internationalWorkflowData.payment_gateway === 'in_review' ||
-    internationalWorkflowData.payment_links === 'in_review';
+    internationalWorkflowData &&
+    (internationalWorkflowData.payment_gateway === 'in_review' ||
+      internationalWorkflowData.payment_links === 'in_review');
   const isAnyProductRejected =
-    internationalWorkflowData.payment_gateway === 'rejected' ||
-    internationalWorkflowData.payment_links === 'rejected';
-  const isPGIntlApproved = internationalWorkflowData.payment_gateway === 'approved';
+    internationalWorkflowData &&
+    (internationalWorkflowData.payment_gateway === 'rejected' ||
+      internationalWorkflowData.payment_links === 'rejected');
+  const isPGIntlApproved =
+    internationalWorkflowData && internationalWorkflowData.payment_gateway === 'approved';
 
   if (isAccepted) {
     if (isAnyProductInReview) {
@@ -245,14 +249,12 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
 };
 
 const fetchInternationalProductStatus = () =>
-  axios
-    .get('http://localhost:6006/merchants/product_international/workflow/status/all')
-    .then((res) => res.data.data);
+  fetch<any>({ url: '/merchants/product_international/workflow/status/all' }).then((res) => {
+    return res.data;
+  });
 
 const fetchWebsiteWorkflowStatus = () =>
-  axios
-    .get('http://localhost:6006/merchant/activation/websites/status')
-    .then((res) => res.data.data.data);
+  fetch<any>({ url: '/merchant/activation/websites/status' });
 
 const AcceptPaymentsCard: React.FC = () => {
   const { status: activationQueryStatus, data: activationData } = useActivation();
@@ -270,19 +272,15 @@ const AcceptPaymentsCard: React.FC = () => {
     internationalWorkflowQueryStatus === 'loading' ||
     websiteWorkflowQueryStatus === 'loading';
 
-  const isError =
-    activationQueryStatus === 'error' ||
-    internationalWorkflowQueryStatus === 'error' ||
-    websiteWorkflowQueryStatus === 'error';
+  const isError = activationQueryStatus === 'error' || websiteWorkflowQueryStatus === 'error';
 
   if (isLoading) {
-    return <div>Loading</div>;
+    return <CenterLoader />;
   }
 
   if (isError) {
     return <div>Something Went Wrong</div>;
   }
-
   const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
 
   if (

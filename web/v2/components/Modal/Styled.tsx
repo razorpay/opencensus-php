@@ -48,7 +48,12 @@ export const CloseIconContainer = styled.div`
   justify-content: center;
 `;
 
-export const BottomSheet = styled.div`
+export const BottomSheet = styled.div.attrs((props) => ({
+  style: {
+    opacity: props.$opacity,
+    transform: `translateY(${props.$y}%)`,
+  },
+}))`
   position: relative;
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
   max-width: 100%;
@@ -58,8 +63,7 @@ export const BottomSheet = styled.div`
   border-top-left-radius: ${({ theme }) => theme.spacings.small};
   border-top-right-radius: ${({ theme }) => theme.spacings.small};
   box-shadow: 0px -4px 15px ${({ theme }) => getColor(theme, 'sapphire.930')};
-  opacity: ${({ $opacity }) => $opacity};
-  transform: ${({ $y }) => `translateY(${$y}%)`};
+
   &:focus {
     outline: 'none';
   }

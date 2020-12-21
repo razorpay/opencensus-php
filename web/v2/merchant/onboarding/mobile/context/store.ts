@@ -47,6 +47,7 @@ type State = {
   same_address: boolean;
   has_gstin: boolean;
   has_website: boolean;
+  active_tab_id: string;
   isContactDetailsCompleted: boolean;
   isBusinessOverviewCompleted: boolean;
   isBusinessDetailsCompleted: boolean;
@@ -59,12 +60,14 @@ type State = {
   setSameAddress: (value: boolean) => void;
   setHasGSTIN: (value: boolean) => void;
   setHasWebsite: (value: boolean) => void;
+  setActiveTabId: (value: string) => void;
 };
 
 const useActivationFormState = create<State>((set) => ({
   same_address: false,
   has_gstin: false,
   has_website: false,
+  active_tab_id: 'contact_details',
   isContactDetailsCompleted: false,
   isBusinessOverviewCompleted: false,
   isBusinessDetailsCompleted: false,
@@ -77,6 +80,7 @@ const useActivationFormState = create<State>((set) => ({
   setSameAddress: (value) => set({ same_address: value }),
   setHasGSTIN: (value) => set({ has_gstin: value }),
   setHasWebsite: (value) => set({ has_website: value }),
+  setActiveTabId: (value) => set({ active_tab_id: value }),
 }));
 
 export { useActivationFormState, isVisible, isTabComplete };

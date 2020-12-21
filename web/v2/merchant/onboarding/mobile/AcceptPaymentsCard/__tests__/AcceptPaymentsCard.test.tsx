@@ -10,10 +10,7 @@ import { NOT_REGISTERED, PROPRIETORSHIP } from '../../Constants/OnboardingConsta
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
 
 const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(
-    () => [...screen.queryAllByLabelText(/loading/i), ...screen.queryAllByText(/loading/i)],
-    { timeout: 8000 },
-  );
+  waitForElementToBeRemoved(() => [...screen.queryAllByRole('loader')], { timeout: 8000 });
 
 afterEach(() => {
   ActivationDB.reset();

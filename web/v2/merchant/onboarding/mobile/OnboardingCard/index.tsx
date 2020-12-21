@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { useQuery } from 'react-query';
 import View from '@razorpay/blade/src/atoms/View';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Text from '@razorpay/blade/src/atoms/Text';
 import Space from '@razorpay/blade/src/atoms/Space';
+import { fetch } from 'v2/services/rest/rest-fetch';
+import { CenterLoader } from 'v2/components/Loader';
 import Card from '../../../../components/Card';
 import useActivation from '../hooks/useActivation';
 import BusinessModelDetails from './BusinessModelDetails';
@@ -13,7 +14,7 @@ import CurrentActivationProgress from './CurrentActivationProgress';
 import FormIcon from './Icons/FormIcon.svg';
 
 const fetchPayments = async () => {
-  const data = await axios.get('http://localhost:6006/payments').then((res) => res.data.data);
+  const data = await fetch<any>({ url: '/payments' });
   return data;
 };
 
@@ -27,7 +28,7 @@ const OnboardingCard: React.FC = () => {
   const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments);
 
   if (activationQueryStatus === 'loading' || paymentsQueryStatus === 'loading') {
-    return <div>Loading...</div>;
+    return <CenterLoader />;
   }
 
   if (activationQueryStatus === 'error' || paymentsQueryStatus === 'error') {
@@ -36,7 +37,7 @@ const OnboardingCard: React.FC = () => {
 
   return (
     <View>
-      <Card padding={[2]}>
+      <Card padding={[2]} margin={[2]}>
         <Flex>
           <View>
             <View>

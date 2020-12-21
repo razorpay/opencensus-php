@@ -614,7 +614,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
   render() {
     return (
-      <div id="payment-buttons-create-container">
+      <div id="payment-buttons-create-container" class="desktop-view">
         {this.state.isPageReceiptModalOpened && this.ReceiptModal}
 
         {this.TopBar}

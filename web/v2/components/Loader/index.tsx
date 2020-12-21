@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade/src/atoms/View';
 import Size from '@razorpay/blade/src/atoms/Size';
+import Space from '@razorpay/blade/src/atoms/Space';
+import Flex from '@razorpay/blade/src/atoms/Flex';
 import { makePxValue } from '@razorpay/blade/src/_helpers/theme';
 
 const StyledLoader = styled(View)`
@@ -21,6 +23,14 @@ const StyledLoader = styled(View)`
   }
 `;
 
+const FullPageView = styled(View)`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+`;
+
 interface LoaderPropsT {
   height?: number | string;
   width?: number | string;
@@ -29,8 +39,33 @@ interface LoaderPropsT {
 const Loader: React.FC<LoaderPropsT> = ({ width = 4, height = 4 }) => {
   return (
     <Size width={width} height={height}>
-      <StyledLoader />
+      <StyledLoader role="loader" />
     </Size>
+  );
+};
+
+export const CenterLoader: React.FC<LoaderPropsT & { margin?: [number, number] }> = ({
+  margin = [6, 2],
+  ...LoaderProps
+}) => {
+  return (
+    <Flex flexDirection="row" justifyContent="center">
+      <Space margin={margin}>
+        <View>
+          <Loader {...LoaderProps} />
+        </View>
+      </Space>
+    </Flex>
+  );
+};
+
+export const FullPageLoader: React.FC<LoaderPropsT> = ({ ...LoaderProps }) => {
+  return (
+    <Flex flexDirection="column" justifyContent="center" alignItems="center">
+      <FullPageView>
+        <Loader {...LoaderProps} />
+      </FullPageView>
+    </Flex>
   );
 };
 

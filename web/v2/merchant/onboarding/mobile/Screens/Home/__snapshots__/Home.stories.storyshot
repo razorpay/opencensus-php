@@ -7,7 +7,34 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
       <div
         class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
       >
-        Loading...
+        <div
+          class="Textweb__Text-sc-6jf9e4-0 fHCMro Spaceweb__Space-njatzl-0 dmogQk"
+          color="shade.950"
+          data-testid="ds-text"
+        >
+          Welcome to your dashboard, 
+          !
+        </div>
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 kcRAUT"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dKEVRn Flexweb__Flex-ni2cjg-0 dlHJnO"
+          >
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
+              role="loader"
+            />
+          </div>
+        </div>
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dKEVRn Flexweb__Flex-ni2cjg-0 dlHJnO"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
+            role="loader"
+          />
+        </div>
       </div>
     </div>
     <div

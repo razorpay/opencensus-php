@@ -4,8 +4,13 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
 <div>
   <div>
     <div>
-      <div>
-        Loading...
+      <div
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dKEVRn Flexweb__Flex-ni2cjg-0 dlHJnO"
+      >
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
+          role="loader"
+        />
       </div>
     </div>
     <div

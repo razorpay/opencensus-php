@@ -100,6 +100,7 @@ const BusinessOverview: React.FC = () => {
                 name="business_category"
                 label="Business Category"
                 value={formikProps.values.business_category}
+                disabled
                 errorText={
                   formikProps.touched.business_category && formikProps.errors.business_category
                 }

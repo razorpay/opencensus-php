@@ -43,3 +43,23 @@ export const getHelpText = (field, data) => {
   }
   return helpText;
 };
+
+export const getMerchantFlow = (business_type: string, activation_flow: string): string => {
+  if (business_type === '11') {
+    return 'whitelist';
+  }
+  return activation_flow;
+};
+
+export const isL1Submitted = (onboarding_milestone: string | null): boolean => {
+  if (!onboarding_milestone) {
+    return false;
+  }
+  if (onboarding_milestone === 'activation_flow') {
+    return false;
+  }
+  if (onboarding_milestone === 'L1') {
+    return true;
+  }
+  return false;
+};

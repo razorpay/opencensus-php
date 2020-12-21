@@ -56,7 +56,7 @@ import track_details from '../Details/track';
     openModal,
     showNotification,
     updateHighlightButtonSettings,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('PaymentButtonCreate'))
 export default class PaymentButtonCreate extends React.Component {
@@ -293,7 +293,7 @@ export default class PaymentButtonCreate extends React.Component {
     if (isEditExistingId) {
       return this.saveReceiptSettings(
         this.paymentButtonId,
-        payment_button.paymentButtonEntity.receipt
+        payment_button.paymentButtonEntity.receipt,
       ).then((resp) => {
         this.props.showNotification({
           type: 'success',
@@ -699,9 +699,9 @@ export default class PaymentButtonCreate extends React.Component {
             </div>
           ) : (
             <React.Fragment
-              key={`${
-                payment_button.paymentButtonEntity.settings.payment_button_template_type
-              }-${this.paymentButtonId || 'new'}`}
+              key={`${payment_button.paymentButtonEntity.settings.payment_button_template_type}-${
+                this.paymentButtonId || 'new'
+              }`}
             >
               <SideBar
                 {...payment_button}
@@ -773,7 +773,7 @@ export default class PaymentButtonCreate extends React.Component {
 
   render() {
     return (
-      <div id="payment-buttons-create-container">
+      <div id="payment-buttons-create-container" class="desktop-view">
         {this.state.isPageReceiptModalOpened && this.ReceiptModal}
         {this.state.isTemplatesSelectionOpened && this.TemplateSelectionModal}
 

@@ -12,12 +12,7 @@ export const Modal = () => {
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
-      <EnableSettlements
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onEnableSettlementsClick={() => {}}
-        exploreToAcceptPaymentsLink={'#'}
-      />
+      <EnableSettlements isOpen={isOpen} />
     </>
   );
 };

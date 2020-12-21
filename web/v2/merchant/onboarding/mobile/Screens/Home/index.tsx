@@ -2,25 +2,18 @@ import React from 'react';
 import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
+import { useApp } from 'v2/context/App';
 import AcceptPaymentsCard from '../../AcceptPaymentsCard';
 import OnboardingCard from '../../OnboardingCard';
-import useActivation from '../../hooks/useActivation';
 
 const Home: React.FC = () => {
-  const { status, data } = useActivation();
-  if (status === 'loading') {
-    return <View>Loading...</View>;
-  }
-
-  if (status === 'error') {
-    return <View>Oops! Something went wrong.</View>;
-  }
+  const { user } = useApp();
 
   return (
     <View>
-      <Space margin={[0, 0, 1, 0]}>
+      <Space margin={[2, 1, 1, 2]}>
         <Text size="large" weight="bold" color="shade.950">
-          Welcome to your dashboard, {data.contact_name}!
+          Welcome to your dashboard, {user.contact_name}!
         </Text>
       </Space>
       <Space margin={[0, 0, 2, 0]}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade/src/atoms/View';
 import Flex from '@razorpay/blade/src/atoms/Flex';
@@ -36,7 +36,9 @@ const Tabs = ({
   activeTabId: externalActiveTabId,
 }: TabsProps): React.ReactElement => {
   const [activeTabId, setActiveTabId] = useState<string | number>(externalActiveTabId);
-
+  useEffect(() => {
+    setActiveTabId(externalActiveTabId);
+  }, [externalActiveTabId]);
   const tabs = React.Children.map(children, (child: React.ReactElement<TabsChildProps>) => {
     if (!child) {
       return undefined;

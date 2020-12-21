@@ -10,6 +10,7 @@ export const queryCache = new QueryCache({
   defaultConfig: {
     queries: {
       queryFn: fetchGraphQL,
+      staleTime: Infinity,
     },
   },
 });

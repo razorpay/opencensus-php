@@ -13,10 +13,7 @@ afterEach(() => {
 });
 
 const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(
-    () => [...screen.queryAllByLabelText(/loading/i), ...screen.queryAllByText(/loading/i)],
-    { timeout: 4000 },
-  );
+  waitForElementToBeRemoved(() => [...screen.queryAllByRole('loader')], { timeout: 4000 });
 
 test('should render correct message for poi_verification_status = incorrect_details', async () => {
   ActivationDB.update({

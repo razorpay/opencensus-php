@@ -76,7 +76,7 @@
   "department": null,
   "created_at": 1606902543,
   "updated_at": 1606902707,
-  "activation_flow": null,
+  "activation_flow": "whitelist",
   "international_activation_flow": null,
   "kyc_clarification_reasons": null,
   "kyc_additional_details": null,
