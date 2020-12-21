@@ -13,10 +13,12 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { track } from './ga.js';
+import RTracking from 'react-tracking';
 
+@RTracking(() => window.rzpQ.component('partnerOnbr'))
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     session: state.session,
     user: state.session.user,
   }),
@@ -25,12 +27,12 @@ import { track } from './ga.js';
     showNotification,
     openModal,
     closeModal,
-  }
+  },
 )
 export default class BaseScreen extends React.Component {
   state = { role: null };
 
-  onRoleSelect = role => {
+  onRoleSelect = (role) => {
     this.setState({ role });
   };
 
@@ -46,17 +48,16 @@ export default class BaseScreen extends React.Component {
       method: 'PATCH',
       data,
     })
-      .then(response => {
+      .then((response) => {
         this.props.updateSession({ user: userval });
         this.props.history.push(`partners/submerchants`);
         this.props.closeModal();
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.closeModal();
         this.props.showNotification({
           type: 'error',
-          message:
-            'Something went wrong, we could not service this request at the moment.',
+          message: 'Something went wrong, we could not service this request at the moment.',
         });
         this.props.closeModal();
       });
@@ -75,6 +76,13 @@ export default class BaseScreen extends React.Component {
     this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().clicked('partnerships.appstore.partner.signup', {
+        merchantId: this.props.user.merchant.id,
+        pagePath: window.location.pathname,
+      }),
+    );
   };
 
   onNotIntrestedClick = () => {
@@ -102,16 +110,12 @@ export default class BaseScreen extends React.Component {
       <div className="partner-onboarding-base-screen">
         <Slider>
           {!this.props.disableClose
-            ? sliderProps => <S0 key={0} sliderProps={sliderProps} />
+            ? (sliderProps) => <S0 key={0} sliderProps={sliderProps} />
             : null}
-          {sliderProps => (
-            <S1
-              key={1}
-              sliderProps={sliderProps}
-              onNext={this.handleNewUserGetStarted}
-            />
+          {(sliderProps) => (
+            <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
           )}
-          {sliderProps => (
+          {(sliderProps) => (
             <S2
               key={2}
               sliderProps={sliderProps}
@@ -120,13 +124,7 @@ export default class BaseScreen extends React.Component {
               abort={this.handleCloseClick}
             />
           )}
-          {sliderProps => (
-            <S3
-              key={3}
-              sliderProps={sliderProps}
-              onNext={this.onCompleteClick}
-            />
-          )}
+          {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
         </Slider>
         {!this.props.disableClose && (
           <button

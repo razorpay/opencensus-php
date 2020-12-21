@@ -82,6 +82,14 @@ export default class MainNavLink extends Component {
       });
     }
 
+    if (this.props.label === 'App Store') {
+      tracking.trackEvent(
+        window.rzpQ.onbr().clicked('partnerships.appstore', {
+          merchantId: window.rzp_user.merchant.id,
+        }),
+      );
+    }
+
     return this.props.isMobileResolution && this.props.toggleMobileMenu();
   }
 

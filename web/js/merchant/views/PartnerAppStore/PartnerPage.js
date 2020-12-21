@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { partnerProducts } from './data/index';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import RTracking from 'react-tracking';
 
 function installHandler(appid, setIsAppInstalled, showNotification) {
   merchantFetch({
@@ -56,6 +57,15 @@ async function checkIfAppIsInstalled(merchantId, appid, showNotification) {
   });
 }
 
+function trackBannerButtonClick(tracking, user, appName) {
+  tracking.trackEvent(
+    window.rzpQ.onbr().clicked('partnerships.appstore.getstarted', {
+      merchantId: user.merchant.id,
+      appName: appName,
+    }),
+  );
+}
+
 // Sub Components START
 
 function BannerButton({
@@ -65,10 +75,17 @@ function BannerButton({
   setIsAppInstalled,
   showNotification,
   user,
+  tracking,
+  appName,
 }) {
   if (!isAppInstallable) {
     return (
-      <a className="btn get-started-button" target="_blank" href={partnerDetails.url}>
+      <a
+        onClick={() => trackBannerButtonClick(tracking, user, appName)}
+        className="btn get-started-button"
+        target="_blank"
+        href={partnerDetails.url}
+      >
         Get Started &nbsp; <i className="fa fa-angle-right"></i>
       </a>
     );
@@ -97,7 +114,10 @@ function BannerButton({
     <>
       <button
         disabled={user.role !== 'owner'}
-        onClick={() => installHandler(partnerDetails.appid, setIsAppInstalled, showNotification)}
+        onClick={() => {
+          trackBannerButtonClick(tracking, user, appName);
+          installHandler(partnerDetails.appid, setIsAppInstalled, showNotification);
+        }}
         className="btn get-started-button install-button"
       >
         Install
@@ -173,6 +193,8 @@ function PartnerPage(props) {
                 setIsAppInstalled={setIsAppInstalled}
                 showNotification={props.showNotification}
                 user={props.user}
+                tracking={props.tracking}
+                appName={partnerDetails.slug}
               />
             </div>
           </div>
@@ -189,4 +211,8 @@ export default connect(
     user: state.session.user,
   }),
   { showNotification },
-)(PartnerPage);
+)(
+  RTracking(() => {
+    window.rzpQ.component('PartnerPage');
+  })(PartnerPage),
+);

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { partnerProducts } from './data/index';
 
@@ -13,6 +14,12 @@ function showPartnerIntent(props) {
     window.hj('tagRecording', ['partner_onboarding_started']);
   }
 
+  props.tracking.trackEvent(
+    window.rzpQ.onbr().clicked('partnerships.appstore.partner.cta', {
+      merchantId: props.user.merchant.id,
+    }),
+  );
+
   props.openModal({
     size: 'xlarge',
     disableClose: false,
@@ -20,13 +27,22 @@ function showPartnerIntent(props) {
   });
 }
 
-// TODO:
-// function ljTrackingHandler(event) {
-//   window.rzpQ.onbr().success('partnerships.appstore.developer', {
-//     merchantId: user.merchant.id
-//   })
-// }
+function trackMerchant(event, props) {
+  props.tracking.trackEvent(
+    window.rzpQ.onbr().clicked(event, {
+      merchantId: props.user.merchant.id,
+    }),
+  );
+}
 
+function appTileClickHandler(props, appSlug) {
+  props.tracking.trackEvent(
+    window.rzpQ.onbr().clicked('partnerships.appstore.app', {
+      merchantId: props.user.merchant.id,
+      appName: appSlug,
+    }),
+  );
+}
 // Helpers END
 
 // Sub-components START
@@ -42,7 +58,11 @@ function BecomePartner(props) {
           </p>
 
           <div className="partner-links">
-            <a className="btn btn-primary" href="https://razorpay.com/app-store/developer-guide">
+            <a
+              onClick={() => trackMerchant('partnerships.appstore.developer', props)}
+              className="btn btn-primary"
+              href="https://razorpay.com/app-store/developer-guide"
+            >
               View Developer Guide <i className="i i-arrow-forward"></i>
             </a>
           </div>
@@ -68,10 +88,16 @@ function BecomePartner(props) {
   );
 }
 
-function PartnerAppCard({ product }) {
+function PartnerAppCard(props) {
+  const product = props.product;
+
   return (
     <div className="product-col">
-      <Link className="product-wrapper" to={'/app-store/' + product.slug}>
+      <Link
+        onClick={() => appTileClickHandler(props, product.slug)}
+        className="product-wrapper"
+        to={'/app-store/' + product.slug}
+      >
         <div className="image-x-title-flex">
           <div className="image-col">
             <div className="product-image-background">
@@ -173,7 +199,7 @@ function PartnerAppStore(props) {
               return null;
             }
 
-            return <PartnerAppCard key={'app-' + index} product={product} />;
+            return <PartnerAppCard key={'app-' + index} product={product} {...props} />;
           })}
         </div>
       </section>
@@ -191,4 +217,8 @@ export default connect(
     isMobileResolution: state.app.isMobileResolution,
   }),
   { openModal, closeModal },
-)(PartnerAppStore);
+)(
+  RTracking(() => {
+    window.rzpQ.component('PartnerAppStore');
+  })(PartnerAppStore),
+);
