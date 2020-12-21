@@ -145,6 +145,8 @@ class ProviderCode
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
     const YESB               = 'yesb';
+    const IPPB               = 'ippb';
+    const AUBANK             = 'aubank';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -218,7 +220,6 @@ class ProviderCode
         self::INDIANBK           => IFSC::IDIB,
         self::INDUS              => IFSC::INDB,
         self::IOB                => IFSC::IOBA,
-        self::JIO                => 'NPCI',
         self::JSB                => IFSC::JSBP,
         self::JSBP               => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
@@ -281,6 +282,9 @@ class ProviderCode
         self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
         self::YESB               => IFSC::YESB,
+        self::IPPB               => IFSC::IPOS,
+        self::JIO                => IFSC::JIOP,
+        self::AUBANK             => IFSC::AUBL
     ];
 
     /**
