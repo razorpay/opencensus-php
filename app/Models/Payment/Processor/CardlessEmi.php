@@ -23,4 +23,9 @@ class CardlessEmi
     {
         return self::$fullName[$provider];
     }
+
+    public static function getCardlessEmiDirectAquirers()
+    {
+        return array_keys(self::$fullName);
+    }
 }

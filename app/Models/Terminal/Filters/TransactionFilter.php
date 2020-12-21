@@ -92,8 +92,7 @@ class TransactionFilter extends Terminal\Filter
 
             case Method::CARDLESS_EMI:
                 // @todo: fix the getWallet() for cardless emi and move it to a separate function
-                return (($terminal->isCardlessEmiEnabled() === true) and
-                        ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+                return ($terminal->isCardlessEmiEnabled() === true);
 
             case Method::PAYLATER:
                 return ($terminal->isPayLaterEnabled() === true);
@@ -1078,14 +1077,15 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isPayLater() === false)
+        if (($payment->isPayLater() === false) and ($payment->isCardlessEmi() === false))
         {
             return true;
         }
 
         $wallet = $this->input['payment']->getWallet();
 
-        if (in_array($wallet, Payment\Processor\PayLater::getPaylaterDirectAquirers()) === true)
+        if (((in_array($wallet, Payment\Processor\PayLater::getPaylaterDirectAquirers()) === true) and ($payment->isPayLater())) or
+            ((in_array($wallet, Payment\Processor\CardlessEmi::getCardlessEmiDirectAquirers()) === true) and ($payment->isCardlessEmi())))
         {
             return ($wallet === $terminal->getGatewayAcquirer());
         }
