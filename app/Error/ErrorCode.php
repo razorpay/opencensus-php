@@ -1992,4 +1992,6 @@ class ErrorCode
 
     const BAD_REQUEST_REWARD_DEACTIVATE                                             = 'BAD_REQUEST_REWARD_DEACTIVATE';
 
+    const BAD_REQUEST_CALLBACK_URL_INCORRECT                                        = 'BAD_REQUEST_CALLBACK_URL_INCORRECT';
+
 }

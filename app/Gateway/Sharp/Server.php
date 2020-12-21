@@ -104,6 +104,15 @@ class Server extends Base\Mock\Server
                 'Input fields not set properly');
         }
 
+        $url_info = parse_url($input['callback_url']);
+
+        if (($this->app->runningUnitTests() === false) and
+            (str_contains($url_info['host'], ["razorpay.com", "razorpay.in"]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CALLBACK_URL_INCORRECT);
+        }
+
         $url = $input['callback_url'];
 
         $content['status'] = 'failed';
