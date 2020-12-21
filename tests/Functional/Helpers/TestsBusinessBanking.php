@@ -310,7 +310,8 @@ trait TestsBusinessBanking
                                            string $payoutToCardsViaRbl = 'on',
                                            string $useWorkflowMicroService = 'off',
                                            string $bulkPayoutsImprovementsRollout = 'on',
-                                           string $oldToNewIfscForMergedBank = 'on')
+                                           string $oldToNewIfscForMergedBank = 'on',
+                                           string $rejectCommentInWebhook = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -334,7 +335,8 @@ trait TestsBusinessBanking
                     $razorpayXAclDenyUnauthorised,
                     $useWorkflowMicroService,
                     $bulkPayoutsImprovementsRollout,
-                    $oldToNewIfscForMergedBank
+                    $oldToNewIfscForMergedBank,
+                    $rejectCommentInWebhook
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -391,6 +393,11 @@ trait TestsBusinessBanking
                     if ($feature === 'old_to_new_ifsc_for_merged_bank')
                     {
                         return strtolower($oldToNewIfscForMergedBank);
+                    }
+
+                    if ($feature === 'payouts_reject_comment_in_webhook_filter')
+                    {
+                        return strtolower($rejectCommentInWebhook);
                     }
 
                     return strtolower($defaultBehaviour);

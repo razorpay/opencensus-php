@@ -60,6 +60,9 @@ final class RazorxTreatment
     // Decides what payload to return in the payouts webhook
     const PAYOUTS_WEBHOOK_FILTER = 'payouts_webhook_filter';
 
+    // Decides whether reject reason has to be sent in webhook
+    const PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER = 'payouts_reject_comment_in_webhook_filter';
+
     // Decides if payout.created webhook should be fired for the merchant
     const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
 

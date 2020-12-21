@@ -265,6 +265,26 @@ class Repository extends Base\Repository
               ->where($cAdminId, '=', $adminId);
     }
 
+    public function fetchUserComment(string $entityId, string $entityName)
+    {
+        $actionIdColumn = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+        $userCommentColumn = $this->repo->action_checker->dbColumn(Checker\Entity::USER_COMMENT);
+        $actionCheckerCreatedAt = $this->repo->action_checker->dbColumn(Checker\Entity::CREATED_AT);
+
+        $workflowActionIdColumn = $this->repo->workflow_action->dbColumn(Entity::ID);
+        $workflowActionEntityId = $this->repo->workflow_action->dbColumn(Entity::ENTITY_ID);
+        $workflowActionEntityName = $this->repo->workflow_action->dbColumn(Entity::ENTITY_NAME);
+
+        return $this->newQuery()
+                    ->select($userCommentColumn)
+                    ->join(Table::ACTION_CHECKER, $workflowActionIdColumn, $actionIdColumn)
+                    ->where($workflowActionEntityId, '=', $entityId)
+                    ->where($workflowActionEntityName, '=', $entityName)
+                    ->latest($actionCheckerCreatedAt)
+                    ->pluck(Checker\Entity::USER_COMMENT)
+                    ->first();
+    }
+
     public function joinQueryWorkflowStep(BuilderEx $query)
     {
         $workflowStepTable = $this->repo->workflow_step->getTableName();

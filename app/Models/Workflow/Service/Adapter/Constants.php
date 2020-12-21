@@ -25,6 +25,10 @@ class Constants
     const DOMAIN_STATUS         = 'domain_status';
     const CONFIG_ID             = 'config_id';
 
+    const WORKFLOW_HISTORY      = 'workflow_history';
+    const WORKFLOW_STATES       = 'states';
+    const WORKFLOW_ACTIONS      = 'actions';
+
     const ID                    = 'id';
     const STATE_ID              = 'state_id';
     const ACTION_TYPE           = 'action_type';
@@ -36,4 +40,5 @@ class Constants
     const ACTOR_META            = 'actor_meta';
     const NARRATION             = 'narration';
     const NOTES                 = 'notes';
+    const REJECTED              = 'rejected';
 }

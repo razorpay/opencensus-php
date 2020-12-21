@@ -25,6 +25,7 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
@@ -70,6 +71,9 @@ class ApiEventSubscriber extends Base\Core
     const MAIN        = 'main';
     const WITH        = 'with';
     const MERCHANT_ID = 'merchant_id';
+
+    const WORKFLOW_SERVICE = 'workflow_service';
+    const API_WORKFLOW     = 'api_workflow';
 
     public function getMode()
     {
@@ -661,6 +665,9 @@ class ApiEventSubscriber extends Base\Core
     protected function onPayoutRejected(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
+
+        $payload = $this->getPayoutRejectCommentInPayload($payout, $payload);
+
         $this->dispatchEventToStork($payload);
     }
 
@@ -722,6 +729,95 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getTerminalFailedPayload($terminal);
         $this->dispatchEventToStork($payload);
+    }
+
+    // payouts can be rejected with comment in workflows. passing that comment in payload for consumption by merchant.
+    protected function getPayoutRejectCommentInPayload(Payout\Entity $payout, array $payload): array
+    {
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER,
+            $this->mode,
+            Payout\Entity::RAZORX_RETRY_COUNT
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            // For merchants who are onboarded to WFS, reject comment can be found by doing ->toArrayPublic on payout entity.
+            $payoutArrayPublic = $payout->toArrayPublic();
+
+            if ((array_key_exists(Adapter\Constants::WORKFLOW_HISTORY, $payoutArrayPublic) === true) and
+                (array_key_exists(Adapter\Constants::WORKFLOW_STATES, $payoutArrayPublic[Adapter\Constants::WORKFLOW_HISTORY]) === true))
+            {
+                $workflowStates = $payoutArrayPublic[Adapter\Constants::WORKFLOW_HISTORY][Adapter\Constants::WORKFLOW_STATES];
+
+                $userComment = $this->processWorkflowServiceStatesForUserComment($workflowStates);
+
+                $payload[Payout\Entity::PAYOUT][Payout\Entity::ENTITY][Payout\Entity::FAILURE_REASON] = $userComment;
+
+                $this->trace->info(
+                    TraceCode::REJECT_PAYOUT_WITH_COMMENT_IN_WEBHOOK,
+                    [
+                        self::MERCHANT_ID               => $merchantId,
+                        Payout\Entity::ID               => $payout->getId(),
+                        Adapter\Constants::COMMENT      => $userComment,
+                        Adapter\Constants::SERVICE      => self::WORKFLOW_SERVICE,
+                    ]);
+
+                return $payload;
+            }
+
+            // For merchants who aren't onboarded to WFS reject comment can be found from action checker table.
+            $userComment = $this->repo->workflow_action->fetchUserComment($payout->getId(), Payout\Entity::PAYOUT);
+
+            $payload[Payout\Entity::PAYOUT][Payout\Entity::ENTITY][Payout\Entity::FAILURE_REASON] = $userComment;
+
+            $this->trace->info(
+                TraceCode::REJECT_PAYOUT_WITH_COMMENT_IN_WEBHOOK,
+                [
+                    self::MERCHANT_ID               => $merchantId,
+                    Payout\Entity::ID               => $payout->getId(),
+                    Adapter\Constants::COMMENT      => $userComment,
+                    Adapter\Constants::SERVICE      => self::API_WORKFLOW,
+                ]);
+        }
+
+        return $payload;
+    }
+
+    protected function processWorkflowServiceStatesForUserComment(array $workflowStates)
+    {
+        foreach ($workflowStates as $workflowState)
+        {
+            if (array_key_exists(Adapter\Constants::WORKFLOW_ACTIONS, $workflowState) === true)
+            {
+                $userComment = $this->processWorkflowServiceActionsForUserComment($workflowState[Adapter\Constants::WORKFLOW_ACTIONS]);
+
+                // This if condition is required as function processWorkflowServiceActionsForUserComment returns null when comment is not found but we want to continue traversing.
+                if ($userComment !== null)
+                {
+                    return $userComment;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function processWorkflowServiceActionsForUserComment(array $workflowActions)
+    {
+        foreach ($workflowActions as $workflowAction)
+        {
+            if (($workflowAction[Adapter\Constants::ACTION_TYPE] == Adapter\Constants::REJECTED) and
+                array_key_exists(Adapter\Constants::COMMENT, $workflowAction))
+            {
+                return $workflowAction[Adapter\Constants::COMMENT];
+            }
+        }
+
+        return null;
     }
 
     protected function onBankingAccountsIssued($merchant)

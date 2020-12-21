@@ -1125,6 +1125,73 @@ return [
         ],
     ],
 
+    'testRejectPayoutWithRejectCommentInWebhookWithWFS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => 'Rejecting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testRejectPayoutWithRejectCommentInWebhookWithoutCommentWithWFS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testRejectPayoutWithRejectCommentInWebhook' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => 'Rejecting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testRejectPayoutWithRejectCommentInWebhookWithoutComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
     'testApprovePayoutCallbackFromNWFS' => [
         'request'  => [
             'method'  => 'POST',
@@ -5657,6 +5724,40 @@ return [
                 'entity' => [
                     'entity' => 'payout',
                     'status' => 'rejected',
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutWithCommentEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'            => 'payout',
+                    'status'            => 'rejected',
+                    'failure_reason'    => 'Rejecting',
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutWithoutCommentInWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'            => 'payout',
+                    'status'            => 'rejected',
+                    'failure_reason'    =>  null,
                 ],
             ],
         ],

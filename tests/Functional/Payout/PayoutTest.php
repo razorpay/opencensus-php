@@ -8,6 +8,7 @@ use Hash;
 use Queue;
 use Redis;
 use Config;
+use Requests_Response;
 
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -36,6 +37,7 @@ use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
+use RZP\Services\Mock\WorkflowService;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
@@ -1797,6 +1799,194 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testRejectPayoutWithRejectCommentInWebhookWithWFS()
+    {
+        $this->liveSetUp();
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on', // to enable new WFS
+            'on',
+            'on',
+            'on'
+        );
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
+
+        $this->mockWFS(substr($payout["id"], 5), $testData['request']['content']['user_comment']);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithCommentEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutWithRejectCommentInWebhookWithoutCommentWithWFS()
+    {
+        $this->liveSetUp();
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on', // to enable new WFS
+            'on',
+            'on',
+            'on'
+        );
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
+
+        $this->mockWFS(substr($payout["id"], 5),  $testData['request']['content']['user_comment'] ?? "null");
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithoutCommentInWebhookEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutWithRejectCommentInWebhook()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'on',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on'
+        );
+
+        // Reject with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithCommentEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals('Rejecting', $actionChecker['user_comment']);
+    }
+
+    public function testRejectPayoutWithRejectCommentInWebhookWithoutComment()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'on',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on'
+        );
+
+        // Reject with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithoutCommentInWebhookEventData';
+
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
+    }
+
     public function testApprovePayoutCallbackFromNWFS()
     {
         $this->liveSetUp();
@@ -2360,7 +2550,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithoutCommentInWebhookEventData';
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
@@ -9705,6 +9895,186 @@ class PayoutTest extends OAuthTestCase
                 }
                 return true;
             }));
+    }
+
+    private function mockWFS(string $payoutId = "FV57s8rpBqOD6w" , string $comment = "null")
+    {
+        if ($comment !== "null") {
+            $comment = '"' . $comment . '"';
+        }
+
+        $wfsMock = $this->getMockBuilder(WorkflowService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['request'])
+            ->getMock();
+
+        $this->app->instance('workflow_service', $wfsMock);
+
+        $response = new Requests_Response();
+
+        $response->status_code = 200;
+
+        $content = '{
+                        "id": "FV58BuqLuCP4Cw",
+                        "config_id": "FV0aQGxYU4kk4c",
+                        "entity_id": "' . $payoutId . '",
+                        "entity_type": "payouts",
+                        "title": "title",
+                        "description": "[]",
+                        "config_version": "1",
+                        "creator_id": "10000000000000",
+                        "creator_type": "merchant",
+                        "diff": {
+                            "old": {
+                                "amount": null,
+                                "merchant_id": null
+                            },
+                            "new": {
+                                "amount": 10000,
+                                "merchant_id": "10000000000000"
+                            }
+                        },
+                        "callback_details": {
+                            "state_callbacks": {
+                                "created": {
+                                    "method": "post",
+                                    "payload": {
+                                        "queue_if_low_balance": true,
+                                        "type": "state_callbacks_created"
+                                    },
+                                    "headers": {
+                                        "x-creator-id": ""
+                                    },
+                                    "service": "api_live",
+                                    "type": "basic",
+                                    "url_path": "/payouts_internal/FV57s8rpBqOD6w/approve",
+                                    "response_handler": {
+                                        "type": "success_status_codes",
+                                        "success_status_codes": [
+                                            201,
+                                            200
+                                        ]
+                                    }
+                                },
+                                "processed": {
+                                    "method": "post",
+                                    "payload": {
+                                        "queue_if_low_balance": true,
+                                        "type": "state_callbacks_processed"
+                                    },
+                                    "headers": {
+                                        "x-creator-id": ""
+                                    },
+                                    "service": "api_live",
+                                    "type": "basic",
+                                    "url_path": "/payouts_internal/FV57s8rpBqOD6w/approve",
+                                    "response_handler": {
+                                        "type": "success_status_codes",
+                                        "success_status_codes": [
+                                            201,
+                                            200
+                                        ]
+                                    }
+                                }
+                            },
+                            "workflow_callbacks": {
+                                "processed": {
+                                    "domain_status": {
+                                        "approved": {
+                                            "method": "post",
+                                            "payload": {
+                                                "queue_if_low_balance": true,
+                                                "type": "workflow_callbacks_approved"
+                                            },
+                                            "headers": {
+                                                "x-creator-id": ""
+                                            },
+                                            "service": "api_live",
+                                            "type": "basic",
+                                            "url_path": "/payouts_internal/FV57s8rpBqOD6w/approve",
+                                            "response_handler": {
+                                                "type": "success_status_codes",
+                                                "success_status_codes": [
+                                                    201,
+                                                    200
+                                                ]
+                                            }
+                                        },
+                                        "rejected": {
+                                            "method": "post",
+                                            "payload": {
+                                                "queue_if_low_balance": true,
+                                                "type": "state_callbacks_rejected"
+                                            },
+                                            "headers": {
+                                                "x-creator-id": ""
+                                            },
+                                            "service": "api_live",
+                                            "type": "basic",
+                                            "url_path": "/payouts_internal/FV57s8rpBqOD6w/reject",
+                                            "response_handler": {
+                                                "type": "success_status_codes",
+                                                "success_status_codes": [
+                                                    201,
+                                                    200
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "status": "initiated",
+                        "domain_status": "created",
+                        "owner_id": "10000000000000",
+                        "owner_type": "merchant",
+                        "org_id": "100000razorpay",
+                        "states": {
+                            "Owner_Approval": {
+                                "id": "FV58Cedbz6e0a2",
+                                "workflow_id": "FV58BuqLuCP4Cw",
+                                "status": "created",
+                                "name": "Owner_Approval",
+                                "group_name": "ABC",
+                                "type": "checker",
+                                "rules": {
+                                    "actor_property_key": "role",
+                                    "actor_property_value": "owner",
+                                    "count": 1
+                                },
+                                "pending_on_user": true,
+                                "created_at": "1598377315",
+                                "updated_at": "1598377315"
+                            },
+                            "FL1_0_Approval" :{
+                                "actions" :[
+                                    {
+                                        "id": "FV0rayoQ8epeX6",
+                                        "workflow_id": "FV0pSI6zc8v6X2",
+                                        "state_id": "FV0pTiztDETNyl",
+                                        "action_type": "rejected",
+                                        "comment": ' . $comment . ',
+                                        "actor_id": "FV0pAuYEKG1QS9",
+                                        "actor_type": "user",
+                                        "status": "processed",
+                                        "actor_property_key": "role",
+                                        "actor_property_value": "owner",
+                                        "actor_meta": {
+                                            "email": "raegan.swaniawski@corkery.com"
+                                        },
+                                        "created_at": "1598362285"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "payout-approval",
+                        "pending_on_user": true
+                    }';
+
+        $response->body = $content;
+
+        $this->app->workflow_service->method('request')
+            ->willReturn($response);
     }
 
     public function testCreateBulkPayoutWithErrorInPayoutData()
