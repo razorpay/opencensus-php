@@ -224,7 +224,7 @@ class Constants
             self::JKB         => ['jkb-netbanking-claims@razorpay.com'],
             self::FSB         => ['fsb-netbanking-refunds@razorpay.com'],
             self::DCB         => ['dcb-netbanking-refunds@razorpay.com'],
-            self::UBI         => [],
+            self::UBI         => ['ubi-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

@@ -13,6 +13,8 @@ class NetbankingUbiGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/NetbankingUbiGatewayTestData.php';
 
         parent::setUp();
