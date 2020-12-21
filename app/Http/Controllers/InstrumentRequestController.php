@@ -131,8 +131,10 @@ class InstrumentRequestController extends BaseController
 
         $query = $input['query'];
 
+        $body = $input['body'];
+
         $response = $this->app['terminals_service']->proxyTerminalService(
-            null,
+            $body,
             \Requests::POST,
             'v2/internal_instrument_request?' . $query,
             [],
