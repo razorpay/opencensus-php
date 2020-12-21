@@ -112,6 +112,8 @@ class Checkout
 
         $this->checkAndFillContactDetails($input, $merchant, $data);
 
+        $this->checkAndFillOrgDetails($merchant, $data);
+
         if ((isset($input['personalisation']) === true) and
             (($input['personalisation'] === true) or $input['personalisation'] === '1'))
         {
@@ -119,6 +121,25 @@ class Checkout
         }
 
         return $data;
+    }
+
+    protected function checkAndFillOrgDetails(Entity $merchant, array &$data)
+    {
+        $orgId = $merchant->getOrgId();
+
+        if (isset($orgId))
+        {
+            $org = $this->repo->org->find($orgId);
+
+            if (isset($org))
+            {
+                $features = $org->getEnabledFeatures();
+
+                $data['org'] = $org;
+
+                $data['org_features'] = $features;
+            }
+        }
     }
 
     protected function checkAndAddDetailsForOrder(
