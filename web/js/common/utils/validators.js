@@ -59,7 +59,7 @@ export const isPhone = (phone) => {
 
 export const isMobile = (mobile) => {
   mobile = mobile || '';
-  let mobileRegExp = new RegExp(/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$/);
+  let mobileRegExp = new RegExp(/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/);
   return mobileRegExp.test(mobile);
 };
 
