@@ -268,7 +268,6 @@ export default class NotificationsDropdown extends Component {
       'Nov20-Opfin-NitroV1',
       'NOV20-VP-C1',
       'NOV20-PG-BANKUPDATE',
-      'NOV20-FTX',
       'Nov20-Opfin-NitroV2',
       'DEC20-PayPal-GTM',
     ];

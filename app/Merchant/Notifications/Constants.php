@@ -226,25 +226,6 @@ class Constants
             ],
         ],
         [
-            'title'       => 'India’s Largest Fintech Event',
-            'description' => 'Network with 15,000+ Founders, Business Owners and Leaders from the comfort of your home. Limited free seats available, claim yours today!',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/ftxzrp.svg',
-            'track_event' => true,
-            'id'          => 'NOV20-FTX',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Save my FREE seat',
-                    'url'   => 'https://razorpay.com/ftx/?coupon_id=FTXPRTNR20&utm_campaign=FTX%202020&utm_source=dashboard&/#buy',
-                ],
-            ],
-            'start_ts'    => 1606201138,
-            'end_ts'      => 1608402600,
-            'filters'     => [
-                'activated' => 1,
-            ],
-        ],
-        [
             'title'       => 'Festive Special: Exclusive Offer For You',
             'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
             'icon'        => '/dist/css/assets/products/opfin.svg',
