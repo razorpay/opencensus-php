@@ -399,6 +399,9 @@ class TerminalsService
     {
         try
         {
+            // check whether merchant is in db
+            (new Merchant\Repository)->findOrFail($merchantId);
+
             if ($this->isMerchantRampedForInstrumentRequests($merchantId) === false)
             {
                 return;

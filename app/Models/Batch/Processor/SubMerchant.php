@@ -119,22 +119,7 @@ class SubMerchant extends Base
 
         if($currentActivationStatus=="activated")
         {
-            try
-            { // check whether merchant is in db
-                $merchant = $this->repo->merchant->findOrFail($subMerchant->getId());
-
-                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
-            }
-            catch(\Exception $e)
-            {
-                $data = [
-                    Entity::MERCHANT_ID => $subMerchant->getId(),
-                    'error'             => $e->getMessage()
-                ];
-
-                $this->trace->info(TraceCode::MERCHANT_DOES_NOT_EXIST, $data);
-
-            }
+            $this->app['terminals_service']->requestDefaultMerchantInstruments($subMerchant->getId());
         }
     }
 

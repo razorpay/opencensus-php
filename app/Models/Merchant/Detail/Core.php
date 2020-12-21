@@ -1490,23 +1490,7 @@ class Core extends Base\Core
                 (new Merchant\Activate)->activate($merchant);
 
                 // request for default instruments when merchant is activated
-                try
-                { // check whether merchant is in db
-                    $merchant = $this->repo->merchant->findOrFail($merchant->getId());
-
-                    $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
-                }
-                catch(\Exception $e)
-                {
-                    $data = [
-                        Entity::MERCHANT_ID => $merchant->getId(),
-                        'error'             => $e->getMessage()
-                    ];
-
-                    $this->trace->info(TraceCode::MERCHANT_DOES_NOT_EXIST, $data);
-
-                }
-
+                $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
             }
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
