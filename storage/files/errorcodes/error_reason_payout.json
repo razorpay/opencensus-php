@@ -313,6 +313,97 @@
       "description": "Payout failed as the IFSC code is invalid. Please change the IFSC code and retry."
     }
   },
+  "PBANK_BENE_NOT_REGISTERED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "BANK_CBS_OFFLINE_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank systems are offline, please retry after 30 min."
+    }
+  },
+  "PBANK_VALIDATION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "DORMANT_ACCOUNT": {
+    "failed": {
+      "source": "business",
+      "reason": "bank_account_invalid",
+      "description": "Payout failed as beneficiary account is dormat. Please contact the beneficiary bank."
+    }
+  },
+  "NPCI_TIMEOUT_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank systems are offline, please retry after 30 min."
+    }
+  },
+  "BBANK_GATEWAY_THROTTLED_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Payout failed at beneficiary bank due to technical issues. Please retry."
+    }
+  },
+  "PBANK_CBS_REJECTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min."
+    }
+  },
+  "FTS_ATTEMPT_INITIATE_FAILED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed due to technical failure. Please retry after 30 min."
+    }
+  },
+  "REJECTED": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "YB_RETURNED_FROM_BENEFICIARY": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+    }
+  },
+  "YB_SENT_TO_BENEFICIARY": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Payouts reversed by benificary bank. Please contact beneficiary bank."
+    }
+  },
+  "FTS_ATTEMPT_CREATE_FAILED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed due to technical failure. Please retry after 30 min."
+    }
+  },
+  "BENEFICIARY_NAME_MISMATCH": {
+    "failed": {
+      "source": "business",
+      "reason": "bank_account_invalid",
+      "description": "Payout failed due to invalid beneficiary account details."
+    }
+  },
   "DEFAULT": {
     "source": "internal",
     "reason": "server_error",
