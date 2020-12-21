@@ -79,7 +79,7 @@ class Entity extends Base\PublicEntity
 
     public function getAttempts()
     {
-        $this->getAttribute(self::ATTEMPTS);
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function setProcessedAt($processedAt)
