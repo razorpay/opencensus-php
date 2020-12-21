@@ -22,6 +22,9 @@ export const fetchConfigForVirtualAccount = () => {
 };
 
 export const fetchVirtualAccounts = (params) => {
+  if (!params.notes) {
+    params.receiver_type = 'bank_account,vpa';
+  }
   return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
 
