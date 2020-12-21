@@ -981,6 +981,7 @@ class Gateway
         Payment\Gateway::HDFC_DEBIT_EMI,
         Payment\Gateway::CASHFREE,
         Payment\Gateway::NETBANKING_UBI,
+        Payment\Gateway::PAYU,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
