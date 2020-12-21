@@ -34,7 +34,7 @@ export const ISSUERS = {
   ICIC: 'ICICI Bank',
   INDB: 'INDUSIND Bank',
   KKBK: 'Kotak Mahindra Bank',
-  RATN: 'Ratnakar Bank Bank',
+  RATN: 'RBL',
   SCBL: 'Standard Chartered Bank',
   AMEX: 'American Express',
   UTIB: 'Axis Bank',
