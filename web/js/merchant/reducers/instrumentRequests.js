@@ -813,7 +813,7 @@ export default function (state = initialState, action) {
       action.payload.data.forEach((s) => {
         let pathToFind = s.instrument.replace('pg.', '').split('.');
         let path = findPath(pathToFind, pg);
-        if (s.comment && s.status === 'action_required') {
+        if (s.comment && ['action_required', 'rejected'].includes(s.status)) {
           let rootPath = path.split('.')[0];
           lodashset(stateClone, `${rootPath}.actionItems["${s.instrument}"]`, s.comment);
         }
@@ -823,7 +823,7 @@ export default function (state = initialState, action) {
           s.merchant_instrument_request_id,
         );
         lodashset(stateClone, `${path}.status`, s.status);
-        if (s.status === 'action_required') {
+        if (['action_required', 'rejected'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
         }
       });

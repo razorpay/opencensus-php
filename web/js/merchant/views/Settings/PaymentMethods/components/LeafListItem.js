@@ -144,7 +144,11 @@ class LeafListItem extends React.Component {
     };
     return (
       <li
-        class={`${instrument.status === 'action_required' ? 'action-required-list-item' : ''}`}
+        class={`${
+          ['action_required', 'rejected'].includes(instrument.status)
+            ? 'action-required-list-item'
+            : ''
+        }`}
         style={customHeight}
       >
         <div>
@@ -167,21 +171,35 @@ class LeafListItem extends React.Component {
               )}
             </div>
           )}
-          <div class="detail">
-            {displayName(instrument.name)}
-            {instrument.description && <p>{instrument.description}</p>}
+          <div class="detail raise-request">
+            <div>
+              {displayName(instrument.name)}
+              {instrument.description && <p>{instrument.description}</p>}
+            </div>
+            {['rejected', 'action_required'].includes(instrument.status) && (
+              <button class="btn btn-link" onClick={this.handleRaiseRequest}>
+                Raise Request
+              </button>
+            )}
+            {!['pending', 'activated', 'rejected', 'action_required'].includes(
+              instrument.status,
+            ) && (
+              <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
+                Cancel
+              </button>
+            )}
           </div>
           <div>
             {['Request', 'requestable', 'cancelled'].includes(instrument.status) && (
               <div
                 style={{
                   display: 'flex',
-                  width: '200px',
                   justifyContent: 'flex-end',
+                  alignItems: 'center',
                 }}
               >
                 <button
-                  class="btn btn-primary mr-20"
+                  class="btn btn-primary mr-25 ml-5"
                   disabled={this.state.loading}
                   onClick={this.handleCreateRequest}
                 >
@@ -193,22 +211,10 @@ class LeafListItem extends React.Component {
               <div
                 style={{
                   display: 'flex',
-                  width: '210px',
                   justifyContent: 'flex-end',
                   alignItems: 'center',
                 }}
               >
-                {!['pending', 'activated', 'rejected'].includes(instrument.status) && (
-                  <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
-                    Cancel
-                  </button>
-                )}
-
-                {['rejected', 'action_required'].includes(instrument.status) && (
-                  <button class="btn btn-link" onClick={this.handleRaiseRequest}>
-                    Raise Request
-                  </button>
-                )}
                 <div class={ctaClass[instrument.status]}>
                   <>
                     {instrument.status.replace('_', ' ')}
@@ -225,7 +231,7 @@ class LeafListItem extends React.Component {
             )}
           </div>
         </div>
-        {instrument.status === 'action_required' && (
+        {['action_required', 'rejected'].includes(instrument.status) && (
           <>
             <div class="comment" title={instrument.comment}>
               <i class="i i-info-outline" />
