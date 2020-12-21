@@ -7,7 +7,7 @@ use RZP\Services\TerminalsService as BaseTerminalsService;
 class TerminalsService extends BaseTerminalsService
 {
 
-    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = []): array
+    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = [], array $otherInputs = []): array
     {
         if ($gateway == 'paysecure')
         {
