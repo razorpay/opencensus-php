@@ -8,6 +8,31 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
+            'title'       => 'The Payments Mobile App is Live!',
+            'description' => 'Track payments, create payment links and issue refunds from anywhere with the new Payments mobile app. Get the mobile app now.',
+            'start_ts'    => 1608229800,
+            'end_ts'      => 1610994599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/payments-mobile-app.svg',
+            'track_event' => true,
+            'id'          => 'Payments-Mobile-App',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Download on iOS',
+                    'url'   => 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144',
+                ],
+                [
+                    'type'  => 'button',
+                    'label' => 'Download on Android',
+                    'url'   => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                ]
+            ],
+            'filters'     => [
+                'activation_status' => ['activated'],
+                'role'  => ['owner', 'admin', 'manager', 'operations'],
+            ],
+        ],
+        [
             'title'       => 'Pay your vendors in seconds',
             'description' => 'Upload invoices and pay vendors and TDS automatically.',
             'start_ts'    => 1604904751,

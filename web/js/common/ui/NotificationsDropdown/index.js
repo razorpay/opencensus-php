@@ -259,6 +259,7 @@ export default class NotificationsDropdown extends Component {
     const { showHubSpotCAForm } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
+      'Payments-Mobile-App',
       'TwoStepVerification2020',
       'upiAutopay',
       'projectNitro',
