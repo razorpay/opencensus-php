@@ -422,6 +422,51 @@
 
     </div>
 
+    @if ($custom_branding)
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                <div class="mj-column-per-100 outlook-group-fix"
+                  style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tbody>
+                      <tr>
+                        <td style="vertical-align:top;padding:0px;">
+
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+                            <tr>
+                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                  <div class="information-row" style="text-align: center;">
+                                    <img src="{{ $email_logo }}" style="height: 32px;" />
+                                  </div>
+                                </div>
+
+                              </td>
+                            </tr>
+
+                          </table>
+
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    @endif
+
   </div>
 
 
