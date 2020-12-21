@@ -15,6 +15,7 @@ class Feature
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const REFUND                  = 'refund';
     const SETTLEMENT_ONDEMAND     = 'settlement_ondemand';
+    const OPTIMIZER               = 'optimizer';
 
     const FEATURE_LIST = [
         self::PAYMENT,
@@ -24,7 +25,8 @@ class Feature
         self::EMI,
         self::ESAUTOMATIC,
         self::FUND_ACCOUNT_VALIDATION,
-        self::SETTLEMENT_ONDEMAND
+        self::SETTLEMENT_ONDEMAND,
+        self::OPTIMIZER
     ];
 
     /**
@@ -40,6 +42,7 @@ class Feature
      */
     const OPTIONAL_PRICING = [
         self::TRANSFER,
+        self::OPTIMIZER
     ];
 
     public static function validateFeature($feature)
@@ -60,6 +63,6 @@ class Feature
      */
     public static function isFeaturePricingOptional(string $feature): bool
     {
-        return (in_array($feature, self::OPTIONAL_PRICING, true) === true);
+        return  (in_array($feature, self::OPTIONAL_PRICING, true) === true);
     }
 }

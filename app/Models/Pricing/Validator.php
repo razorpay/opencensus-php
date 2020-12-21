@@ -29,14 +29,13 @@ use RZP\Models\BankingAccountStatement\Channel as BASChannel;
 class Validator extends Base\Validator
 {
     const ALLOWED_AUTH_TYPE_FOR_BANKING_PRODUCT = [BasicAuth\Type::PRIVATE_AUTH, BasicAuth\Type::PROXY_AUTH];
-
     protected static $addPlanRuleRules = [
         Entity::PRODUCT                 => 'sometimes|string|custom',
         Entity::FEATURE                 => 'sometimes|alpha_dash',
         Entity::GATEWAY                 => 'sometimes',
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
-        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund|nullable|string',
+        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
@@ -92,6 +91,7 @@ class Validator extends Base\Validator
         'addPlanRulePayoutFundTransfer',
         'addPlanRuleRefund',
         'addPlanRuleAuthType',
+        'addPlanRuleProcurer',
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
@@ -124,6 +124,22 @@ class Validator extends Base\Validator
         Pricing\Feature::validateFeature($input[Pricing\Entity::FEATURE]);
     }
 
+    protected function validateAddPlanRuleProcurer($input)
+    {
+        if (empty($input[Pricing\Entity::PROCURER]) === true)
+        {
+            return;
+        }
+
+        if ($input[Pricing\Entity::FEATURE] !== Feature::OPTIMIZER)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'procurer is not required when feature is optimizer.');
+    }
+
     protected function validateAddPlanRulePricingMethod(array $input)
     {
         $feature = Pricing\Feature::PAYMENT;
@@ -138,7 +154,18 @@ class Validator extends Base\Validator
         switch ($feature)
         {
             case Pricing\Feature::PAYMENT:
-                Payment\Method::validateMethod($method);
+
+                // throw error if procurer is not merchant and method is null
+                if (($input[Entity::PROCURER] !== "merchant") and (is_null($method) === true))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The payment method field is required for feature payment if procurer is not merchant.');
+                }
+
+                if (is_null($method) === false)
+                {
+                    Payment\Method::validateMethod($method);
+                }
 
                 break;
 

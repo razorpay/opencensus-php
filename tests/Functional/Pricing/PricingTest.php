@@ -99,6 +99,42 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithProcurerMerchantAndMethodNull()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithProcurerRazorpayAndMethodNull()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureOptimizerAndMethodNull()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureOptimizerAndProcurerNotNull()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testDuplicateReceiverRule()
     {
         $content = $this->createPricingPlan(['receiver_type' => 'qr_code']);
@@ -2131,9 +2167,20 @@ class PricingTest extends TestCase
 
         foreach (Pricing\Feature::FEATURE_LIST as $feature)
         {
-            if ($feature !== 'refund')
+            if ($feature !== 'refund' and $feature !== 'optimizer')
             {
                 $testData['request']['content']['feature'] = $feature;
+
+                if ($feature === 'payment')
+                {
+                    $message = "The payment method field is required for feature payment if procurer is not merchant.";
+                }
+                else
+                {
+                    $message =  "The payment method field is required unless feature is in refund, optimizer, payment.";
+
+                }
+                $testData['response']['content']['error']['description'] = $message;
 
                 $this->startTest($testData);
             }

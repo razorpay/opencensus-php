@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Models\Org;
 use RZP\Models\Card;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Merchant\FeeBearer;
@@ -15,6 +17,75 @@ use RZP\Models\Payment as PaymentModel;
 
 class Payment extends Base
 {
+
+    protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
+    {
+        $method   = $this->entity->getMethod();
+        $orgId    = $this->entity->merchant->org->getId();
+        $product  = $this->product;
+
+        $payment = $this->entity;
+        $merchantId = $payment->getMerchantId();
+
+        if ($this->isMerchantProcuredPayment() === true){
+
+            $mode = $this->mode ?? Mode::LIVE;
+
+            $featureFlag = "apply_procurer_pricing";
+
+            $variant = $this->app->razorx->getTreatment($merchantId, $featureFlag, $mode);
+
+            if ($variant === "on")
+            {
+                $procurer = $payment->terminal->getProcurer();
+
+                $filters = $this->getBasicPricingRuleFiltersForProcuredPayment($product, $feature, $procurer, $method);
+            }
+            else
+            {
+                $filters = $this->getBasicPricingRuleFilters($product, $feature, $method);
+            }
+        }
+        else
+        {
+            $filters = $this->getBasicPricingRuleFilters($product, $feature, $method);
+        }
+
+        $rules = $this->applyFiltersOnRules($pricing, $filters);
+
+        $rulesCount = count($rules);
+
+        //
+        // If pricing for the feature is optional, no rules may exist
+        // In this case, we add the zero pricing rule and return
+        //
+        $isFeatureOptional = $this->isFeatureOptional($feature);
+
+        if (($rulesCount === 0) and
+            ($isFeatureOptional === true) and
+            ($orgId === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
+            return;
+        }
+
+        $rule = $this->getPricingRule($rules, $method);
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                ['entity' => $this->entity->toArray()]);
+        }
+
+        $this->pricingRules->push($rule);
+    }
+
+
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
         $method  = $this->entity->getMethod();
@@ -22,11 +93,7 @@ class Payment extends Base
 
         foreach ($features as $feature)
         {
-            $filters = [
-                [Pricing\Entity::PRODUCT,        $product, false, null],
-                [Pricing\Entity::FEATURE,        $feature, false, null],
-                [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
-            ];
+            $filters = $this->getBasicPricingRuleFiltersForFeature($product, $feature, $method);
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
@@ -558,5 +625,81 @@ class Payment extends Base
         }
 
         $this->amount = $amount;
+    }
+
+    protected function isMerchantProcuredPayment(): bool{
+
+        $payment = $this->entity;
+
+        if ($payment->merchant->isFeeBearerCustomerOrDynamic() === true)
+        {
+            return false;
+        }
+        //
+        // Transfer method doesn't have terminal associated
+        //
+        if ($payment->getMethod() === PaymentModel\Method::TRANSFER)
+        {
+            return false;
+        }
+
+        $procurer = $payment->terminal->getProcurer();
+
+        if ($procurer === "merchant") {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getBasicPricingRuleFiltersForProcuredPayment($product, $feature, $procurer, $method) : array
+    {
+        $filters = [
+            [Pricing\Entity::PRODUCT,        $product,   false, null],
+            [Pricing\Entity::FEATURE,        $feature,   false, null],
+            [Pricing\Entity::PROCURER,       $procurer,  false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,    true, null],
+        ];
+
+        return $filters;
+    }
+
+    protected function isFeatureOptional(string $feature):bool
+    {
+        $isOptional = Pricing\Feature::isFeaturePricingOptional($feature);
+
+        if ($isOptional === true)
+        {
+            return true;
+        }
+
+        if (($feature === Pricing\Feature::PAYMENT) and ($this->isMerchantProcuredPayment() === true))
+        {
+            return  true;
+        }
+
+        return false;
+    }
+
+    private function getBasicPricingRuleFiltersForFeature(string $product, $feature, $method)
+    {
+        if ($feature == Pricing\Feature::OPTIMIZER)
+        {
+            $filters = [
+                [Pricing\Entity::PRODUCT,        $product, false, null],
+                [Pricing\Entity::FEATURE,        $feature, false, null],
+                [Pricing\Entity::PAYMENT_METHOD, $method,  true, null],
+            ];
+
+            return $filters;
+        }
+
+        $filters = [
+            [Pricing\Entity::PRODUCT,        $product, false, null],
+            [Pricing\Entity::FEATURE,        $feature, false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
+        ];
+
+        return $filters;
     }
 }

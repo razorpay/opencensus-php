@@ -3879,6 +3879,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $features[] = Pricing\Feature::ESAUTOMATIC;
         }
 
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::RAAS) === true)
+        {
+            $features[] = Pricing\Feature::OPTIMIZER;
+        }
+
         return $features;
     }
 

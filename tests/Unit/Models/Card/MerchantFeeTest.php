@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -27,6 +28,8 @@ class MerchantFeeTest extends TestCase
     ];
 
     protected $qrCode;
+
+    protected $sharpTerminal;
 
     protected $input = [
         'method'   => 'card',
@@ -55,11 +58,11 @@ class MerchantFeeTest extends TestCase
         $this->sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
-    public function getMockPricingRepo($withCreditCardRule = false, $withReceiverRule = false, $withDefault = true, $pricingRules = [])
+    public function getMockPricingRepo($withCreditCardRule = false, $withReceiverRule = false, $withDefault = true, $pricingRules = [], $procurer = true)
     {
         if (count($pricingRules) === 0)
         {
-            $pricingRules = $this->getDefaultPricingRules($withCreditCardRule, $withReceiverRule, $withDefault);
+            $pricingRules = $this->getDefaultPricingRules($withCreditCardRule, $withReceiverRule, $withDefault, $procurer);
         }
 
         $pricingPlan = new Pricing\Plan($pricingRules);
@@ -79,7 +82,7 @@ class MerchantFeeTest extends TestCase
     }
 
 
-    protected function getDefaultPricingRules($withCreditCardRule, $withReceiverRule, $withDefault)
+    protected function getDefaultPricingRules($withCreditCardRule, $withReceiverRule, $withDefault, $procurer = true)
     {
         $pricingRuleUpi = new Pricing\Entity([
             'id'                  => '1nvp2XPMasRLxx',
@@ -677,6 +680,49 @@ class MerchantFeeTest extends TestCase
             'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
+        $pricingRuleOptimizer = new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaaxya',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'optimizer',
+            'payment_method'      => null,
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $pricingRulePaymentProcurer= new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaaxyk',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'procurer'            => 'merchant',
+            'payment_method'      => null,
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
         $pricingRules =  [
             $pricingRuleUpi,
             $pricingRuleOne,
@@ -700,7 +746,8 @@ class MerchantFeeTest extends TestCase
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
             $pricingRuleDebitPin,
-            $pricingRuleCardEsAutomatic
+            $pricingRuleCardEsAutomatic,
+            $pricingRuleOptimizer,
         ];
 
         if ($withDefault === false)
@@ -722,6 +769,11 @@ class MerchantFeeTest extends TestCase
             $pricingRules[] = $pricingRuleDebit;
 
             $pricingRules[] = $pricingRuleUpiReceiver;
+        }
+
+        if ($procurer === true){
+            $pricingRules[] = $pricingRulePaymentProcurer;
+
         }
 
         return $pricingRules;
@@ -1322,9 +1374,9 @@ class MerchantFeeTest extends TestCase
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
-    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
+    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null)
     {
-        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType);
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType, $procurer);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1355,7 +1407,7 @@ class MerchantFeeTest extends TestCase
         $this->fail();
     }
 
-    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
+    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -1389,6 +1441,17 @@ class MerchantFeeTest extends TestCase
         $payment->merchant()->associate($merchant);
 
         $terminal = Terminal\Entity::find('1n25f6uN5S1Z5a');
+
+        if (empty($procurer) === false)
+        {
+            $data = ["procurer"=>$procurer];
+
+            $tid = $terminal["id"];
+
+            $this->editTerminal($tid, $data);
+
+            $terminal->reload();
+        }
 
         $payment->associateTerminal($terminal);
 
@@ -1611,4 +1674,64 @@ class MerchantFeeTest extends TestCase
 
         $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::CREDIT, true);
     }
+
+    public function testDebitCardRuleSelectionWithOptimizer()
+    {
+
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $expectedPricingRules = [
+            'payment'        => '4pmbgtgNVVDd7x',
+            'optimizer'      => '1nvp2XPMmaaxya',
+        ];
+
+        //without razorx
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
+
+        // with razorx zero pricing rule
+        $this->mockRazorx();
+        $expectedPricingRules = [
+            'payment'        => '1nvp2XPMmaaxyk',
+            'optimizer'      => '1nvp2XPMmaaxya',
+        ];
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
+    }
+
+    public function testDebitCardRuleSelectionWithOptimizerWithProcurerZeroPricingRule()
+    {
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $rules = $this->getMockPricingRepo(false, false, true, [], false);
+
+        $this->fee->setPricingRepo($rules);
+
+        $this->mockRazorx();
+
+        $expectedPricingRules = [
+            'payment'        => '1ZeroPricingR1',
+            'optimizer'      => '1nvp2XPMmaaxya',
+        ];
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
+    }
+
+
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    return "on";
+                }));
+    }
+
+
 }
