@@ -780,6 +780,8 @@ class Route
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
+        'wallet_service'                           => ['any',      'wallet/{path}',                                  'WalletController@handleProxyMerchantRequests'                      ],
+        'wallet_service_admin'                     => ['any',      'wallet/admin/{path}',                            'WalletController@handleProxyAdminRequests'                         ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -2293,6 +2295,7 @@ class Route
     ];
 
     public static $private = [
+        'wallet_service',
         'mir_instruments_get',
         'settlement_ondemand_fees',
         'settlement_ondemand_create',
@@ -3411,6 +3414,7 @@ class Route
         'paper_nach_approve_failure',
         'loc_service_admin',
         'capital_cards_admin',
+        'wallet_service_admin',
         'capital_collections_admin',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
@@ -4135,6 +4139,7 @@ class Route
         'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
         'capital_cards_admin'                      => Permission::CAPITAL_CARDS,
+        'capital_cards_admin'                      => Permission::WALLETS,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,

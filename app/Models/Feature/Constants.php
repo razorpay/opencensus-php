@@ -144,6 +144,8 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
 
+    const WALLET                          = 'wallet';
+
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
     const UPI_OTM                         = 'upi_otm';
@@ -801,7 +803,8 @@ class Constants
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
-        self::REWARD_MERCHANT_DASHBOARD      => true,
+        self::REWARD_MERCHANT_DASHBOARD       => true,
+        self::WALLET                          => true,
     ];
 
     // Entity type constants

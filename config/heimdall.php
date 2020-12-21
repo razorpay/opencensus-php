@@ -951,6 +951,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::WALLETS => [
+                'description' => 'Allow access to wallet service admin actions',
+                'assignable'  => true,
+            ],
+
             Permission::LOC => [
                 'description' => 'Allow access to capital-loc service from dashboard',
                 'assignable'  => true,

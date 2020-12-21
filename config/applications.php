@@ -519,6 +519,13 @@ return [
         'timeout'       => env('APP_LINE_OF_CREDIT_TIMEOUT', 60),
     ],
 
+    'wallet' => [
+        'url'           => env('APP_WALLET_URL'),
+        'username'      => 'test',
+        'secret'        => env('APP_WALLET_SECRET', 'test'),
+        'timeout'       => env('APP_WALLET_TIMEOUT', 60),
+    ],
+
     'capital_cards' => [
         'url'           => env('APP_CAPITAL_CARDS_URL'),
         'username'      => 'api',
