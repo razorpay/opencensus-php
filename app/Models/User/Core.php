@@ -1774,4 +1774,83 @@ class Core extends Base\Core
             }
         }
     }
+
+    /**
+     * it'll fetch the user details given the user email id
+     * user details contains
+     * - basic user information
+     * - all primary merchant accounts associated with the user
+     * - business specific details
+     *
+     * @param array $input
+     * @return array
+     */
+    public function getDetails(array $input): array
+    {
+        $user = $this->repo
+                     ->user
+                     ->getUserFromEmailOrFail($input['email']);
+
+        $merchantDetails = $this->getPrimaryMerchantDetails($user);
+
+        return [
+            'name'                    => $user->getName(),
+            'email'                   => $user->getEmail(),
+            'contact_mobile'          => $user->getContactMobile(),
+            'contact_mobile_verified' => $user->isContactMobileVerified(),
+            'account_locked'          => $user->isAccountLocked(),
+            'confirmed'               => $user->confirmed,
+            'merchants'               => $merchantDetails,
+        ];
+    }
+
+    /**
+     * it'll collect all the primary accounts (pg accounts) associated with the user
+     * along with their business details
+     *
+     * we will be adding first merchant who is associated with the user (prod requirement)
+     *
+     * @param Entity $user
+     * @return array
+     */
+    protected function getPrimaryMerchantDetails(Entity $user): array
+    {
+        $merchant = $user->primaryMerchants()->first();
+
+        // if there is no merchant details then return empty result
+        if ($merchant === NULL)
+        {
+            return [];
+        }
+
+        $merchantDetails = [
+            'gstin'           => NULL,
+            'pan'             => NULL,
+            'billing_address' => NULL,
+            'description'     => NULL,
+        ];
+
+        $details = $merchant->merchantDetail;
+
+        // update merchant details if there is data
+        if ($details !== NULL)
+        {
+            $merchantDetails = [
+                'gstin'             => $details->getBusinessStateCode(),
+                'pan'               => $details->getPan(),
+                'billing_address'   => $details->getBusinessAddress(),
+                'description'       => $details->getBusinessDescription(),
+            ];
+        }
+
+        $merchantDetails += [
+            'id'                => $merchant->getId(),
+            'activated'         => $merchant->isActivated(),
+            'website'           => $merchant->getWebsite(),
+            'name'              => $merchant->getName(),
+            'billing_label'     => $merchant->getBillingLabelNotName(),
+        ];
+
+        return [$merchantDetails];
+    }
 }

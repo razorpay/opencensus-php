@@ -1222,4 +1222,11 @@ class Service extends Base\Service
 
         return app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, $input['source']);
     }
+
+    public function getDetails(array $input)
+    {
+        (new Validator)->validateInput('get_details', $input);
+
+        return (new Core())->getDetails($input);
+    }
 }

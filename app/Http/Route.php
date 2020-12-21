@@ -1295,6 +1295,7 @@ class Route
         'user_opt_in_whatsapp'                     => ['post',     'users/whatsapp/opt_in',                          'UserController@optInForWhatsapp'                                   ],
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
+        'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -2853,6 +2854,8 @@ class Route
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
+        'user_details',
+
         'reward_expire_cron',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
@@ -5728,6 +5731,14 @@ class Route
 
         'thirdwatch_reports' => [
             'currency_fetch_rates_internal'
+        ],
+
+        'thirdwatch' => [
+            'user_details',
+        ],
+
+        'opfin' => [
+            'user_details',
         ],
 
         'razorflow' => [

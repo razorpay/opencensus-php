@@ -147,6 +147,14 @@ return [
         'secret'  => env('THIRDWATCH_REPORTS_SERVICE_SECRET')
     ],
 
+    'thirdwatch' => [
+        'secret'  => env('THIRDWATCH_SERVICE_SECRET')
+    ],
+
+    'opfin' => [
+        'secret'  => env('OPFIN_SERVICE_SECRET')
+    ],
+
     'scrooge' => [
         'mock'              => env('SCROOGE_MOCK', false),
         'url'               => env('SCROOGE_URL'),

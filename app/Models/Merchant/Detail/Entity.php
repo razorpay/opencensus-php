@@ -602,15 +602,20 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
     {
         return Address\Utility::formatAddressAsText(
-            [
-                Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
-                Address\Entity::LINE2     => $this->getBusinessRegisteredAddressLine2(),
-                Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
-                Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
-                Address\Entity::COUNTRY   => 'India',
-                Address\Entity::ZIPCODE   => $this->getBusinessRegisteredPin(),
-            ],
+            $this->getBusinessAddress(),
             $delimiter);
+    }
+
+    public function getBusinessAddress(): array
+    {
+        return [
+            Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
+            Address\Entity::LINE2     => $this->getBusinessRegisteredAddressLine2(),
+            Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
+            Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
+            Address\Entity::COUNTRY   => 'India',
+            Address\Entity::ZIPCODE   => $this->getBusinessRegisteredPin(),
+        ];
     }
 
     public function hasBusinessRegisteredAddress(): bool

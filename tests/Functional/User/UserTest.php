@@ -2578,4 +2578,45 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUserDetails()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->primaryMerchants()->first();
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users?email='.$user['email'],
+            ],
+            'response' => [
+                'content' => [
+                    'name'                      => $user->getName(),
+                    'email'                     => $user->getEmail(),
+                    'contact_mobile'            => NULL,
+                    'contact_mobile_verified'   => FALSE,
+                    'account_locked'            => FALSE,
+                    'confirmed'                 => TRUE,
+                    'merchants' => [
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'billing_address'   => NULL,
+                            'id'                => $merchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $merchant->getWebsite(),
+                            'name'              => $merchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $merchant->getBillingLabelNotName(),
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
 }
