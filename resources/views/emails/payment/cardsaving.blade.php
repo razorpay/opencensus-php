@@ -54,11 +54,13 @@
         <tr style="height: 25px">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">&nbsp;</td>
         </tr>
-        <tr>
-            <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
-            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
-            </td>
-        </tr>
+        @if ($custom_branding === false)
+          <tr>
+              <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
+              <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
+              </td>
+          </tr>
+        @endif
         <tr style="height: 25px">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">&nbsp;</td>
         </tr>
@@ -163,11 +165,13 @@
         <tr style="height: 20px;">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">&nbsp;</td>
         </tr>
-        <tr>
-            <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
-            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
-            </td>
-        </tr>
+        @if ($custom_branding === false)
+          <tr>
+              <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
+              <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
+              </td>
+          </tr>
+        @endif
         <tr style="height: 10px;font-size:1px;">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">&nbsp;</td>
         </tr>
@@ -187,6 +191,13 @@
         <tr style="height: 20px;">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">&nbsp;</td>
         </tr>
+        @if ($custom_branding)
+          <tr>
+              <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
+              <center><img src="{{ $email_logo }}" style="height: 32px;"></center>
+              </td>
+          </tr>
+        @endif
     </tbody>
 </table>
 </center>

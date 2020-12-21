@@ -6,7 +6,7 @@
 </head>
 <body class="body" style="width: 100% !important; min-width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; background: #EBECEE;">
     <table class="container" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; width: 580px; margin: 0 auto; text-align: inherit; background: #EBECEE;"><tr style="padding: 0; vertical-align: top; text-align: left;"><td style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
-          @include('emails.partials.header', ['message' => $message])
+          @include('emails.partials.header', ['message' => $message, 'custom_branding'=>$custom_branding])
           <!-- Text Header -->
           <table class="container" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; width: 580px; margin: 0 auto; text-align: inherit;"><tr style="padding: 0; vertical-align: top; text-align: left;">
 <td style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
@@ -144,7 +144,33 @@ capturing it in the dashboard.</p>
           @endforeach
           @include('emails.partials.footer', ['message' => $message])
         
-      
+        @if ($custom_branding)
+          <table class="row" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;">
+            <tr style="padding: 0; text-align: left; vertical-align: top;">
+              <td class="center" align="center" style="border-collapse: collapse !important; padding: 0; text-align: center; vertical-align: top; margin: 0;">
+                <center style="min-width: 580px; width: 100%;">
+                  <table class="container" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;">
+                    <tr style="padding: 0; text-align: left; vertical-align: top;">
+                      <td class="wrapper last white" style="border-collapse: collapse !important; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; margin: 0; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
+                        <table class="twelve columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;">
+                          <tr style="padding: 0; text-align: left; vertical-align: top;">
+                            <td class="center lighttext" style="border-collapse: collapse !important; padding: 0px 0px 10px; text-align: center; vertical-align: top; margin: 0; font-size: 12px;">
+                              <center style="min-width: 580px; width: 100%;">
+                                <img src="{{ $email_logo }}" style="height: 32px;" />
+                              </center>
+                            </td>
+                            <td class="expander" style="border-collapse: collapse !important; padding: 0 !important; text-align: left; vertical-align: top; margin: 0; visibility: hidden; width: 0px;">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+        @endif
     </table>
 </td></tr></table>
 </body>

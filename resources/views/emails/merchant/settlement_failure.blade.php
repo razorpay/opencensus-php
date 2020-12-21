@@ -19,10 +19,12 @@
 >
     <!-- Razorpay logo -->
     <div style="text-align: center; margin-bottom: 30px">
-        <img
+        @if ($custom_branding === false)
+            <img
                 style="margin-top: 30px; height: 30px"
                 src="https://cdn.razorpay.com/logo_invert.png"
-        />
+            />
+        @endif
     </div>
     <div style="max-width: 588px; margin: auto">
         <div style="max-width: 588px; margin: auto">
@@ -168,6 +170,12 @@
                     updated the details.
                 </p>
             </div>
+
+            @if ($custom_branding)
+                <div style="text-align: center; margin-top: 20px; margin-bottom: 5px">
+                    <img src="{{ $email_logo }}" style="height: 32px;" />
+                </div>
+            @endif
         </div>
     </div>
 </div>
