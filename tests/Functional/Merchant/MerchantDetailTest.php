@@ -305,10 +305,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
-        $merchant = $this->getDbEntityById('merchant', $merchantId);
-
-        $this->assertNotContains('abc.com', $merchant->getWhitelistedDomains());
-
         // needs_clarification to under_review
         $this->changeActivationStatusFromNeedsClarificationToUnderReview(
             $testData['request']['content'],

@@ -1533,8 +1533,6 @@ class Core extends Base\Core
 
                     $this->sendNeedsClarificationEmail($merchant);
                 }
-
-                $this->deactivateIfFlawedWebsite($merchant, $merchantDetails->getIssueFields());
             }
 
             $this->repo->saveOrFail($merchantDetails);
