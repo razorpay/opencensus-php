@@ -2606,8 +2606,6 @@ trait Authorize
             return;
         }
 
-        $fallbacktoV1Flow = false;
-
         try
         {
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
@@ -2617,27 +2615,32 @@ trait Authorize
             // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
 
+             // Shield is 100% live. In case shield is down, solution implemented as discussed in Jira ticket: CARD-593
+             // https://docs.google.com/document/d/1RdfWJbyunG1E0RzwqrcEyVA-U8I8_-nIfUN6alphGwI
+
+            $shieldFailure = false;
+            $shieldOnValue = 'shield_on';
+
             $razorxConfig = $this->app['config']->get('applications.razorx');
 
-            //Remove redundant razorx calls on prod. ramp-up is 100%
-            if (($this->app['env'] === Environment::PRODUCTION) and
-                ($this->mode === Mode::LIVE) and
-                ($razorxConfig['mock'] !== true))
+            $isLiveEnvironment = (($this->app['env'] === Environment::PRODUCTION) and ($this->mode === Mode::LIVE)
+                and ($razorxConfig['mock'] !== true));
+
+            if ($isLiveEnvironment === true)
             {
-                $razorxResult = 'shield_on';
+                // As shield is 100% live therefore we are not calling the razorx on live.
+                $razorxResult = $shieldOnValue;
             }
             else
             {
+                // For non-live env we still need to call the razorx mock service for existing test to pass.
                 $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'shield_risk_evaluation', $this->mode);
             }
 
-            $this->trace->info(TraceCode::RAZORX_VARIANT_SHIELD, [
-                'payment_id'     => $payment->getId(),
-                'razorx_variant' => $razorxResult,
-            ]);
-
-            $shouldRunFraudDetectionV2 = (($razorxResult === 'shield_on') and
-                                          ($payment->shouldRunShieldChecks() === true));
+            $shouldRunFraudDetectionV2 = (
+                ($razorxResult === $shieldOnValue) and
+                ($payment->shouldRunShieldChecks() === true)
+            );
 
             if ($shouldRunFraudDetectionV2 === true)
             {
@@ -2649,35 +2652,47 @@ trait Authorize
                 }
                 catch (Exception\IntegrationException $exception)
                 {
-                    $fallbacktoV1Flow = true;
+                    $shieldFailure = true;
                 }
                 catch (\Requests_Exception $exception)
                 {
-                    $fallbacktoV1Flow = true;
+                    $shieldFailure = true;
                 }
                 finally
                 {
-                    $payment->setMetadataKey('shield_risk_execution', $razorxResult);
+                    $payment->setMetadataKey('shield_risk_execution', 'shield_on');
                 }
             }
 
-            /*
-             * Firstly, $payment->shouldRunFraudChecks tells us whether maxmind can handle the request in the first
-             * place.
-             *
-             * Now, provided maxmind can handle the request, we check:
-             * If a fraud check ran on shield, then we do not fallback to maxmind.
-             * If a fraud check was not run on shield, or it ran and failed, we fallback to maxmind.
-             */
-            if (($payment->shouldRunFraudChecks() === true) and
-                (($shouldRunFraudDetectionV2 === false) or
-                 ($fallbacktoV1Flow === true)))
+            if ($shieldFailure === true)
             {
-                $this->validateEmailTld($payment);
+                $riskSource = Risk\Source::MANUAL;
 
-                $riskSource = Risk\Source::MAXMIND;
+                if ($payment->hasCard() and $payment->card->isInternational() === true)
+                {
 
-                $this->validateFraudDetection($payment, $this->merchant);
+                    $data = [
+                        'payment_id' => $payment->getPublicId(),
+                        'method'     => $payment->getMethod(),
+                    ];
+
+                    $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
+                    $e = new Exception\BadRequestException($errorCode, null, $data);
+
+                    $this->updatePaymentAuthFailed($e);
+                    throw $e;
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::FRAUD_DETECTION_SKIPPED,
+                        [
+                            'payment_id'  => $payment->getPublicId(),
+                            'environment' => $this->app['env'],
+                            'mode'        => $this->mode,
+                        ]
+                    );
+                }
             }
 
             $this->app['diag']->trackPaymentEventV2(

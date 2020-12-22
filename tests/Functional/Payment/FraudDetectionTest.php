@@ -75,6 +75,8 @@ class FraudDetectionTest extends TestCase
 
     public function testFraudDetected()
     {
+        $this->markTestSkipped('Maxmind code removed');
+
         $this->mockMaxmind();
 
         $payment = $this->getDefaultPaymentArray();
@@ -184,6 +186,8 @@ class FraudDetectionTest extends TestCase
 
     public function testFraudDetectedWithInvalidEmailTld()
     {
+        $this->markTestSkipped('Maxmind code removed');
+
         $this->fixtures->merchant->enableInternational();
 
         $payment                   = $this->getDefaultPaymentArray();
@@ -397,6 +401,8 @@ class FraudDetectionTest extends TestCase
      */
     public function testFraudDetectionFailedByShieldDetectedByMaxMind()
     {
+        $this->markTestSkipped('Maxmind code removed');
+
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
 
         $shieldClient->shouldReceive('evaluateRules')
@@ -636,5 +642,52 @@ class FraudDetectionTest extends TestCase
         };
 
         $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    /*
+    * In this test case, we simulate a failure to detect fraud on Shield(validateFraudDetectionV2).
+    * In this case, if it's an international card then throw an error and fail the payment
+    */
+    public function testInternationalCardFraudFailedByShield()
+    {
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload){
+                throw new IntegrationException(ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED,
+                    ErrorCode::SERVER_ERROR_SHIELD_FRAUD_DETECTION_FAILED);
+            });
+
+        $this->app['shield'] = $shieldClient;
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
+
+        $payment['card']['number'] = '5149067611060906';
+
+        $data = $this->testData['testInternationalCardFraudFailedByShield'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $payment['error_code']);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD, $payment['internal_error_code']);
     }
 }

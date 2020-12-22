@@ -497,6 +497,8 @@ class AnalyticsTest extends TestCase
 
     public function testRiskScoreAnalyticsPaymentSuccess()
     {
+        $this->markTestSkipped('Maxmind code removed');
+
         $this->mockMaxmind();
 
         $payment = $this->getDefaultPaymentArray();
@@ -522,6 +524,8 @@ class AnalyticsTest extends TestCase
 
     public function testRiskScoreAnalyticsPaymentFailed()
     {
+        $this->markTestSkipped('Maxmind code removed');
+
         $this->mockMaxmind();
 
         $this->fixtures->merchant->enableInternational();
