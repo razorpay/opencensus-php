@@ -590,8 +590,15 @@ class PayoutLinks
 
         $headers['X-Task-ID'] = $this->app['request']->getId();
 
-        $options = ['auth' => [self::KEY,
-                               $this->secret]];
+        $options = [
+            'auth' => [
+                self::KEY,
+                $this->secret
+            ],
+            // Increasing timeout to 25 seconds. Temporary fix.
+            // Final FIX: https://jira.corp.razorpay.com/browse/RX-4320
+            'timeout' => 25,
+        ];
 
         $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
             [
