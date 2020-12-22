@@ -113,6 +113,10 @@ export default class DirectTransfers extends React.Component {
           type: 'error',
           message: error,
         });
+
+        this.setState({
+          isFormLocked: false,
+        });
       });
   };
 
