@@ -30,6 +30,7 @@ class ProviderCode
     const ANDB               = 'andb';
     const APB                = 'apb';
     const APL                = 'apl';
+    const AUBANK             = 'aubank';
     const AXIS               = 'axis';
     const AXISBANK           = 'axisbank';
     const AXISGO             = 'axisgo';
@@ -113,6 +114,7 @@ class ProviderCode
     const PNB                = 'pnb';
     const PNBPAY             = 'pnbpay';
     const POCKETS            = 'pockets';
+    const POSTBANK           = 'postbank';
     const PSB                = 'psb';
     const PURZ               = 'purz';
     const RAJGOVHDFCBANK     = 'rajgovhdfcbank';
@@ -145,8 +147,6 @@ class ProviderCode
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
     const YESB               = 'yesb';
-    const IPPB               = 'ippb';
-    const AUBANK             = 'aubank';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -167,6 +167,7 @@ class ProviderCode
         self::ANDB               => IFSC::ANDB,
         self::APB                => IFSC::AIRP,
         self::APL                => IFSC::AIRP,
+        self::AUBANK             => IFSC::AUBL,
         self::AXIS               => IFSC::UTIB,
         self::AXISBANK           => IFSC::UTIB,
         self::AXISGO             => IFSC::UTIB,
@@ -220,6 +221,7 @@ class ProviderCode
         self::INDIANBK           => IFSC::IDIB,
         self::INDUS              => IFSC::INDB,
         self::IOB                => IFSC::IOBA,
+        self::JIO                => IFSC::JIOP,
         self::JSB                => IFSC::JSBP,
         self::JSBP               => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
@@ -250,6 +252,7 @@ class ProviderCode
         self::PNBPAY             => IFSC::PUNB,
         self::PSB                => IFSC::PSIB,
         self::POCKETS            => IFSC::ICIC,
+        self::POSTBANK           => IFSC::IPOS,
         self::PURZ               => 'NPCI',
         self::RAJGOVHDFCBANK     => IFSC::HDFC,
         self::RBL                => IFSC::RATN,
@@ -282,9 +285,6 @@ class ProviderCode
         self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
         self::YESB               => IFSC::YESB,
-        self::IPPB               => IFSC::IPOS,
-        self::JIO                => IFSC::JIOP,
-        self::AUBANK             => IFSC::AUBL
     ];
 
     /**
