@@ -63,7 +63,7 @@ class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceNetbanki
 
         $transactionEntity2 = $this->getDbLastEntity(Entity::TRANSACTION);
 
-        $reconFile = $this->getReconExcelFile($payments);
+        $reconFile = $this->getReconFile($payments);
 
         $uploadedFile = $this->createUploadedFile($reconFile);
 
@@ -114,7 +114,7 @@ class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceNetbanki
         $this->assertEquals($payments[0][Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
         $this->assertEquals($payments[0][Payment::STATUS], Status::FAILED);
 
-        $reconFile = $this->getReconExcelFile($payments);
+        $reconFile = $this->getReconFile($payments);
 
         $uploadedFile = $this->createUploadedFile($reconFile);
 
@@ -139,26 +139,22 @@ class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceNetbanki
         $this->assertEquals($batch['status'], 'processed');
     }
 
-    protected function getReconExcelFile($payments)
+    protected function getReconFile($payments)
     {
-        $items[] = Reconciliate::$columnHeaders;
+        $formattedData = '';
 
         foreach ($payments as $index => $payment)
         {
             $amount  = number_format($payment['amount'] / 100, '2', '.', '');
-            $items[] = [
-                Reconciliate::PAYMENT_ID            => $payment['id'],
-                Reconciliate::BANK_REFERENCE_NUMBER => '1234',
-                Reconciliate::PAYMENT_AMOUNT        => $amount,
-                Reconciliate::PAYMENT_STATUS        => '000',
-                Reconciliate::PAYMENT_DATE          => Carbon::today()->format("d-m-y")
-            ];
+
+            $formattedData = $formattedData . $payment['id'] . '^' . '1234' . '^' . $amount . '^' . '000' . '^' .
+                Carbon::createFromTimestamp($payment['created_at'])->format("d-m-y") . "\n";
         }
 
         $creator = new FileStore\Creator;
 
-        $file = $creator->extension(FileStore\Format::XLSX)
-                        ->content($items)
+        $file = $creator->extension(FileStore\Format::TXT)
+                        ->content($formattedData)
                         ->name('DcbReconTest')
                         ->type(FileStore\Type::MOCK_RECONCILIATION_FILE)
                         ->headers(false)

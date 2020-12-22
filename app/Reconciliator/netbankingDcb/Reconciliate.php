@@ -31,4 +31,9 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::PAYMENT;
     }
+
+    public function getDelimiter()
+    {
+        return '^';
+    }
 }
