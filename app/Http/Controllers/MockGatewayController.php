@@ -8,6 +8,8 @@ use Redirect;
 use ApiResponse;
 use RZP\Gateway\Hdfc;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Http\CheckoutView;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Locale\Core as LocaleCore;
 
@@ -197,7 +199,9 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $languageCode = LocaleCore::setLocale($input, $this->app['basicauth']->getMerchant()->getId());
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $languageCode = LocaleCore::setLocale($input,$merchant->getId());
 
         $server = $this->gateway->server('sharp');
 
@@ -212,8 +216,18 @@ class MockGatewayController extends Controller
         {
             $data['language_code'] = $languageCode;
 
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+            $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                [
+                    'view create via'   =>  'gateway.sharpBankPage',
+                    'org_logo'           => $data['org_logo'],
+                    'org_name'          => $data['org_name'],
+                ]);
             return View::make('gateway.sharpBankPage')
-                       ->with($data);
+                       ->with('data', $data);
         }
     }
 

@@ -7,7 +7,9 @@ use Redirect;
 use Response;
 use Request;
 use App;
+use RZP\Http\CheckoutView;
 use RZP\Models\Payment\Method;
+use RZP\Models\Settlement\Merchant;
 use View;
 use Crypt;
 
@@ -42,6 +44,7 @@ class PaymentCreateController extends Controller
             if((isset($this->input['provider'])) and ($this->input['provider'] === Payment\Gateway::GETSIMPL) and ($this->app['rzp.mode'] != 'test'))
             {
                 assertTrue ($ret !== null);
+
                 return $this->returnCheckoutCallbackView($ret);
             }
             else {
@@ -86,6 +89,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->processNachRegister($input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         $response = $this->processCoprotoJsonData($data);
 
         $this->logResponseIfApplicable($response);
@@ -103,6 +110,10 @@ class PaymentCreateController extends Controller
         $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->process($input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         $response = $this->processCoprotoJsonData($data);
 
@@ -125,6 +136,10 @@ class PaymentCreateController extends Controller
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
         $data = $this->service(E::PAYMENT)->process($input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         $response = $this->processCoprotoJsonData($data);
 
@@ -156,6 +171,15 @@ class PaymentCreateController extends Controller
 
     public function getCreatePaymentCheckoutCallback()
     {
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $templateData = (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.gatewayAsyncForm',
+            ]);
+
         return View::make('gateway.gatewayAsyncForm')
                 ->with('data', $templateData);
     }
@@ -172,7 +196,9 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
-        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomerOrDynamic() === true) and
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if (($merchant->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
         {
             $input['view'] = 'html';
@@ -217,6 +243,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->process($input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
@@ -240,6 +270,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->process($input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
@@ -253,6 +287,10 @@ class PaymentCreateController extends Controller
         $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->processWallet($input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         if (isset($data['request']))
         {
@@ -289,6 +327,10 @@ class PaymentCreateController extends Controller
         $data = $this->service(E::PAYMENT)->processUpi($input);
 
         $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         if (isset($data['data']['intent_url']) === true)
         {
@@ -358,11 +400,15 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
         // Converts all the amounts to rupees
         foreach ($data as $key => $value)
         {
             $data[$key] = $value / 100;
         }
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         if ($retHtml === true)
         {
@@ -383,6 +429,10 @@ class PaymentCreateController extends Controller
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         unset($data['originalAmount']);
 
@@ -407,6 +457,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->otpResend($id, $input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         $response = $this->processCoprotoJsonData($data);
 
         return ApiResponse::json($response);
@@ -421,6 +475,10 @@ class PaymentCreateController extends Controller
         $input = Request::all();
 
         $data = $this->service(E::PAYMENT)->otpGenerate($id, $input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         $response = $this->processCoprotoJsonData($data);
 
@@ -447,6 +505,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->topup($id, $input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
@@ -458,6 +520,10 @@ class PaymentCreateController extends Controller
         $input = Request::all();
 
         $data = $this->service(E::PAYMENT)->topup($id, $input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         return $this->processCoprotoData($data);
     }
@@ -485,6 +551,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
@@ -499,6 +569,10 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->processOtpSubmitPrivate($id, $hash, $input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
@@ -511,12 +585,20 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
     public function postRedirectCallback($id)
     {
         $data = $this->service(E::PAYMENT)->redirectCallback($id);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         return $this->returnCallbackResponse($data);
     }
@@ -536,6 +618,10 @@ class PaymentCreateController extends Controller
     {
         $data = $this->service(E::PAYMENT)->redirectToAuthorize($id);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         $response = $this->processCoprotoData($data);
 
         $this->logResponseIfApplicable($response);
@@ -550,18 +636,30 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->authorizePayment($input, $id);
 
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         return ApiResponse::json($data);
     }
 
     public function getAuthenticateUrl($id)
     {
-      $data = $this->service(E::PAYMENT)->getAuthenticateUrl($id);
+        $data = $this->service(E::PAYMENT)->getAuthenticateUrl($id);
 
-      return $data;
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        return $data;
     }
 
     protected function returnCallbackResponse($data)
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         if (isset($data['type']))
         {
             $type = $data['type'];
@@ -579,7 +677,14 @@ class PaymentCreateController extends Controller
 
     protected function processCoprotoData($data)
     {
-        $languageCode = App::getLocale() !== null ? App::getLocale() : LocaleCore::setLocale($data, $this->app['basicauth']->getMerchant()->getId());
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $languageCode = App::getLocale() !== null ?
+                        App::getLocale() :
+                        LocaleCore::setLocale($data, $this->app['basicauth']->getMerchant()->getId());
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         //
         // Check for call from API
         //
@@ -672,6 +777,11 @@ class PaymentCreateController extends Controller
                    'language_code' => $languageCode,
                 ];
 
+                $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                    [
+                        'view create via'   =>  'gateway.gatewayOtpPostForm',
+                    ]);
+
                 return View::make('gateway.gatewayOtpPostForm')
                            ->with('data', $templateData);
             }
@@ -694,6 +804,11 @@ class PaymentCreateController extends Controller
                     'api'  => $this->config->get('url.api.production')
                 ];
 
+                $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                    [
+                        'view create via'   =>  'gateway.gatewayAsyncForm',
+                    ]);
+
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $templateData);
             }
@@ -701,16 +816,31 @@ class PaymentCreateController extends Controller
             {
                 if ($data['method'] === Payment\Method::WALLET)
                 {
+                    $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                        [
+                            'view create via'   =>  'gateway.gatewayWalletForm',
+                        ]);
+
                     return View::make('gateway.gatewayWalletForm')
                                ->with('data', $data);
                 }
                 else if ($data['method'] === Payment\Method::EMANDATE)
                 {
+                    $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                        [
+                            'view create via'   =>  'emandate.form',
+                        ]);
+
                     return View::make('emandate.form')
                                ->with('data', $data);
                 }
                 else if ($data['method'] === Payment\Method::UPI)
                 {
+                    $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                        [
+                            'view create via'   =>  'gateway.gatewayUpiForm',
+                        ]);
+
                     return View::make('gateway.gatewayUpiForm')
                                ->with('data', [
                                     'key'          => $this->ba->getPublicKey(),
@@ -727,6 +857,11 @@ class PaymentCreateController extends Controller
                     {
                         $data['cdn'] = $this->config->get('url.cdn.production');
 
+                        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                            [
+                                'view create via'   =>  'gateway.gatewayCardlessEmiForm',
+                            ]);
+
                         return View::make('gateway.gatewayCardlessEmiForm')
                                    ->with('data', $data);
                     }
@@ -737,6 +872,11 @@ class PaymentCreateController extends Controller
                        'language_code' => $languageCode,
                     ];
 
+                    $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                        [
+                            'view create via'   =>  'gateway.gatewayOtpPostForm',
+                        ]);
+
                     return View::make('gateway.gatewayOtpPostForm')
                                ->with('data', $templateData);
                 }
@@ -745,6 +885,11 @@ class PaymentCreateController extends Controller
                     if ((isset($data['missing']) === true) and
                         (in_array('contact', $data['missing'], true) === true)) {
                         $data['cdn'] = $this->config->get('url.cdn.production');
+
+                        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                            [
+                                'view create via'   =>  'gateway.gatewayCardlessEmiForm',
+                            ]);
 
                         // Here, we use the same view as we use for cardless EMI form
                         // for accepting OTP for EMI payments
@@ -1014,6 +1159,11 @@ class PaymentCreateController extends Controller
         $postFormData['merchant_id'] = $merchant->getId();
         $postFormData['language_code'] = $data['language_code'];
 
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.gatewayPostForm',
+            ]);
+
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);
     }
@@ -1026,6 +1176,11 @@ class PaymentCreateController extends Controller
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.gatewayGetForm',
+            ]);
+
         return View::make('gateway.gatewayGetForm')
             ->with('data', $postFormData);
     }
@@ -1036,6 +1191,12 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
         $postFormData['merchant_id'] = $merchant->getId();
+
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.phonepeSwitchFormSubmit',
+            ]);
+
         return View::make('gateway.phonepeSwitchFormSubmit')
             ->with('data', $postFormData);
     }
@@ -1050,6 +1211,11 @@ class PaymentCreateController extends Controller
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
         $postFormData['merchant_id'] = $merchant->getId();
 
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'public.paymentRedirectPostForm',
+            ]);
+
         return View::make('public.paymentRedirectPostForm')
                    ->with('data', $postFormData);
     }
@@ -1060,10 +1226,19 @@ class PaymentCreateController extends Controller
      */
     protected function returnCheckoutCallbackView($data)
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {
             return $this->returnNachNbCallbackView($data);
         }
+
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.callback',
+            ]);
 
         return View::make('gateway.callback')->with('data', $data);
     }
@@ -1078,21 +1253,41 @@ class PaymentCreateController extends Controller
             return $this->returnNachNbRedirectView($data);
         }
 
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.callbackReturnUrl',
+            ]);
+
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
     }
 
     protected function returnNachNbCallbackView($data)
     {
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.callbackNachNb - callback view',
+            ]);
+
         return View::make('gateway.callbackNachNb')->with('data', $data);
     }
 
     protected function returnNachNbRedirectView($data)
     {
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.callbackNachNb - redirect view',
+            ]);
+
         return View::make('gateway.callbackNachNb')->with('data', $data);
     }
 
     protected function returnConvenienceFeesView($input, $data, $url)
     {
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.gatewayFeesForm',
+            ]);
+
         return View::make('gateway.gatewayFeesForm')
                    ->with('data', $data)
                    ->with('input', array_assoc_flatten($input, "%s[%s]"))
@@ -1153,7 +1348,6 @@ class PaymentCreateController extends Controller
         ];
 
         $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
-
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_INITIATED, null, null, $metaDetails, $properties);
     }

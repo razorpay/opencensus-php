@@ -3,6 +3,7 @@
 namespace RZP\Http\Response;
 
 use App;
+use RZP\Http\CheckoutView;
 use View;
 use Request;
 use RZP\Http\Route;
@@ -134,6 +135,10 @@ class Response
 
         $route = $this->getCurrentRouteName();
 
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $viewData += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         if (empty($app[$key]) === false)
         {
             if ($this->isMerchantCallbackRoute($route))
@@ -201,6 +206,8 @@ class Response
 
         $route = $this->getCurrentRouteName();
 
+        $merchant = $this->app['basicauth']->getMerchant();
+
         if (empty($app[$key]) === false)
         {
             if ($this->isMerchantCallbackRoute($route))
@@ -221,6 +228,8 @@ class Response
                     ],
                 ];
 
+                $callbackArray += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
                 $view = \View::make('gateway.callbackReturnUrl')
                             ->with('data', $callbackArray)->render();
 
@@ -230,6 +239,8 @@ class Response
         else if ($this->isCheckoutCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
+
+            $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
             $view = \View::make('gateway.callback')->with('data', $data)->render();
 
@@ -323,6 +334,10 @@ class Response
 
     protected function generateCheckoutView($data)
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         $view = \View::make('checkout.checkout')
                      ->with($data)
                      ->render();
@@ -529,6 +544,10 @@ class Response
      */
     protected function generateDefaultErrorView(array $data)
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
         $response = \View::make('public.error', ['data' => $data]);
 
         return \Response::make($response);

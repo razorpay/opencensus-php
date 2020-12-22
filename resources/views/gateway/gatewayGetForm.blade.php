@@ -49,7 +49,7 @@
         <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
     <div id='ftr'>
-        <div style="display:inline-block;">Secured by <img style="vertical-align:middle;margin-bottom:5px;" height="20px" src="https://cdn.razorpay.com/logo.svg"></div>
+        <div style="display:inline-block;">Secured by <img style="vertical-align:middle;margin-bottom:5px;" height="20px" src={{ $data['checkout_logo'] }}></div>
         <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
 </div>

@@ -449,7 +449,7 @@
     </style>
   </head>
   <body>
-    <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="35px" style="height: 35px; margin: 20px auto;display: block;">
+    <img src={{ $data['org_logo'] }} id="logo" height="35px" style="height: 35px; margin: 20px auto;display: block;">
     <form action="{{ $data['request']['url'] }}" method="{{ $data['request']['method'] }}">
       @foreach ($data['request']['content']['input'] as $key => $value)
         @if (is_array($value))

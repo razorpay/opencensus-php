@@ -40,12 +40,12 @@
     </style>
   </head>
   <body>
-    <h1><img src="https://cdn.razorpay.com/logo.svg" width="316" height="67"></h1>
-    <h3>Welcome to Razorpay Bank</h3>
+    <h1><img src="{{ $data['org_logo'] }}" width="316" height="67"></h1>
+    <h3>Welcome to {{ $data['org_name'] }} Bank</h3>
     This is just a demo bank page.<br>
     You can choose whether to make this payment successful or not: <br><br>
-    <form onsubmit="return false" method="post" action="{{{ $url }}}">
-      @if ($method === 'emandate')
+    <form onsubmit="return false" method="post" action="{{{ $data['url'] }}}">
+      @if ($data['method'] === 'emandate')
         <input type="hidden" name="emandate_success">
         <button data-val="S" class="success">Success</button>
         <button data-val="M" class="warn em">Payment successful but e-Mandate failed</button>
@@ -53,9 +53,9 @@
         <button data-val="S" class="success">Success</button>
       @endif
       <button data-val="F" class="danger">Failure</button>
-      <input type="hidden" name="callback_url" value="{{{ $content['callback_url'] }}}">
-      @if (isset($language_code) === true && str_contains($url, '/gateway/mocksharp/payment/submit'))
-        <input type="hidden" name="language_code" value="{{{ $language_code }}}">
+      <input type="hidden" name="callback_url" value="{{{ $data['content']['callback_url'] }}}">
+      @if (isset($data['language_code']) === true && str_contains($data['url'], '/gateway/mocksharp/payment/submit'))
+        <input type="hidden" name="language_code" value="{{{ $data['language_code'] }}}">
       @endif
       <input type="hidden" name="success">
     </form>

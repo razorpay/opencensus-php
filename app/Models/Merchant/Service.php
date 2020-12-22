@@ -34,6 +34,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
+use RZP\Http\CheckoutView;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -652,6 +653,8 @@ class Service extends Base\Service
 
             $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
         }
+
+        $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);
 
         return $response;
     }

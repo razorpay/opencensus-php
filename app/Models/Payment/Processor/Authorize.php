@@ -48,6 +48,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\PaymentsUpi;
 use RZP\Constants\Environment;
 use RZP\Models\Card\Network;
+use RZP\Http\CheckoutView;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
@@ -953,6 +954,8 @@ trait Authorize
                'production'    => $this->app->environment() === Environment::PRODUCTION,
                'language_code' => $languageCode
             ];
+
+            $templateData += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
             $content = $this->app['view']
                             ->make('gateway.gatewayOtpPostForm')

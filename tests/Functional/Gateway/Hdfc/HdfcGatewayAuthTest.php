@@ -237,7 +237,12 @@ class HdfcGatewayAuthTest extends TestCase
             'amount',
             'image',
             'magic',
-            'http_status_code');
+            'org_logo',
+            'org_name',
+            'checkout_logo',
+            'custom_branding',
+            'http_status_code',
+            );
 
         $dataFields = array(
             'TermUrl',

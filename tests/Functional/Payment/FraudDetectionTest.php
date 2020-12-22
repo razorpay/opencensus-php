@@ -120,6 +120,11 @@ class FraudDetectionTest extends TestCase
 
         $response = $this->doAuthPayment($payment);
 
+        unset($response['org_logo']);
+        unset($response['org_name']);
+        unset($response['checkout_logo']);
+        unset($response['custom_branding']);
+
         $this->assertArrayKeysExist($response, ['razorpay_payment_id']);
 
         $payment = $this->getLastEntity('payment', true);

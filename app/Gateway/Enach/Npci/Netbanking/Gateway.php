@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Http\CheckoutView;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
@@ -898,6 +899,10 @@ class Gateway extends Base\Gateway
                                                                               $this->config,
                                                                               $this->mode
                                                                               );
+
+        $merchant = $input['merchant'];
+
+        $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
         return View::make('gateway.gatewayNachNbForm')->with('data', $postFormData)->render();
     }

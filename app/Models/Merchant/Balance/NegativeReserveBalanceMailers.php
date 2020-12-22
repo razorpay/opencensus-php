@@ -232,7 +232,6 @@ class NegativeReserveBalanceMailers extends Base\Core
                                     date("d") - $dayCount, date("Y")));
         $data = [
             'email'                 => $merchant->getEmail(),
-            'cc'                    => 'sujata@razorpay.com',
             'merchant_id'           => $merchant->getId(),
             'since'                 => $since,
             'balance'               => ($balanceAmount) / 100 . ' INR',
