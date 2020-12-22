@@ -2,15 +2,18 @@
 
 namespace RZP\Models\Contact;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Constants;
-use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**
@@ -256,5 +259,250 @@ class Core extends Base\Core
         $contact = $this->create($contactData, $merchant, null, true, true);
 
         return $contact;
+    }
+
+    /**
+     * Remove leading and trailing space from type
+     *
+     * @param $merchants
+     * @param $merchantIds
+     * @param PaginationEntity $paginationEntity
+     */
+    public function trimContactType($merchants, $merchantIds, PaginationEntity $paginationEntity)
+    {
+        $this->trace->info(
+            TraceCode::START_CONTACT_TYPE_TRIMMING,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+
+        $keysWithWhiteSpaceAlreadyTrimmed = [];
+
+        $typeObj = new Type();
+
+        foreach ($merchants as $merchant)
+        {
+            $allCustomKeys = $typeObj->getCustom($merchant);
+
+            foreach ($allCustomKeys as  $type)
+            {
+                if (strlen($type) !== strlen(trim($type)))
+                {
+                    $typeObj->trimType($type, $merchant);
+
+                    array_push($keysWithWhiteSpaceAlreadyTrimmed, $type);
+
+                    $this->trace->info(
+                        TraceCode::CONTACT_TYPE_TRIMMED_FROM_SETTING,
+                        [
+                            'type'        => $type,
+                            'merchant_id' => $merchant->getId()
+                        ]
+                    );
+                }
+            }
+        }
+
+
+        $contacts = $this->repo->contact->fetchContactsHavingSpaceInType(
+            $merchantIds,
+            $paginationEntity->getCurrentStartTime(),
+            $paginationEntity->getCurrentEndTime(),
+            $paginationEntity->getLimit()
+        );
+
+        $contactIds = $contacts->getIds();
+
+        while (count($contacts) > 0)
+        {
+            foreach ($contacts as $contact)
+            {
+                try
+                {
+                    $contactType = $contact->getType();
+
+                    $trimmedContactType = trim(str_replace('\n', '', $contactType));
+
+                    if (is_null($contactType) === false)
+                    {
+                        $contact->setType($trimmedContactType);
+                    }
+
+                    $contact->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::CONTACT_TYPE_TRIMMED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::CONTACT_TYPE_TRIM_FAILED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+            }
+
+            $newContacts = $this->repo->contact->fetchContactsHavingSpaceInType(
+                $merchantIds,
+                $paginationEntity->getCurrentStartTime(),
+                $paginationEntity->getCurrentEndTime(),
+                $paginationEntity->getLimit()
+            );
+
+            $newContactIds = $newContacts->getIds();
+
+            $nonCommonIdsFromLastContacts = array_diff($newContactIds, $contactIds);
+
+            if ((count($newContacts) === 0) or
+                (count($nonCommonIdsFromLastContacts) > 0))
+            {
+                $contactIds = $newContactIds;
+
+                $contacts = $newContacts;
+            }
+            else
+            {
+                $data = [
+                    'merchant_ids'  => $merchantIds,
+                    'created_from'  => $paginationEntity->getCurrentStartTime(),
+                    'created_till'  => $paginationEntity->getCurrentEndTime()
+                ];
+
+                $this->trace->info(
+                    TraceCode::CONTACT_TYPE_TRIM_FOR_MERCHANTS_FAILED,
+                    $data
+                );
+
+                return;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::CONTACT_TYPE_TRIMMED_FOR_MERCHANTS,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+    }
+
+    /**
+     * Remove leading and trailing space from name
+     *
+     * @param $merchantIds
+     * @param PaginationEntity $paginationEntity
+     */
+    public function trimContactName($merchantIds, PaginationEntity $paginationEntity)
+    {
+        $this->trace->info(
+            TraceCode::START_CONTACT_NAME_TRIMMING,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+
+        $contacts = $this->repo->contact->fetchContactsHavingSpaceInName(
+            $merchantIds,
+            $paginationEntity->getCurrentStartTime(),
+            $paginationEntity->getCurrentEndTime(),
+            $paginationEntity->getLimit()
+        );
+
+        $contactIds = $contacts->getIds();
+
+        while (count($contacts) > 0)
+        {
+            foreach ($contacts as $contact)
+            {
+                try
+                {
+                    $contactName = $contact->getName();
+
+                    $trimmedContactName = trim(str_replace('\n', '', $contactName));
+
+                    if (is_null($contactName) === false)
+                    {
+                        $contact->setName($trimmedContactName);
+                    }
+
+                    $contact->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::CONTACT_NAME_TRIMMED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::CONTACT_NAME_TRIM_FAILED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+            }
+
+            $newContacts = $this->repo->contact->fetchContactsHavingSpaceInName(
+                $merchantIds,
+                $paginationEntity->getCurrentStartTime(),
+                $paginationEntity->getCurrentEndTime(),
+                $paginationEntity->getLimit()
+            );
+
+            $newContactIds = $newContacts->getIds();
+
+            $nonCommonIdsFromLastContacts = array_diff($newContactIds, $contactIds);
+
+            if ((count($newContacts) === 0) or
+                (count($nonCommonIdsFromLastContacts) > 0))
+            {
+                $contactIds = $newContactIds;
+
+                $contacts = $newContacts;
+            }
+            else
+            {
+                $data = [
+                    'merchant_ids'  => $merchantIds,
+                    'created_from'  => $paginationEntity->getCurrentStartTime(),
+                    'created_till'  => $paginationEntity->getCurrentEndTime()
+                ];
+
+                $this->trace->info(
+                    TraceCode::CONTACT_NAME_TRIM_FOR_MERCHANTS_FAILED,
+                    $data
+                );
+
+                return;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::CONTACT_NAME_TRIMMED_FOR_MERCHANTS,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
     }
 }

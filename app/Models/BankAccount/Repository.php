@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankAccount;
 
+use DB;
+
 use RZP\Models\Base;
 use Rzp\Models\Merchant;
 use RZP\Constants\Table;
@@ -426,17 +428,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBankAccountWithMerchantIdAndLimit1000(string $merchantId,
-                                                               $lastBankAccountCreatedAt = 0)
-    {
-        return $this->newQuery()
-                    ->where(Entity::CREATED_AT, '>', $lastBankAccountCreatedAt)
-                    ->merchantId($merchantId)
-                    ->orderBy(Entity::CREATED_AT, 'asc')
-                    ->limit(1000)
-                    ->get();
-    }
-
     public function fetchBankAccountWithNameAndBeneDetails(
         Merchant\Entity $merchant,
         string $name = null,
@@ -449,5 +440,59 @@ class Repository extends Base\Repository
                     ->where(Entity::IFSC_CODE, $ifsc)
                     ->where(Entity::MERCHANT_ID, $merchant->getId())
                     ->first();
+    }
+
+    /**
+     * Fetch bank accounts with space or line break in beneficiary_name
+     *
+     * @param array $merchantIds
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchBankAccountsHavingSpaceInBeneficiaryName(array $merchantIds,
+                                                                  $from,
+                                                                  $to,
+                                                                  $limit = 1000)
+    {
+        return $this->newQuery()
+            ->where(Entity::CREATED_AT, '>=', $from)
+            ->where(Entity::CREATED_AT, '<=', $to)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->where(
+                DB::raw('CHAR_LENGTH(' . Entity::BENEFICIARY_NAME . ')'),
+                '>',
+                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::BENEFICIARY_NAME . ',"\n","")))')
+            )
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Fetch bank accounts with space or line break in account_ number
+     *
+     * @param array $merchantIds
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchBankAccountsHavingSpaceInAccountNumber(array $merchantIds,
+                                                                $from,
+                                                                $to,
+                                                                $limit = 1000)
+    {
+        return $this->newQuery()
+            ->where(Entity::CREATED_AT, '>=', $from)
+            ->where(Entity::CREATED_AT, '<=', $to)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->where(
+                DB::raw('CHAR_LENGTH(' . Entity::ACCOUNT_NUMBER . ')'),
+                '>',
+                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::ACCOUNT_NUMBER . ',"\n","")))')
+            )
+            ->limit($limit)
+            ->get();
     }
 }

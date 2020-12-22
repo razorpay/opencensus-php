@@ -1319,20 +1319,22 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function trimPayoutPurposeWithMerchantIdAndPayoutPurpose(string $merchantId,
-                                                                    string $payout_purpose,
-                                                                    string $trimmedPurpose,
-                                                                    string $type)
+    public function fetchPayoutsToTrimForMerchants(array $merchantIds,
+                                                   $from,
+                                                   $to,
+                                                   $limit = 1000)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Entity::PURPOSE, '=', $payout_purpose)
-                    ->update(
-                        [
-                            Entity::PURPOSE => $trimmedPurpose,
-                            Entity::TYPE => $type
-                        ]
-                    );
+                    ->where(Entity::CREATED_AT, '>=', $from)
+                    ->where(Entity::CREATED_AT, '<=', $to)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(
+                        DB::raw('CHAR_LENGTH(' . Entity::PURPOSE . ')'),
+                        '>',
+                        DB::raw('CHAR_LENGTH(trim(replace(' . Entity::PURPOSE . ',"\n","")))')
+                    )
+                    ->limit($limit)
+                    ->get();
     }
 
     /**

@@ -9,6 +9,7 @@ use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 
 class ConfigKey
 {
@@ -144,6 +145,8 @@ class ConfigKey
 
     const DELAY_RUPAY_CAPTURE    = self::PREFIX . 'delay_rupay_capture';
 
+    const PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE = self::PREFIX . PaginationEntity::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE;
+
     // This will be the cutoff based on which we shall decide which flow to show for bulk payouts.
     const BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP = self::PREFIX . 'bulk_payouts_new_merchant_cutoff_timestamp';
 
@@ -213,6 +216,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_WALLET,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
+        self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
     ];
 

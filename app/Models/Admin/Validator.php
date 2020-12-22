@@ -125,6 +125,7 @@ class Validator extends Base\Validator
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL  => 'filled|integer',
         ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
         ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
+        ConfigKey::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE   => 'array',
         ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP   => 'filled|integer',
     ];
 

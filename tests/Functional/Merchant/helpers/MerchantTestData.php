@@ -7098,7 +7098,7 @@ return [
             ],
         ],
     ],
-
+  
     'testGetAutoDisabledMethodsForMerchantWithRandomCategory' => [
         'request' => [
             'url'      => '/internal/auto_disabled_methods/10000000000000',
@@ -7109,24 +7109,6 @@ return [
             'content' => [
                 'auto_disabled_methods' => [ ]
             ],
-        ],
-    ],
-
-    'testTrimMerchantData' => [
-        'request'  => [
-            'method'  => 'PATCH',
-            'url'     => '/merchants/trim_space',
-            'content' => [
-                'merchant_ids' => ['10000000000001']
-            ]
-        ],
-        'response' => [
-            'content'     => [
-                'status'        => 'updated',
-                'updated_count' => 1,
-                'total_count'   => 1
-            ],
-            'status_code' => 200,
         ],
     ],
 

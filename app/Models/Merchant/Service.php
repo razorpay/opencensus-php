@@ -76,6 +76,7 @@ use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -5075,49 +5076,52 @@ class Service extends Base\Service
 
     }
 
-
-    public function fixDataForMerchant(array $input): array
+    /**
+     * Fix merchant data with leading and trailing spaces
+     *
+     * @param PaginationEntity $paginationEntity
+     * @return array
+     */
+    public function fixDataForMerchant(PaginationEntity $paginationEntity): array
     {
-        (new Validator)->validateInput('trim_merchant_data', $input);
+        $merchantIds = $paginationEntity->getFinalMerchantList();
 
-        $merchantIds = $input['merchant_ids'];
+        $experimentEnabledMerchants = [];
 
-        $count = 0;
+        $mode = $this->mode;
 
         foreach ($merchantIds as $merchantId)
         {
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            $mode = $this->mode;
-
             $treatment = $this->app
-                              ->razorx
-                              ->getTreatment(
-                                  $merchant->getId(),
-                                  RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
-                                  $mode
-                              );
+                ->razorx
+                ->getTreatment(
+                    $merchantId,
+                    RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
+                    $mode
+                );
 
             if ($treatment === 'on')
             {
-
-                $count += $this->repo->transaction(function () use ($merchant)
-                {
-                    (new Payout\Service)->trimPayoutPurpose($merchant);
-
-                    (new FundAccount\Service)->trimBeneficiaryNameAndAccountNumber($merchant);
-
-                    (new Contact\Service)->trimContactNameAndType($merchant);
-
-                    return 1;
-                });
+                array_push($experimentEnabledMerchants, $merchantId);
             }
         }
 
+        $merchantIds = $experimentEnabledMerchants;
+
+        $merchants = $this->repo->merchant->findMany($merchantIds);
+
+        (new Payout\Core)->trimPayoutPurpose($merchants, $merchantIds, $paginationEntity);
+
+        (new BankAccount\Core)->trimBeneficiaryName($merchantIds, $paginationEntity);
+
+        (new BankAccount\Core)->trimAccountNumber($merchantIds, $paginationEntity);
+
+        (new Contact\Core)->trimContactType($merchants, $merchantIds, $paginationEntity);
+
+        (new Contact\Core)->trimContactName($merchantIds, $paginationEntity);
+
         return [
-            'status'        => 'updated',
-            'updated_count' => $count,
-            'total_count'   => count($merchantIds)
+            'status'        => 'updated'
         ];
     }
 

@@ -498,7 +498,6 @@ class Route
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
         'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'                         ],
-        'fix_merchant_data_cron'                   => ['patch',    'merchants/trim_space',                           'MerchantController@trimSpacesForMerchant'                          ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -2154,6 +2153,8 @@ class Route
         'reward_terms'                            => ['get',     'reward/{id}/terms',                                       'RewardController@getRewardTerms'                              ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
 
+        // pagination operations routes
+        'fix_merchant_data_cron'                  => ['post',    'pagination/trim_space/start',                             'PaginationController@trimSpacesForMerchant'                   ],
         // GupShup Incoming Messages Webhook
         'gupshup_incoming_messages_callback'      => ['post',    'gupshup/incoming_messages/callback',                      'GupShupController@handleIncomingMessagesCallback'             ],
     ];
@@ -2540,11 +2541,11 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'fix_merchant_data_cron',
         // crons for autoKYC'd merchants who have not been verified manually yet
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
-
         'settlement_ondemand_process',
         'internal_balance_fetch',
         'merchant_balance_create',
@@ -4076,7 +4077,6 @@ class Route
         'setl_replay_status_update',
 
         'get_irctc_settlement_file_admin',
-        'fix_merchant_data_cron',
         'update_late_auth_config_admin_bulk',
         'create_payment_config_bulk',
         'sync_pg_router_order_bulk',
@@ -4898,7 +4898,6 @@ class Route
         'fetch_payout_downtimes_enabled'              => '*',
         'get_irctc_settlement_file_admin'             => '*',
 
-        'fix_merchant_data_cron'                   => Permission::UPDATE_CONFIG_KEY,
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
         'payouts_bulk_amount_type'                 => Permission::RX_ADMIN_ACTION_PERMISSION,
 
@@ -5457,6 +5456,7 @@ class Route
             'payment_auth_timeout',
             'scorecard',
             'banking_scorecard',
+            'fix_merchant_data_cron',
             'merchant_daily_report',
             'merchant_post_beneficiary_file',
             'merchant_notify_holiday',

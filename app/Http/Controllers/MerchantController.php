@@ -1845,15 +1845,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function trimSpacesForMerchant()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->fixDataForMerchant($input);
-
-        return ApiResponse::json($response);
-    }
-
     /**
      * See Merchant\Service's bootstrapAccessMapsCacheOfStork function.
      *

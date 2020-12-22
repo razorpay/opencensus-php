@@ -1406,48 +1406,6 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function trimPayoutPurpose(Merchant\Entity $merchant)
-    {
-        $purposeObj = new Purpose;
-
-        $allCustomKeys = $purposeObj->getCustom($merchant);
-
-        $keysWithWhiteSpace = [];
-
-        foreach ($allCustomKeys as  $purpose => $type)
-        {
-            if (strlen($purpose) !== strlen(trim($purpose)))
-            {
-                $keysWithWhiteSpace[$purpose] = $type;
-            }
-        }
-
-        foreach ($keysWithWhiteSpace as $purpose => $type)
-        {
-            $purposeObj->trimPurpose($merchant, $purpose, $type);
-
-            $trimmedPurpose = trim(str_replace('\n', '', $purpose));
-
-            $is_success = $this->repo->payout->trimPayoutPurposeWithMerchantIdAndPayoutPurpose(
-                $merchant->getId(),
-                $purpose,
-                $trimmedPurpose,
-                $type
-            );
-
-            if ($is_success)
-            {
-                $this->trace->info(
-                    TraceCode::PAYOUT_PURPOSE_TRIMMED_FOR_MERCHANT,
-                    [
-                        'purpose'     => $trimmedPurpose,
-                        'merchant_id' => $merchant->getId()
-                    ]
-                );
-            }
-        }
-    }
-
     public function updatePayoutStatusManually(string $id, array $input)
     {
         $payout = $this->repo->payout->findOrFail($id);

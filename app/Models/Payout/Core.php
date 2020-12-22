@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use App;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Constants;
@@ -39,7 +40,6 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
@@ -50,6 +50,7 @@ use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -2726,5 +2727,136 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    /**
+     * Trim payout purpose with leading and trailing spaces
+     *
+     * @param $merchants
+     * @param $merchantIds
+     * @param PaginationEntity $paginationEntity
+     */
+    public function trimPayoutPurpose($merchants, $merchantIds, PaginationEntity $paginationEntity)
+    {
+        $this->trace->info(
+            TraceCode::START_PAYOUT_PURPOSE_TRIMMING,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+
+        $purposeObj = new Purpose;
+
+        foreach ($merchants as $merchant)
+        {
+            $allCustomKeys = $purposeObj->getCustom($merchant);
+
+            foreach ($allCustomKeys as  $purpose => $type)
+            {
+                if (strlen($purpose) !== strlen(trim($purpose)))
+                {
+                    $purposeObj->trimPurpose($merchant, $purpose, $type);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUT_PURPOSE_TRIMMED,
+                        [
+                            'purpose'     => $purpose,
+                            'merchant_id' => $merchant->getId()
+                        ]
+                    );
+                }
+            }
+        }
+
+        $payouts = $this->repo->payout->fetchPayoutsToTrimForMerchants(
+            $merchantIds,
+            $paginationEntity->getCurrentStartTime(),
+            $paginationEntity->getCurrentEndTime(),
+            $paginationEntity->getLimit()
+        );
+
+        $payoutIds = $payouts->getIds();
+
+        while (count($payouts) > 0)
+        {
+            foreach ($payouts as $payout)
+            {
+                try
+                {
+                    $purpose = $payout->getPurpose();
+
+                    $trimmedPurpose = trim(str_replace('\n', '', $purpose));
+
+                    $payout->setPurpose($trimmedPurpose);
+
+                    $payout->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::PAYOUT_ENTITY_PURPOSE_TRIMMED,
+                        [
+                            'payout_id' => $payout->getId(),
+                            'old_purpose' => $purpose,
+                            'new_purpose' => $trimmedPurpose
+                        ]
+                    );
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::PAYOUT_ENTITY_PURPOSE_TRIM_FAILED,
+                        [
+                            'payout_id' => $payout->getId()
+                        ]
+                    );
+                }
+            }
+
+            $newPayouts = $this->repo->payout->fetchPayoutsToTrimForMerchants(
+                $merchantIds,
+                $paginationEntity->getCurrentStartTime(),
+                $paginationEntity->getCurrentEndTime(),
+                $paginationEntity->getLimit()
+            );
+
+            $newPayoutIds = $newPayouts->getIds();
+
+            $nonCommonIdsFromLastPayouts = array_diff($newPayoutIds, $payoutIds);
+
+            if ((count($newPayouts) === 0) or
+                (count($nonCommonIdsFromLastPayouts) > 0))
+            {
+                $payoutIds = $newPayoutIds;
+
+                $payouts = $newPayouts;
+            }
+            else
+            {
+                $data = [
+                    'merchant_ids'  => $merchantIds,
+                    'created_from'  => $paginationEntity->getCurrentStartTime(),
+                    'created_till'  => $paginationEntity->getCurrentEndTime()
+                ];
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_PURPOSE_TRIM_FOR_MERCHANTS_FAILED,
+                    $data
+                );
+
+                return;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_PURPOSE_TRIMMED_FOR_MERCHANTS,
+            [
+                'merchant_ids'  => $merchantIds,
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
     }
 }

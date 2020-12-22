@@ -195,14 +195,57 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchContactWithMerchantIdAndLimit1000(string $merchantId,
-                                                           $lastContactCreatedAt = 0)
+    /**
+     * Fetch contacts with space in name
+     *
+     * @param array $merchantIds
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchContactsHavingSpaceInName(array $merchantIds,
+                                                   $from,
+                                                   $to,
+                                                   $limit = 1000)
     {
         return $this->newQueryWithoutTimestamps()
-                    ->where(Entity::CREATED_AT, '>', $lastContactCreatedAt)
-                    ->merchantId($merchantId)
-                    ->orderBy(Entity::CREATED_AT, 'asc')
-                    ->limit(1000)
-                    ->get();
+            ->where(Entity::CREATED_AT, '>=', $from)
+            ->where(Entity::CREATED_AT, '<=', $to)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->where(
+                DB::raw('CHAR_LENGTH(' . Entity::NAME . ')'),
+                '>',
+                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::NAME . ',"\n","")))')
+            )
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Fetch contacts with space in type
+     *
+     * @param array $merchantIds
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchContactsHavingSpaceInType(array $merchantIds,
+                                                   $from,
+                                                   $to,
+                                                   $limit = 1000)
+    {
+        return $this->newQueryWithoutTimestamps()
+            ->where(Entity::CREATED_AT, '>=', $from)
+            ->where(Entity::CREATED_AT, '<=', $to)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->where(
+                DB::raw('CHAR_LENGTH(' . Entity::TYPE . ')'),
+                '>',
+                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::TYPE . ',"\n","")))')
+            )
+            ->limit($limit)
+            ->get();
     }
 }
