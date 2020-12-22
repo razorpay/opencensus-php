@@ -353,6 +353,7 @@ export default class Details extends Component {
                   </EntityDetailRow>
                 )}
 
+                {/* TODO: Enable this once prefill account id add to direct transfers from
                 {user.isDirectTransferEnabled && (
                   <>
                     <br />
@@ -361,7 +362,7 @@ export default class Details extends Component {
                       Create Direct Transfer
                     </NavLink>
                   </>
-                )}
+                )} */}
               </div>
             </div>
           </div>

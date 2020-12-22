@@ -11,23 +11,25 @@ export default React.memo(function DirectTransferBanner() {
   return (
     <div class="direct-transfer-banner">
       <Banner>
+        <i class="i i-route" />
         <div class="content">
-          <i class="i i-route" />
-          <div>
-            <h4>Introducing Direct Transfers on Route</h4>
-            <div class="desc">
-              Now create <b>Direct Transfers</b> to your linked accounts <b>from Route!</b>
-              <DocsLink
-                url="https://razorpay.com/docs/route/dashboard/"
-                title="Learn more"
-                onClick={track.onClickDocsLink}
-              />
-            </div>
+          <h4>Introducing Direct Transfers on Route</h4>
+          <div class="desc">
+            Now create <b>Direct Transfers</b> to your linked accounts <b>from Route!</b>
+            <DocsLink
+              url="https://razorpay.com/docs/route/dashboard/"
+              title="Learn more"
+              onClick={track.onClickDocsLink}
+            />
           </div>
+          <Link
+            to="/route/transfers"
+            class="btn Button--primary--invert explore-now-btn"
+            onClick={track.onClickCTA}
+          >
+            Explore Now
+          </Link>
         </div>
-        <Link to="/route/transfers" class="btn Button--primary--invert" onClick={track.onClickCTA}>
-          Explore Now
-        </Link>
       </Banner>
     </div>
   );

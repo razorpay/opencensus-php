@@ -135,6 +135,7 @@ const AccountsListItem = ({
         </td>
       )}
 
+      {/* TODO: Enable this once prefill account id add to direct transfers from
       {isDirectTransferEnabled && (
         <td style={{ textAlign: 'center' }}>
           <NavLink class="btn btn-default btn-xs" to="/route/transfers/direct_transfer">
@@ -142,7 +143,7 @@ const AccountsListItem = ({
             Create Direct Transfer
           </NavLink>
         </td>
-      )}
+      )} */}
     </EntityItemRow>
   );
 };
@@ -183,7 +184,8 @@ export default function AccountsList({
                 </small>
               </th>
             )}
-            {isDirectTransferEnabled && <th> </th>}
+            {/* TODO: Enable this once prefill account id add to direct transfers from
+            {isDirectTransferEnabled && <th> </th>} */}
           </tr>
         </thead>
         <TableBody
