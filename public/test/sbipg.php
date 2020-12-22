@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <?php
+require('../scripts/sanitizeParams.php');
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 

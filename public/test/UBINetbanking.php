@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
 <?php
+require('../scripts/sanitizeParams.php');
+
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 $key_id = $_GET['key'] ?? 'rzp_test_ZAxCg9TB9J6ifu';
 $secret = 'thisissupersecret';

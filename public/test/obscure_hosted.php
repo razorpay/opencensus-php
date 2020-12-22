@@ -1,7 +1,9 @@
 <!doctype html>
 <html>
 <?php
-  $key_id = 'rzp_test_1DP5mmOlF5G5ag';
+require('../scripts/sanitizeParams.php');
+
+$key_id = 'rzp_test_1DP5mmOlF5G5ag';
 ?>
 <head>
   <meta name="viewport" content="width=device-width">

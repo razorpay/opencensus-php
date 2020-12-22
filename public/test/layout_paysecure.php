@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
 <?php
+require('../scripts/sanitizeParams.php');
+
 $key_id = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
 ?>
     <style>

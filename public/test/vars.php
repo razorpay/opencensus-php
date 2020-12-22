@@ -1,4 +1,5 @@
 <?php
+require('../scripts/sanitizeParams.php');
 
 $checkout = 'https://checkout.razorpay.com';
 $fonts = 'https://s3.amazonaws.com/checkout-live/lato';
