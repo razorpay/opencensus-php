@@ -10,42 +10,44 @@
 
 Note: Please ensure that you install composer 1.x.x and not 2.x.x, as the latest version of composer is incompatible with our codebase, and causes issues during ``composer install``. If you are already at composer 2.x.x use ``composer self-update 1.10.17`` to downgrade.
 
-### (Docker)
+There are 3 Ways to set up, you can choose either:
 
-* [Refer Docker](readme-docker.md)
+  ### 1.( Docker )
 
-
-### ( Vagrant / Homestead )
-
-* Install Virtualbox & Vagrant
-* Add laravel/homestead box. (Manual download recommended.)
-* Clone Homestead repo & follow setup instructions.
-* Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ], with "nfs" enabled.
-* Map api.razorpay.in to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
-* Follow Common Instructions
-* Follow Common Test Setup Instructions
+  * [Refer Docker](readme-docker.md)
 
 
-### ( Ubuntu )
+  ### 2.( Vagrant / Homestead )
 
-* Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
-* `sudo a2ensite api.razorpay.com.conf`
-* Install redis ( arch-linux : `pacman -S redis`) and enable its service (`systemctl enable --now redis.service`)
-* Follow Common Instructions
-* Follow Common Test Setup Instructions
+  * Install Virtualbox & Vagrant
+  * Add laravel/homestead box. (Manual download recommended.)
+  * Clone Homestead repo & follow setup instructions.
+  * Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ], with "nfs" enabled.
+  * Map api.razorpay.in to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
+  * Follow Common Instructions
+  * Follow Common Test Setup Instructions
 
-### ( OSX )
-*  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
-* Follow Common Instructions
-* Follow Common Test Setup Instructions
-* Install coreutils `brew install coreutils --with-default-names`
-* ~~Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
+
+  ### 3.a( Local - Ubuntu )
+
+  * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
+  * `sudo a2ensite api.razorpay.com.conf`
+  * Install redis ( arch-linux : `pacman -S redis`) and enable its service (`systemctl enable --now redis.service`)
+  * Follow Common Instructions
+  * Follow Common Test Setup Instructions
+
+  ### 3.b( Local - OSX )
+  *  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
+  * Follow Common Instructions
+  * Follow Common Test Setup Instructions
+  * Install coreutils `brew install coreutils --with-default-names`
+  * ~~Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
 
 ### Common Instruction
 
 *PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.5/installation#server-requirements):
 
-- PHP >= 5.5.9
+- PHP >= 5.5.9 and PHP<= 7.3
 - OpenSSL PHP Extension
 - PDO PHP Extension
 - Mbstring PHP Extension
