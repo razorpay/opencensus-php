@@ -98,8 +98,6 @@ class Service extends Base\Service
 
     public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
-        $rate = number_format($rate, 6);
-
         $convertedAmount = $baseAmount * $rate;
 
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
@@ -122,7 +120,8 @@ class Service extends Base\Service
     {
         $roundedTime = $this->getCurrentRoundedTime();
 
-        $this->redis->set($this->getCurrencyRequestDataRedisKey($currencyRequestId), $roundedTime, self::REQUEST_VS_TIME_TTL);
+        $this->redis->set($this->getCurrencyRequestDataRedisKey($currencyRequestId),
+            $roundedTime, self::REQUEST_VS_TIME_TTL);
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
@@ -134,7 +133,12 @@ class Service extends Base\Service
             {
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency);
 
-                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency], $markUpPercent);
+                $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
+
+                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent);
+                $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
+                $supportedCurrencies[$currency]['fee'] =
+                    $this->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
             }
             else
             {
@@ -157,7 +161,7 @@ class Service extends Base\Service
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
-                $forexRate = number_format($rates[$requestedCurrency], 6);
+                $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency);
 

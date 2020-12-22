@@ -221,6 +221,33 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertNotNull($currencyRequestId);
     }
 
+    public function testPaymentFlowsWithNewDccResponseParams()
+    {
+        $flowsData = $this->getDefaultPaymentFlowsRequestData();
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $cardCurrencyObject = $responseContent['all_currencies'][$cardCurrency];
+
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === true);
+        $this->assertNotNull($cardCurrencyObject);
+
+        $forexRate = number_format($cardCurrencyObject['forex_rate'],6, '.','');
+        $fee = $cardCurrencyObject['fee'];
+        $amount = $cardCurrencyObject['amount'];
+        $baseAmount = $flowsData['content']['amount'];
+        $markup = 0.05;
+        $feeExpected = $forexRate * $markup * $baseAmount;
+        $feeExpected = number_format($feeExpected, 2, '.','');
+
+        $amountExpected = ceil($forexRate * $markup * $baseAmount + $forexRate * $baseAmount);
+
+        $this->assertEquals(10, $forexRate);
+        $this->assertEquals($feeExpected, $fee);
+        $this->assertEquals($amountExpected, $amount);
+    }
+
     private function getTokenIdForDCC()
     {
         $token = $this->fixtures->create('token', [
@@ -253,4 +280,5 @@ class PaymentCreateDCCTest extends TestCase
 
         return $flowsData;
     }
+
 }
