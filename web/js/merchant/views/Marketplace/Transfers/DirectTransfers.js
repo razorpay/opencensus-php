@@ -167,7 +167,7 @@ export default class DirectTransfers extends React.Component {
       <>
         <AccountSelector
           required
-          showClear={false}
+          showClear
           label="Account"
           updateAccount={this.handleAccount}
           selectedAccount={state.selectedAccount}

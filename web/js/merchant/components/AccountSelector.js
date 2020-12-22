@@ -69,7 +69,7 @@ export default class AccountSelector extends React.Component {
     return (
       <>
         <Label required={props.required} text={props.label} />
-        <div class="custom-select transfers-accounts" style={{ position: 'relative' }}>
+        <div class="custom-select auto-complete-search" style={{ position: 'relative' }}>
           <TypeAhead
             showClear={props.showClear}
             options={accountsList}
