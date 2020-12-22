@@ -51,6 +51,11 @@ class Tracing
             $attrs['rzp_mode'] = $app['rzp.mode'];
         }
 
+        if (isset($app['request']))
+        {
+            $attrs['task_id'] = $app['request']->getTaskId();
+        }
+
         $app_env = $app['config']->get('applications.jaeger.tag_app_env');
         if($app_env){
             $attrs['app_env'] = $app_env;
