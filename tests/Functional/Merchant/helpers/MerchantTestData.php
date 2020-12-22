@@ -3216,7 +3216,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3251,6 +3251,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'CORP',
                         ],
                     ],
                     [
@@ -3434,7 +3441,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 31,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3476,6 +3483,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'CORP',
                         ],
                     ],
                     [
@@ -3867,6 +3881,7 @@ return [
                                 'BBKM',
                                 'BDBL',
                                 'BKDN',
+                                'CORP',
                                 'COSB',
                                 'ESAF',
                                 'JSBP',
@@ -7058,7 +7073,7 @@ return [
         'response' => [
             'status_code' => 200,
             'content' => [
-                'auto_disabled_methods' => 
+                'auto_disabled_methods' =>
                     [   "credit_card",
                         "emi",
                         "prepaid_card",

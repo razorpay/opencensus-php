@@ -208,11 +208,11 @@ class RefundTest extends TestCase
 
         $this->capturePayment($entries[0]['Payment Id'], 50000);
 
-        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+        $payment = $this->getDefaultNetbankingPaymentArray('ALLA');
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
 
         $this->doAuthAndCapturePayment($payment);
 
@@ -385,7 +385,7 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $entries[0][Header::SPEED] = ''; // empty speed
 
-        $entries[] = [ 
+        $entries[] = [
                         Header::PAYMENT_ID  => $payment['id'],
                         Header::AMOUNT      => 5000,
                         'notes[key_1]'      => 'Array2, Notes Value 1',

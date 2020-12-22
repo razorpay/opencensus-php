@@ -88,7 +88,6 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
-        IFSC::CORP,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
@@ -205,6 +204,12 @@ class Netbanking
                 IFSC::CBIN,
                 IFSC::CIUB,
                 IFSC::CNRB,
+                /*As CORP is now redirected to UBIN. For this, We are Removing CORP
+                from billdesk tpv as billdesk doesn't support UBIN for tpv. That's why no redirection
+                can be done for billdesk tpv of CORP to UBIN. Eventhough we are redirecting
+                the retail from billdesk and payu. As in these both gateways request of CORP
+                can be redirect to UBIN.
+                */
                 IFSC::CORP,
                 IFSC::COSB,
                 IFSC::CSBK,
@@ -276,7 +281,11 @@ class Netbanking
                 IFSC::ANDB,
                 IFSC::BKID,
                 IFSC::CIUB,
-                IFSC::CORP,
+                /*As CORP is now redirected to UBIN. For this, We are Removing CORP
+                from billdesk tpv as billdesk doesn't support UBIN for tpv. That's why no redirection
+                can be done for billdesk tpv of CORP to UBIN.
+                */
+             // IFSC::CORP,
                 IFSC::HDFC,
                 IFSC::IBKL,
                 IFSC::ICIC,
@@ -567,11 +576,6 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::HDFC
-            ]
-        ],
-        Gateway::NETBANKING_CORPORATION => [
-            'retail' => [
-                IFSC::CORP,
             ]
         ],
         Gateway::NETBANKING_CANARA => [

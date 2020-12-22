@@ -20,7 +20,7 @@ class BankCodes
         IFSC::CBIN => 'CBI',                    // Central Bank of India
         IFSC::CIUB => 'CUB',                    // City Union Bank
         IFSC::CNRB => 'CNB',                    // Canara Bank
-        IFSC::CORP => 'CRP',                    // Corporation Bank Ltd
+        IFSC::CORP => 'UBI',                    // Corporation Bank Ltd
         IFSC::COSB => 'COB',                    // Cosmos Coop Bank Ltd
         IFSC::CSBK => 'CSB',                    // Catholic Syrian Bank Ltd
         IFSC::DBSS => 'DBS',                    // DBS Bank

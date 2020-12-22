@@ -1102,7 +1102,6 @@ class Gateway
             self::NETBANKING_IDBI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
-            self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_UBI,

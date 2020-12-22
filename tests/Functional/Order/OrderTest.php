@@ -683,7 +683,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'CORP';
+        $payment['bank'] = 'ALLA';
 
         $payment['order_id'] = $order['id'];
 
