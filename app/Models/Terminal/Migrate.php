@@ -485,9 +485,9 @@ trait Migrate
             return false;
         }
 
-        $apiSorted = $apiTerminals->sortBy('id');
+        $apiSorted = $apiTerminals->sortBy('id')->values();
 
-        $terminalSorted = $terminals->sortBy('id');
+        $terminalSorted = $terminals->sortBy('id')->values();
 
         $isEqual = true;
 
