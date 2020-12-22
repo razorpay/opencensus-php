@@ -87,6 +87,14 @@ export default class DirectTransfers extends React.Component {
       currency: 'INR',
     };
 
+    if (formData.on_hold) {
+      payload.on_hold = formData.on_hold === '1' ? 1 : 0;
+    }
+
+    if (!payload.on_hold_until) {
+      delete payload.on_hold_until;
+    }
+
     this.setState({
       isFormLocked: true,
     });
