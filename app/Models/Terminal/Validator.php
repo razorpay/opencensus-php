@@ -121,6 +121,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::WALLET_PHONEPESWITCH,
         Payment\Gateway::WALLET_PAYPAL,
+        Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
@@ -758,6 +759,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
+    ];
+
+    protected static $walletFreechargeEditTerminalRules = [
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
     ];
 
     protected static $netbankingIciciTerminalRules = [
@@ -1409,6 +1414,8 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::ENABLED                     => 'sometimes|in:0,1',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $credTerminalRules = [
