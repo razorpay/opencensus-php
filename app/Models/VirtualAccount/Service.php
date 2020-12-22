@@ -447,8 +447,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
 
-        $this->modifyAddReceiversInputOldToNew($input);
-
         (new Validator())->validateInput('addReceivers', $input);
 
         $virtualAccount = $this->repo
@@ -485,14 +483,6 @@ class Service extends Base\Service
         );
 
         return $virtualAccount->toArrayPublic();
-    }
-
-    private function modifyAddReceiversInputOldToNew(&$input)
-    {
-        if (isset($input[Entity::RECEIVERS]) === true)
-        {
-            $input = $input[Entity::RECEIVERS];
-        }
     }
 
     public function createOfflineQr($input = [])
