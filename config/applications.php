@@ -528,10 +528,21 @@ return [
     ],
 
     'wallet' => [
-        'url'           => env('APP_WALLET_URL'),
-        'username'      => 'test',
-        'secret'        => env('APP_WALLET_SECRET', 'test'),
-        'timeout'       => env('APP_WALLET_TIMEOUT', 60),
+        'timeout'     => env('APP_WALLET_TIMEOUT', 60),
+        'url'         => [
+            'live'    =>   env('APP_WALLET_LIVE_URL'),
+            'test'    =>   env('APP_WALLET_TEST_URL'),
+        ],
+        'api' => [
+            'live' => [
+                'username'  => 'api',
+                'secret'    => env('WALLET_API_LIVE_SECRET'),
+            ],
+            'test' => [
+                'username'  => 'api',
+                'secret'    => env('WALLET_API_TEST_SECRET'),
+            ],
+        ],
     ],
 
     'capital_cards' => [

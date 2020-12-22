@@ -235,6 +235,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSFER_RAZORX_REQUEST_FAILED                = 'PAYMENT_TRANSFER_RAZORX_REQUEST_FAILED';
     const PAYMENT_TRANSFER_RAZORX_SQS_PUSH                      = 'PAYMENT_TRANSFER_RAZORX_SQS_PUSH';
     const PAYMENT_TRANSFER_TO_CUSTOMER                          = 'PAYMENT_TRANSFER_TO_CUSTOMER';
+    const PAYMENT_TRANSFER_TO_WALLET                            = 'PAYMENT_TRANSFER_TO_WALLET';
     const FIRING_TRANSFER_SETTLED_WEBHOOK                       = 'FIRING_TRANSFER_SETTLED_WEBHOOK';
     const PAYMENT_CAPTURE_UPDATE_TRANSACTION                    = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
     const PAYMENT_CAPTURE_ORDER_UPDATE                          = 'PAYMENT_CAPTURE_ORDER_UPDATE';
@@ -3494,6 +3495,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_RAZORPAYX_ACTIVATION_FAILED                  = 'MERCHANT_RAZORPAYX_ACTIVATION_FAILED';
     const MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED                = 'MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED';
     const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
+
+    // Wallet service
+    const WALLET_REQUEST                                        = 'WALLET_REQUEST';
+    const WALLET_RESPONSE                                       = 'WALLET_RESPONSE';
+    const WALLET_REQUEST_EXCEPTION                              = 'WALLET_REQUEST_EXCEPTION';
 
     // Settlements service
     const SETTLEMENTS_REQUEST                                   = 'SETTLEMENTS_REQUEST';

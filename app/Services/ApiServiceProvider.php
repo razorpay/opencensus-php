@@ -28,6 +28,7 @@ use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Options;
 use RZP\Models\Payment;
+use RZP\Services\Wallet;
 use RZP\Models\External;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -416,6 +417,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSettlementApi();
 
         $this->registerSettlementsReminder();
+
+        $this->registerWalletApi();
 
         $this->registerHttpClients();
 
@@ -1093,6 +1096,14 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new WorkflowService($app);
+        });
+    }
+
+    protected function registerWalletApi()
+    {
+        $this->app->singleton('wallet_api', function($app)
+        {
+            return new Wallet\Api($app);
         });
     }
 

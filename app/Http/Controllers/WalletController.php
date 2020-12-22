@@ -7,6 +7,7 @@ use Razorpay\Api\Errors\BadRequestError;
 use Request;
 use ApiResponse;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Mail\System\Trace;
@@ -26,6 +27,8 @@ class WalletController extends Controller
     const DELETE   = 'DELETE';
     const MERCHANT = 'MERCHANT';
 
+    const USER = 'api';
+
     // merchant routes
     const CREATE_USER       = 'CREATE_USER';
     const SEND_OTP          = 'SEND_OTP';
@@ -40,12 +43,12 @@ class WalletController extends Controller
         // merchant routes
         self::CREATE_USER       => 'users',
         self::SEND_OTP          => 'otp',
-        self::VERIFY_OTP        => 'users/(.+)/verify',
+        self::VERIFY_OTP        => 'users/(\w+)/verify',
         self::CREATE_WALLET     => 'wallet',
 
         // admin route
         self::TRANSFER          => 'transfer',
-        self::TRANSFER_STATUS   => 'transfer/(.+)',
+        self::TRANSFER_STATUS   => 'transfer/(\w+)',
     ];
 
     const MERCHANT_ROUTES = [
@@ -82,7 +85,7 @@ class WalletController extends Controller
     private function handleProxyRequests(array $routeList, $path = null, $merchantId = null)
     {
         $request = Request::instance();
-        $url     = $path;
+        $url     = '/v1/' . $path;
         $body    = $request->all();
 
         $this->trace->info(TraceCode::WALLET_SERVICE_PROXY_REQUEST, [
@@ -108,7 +111,7 @@ class WalletController extends Controller
                     $url .= '?' . http_build_query($body);
                 }
 
-                return $this->sendRequestAndParseResponse( $request->method(), $url, $body);
+                return $this->sendRequestAndParseResponse($request->method(), $url, $body);
             }
         }
 
@@ -122,13 +125,17 @@ class WalletController extends Controller
         array $headers = [],
         array $options = [])
     {
-        $config                  = config('applications.wallet');
-        $baseUrl                 = $config['url'];
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+        $config     = config('applications.wallet');
+        $baseUrl    = $config['url'][$mode];
+        $username   = $config[self::USER][$mode]['username'];
+        $password   = $config[self::USER][$mode]['secret'];
 
         // updates header values
         $headers['Accept']       = 'application/json';
         $headers['Content-Type'] = 'application/json';
-        $headers['Authorization'] = 'Basic '. base64_encode($config['username'] . ':' . $config['secret']);
+        $headers['Authorization'] = 'Basic '. base64_encode($username . ':' . $password);
 
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
@@ -151,7 +158,6 @@ class WalletController extends Controller
 
         $this->trace->info(TraceCode::WALLET_SERVICE_PROXY_RESPONSE, [
             'status_code'   => $resp->getStatusCode(),
-            'response'=> json_decode($resp->getBody(), true),
         ]);
 
         return $this->parseResponse($resp->getStatusCode(), $resp->getBody());
