@@ -1121,13 +1121,7 @@ return [
         ],
 
         PermissionCategory::MERCHANT_NOTIFICATION_CONFIG => [
-            Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Create Merchant Notification Config Request as Admin',
-            Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Update Merchant Notification Config Request as Admin',
-            Permission::FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN   => 'Fetch Merchant Notification Config Request as Admin',
-            Permission::LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN    => 'List Merchant Notification Config Request as Admin',
-            Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Delete Merchant Notification Config Request as Admin',
-            Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN => 'Disable Merchant Notification Config Request as Admin',
-            Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Enable Merchant Notification Config Request as Admin',
+            Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Merchant Notification Config Admin Permissions',
         ],
 
         PermissionCategory::PAYMENT_LINK_V2 => [

@@ -495,13 +495,7 @@ class Name
     const DELETE_MERCHANT_NOTIFICATION_CONFIG        = 'delete_merchant_notification_config';
 
     // Admin merchant notification config
-    const CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'create_merchant_notification_config_admin';
-    const UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'update_merchant_notification_config_admin';
-    const FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN   = 'fetch_merchant_notification_config_admin';
-    const LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN    = 'list_merchant_notification_config_admin';
-    const ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'enable_merchant_notification_config_admin';
-    const DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN = 'disable_merchant_notification_config_admin';
-    const DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN  = 'delete_merchant_notification_config_admin';
+    const MERCHANT_NOTIFICATION_CONFIG_ADMIN         = 'create_merchant_notification_config_admin';
 
     const CORRECT_MERCHANT_OWNER_MISMATCH     = 'correct_merchant_owner_mismatch';
 

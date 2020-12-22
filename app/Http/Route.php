@@ -4938,13 +4938,14 @@ class Route
         'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
 
         // Admin merchant notification configs
-        'create_merchant_notification_config_admin'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'update_merchant_notification_config_admin'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'fetch_merchant_notification_config_admin'            => Permission::FETCH_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'list_merchant_notification_config_admin'             => Permission::LIST_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'delete_merchant_notification_config_admin'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'disable_merchant_notification_config_admin'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
-        'enable_merchant_notification_config_admin'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'create_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'update_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'fetch_merchant_notification_config_admin'            => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'list_merchant_notification_config_admin'             => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'delete_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'disable_merchant_notification_config_admin'          => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+        'enable_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
+
         'merchant_invoice_control'                            => Permission::MERCHANT_INVOICE_CONTROL,
     ];
 

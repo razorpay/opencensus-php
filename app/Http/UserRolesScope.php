@@ -225,12 +225,6 @@ class UserRolesScope
             'enable_merchant_notification_config'         => [Role::OWNER],
 
             'create_merchant_notification_config_admin'   => [Role::ADMIN],
-            'update_merchant_notification_config_admin'   => [Role::ADMIN],
-            'fetch_merchant_notification_config_admin'    => [Role::ADMIN],
-            'list_merchant_notification_config_admin'     => [Role::ADMIN],
-            'delete_merchant_notification_config_admin'   => [Role::ADMIN],
-            'disable_merchant_notification_config_admin'  => [Role::ADMIN],
-            'enable_merchant_notification_config_admin'   => [Role::ADMIN],
         ];
 
         /*
