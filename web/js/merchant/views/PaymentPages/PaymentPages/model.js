@@ -193,6 +193,15 @@ export function getPaymentSplitAmongstItems(orderId) {
   });
 }
 
+export function getPaymentPageDetailsById(orderId) {
+  return merchantFetch({
+    url: `orders/${orderId}/product_details`,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
 /**************/
 
 export function setReceiptDetails(id, params) {

@@ -15,6 +15,7 @@ import PaymentRefund from 'merchant/views/Transactions/Payments/components/Payme
 import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
 import PaymentReceipt from './PaymentReceipt';
+import PaymentPageDetails from './PaymentPageDetails';
 import PaymentSplitInItems from './PaymentSplitInItems';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
@@ -132,6 +133,8 @@ export default (props) => {
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="list-group pair-row-container">
+                <PaymentPageDetails payment={payment} />
+
                 <EntityDetailRow label="Amount">
                   <b>
                     <Amount value={payment.amount} currency={payment.currency} />
@@ -283,7 +286,7 @@ export default (props) => {
                   <PaymentReceipt payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
                 )}
 
-                <PaymentSplitInItems payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
+                <PaymentSplitInItems payment={payment} />
 
                 {!user.isUxRevampPhase2Enabled && payment.transaction ? (
                   <EntityDetailRow label="Settlement Details">
