@@ -25,6 +25,8 @@ class NeedsClarificationMetaData
         Entity::BUSINESS_WEBSITE                => [ReasonList::WEBSITE_NOT_LIVE],
         Entity::GSTIN                           => [ReasonList::INVALID_GSTIN_NUMBER,
                                                     ReasonList::GSTIN_DATA_UNAVAILABLE],
+        Entity::SHOP_ESTABLISHMENT_NUMBER       => [ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
+                                                    ReasonList::SHOP_ESTABLISHMENT_DATA_UNAVAILABLE],
         Entity::COMPANY_CIN                     => [ReasonList::INVALID_CIN_NUMBER,
                                                     ReasonList::CIN_DATA_UNAVAILABLE,
                                                     ReasonList::INVALID_LLPIN_NUMBER,
