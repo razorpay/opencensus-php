@@ -243,6 +243,54 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2021 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
+            ],
+            3 => [
+                11 => 'Mahashivratri',
+                29 => 'Holi (Second Day)',
+            ],
+            4 => [
+                1  => 'Annual closing of banks',
+                2  => 'Good Friday',
+                13 => 'Gudhi Padwa/Telugu New Year’s Day',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Bengali New Year’s Day',
+                21 => 'Ram Navami',
+            ],
+            5 => [
+                1  => 'Maharashtra Din/May Day (Labour Day)',
+                13 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
+                26 => 'Buddha Pournima',
+            ],
+            7 => [
+                21 => 'Bakri ID (Id-Ul-Zuha)',
+            ],
+            8 => [
+                16 => 'Parse New Year (Shahenshahi)',
+                19 => 'Muharram (Ashoora)',
+            ],
+            9 => [
+                10 => 'Ganesh Chaturthi/Samvatsari (Chaturthi Paksha)/Vinayakar Chathurthi',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                15 => 'Dasara/Dusshera (Vijaya Dashmi)',
+                19 => 'Id-E-Milad/Eid-e-Miladunnabi/Milad-i-Sherif(Prophet Mohammad’s Birthday)'
+            ],
+            11 => [
+                4  => 'Diwali Amavasaya (Laxmi Pujan)/Deepavali',
+                5  => 'Diwali (Bali Pratipada)/Vikram Samvant New Year Day',
+                19 => 'Guru Nanak jayanti',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**
