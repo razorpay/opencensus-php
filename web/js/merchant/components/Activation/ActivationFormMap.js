@@ -522,6 +522,9 @@ const businessDetails = [
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
+      getLabel: (activation) => {
+        return activation.isNeedsClarificationMode() && activation.isOnKYCTab() && 'GSTIN';
+      },
       placeholder: 'Enter GSTIN',
       size: 'small',
       info: 'The entered GST Number should match either of the Address given above.',

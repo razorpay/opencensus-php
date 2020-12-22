@@ -437,4 +437,27 @@ const predefinedReasons = {
       },
     },
   },
+  gstin: {
+    reasons: {
+      gstin_data_unavailable: {
+        description:
+          "We weren't able to validate your GSTIN number, please check and edit the same.",
+      },
+      invalid_gstin_number: {
+        description: 'The GSTIN number you have entered is invalid, please enter valid details.',
+      },
+    },
+  },
+  shop_establishment_number: {
+    reasons: {
+      invalid_shop_establishment_number: {
+        description:
+          'The SHOP ESTABLISHMENT NUMBER you have entered is invalid, please enter valid details.',
+      },
+      shop_establishment_data_unavailable: {
+        description:
+          " We weren't able to validate your SHOP ESTABLISHMENT number, please check and edit the same.",
+      },
+    },
+  },
 };
