@@ -674,7 +674,45 @@ class Repository extends Base\Repository
                       ->where(Entity::GATEWAY, $gateway)
                       ->withTrashed();
 
-        return $query->get();
+        $apiTerminals = $query->get();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_NO_MID_OR_IDENTIFIERS_TS", $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $data = ["function" => "getAllBankTransferTerminals", "gateway" => $gateway];
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            try
+            {
+                $path = "v1/merchants/terminals";
+
+                $input = [
+                    'gateway' => $gateway,
+                    'methods' => [Entity::BANK_TRANSFER],
+                    'deleted' => true,
+                    'fetch_where_submerchant' => false,
+                ];
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+                $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false) {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $apiTerminals;
     }
 
     protected function addMerchantWhereCondition($query, array $merchantIds)
@@ -731,7 +769,9 @@ class Repository extends Base\Repository
 
         $terminal = $query->findOrFailPublic($tid);
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -764,8 +804,6 @@ class Repository extends Base\Repository
             catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
-                $data["function"] = "getByIdAndMerchantId";
-
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
@@ -783,7 +821,9 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -815,8 +855,6 @@ class Repository extends Base\Repository
             catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
-                $data["function"] = "getByMerchantIdAndGateway";
-
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
@@ -837,7 +875,45 @@ class Repository extends Base\Repository
                 $query->whereIn(Entity::MERCHANT_ID, $mids);
             });
 
-        return $query->pluck(Entity::ID)->all();
+        $apiTerminalIds = $query->pluck(Entity::ID)->all();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS", $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            try
+            {
+                $path = "v1/merchants/terminals";
+
+                $input = [
+                    'gateway' => $gateway,
+                    'merchant_ids' => $mids,
+                    'enabled' => true,
+                ];
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+                $terminalIds = $response->pluck(Entity::ID)->all();
+
+                if (sizeof($terminalIds) === sizeof($apiTerminalIds) && sizeof($terminalIds->diff($apiTerminalIds)->all()) !== 0)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $apiTerminalIds;
     }
 
     public function getRecurringTerminalsByMidAndGateway($mid, $gateway)
@@ -854,7 +930,9 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
         $terminal = $query->first();
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -887,8 +965,6 @@ class Repository extends Base\Repository
             catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
-                $data["function"] = "getRecurringTerminalsByMidAndGateway";
-
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
@@ -907,7 +983,9 @@ class Repository extends Base\Repository
 
         $terminal = $query->first();
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS",  $this->app['rzp.mode']);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -940,8 +1018,6 @@ class Repository extends Base\Repository
             catch (\Throwable $ex)
             {
                 $data['message'] = $ex->getMessage();
-                $data["function"] = "getRecurringTerminalsByMidAndGateway";
-
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
@@ -1004,9 +1080,46 @@ class Repository extends Base\Repository
 
     public function getByTerminalIds(array $ids)
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $ids)
-                    ->get();
+        $apiTerminals = $this->newQuery()
+            ->whereIn(Entity::ID, $ids)
+            ->get();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_NO_MID_OR_IDENTIFIERS_TS", $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $data = ["function" => "getByTerminalIds", "ids" => $ids];
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            try
+            {
+                $path = "v1/merchants/terminals";
+
+                $input = [
+                    'terminal_ids' => $ids,
+                    'fetch_where_submerchant' => false,
+                ];
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+                $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $apiTerminals;
     }
 
     public function getTpvTerminalIdsForGateway($gateway)
@@ -1133,7 +1246,49 @@ class Repository extends Base\Repository
 
         $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
 
-        return $query->firstOrFail();
+        $terminal = $query->firstOrFail();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS", $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $data = ["function" => "getByMerchantProviderAndMethod", "mid" => $merchantId, "gateway_acquirer" => $provider];
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            try
+            {
+                $path = "v1/merchants/terminals";
+
+                $input = [
+                    Entity::GATEWAY_ACQUIRER => $provider,
+                    'merchant_ids' => [$merchantId, Account::SHARED_ACCOUNT],
+                    'methods' => [$method],
+                    'enabled' => true,
+                ];
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $terminal;
     }
 
     public function findByMerchantIdAndMethod(string $merchantId, string $method)
