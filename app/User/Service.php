@@ -1404,7 +1404,8 @@ class Service extends Base\Service
             'rx_manual_tax_payment',
             'rx_vp_inline_recommendation',
             'partner_app_store',
-            'AnnouncementIconDec2020'
+            'AnnouncementIconDec2020',
+            'bulk_payouts_improvements_rollout'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
