@@ -242,6 +242,11 @@ class EventCode
         'name'  => 'payment.verification.initiated'
     ];
 
+    const PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE   = [
+        'group' => 'verification',
+        'name'  => 'payment.verification.filtered.final.failure'
+    ];
+
     const PAYMENT_VERIFICATION_PROCESSED                = [
         'group' => 'verification',
         'name'  => 'payment.verification.processed'

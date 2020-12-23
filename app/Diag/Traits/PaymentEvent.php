@@ -42,9 +42,12 @@ trait PaymentEvent
         ];
 
         $customProperties +=[
-            'status'    => $payment->getStatus(),
-            'bucket'    => $payment->getVerifyBucket(),
-            'verify_at' => $payment->getVerifyAt(),
+            'status'              => $payment->getStatus(),
+            'bucket'              => $payment->getVerifyBucket(),
+            'verify_at'           => $payment->getVerifyAt(),
+            'created_at'          => $payment->getCreatedAt(),
+            'internal_error_code' => $payment->getInternalErrorCode(),
+            'error_desc'          => $payment->getErrorDescription(),
         ];
 
         $this->trackPaymentEventV2($event, $payment, $ex, $metaDetails, $customProperties);

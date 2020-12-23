@@ -9,6 +9,7 @@ use RZP\Exception;
 use RedisDualWrite;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -409,6 +410,8 @@ class Verify extends Base\Core
                     ]);
 
                 $this->repo->saveOrFail($payment);
+
+                $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment);
             }
 
             return !$isFinalErrorCode;
