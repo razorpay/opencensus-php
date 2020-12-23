@@ -34,6 +34,25 @@ class Constants
         ],
         [
             'title'       => 'Pay your vendors in seconds',
+            'description' => 'Pay upto 300 vendor invoices free every month.',
+            'start_ts'    => 1608633480,
+            'end_ts'      => 1624358771,
+            'icon'        => 'https://cdn.razorpay.com/pg_announcement_icon.svg',
+            'track_event' => true,
+            'id'          => 'DEC20-VP-C1',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => 'https://x.razorpay.com/vendor-payments',
+                ]
+            ],
+            'filters'     => [
+                'experiments'         => ['show_rx_vp_announcement_2'],
+            ],
+        ],
+        [
+            'title'       => 'Pay your vendors in seconds',
             'description' => 'Upload invoices and pay vendors and TDS automatically.',
             'start_ts'    => 1604904751,
             'end_ts'      => 1612084863,

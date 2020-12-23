@@ -271,6 +271,7 @@ export default class NotificationsDropdown extends Component {
       'NOV20-PG-BANKUPDATE',
       'Nov20-Opfin-NitroV2',
       'DEC20-PayPal-GTM',
+      'DEC20-VP-C1',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
