@@ -2993,6 +2993,30 @@ class BankTransferTest extends TestCase
         $this->assertEquals(100000, $payment['amount']);
     }
 
+    public function testRblBankTransferWithNoMatchingTerminal()
+    {
+        $terminalAttributes = [
+            'id'                    =>'RblBtShrdTrmnl',
+            'gateway'               => Gateway::BT_RBL,
+            'gateway_merchant_id'   => '111222',
+            'gateway_merchant_id2'  => '',
+            'shared'                => true,
+            'bank_transfer'         => true,
+        ];
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $this->startTest();
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('RblBtShrdTrmnl', $payment['terminal_id']);
+    }
+
     protected function getRblVaBankAccount()
     {
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];

@@ -167,7 +167,34 @@ class TerminalProcessor extends Base\Core
 
         $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway);
 
-        return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
+        try
+        {
+            return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
+        }
+        catch (LogicException $ex)
+        {
+            //
+            // When this error is thrown, the payee account is invalid and the bank
+            // transfer is to be refunded. In order to refund successfully, we are just
+            // returning a shared bank transfer terminal for that particular gateway.
+            //
+            if ($ex->getMessage() === 'No terminal found for bank transfer.')
+            {
+                $this->trace->traceException($ex);
+                
+                $terminal = $this->repo->terminal->findByGatewayAndTerminalData(
+                    $gateway,
+                    [
+                        Terminal\Entity::SHARED                 => true,
+                        Terminal\Entity::BANK_TRANSFER          => true,
+                    ]
+                );
+
+                return $terminal;
+            }
+
+            throw $ex;
+        }
     }
 
     /**
@@ -274,7 +301,14 @@ class TerminalProcessor extends Base\Core
 
             // This case will only happen if we get request for root that is not allotted
             // to us or we forgot to create the fallback terminal.
-            throw new LogicException('Should not have reached here');
+            throw new LogicException(
+                'No terminal found for bank transfer.',
+                null,
+                [
+                    'payee_account_prefix'      => substr($accountNumber, 0, 8),
+                    'payee_account_descriptor'  => substr($accountNumber, 8, strlen($accountNumber)),
+                ]
+            );
         }
 
         if ($selectedTerminals->count() !== 1)

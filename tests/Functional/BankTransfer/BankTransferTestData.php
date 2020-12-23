@@ -1186,6 +1186,44 @@ return [
         ],
     ],
 
+    'testRblBankTransferWithNoMatchingTerminal' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'ft',
+                        'amount'                    => '1000',
+                        'UTRNumber'                 => 'RANDOM0UTR0',
+                        'senderIFSC'                => 'CNRB0008652',
+                        'senderAccountNumber'       => '999988887777',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'Rzrpy',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => 'AAABBB8866442200',
+                        'creditDate'                => '14-02-2020 201500',
+                        'creditAccountNumber'       => '112233445566',
+                        'corporateCode'             => '',
+                        'clientCodeMaster'          => '',
+                        'senderInformation'         => 'Something something',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEcollectRblBatchCreate' => [
         'request' => [
             'url' => '/ecollect/validate/file/rbl',
