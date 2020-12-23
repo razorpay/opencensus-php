@@ -2282,6 +2282,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
     const HEARTBEAT_PDO_FETCH_ERROR                             = 'HEARTBEAT_PDO_FETCH_ERROR';
     const DB_PDO_CONN_SETUP_ERROR                               = 'DB_PDO_CONN_SETUP_ERROR';
+    const DB_SESSION_VAR_SETUP_ERROR                            = 'DB_SESSION_VAR_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
     const AWS_SNS_PUBLISH_REQUEST                               = 'AWS_SNS_PUBLISH_REQUEST';

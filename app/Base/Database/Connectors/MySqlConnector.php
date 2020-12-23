@@ -3,6 +3,7 @@
 namespace RZP\Base\Database\Connectors;
 
 use App;
+use Database\Connection;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
@@ -76,6 +77,12 @@ class MySqlConnector extends BaseMySqlConnector
 
         $this->initializeWaitTimeout($connection, $config);
 
+        if ((empty($config['name']) === false) and
+            (($config['name'] === Connection::DATA_WAREHOUSE_LIVE) or ($config['name'] === Connection::DATA_WAREHOUSE_TEST)))
+        {
+            $this->initializeTiDBSessionVariables($connection, $config);
+        }
+
         return $connection;
     }
 
@@ -111,6 +118,27 @@ class MySqlConnector extends BaseMySqlConnector
     protected function execWaitTimeout($connection, $timeoutValue)
     {
         $connection->exec("set session wait_timeout={$timeoutValue}");
+    }
+
+    protected function initializeTiDBSessionVariables($connection, array $config)
+    {
+        foreach($config as $key => $value)
+        {
+            if ((Str::startsWith($key, 'tidb_')) and (empty($config[$key]) === false))
+            {
+                try
+                {
+                    $connection->exec("set session {$key}='{$value}'");
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->app['trace']->traceException($ex, null, TraceCode::DB_SESSION_VAR_SETUP_ERROR,[
+                        'key'   => $key,
+                        'value' => $value,
+                    ]);
+                }
+            }
+        }
     }
 
     public function setWaitTimeout($type, $conn = '')

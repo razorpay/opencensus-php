@@ -175,6 +175,8 @@ return array(
             'strict'                   => true,
             'wait_timeout'             => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'tidb_opt_agg_push_down'   => env('DB_TIDB_OPT_AGG_PUSH_DOWN'),
+            'tidb_replica_read'        => env('DB_TIDB_REPLICA_READ'),
             'options' => [
                 PDO::ATTR_TIMEOUT => 2,
             ],
@@ -203,6 +205,8 @@ return array(
             'strict'                   => true,
             'wait_timeout'             => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'tidb_opt_agg_push_down'   => env('DB_TIDB_OPT_AGG_PUSH_DOWN'),
+            'tidb_replica_read'        => env('DB_TIDB_REPLICA_READ'),
             'options' => [
                 PDO::ATTR_TIMEOUT => 2,
             ],
