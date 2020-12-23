@@ -2226,6 +2226,28 @@ class Service extends Base\Service
         return (new Verify)->verifyPayment($payment);
     }
 
+    public function verifyCapturedPayments(array $input)
+    {
+        (new Payment\Validator)->validateInput('verify_all', $input);
+
+        $gateway = $input['gateway'] ?? null;
+
+        $delay = $input['delay'] ?? 0;
+
+        $count = $input['count'] ?? 200;
+
+        $bucket = $input['bucket'] ?? null;
+
+        $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+
+        $start = $this->getStartTimestamp($delay);
+
+        $startTime = Carbon::createFromTimestamp($start, Timezone::IST)->toTimeString();
+        $endTime = Carbon::createFromTimestamp($end, Timezone::IST)->toTimeString();
+
+        return (new Verify)->verifyCapturedPayments([$start, $end], $gateway, $count, $bucket);
+    }
+
     /**
      * Certain gateways require gateway data such as bank reference number for payment verification
      * to function accurately

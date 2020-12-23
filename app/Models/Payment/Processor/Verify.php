@@ -189,7 +189,7 @@ trait Verify
      * @return array
      * @throws \Exception
      */
-    public function verifyNewRoute(Payment\Entity $payment, array $gatewayData = null)
+    public function verifyNewRoute(Payment\Entity $payment, string $verifyRoute = 'verify/new_cron', array $gatewayData = null)
     {
         $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
 
@@ -200,7 +200,7 @@ trait Verify
         $customProperties = [
             'bucket'=> $payment->getVerifyBucket(),
             'payment_id' => $payment->getId(),
-            'verify_route' => 'verify/new_cron',
+            'verify_route' => $verifyRoute,
         ];
 
         $finalException = $this->callVerification($payment, $data, $customProperties);

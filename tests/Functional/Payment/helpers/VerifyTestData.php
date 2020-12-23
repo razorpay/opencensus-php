@@ -28,7 +28,7 @@ return [
 
     'testIciciBqrVerify' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],
@@ -48,7 +48,7 @@ return [
 
     'testNotVerifiablePaymentForCaptureVerify' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],
@@ -68,7 +68,7 @@ return [
 
     'testIsgBqrVerify' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],
@@ -88,7 +88,7 @@ return [
 
     'testAmexVerify' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],
@@ -108,7 +108,7 @@ return [
 
     'testHitachiUpiVerifyShdFail' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],
@@ -141,6 +141,16 @@ return [
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         ],
     ],
+
+    'testCapturedPaymentVerify' => [
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
     'testInvalidFilter' => [
         'response'  => [
             'content'     => [

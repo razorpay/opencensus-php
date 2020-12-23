@@ -627,6 +627,91 @@ class VerifyWithErrorCodeMappingTest extends TestCase
         $this->afterVerifyTest($filter, $request, $expectedData);
     }
 
+    public function testCapturedPaymentVerify()
+    {
+        $this->setupRedisMock();
+
+        $data = $this->testData['testCapturedPaymentVerify'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getDbLastEntityPublic('payment');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized' => 0,
+            'success' => 0,
+            'timeout' => 0,
+            'error' => 0,
+            'unknown' => 0,
+            'request_error' => 0,
+            'not_applicable' => 0,
+            'locked_count' => 0,
+        ];
+
+        $this->assertVerifyNewRouteContent($resultData, $content);
+    }
+
+    public function testCapturedPaymentVerifyNewRoute()
+    {
+        $this->setupRedisMock();
+
+        $data = $this->testData['testCapturedPaymentVerify'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getDbLastEntityPublic('payment');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/new_cron',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized' => 0,
+            'success' => 0,
+            'timeout' => 0,
+            'error' => 0,
+            'locked_count' => 0,
+            'unknown' => 0,
+            'request_error' => 0,
+            'not_applicable' => 0,
+            'attempted_payments' => 0,
+            'total_payments' => 0,
+            'must_attempt' => 0
+        ];
+
+        $this->assertVerifyNewRouteContent($resultData, $content);
+    }
+
     protected function authPaymentTimeout(string $method, bool $terminalFailure = false, bool $invalidErrorCode = false)
     {
         $this->setMockGatewayTrue();
@@ -847,6 +932,8 @@ class VerifyWithErrorCodeMappingTest extends TestCase
         unset($actualContent['verified_payments']);
         unset($actualContent['bucket_filter']);
         unset($actualContent['filter']);
+        unset($actualContent['start_time']);
+        unset($actualContent['end_time']);
 
         $this->assertEquals($expectedContent, $actualContent);
     }

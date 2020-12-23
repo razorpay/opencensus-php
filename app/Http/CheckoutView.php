@@ -44,11 +44,11 @@ class CheckoutView{
         {
             $orgId = $merchant->getOrgId();
 
-            if (isset($orgId))
+            if (isset($orgId) === true)
             {
                 $orgDetails = $this->repo->org->find($orgId);
 
-                if (isset($orgDetails))
+                if (isset($orgDetails) === true)
                 {
                     $data['org_logo'] = $orgDetails->getMainLogo();
 
@@ -62,7 +62,7 @@ class CheckoutView{
         {
             $razorpayOrg = $this->repo->org->find(Org\Entity::RAZORPAY_ORG_ID);
 
-            if (isset($razorpayOrg))
+            if (isset($razorpayOrg) === true)
             {
                 $data['org_logo'] = $razorpayOrg->getMainLogo();
 

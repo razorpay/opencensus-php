@@ -127,11 +127,11 @@ class Checkout
     {
         $orgId = $merchant->getOrgId();
 
-        if (isset($orgId))
+        if (isset($orgId) === true)
         {
             $org = $this->repo->org->find($orgId);
 
-            if (isset($org))
+            if (isset($org) === true)
             {
                 $features = $org->getEnabledFeatures();
 

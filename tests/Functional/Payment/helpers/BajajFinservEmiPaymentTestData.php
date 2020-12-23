@@ -67,7 +67,7 @@ return [
 
     'testBajajFinservVerify' => [
         'request' => [
-            'url'    => '/payments/verify/all',
+            'url'    => '/payments/captured/verify',
             'method' => 'post',
             'content' => [
             ],

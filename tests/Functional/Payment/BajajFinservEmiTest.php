@@ -278,7 +278,7 @@ class BajajFinservEmiTest extends TestCase
             'authorized_at' => $createdAt,
             'verify_at'     => $createdAt,
             'captured_at'   => $createdAt,
-            'status'        => 'authorized',
+            'status'        => 'captured',
         ]);
 
         $this->fixtures->create('mozart',

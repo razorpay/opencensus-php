@@ -28,7 +28,7 @@ class CaptureVerify extends Verify
         //
         try
         {
-            $this->processor($merchant)->verify($payment);
+            $this->processor($merchant)->verifyNewRoute($payment, 'captured/verify');
 
             // Verification was successful so move this verification to last state
             $this->updateVerifyBucket($payment, $filter, self::LAST);

@@ -523,7 +523,8 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways, $bucket)
+    public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways,
+                                                        $bucket, array $filterStatus = [])
     {
         $query = $this->newQuery()
                       ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
@@ -540,6 +541,11 @@ class Repository extends Base\Repository
         if ($bucket !== null)
         {
             $query->whereIn(Payment\Entity::VERIFY_BUCKET, $bucket);
+        }
+
+        if (isset($filterStatus) === true)
+        {
+            $query->whereIn(Payment\Entity::STATUS, $filterStatus);
         }
 
         return $query->take($count)

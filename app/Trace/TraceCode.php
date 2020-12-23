@@ -911,6 +911,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_ACTION                                         = 'VERIFY_ACTION';
     const VERIFY_GATEWAY_BLOCK                                  = 'VERIFY_GATEWAY_BLOCK';
     const VERIFY_PROCESSED_SUMMARY                              = 'VERIFY_PROCESSED_SUMMARY';
+    const CAPTURED_VERIFY_PROCESSED_SUMMARY                     = 'CAPTURED_VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                                 = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_EVENT_DATA                             = 'PAYMENT_VERIFY_EVENT_DATA';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED                     = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
