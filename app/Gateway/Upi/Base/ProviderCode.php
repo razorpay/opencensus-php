@@ -102,9 +102,11 @@ class ProviderCode
     const LVB                = 'lvb';
     const LVBANK             = 'lvbank';
     const MAHB               = 'mahb';
+    const MAIRTEL            = 'mairtel';
     const MYICICI            = 'myicici';
     const OBC                = 'obc';
     const OKAXIS             = 'okaxis';
+    const OKBIZAXIS          = 'okbizaxis';
     const OKHDFCBANK         = 'okhdfcbank';
     const OKICICI            = 'okicici';
     const OKSBI              = 'oksbi';
@@ -239,9 +241,11 @@ class ProviderCode
         self::LVB                => IFSC::LAVB,
         self::LVBANK             => IFSC::LAVB,
         self::MAHB               => IFSC::MAHB,
+        self::MAIRTEL            => IFSC::AIRP,
         self::MYICICI            => IFSC::ICIC,
         self::OBC                => IFSC::ORBC,
         self::OKAXIS             => IFSC::UTIB,
+        self::OKBIZAXIS          => IFSC::UTIB,
         self::OKICICI            => IFSC::ICIC,
         self::OKHDFCBANK         => IFSC::HDFC,
         self::OKSBI              => IFSC::SBIN,
