@@ -266,6 +266,7 @@ class Gateway
             self::ACQUIRER_AXIS => self::AXIS,
         ],
         self::HDFC                  => self::HDFC,
+        self::BT_HDFC_ECMS          => self::HDFC,
         self::ISG                   => [
             'default'           => self::HDFC,
             self::ACQUIRER_HDFC => self::HDFC,
