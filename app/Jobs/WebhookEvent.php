@@ -7,6 +7,7 @@ use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Models\Base\UniqueIdEntity;
 
 /**
  * This is a fallback queued job and the handler just calls stork's processEvent().
@@ -57,6 +58,11 @@ class WebhookEvent extends Job
         try
         {
             $event = new Event\Entity($this->eventAttrs);
+            if ((isset($this->eventAttrs['id']) === true) &&
+                (UniqueIdEntity::verifyUniqueId($this->eventAttrs['id'], false) === true))
+            {
+                $event->setId($this->eventAttrs['id']);
+            }
             $event->merchant()->associate($this->merchant);
 
             $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());

@@ -4,6 +4,7 @@ namespace RZP\Tests\Traits;
 
 use Mockery;
 use Requests_Response;
+use RZP\Models\Base\UniqueIdEntity;
 use PHPUnit\Framework\ExpectationFailedException;
 
 trait TestsWebhookEvents
@@ -39,6 +40,12 @@ trait TestsWebhookEvents
         {
             // $arg['event'] is stork's event struct.
             if ($name !== $arg['event']['name'])
+            {
+                return false;
+            }
+
+            if ((isset($arg['event']['id']) === false) ||
+                (UniqueIdEntity::verifyUniqueId($arg['event']['id'], false) === false))
             {
                 return false;
             }

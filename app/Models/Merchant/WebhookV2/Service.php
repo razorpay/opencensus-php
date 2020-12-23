@@ -580,6 +580,7 @@ class Service extends Base\Service
             unset($eventAttrs['entity']);
 
             $event = (new Event\Entity)->build($eventAttrs);
+            $event->generateId();
             $event->merchant()->associate($merchantsById->get($merchantId));
 
             $events[] = $event;
@@ -616,6 +617,7 @@ class Service extends Base\Service
                 EventEntity::CREATED_AT => Carbon::now()->getTimestamp(),
             ];
             $eventEntity = new EventEntity($eventAttrs);
+            $eventEntity->generateId();
             $eventEntity->setPayload($payload);
             $eventEntity->merchant()->associate($this->merchant);
 

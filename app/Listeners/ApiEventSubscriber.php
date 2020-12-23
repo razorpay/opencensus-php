@@ -1315,6 +1315,7 @@ class ApiEventSubscriber extends Base\Core
         );
 
         $event = new Event\Entity($attributes);
+        $event->generateId();
 
         $event->setPayload($payload);
 

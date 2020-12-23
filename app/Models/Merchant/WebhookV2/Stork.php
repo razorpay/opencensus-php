@@ -295,6 +295,7 @@ class Stork
 
         $processEventReq = [
             'event' => [
+                'id'         => $event->getId(),
                 'service'    => $this->service->service,
                 'owner_id'   => $event->getMerchantId(),
                 'owner_type' => E::MERCHANT,

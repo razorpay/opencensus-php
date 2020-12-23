@@ -36,6 +36,7 @@ class P2pWebhookListener extends P2pListener
             Event\Entity::CREATED_AT => $this->event->getEntity()->getUpdatedAt(),
         ];
         $event = new Event\Entity($eventAttrs);
+        $event->generateId();
         $event->setPayload($eventPayload);
         $event->merchant()->associate($this->getMerchant());
 
