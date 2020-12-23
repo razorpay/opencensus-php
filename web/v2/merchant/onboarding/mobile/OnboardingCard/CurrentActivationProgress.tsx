@@ -1,5 +1,5 @@
 import React from 'react';
-import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
+import { isUnregisteredBusiness } from '../services/utils';
 import RemainingStepsInfo from './RemainingStepsInfo';
 import Info from './Info';
 import Buttons from './Buttons';

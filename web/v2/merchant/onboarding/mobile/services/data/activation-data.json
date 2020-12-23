@@ -90,7 +90,7 @@
   "bank_details_doc_verification_status": null,
   "shop_establishment_number": null,
   "shop_establishment_verification_status": null,
-  "documents": [],
+  "documents": {},
   "shop_establishment_verifiable_zone": false,
   "verification": {
     "status": "disabled",

@@ -8,8 +8,8 @@ import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { CIN_BusinessTypes, isUnregisteredBusiness } from '../Constants/OnboardingConstants';
-import { getLabel } from '../services/utils';
+import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
+import { getLabel, isUnregisteredBusiness } from '../services/utils';
 
 const BankDetails: React.FC = () => {
   const { data, postData } = useActivation();

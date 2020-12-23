@@ -1,8 +1,17 @@
 import create from 'zustand';
 import {
   isUnregisteredBusiness,
+  hasUploadedBusinessProofTypeDoc,
+  hasUploadedBusinessProofUrl,
+  showForOrgs,
+  isBusinessProofTypeDocFieldVisible,
+  doesHaveAdditionalDocs,
+  isRegAutoKYCEnabled,
+} from 'v2/merchant/onboarding/mobile/services/utils';
+import {
   CIN_BusinessTypes,
   LLPIN_BusinessTypes,
+  PROPRIETORSHIP,
 } from '../../mobile/Constants/OnboardingConstants';
 
 const isVisible = (fieldName, context) => {
@@ -30,6 +39,46 @@ const isVisible = (fieldName, context) => {
         CIN_BusinessTypes.includes(Number(context.business_overview.business_type.value)) ||
         LLPIN_BusinessTypes.includes(Number(context.business_overview.business_type.value))
       );
+    case 'address_proof':
+      return (
+        isUnregisteredBusiness(context.business_overview.business_type.value) ||
+        isRegAutoKYCEnabled()
+      );
+    case 'business_proof_url':
+      if (!isUnregisteredBusiness(context.business_overview.business_type.value)) {
+        if (
+          context.business_overview.business_type.value === PROPRIETORSHIP &&
+          hasUploadedBusinessProofTypeDoc(context.documents)
+        ) {
+          return false;
+        }
+        if (
+          context.business_overview.business_type.value !== PROPRIETORSHIP ||
+          (hasUploadedBusinessProofUrl(context.documents) && context.submitted)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    case 'business_pan_url':
+      return (
+        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+        Number(context.business_overview.business_type.value) !== PROPRIETORSHIP
+      );
+    case 'personal_pan':
+      return (
+        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+        Number(context.business_overview.business_type.value) === PROPRIETORSHIP
+      );
+    case 'form_80g_url':
+    case 'form_12a_url':
+      return showForOrgs(context.business_overview.business_type.value);
+    case 'bank_prrof':
+      return context.activation_status === 'needs_clarification';
+    case 'business_proof':
+      return isBusinessProofTypeDocFieldVisible(context);
+    case 'additional_doc':
+      return doesHaveAdditionalDocs(context);
     default:
       return true;
   }
@@ -57,6 +106,7 @@ type State = {
   setBusinessOverviewCompleted: (value: boolean) => void;
   setBusinessDetailsCompleted: (value: boolean) => void;
   setBankAndCompanyDetailsCompleted: (value: boolean) => void;
+  setDocumentUploadCompleted: (value: boolean) => void;
   setSameAddress: (value: boolean) => void;
   setHasGSTIN: (value: boolean) => void;
   setHasWebsite: (value: boolean) => void;
@@ -77,6 +127,7 @@ const useActivationFormState = create<State>((set) => ({
   setBusinessOverviewCompleted: (value) => set({ isBusinessOverviewCompleted: value }),
   setBusinessDetailsCompleted: (value) => set({ isBusinessDetailsCompleted: value }),
   setBankAndCompanyDetailsCompleted: (value) => set({ isBankAndCompanyDetailsCompleted: value }),
+  setDocumentUploadCompleted: (value) => set({ isDocumentsUploadCompleted: value }),
   setSameAddress: (value) => set({ same_address: value }),
   setHasGSTIN: (value) => set({ has_gstin: value }),
   setHasWebsite: (value) => set({ has_website: value }),

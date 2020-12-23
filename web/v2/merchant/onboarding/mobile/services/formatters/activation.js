@@ -27,11 +27,43 @@ const bankAndCompanyDetailFields = [
   'bank_branch_ifsc',
 ];
 const onboardingCardFields = ['business_type', 'business_subcategory', 'business_model'];
+const documentsUploadFields = [
+  'aadhar_front',
+  'aadhar_back',
+  'passport_front',
+  'passport_back',
+  'voter_id_front',
+  'voter_id_back',
+  'gst_certificate',
+  'msme_certificate',
+  'shop_establishment_certificate',
+  'cancelled_cheque',
+  'bank_statement',
+  'business_proof_url',
+  'business_pan_url',
+  'personal_pan',
+  'form_12a_url',
+  'form_80g_url',
+  'amfi_certificate',
+  'sla_amfi_certificate',
+  'nbfc_registration_certificate',
+  'sla_nbfc_registration_certificate',
+  'irdai_registration_certificate',
+  'sla_irdai_registration_certificate',
+  'ffmc_license',
+  'sla_ffmc_license',
+  'sebi_registration_certificate',
+  'sla_sebi_registration_certificate',
+  'iata_certificate',
+  'sla_iata_certificate',
+  'affiliation_certificate',
+  'shop_establishment_number',
+];
 
 const getFieldObjects = (fields, data) => {
   let fieldObjects = {};
   fields.forEach((field) => {
-    const value = data[field];
+    const value = data[field] || data.documents[field];
     const error = null;
     fieldObjects = { ...fieldObjects, [field]: { value, error } };
   });
@@ -44,13 +76,15 @@ const activationFormatter = (data) => {
   const businessDetails = getFieldObjects(businessDetailFields, data);
   const bankAndCompanyDetails = getFieldObjects(bankAndCompanyDetailFields, data);
   const onboardingCardDetails = getFieldObjects(onboardingCardFields, data);
+  const documentsUpload = getFieldObjects(documentsUploadFields, data);
   return {
+    ...data,
     contact_details: contactDetails,
     business_overview: businessOverview,
     business_details: businessDetails,
     bank_and_company_details: bankAndCompanyDetails,
     onboarding_card_details: onboardingCardDetails,
-    ...data,
+    documents: documentsUpload,
   };
 };
 

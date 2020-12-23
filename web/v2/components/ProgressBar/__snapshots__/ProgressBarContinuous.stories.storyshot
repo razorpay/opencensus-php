@@ -5,7 +5,7 @@ exports[`Storyshots ProgressBarContinuous Progress Bar 1`] = `
   <div>
     <div>
       <div
-        class="ProgressBarContinuous__ProgressContainer-sc-15w7tnu-0 lgcBrt"
+        class="ProgressBarContinuous__ProgressContainer-sc-15w7tnu-0 lgcBrt Spaceweb__Space-njatzl-0 jwotGG"
         height="4px"
       >
         <div
@@ -60,7 +60,7 @@ exports[`Storyshots ProgressBarContinuous Progress Bar Continuous With Controls 
   <div>
     <div>
       <div
-        class="ProgressBarContinuous__ProgressContainer-sc-15w7tnu-0 lgcBrt"
+        class="ProgressBarContinuous__ProgressContainer-sc-15w7tnu-0 lgcBrt Spaceweb__Space-njatzl-0 jwotGG"
         height="4px"
       >
         <div

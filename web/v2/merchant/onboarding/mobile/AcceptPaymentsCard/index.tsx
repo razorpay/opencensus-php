@@ -10,7 +10,7 @@ import Flex from '@razorpay/blade/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
 import { CenterLoader } from 'v2/components/Loader';
 import useActivation from '../hooks/useActivation';
-import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
+import { isUnregisteredBusiness } from '../services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import * as Messages from './Constants';
 

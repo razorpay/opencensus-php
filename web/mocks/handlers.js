@@ -139,4 +139,55 @@ export const handlers = [
       );
     },
   ),
+
+  rest.post(
+    'http://localhost:6006/merchant/api/test/merchant/documents/upload',
+    (req, res, ctx) => {
+      if (req.body) {
+        ActivationDB.update({
+          documents: {
+            aadhar_back: [
+              {
+                id: 'Fz4zHZJgOUHbGs',
+                file_store_id: 'Fz4zHkwuXILcgw',
+                merchant_id: 'FguKGQ2MICXBFc',
+              },
+            ],
+          },
+        });
+      }
+
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: ActivationDB.read(),
+        }),
+      );
+    },
+  ),
+
+  rest.delete(
+    `http://localhost:6006/merchant/api/test/merchant/documents/doc_:params`,
+    (req, res, ctx) => {
+      const docId = req.url.pathname.split('doc_')[1];
+      if (docId) {
+        ActivationDB.update({
+          documents: {
+            business_pan_url: null,
+          },
+        });
+      }
+
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: ActivationDB.read(),
+        }),
+      );
+    },
+  ),
 ];

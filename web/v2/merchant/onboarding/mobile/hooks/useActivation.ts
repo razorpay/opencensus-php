@@ -3,7 +3,7 @@ import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
-import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
+import { isUnregisteredBusiness } from '../services/utils';
 
 export const fetchActivationData = async () => {
   const data = await fetch<any>({ url: '/merchant/activation' });
@@ -30,6 +30,17 @@ export const getRequestData = (prevDetails, updatedDetails) => {
   return reqData;
 };
 
+export const saveFile = ({ formData, progressTracker }) =>
+  fetch<any>({
+    url: '/merchant/documents/upload',
+    method: 'POST',
+    data: formData,
+    onUploadProgress: progressTracker,
+  });
+
+export const deleteFile = (curDoc) =>
+  fetch<any>({ url: `/merchant/documents/doc_${curDoc.id}`, method: 'DELETE' });
+
 export default function useActivation() {
   const { status, data } = useQuery('activation', fetchActivationData, {
     staleTime: Infinity,
@@ -37,6 +48,14 @@ export default function useActivation() {
 
   const queryCache = useQueryCache();
   const [postData] = useMutation(postActivation, {
+    onSuccess: () => queryCache.invalidateQueries('activation'),
+  });
+
+  const [documentUpload] = useMutation(saveFile, {
+    onSuccess: () => queryCache.invalidateQueries('activation'),
+  });
+
+  const [documentDelete] = useMutation(deleteFile, {
     onSuccess: () => queryCache.invalidateQueries('activation'),
   });
 
@@ -52,6 +71,9 @@ export default function useActivation() {
   const setBankAndCompanyDetailsCompleted = useActivationFormState(
     (state) => state.setBankAndCompanyDetailsCompleted,
   );
+  const setDocumentUploadCompleted = useActivationFormState(
+    (state) => state.setDocumentUploadCompleted,
+  );
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
@@ -62,10 +84,12 @@ export default function useActivation() {
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
       const isBusinessDetailsTabComplete = isTabComplete(data, 'business_details');
       const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
+      const isDocumentsUploadTabComplete = isTabComplete(data, 'documents');
       setContactDetailsCompleted(isContactDetailsTabComplete);
       setBusinessOverviewCompleted(isBusinessOverviewTabComplete);
       setBusinessDetailsCompleted(isBusinessDetailsTabComplete);
       setBankAndCompanyDetailsCompleted(isBankAndCompanyDetailsTabComplete);
+      setDocumentUploadCompleted(isDocumentsUploadTabComplete);
       if (data.business_overview.business_website.value) {
         setHasWebsite(true);
       }
@@ -88,10 +112,11 @@ export default function useActivation() {
     setBusinessOverviewCompleted,
     setBusinessDetailsCompleted,
     setBankAndCompanyDetailsCompleted,
+    setDocumentUploadCompleted,
     setHasWebsite,
     setSameAddress,
     setHasGSTIN,
   ]);
 
-  return { status, data, postData };
+  return { status, data, postData, documentUpload, documentDelete };
 }

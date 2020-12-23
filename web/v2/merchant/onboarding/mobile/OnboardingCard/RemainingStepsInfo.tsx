@@ -3,7 +3,7 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Space from '@razorpay/blade/src/atoms/Space';
 import View from '@razorpay/blade/src/atoms/View';
 import { useActivationFormState } from '../context/store';
-import { isUnregisteredBusiness } from '../Constants/OnboardingConstants';
+import { isUnregisteredBusiness } from '../services/utils';
 import Info from './Info';
 import * as Messages from './Constants';
 
