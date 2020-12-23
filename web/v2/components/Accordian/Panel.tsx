@@ -13,6 +13,7 @@ export interface PanelPropsT {
   onClick?: (e: Event) => void;
   title?: ReactNode;
   children: ReactNode;
+  _ref?: ReactNode;
 }
 
 const Panel: React.FC<PanelPropsT> = ({
@@ -22,6 +23,7 @@ const Panel: React.FC<PanelPropsT> = ({
   title,
   children,
   onClick,
+  _ref,
 }) => {
   const _onClick = (e: Event) => {
     if (disabled) {
@@ -38,6 +40,7 @@ const Panel: React.FC<PanelPropsT> = ({
   return (
     <PanelContainer>
       <Header
+        ref={_ref}
         role="button"
         aria-expanded={expanded}
         aria-disabled={disabled || null}
