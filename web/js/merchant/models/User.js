@@ -740,6 +740,11 @@ export default class User {
     return this.getExpStatus('bank_account_update_merchant_dashboard');
   }
 
+  // Blocks bank account update feature
+  blockBankAccountUpdate() {
+    return this.getExpStatus('block_bank_account_update_merchant_dashboard');
+  }
+
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;

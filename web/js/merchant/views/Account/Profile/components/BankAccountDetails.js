@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import DetailRow from 'merchant/components/DetailRow';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -9,6 +10,7 @@ const BankAccountDetails = ({
   isBankAccountChangeAllowed,
   settlement_amount,
   location,
+  user,
 }) => {
   const bankAccountSectionRef = useRef(null);
 
@@ -43,6 +45,7 @@ const BankAccountDetails = ({
         {((settlement_amount.no_settlement && !settlement_amount.no_settlement.on_hold) ||
           !settlement_amount.no_settlement) &&
           isBankAccountChangeAllowed !== null &&
+          !user.blockBankAccountUpdate() &&
           (isBankAccountChangeAllowed ? (
             <a class="pull-right" onClick={onChangeBankAccountDetails}>
               Request Change
@@ -62,4 +65,8 @@ const BankAccountDetails = ({
   );
 };
 
-export default withRouter(BankAccountDetails);
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default withRouter(connect(mapStateToProps, {})(BankAccountDetails));
