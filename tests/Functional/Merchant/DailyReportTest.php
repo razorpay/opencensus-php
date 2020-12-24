@@ -12,11 +12,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 
 class DailyReportTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use CustomBrandingTrait;
 
     protected $settleAtTimestamp;
 
@@ -25,7 +27,7 @@ class DailyReportTest extends TestCase
         parent::setUp();
     }
 
-    public function testDailyReport()
+    protected function setupDailyReport()
     {
         Mail::fake();
 
@@ -42,7 +44,33 @@ class DailyReportTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 5;
+
         $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
+    }
+
+    public function testDailyReportForCustomOrg()
+    {
+        $this->setupDailyReport();
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant('10000000000000');
+
+        $this->generateDailyReport();
+
+        Mail::assertQueued(DailyReportMail::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('emails.merchant.daily_report', $mail->view);
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
+    }
+
+    public function testDailyReportForRazorpayOrg()
+    {
+        $this->setupDailyReport();
 
         $testData = [
             'captured'    => ['count' => '4', 'sum' => '4000000'],
@@ -55,7 +83,13 @@ class DailyReportTest extends TestCase
 
         Mail::assertQueued(DailyReportMail::class, function ($mail) use ($testData)
         {
-            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+            $viewData = $mail->viewData;
+
+            $this->assertArraySelectiveEquals($testData, $viewData);
+
+            $this->assertEquals('emails.merchant.daily_report', $mail->view);
+
+            $this->assertRazorpayOrgMailData($viewData);
 
             return $mail->hasTo('test@razorpay.com');
         });

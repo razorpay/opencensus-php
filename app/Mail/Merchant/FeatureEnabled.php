@@ -5,16 +5,21 @@ namespace RZP\Mail\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\OrgWiseConfig;
 
 class FeatureEnabled extends Mailable
 {
     protected $data;
 
-    public function __construct(array $data)
+    protected $merchant;
+
+    public function __construct(array $data, $merchant = null)
     {
         parent::__construct();
 
         $this->data = $data;
+
+        $this->merchant = $merchant;
     }
 
     protected function addRecipients()
@@ -64,6 +69,8 @@ class FeatureEnabled extends Mailable
 
     protected function addMailData()
     {
+        $this->data = array_merge($this->data, OrgWiseConfig::getOrgDataForEmail($this->merchant));
+
         $this->with($this->data);
 
         return $this;
@@ -85,4 +92,5 @@ class FeatureEnabled extends Mailable
 
         return $this;
     }
+
 }

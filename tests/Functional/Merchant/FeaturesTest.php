@@ -24,6 +24,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -33,6 +34,7 @@ class FeaturesTest extends TestCase
     use FileUploadTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
+    use CustomBrandingTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
@@ -563,6 +565,29 @@ class FeaturesTest extends TestCase
         $this->addFeatures(Mode::LIVE, true);
 
         Mail::assertNotQueued(FeatureEnabledEmail::class);
+    }
+
+    public function testProductFeatureEnabledEmailNotifyCustomBrandingOrg()
+    {
+        Mail::fake();
+
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant(self::ONBOARDING_MERCHANT_ID);
+
+        $this->addFeatures(
+            Mode::LIVE,
+            false,
+            ['subscriptions'],
+            'merchant',
+            self::ONBOARDING_MERCHANT_ID);
+
+        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail) use ($org)
+        {
+            $this->assertCustomBrandingMailViewData($org, $mail->viewData);
+
+            return true;
+        });
     }
 
     public function testEsEligibleEmailNotify()

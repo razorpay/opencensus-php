@@ -185,7 +185,7 @@ class Core extends Base\Core
             $data['contact_name']  = $merchant->getName();
             $data['contact_email'] = $merchantEmail;
 
-            $featureUpdateEmail = new FeatureEnabled($data);
+            $featureUpdateEmail = new FeatureEnabled($data, $merchant);
 
             Mail::queue($featureUpdateEmail);
 
@@ -797,7 +797,7 @@ class Core extends Base\Core
         $data['contact_name']  = $merchant->getName();
         $data['contact_email'] = $merchantEmail;
 
-        $featureUpdateEmail = new FeatureEnabled($data);
+        $featureUpdateEmail = new FeatureEnabled($data, $merchant);
 
         Mail::queue($featureUpdateEmail);
 

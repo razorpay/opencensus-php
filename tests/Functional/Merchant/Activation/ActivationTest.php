@@ -30,6 +30,7 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
@@ -44,6 +45,7 @@ class ActivationTest extends OAuthTestCase
 {
     use TerminalTrait;
     use PartnerTrait;
+    use CustomBrandingTrait;
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -1082,11 +1084,10 @@ class ActivationTest extends OAuthTestCase
         $this->assertSame('whitelist', $liveMerchant->merchantdetail->getActivationFlow());
     }
 
-    public function testKycSubmissionForInstantlyActivatedMerchant()
+    public function setupKycSubmissionForInstantlyActivatedMerchant($merchantId)
     {
-        $merchantId = '1cXSLlUU8V9sXl';
-
         $data = $this->getInstantlyActivatedMerchantDetailData($merchantId);
+
         // Adding the file upload attributes for simplicity of the test
         $otherMerchantDetailAttributes = [
             'address_proof_url'    => '124',
@@ -1115,10 +1116,57 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
 
         $this->createDocumentEntities($merchantId, ['address_proof_url', 'business_pan_url', 'business_proof_url', 'promoter_address_url']);
+    }
+
+    public function testKycSubmissionForInstantlyActivatedMerchantForRazorpayOrg()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
 
         $this->startTest();
+
         $testData = $this->testData['submitKyc'];
+
         $this->startTest($testData);
+
+        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
+
+            return $this->assertRazorpayOrgMailData($viewData['merchant_details']);
+        });
+    }
+
+    public function testKycSubmissionForInstantlyActivatedMerchantForCustomOrg()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $this->startTest($testData);
+
+        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
+
+            return $this->assertCustomBrandingMailViewData($org, $viewData['merchant_details']);
+        });
+
     }
 
     public function testKycSubmissionWhenPoaIsOcrVerified()

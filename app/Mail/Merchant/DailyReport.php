@@ -2,9 +2,12 @@
 
 namespace RZP\Mail\Merchant;
 
+use App;
+use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\OrgWiseConfig;
 
 class DailyReport extends Mailable
 {
@@ -16,9 +19,22 @@ class DailyReport extends Mailable
     {
         parent::__construct();
 
-        $this->data = $data;
+        $orgData = $this->getOrgData($merchant);
+
+        $this->data = array_merge($orgData, $data);
 
         $this->merchant = $merchant;
+    }
+
+    protected function getOrgData($merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $repo = $app['repo'];
+
+        $merchantEntity = $repo->merchant->findOrFailPublic($merchant[Merchant\Entity::ID]);
+
+        return OrgWiseConfig::getOrgDataForEmail($merchantEntity);
     }
 
     protected function addRecipients()

@@ -22,15 +22,25 @@
 
         </div>
 
-        <div>
-            <p>
-            --<br/>
-            The Razorpay Team <br/>
-            <a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
-            </p>
-            <a href="https://razorpay.com" target="_blank">
-                <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
-            </a>
-        </div>
+        @if ($merchant_details['custom_branding'] === false)
+            <div>
+                <p>
+                --<br/>
+                The Razorpay Team <br/>
+                <a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
+                </p>
+                <a href="https://razorpay.com" target="_blank">
+                    <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
+                </a>
+            </div>
+        @elseif ($merchant_details['custom_branding'] === true)
+            <div>
+                <p>
+                --<br/>
+                The {{$merchant_details['org_name']}} Team <br/>
+                </p>
+                <img style="width:200px; height:auto;" src="{{ $merchant_details['email_logo'] }}">
+            </div>
+        @endif
     </body>
 </html>

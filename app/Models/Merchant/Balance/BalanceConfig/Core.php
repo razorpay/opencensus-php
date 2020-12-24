@@ -242,7 +242,7 @@ class Core extends Base\Core
         $data[self::NEGATIVE_LIMIT_AUTO]             = $balanceConfig->getMaxNegativeLimitAuto();
         $data[self::NEGATIVE_TRANSACTION_FLOWS]      = $balanceConfig->getNegativeTransactionFlows();
 
-        $featureUpdateEmail = new FeatureEnabled($data);
+        $featureUpdateEmail = new FeatureEnabled($data, $merchant);
 
         Mail::queue($featureUpdateEmail);
 
