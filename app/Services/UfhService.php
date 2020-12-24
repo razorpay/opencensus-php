@@ -5,12 +5,14 @@ namespace RZP\Services;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Models\Base\Entity;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Exception\BadRequestException;
 
 use Razorpay\Ufh\Client as UfhClient;
@@ -45,27 +47,11 @@ class UfhService
 
     const METADATA          = 'metadata';
 
-    const INVOICES          = 'invoices';
+    // razorx flag
+    const RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS = 'razorx_flag_ufh_validate_user_role_for_access';
 
-    const PAYMENTS          = 'payments';
-
-    const ORDERS            = 'orders';
-
-    const REFUNDS           = 'refunds';
-
-    const SETTLEMENTS       = 'settlements';
-
-    const WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS = [
-        Role::SELLERAPP => [
-            self::INVOICES,
-        ],
-        Role::SUPPORT =>  [
-            self::PAYMENTS,
-            self::ORDERS,
-            self::REFUNDS,
-            self::SETTLEMENTS,
-            self::INVOICES,
-        ],
+    const BLACK_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS = [
+        Role::SUPPORT =>  Type::VALID_DOCUMENTS,
     ];
 
     protected $config;
@@ -82,6 +68,13 @@ class UfhService
 
     /** @var  BasicAuth */
     protected $ba;
+
+    /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
 
     /**
      * Repository manager instance
@@ -102,6 +95,8 @@ class UfhService
         $this->config          = $app['config']['applications.ufh'];
 
         $this->merchantId      = $this->ba->getMerchantId();
+
+        $this->app             = $app;
 
         if (($this->ba->isAdminAuth() === true))
         {
@@ -267,29 +262,37 @@ class UfhService
     {
         $userRole = $this->ba->getUserRole();
 
-        // logging the decision only
-        $this->isRestrictedFileTypeForUserRole($fileType, $userRole);
-
-        /*
         if ($this->isRestrictedFileTypeForUserRole($fileType, $userRole) === true)
         {
-
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid access');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
-        */
     }
 
-    protected function isRestrictedFileTypeForUserRole($fileType, $userRole):bool
+    protected function isRestrictedFileTypeForUserRole($fileType, $userRole): bool
     {
+        $treatment = 'control';
+
+        $merchantId = $this->ba->getMerchantId();
+
+        if($merchantId !== null)
+        {
+            $treatment = $this->app['razorx']->getTreatment(
+                $merchantId,
+                self::RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS,
+                $this->app['rzp.mode'] ?? Mode::LIVE
+            );
+        }
+
         $traceData = [
             'user_role'         => $userRole,
             'file_type'         => $fileType,
+            'razorx_treatment'  => $treatment,
             'access_validation' => 'passed'
         ];
 
-        if ((key_exists($userRole, self::WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS) === true) and
-            (in_array($fileType, self::WHITE_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS[$userRole], true) === false))
+        if (($treatment === 'on') and
+            (key_exists($userRole, self::BLACK_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS) === true) and
+            (in_array($fileType, self::BLACK_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS[$userRole], true) === true))
         {
             $traceData['access_validation'] = 'failed';
 

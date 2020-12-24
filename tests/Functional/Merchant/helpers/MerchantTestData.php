@@ -844,6 +844,46 @@ return [
         ]
     ],
 
+    'testUfhSignedUrlAccessValidationForSupportRoleFail' => [
+        'request' => [
+            'url' => '/ufh/file/file_DM6dXJfU4WzeAF/get-signed-url',
+            'method' => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testUfhSignedUrlAccessValidationForSupportRolePass' => [
+        'request' => [
+            'url' => '/ufh/file/file_DM6dXJfU4WzeAF/get-signed-url',
+            'method' => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'         => 'file_DM6dXJfU4WzeAFb',
+                'signed_url' => 'http:://random-url'
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testEditMerchantUppercaseEmail' => [
         'request' => [
             'content' => [

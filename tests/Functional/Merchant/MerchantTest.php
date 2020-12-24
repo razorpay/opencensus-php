@@ -9,7 +9,9 @@ use Event;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
+use RZP\Services\UfhService;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Cache\Events\CacheHit;
@@ -542,6 +544,88 @@ class MerchantTest extends TestCase
         {
             $this->assertEquals(1, $merchant['hold_funds']);
         }
+    }
+
+    public function testUfhSignedUrlAccessValidationForSupportRolePass()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'support');
+
+        $this->setMockUfhServiceResponseForGetSignedUrl([
+            'id'          => 'file_DM6dXJfU4WzeAFb',
+            'type'        => 'report',
+            'signed_url'  => 'http:://random-url',
+        ]);
+
+        $this->enableRazorXTreatmentForFeature(
+            UfhService::RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS, 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
+    public function testUfhSignedUrlAccessValidationForNonSupportRolePass()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUfhSignedUrlAccessValidationForSupportRolePass'];
+
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'owner');
+
+        $this->setMockUfhServiceResponseForGetSignedUrl([
+            'id'          => 'file_DM6dXJfU4WzeAFb',
+            'type'        => 'aadhar_card',
+            'signed_url'  => 'http:://random-url',
+        ]);
+
+        $this->enableRazorXTreatmentForFeature(
+            UfhService::RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS, 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
+    }
+
+    public function testUfhSignedUrlAccessValidationForSupportRoleFail()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'support');
+
+        $this->setMockUfhServiceResponseForGetSignedUrl(['type' => 'aadhar_back']);
+
+        $this->enableRazorXTreatmentForFeature(
+            UfhService::RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS, 'on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $this->startTest();
     }
 
     public function testFailedBulkMerchant()
@@ -9402,6 +9486,33 @@ class MerchantTest extends TestCase
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
             ]);
+    }
+
+    protected function setMockUfhServiceResponseForGetSignedUrl($response)
+    {
+        $defaultResponse = [
+            'id'            => 'file_DM6dXJfU4WzeAFb',
+            'type'          => 'amfi_certificate',
+            'name'          => 'myfile2.pdf',
+            'bucket'        => 'test_bucket',
+            'mime'          => 'text/csv',
+            'extension'     => 'csv',
+            'merchant_id'   => '10000000000000',
+            'store'         => 's3',
+            'signed_url'    => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
+        ];
+
+        $response = array_merge($defaultResponse, $response);
+
+        $ufhServiceMock = $this->getMockBuilder(Mock\UfhService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods([ 'getSignedUrl'])
+            ->getMock();
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        $ufhServiceMock->method( 'getSignedUrl')
+            ->willReturn($response);
     }
 
     private function getBankAccountsCount($merchantId)
