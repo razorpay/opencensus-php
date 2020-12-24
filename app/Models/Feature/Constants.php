@@ -474,8 +474,6 @@ class Constants
     //Show payout source in payout details
     const RX_SHOW_PAYOUT_SOURCE       = 'rx_show_payout_source';
 
-    const BEPG  = 'bepg';
-
     //NPS FEATURES
 
     const NPS_SURVEY_PAYMENT_LINKS       = 'nps_survey_payment_links';
@@ -765,7 +763,6 @@ class Constants
         self::UPI_OTM                         => true,
         self::CHARGE_ACCOUNT                  => true,
         self::TRANSACTION_ON_HOLD             => true,
-        self::BEPG                            => true,
         self::LOAN                            => true,
         self::LOC                             => true,
         self::LOS                             => true,
