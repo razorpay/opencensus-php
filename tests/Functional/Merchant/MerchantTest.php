@@ -25,6 +25,7 @@ use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -92,6 +93,7 @@ class MerchantTest extends TestCase
     use TestsWebhookEvents;
     use EventsTrait;
     use TestsBusinessBanking;
+    use CustomBrandingTrait;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -2243,6 +2245,10 @@ class MerchantTest extends TestCase
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'    => Org::RZP_ORG,
+        ]);
+
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
@@ -2270,13 +2276,23 @@ class MerchantTest extends TestCase
 
         $changeRequestMailCount = 0;
 
-        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use (& $changeRequestMailCount) {
+        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use (& $changeRequestMailCount)
+        {
             $changeRequestMailCount += 1;
+
+            $viewData = $mail->viewData;
+
+            $this->assertRazorpayOrgMailData($viewData);
 
             return true;
         });
 
-        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
+        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertRazorpayOrgMailData($viewData);
+
             return true;
         });
 
@@ -2287,6 +2303,53 @@ class MerchantTest extends TestCase
         $this->assertEquals($changeRequestMailCount, 1);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountPennyTestingEventAccountChangeMailsForCustomBrandinOrg()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'             => 'processed',
+            'account_status'     => 'active',
+            'registered_name'    => 'testhello',
+
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'ifsc'             => 'ICIC0001206',
+            'account_number'   => '0000009999999999999',
+            'name'             => 'Test R4zorpay:',
+        ]);
+
+        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) use ($org)
+        {
+
+            $viewData = $mail->viewData;
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
+
+        Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
     }
 
     public function testUpdateBankAccountPennyTestingEventNameMismatch()

@@ -52,9 +52,13 @@ class AccountChange extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->bankAccount, $this->merchant);
+        parent::addMailData();
 
-        $this->with($data);
+        $mailData = array_merge($this->bankAccount, $this->merchant);
+
+        $mailData = array_merge($mailData, $this->data);
+
+        $this->with($mailData);
 
         return $this;
     }
