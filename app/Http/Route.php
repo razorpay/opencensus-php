@@ -6686,7 +6686,7 @@ class Route
         'customer_get_saved_status'                         => HeartbeatLagChecker::SLAVE,
         'payment_fetch_card_details'                        => HeartbeatLagChecker::HEARTBEAT,
         'transfer_fetch'                                    => HeartbeatLagChecker::MASTER,
-        'merchant_product_switch'                           => HeartbeatLagChecker::HEARTBEAT,
+        'merchant_product_switch'                           => HeartbeatLagChecker::MASTER,
         'card_check_recurring'                              => HeartbeatLagChecker::HEARTBEAT,
         'customer_fetch_tokens'                             => HeartbeatLagChecker::SLAVE,
         'customer_create'                                   => HeartbeatLagChecker::HEARTBEAT,
