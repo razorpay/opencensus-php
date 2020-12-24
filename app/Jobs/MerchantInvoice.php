@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Invoice\Processor;
 
 class MerchantInvoice extends Job
@@ -20,6 +21,11 @@ class MerchantInvoice extends Job
     const MERCHANT_INVOICE_MUTEX_RESOURCE = 'MERCHANT_INVOICE_CREATE_%s_%s_%s';
 
     const MUTEX_LOCK_TIMEOUT = 5400;
+
+    const MAX_ALLOWED_ATTEMPTS = 5;
+
+    // interval will be in seconds
+    const RETRY_INTERVAL = 900;
 
     public function __construct(
         string $merchantId,
@@ -63,6 +69,16 @@ class MerchantInvoice extends Job
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
                 );
         }
+        catch (BadRequestException $e)
+        {
+            if($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS)
+            {
+                if($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
+                {
+                    $this->release(self::RETRY_INTERVAL);
+                }
+            }
+        }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
@@ -85,6 +101,7 @@ class MerchantInvoice extends Job
                     'month'       => $this->month,
                     'year'        => $this->year,
                 ]);
+
             $this->delete();
         }
     }
