@@ -566,7 +566,7 @@ class Processor extends Base\Core
 
         $this->beginTimestamp = $beginDate->startOfMonth()->timestamp;
 
-        $this->endTimestamp = $beginDate->endOfMonth()->timestamp;
+        $this->endTimestamp = $this->getPatchedLastDay($this->month, $this->year)->timestamp;
 
         // Get GSTIN
         $this->gstin = $this->merchant->getGstin();
@@ -616,6 +616,16 @@ class Processor extends Base\Core
                     ];
                 }
             }
+        }
+    }
+    private function getPatchedLastDay($month, $year)
+    {
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+        if ($month == 12 and $year == 2020) {
+            return $date->lastOfMonth()->subDays(1)->endOfDay();
+        }
+        else {
+            return $date->endOfMonth();
         }
     }
 }

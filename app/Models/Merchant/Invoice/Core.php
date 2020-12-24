@@ -305,8 +305,7 @@ class Core extends Base\Core
                 'mode'                  => $mode
             ]);
 
-        $endTimestamp =  Carbon::createFromDate($year, $month, 1, Timezone::IST)
-                                ->endOfMonth()
+        $endTimestamp =  $this->getPatchedLastDay($month, $year)
                                 ->getTimestamp();
 
         $batch = 10000;
@@ -445,8 +444,8 @@ class Core extends Base\Core
 
         $data['dates'] = [
                 'startDate'   => $date->format('d/m/y'),
-                'billingDate' => $date->endOfMonth()->format('d/m/y'),
-                'endDate'     => $date->endOfMonth()->format('d/m/y'),
+                'billingDate' => $this->getPatchedLastDay($month, $year)->format('d/m/y'),
+                'endDate'     => $this->getPatchedLastDay($month, $year)->format('d/m/y'),
         ];
 
         $data['invoice_id'] = $merchant->getId() . '/' . $date->addMonth()->format('m/y');
@@ -507,5 +506,16 @@ class Core extends Base\Core
         }
 
         return (new FileStore\Accessor())->getSignedUrlOfFile($file);
+    }
+
+    private function getPatchedLastDay($month, $year)
+    {
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+        if ($month == 12 and $year == 2020) {
+            return $date->lastOfMonth()->subDays(1)->endOfDay();
+        }
+        else {
+            return $date->endOfMonth();
+        }
     }
 }
