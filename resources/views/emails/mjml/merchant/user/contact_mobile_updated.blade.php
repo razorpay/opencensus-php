@@ -1,4 +1,3 @@
-
     <!doctype html>
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
       <head>
@@ -101,7 +100,21 @@
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
       <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
+        <div class="header" style="box-sizing: border-box; max-width: 100%;">
+          <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;">
+            <div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;">
+              <div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;">
+                @if (isset($custom_branding) && $custom_branding === false)
+                  <img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;">
+                @endif
+              </div>
+            </div>
+          </div>
+          <div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;">
+            </div>
+          </div>
+        </div>
       </div>
 
               </td>
@@ -356,6 +369,20 @@
 
 
       </div>
+
+      @if (isset($custom_branding) && $custom_branding === true)
+        <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+              <tbody>
+                  <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                          <img src="{{ $email_logo }}" style="height: 32px;" />
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+        </div>
+      @endif
 
       </body>
     </html>

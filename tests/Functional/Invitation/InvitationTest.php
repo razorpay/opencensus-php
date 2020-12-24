@@ -11,10 +11,12 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 
 class InvitationTest extends TestCase
 {
+    use CustomBrandingTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID = '1000InviteMerc';
@@ -32,6 +34,24 @@ class InvitationTest extends TestCase
         $this->merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
+    }
+
+    public function testPostSendInvitationToNewUserCustomBrandingOrg()
+    {
+        Mail::fake();
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->testData[__FUNCTION__] = $this->testData['testPostSendInvitationToNewUser'];
+
+        $this->startTest();
+
+        Mail::assertQueued(InvitationMail::class, function ($mail) use ($org)
+        {
+            $this->assertCustomBrandingMailViewData($org, $mail->viewData);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToNewUser()

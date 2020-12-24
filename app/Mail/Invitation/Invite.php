@@ -9,7 +9,7 @@ use RZP\Mail\Base\Mailable;
 class Invite extends Mailable
 {
     protected $data;
-    
+
     public function __construct(array $data)
     {
         parent::__construct();
@@ -37,6 +37,8 @@ class Invite extends Mailable
 
     protected function addMailData()
     {
+        parent::addMailData();
+
         $emailParams = [
             'sender_name'   => $this->data['sender_name'],
             'merchant_name' => $this->data['name'],
@@ -44,7 +46,7 @@ class Invite extends Mailable
             'product'       => $this->data['product'],
         ];
 
-        $this->with($emailParams);
+        $this->with(array_merge($emailParams, $this->data));
 
         return $this;
     }
