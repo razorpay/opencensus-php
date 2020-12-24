@@ -1535,9 +1535,25 @@ class Core extends Base\Core
                 }
             }
 
+            $this->trace->info(
+                TraceCode::MERCHANT_ACTIVATION_LOGS,
+                [
+                    'text' => 'before saving merchant',
+                    'merchant' => $merchant
+                ]
+            );
+
             $this->repo->saveOrFail($merchantDetails);
 
             $this->repo->saveOrFail($merchant);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ACTIVATION_LOGS,
+                [
+                    'text' => 'after saving merchant',
+                    'merchant' => $merchant
+                ]
+            );
 
             $stateData = [
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
