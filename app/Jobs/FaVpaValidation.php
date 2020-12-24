@@ -4,10 +4,12 @@ namespace RZP\Jobs;
 
 use Throwable;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount\Type;
 use RZP\Exception\LogicException;
 use RZP\Exception\RuntimeException;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
@@ -73,7 +75,7 @@ class FaVpaValidation extends Job
             ];
 
             $this->trace->info(
-                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_FAILED,
+                TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
                 $vpaInput
             );
 
@@ -184,6 +186,27 @@ class FaVpaValidation extends Job
             );
 
             $data['account_status'] = AccountStatus::INVALID;
+
+        }
+        catch (BadRequestException $e)
+        {
+            if ($e->getCode() != ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA) {
+
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::FUND_ACCOUNT_VALIDATION_VPA_BAD_REQUEST,
+                    [
+                        'fa_validation_id' => $this->favId,
+                    ]
+                );
+
+                throw $e;
+            }
+
+            $data['account_status'] = AccountStatus::INVALID;
+
+            $data['name'] = null;
 
         }
 
