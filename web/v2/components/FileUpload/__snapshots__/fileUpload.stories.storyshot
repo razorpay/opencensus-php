@@ -14,8 +14,7 @@ exports[`Storyshots Onboarding/file upload File Upload Component 1`] = `
         <input
           accept="application/pdf,image/*"
           data-testid="upload-input"
-          disabled=""
-          name=""
+          name="file"
           type="file"
         />
       </label>

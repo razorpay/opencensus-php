@@ -1,21 +1,44 @@
-import React from 'react';
-import { Story, Meta } from '@storybook/react/types-6-0.d';
-import ProgressBar, { ProgressBarPropsT } from './ProgressBar';
+import React, { useState } from 'react';
+import Button from '@razorpay/blade/src/atoms/Button';
+import { Story } from '@storybook/react/types-6-0.d';
+import spacing from '@razorpay/blade/src/tokens/spacings';
+import ProgressBarContinuous, { ProgressBarPropsT } from './ProgressBar';
 
 export default {
-  title: 'ProgressBar',
-  component: ProgressBar,
-} as Meta;
-
-export const ProgressBarSteps: React.FC = () => {
-  return <ProgressBar currentStep={3} totalSteps={5} />;
+  title: 'ProgressBarContinuous',
+  component: ProgressBarContinuous,
 };
 
-const Template: Story<ProgressBarPropsT> = (args) => <ProgressBar {...args} />;
+export const ProgressBar: React.FC<ProgressBarPropsT> = () => {
+  const [progress, setProgress] = useState(10);
+  const increaseByFive = () => {
+    let newProgress = progress + 5;
+    if (newProgress > 100) newProgress = 100;
+    setProgress(newProgress);
+  };
+  const increaseByTen = () => {
+    let newProgress = progress + 10;
+    if (newProgress > 100) newProgress = 100;
+    setProgress(newProgress);
+  };
+  return (
+    <>
+      <ProgressBarContinuous percentDone={progress} />
+      <br />
+      <br />
+      <Button onClick={increaseByFive}>Increase By 5</Button>
+      <br />
+      <br />
+      <Button onClick={increaseByTen}>Increase By 10</Button>
+    </>
+  );
+};
 
-export const ProgressBarWithControls = Template.bind({});
+const Template: Story<ProgressBarPropsT> = (args) => <ProgressBarContinuous {...args} />;
 
-ProgressBarWithControls.args = {
-  totalSteps: 5,
-  currentStep: 2,
+export const ProgressBarContinuousWithControls = Template.bind({});
+
+ProgressBarContinuousWithControls.args = {
+  percentDone: 70,
+  height: spacing.xsmall,
 };

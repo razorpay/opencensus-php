@@ -1,6 +1,7 @@
 const contactDetailFields = ['contact_name', 'contact_mobile', 'contact_email'];
 const businessOverviewFields = [
   'business_type',
+  'business_subcategory',
   'business_category',
   'business_dba',
   'business_website',

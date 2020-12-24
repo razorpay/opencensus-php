@@ -6,12 +6,12 @@ export default function useBusinessCategory(query: string): any {
     `businessCategories_${query}`,
     async () => {
       const businessCategoreis = await fetch({
-        url: `/merchant/activation/business_details?search_string=${query}`,
+        url: `merchant/activation/business_details?search_string=${query}`,
       });
       return businessCategoreis;
     },
     {
-      staleTime: 1000 * 60 * 5,
+      staleTime: Infinity,
     },
   );
   return [status, data];

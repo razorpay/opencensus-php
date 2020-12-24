@@ -249,22 +249,32 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
 };
 
 const fetchInternationalProductStatus = () =>
-  fetch<any>({ url: '/merchants/product_international/workflow/status/all' }).then((res) => {
-    return res.data;
-  });
+  fetch<any>({ url: 'merchants/product_international/workflow/status/all', mode: 'live' }).then(
+    (res) => {
+      return res.data;
+    },
+  );
 
 const fetchWebsiteWorkflowStatus = () =>
-  fetch<any>({ url: '/merchant/activation/websites/status' });
+  fetch<any>({ url: 'merchant/activation/websites/status', mode: 'live' });
 
 const AcceptPaymentsCard: React.FC = () => {
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: internationalWorkflowQueryStatus, data: internationalWorkflowData } = useQuery(
     'internationalWorkflowStatus',
     fetchInternationalProductStatus,
+    {
+      retry: false,
+      staleTime: Infinity,
+    },
   );
   const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery(
     'websiteWorkflowStatus',
     fetchWebsiteWorkflowStatus,
+    {
+      retry: false,
+      staleTime: Infinity,
+    },
   );
 
   const isLoading =
@@ -283,10 +293,7 @@ const AcceptPaymentsCard: React.FC = () => {
   }
   const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
 
-  if (
-    activationData.onboarding_milestone === 'l1_submitted' ||
-    activationData.onboarding_milestone === 'l2_submitted'
-  ) {
+  if (activationData.onboarding_milestone === 'L1' || activationData.submitted) {
     return (
       <Space padding={[2, 6, 2, 2]}>
         <ViewWithBackground>{content}</ViewWithBackground>

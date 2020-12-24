@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Storyshots FAQs Faq 1`] = `
+exports[`Storyshots onboarding/FAQs Faq 1`] = `
 <div>
   <div>
     <div>
@@ -28,7 +28,7 @@ exports[`Storyshots FAQs Faq 1`] = `
 </div>
 `;
 
-exports[`Storyshots FAQs Specific Section Faq 1`] = `
+exports[`Storyshots onboarding/FAQs Specific Section Faq 1`] = `
 <div>
   <div>
     <div>

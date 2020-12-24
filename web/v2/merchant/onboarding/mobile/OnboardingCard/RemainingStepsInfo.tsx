@@ -2,6 +2,7 @@ import React from 'react';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Space from '@razorpay/blade/src/atoms/Space';
 import View from '@razorpay/blade/src/atoms/View';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { useActivationFormState } from '../context/store';
 import { isUnregisteredBusiness } from '../services/utils';
 import Info from './Info';
@@ -12,14 +13,24 @@ const COUNT_TO_WORD = {
   2: 'two',
 };
 
-const FillDetailsCTA = () => (
-  <Space margin={[2.5, 0, 0, 0]}>
-    <View>
-      <Button size="large" icon="arrowRight" iconAlign="right" block>
-        Fill Remaining Details
-      </Button>
-    </View>
-  </Space>
+const FillDetailsCTA = withRouter<RouteComponentProps, React.FC<RouteComponentProps>>(
+  ({ history }) => (
+    <Space margin={[2.5, 0, 0, 0]}>
+      <View>
+        <Button
+          onClick={() => {
+            history.push('/onboarding/steps');
+          }}
+          size="large"
+          icon="arrowRight"
+          iconAlign="right"
+          block
+        >
+          Fill Remaining Details
+        </Button>
+      </View>
+    </Space>
+  ),
 );
 
 const EnablePaymentInfo = ({ data, incompleteEnablePaymentsSteps, totalIncompleteSteps }) => {
@@ -146,7 +157,7 @@ const RemainingSteps = ({ data, payments }) => {
 
   const { onboarding_milestone } = data;
 
-  if (onboarding_milestone !== 'l1_submitted') {
+  if (onboarding_milestone !== 'L1') {
     return (
       <EnablePaymentInfo
         data={data}

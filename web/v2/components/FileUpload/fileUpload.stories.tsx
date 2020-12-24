@@ -25,12 +25,12 @@ export const FileUploadComponent: React.FC<FileUploadPropsT> = () => {
   };
   return (
     <FileUpload
-      fileNameProp={name}
+      value={name}
       onFileUpload={onFileUpload}
       onRemove={removeFile}
       progress={progress}
       accept={['pdf', 'image']}
-      name=""
+      name="file"
       error=""
     />
   );

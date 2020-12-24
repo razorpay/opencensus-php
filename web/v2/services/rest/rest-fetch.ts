@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
-
+import { getMode, ModeT } from '../mode';
 export const restInstance = axios.create({});
 
 const isAxiosResponse = <T>(obj: any): obj is AxiosError<T> =>
@@ -36,10 +36,15 @@ class ClientError extends Error {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export async function fetch<T extends any>(options?: AxiosRequestConfig): Promise<T> {
+export async function fetch<T extends any>(
+  options: AxiosRequestConfig & { mode?: ModeT },
+): Promise<T> {
   try {
     const response = await restInstance({
       ...options,
+      url: `/merchant/api/${typeof options.mode !== 'undefined' ? options.mode : getMode()}/${
+        options.url
+      }`,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         Accept: 'application/json, text/plain, */*',
@@ -54,6 +59,14 @@ export async function fetch<T extends any>(options?: AxiosRequestConfig): Promis
       throw new ClientError({ ...errorResult, status: response.status });
     }
   } catch (e) {
+    if (e.response.status === 401) {
+      document.body.dispatchEvent(
+        new CustomEvent('NOT_AUTHENTICATED', {
+          bubbles: true,
+          detail: { continueAjax: () => {} },
+        }),
+      );
+    }
     if (e instanceof ClientError) {
       throw e;
     } else if (isAxiosResponse(e)) {

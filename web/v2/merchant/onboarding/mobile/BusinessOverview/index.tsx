@@ -8,6 +8,8 @@ import Radio from '@razorpay/blade/src/atoms/Radio';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
+import BusinessType from '../Fields/BusinessType';
+import BusinessCategory from '../Fields/BusinessCategory';
 
 const BusinessOverview: React.FC = () => {
   const { data, postData } = useActivation();
@@ -42,13 +44,13 @@ const BusinessOverview: React.FC = () => {
         business_type: businessOverview.business_type.value,
         business_dba: businessOverview.business_dba.value,
         business_website: businessOverview.business_website.value,
-        business_category: businessOverview.business_category.value,
+        business_subcategory: businessOverview.business_subcategory.value,
       }}
       initialErrors={{
         business_type: businessOverview.business_type.error,
         business_dba: businessOverview.business_dba.error,
         business_website: businessOverview.business_website.error,
-        business_category: businessOverview.business_category.error,
+        business_subcategory: businessOverview.business_subcategory.error,
       }}
       validationSchema={() => {
         const _schema = Yup.object().shape({
@@ -86,24 +88,25 @@ const BusinessOverview: React.FC = () => {
         >
           <FormSection title="About Your Business">
             <Field>
-              <TextInput
-                width="auto"
-                name="business_type"
-                label="Business Type"
+              <BusinessType
+                onboardingMilestone={data.onboarding_milestone}
                 value={formikProps.values.business_type}
                 errorText={formikProps.touched.business_type && formikProps.errors.business_type}
+                onChange={(value) => {
+                  formikProps.setFieldTouched('business_type');
+                  formikProps.setFieldValue('business_type', value);
+                  setIsBlurCalled(true);
+                }}
               />
             </Field>
             <Field>
-              <TextInput
-                width="auto"
-                name="business_category"
-                label="Business Category"
-                value={formikProps.values.business_category}
-                disabled
+              <BusinessCategory
+                value={formikProps.values.business_subcategory}
                 errorText={
-                  formikProps.touched.business_category && formikProps.errors.business_category
+                  formikProps.touched.business_subcategory &&
+                  formikProps.errors.business_subcategory
                 }
+                disabled={true}
               />
             </Field>
             <Field last>

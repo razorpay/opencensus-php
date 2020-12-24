@@ -1,28 +1,24 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import FAQs from '../FAQs';
+import { useActivationFormState } from '../../context/store';
 import { render, fireEvent, screen } from 'test-utils';
 
 test('FAQs component rendering', () => {
   const buttonText = 'billing-label';
 
   const App = () => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [expanded, setExpanded] = React.useState<React.ReactText[]>(['']);
+    const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
+    const setFAQSection = useActivationFormState((state) => state.setFAQSection);
+
     const handleBillingLabelFaqClick = () => {
-      setExpanded(['Q1']);
+      setFAQSection('Q1');
       setIsOpen(true);
     };
     return (
       <>
         <button onClick={handleBillingLabelFaqClick}>billing-label</button>
-        <FAQs
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          expanded={expanded}
-          onChange={(_key, exp) => setExpanded(exp)}
-          sectionToDisplay="billing-label"
-        />
+        <FAQs />
       </>
     );
   };

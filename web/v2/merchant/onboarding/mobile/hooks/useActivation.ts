@@ -6,13 +6,13 @@ import activationFormatter from '../services/formatters/activation';
 import { isUnregisteredBusiness } from '../services/utils';
 
 export const fetchActivationData = async () => {
-  const data = await fetch<any>({ url: '/merchant/activation' });
+  const data = await fetch<any>({ url: 'merchant/activation' });
   const formattedData = activationFormatter(data);
   return formattedData;
 };
 
 export const postActivation = (data) =>
-  fetch<any>({ url: '/merchant/activation', method: 'POST', data });
+  fetch<any>({ url: 'merchant/activation', method: 'POST', data });
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
@@ -32,14 +32,14 @@ export const getRequestData = (prevDetails, updatedDetails) => {
 
 export const saveFile = ({ formData, progressTracker }) =>
   fetch<any>({
-    url: '/merchant/documents/upload',
+    url: 'merchant/documents/upload',
     method: 'POST',
     data: formData,
     onUploadProgress: progressTracker,
   });
 
 export const deleteFile = (curDoc) =>
-  fetch<any>({ url: `/merchant/documents/doc_${curDoc.id}`, method: 'DELETE' });
+  fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE' });
 
 export default function useActivation() {
   const { status, data } = useQuery('activation', fetchActivationData, {
@@ -48,15 +48,24 @@ export default function useActivation() {
 
   const queryCache = useQueryCache();
   const [postData] = useMutation(postActivation, {
-    onSuccess: () => queryCache.invalidateQueries('activation'),
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result);
+      queryCache.setQueryData('activation', formattedData);
+    },
   });
 
   const [documentUpload] = useMutation(saveFile, {
-    onSuccess: () => queryCache.invalidateQueries('activation'),
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result);
+      queryCache.setQueryData('activation', formattedData);
+    },
   });
 
   const [documentDelete] = useMutation(deleteFile, {
-    onSuccess: () => queryCache.invalidateQueries('activation'),
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result);
+      queryCache.setQueryData('activation', formattedData);
+    },
   });
 
   const setContactDetailsCompleted = useActivationFormState(

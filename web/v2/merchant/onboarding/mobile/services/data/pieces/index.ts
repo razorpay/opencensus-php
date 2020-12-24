@@ -18,11 +18,11 @@ export const OnboardingMileStoneBizPicker = {
 };
 
 export const OnboardingMileStoneL1 = {
-  onboarding_milestone: 'l1_submitted',
+  onboarding_milestone: 'L1',
 };
 
 export const OnboardingMileStoneL2 = {
-  onboarding_milestone: 'l2_submitted',
+  submitted: true,
 };
 
 export const ActivationFlowGG = {

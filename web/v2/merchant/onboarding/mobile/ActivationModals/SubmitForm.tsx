@@ -3,12 +3,11 @@ import styled from 'styled-components';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
 import Button from '@razorpay/blade/src/atoms/Button';
-import Link from '@commander/shield/src/shared/Link';
 import Text from '@razorpay/blade/src/atoms/Text';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import BannerModal from './Frame.svg';
 
-export interface EnableSettlementsModalPropsT {
+export interface SubmitFromPropsT {
   isOpen: boolean;
 }
 
@@ -17,12 +16,9 @@ const Container = styled(View)`
   text-align: center;
 `;
 
-const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen }) => {
-  const onEnableSettlementsClick = () => {
+const SubmitFrom: React.FC<SubmitFromPropsT> = ({ isOpen }) => {
+  const backToDashboard = () => {
     window.location.href = '/';
-  };
-  const onExploreToAcceptPaymentsLinkClick = () => {
-    window.location.href = '/onboarding/form';
   };
   return (
     <Modal onClose={() => {}} isOpen={isOpen} closeable={false}>
@@ -39,29 +35,22 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
                   align="center"
                   _lineHeight="medium"
                 >
-                  Live Payments Enabled!
+                  You have submitted all the details.
                 </Text>
               </View>
             </Space>
 
             <Text size="medium" align="center">
-              Congratulations! You can start accepting payments from your customers now but you
-              would need to enable settlements for the payments to be settled to your account
+              Your documents are under review. It’s now our responsibility to make sure your
+              documents are processed. It usually takes 3 days for our team to review your
+              documents.
             </Text>
           </View>
-          <Space margin={[2, 0, 0, 0]}>
-            <View>
-              <Button onClick={() => onEnableSettlementsClick()} block>
-                Enable settlements
-              </Button>
-            </View>
-          </Space>
-
           <Space margin={[2, 0, 2, 0]}>
             <View>
-              <Link onClick={() => onExploreToAcceptPaymentsLinkClick()}>
-                Explore products to accept payments
-              </Link>
+              <Button onClick={() => backToDashboard()} block>
+                Back To Dashboard
+              </Button>
             </View>
           </Space>
         </Container>
@@ -70,4 +59,4 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
   );
 };
 
-export default EnableSettlementsModal;
+export default SubmitFrom;

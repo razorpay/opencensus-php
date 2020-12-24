@@ -1,51 +1,48 @@
 import React from 'react';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Text from '@razorpay/blade/src/atoms/Text';
+import styled from 'styled-components';
+import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import theme from '@razorpay/blade/src/tokens/theme.web';
+import spacing from '@razorpay/blade/src/tokens/spacings';
 import Space from '@razorpay/blade/src/atoms/Space';
-import Icon from '@razorpay/blade/src/atoms/Icon';
 
 export interface ProgressBarPropsT {
-  headerText?: string;
-  currentStep: number;
-  totalSteps: number;
-  icon?: string;
+  percentDone: number;
+  height?: string;
+  progressBarCompletedColor?: string;
+  progressBarBackgroundColor?: string;
 }
+const ProgressContainer = styled.div`
+  width: 100%;
+  max-height: ${(props) => props.height};
+  height: ${(props) => props.height};
+  max-width: 100%;
+  border-radius: 100px;
+  background-color: ${(props) => getColor(theme, props.progressBarBackgroundColor)};
+`;
 
+const StyledProgressBar = styled.div`
+  background-color: ${(props) => getColor(theme, props.progressBarCompletedColor)};
+  width: ${(props) => `${props.width}%`};
+  height: ${(props) => props.height};
+  border-radius: 100px;
+  transition: width 0.3s ease-in-out;
+`;
 const ProgressBar: React.FC<ProgressBarPropsT> = ({
-  headerText,
-  currentStep,
-  totalSteps,
-  icon = 'check',
+  percentDone,
+  height = spacing.xsmall,
+  progressBarCompletedColor = 'green.900',
+  progressBarBackgroundColor = 'white.800',
 }) => {
-  const renderSteps = () => {
-    const stepsArray: React.ReactNodeArray = [];
-
-    for (let i = 1; i <= totalSteps; i++) {
-      stepsArray.push(
-        <Icon name={icon} key={i} fill={i <= currentStep ? 'green.900' : 'grey.500'} />,
-      );
-    }
-    return stepsArray;
-  };
-
   return (
-    <View>
-      {headerText ? (
-        <Flex>
-          <Space margin={[0, 0, 1, 0.25]}>
-            <Text color="shade.970" size="medium" _lineHeight="medium" weight="bold">
-              {headerText}
-            </Text>
-          </Space>
-        </Flex>
-      ) : null}
-
-      <Flex>
-        <View data-testid="progressSteps">{renderSteps()}</View>
-      </Flex>
-    </View>
+    <Space margin={[0.25, 0, 0, 0]}>
+      <ProgressContainer height={height} progressBarBackgroundColor={progressBarBackgroundColor}>
+        <StyledProgressBar
+          width={percentDone}
+          height={height}
+          progressBarCompletedColor={progressBarCompletedColor}
+        />
+      </ProgressContainer>
+    </Space>
   );
 };
-
 export default ProgressBar;

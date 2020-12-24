@@ -14,7 +14,7 @@ describe('fileUpload component', () => {
         onRemove={remove}
         progress={0}
         accept={[]}
-        fileNameProp=""
+        value=""
         name="aadhar_front"
         error=""
       />

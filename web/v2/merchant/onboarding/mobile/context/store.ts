@@ -97,6 +97,8 @@ type State = {
   has_gstin: boolean;
   has_website: boolean;
   active_tab_id: string;
+  isFAQOpen: boolean;
+  fAQSection: string;
   isContactDetailsCompleted: boolean;
   isBusinessOverviewCompleted: boolean;
   isBusinessDetailsCompleted: boolean;
@@ -111,6 +113,8 @@ type State = {
   setHasGSTIN: (value: boolean) => void;
   setHasWebsite: (value: boolean) => void;
   setActiveTabId: (value: string) => void;
+  setIsFAQOpen: (value: boolean) => void;
+  setFAQSection: (value: string) => void;
 };
 
 const useActivationFormState = create<State>((set) => ({
@@ -118,6 +122,8 @@ const useActivationFormState = create<State>((set) => ({
   has_gstin: false,
   has_website: false,
   active_tab_id: 'contact_details',
+  isFAQOpen: false,
+  fAQSection: '',
   isContactDetailsCompleted: false,
   isBusinessOverviewCompleted: false,
   isBusinessDetailsCompleted: false,
@@ -132,6 +138,8 @@ const useActivationFormState = create<State>((set) => ({
   setHasGSTIN: (value) => set({ has_gstin: value }),
   setHasWebsite: (value) => set({ has_website: value }),
   setActiveTabId: (value) => set({ active_tab_id: value }),
+  setIsFAQOpen: (value) => set({ isFAQOpen: value }),
+  setFAQSection: (value) => set({ fAQSection: value }),
 }));
 
 export { useActivationFormState, isVisible, isTabComplete };

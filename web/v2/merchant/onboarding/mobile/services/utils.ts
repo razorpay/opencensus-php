@@ -150,3 +150,13 @@ export function getAdditionalDocCount(context) {
 
   return 0;
 }
+
+//Todo: Need to use Lodash in dashboard codebase
+function debounce(cb, time) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(cb, time, ...args);
+  };
+}
+export { debounce };

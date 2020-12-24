@@ -16,7 +16,7 @@ const Home: React.FC = () => {
           Welcome to your dashboard, {user.contact_name}!
         </Text>
       </Space>
-      <Space margin={[0, 0, 2, 0]}>
+      <Space margin={[0, 2, 2, 2]}>
         <View>
           <AcceptPaymentsCard />
         </View>

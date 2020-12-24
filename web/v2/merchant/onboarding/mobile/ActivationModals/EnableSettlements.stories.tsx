@@ -3,11 +3,11 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import EnableSettlements from './EnableSettlements';
 
 export default {
-  title: 'Onboarding/Enable Settlements',
+  title: 'Onboarding/ActivationModals/Enable Settlements',
   component: EnableSettlements,
 };
 
-export const Modal = () => {
+export const Modal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>

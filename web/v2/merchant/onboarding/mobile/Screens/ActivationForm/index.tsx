@@ -18,8 +18,12 @@ import ContactDetails from '../../ContactDetails';
 import BusinessOverview from '../../BusinessOverview';
 import BusinessDetails from '../../BusinessDetails';
 import DocumentUpload from '../../DocumentUpload';
-import EnableSettlementModal from '../../EnableSettlements';
+import {
+  EnableSettlements as EnableSettlementModal,
+  SubmitForm as SubmitFormModal,
+} from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
+import FAQs from '../../FAQs/FAQs';
 
 type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Save';
 
@@ -58,9 +62,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const isDocumentsUploadCompleted = useActivationFormState(
     (state) => state.isDocumentsUploadCompleted,
   );
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setActiveTabId = useActivationFormState((state) => state.setActiveTabId);
   const [isEnableSettlementModalOpen, setIsEnableSettlementModalOpen] = useState(false);
+  const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
 
   if (status === 'loading') {
@@ -75,13 +81,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const { onboarding_milestone } = data;
   const submitL1 = () => {
     postData({ onboarding_milestone: 'L1' }).then((res) => {
-      if (res.onboarding_milestone === 'L1') {
+      if (res && res.onboarding_milestone === 'L1') {
         setIsEnableSettlementModalOpen(true);
       }
     });
   };
   const submitL2 = () => {
-    postData({ submit: 1 });
+    postData({ submit: 1 }).then((res) => {
+      if (res && res.submitted) {
+        setIsSubmitFormModalOpen(true);
+      }
+    });
   };
   const getNextText = (): NextTextT => {
     if (activeTabId === 'documents') {
@@ -206,15 +216,19 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       {/* Footer */}
       <Flex justifyContent="space-between">
         <StyledFooter>
-          <Button variant="tertiary">FAQs</Button>
+          <Button onClick={() => setIsOpen(true)} variant="tertiary">
+            FAQs
+          </Button>
           <Button onClick={() => handleNextClick()}>{getNextText()}</Button>
         </StyledFooter>
       </Flex>
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
+      <SubmitFormModal isOpen={isSubmitFormModalOpen} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}
         onClose={() => setIsSaveAndExitModalOpen(false)}
       />
+      <FAQs />
     </View>
   );
 };

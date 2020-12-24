@@ -1,55 +1,48 @@
 import React from 'react';
 import Button from '@razorpay/blade/src/atoms/Button';
+import { useActivationFormState } from '../context/store';
 import FAQs from './FAQs';
 
 export default {
-  title: 'FAQs',
+  title: 'onboarding/FAQs',
   component: FAQs,
 };
 
-export const Faq = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [expanded, setExpanded] = React.useState<React.ReactText[]>(['']);
+export const Faq: React.FC = () => {
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>All FAQs</Button>
-      <FAQs
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        expanded={expanded}
-        onChange={(_key, exp) => setExpanded(exp)}
-      />
+      <FAQs />
     </>
   );
 };
 
-export const SpecificSectionFaq = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [expanded, setExpanded] = React.useState<React.ReactText[]>(['']);
-  const [sectionToDisplay, setSectionToDisplay] = React.useState('');
-  const handleBillingLabelFaqClick = () => {
-    setExpanded(['Q1']);
-    setIsOpen(true);
-    setSectionToDisplay('billing-label');
-  };
-  const hanldeWebsiteDetailsClick = () => {
-    setExpanded(['Q2']);
-    setIsOpen(true);
-    setSectionToDisplay('website-details');
-  };
+export const SpecificSectionFaq: React.FC = () => {
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
+  const setFAQSection = useActivationFormState((state) => state.setFAQSection);
+
   return (
     <>
-      <Button onClick={handleBillingLabelFaqClick}>billing - label</Button>
+      <Button
+        onClick={() => {
+          setFAQSection('Q1');
+          setIsOpen(true);
+        }}
+      >
+        billing - label
+      </Button>
       <br />
       <br />
-      <Button onClick={hanldeWebsiteDetailsClick}>website details</Button>
-      <FAQs
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        expanded={expanded}
-        onChange={(_key, exp) => setExpanded(exp)}
-        sectionToDisplay={sectionToDisplay}
-      />
+      <Button
+        onClick={() => {
+          setFAQSection('Q2');
+          setIsOpen(true);
+        }}
+      >
+        website details
+      </Button>
+      <FAQs />
     </>
   );
 };

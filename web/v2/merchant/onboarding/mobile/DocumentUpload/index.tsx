@@ -55,7 +55,7 @@ const DocumentUpload: React.FC = () => {
     formData.append('document_type', docType);
 
     const onUploadProgress = (progressEvent) => {
-      setProgress(progressEvent.loaded);
+      setProgress(Math.round((100 * progressEvent.loaded) / progressEvent.total));
     };
 
     const response = await documentUpload({ formData, progressTracker: onUploadProgress });
@@ -170,7 +170,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={addressDoc ? `${addressDoc}_front` : ''}
-                    fileNameProp={
+                    value={
                       formikProps.values[`${addressDoc}_front`]
                         ? formikProps.values[`${addressDoc}_front`][
                             formikProps.values[`${addressDoc}_front`].length - 1
@@ -190,7 +190,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={addressDoc ? `${addressDoc}_back` : ''}
-                    fileNameProp={
+                    value={
                       formikProps.values[`${addressDoc}_back`]
                         ? formikProps.values[`${addressDoc}_back`][
                             formikProps.values[`${addressDoc}_back`].length - 1
@@ -214,7 +214,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="business_proof_url"
-                    fileNameProp={
+                    value={
                       formikProps.values.business_proof_url
                         ? formikProps.values.business_proof_url[
                             formikProps.values.business_proof_url.length - 1
@@ -264,7 +264,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={businessDoc}
-                    fileNameProp={
+                    value={
                       formikProps.values[businessDoc]
                         ? formikProps.values[businessDoc][
                             formikProps.values[businessDoc].length - 1
@@ -285,7 +285,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="business_pan_url"
-                    fileNameProp={
+                    value={
                       formikProps.values.business_pan_url
                         ? formikProps.values.business_pan_url[
                             formikProps.values.business_pan_url.length - 1
@@ -306,7 +306,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="personal_pan"
-                    fileNameProp={
+                    value={
                       formikProps.values.personal_pan
                         ? formikProps.values.personal_pan[
                             formikProps.values.personal_pan.length - 1
@@ -327,7 +327,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="form_12a_url"
-                    fileNameProp={
+                    value={
                       formikProps.values.form_12a_url
                         ? formikProps.values.form_12a_url[
                             formikProps.values.form_12a_url.length - 1
@@ -348,7 +348,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="form_80g_url"
-                    fileNameProp={
+                    value={
                       formikProps.values.form_80g_url
                         ? formikProps.values.form_80g_url[
                             formikProps.values.form_80g_url.length - 1
@@ -388,7 +388,7 @@ const DocumentUpload: React.FC = () => {
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={bankDoc}
-                    fileNameProp={
+                    value={
                       formikProps.values[bankDoc]
                         ? formikProps.values[bankDoc][formikProps.values[bankDoc].length - 1].id
                         : ''
@@ -454,7 +454,7 @@ const DocumentUpload: React.FC = () => {
                     name={
                       getAdditionalDocCount(data) > 1 ? additionalDoc : 'affiliation_certificate'
                     }
-                    fileNameProp={
+                    value={
                       getAdditionalDocCount(data) > 1
                         ? formikProps.values[additionalDoc]
                           ? formikProps.values[additionalDoc][

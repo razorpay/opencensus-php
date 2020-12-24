@@ -5,33 +5,32 @@ import Heading from '@razorpay/blade/src/atoms/Heading';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import Panel from '../../../../components/Accordian/Panel';
 import StatelessAccordian from '../../../../components/Accordian/StatelessAccordian';
+import { useActivationFormState } from '../context/store';
 
-export interface FAQsProps {
-  isOpen: boolean;
-  onClose: () => void;
-  expanded: React.Key[];
-  onChange: (key: React.Key, expanded: React.Key[]) => void;
-  sectionToDisplay?: string;
-}
-
-const FAQs: React.FC<FAQsProps> = ({ isOpen, onClose, expanded, onChange, sectionToDisplay }) => {
+const FAQs: React.FC = () => {
+  const isOpen = useActivationFormState((state) => state.isFAQOpen);
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
+  const sectionToDisplay = useActivationFormState((state) => state.fAQSection);
   const websiteDetailsRef = useRef<HTMLDivElement>(null);
   const billingLabelRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
+
   useEffect(() => {
     setTimeout(() => {
-      if (sectionToDisplay === 'billing-label' && billingLabelRef.current) {
+      if (sectionToDisplay === 'Q1' && billingLabelRef.current) {
         billingLabelRef.current.scrollIntoView();
       }
-      if (sectionToDisplay === 'website-details' && websiteDetailsRef.current) {
+      if (sectionToDisplay === 'Q2' && websiteDetailsRef.current) {
         websiteDetailsRef.current.scrollIntoView();
       }
     });
-  });
+    setExpanded([sectionToDisplay]);
+  }, [sectionToDisplay]);
 
   return (
-    <Modal bottomsheet isOpen={isOpen} onClose={onClose}>
+    <Modal bottomsheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
       <ModalBody>
-        <StatelessAccordian accordian expanded={expanded} onChange={onChange}>
+        <StatelessAccordian accordian expanded={expanded} onChange={(_, exp) => setExpanded(exp)}>
           <Heading size="medium" color="shade.970">
             Billing label
           </Heading>

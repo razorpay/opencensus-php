@@ -1,11 +1,19 @@
 import React from 'react';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { isUnregisteredBusiness } from '../services/utils';
 import RemainingStepsInfo from './RemainingStepsInfo';
 import Info from './Info';
 import Buttons from './Buttons';
 import * as Messages from './Constants';
 
-const CurrentActivationProgress = ({ data, payments }) => {
+const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; payments: any }> = ({
+  data,
+  payments,
+  history,
+}) => {
+  const onCTAClick = () => {
+    history.push('/onboarding/steps');
+  };
   if (data.onboarding_milestone === 'activation_flow') {
     if (
       data.poi_verification_status === 'incorrect_details' ||
@@ -19,7 +27,7 @@ const CurrentActivationProgress = ({ data, payments }) => {
             titleColor="negative.900"
             hasError
           />
-          <Buttons.Primary title="Review Details" icon="arrowRight" />
+          <Buttons.Primary onClick={onCTAClick} title="Review Details" icon="arrowRight" />
         </>
       );
     }
@@ -33,7 +41,7 @@ const CurrentActivationProgress = ({ data, payments }) => {
             titleColor="negative.900"
             hasError
           />
-          <Buttons.Primary title="Try Again" />
+          <Buttons.Primary onClick={onCTAClick} title="Try Again" />
         </>
       );
     }
@@ -49,7 +57,7 @@ const CurrentActivationProgress = ({ data, payments }) => {
     }
   }
 
-  if (data.onboarding_milestone === 'l2_submitted') {
+  if (data.submitted) {
     if (data.bank_details_verification_status === 'failed') {
       return (
         <>
@@ -58,7 +66,11 @@ const CurrentActivationProgress = ({ data, payments }) => {
             description={Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.description}
             titleColor="negative.900"
           />
-          <Buttons.Primary title="Upload Bank Account Proof" icon="arrowRight" />
+          <Buttons.Primary
+            onClick={onCTAClick}
+            title="Upload Bank Account Proof"
+            icon="arrowRight"
+          />
         </>
       );
     }
@@ -78,7 +90,11 @@ const CurrentActivationProgress = ({ data, payments }) => {
             titleColor="neutral.960"
             description={description}
           />
-          <Buttons.LinkButton title="View Submitted Details" icon="arrowRight" />
+          <Buttons.LinkButton
+            onClick={onCTAClick}
+            title="View Submitted Details"
+            icon="arrowRight"
+          />
         </>
       );
     }
@@ -92,7 +108,11 @@ const CurrentActivationProgress = ({ data, payments }) => {
             titleColor="negative.900"
             hasError
           />
-          <Buttons.LinkButton title="View Submitted Details" icon="arrowRight" />
+          <Buttons.LinkButton
+            onClick={onCTAClick}
+            title="View Submitted Details"
+            icon="arrowRight"
+          />
         </>
       );
     }
@@ -104,20 +124,17 @@ const CurrentActivationProgress = ({ data, payments }) => {
             title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
             description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
           />
-          <Buttons.Secondary title="View Settlement Schedule" />
+          <Buttons.Secondary onClick={onCTAClick} title="View Settlement Schedule" />
         </>
       );
     }
   }
 
-  if (
-    data.onboarding_milestone === 'activation_flow' ||
-    data.onboarding_milestone === 'l1_submitted'
-  ) {
+  if (data.onboarding_milestone === 'activation_flow' || data.onboarding_milestone === 'L1') {
     return <RemainingStepsInfo data={data} payments={payments} />;
   }
 
   return null;
 };
 
-export default CurrentActivationProgress;
+export default withRouter(CurrentActivationProgress);

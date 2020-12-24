@@ -88,6 +88,9 @@ export const handlers = [
 
   rest.post('http://localhost:6006/merchant/api/test/merchant/activation', (req, res, ctx) => {
     if (req.body) {
+      if (req.body.submit) {
+        req.body.submitted = true;
+      }
       ActivationDB.update(req.body);
     }
 
@@ -113,7 +116,7 @@ export const handlers = [
   }),
 
   rest.get(
-    'http://localhost:6006/merchant/api/test/merchants/product_international/workflow/status/all',
+    'http://localhost:6006/merchant/api/live/merchants/product_international/workflow/status/all',
     (req, res, ctx) => {
       return res(
         ctx.status(200),
@@ -127,7 +130,7 @@ export const handlers = [
   ),
 
   rest.get(
-    'http://localhost:6006/merchant/api/test/merchant/activation/websites/status',
+    'http://localhost:6006/merchant/api/live/merchant/activation/websites/status',
     (req, res, ctx) => {
       return res(
         ctx.status(200),

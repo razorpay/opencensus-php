@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ProgressBar from '../ProgressBar';
+import ProgressBar from '../ProgressSteps';
 import { render, screen } from 'test-utils';
 
 describe('Progress Bar', () => {
