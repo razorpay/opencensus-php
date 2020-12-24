@@ -2199,8 +2199,17 @@ class Processor
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
+        $shouldRunForEmandateFailedPayment = false;
+
+        // we run this again for failed emandate payments to update the error codes
+        if (($payment->isEmandate() === true) and ($payment->hasNotBeenAuthorized() === true))
+        {
+            $shouldRunForEmandateFailedPayment = true;
+        }
+
         if (($status !== Status::CREATED) and
-            ($status !== Status::AUTHENTICATED))
+            ($status !== Status::AUTHENTICATED) and
+            ($shouldRunForEmandateFailedPayment === false))
         {
             throw new Exception\LogicException(
                 'Payment not in the appropriate status to be marked as failed.',

@@ -195,7 +195,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(10));
+        Carbon::setTestNow(Carbon::now()->addDays(5));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -232,7 +232,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => 'Balance insufficient',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(10));
+        Carbon::setTestNow(Carbon::now()->addDays(5));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -264,7 +264,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => 'BANK EXTENDED',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(10));
+        Carbon::setTestNow(Carbon::now()->addDays(5));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -289,7 +289,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(10));
+        Carbon::setTestNow(Carbon::now()->addDays(5));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 

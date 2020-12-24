@@ -128,7 +128,7 @@ class EnachNbIcici extends Base
 
         $tokenAccNo = $token->getAccountNumber();
 
-        if (($payment->isCreated() === false) or
+        if (($payment->hasBeenAuthorized() === true) or
             ($payment->getGateway() !== Gateway::ENACH_NPCI_NETBANKING) or
             ($payment->getRecurringType() !== RecurringType::AUTO) or
             ($token === null) or

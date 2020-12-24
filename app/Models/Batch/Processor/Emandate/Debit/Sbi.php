@@ -72,7 +72,7 @@ class Sbi extends Base
 
         $fileAccountNumber = ltrim($content[self::ACCOUNT_NUMBER], '0');
 
-        if (($payment->isCreated() === false) or
+        if (($payment->hasBeenAuthorized() === true) or
             ($payment->getGateway() !== $this->gateway) or
             ($payment->getRecurringType() !== RecurringType::AUTO) or
             ($token === null) or

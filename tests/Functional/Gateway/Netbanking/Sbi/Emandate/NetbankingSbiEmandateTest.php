@@ -471,6 +471,73 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertDebitDetails($debitPayments);
     }
 
+    public function testDebitFileReconFailedPayments()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+        $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment1 = $this->createSecondReccuringPayment($token);
+
+        $debitPayments[] = [
+            'payment' => $payment1,
+            'status'  => 'Success',
+        ];
+
+        $payment2 = $this->createSecondReccuringPayment($token);
+
+        $debitPayments[] = [
+            'payment'       => $payment2,
+            'status'        => 'REJECTED',
+            'return_reason' => 'ACCT HAS HOLD. INSUFFICIENT FREE BAL FOR TXN',
+        ];
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        foreach ($debitPayments as $entry)
+        {
+            $this->fixtures->edit('payment', $entry['payment']['id'], ['created_at' => $createdAt]);
+        }
+
+        $this->generateDebitGatewayFile();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
+
+        $this->fixtures->edit('payment', $payment1['id'], ['created_at' => $createdAt]);
+        $this->fixtures->edit('payment', $payment2['id'], ['created_at' => $createdAt - 10]);
+
+        $this->timeoutOldPayment();
+
+        $pay1 = $this->getDbEntityById('payment', $payment1['id']);
+        $pay2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals('failed', $pay1['status']);
+        $this->assertEquals('failed', $pay2['status']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $pay1['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $pay2['internal_error_code']);
+
+        $batch = $this->uploadDebitBatchFile($debitPayments);
+
+        $pay1 = $this->getDbEntityById('payment', $payment1['id']);
+        $pay2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals(null, $pay1['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $pay2['internal_error_code']);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $this->assertDebitDetails($debitPayments, 'authorized', 'ACCT HAS HOLD. INSUFFICIENT FREE BAL FOR TXN');
+    }
+
     // Use case where sbi appends additional 0s to the account number
     public function testDebitFileReconWithModifiedAccNo()
     {
@@ -616,12 +683,12 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertTrue($refundOfFailedRegister->transaction->isReconciled());
     }
 
-    protected function assertDebitDetails($entities)
+    protected function assertDebitDetails($entities, $status = 'captured', $errorMsg = 'Mandate does not Exist / Expired')
     {
         $successPayment = $this->getDbEntityById('payment', $entities[0]['payment']['id']);
-        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $entities[0]['payment']['id']]);
+        $successNetbanking = $this->getDbEntity('netbanking', ['payment_id' => $entities[0]['payment']['id']]);
 
-        $this->assertEquals('captured', $successPayment['status']);
+        $this->assertEquals($status, $successPayment['status']);
         $this->assertTrue($successNetbanking['received']);
         $this->assertEquals('Success', $successNetbanking['status']);
         $this->assertTrue($successPayment->transaction->isReconciled());
@@ -630,7 +697,7 @@ class NetbankingSbiEmandateTest extends TestCase
         $failureNetbanking = $this->getDbEntity('netbanking', ['payment_id' => $entities[1]['payment']['id']]);
 
         $this->assertEquals('failed', $failurePayment['status']);
-        $this->assertEquals('Mandate does not Exist / Expired', $failureNetbanking['error_message']);
+        $this->assertEquals($errorMsg, $failureNetbanking['error_message']);
         $this->assertTrue($failureNetbanking['received']);
     }
 }
