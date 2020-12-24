@@ -38,7 +38,10 @@ function Data(brandColor) {
               <p>
                 In a new Invoice, you will see the option to make Online payments. Click Setup now.
               </p>
-              <PaddedImage src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-1.png" />
+              <PaddedImage
+                alt="Online Payments option highlighted in a green box with Razorpay logo selected"
+                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-1.png"
+              />
             </div>
           </li>
           <li>
@@ -47,7 +50,10 @@ function Data(brandColor) {
                 A decision box will appear asking whether you want to leave without saving. Click
                 Yes.
               </p>
-              <PaddedImage src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-2.png" />
+              <PaddedImage
+                alt="A popup with text Do you want to leave without saving and Yes and No Buttons. Mouse pointing on the Yes."
+                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-2.png"
+              />
             </div>
           </li>
           <li>
@@ -56,7 +62,10 @@ function Data(brandColor) {
                 You will be directed to a Razorpay QuickBooks integration page. Under Connect your
                 Razorpay Account, click one to create a new Razorpay account.
               </p>
-              <PaddedImage src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-3.png" />
+              <PaddedImage
+                alt="Page with Heading, Accept Payments with Razorpay, 3 infographics about the process and Let's get started button"
+                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-3.png"
+              />
             </div>
           </li>
           <li>

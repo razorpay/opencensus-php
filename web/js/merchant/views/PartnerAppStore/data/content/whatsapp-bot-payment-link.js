@@ -43,7 +43,10 @@ function Data(brandColor) {
                     Admin Account
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.png" />
+                <PaddedImage
+                  alt="Screenshot from whatsapp chat where Razorpay bot sent App Successfully Installed message"
+                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.png"
+                />
               </div>
             </li>
 
@@ -60,7 +63,10 @@ function Data(brandColor) {
                     eg: Create 100 will create a Payment Link for INR 100
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.png" />
+                <PaddedImage
+                  alt="User sent Create 100"
+                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.png"
+                />
               </div>
             </li>
 
@@ -74,7 +80,10 @@ function Data(brandColor) {
                     customers
                   </span>
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.png" />
+                <PaddedImage
+                  alt="Razorpay bot replied with Link creation success message and the payment link"
+                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.png"
+                />
               </div>
             </li>
           </ol>

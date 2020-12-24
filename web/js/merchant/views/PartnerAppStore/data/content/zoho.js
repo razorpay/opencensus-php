@@ -48,7 +48,10 @@ function Data(brandColor) {
                 <p>
                   Log into your Zoho Dashboard and click <strong>Settings</strong>.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-1.png" />
+                <PaddedImage
+                  alt="screenshot of settings icon on top right"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-1.png"
+                />
               </div>
             </li>
             <li>
@@ -56,7 +59,10 @@ function Data(brandColor) {
                 <p>
                   Click <strong>Integrations</strong>.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-2.png" />
+                <PaddedImage
+                  alt="Integration button in right settings pan"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-2.png"
+                />
               </div>
             </li>
             <li>
@@ -65,7 +71,10 @@ function Data(brandColor) {
                   Find <strong>Razorpay</strong> on the <strong>Customer Payments</strong> page and
                   click <strong>Setup Now</strong>.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-3.png" />
+                <PaddedImage
+                  alt="Red button with Setup now text on Customer Payments page"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-3.png"
+                />
               </div>
             </li>
             <li>
@@ -74,7 +83,10 @@ function Data(brandColor) {
                   You are redirected to the Razorpay login page. Enter your credentials on this page
                   and click <strong>Login</strong>.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-4.png" />
+                <PaddedImage
+                  alt="Screenshot of razorpay login page with email and password inputs"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-4.png"
+                />
               </div>
             </li>
             <li>
@@ -82,7 +94,10 @@ function Data(brandColor) {
                 <p>
                   Click <strong>Authorize</strong>.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-5.png" />
+                <PaddedImage
+                  alt="Authorize button in purple"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-5.png"
+                />
               </div>
             </li>
             <li>
@@ -91,7 +106,10 @@ function Data(brandColor) {
                   The integration is complete, Razorpay is marked as <code>Active</code> and you can
                   start accepting payments from your customers using the Razorpay Payment Gateway.
                 </p>
-                <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-6.png" />
+                <PaddedImage
+                  alt="Active text next to Razorpay logo"
+                  src="/dist/css/assets/app-store/content-assets/zoho/link-razorpay-zoho-6.png"
+                />
               </div>
             </li>
           </ol>
@@ -99,7 +117,10 @@ function Data(brandColor) {
             <p>
               The short animation below shows you how to integrate your Zoho suite with Razorpay.
             </p>
-            <PaddedImage src="/dist/css/assets/app-store/content-assets/zoho/integrate-razorpay-on-zoho.gif" />
+            <PaddedImage
+              alt="Above steps in animation"
+              src="/dist/css/assets/app-store/content-assets/zoho/integrate-razorpay-on-zoho.gif"
+            />
           </div>
         </article>
       </div>

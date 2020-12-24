@@ -142,7 +142,10 @@ function Data(brandColor) {
                   <p>
                     Click <strong>+ Add New Webhook</strong>.
                   </p>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-1.png" />
+                  <PaddedImage
+                    alt="Add new webhook button on top right of the screen"
+                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-1.png"
+                  />
                 </div>
               </li>
               <li className="number-label-top">
@@ -186,7 +189,10 @@ function Data(brandColor) {
                       </li>
                     </ul>
                   </div>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-2.png" />
+                  <PaddedImage
+                    alt="Webhook setup page"
+                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-2.png"
+                  />
                 </div>
               </li>
               <li>
@@ -197,14 +203,20 @@ function Data(brandColor) {
                   <p>
                     Once created, it appears on the list of webhooks: <br />
                   </p>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/woocommerce/webhooks-list.png" />
+                  <PaddedImage
+                    alt="Table of webhooks with created webhook listed on it"
+                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhooks-list.png"
+                  />
                 </div>
               </li>
             </ol>
 
             <div className="text-center" style={{ padding: '50px 0px' }}>
               <p>Watch the short animation below for more details.</p>
-              <PaddedImage src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation.gif" />
+              <PaddedImage
+                alt="Animations of above steps"
+                src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation.gif"
+              />
             </div>
 
             <h4>List of Events to Subscribe</h4>
@@ -244,7 +256,10 @@ function Data(brandColor) {
                     Generate the &lt;key_id&gt; and &lt;key_secret&gt; in the{' '}
                     <strong>Live mode</strong> on your Razorpay Dashboard.
                   </p>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/woocommerce/generate-api-keys.gif" />
+                  <PaddedImage
+                    alt="Animations of clicking buttons in following format: Settings then API Keys then Generate Live Keys"
+                    src="/dist/css/assets/app-store/content-assets/woocommerce/generate-api-keys.gif"
+                  />
                 </div>
               </li>
               <li>

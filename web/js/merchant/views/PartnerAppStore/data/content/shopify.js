@@ -46,7 +46,10 @@ function Data(brandColor) {
                   <p>
                     Select <strong>Razorpay</strong> from the drop down list.
                   </p>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/shopify/shopify-1.png" />
+                  <PaddedImage
+                    alt="Alternative Payments section, with razorpay in the dropdown list"
+                    src="/dist/css/assets/app-store/content-assets/shopify/shopify-1.png"
+                  />
                 </div>
               </li>
               <li>
@@ -55,7 +58,10 @@ function Data(brandColor) {
                     Enter the <code>&lt;YOUR_KEY_ID&gt;</code> and{' '}
                     <code>&lt;YOUR_KEY_SECRET&gt;</code> generated in the previous section.
                   </p>
-                  <PaddedImage src="/dist/css/assets/app-store/content-assets/shopify/shopify-2.png" />
+                  <PaddedImage
+                    alt="Textbox with Key ID and Key Secret Labels"
+                    src="/dist/css/assets/app-store/content-assets/shopify/shopify-2.png"
+                  />
                 </div>
               </li>
               <li>
