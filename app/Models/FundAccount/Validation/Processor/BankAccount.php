@@ -59,20 +59,47 @@ class BankAccount extends Base
                            $this->account->getAccountNumber(),
                            Carbon::now()->subMonth(1)->getTimestamp());
 
+        $ifscCode = $this->account->getIfscCode();
+
+        $isDifferentIfsc = false;
+
+        //if with the same account number and different ifscs an fav is attempted
+        //adding a filter for ifsc on top of existing account number check to decide whether to pick from cache or hit fresh
+
+        if ($result != null)
+        {
+            $resultIfsc = $result->getAttribute(Constants::IFSC_CODE);
+
+            $isDifferentIfsc = ($resultIfsc != $ifscCode);
+
+            if ($isDifferentIfsc === true) {
+
+                //logging in case of an instance when same account number and diff ifsc
+                $this->trace->info(
+                    TraceCode::FUND_ACCOUNT_VALIDATE_WITH_SAME_ACC_NUMBER_DIFF_IFSC,
+                    [
+                        'existing_ifsc'  => $resultIfsc,
+                        'id'             => $result->getId(),
+                        'requested_ifsc' => $ifscCode
+                    ]
+                );
+            }
+        }
+
         // If merchant is expecting utr, we can not return same utr, so no retry
         // Now, If same account detail was already processed and it is active account
         // copy and return
         //also when there is a merger in banks the ifsc changes
         // if the ifsc is in the list of old ifsc mappings then we will do a fresh fav rather than retruning the same response
 
-        $ifscCode = $this->account->getIfscCode();
-
         $retryRequired = $this->isRetryRequired($ifscCode);
 
         if (($retryRequired === false) and
-            ($result != null) and
+            (($result != null) and
+            ($isDifferentIfsc === false)) and
             ($result->getAccountStatus() === AccountStatus::ACTIVE))
         {
+
             $beneficiaryName = $result->getRegisteredName() ?? '';
 
             // if beneficiary Name exist then only copy details

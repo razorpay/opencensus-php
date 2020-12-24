@@ -80,6 +80,7 @@ class Repository extends Base\Repository
         $bankAccountNumberCol = $this->repo->bank_account->dbColumn(\RZP\Models\BankAccount\Entity::ACCOUNT_NUMBER);
 
         return $query->where($bankAccountNumberCol, $accountNumber)
-                    ->first();
+                     ->orderBy($createdAtInFAV, 'desc')
+                     ->first();
     }
 }
