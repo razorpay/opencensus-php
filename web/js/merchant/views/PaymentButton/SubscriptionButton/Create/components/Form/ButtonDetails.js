@@ -12,8 +12,7 @@ import {
   updatePaymentField,
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
-import track from '../../../../PaymentButton/Create/track';
-// import track from '../../track';
+import track from '../../track';
 
 export const maxLengthForButtonLabel = 20;
 
@@ -56,7 +55,7 @@ export default class ButtonDetails extends React.Component {
 
     this.markReviewDone(true);
 
-    // track.lj.trackButtonScreenNextSuccess();
+    track.lj.trackButtonScreenNextSuccess();
   };
 
   handleChangeButtonLabel = (e) => {
@@ -82,7 +81,7 @@ export default class ButtonDetails extends React.Component {
 
     this.markReviewDone(false);
 
-    // track.lj.trackButtonTheme(option);
+    track.lj.trackButtonTheme(option);
   };
 
   toggleDisableSubmit = (e) => {
@@ -162,7 +161,7 @@ export default class ButtonDetails extends React.Component {
                 return `Maximum ${maxLengthForButtonLabel} characters are allowed`;
               }
             }}
-            // onBlur={track.lj.trackButtonLabel}
+            onBlur={track.lj.trackButtonLabel}
           />
 
           <InputDropdown

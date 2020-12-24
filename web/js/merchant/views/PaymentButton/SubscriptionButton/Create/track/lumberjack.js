@@ -5,15 +5,15 @@ function _track() {
     is_intent_duplicate: '',
     is_intent_edit: '',
     is_new: '',
-    payment_button_id: '',
+    subscription_button_id: '',
   };
 
   function send(event, data) {
     track(
-      window.rzpQ.paymentButtons().interaction(`button.create.${event}`, {
+      window.rzpQ.subscriptionButtons().interaction(`button.create.${event}`, {
         data,
         config,
-      })
+      }),
     );
   }
 
@@ -52,23 +52,16 @@ function _track() {
       send('setup.next_button.success');
     },
 
-    // 3. Amount Fom
-    trackOnClickAmountField() {
-      send('amount.item_add');
+    trackPlanFieldSaveSuccess() {
+      send('input.save_plan_field_success');
     },
 
-    trackChangeCurrency() {
-      send('amount.change_currency');
+    trackPlanFormDeleteField() {
+      send('plan.delete_field');
     },
 
-    trackAmountScreenOpenMoreOptions() {
-      send('amount.more_options');
-    },
-
-    trackToggleMakeMandatory(isOptional) {
-      send('amount.optional', {
-        isOptional,
-      });
+    trackAddNewPlanField() {
+      send('plan.add_new');
     },
 
     trackAmountFormDeleteField() {

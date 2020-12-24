@@ -37,7 +37,7 @@ export default class CustomerDetails extends React.Component {
 
     this.markReviewDone();
 
-    // track.lj.trackCustomerScreenNextSuccess();
+    track.lj.trackCustomerScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -69,7 +69,7 @@ export default class CustomerDetails extends React.Component {
             >
               <Button
                 class="Button--primary--invert addFieldBtn"
-                // onClick={track.lj.trackCustomerScreenInputField}
+                onClick={track.lj.trackCustomerScreenInputField}
               >
                 <b>+ Add Another Input Field</b>
               </Button>
@@ -83,7 +83,7 @@ export default class CustomerDetails extends React.Component {
             onClick={() => {
               this.props.goBack();
 
-              // track.lj.trackCustomerScreenBackSuccess();
+              track.lj.trackCustomerScreenBackSuccess();
             }}
           >
             Back

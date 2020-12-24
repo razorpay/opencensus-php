@@ -48,6 +48,9 @@
       paymentButtons: function() {
         return window.rzpQ;
       },
+      subscriptionButtons: function() {
+        return window.rzpQ;
+      },
       smartCollect: function() {
         return window.rzpQ;
       },
@@ -181,6 +184,16 @@
             {
               propertyName: 'event_group',
               value: 'paymentbuttons-dashboard'
+            }
+          ],
+          subscriptionButtons: [
+            {
+              propertyName: 'event_type',
+              value: 'subscriptionbuttons'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'subscriptionbuttons-dashboard'
             }
           ],
           smartCollect: [

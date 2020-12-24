@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-// import RTracking from 'react-tracking';
+import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import { subscriptionButtonTitle, createdAt } from 'common/ui/item/pair';
@@ -148,20 +148,20 @@ export const status = {
   }),
   { fetchAll, openModal, closeModal, handleProductQuickGuide },
 )
-// @RTracking(() => window.rzpQ.component('SubscriptionButtonsList'))
+@RTracking(() => window.rzpQ.component('SubscriptionButtonsList'))
 export default class SubscriptionButtonsList extends ListContainer {
   state = {
     isSubscriptionButtonOpen: false,
   };
 
   componentDidMount() {
-    // track.lj.init({
-    //   track: this.props.tracking.trackEvent,
-    // });
+    track.lj.init({
+      track: this.props.tracking.trackEvent,
+    });
   }
 
   openGetCodeModal = (subscriptionButtonEntity) => {
-    // track.lj.trackGetCode(subscriptionButtonEntity.id);
+    track.lj.trackGetCode(subscriptionButtonEntity.id);
 
     this.props.openModal({
       size: 'medium',
@@ -173,11 +173,11 @@ export default class SubscriptionButtonsList extends ListContainer {
           closeModal={() => {
             this.props.closeModal();
 
-            // track.lj.trackGetCodeModalClosed(subscriptionButtonEntity.id);
+            track.lj.trackGetCodeModalClosed(subscriptionButtonEntity.id);
           }}
-          // onClickCopy={() => track.lj.trackCopyCode(subscriptionButtonEntity.id)}
-          // onCodeCopy={() => track.lj.trackCodeCopy(subscriptionButtonEntity.id)}
-          // onClickSeeDocumentation={() => track.lj.trackOpenDocs(subscriptionButtonEntity.id)}
+          onClickCopy={() => track.lj.trackCopyCode(subscriptionButtonEntity.id)}
+          onCodeCopy={() => track.lj.trackCodeCopy(subscriptionButtonEntity.id)}
+          onClickSeeDocumentation={() => track.lj.trackOpenDocs(subscriptionButtonEntity.id)}
         />
       ),
     });
@@ -205,7 +205,7 @@ export default class SubscriptionButtonsList extends ListContainer {
   };
 
   openSubscriptionButtonsNewPage = () => {
-    // track.lj.trackCreateEnter();
+    track.lj.trackCreateEnter();
 
     this.setState(
       {
@@ -241,7 +241,7 @@ export default class SubscriptionButtonsList extends ListContainer {
         <ListFilter
           form="paymentButtonListFilter"
           count={this.state.count}
-          // onClearAnalytics={track.lj.trackSearchClear}
+          onClearAnalytics={track.lj.trackSearchClear}
           onSubmit={this.search}
         />
 
@@ -258,13 +258,13 @@ export default class SubscriptionButtonsList extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={(params, type) => {
-            // track.lj.trackPaginate(params, type);
+            track.lj.trackPaginate(params, type);
 
             this.paginate(params, type);
           }}
           {...this.props}
           EmptyComponent={EmptyComponent}
-          // onErrorCloseClick={() => {track.lj.trackErrorCloseClick(this.state.status.message);}}
+          onErrorCloseClick={() => {track.lj.trackErrorCloseClick(this.state.status.message);}}
         />
       </div>
     );

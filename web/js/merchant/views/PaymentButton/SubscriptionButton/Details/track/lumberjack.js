@@ -4,7 +4,7 @@ function _track() {
 
   function send(event, options) {
     track(
-      window.rzpQ.paymentButtons().interaction(`button.${event}`, {
+      window.rzpQ.subscriptionButtons().interaction(`button.${event}`, {
         options,
         button_id: buttonId,
       })

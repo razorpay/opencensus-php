@@ -14,7 +14,7 @@ import FieldOptionsDropdown, {
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import Button from 'common/new-ui/Button';
 
-// import track from '../../../track';
+import track from '../../../track';
 
 @withRouter
 export default class BaseForm extends React.Component {
@@ -77,7 +77,7 @@ export default class BaseForm extends React.Component {
       selectedPlanOption: option,
     });
 
-    // track.lj.trackCustomerScreenFieldType(option);
+    track.lj.trackCustomerScreenFieldType(option);
   };
 
   getCurrencySymbol(plan) {
@@ -139,7 +139,7 @@ export default class BaseForm extends React.Component {
           onClick={() => {
             this.props.handleClose();
 
-            // track.lj.trackCustomerScreenCancelFieldChanges();
+            track.lj.trackCustomerScreenCancelFieldChanges();
           }}
         >
           <span>&times;</span>
@@ -205,7 +205,10 @@ export default class BaseForm extends React.Component {
               return (
                 <div
                   class="create-plan-btn Button Button--transparent"
-                  onClick={() => this.handleAddNewPlan(select.actions.close)}
+                  onClick={() => {
+                    this.handleAddNewPlan(select.actions.close);
+                    track.lj.trackAddNewPlanField();
+                  }}
                 >
                   <b>Add New Plan</b>
                 </div>

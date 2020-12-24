@@ -14,7 +14,7 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
 
-// import track from '../../../track';
+import track from '../../../track';
 
 @connect(null, {
   updatePaymentField,
@@ -57,7 +57,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    // track.lj.trackCustomerScreenFieldSaveSuccess();
+    track.lj.trackPlanFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
@@ -65,7 +65,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    // track.lj.trackCustomerScreenDeleteField();
+    track.lj.trackPlanFormDeleteField();
   };
 
   findSelectedOptionInPlanOptions() {

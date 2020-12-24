@@ -77,31 +77,31 @@ export default class SideBar extends React.Component {
             <ProgressBar
               title={`Step ${this.totalTabsDone}/${this.totalTabs}`}
               progressPercentage={progressPercentage}
-              // onClick={track.lj.trackOnClickProgressBar}
+              onClick={track.lj.trackOnClickProgressBar}
             />
 
             <ul class="SideBar-stepsList">
               <Step
                 title="Button Details"
                 isDone={this.isButtonDetailsDone}
-                // onClick={() => track.lj.trackOnClickProgressStep('button_details')}
+                onClick={() => track.lj.trackOnClickProgressStep('button_details')}
               />
 
               <Step
                 title="Add Subscription Plans"
                 isDone={this.isPlansDetailsDone}
-                // onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
+                onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
               />
 
               <Step
                 title="Add One-Time Payments"
                 isDone={this.isOneTimePaymentsDetailsDone}
-                // onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
+                onClick={() => track.lj.trackOnClickProgressStep('plans_details')}
               />
 
               <Step
                 title="Customer Details"
-                // onClick={() => track.lj.trackOnClickProgressStep('customer_details')}
+                onClick={() => track.lj.trackOnClickProgressStep('customer_details')}
                 isDone={this.isCustomerDetailsDone}
               />
 
@@ -109,7 +109,7 @@ export default class SideBar extends React.Component {
                 title="Review and Create"
                 description="Finalise configuration and create button"
                 isDone={false}
-                // onClick={() => track.lj.trackOnClickProgressStep('review_create' )}
+                onClick={() => track.lj.trackOnClickProgressStep('review_create' )}
                 isDisabled={
                   !this.isButtonDetailsDone ||
                   !this.isPlansDetailsDone ||

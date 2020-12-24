@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-// import RTracking from 'react-tracking';
+import RTracking from 'react-tracking';
 
 import { classList } from 'common/utils/rzp-utils';
 
@@ -27,7 +27,7 @@ import GetCodeModal from '../components/GetCodeModal';
 import SettingsModal from '../components/SettingsModal';
 import ItemDetails from './components/ItemDetails';
 
-// import track from './track';
+import track from './track';
 
 /*
   Human readable reason to be displayed
@@ -58,7 +58,7 @@ const inActiveStatusReasonMap = {
     updateHighlightButtonSettings,
   },
 )
-// @RTracking(() => window.rzpQ.component('subscriptionButtonEntity'))
+@RTracking(() => window.rzpQ.component('subscriptionButtonEntity'))
 export default class subscriptionButtonEntity extends React.Component {
   constructor(props) {
     super(props);
@@ -140,7 +140,7 @@ export default class subscriptionButtonEntity extends React.Component {
   };
 
   openGetCodeModal = () => {
-    // track.lj.trackOpenGetCodeModal();
+    track.lj.trackOpenGetCodeModal();
 
     this.props.openModal({
       size: 'medium',
@@ -152,17 +152,17 @@ export default class subscriptionButtonEntity extends React.Component {
           closeModal={() => {
             this.props.closeModal();
 
-            // track.lj.trackCloseGetCodeModal();
+            track.lj.trackCloseGetCodeModal();
           }}
-          // onCodeCopy={track.lj.trackCopyCode}
-          // onClickSeeDocumentation={track.lj.trackSeeDocumentation}
+          onCodeCopy={track.lj.trackCopyCode}
+          onClickSeeDocumentation={track.lj.trackSeeDocumentation}
         />
       ),
     });
   };
 
   openSettingsModal = () => {
-    // track.lj.trackOptionsOpenSettings();
+    track.lj.trackOptionsOpenSettings();
 
     this.props.openModal({
       size: 'medium',
@@ -172,12 +172,12 @@ export default class subscriptionButtonEntity extends React.Component {
             this.props.subscriptionButtonEntity.settings.payment_success_message
           }
           editPaymentButton={this.props.editPaymentButton}
-          // track={{
-          //   customMessage: track.lj.trackSettingsCustomMessage,
-          //   closeModal: track.lj.trackSettingsCancel,
-          //   save: track.lj.trackSettingsSave,
-          //   saveFail: track.lj.trackSettingsSaveFail,
-          // }}
+          track={{
+            customMessage: track.lj.trackSettingsCustomMessage,
+            closeModal: track.lj.trackSettingsCancel,
+            save: track.lj.trackSettingsSave,
+            saveFail: track.lj.trackSettingsSaveFail,
+          }}
         />
       ),
     });
@@ -185,7 +185,7 @@ export default class subscriptionButtonEntity extends React.Component {
   /*
   togglePageReceiptModal = () => {
     if (this.state.isPageReceiptModalOpened) {
-      // track.lj.trackSettingsReceiptConfigure();
+      track.lj.trackSettingsReceiptConfigure();
     }
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
@@ -218,7 +218,7 @@ export default class subscriptionButtonEntity extends React.Component {
       this.props.updateHighlightButtonSettings(null);
     }
 
-    // track.lj.trackOptionsOpen();
+    track.lj.trackOptionsOpen();
   };
 
   render() {
@@ -259,7 +259,7 @@ export default class subscriptionButtonEntity extends React.Component {
                 <Link
                   class="Button Button--primary--invert"
                   to={`/subscription_buttons/${subscriptionButtonEntity.id}/edit`}
-                  // onClick={track.lj.trackOptionsOpenEdit}
+                  onClick={track.lj.trackOptionsOpenEdit}
                 >
                   <i class="i i-edit-outline" />
                 </Link>
@@ -267,7 +267,7 @@ export default class subscriptionButtonEntity extends React.Component {
                 <Link
                   class="Button Button--primary--invert"
                   to={`/subscription_buttons/new?duplicate_id=${subscriptionButtonEntity.id}`}
-                  // onClick={track.lj.trackOptionsOpenDuplicate}
+                  onClick={track.lj.trackOptionsOpenDuplicate}
                 >
                   <i class="i i-copy" />
                 </Link>

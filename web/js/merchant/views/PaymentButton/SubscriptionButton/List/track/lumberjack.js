@@ -2,7 +2,7 @@ function _track() {
   let track;
 
   function send(event, options) {
-    track(window.rzpQ.paymentButtons().interaction(`button.${event}`, options));
+    track(window.rzpQ.subscriptionButtons().interaction(`button.${event}`, options));
   }
 
   return {

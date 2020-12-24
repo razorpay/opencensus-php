@@ -4,8 +4,7 @@ import Input from 'common/new-ui/Input';
 import BaseForm from './BaseForm';
 
 import { getCurrency } from 'common/ui/Amount';
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
-import { getPeriodLabel } from '../../../constants/billingCycle';
+import { classList } from 'common/utils/rzp-utils';
 
 import {
   updatePaymentField,
@@ -14,7 +13,7 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
 
-// import track from '../../../track';
+import track from '../../../track';
 
 @connect(null, {
   updatePaymentField,
@@ -51,7 +50,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    // track.lj.trackCustomerScreenFieldSaveSuccess();
+    track.lj.trackAmountFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
@@ -59,7 +58,7 @@ export default class EditableDisplayField extends React.Component {
 
     this.markReviewUnDone();
 
-    // track.lj.trackCustomerScreenDeleteField();
+    track.lj.trackAmountFormDeleteField();
   };
 
   markReviewUnDone = () => {

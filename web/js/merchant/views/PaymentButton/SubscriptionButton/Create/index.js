@@ -1,6 +1,6 @@
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
-// import RTracking from 'react-tracking';
+import RTracking from 'react-tracking';
 
 import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
@@ -51,7 +51,7 @@ import track from './track';
     updateHighlightButtonSettings,
   },
 )
-// @RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
+@RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
 export default class SubscriptionButtonCreate extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -126,8 +126,6 @@ export default class SubscriptionButtonCreate extends React.Component {
   // Tracker initialization
 
   initTracker = (props = this.props) => {
-    return false;
-
     const { tracking, location, id } = props;
 
     const searchQuery = getURLQueryParams(location.search);
@@ -141,7 +139,7 @@ export default class SubscriptionButtonCreate extends React.Component {
       is_intent_duplicate: !!searchQuery.duplicate_id,
     };
 
-    // track.lj.init(tracking.trackEvent, config);
+    track.lj.init(tracking.trackEvent, config);
   };
 
   /*
@@ -393,7 +391,7 @@ export default class SubscriptionButtonCreate extends React.Component {
             this.onSaveSuccessActions(resp, isEditExistingId);
           }
 
-          // track.lj.trackCreateOrEditSuccess();
+          track.lj.trackCreateOrEditSuccess();
         } else {
           throw new Error(resp.errors);
         }
@@ -418,7 +416,7 @@ export default class SubscriptionButtonCreate extends React.Component {
           err = `Some network error has occured`;
         }
 
-        // track.lj.trackCreateOrEditFail(err);
+        track.lj.trackCreateOrEditFail(err);
 
         this.props.showNotification({
           type: 'error',
@@ -456,16 +454,18 @@ export default class SubscriptionButtonCreate extends React.Component {
   };
 
   openSuccessView = (isEditExistingId, subscriptionButtonEntity) => {
-    // track.lj.trackShowCode(subscriptionButtonEntity.id);
+    track.lj.trackShowCode(subscriptionButtonEntity.id);
 
     const modalContent = (
       <SuccessModal
         isEditExistingId={isEditExistingId}
         paymentButton={subscriptionButtonEntity}
         updateHighlightButtonSettings={this.props.updateHighlightButtonSettings}
-        // onCodeCopy={() => track.lj.trackCodeCopy(subscriptionButtonEntity.id)}
-        // onClickSeeDocumentation={() => track.lj.trackOpenDocs(subscriptionButtonEntity.id)}
-        // onClickButtonSettings={() => {track.lj.trackOnClickButtonSettings();}}
+        onCodeCopy={() => track.lj.trackCodeCopy(subscriptionButtonEntity.id)}
+        onClickSeeDocumentation={() => track.lj.trackOpenDocs(subscriptionButtonEntity.id)}
+        onClickButtonSettings={() => {
+          track.lj.trackOnClickButtonSettings();
+        }}
       />
     );
 

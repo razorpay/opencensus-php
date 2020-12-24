@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-// import RTracking from 'react-tracking';
+import RTracking from 'react-tracking';
 
 import { keysToSentence } from 'common/utils/rzp-utils';
 import { updateItem } from 'common/utils/immutable';
@@ -30,7 +30,7 @@ import track from './track';
   openModal,
   updateSubscriptionButtonInReduxList,
 })
-// @RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
+@RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
 export default class PaymentButtonDetails extends React.Component {
   state = {
     subscriptionButtonEntity: {},
@@ -44,12 +44,12 @@ export default class PaymentButtonDetails extends React.Component {
   }
 
   componentDidMount() {
-    // track.lj.init({
-    //   track: this.props.tracking.trackEvent,
-    //   button_id: this.entityId,
-    // });
-    //
-    // track.lj.trackDetailsStart();
+    track.lj.init({
+      track: this.props.tracking.trackEvent,
+      button_id: this.entityId,
+    });
+
+    track.lj.trackDetailsStart();
   }
 
   componentWillMount() {

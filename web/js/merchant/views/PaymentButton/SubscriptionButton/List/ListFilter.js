@@ -11,7 +11,7 @@ export default props => {
           name="title"
           component="input"
           class="form-control input-sm"
-          // onBlur={track.lj.trackSearchTitle}
+          onBlur={track.lj.trackSearchTitle}
         />
       </div>
 
@@ -33,7 +33,7 @@ export default props => {
           max={100}
           type="number"
           class="form-control input-sm"
-          // onBlur={track.lj.trackSearchCount}
+          onBlur={track.lj.trackSearchCount}
         />
       </div>
     </ListFilter>
