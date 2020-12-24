@@ -65,4 +65,9 @@ class Base extends Mailable
 
         return $this;
     }
+
+    protected function getOrgDataForMail($orgId = null)
+    {
+        return parent::getMailDataForAdmin();
+    }
 }

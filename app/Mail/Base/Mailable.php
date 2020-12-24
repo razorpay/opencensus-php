@@ -6,6 +6,7 @@ use App;
 use \Swift_Mailer;
 use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
 use Illuminate\Bus\Queueable;
@@ -404,12 +405,76 @@ class Mailable extends BaseMailable
 
         $merchant  = $app['basicauth']->getMerchant();
 
-        $this->data = [];
+        $this->data = $this->data ?? [];
 
-        $this->data = OrgWiseConfig::getOrgDataForEmail($merchant);
+        $this->data = array_merge(OrgWiseConfig::getOrgDataForEmail($merchant), $this->data);
 
         return $this;
     }
+
+    /**
+     * Stub method to add mail data for use by the template. To be implemented by child classes.
+     * Use the mailable with() method to attach any data to the mail body
+     */
+    protected function getMailDataForAdmin()
+    {
+        $app = App::getFacadeRoot();
+
+        $orgId  = $app['basicauth']->getAdminOrgId();
+
+        return $this->getOrgData($orgId);
+    }
+
+    protected function getOrgData($orgId)
+    {
+        $customBranding = true;
+
+        $orgData = [];
+
+        if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $customBranding = false;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $repo = $app['repo'];
+
+        $org = $repo->org->findOrFail($orgId);
+
+        $orgData['org_name'] = $org->getDisplayName();
+
+        $orgData['checkout_logo'] = $org->getCheckoutLogo();
+
+        if ($customBranding === true)
+        {
+            $orgData['email_logo'] = $org->getEmailLogo();
+        }
+        else
+        {
+            $orgData['email_logo'] = $org->getMainLogo();
+        }
+
+        $orgData['custom_branding'] = $customBranding;
+
+        return $orgData;
+    }
+
+    protected function getUserOrgData($userId)
+    {
+        $app = App::getFacadeRoot();
+
+        $repo = $app['repo'];
+
+        $user = $repo->user->findOrFailPublic($userId);
+
+        $totalMerchants = $user->primaryMerchants()->count();
+
+        $merchant = $totalMerchants === 1 ? $user->primaryMerchants()->first() : null;
+
+        return OrgWiseConfig::getOrgDataForEmail($merchant);
+    }
+
 
     /**
      * Stub method to handle attachments. To be implemented by child classes
