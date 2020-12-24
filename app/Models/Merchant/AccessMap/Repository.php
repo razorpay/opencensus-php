@@ -160,13 +160,14 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns the access map that links a submerchant to the referred app of a partner.
+     * Returns the access maps that links a submerchant to the given app type of a partner.
      *
      * @param string $subMerchantId
+     * @param string $appType
      *
      * @return Entity|null
      */
-    public function getReferredAppMapping(string $subMerchantId)
+    public function getMappingByApplicationType(string $subMerchantId, string $appType)
     {
         $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
         $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
@@ -179,9 +180,9 @@ class Repository extends Base\Repository
                     ->merchantId($subMerchantId)
                     ->join(Table::MERCHANT_APPLICATION, $accessMapsEntityId, $applicationIds)
                     ->where($accessMapsEntityType, '=', Entity::APPLICATION)
-                    ->where($applicationType, '=', MerchantApp\Entity::REFERRED)
+                    ->where($applicationType, '=', $appType)
                     ->whereNull($applicationDeleted)
-                    ->first();
+                    ->get();
     }
 
 }

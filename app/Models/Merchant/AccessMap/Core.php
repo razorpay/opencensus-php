@@ -288,9 +288,11 @@ class Core extends Base\Core
      */
     public function getReferredAppOfSubmerchant(Merchant\Entity $subMerchant)
     {
-        $accessMap = $this->repo
+        $accessMaps = $this->repo
                           ->merchant_access_map
-                          ->getReferredAppMapping($subMerchant->getId());
+                          ->getMappingByApplicationType($subMerchant->getId(), MerchantApplications\Entity::REFERRED);
+
+        $accessMap = $accessMaps->first();
 
         $partnerApp = optional($accessMap)->entity;
 

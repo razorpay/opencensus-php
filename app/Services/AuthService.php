@@ -143,7 +143,17 @@ class AuthService
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
-        return $this->sendRequest('tokens', Requests::GET, $input);
+        $response =  $this->sendRequest('tokens', Requests::GET, $input);
+
+        if (array_key_exists('items', $response) === true)
+        {
+            foreach ($response['items'] as &$item)
+            {
+                unset($item['application']['client_details']);
+            }
+        }
+
+        return $response;
     }
 
     public function getToken(string $id, array $input, string $merchantId) : array
