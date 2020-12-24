@@ -97,7 +97,7 @@ export const partnerProducts = {
     url: 'https://ristaapps.com/',
     category: 'Restaurant Management Platform',
     description: 'Omni-channel restaurant management platform',
-    logo: 'rista.webp',
+    logo: 'rista.png',
     brandColor: '#AB8671',
   },
 };
