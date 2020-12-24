@@ -2599,4 +2599,79 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateFundAccountInvalidVpaArray' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'          => 'vpa',
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'vpa must be an object',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountInvalidCardArray' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => 'card'
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'card must be an object',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountInvalidBankAccountArray' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => 'bank_account'
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'bank_account must be an object',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

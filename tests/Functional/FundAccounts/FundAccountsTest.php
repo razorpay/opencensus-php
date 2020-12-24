@@ -1043,4 +1043,25 @@ class FundAccountsTest extends TestCase
 
         $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
+
+    public function testCreateFundAccountInvalidVpaArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountInvalidCardArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountInvalidBankAccountArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
 }

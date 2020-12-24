@@ -34,8 +34,8 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',
         Entity::CONTACT_ID                          => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE                        => 'required|string|custom',
-        Entity::VPA                                 => 'filled|custom',
-        Entity::BANK_ACCOUNT                        => 'filled|custom',
+        Entity::VPA                                 => 'filled|associative_array|custom',
+        Entity::BANK_ACCOUNT                        => 'filled|associative_array|custom',
         Entity::CARD                                => 'filled|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
