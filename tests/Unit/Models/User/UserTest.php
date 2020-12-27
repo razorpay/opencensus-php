@@ -1870,11 +1870,25 @@ class UserTest extends TestCase
 
         $subMerchant->shouldReceive('isLinkedAccount')->andReturn(false);
 
+        $subMerchant->shouldReceive('isRazorpayOrgId')->withAnyArgs()->andReturn(true);
+
         $createdNew = false;
 
         Mail::fake();
 
         $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
+
+        $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
+
+        $org->shouldReceive('getMainLogo')->andReturn('razorpay.png');
+
+        $org->shouldReceive('getCheckoutLogo')->andReturn('razorpay.png');
+
+        $org->shouldReceive('getDisplayName')->andReturn('razorpay');
+
+        $this->orgRepoMock->shouldReceive('find')->withAnyArgs()->andReturn($org);
+
+        $orgMock->shouldReceive('find')->withAnyArgs(Org::RZP_ORG)->andReturn($org);
 
         $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
 

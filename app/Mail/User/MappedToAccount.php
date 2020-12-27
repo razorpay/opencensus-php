@@ -59,13 +59,16 @@ class MappedToAccount extends Base\Mailable
 
     protected function addMailData()
     {
-        $data = [
+        parent::addMailData();
+
+        $mailData = [
             'org'         => $this->org,
             'subMerchant' => $this->subMerchant,
             'user'        => $this->user,
+            'data'        => $this->data,
         ];
 
-        $this->with($data);
+        $this->with($mailData);
 
         return $this;
     }

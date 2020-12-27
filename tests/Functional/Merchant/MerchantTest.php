@@ -6011,6 +6011,7 @@ class MerchantTest extends TestCase
         $merchant = $this->fixtures->create('merchant', [
             'id'     => '10000000000040',
             'email'  => 'test1@razorpay.com',
+            'org_id' => Org::RZP_ORG,
         ]);
 
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
@@ -6035,6 +6036,8 @@ class MerchantTest extends TestCase
         {
             $mailData = $mailable->viewData;
 
+            $this->assertRazorpayOrgMailData($mailData['data']);
+
             $this->assertNotEmpty($mailData['org']);
 
             $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
@@ -6047,6 +6050,49 @@ class MerchantTest extends TestCase
         $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user2['id']);
 
         $this->assertEquals(1, count($mapping));
+    }
+
+    public function testCreateSubmerchantLoginUserExistsMailForCustomBrandinOrg()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateSubmerchantLoginUserExists'];
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000040',
+            'user_id'     => $user['id'],
+            'role'        => 'owner'
+        ]);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant('10000000000000');
+
+        $this->fixtures->create('user', ['email' => 'test1@razorpay.com']);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(['ref-10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(MappedToAccount::class, function ($mailable) use ($org)
+        {
+            $viewData = $mailable->viewData['data'];
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
     }
 
     /**
