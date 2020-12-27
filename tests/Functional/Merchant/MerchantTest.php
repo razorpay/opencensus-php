@@ -2591,6 +2591,15 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
+        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertRazorpayOrgMailData($viewData);
+
+            return true;
+        });
+
         Mail::assertQueued(MerchantMail\AccountChange::class, function ($mail) {
             return true;
         });
@@ -2600,6 +2609,39 @@ class MerchantTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountPennyTestingFailMailForCustomBrandingOrg()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'            => 'processed',
+            'account_status'    => 'active',
+            'registered_name'   => 'invalid name',
+
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
     }
 
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()

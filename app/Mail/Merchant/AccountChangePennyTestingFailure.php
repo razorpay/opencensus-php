@@ -52,7 +52,11 @@ class AccountChangePennyTestingFailure extends Mailable
 
     protected function addMailData()
     {
+        parent::addMailData();
+
         $data = array_merge($this->bankAccount, $this->merchant);
+
+        $data = array_merge($data, $this->data);
 
         $this->with($data);
 

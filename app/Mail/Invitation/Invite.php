@@ -46,6 +46,11 @@ class Invite extends Mailable
             'product'       => $this->data['product'],
         ];
 
+        if (isset($this->data['user_id']))
+        {
+            $emailParams['data'] = $this->getUserOrgData($this->data['user_id']);
+        }
+
         $this->with(array_merge($emailParams, $this->data));
 
         return $this;
