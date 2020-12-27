@@ -16,10 +16,12 @@ use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 
 class AdminTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use CustomBrandingTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -56,11 +58,13 @@ class AdminTest extends TestCase
 
         $superAdminRole = Role\Entity::getSignedId(Org::ADMIN_ROLE);
 
-        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $superAdminRole;
-
         $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
 
-        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+        $email = 'xyz@razorpay.com';
+
+        $this->setRequestResponseForCreateAdminTest(__FUNCTION__,$superAdminRole, $group, $email);
+
+        $this->ba->adminAuth();
 
         $result = $this->startTest();
 
@@ -68,19 +72,66 @@ class AdminTest extends TestCase
 
         $this->assertEquals($result['groups'][0]['id'], $group);
 
-        Mail::assertQueued(AdminMail\Create::class, function ($mail)
+        Mail::assertQueued(AdminMail\Create::class, function ($mail) use ($email)
         {
             $testData = [
                 'user' => [
-                    'email' => 'xyz@rzp.com',
+                    'email'    => $email,
                     'password' => 'random!12#'
                 ]
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            return $mail->hasTo('xyz@rzp.com');
+            $this->assertRazorpayOrgMailData($mail->viewData['data']);
+
+            return $mail->hasTo($email);
         });
+    }
+
+    public function testCreateAdminMailForCustomBrandingOrg()
+    {
+        Mail::fake();
+
+        $superAdminRole = Role\Entity::getSignedId(Org::ADMIN_ROLE);
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $email = 'xyz@rzp.com';
+
+        $this->setRequestResponseForCreateAdminTest(__FUNCTION__, $superAdminRole, $group, $email);
+
+        $org = $this->fixtures->edit('org', $this->orgId,[
+            'email_logo_url'    => 'https://www.xyz.com/email_logo.png',
+            'display_name'      => 'random_org_name',
+            'checkout_logo_url' => 'https://www.xyz.com/checkout_logo.png'
+        ]);
+
+        $this->enableCustomBrandingForOrg($org);
+
+        $this->startTest();
+
+        Mail::assertQueued(AdminMail\Create::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData['data'];
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
+    }
+
+    protected function setRequestResponseForCreateAdminTest($functionName, $superAdminRole, $group, $email)
+    {
+        $this->testData[$functionName] = $this->testData['testCreateAdmin'];
+
+        $this->testData[$functionName]['request']['content']['roles'] = (array) $superAdminRole;
+
+        $this->testData[$functionName]['request']['content']['groups'] = (array) $group;
+
+        $this->testData[$functionName]['request']['content']['email'] = $email;
+
+        $this->testData[$functionName]['response']['content']['email'] = $email;
     }
 
     public function testCreateAdminWithWrongEmailDomain()

@@ -53,6 +53,8 @@ class SecondFactorAuth extends Mailable
 
     protected function addMailData()
     {
+        parent::addMailData();
+
         $this->with($this->data);
 
         return $this;

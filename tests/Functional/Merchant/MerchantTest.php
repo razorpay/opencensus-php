@@ -702,31 +702,56 @@ class MerchantTest extends TestCase
         $this->assertTrue($userEntity->isSecondFactorAuthEnforced());
     }
 
-    public function testMerchant2faEnable()
+    public function testMerchant2faEnableMailForCustomBrandingOrg()
     {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testMerchant2faEnable'];
+
         $merchant = $this->fixtures->create('merchant', [
             MerchantEntity::SECOND_FACTOR_AUTH      => 0,
         ]);
 
-        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      => 0,
-            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-            UserEntity::CONTACT_MOBILE          => '9999999999',
-            UserEntity::PASSWORD                => 'hello123',
-        ], 'owner');
+        $user = $this->createUserForMerchantFor2Fa($merchant['id'], 0);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
-        $content =  [
-            MerchantEntity::SECOND_FACTOR_AUTH => 1,
-            UserEntity::PASSWORD               => 'hello123',
-        ];
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchant['id']);
 
-        $testData['request']['content'] = $content;
+        $this->startTest();
+
+        Mail::assertSent(MerchantMail\SecondFactorAuth::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
+    }
+
+    public function testMerchant2faEnable()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH      => 0,
+        ]);
+
+        $user = $this->createUserForMerchantFor2Fa($merchant['id'], 0);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
         $this->startTest();
+
+        Mail::assertSent(MerchantMail\SecondFactorAuth::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertRazorpayOrgMailData($viewData);
+
+            return true;
+        });
 
         $userEntity = $this->getDbEntityById('user', $user['id']);
         $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
@@ -824,29 +849,26 @@ class MerchantTest extends TestCase
 
     public function testMerchant2faDisable()
     {
+        Mail::fake();
+
         $merchant = $this->fixtures->create('merchant', [
             MerchantEntity::SECOND_FACTOR_AUTH      => 1,
         ]);
 
-        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      => 1,
-            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-            UserEntity::CONTACT_MOBILE          => '9999999999',
-            UserEntity::PASSWORD                => 'hello123',
-        ], 'owner');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content =  [
-            MerchantEntity::SECOND_FACTOR_AUTH => 0,
-            UserEntity::PASSWORD               => 'hello123',
-        ];
-
-        $testData['request']['content'] = $content;
+        $user = $this->createUserForMerchantFor2Fa($merchant['id'], 1);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
         $this->startTest();
+
+        Mail::assertSent(MerchantMail\SecondFactorAuth::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertRazorpayOrgMailData($viewData);
+
+            return true;
+        });
 
         $userEntity = $this->getDbEntityById('user', $user['id']);
         $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
@@ -854,6 +876,46 @@ class MerchantTest extends TestCase
         $this->assertTrue($userEntity->isSecondFactorAuth());
         $this->assertFalse($merchantEntity->isSecondFactorAuth());
         $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
+    }
+
+    public function testMerchant2faDisableMailForCustomBrandingOrg()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testMerchant2faDisable'];
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::SECOND_FACTOR_AUTH      => 1,
+        ]);
+
+        $user = $this->createUserForMerchantFor2Fa($merchant['id'], 1);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchant['id']);
+
+        $this->startTest();
+
+        Mail::assertSent(MerchantMail\SecondFactorAuth::class, function ($mail) use ($org)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertCustomBrandingMailViewData($org, $viewData);
+
+            return true;
+        });
+    }
+
+    protected function createUserForMerchantFor2Fa($merchantId, $secondFactorAuth = 1)
+    {
+        $user = $this->fixtures->user->createUserForMerchant($merchantId, [
+            UserEntity::SECOND_FACTOR_AUTH      => $secondFactorAuth,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
+
+        return $user;
     }
 
     public function testFailedMerchantEnable2faMobNotPresent()

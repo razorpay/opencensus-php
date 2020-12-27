@@ -967,7 +967,10 @@ return [
         'request' => [
             'url'     => '/merchants/2fa',
             'method'  => 'PATCH',
-            'content' => [],
+            'content' => [
+                'second_factor_auth' => true,
+                'password'           => 'hello123',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1039,7 +1042,10 @@ return [
         'request' => [
             'url'     => '/merchants/2fa',
             'method'  => 'PATCH',
-            'content' => [],
+            'content' => [
+                'second_factor_auth' => 0,
+                'password'           => 'hello123',
+            ],
         ],
         'response' => [
             'content' => [

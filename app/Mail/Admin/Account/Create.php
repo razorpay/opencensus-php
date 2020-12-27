@@ -51,7 +51,8 @@ class Create extends Base
                 'password' => $password,
                 'org'      => $this->org['display_name'],
                 'url'      => Config::get('applications.dashboard.url'),
-            ]
+            ],
+            'data' => parent::getOrgDataForMail(),
         ];
 
         $this->with($data);
