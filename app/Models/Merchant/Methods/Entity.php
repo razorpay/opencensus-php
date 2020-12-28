@@ -234,7 +234,7 @@ class Entity extends Base\PublicEntity
         self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
         self::MPESA          => false,
-        self::DISABLED_BANKS => [],
+        self::DISABLED_BANKS => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         self::EMI            => EmiType::DEFAULT_TYPES,
         self::UPI            => false,
         self::AEPS           => false,

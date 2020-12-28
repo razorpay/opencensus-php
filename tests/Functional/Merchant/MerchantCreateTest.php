@@ -22,6 +22,7 @@ use RZP\Models\Partner\RateLimitBatch;
 use RZP\Models\Merchant\Methods\Entity;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -244,7 +245,7 @@ class MerchantCreateTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->assertSame(array(), $content['disabled']);
+        $this->assertSame(count(Netbanking::DEFAULT_DISABLED_BANKS), count($content['disabled']));
     }
 
     public function testCheckSalesforceGroupForSubmerchantCreate()

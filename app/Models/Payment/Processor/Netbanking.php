@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Feature\Constants;
@@ -752,7 +753,6 @@ class Netbanking
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::ABNA,
-        IFSC::DBSS,
         IFSC::TJSB,
         IFSC::KJSB,
         IFSC::MSNU,
@@ -766,16 +766,19 @@ class Netbanking
         IFSC::VARA,
         IFSC::NESF,
         IFSC::ZCBL,
+        IFSC::UTIB,
+        IFSC::CIUB,
         self::LAVB_C,
         self::UTIB_C,
-        self::BKID_C,
         self::IBKL_C,
         self::YESB_C,
         self::ANDB_C,
         self::RATN_C,
-        self::ANDB_C,
         self::DLXB_C,
         self::SVCB_C,
+        self::BARB_C,
+        self::PUNB_C,
+        self::ICIC_C,
     ];
 
     public static function isSupportedBank($bank)
@@ -796,15 +799,15 @@ class Netbanking
     public static function getAllBanks(): array
     {
         //
-        // Merge paytm and billdesk supported banks and remove
+        // Merge billdesk, atom, ebs and paytm supported banks and remove
         // duplicate values
         //
 
         return array_values(array_unique(array_merge(
-                                            self::$gatewaySupportedBanks[Gateway::PAYTM]['retail'],
                                             self::$gatewaySupportedBanks[Gateway::BILLDESK]['retail'],
-                                            self::$gatewaySupportedBanks[Gateway::BILLDESK]['corp'] ?? [],
-                                            self::$gatewaySupportedBanks[Gateway::EBS]['retail'],
+                                            self::$gatewaySupportedBanks[Gateway::ATOM]['retail'],
+                                            self::$gatewaySupportedBanks[Gateway::EBS]['corp'] ?? [],
+                                            self::$gatewaySupportedBanks[Gateway::PAYTM]['retail'],
                                             self::$self,
                                             self::$selfCorp)));
     }
@@ -889,6 +892,8 @@ class Netbanking
     /**
      * Gets supported banks for a merchant.
      * Checks for TPV merchants and any bank disabled by category
+     * @param Entity $merchant
+     * @return array
      */
     public static function getSupportedBanks($merchant = null)
     {
@@ -898,8 +903,7 @@ class Netbanking
         if ((isset($merchant) === true) and
             ($merchant->isFeatureEnabled(Constants::CORPORATE_BANKS) === false))
         {
-            $billdeskCorp = self::$gatewaySupportedBanks[Gateway::BILLDESK]['corp'] ?? [];
-            $banks = array_diff($banks, $billdeskCorp, self::$selfCorp);
+            $banks = array_diff($banks, self::$selfCorp);
         }
 
         if ((isset($merchant) === true) and
@@ -918,11 +922,11 @@ class Netbanking
 
     public static function getSupportedBanksInLiveMode()
     {
-        $billdeskCorp = self::$gatewaySupportedBanks[Gateway::BILLDESK]['corp'] ?? [];
         return array_values(array_unique(array_merge(
                                             self::$gatewaySupportedBanks[Gateway::BILLDESK]['retail'],
-                                            $billdeskCorp,
+                                            self::$gatewaySupportedBanks[Gateway::ATOM]['retail'],
                                             self::$gatewaySupportedBanks[Gateway::EBS]['retail'],
+                                            self::$gatewaySupportedBanks[Gateway::PAYTM]['retail'],
                                             self::$self,
                                             self::$selfCorp)));
     }

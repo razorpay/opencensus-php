@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Payment\Processor;
+
 class Methods extends Base
 {
     public function createDefaultMethods(array $attributes = [])
@@ -18,7 +20,7 @@ class Methods extends Base
             'airtelmoney'    => '1',
             'bank_transfer'  => '1',
             'banks'          => '[]',
-            'disabled_banks' => [],
+            'disabled_banks' => Processor\Netbanking::DEFAULT_DISABLED_BANKS,
         ];
 
         $attributes = array_merge($defaultAttributes, $attributes);

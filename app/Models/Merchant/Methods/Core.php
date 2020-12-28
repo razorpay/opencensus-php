@@ -459,8 +459,6 @@ class Core extends Base\Core
                 $methods->setJiomoney(true);
                 $methods->setPayLater(true);
                 $methods->setPhonepeSwitch(true);
-                // Initializing Disabled bank with empty array
-                $methods->setDisabledBanks([]);
             }
         }
         else
