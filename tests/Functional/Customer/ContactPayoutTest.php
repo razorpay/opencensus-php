@@ -42,6 +42,6 @@ class ContactPayoutTest extends TestCase
 
         $accounts = $this->testGetCustomerBankAccounts();
 
-        $this->assertEquals(count($accounts['items']), 3);
+        $this->assertEquals(count($accounts['items']), 2);
     }
 }

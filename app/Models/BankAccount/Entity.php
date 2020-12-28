@@ -520,7 +520,13 @@ class Entity extends Base\PublicEntity
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::DELETED_AT],
+            $copy[self::BENEFICIARY_CODE],
             $copy[self::BENEFICIARY_ADDRESS4]);
+
+        $copy = array_filter($copy, function($value)
+        {
+            return is_null($value) === false;
+        });
 
         return ($orig === $copy);
     }

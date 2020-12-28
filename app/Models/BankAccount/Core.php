@@ -53,6 +53,8 @@ class Core extends Base\Core
 
         $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
 
+        $newBankAccount->associateMerchant($merchant);
+
         if ($newBankAccount->equals($oldBankAccount))
         {
             $this->trace->info(
