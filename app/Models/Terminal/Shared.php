@@ -137,6 +137,8 @@ class Shared
     const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
     const CRED_TERMINAL                      = '100DiCreDTrmnl';
     const NETBANKING_FSB_TERMINAL            = '1000NbFsbTrmnl';
+    const CARDLESS_EMI_FLEXMONEY_MULTILENDER_TERMINAL    = '20CrdlsEmiMlTl';
+    const CARDLESS_EMI_FLEXMONEY_EMPTY_ENABLED_BANKS     = '20CrdlsEmiEmTl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

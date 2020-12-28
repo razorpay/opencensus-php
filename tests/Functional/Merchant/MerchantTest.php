@@ -3553,6 +3553,32 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
+    public function testGetCheckoutPreferencesForCardlessEmiFlexmoney()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:cardless_emi_flexmoney_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('flexmoney', $response['methods']['cardless_emi']);
+    }
+
+    public function testGetCheckoutPreferencesForEmptyEnabledBanks()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:cardlessEmiFlexMoneyEmptyEnabledBanks');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('flexmoney', $response['methods']['cardless_emi']);
+    }
+
     public function testGetCheckoutPreferencesForDebitEmi()
     {
         $this->fixtures->merchant->enableEmi();
@@ -3644,6 +3670,22 @@ class MerchantTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
+    }
+
+    public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(3, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
     }
 
     public function testPreferenceforTpvMerchantWithOrder()

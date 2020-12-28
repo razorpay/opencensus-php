@@ -18,6 +18,7 @@ use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -868,6 +869,48 @@ class Terminal extends Base
             'gateway_merchant_id2' => 'cardless_emi_merchant2',
             'gateway_acquirer'     => 'flexmoney',
             'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCardlessEmiFlexMoneySubproviderTerminal(array $attributes = [])
+    {
+        $termId = Shared::CARDLESS_EMI_FLEXMONEY_MULTILENDER_TERMINAL;
+
+        $attributes = [
+            'id'                   => $termId,
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'cardless_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 1,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'flexmoney',
+            'mode'                 => 1,
+            'enabled_banks'        => array_diff(CardlessEmi::getSupportedBanksForMultilenderProvider('flexmoney'), CardlessEmi::getDefaultDisabledBanksForMultilenderProvider('flexmoney')),
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCardlessEmiFlexMoneyEmptyEnabledBanks(array $attributes = [])
+    {
+        $termId = Shared::CARDLESS_EMI_FLEXMONEY_EMPTY_ENABLED_BANKS;
+
+        $attributes = [
+            'id'                   => $termId,
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'cardless_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 1,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'flexmoney',
+            'mode'                 => 1,
+            'enabled_banks'        => [],
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

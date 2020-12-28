@@ -747,10 +747,10 @@ class Core extends Base\Core
 
         $terminals = $terminals->toArray();
 
-        $providers    = (array_unique(array_column($terminals, 'gateway_acquirer')));
-
         if ($method === Payment\Method::PAYLATER)
         {
+            $providers = (array_unique(array_column($terminals, 'gateway_acquirer')));
+
             $enabledBanks = (array_column($terminals, 'enabled_banks'));
             $enabledBanks = array_unique(array_flatten($enabledBanks));
             $enabledBanks = array_filter($enabledBanks);
@@ -758,6 +758,28 @@ class Core extends Base\Core
             $enabledProviders = array_map('strtolower', $enabledBanks);
 
             $providers = array_merge($providers, $enabledProviders);
+        }
+
+        if ($method === Payment\Method::CARDLESS_EMI)
+        {
+            $providers = [];
+
+            foreach ($terminals as $terminal)
+            {
+                $terminalProviders = null;
+
+                if ((Payment\Processor\CardlessEmi::isMultilenderProvider($terminal[Terminal\Entity::GATEWAY_ACQUIRER])) and
+                    (empty($terminal[Terminal\Entity::ENABLED_BANKS]) === false))
+                {
+                    $terminalProviders = array_map('strtolower', $terminal[Terminal\Entity::ENABLED_BANKS]);
+                }
+                else
+                {
+                    $terminalProviders[] = $terminal[Terminal\Entity::GATEWAY_ACQUIRER];
+                }
+
+                $providers = array_unique(array_merge($providers,$terminalProviders));
+            }
         }
 
         foreach ($providers as $providerName)
