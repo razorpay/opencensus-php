@@ -1,6 +1,6 @@
 <div class="auth-overflow-container">
   <div class="login-translate-container"
-       ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
+    ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
     <div class="auth-step">
       <div class="auth-heading">
         Forgot Password
@@ -10,11 +10,10 @@
       </div>
 
       <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)"
-            ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
+        ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
         <input override-tab type="email" placeholder="example@xyz.com" name="email" id="email"
-               ng-model="login.data.email" class="form-control auth-form-input" required
-               ng-focus="onResetEmailChange()">
+          ng-model="login.data.email" class="form-control auth-form-input" required ng-focus="onResetEmailChange()">
         <button override-tab class="btn btn-primary form-control" type="submit">
           Send Reset Link
         </button>
@@ -35,87 +34,71 @@
       </div>
       <div class="login-details-overflow-container">
         <div class="login-details-translate-container"
-             ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
+          ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
           <div class="auth-substep">
             <div class="auth-text">
-              <span ng-if="lockme">You have been inactive for more than 5 minutes. Enter password to access the dashboard as </span>
+              <span ng-if="lockme">You have been inactive for more than 5 minutes. Enter password to access the
+                dashboard as </span>
               <strong ng-if="lockme">{{login.data.email}}</strong>
             </div>
 
-              <div class="g-btn-container">
-                <div class="g-image-container">
-                  <img class="g-image" src="../../img/google-icon.svg"/>
-                </div>
-                <button
-                  id="gauth"
-                  override-tab
-                  class="full-width ds-btn secondary"
-                  type="submit"
-                  ng-click="onLoginWithGoogle()"
-                  ng-init="init()"
-                >
-                  Login with Google
-                </button>
+            <div class="g-btn-container" ng-if="!isOrgAXIS">
+              <div class="g-image-container">
+                <img class="g-image" src="../../img/google-icon.svg" />
               </div>
+              <button id="gauth" override-tab class="full-width ds-btn secondary" type="submit"
+                ng-click="onLoginWithGoogle()" ng-init="init()"">
+                Login with Google
+              </button>
+            </div>
 
-              <div class="separator-container">
-                <div class="separator"/>
+            <div class=" separator-container" ng-if="!isOrgAXIS">
+                <div class="separator" />
                 <span class="text">or</span>
-              </div>
+            </div>
 
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)"
-                  ng-submit="sendLoginCredentials(loginForm.$valid)">
+              ng-submit="sendLoginCredentials(loginForm.$valid)">
               <label ng-if="!lockme" class="form-label auth-subheading auth-subheading" for="email">Your email</label>
               <input ng-if="!lockme" type="email" placeholder="example@xyz.com" name="email" id="email"
-                     ng-model="login.data.email" class="form-control auth-form-input" required
-                     ng-focus="onLoginInputFocus('email')"
-                     ng-class="{'ds-error-input': inlineEmailError}"
-              >
+                ng-model="login.data.email" class="form-control auth-form-input" required
+                ng-focus="onLoginInputFocus('email')" ng-class="{'ds-error-input': inlineEmailError}">
               <div class="ds-error" ng-if="inlineEmailError">
                 {{inlineEmailError}}
               </div>
 
               <div>
                 <label class="form-label auth-subheading" for="password">Password</label>
-                <span ng-if="!lockme && isOrgCheckDone" class="forgot-password-text"
-                      ng-click="goToForgotPwd()">
+                <span ng-if="!lockme && isOrgCheckDone" class="forgot-password-text" ng-click="goToForgotPwd()">
                   (Forgot?)
                 </span>
                 <input type="password" placeholder="Password" name="password" ng-model="login.data.password"
-                       class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')"
-                       ng-class="{'ds-error-input': inlinePasswordError}"
-                >
+                  class="form-control auth-form-input" required ng-focus="onLoginInputFocus('password')"
+                  ng-class="{'ds-error-input': inlinePasswordError}">
                 <div class="ds-error" ng-if="inlinePasswordError">
                   {{inlinePasswordError}}
                 </div>
 
-                <div
-                  id='login-recaptcha'
-                  ng-init="loadCaptcha()"
-                  data-size="invisible"
-                />
+                <div id='login-recaptcha' ng-init="loadCaptcha()" data-size="invisible" />
 
-                <button
-                  override-tab
-                  class="full-width btn-primary"
-                  type="submit"
-                  ng-click="onLogin()"
-                >
+                <button override-tab class="full-width btn-primary" type="submit" ng-click="onLogin()">
                   {{lockme ? "Unlock" : "Log in"}}
                 </button>
               </div>
 
             </form>
 
-            <div class="subtext">
+            <div class="subtext" ng-if="!isOrgAXIS">
               Protected by reCAPTCHA. Google
-              <a href="https://policies.google.com/privacy" class="inline-block ds-highlight-clickable-text">Privacy Policy</a> &
-              <a href="https://policies.google.com/terms" class="inline-block ds-highlight-clickable-text">Terms of Service</a> apply.
+              <a href="https://policies.google.com/privacy" class="inline-block ds-highlight-clickable-text">Privacy
+                Policy</a> &
+              <a href="https://policies.google.com/terms" class="inline-block ds-highlight-clickable-text">Terms of
+                Service</a> apply.
             </div>
 
-              <div class="loading-animation">
-                  <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
-              </div>
+            <div class="loading-animation">
+              <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
+            </div>
 
             <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
               {{alert.msg}}
@@ -123,9 +106,9 @@
           </div>
         </div>
       </div>
-      <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="contact-us-text">
+      <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC && !isOrgAXIS" class="contact-us-text">
         Need help? <a class="highlight-clickable-text" ng-click="onContactUs()"
-                      href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
+          href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
       </div>
     </div>
 
@@ -133,7 +116,7 @@
       <div ng-include="'tpl/auth/questions.html'"></div>
     </div>
 
-    <div class="auth-step" >
+    <div class="auth-step">
       <div ng-include="'tpl/auth/verify.html'"></div>
     </div>
 
@@ -154,12 +137,12 @@
 
     <!-- account is blocked -->
     <div class="auth-step">
-      <div ng-include="'tpl/auth/account_block.html'" ></div>
+      <div ng-include="'tpl/auth/account_block.html'"></div>
     </div>
 
     <!-- contact admin -->
     <div class="auth-step">
-      <div ng-include="'tpl/auth/contact_admin.html'" ></div>
+      <div ng-include="'tpl/auth/contact_admin.html'"></div>
     </div>
   </div>
 </div>

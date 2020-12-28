@@ -24,12 +24,22 @@ const THEMES = {
     brandBg: 'transparent',
     borderColor: '#fff',
   },
+  axis: {
+    navBg: '#97144d',
+    primary: '#97144d',
+    sidebarLinkActive: 'pink',
+    sidebarLinkActiveBg: '#78103D',
+    brandBg: 'transparent',
+    borderColor: 'pink',
+    actStatusBg: '#78103D',
+    actText: 'white',
+  },
 };
 
 export const applyTheme = (org) => {
   var style = document.createElement('style');
   style.type = 'text/css';
-  var rules = makeTheme(Object.assign(base, THEMES[org]));
+  var rules = makeTheme(Object.assign(base, THEMES[org]), org);
   if (style.styleSheet) {
     style.styleSheet.cssText = rules;
   } else {
@@ -38,63 +48,68 @@ export const applyTheme = (org) => {
   document.getElementsByTagName('head')[0].appendChild(style);
 };
 
-const makeTheme = (it) => `
+const makeTheme = (it, org) => `
 #react-root.bob .brand-logo img {
   width: 100%;
   height: 100%;
 }
 
-.btn-primary,
-.btn-primary:active,
-.btn-primary:active:hover,
-.btn-primary[disabled]:hover {
+.${org} .btn-primary,
+.${org} .btn-primary:active,
+.${org} .btn-primary:active:hover,
+.${org} .btn-primary[disabled]:hover {
   background-color: ${it.primary};
   border-color: ${it.primary};
 }
 
-tabbed-container header a.active {
+.${org} tabbed-container header a.active {
   border-color: ${it.primary};
   color: ${it.primary};
 }
 
-.btn-primary:hover,
-.btn-primary:active,
-.btn-primary:focus, {
+.${org} .btn-primary:hover,
+.${org} .btn-primary:active,
+.${org} .btn-primary:focus, {
   background-color: ${it.transparent};
 }
 
-${it.actStatus ? `.activation-status{color:${it.actStatus}  !important;}` : ''}
-${it.actStatusBg ? `.activation-status{background-color:${it.actStatusBg} !important;}` : ''}
-${it.actText ? `.activation-bar-text{color:${it.actText}  !important;}` : ''}
-${it.brandBg ? `.brand-logo{background:${it.brandBg}  !important;}` : ''}
+${it.actStatus ? `.${org} .activation-status{color:${it.actStatus}};` : ''}
+${
+  it.actStatusBg
+    ? `.${org} .sidebar nav div.activation-status{background-color:${it.actStatusBg}};`
+    : ''
+}
+${it.actText ? `.${org} .activation-bar-text{color:${it.actText}};` : ''}
+${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
 
-.sidebar {
-  background-color: ${it.navBg || it.primary} !important;
+.${org} .sidebar {
+  background-color: ${it.navBg || it.primary};
 }
 
-.sidebar .brand-logo::after {
-  border-color: ${it.borderColor || it.transparent} !important;
+.${org} .sidebar .brand-logo::after {
+  border-color: ${it.borderColor || it.transparent};
 }
 
-.sidebar .nav > a {
-  color: ${it.sideBarColor || it.textLight} !important;
+.${org} .sidebar .nav > a {
+  color: ${it.sideBarColor || it.textLight};
 }
 
-.sidebar .nav > a:hover {
+.${org} .sidebar .nav > a:hover {
   background-color: ${it.transparent};
-  ${it.sideBarColor ? `color:${it.sideBarColor} !important;` : ''}
+  ${it.sideBarColor ? `color:${it.sideBarColor};` : ''}
 }
 
-.sidebar .nav > a:focus,
-.sidebar .nav > a.active {
-  border-color: ${it.sidebarLinkActive || it.transparent} !important;
+.${org} .sidebar .nav > a:focus,
+.${org} .sidebar .nav > a.active {
+  background-color: ${it.sidebarLinkActiveBg || it.transparentDark};
+  border-color: ${it.sidebarLinkActive || it.transparent};
 }
 
 ${
   it.sideBarIcon
     ? `
-.sidebar .nav > a:focus,
-.sidebar .nav > a >i{
+    .${org} .sidebar .nav > a:focus,
+    .${org} .sidebar .nav > a >i{
 color:${it.sideBarIcon};
 }`
     : ``
@@ -103,55 +118,55 @@ color:${it.sideBarIcon};
 ${
   it.sideBarIconActive
     ? `
-.sidebar .nav > a:focus,
-.sidebar .nav > a.active>i{
+    .${org} .sidebar .nav > a:focus,
+    .${org}.sidebar .nav > a.active>i{
 color:${it.sideBarIconActive};
 }`
     : ``
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td,
-.table-striped > tbody > tr:nth-child(odd) > th {
+.${org} .table-striped > tbody > tr:nth-child(odd) > td,
+.${org} .table-striped > tbody > tr:nth-child(odd) > th {
   background-color: ${it.primaryTransparent};
 }
-.table-striped > tbody > tr:nth-child(even) > td,
-.table-striped > tbody > tr:nth-child(even) > th {
+.${org} .table-striped > tbody > tr:nth-child(even) > td,
+.${org} .table-striped > tbody > tr:nth-child(even) > th {
   background-color: #ffffff;
 }
 
-.panel-default .panel-heading {
+.${org} .panel-default .panel-heading {
   background-color: ${it.primaryTransparent};
 }
 
-.alert-danger {
+.${org} .alert-danger {
   background-color: ${it.errorBackground};
   color: ${it.secondary};
 }
 
 
-.bg-dark .text-warning-lter,
-.bg-dark .nav > li > a,
-.bg-dark .text-info,
-.bg-dark .text-muted {
+.${org} .bg-dark .text-warning-lter,
+.${org} .bg-dark .nav > li > a,
+.${org} .bg-dark .text-info,
+.${org} .bg-dark .text-muted {
   color: ${it.textLight} !important;
 }
 
-.bg-dark .line {
+.${org} .bg-dark .line {
   background-color: ${it.transparent};
 }
 
-.btn.btn-primary {
+.${org} .btn.btn-primary {
   background-color: ${it.primary};
   border-color: ${it.primary}
 }
 
-.bg-light.lter, .bg-light .lter {
+.${org} .bg-light.lter, .${org} .bg-light .lter {
   background-color: ${it.primaryTransparent} !important;
 }
 
-.form-control[disabled],
-.form-control[readonly],
-fieldset[disabled] .form-control {
+.${org} .form-control[disabled],
+.${org} .form-control[readonly],
+.${org} fieldset[disabled] .form-control {
   background-color: ${it.primaryTransparent};
 }
 `;

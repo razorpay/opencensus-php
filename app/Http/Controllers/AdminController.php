@@ -454,6 +454,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postUploadOrgBackgroundImage($orgId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->uploadOrgBackgroundImage($orgId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     public function getStatus()
     {
         list($response, $statusCode) = (new Admin\Service)->getStatus();

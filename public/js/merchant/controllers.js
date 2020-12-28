@@ -9,9 +9,8 @@ angular
     'theme',
     'organization',
     'tracking',
-    function($scope, $localStorage, $window, theme, organization, tracking) {
-      isSmartDevice($window) &&
-        angular.element($window.document.body).addClass('smart');
+    function ($scope, $localStorage, $window, theme, organization, tracking) {
+      isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
       var baseTheme = {
         transparent: 'rgba(0,0,0,0.2)',
@@ -24,14 +23,14 @@ angular
         tertiary: '#ffffff',
       };
 
-      organization.fetchCurrentOrg().then(function(data) {
+      organization.fetchCurrentOrg().then(function (data) {
         if (data.custom_code) {
           switch (data.custom_code) {
             case 'hdfc':
               theme.apply(
                 angular.extend(baseTheme, {
                   primary: '#084c8d',
-                })
+                }),
               );
               break;
 
@@ -40,7 +39,7 @@ angular
                 angular.extend(baseTheme, {
                   navBg: '#F07937',
                   primary: '#0A3D6B',
-                })
+                }),
               );
               break;
 
@@ -49,7 +48,16 @@ angular
                 angular.extend(baseTheme, {
                   navBg: '#FF5D27',
                   primary: '#F04E00',
-                })
+                }),
+              );
+              break;
+
+            case 'axis':
+              theme.apply(
+                angular.extend(baseTheme, {
+                  primary: '#97144d',
+                  navBgUrl: data.background_image_url,
+                }),
               );
               break;
           }
@@ -90,22 +98,17 @@ angular
       }
       $scope.$watch(
         'app.settings',
-        function() {
+        function () {
           $localStorage.settings = $scope.app.settings;
         },
-        true
+        true,
       );
 
       function isSmartDevice($window) {
         // Adapted from http://www.detectmobilebrowsers.com
-        var ua =
-          $window.navigator.userAgent ||
-          $window.navigator.vendor ||
-          $window.opera;
+        var ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;
         // Checks for iOs, Android, Blackberry, Opera Mini, and Windows mobile devices
-        return /iPhone|iPod|iPad|Silk|Android|BlackBerry|Opera Mini|IEMobile/.test(
-          ua
-        );
+        return /iPhone|iPod|iPad|Silk|Android|BlackBerry|Opera Mini|IEMobile/.test(ua);
       }
       $scope.flag = false;
       tracking.pushEvents({
@@ -119,11 +122,11 @@ angular
     'modeFactory',
     'user',
     '$modal',
-    function($scope, modeFactory, user, $modal) {
+    function ($scope, modeFactory, user, $modal) {
       $scope.modes = modeFactory.getModes;
       $scope.mode = modeFactory.getMode;
-      $scope.selectMode = function(mode) {
-        user.identity().then(function(data) {
+      $scope.selectMode = function (mode) {
+        user.identity().then(function (data) {
           var userData = data;
           if (mode == 'live' && parseInt(userData.activated) !== 1) {
             var modalInstance = $modal.open({
@@ -143,28 +146,28 @@ angular
     '$http',
     '$state',
     'user',
-    function($scope, $http, $state, $user) {
-      $user.identity(true).then(function(data) {
-        $scope.merchants = $.map(data.merchants || [], function(v) {
+    function ($scope, $http, $state, $user) {
+      $user.identity(true).then(function (data) {
+        $scope.merchants = $.map(data.merchants || [], function (v) {
           return v;
         });
       });
 
-      $scope.initRoleSelector = function(element) {
-        element.on('select2:select', function(e) {
+      $scope.initRoleSelector = function (element) {
+        element.on('select2:select', function (e) {
           var merchantId = e.params.data.id;
 
           if (merchantId) {
             var request = $http.get('/settings/merchants/switch/' + merchantId);
             request
-              .success(function(data) {
+              .success(function (data) {
                 if (data.success) {
                   location.reload();
                 } else {
                   $scope.alerts.addAlert('danger', null, true);
                 }
               })
-              .error(function() {
+              .error(function () {
                 $scope.alerts.addAlert('danger', null, true);
               });
           }
@@ -175,11 +178,11 @@ angular
   .controller('activationModalCtrl', [
     '$scope',
     '$modalInstance',
-    function($scope, $modalInstance) {
-      $scope.ok = function() {
+    function ($scope, $modalInstance) {
+      $scope.ok = function () {
         $modalInstance.close();
       };
-      $scope.cancel = function() {
+      $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
       };
     },
@@ -188,12 +191,12 @@ angular
     '$scope',
     '$modalInstance',
     'message',
-    function($scope, $modalInstance, message) {
+    function ($scope, $modalInstance, message) {
       $scope.message = message;
-      $scope.ok = function() {
+      $scope.ok = function () {
         $modalInstance.close();
       };
-      $scope.cancel = function() {
+      $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
       };
     },

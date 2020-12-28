@@ -1271,6 +1271,41 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function uploadOrgBackgroundImage($orgId, $input)
+    {
+        $error = $data = null;
+
+        $file = $input["background_image"];
+
+        $s3Client = $this->getS3Client();
+
+        $filePath = $file->getPathname();
+        $fileName = $file->getFilename();
+
+        $keyName = "$orgId/background_image/$fileName";
+
+        $s3Obj = [
+            'Bucket'        => config('aws.activation_bucket'),
+            'Key'           => $keyName,
+            'SourceFile'    => $filePath,
+            'ContentType'   => 'image/jpeg',
+            'ACL'           => 'public-read',
+        ];
+
+        try
+        {
+            $result = $s3Client->putObject($s3Obj);
+
+            $data = $result['ObjectURL'];
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
     public function logout()
     {
         $error = $data = null;

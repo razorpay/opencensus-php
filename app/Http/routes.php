@@ -188,6 +188,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
+        Route::post('/admin/org/{org_id}/bg_img', 'AdminController@postUploadOrgBackgroundImage');
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
 
         Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');

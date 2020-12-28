@@ -97,6 +97,7 @@ app
         $scope.organization = data;
         $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
         $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
+        $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
       });
       $scope.forms = {};
 
@@ -119,6 +120,7 @@ app
       }
 
       var isProd = window.location.hostname.endsWith('razorpay.com');
+      var isAxisBankUATEnv = window.location.hostname.includes('dashboard-axis.stage.razorpay.in');
       var isLoginWithGoogle = false;
 
       $scope.signup = {
@@ -200,7 +202,7 @@ app
         showMore: false,
 
         // disable signup/login submission before captcha only in prod
-        submissionDisabled: isProd,
+        submissionDisabled: isProd || isAxisBankUATEnv,
         isWhatsAppOptIn: false,
       };
 
@@ -241,7 +243,7 @@ app
       };
 
       $scope.loadCaptcha = function (loadCheckbox = false) {
-        if (!loadCheckbox && !isProd) return; //Disable invisible captcha for staging
+        if (!loadCheckbox && !isProd && !isAxisBankUATEnv) return; //Disable invisible captcha for staging
         renderRecaptchaScript(loadCheckbox);
         if (loadCheckbox) {
           let checkboxCaptchaElement = document.getElementById('checkbox-recaptcha');
@@ -1810,9 +1812,9 @@ app
          * isTestEnv will be passed from test suites run for production
          * window.parent = X (opening PG in iframe)
          */
-        if (window.parent.isTestEnv || window.isTestEnv || !isProd) {
+        if (window.parent.isTestEnv || window.isTestEnv || (!isProd && !isAxisBankUATEnv)) {
           login('Faked');
-        } else if (isProd) {
+        } else if (isProd || isAxisBankUATEnv) {
           showSpinner();
           if (window.grecaptcha && window.grecaptcha.execute) {
             grecaptcha.reset();
