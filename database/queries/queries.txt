@@ -6097,3 +6097,7 @@ ALTER TABLE bank_transfer_requests
 
 ALTER TABLE payouts
     ADD COLUMN cancellation_user_id CHAR (14) DEFAULT NULL;
+
+
+ALTER TABLE merchant_details
+    ADD COLUMN client_applications JSON DEFAULT NULL;

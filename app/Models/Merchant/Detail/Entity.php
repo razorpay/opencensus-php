@@ -109,6 +109,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
     const INTERNAL_NOTES                     = 'internal_notes';
     const CUSTOM_FIELDS                      = 'custom_fields';
+    const CLIENT_APPLICATIONS                = 'client_applications';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -276,6 +277,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::PLATFORM,
         self::DATE_OF_ESTABLISHMENT,
         self::SHOP_ESTABLISHMENT_NUMBER,
+        self::CLIENT_APPLICATIONS,
     ];
 
     protected $public = [
@@ -380,6 +382,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BANK_DETAILS_DOC_VERIFICATION_STATUS,
         self::SHOP_ESTABLISHMENT_NUMBER,
         self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
+        self::CLIENT_APPLICATIONS,
     ];
 
     protected $defaults = [
@@ -1092,6 +1095,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getCustomFields(): array
     {
         return $this->getAttribute(self::CUSTOM_FIELDS);
+    }
+
+    public function getClientApplications()
+    {
+        return $this->getAttribute(self::CLIENT_APPLICATIONS);
     }
 
     protected function setCustomFieldsAttribute(array $customFields)

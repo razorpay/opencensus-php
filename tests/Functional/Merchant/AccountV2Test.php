@@ -1,0 +1,58 @@
+<?php
+
+namespace Functional\Merchant;
+
+use RZP\Tests\Functional\TestCase;
+use Illuminate\Database\Eloquent\Factory;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+
+class AccountV2Test extends TestCase
+{
+    use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
+    use PartnerTrait;
+
+    const RZP_ORG = '100000razorpay';
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/AccountV2TestData.php';
+
+        parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+    }
+
+    public function testCreateAccountV2ForMandatoryFilledRequest()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testCreateAccountV2ForCompletelyFilledRequest()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testFetchAccountV2()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+}

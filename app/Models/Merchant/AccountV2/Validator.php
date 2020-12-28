@@ -1,0 +1,240 @@
+<?php
+
+namespace RZP\Models\Merchant\AccountV2;
+
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account\Constants;
+
+class Validator extends Merchant\Validator
+{
+    protected static $createAccountRules = [
+        Constants::ACCOUNT_CODE        => 'sometimes',
+        Constants::EMAIL               => 'required|email',
+        Constants::PHONE               => 'sometimes|numeric',
+        Constants::LEGAL_BUSINESS_NAME => 'required|string',
+        Constants::DOING_BUSINESS_AS   => 'sometimes|string',
+        Constants::BUSINESS_TYPE       => 'required|string',
+        Constants::PROFILE             => 'required|array',
+        Constants::LEGAL_INFO          => 'sometimes|array',
+        Constants::CONTACT_INFO        => 'sometimes|array',
+        Constants::APPS                => 'sometimes|array',
+        Constants::BRAND               => 'sometimes|array',
+        Constants::TOS_ACCEPTANCE      => 'sometimes|array',
+        Constants::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $profileRules = [
+        Constants::ADDRESSES         => 'required|array|max:2',
+        Constants::ADDRESSES . '.*'  => 'filled|array',
+        Constants::CATEGORY          => 'required|string',
+        Constants::SUBCATEGORY       => 'required|string',
+        Constants::DESCRIPTION       => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
+    ];
+
+    protected static $accountAddressRules = [
+        Constants::STREET1     => 'required|string|max:100',
+        Constants::STREET2     => 'required|string|max:100',
+        Constants::CITY        => 'required|string',
+        Constants::STATE       => 'required|string',
+        Constants::POSTAL_CODE => 'required|integer',
+        Constants::COUNTRY     => 'required|string',
+    ];
+
+    protected static $addressTypeRules = [
+        Constants::OPERATION  => 'sometimes|array',
+        Constants::REGISTERED => 'required|array',
+    ];
+
+    protected static $legalInfoRules = [
+        Constants::PAN => 'sometimes|companyPan',
+        Constants::GST => 'sometimes|gstin',
+    ];
+
+    protected static $brandRules = [
+        Constants::COLOR => 'required|string',
+    ];
+
+    protected static $tosAcceptanceRules = [
+        Constants::DATE       => 'sometimes',
+        Constants::IP         => 'sometimes',
+        Constants::USER_AGENT => 'sometimes',
+    ];
+
+    protected static $contactInfoRules = [
+        Constants::EMAIL      => 'required|string',
+        Constants::PHONE      => 'sometimes|numeric|digits:10',
+        Constants::POLICY_URL => 'sometimes|string|nullable',
+    ];
+
+    protected static $appsRules = [
+        Constants::WEBSITES       => 'sometimes|array|min:1',
+        Constants::ANDROID        => 'sometimes|array|min:1',
+        Constants::ANDROID . '.*' => 'filled|array',
+        Constants::IOS            => 'sometimes|array|min:1',
+        Constants::IOS . '.*'     => 'filled|array',
+    ];
+
+    protected static $appsAndroidRules = [
+        Constants::URL  => 'required|string',
+        Constants::NAME => 'required|string',
+    ];
+
+    protected static $appsIosRules     = [
+        Constants::URL  => 'required|string',
+        Constants::NAME => 'required|string',
+    ];
+
+    protected static $createAccountValidators = [
+        'profile_input',
+        'legal_info',
+        'brand',
+        'tos_acceptance',
+        'contact_info',
+        'apps',
+    ];
+
+    protected static $addressTypeValidators = [
+        'address_check'
+    ];
+
+    protected function validateAddressCheck(array $input)
+    {
+        foreach ($input as $address)
+        {
+            $this->validateInput('AccountAddress', $address);
+        }
+    }
+
+    protected function validateAddresses(array $profileInput, string $action = '')
+    {
+        $addresses = $profileInput[Constants::ADDRESSES];
+
+        $this->validateInput('addressType',$addresses);
+    }
+
+    protected function validateProfileInput(array $input)
+    {
+        $profileInput = $input[Constants::PROFILE];
+
+        $this->validateInput('profile', $profileInput);
+
+        $this->validateAddresses($profileInput);
+    }
+
+    protected function validateLegalInfo(array $input)
+    {
+        if (isset($input[Constants::LEGAL_INFO]) === false)
+        {
+            return;
+        }
+
+        $legalInfo = $input[Constants::LEGAL_INFO];
+
+        $this->validateInput('legalInfo', $legalInfo);
+    }
+
+    protected function validateBrand(array $input)
+    {
+        if (isset($input[Constants::BRAND]) === false)
+        {
+            return;
+        }
+
+        $legalInfo = $input[Constants::BRAND];
+
+        $this->validateInput('brand', $legalInfo);
+    }
+
+    protected function validateTosAcceptance(array $input)
+    {
+        if (isset($input[Constants::TOS_ACCEPTANCE]) === false)
+        {
+            return;
+        }
+
+        $legalInfo = $input[Constants::TOS_ACCEPTANCE];
+
+        $this->validateInput('tosAcceptance', $legalInfo);
+    }
+
+    protected function validateBusinessModel($attribute, $value)
+    {
+        if (in_array(strtoupper($value), Constants::$validBusinessModels, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
+        }
+    }
+
+    protected function validateContactInfo(array $input, string $action = '')
+    {
+        if (isset($appsInput[Constants::CONTACT_INFO]) === false)
+        {
+            return;
+        }
+
+        $fieldNames = [
+            Constants::SUPPORT,
+            Constants::CHARGEBACK,
+            Constants::REFUND,
+            Constants::DISPUTE,
+        ];
+
+        $contactInfo = $input[Constants::CONTACT_INFO];
+
+        foreach ($fieldNames as $fieldName)
+        {
+            if (isset($contactInfo[$fieldName]) === true)
+            {
+                $this->validateInput($action . 'contactInfo', $contactInfo[$fieldName]);
+            }
+        }
+    }
+
+    protected function validateApps(array $input, string $action = '')
+    {
+        if (isset($appsInput[Constants::APPS]) === false)
+        {
+            return;
+        }
+
+        $appsInput = $input[Constants::APPS];
+
+        $this->validateInput('apps', $appsInput);
+
+        $this->validateAndroid($appsInput);
+
+        $this->validateIos($appsInput);
+    }
+
+    protected function validateAndroid(array $appsInput)
+    {
+        if (isset($appsInput[Constants::ANDROID]) === false)
+        {
+            return;
+        }
+
+        $androidInput = $appsInput[Constants::ANDROID];
+
+        foreach ($androidInput as $android)
+        {
+            $this->validateInput('appsAndroid', $android);
+        }
+    }
+
+    protected function validateIos(array $appsInput)
+    {
+        if (isset($appsInput[Constants::IOS]) === false)
+        {
+            return;
+        }
+
+        $iosInput = $appsInput[Constants::IOS];
+
+        foreach ($iosInput as $android)
+        {
+            $this->validateInput('appsIos', $android);
+        }
+    }
+}

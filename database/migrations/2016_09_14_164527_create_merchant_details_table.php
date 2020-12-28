@@ -287,6 +287,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->text(MerchantDetail::CUSTOM_FIELDS)
                   ->nullable();
 
+            $table->text(MerchantDetail::CLIENT_APPLICATIONS)
+                  ->nullable();
+
             $table->string(MerchantDetail::MARKETPLACE_ACTIVATION_STATUS, 30)
                   ->nullable();
 

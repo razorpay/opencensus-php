@@ -102,6 +102,27 @@ class Constants
     const B2C  = 'B2C';
     const B2BC = 'B2B+B2C';
 
+    const ACCOUNT_CODE        = 'account_code';
+    const LEGAL_BUSINESS_NAME = 'legal_business_name';
+    const DOING_BUSINESS_AS   = 'doing_business_as';
+    const BUSINESS_TYPE       = 'business_type';
+    const LEGAL_INFO          = 'legal_info';
+    const TOS_ACCEPTANCE      = 'tos_acceptance';
+    const CATEGORY            = 'category';
+    const SUBCATEGORY         = 'subcategory';
+    const POSTAL_CODE         = 'postal_code';
+    const STREET1             = 'street1';
+    const STREET2             = 'street2';
+    const PAN                 = 'pan';
+    const GST                 = 'gst';
+    const USER_AGENT          = 'user_agent';
+    const DATE                = 'date';
+    const IP                  = 'ip';
+    const POLICY_URL          = 'policy_url';
+    const WEBSITES            = 'websites';
+    const STANDARD            = 'standard';
+
+
     // bank account statuses
     const PENDING_VERIFICATION = 'pending_verification';
     const ACTIVE               = 'active';

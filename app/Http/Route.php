@@ -1633,6 +1633,10 @@ class Route
         'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
+        'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
+        'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
+
+
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                       ],
@@ -2502,6 +2506,9 @@ class Route
         'account_fetch_by_external_id',
         'account_edit',
         'account_action',
+
+        'account_create_v2',
+        'account_fetch_v2',
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
@@ -2927,6 +2934,7 @@ class Route
         'account_fetch_by_external_id',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
+
 
         // Temp fix to allow partners creating their own QR codes for
         // submerchants to use only one set of credentials everywhere
@@ -6426,7 +6434,10 @@ class Route
 
     ];
 
-    public static $routesWithV2Prefix = [];
+    public static $routesWithV2Prefix = [
+        'account_create_v2',
+        'account_fetch_v2',
+    ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true
     // By Sending this flag as true dashboard clarifies that user is verified by 2FA in its current

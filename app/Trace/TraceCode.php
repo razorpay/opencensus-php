@@ -2269,6 +2269,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
     const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
 
+    const ACCOUNT_CREATION_V2_REQUEST                           = 'ACCOUNT_CREATION_V2_REQUEST';
+
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
