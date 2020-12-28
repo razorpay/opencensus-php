@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "920792e8cd738789626b955e30433b1d",
+    "content-hash": "02392fb0d2b8a8321fd89f58711b07f2",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4629,16 +4629,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.3",
+            "version": "v0.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "2e5ee2366ef81642586c5dc990223a481eb854a4"
+                "reference": "e3be8d73a6570266acb5f921978929d1986e77bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/2e5ee2366ef81642586c5dc990223a481eb854a4",
-                "reference": "2e5ee2366ef81642586c5dc990223a481eb854a4",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/e3be8d73a6570266acb5f921978929d1986e77bc",
+                "reference": "e3be8d73a6570266acb5f921978929d1986e77bc",
                 "shasum": ""
             },
             "archive": {
@@ -4700,10 +4700,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.3",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.4",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2020-07-29T05:28:43+00:00"
+            "time": "2020-11-26T06:58:21+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -6711,7 +6711,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2020-04-04T18:44:38+00:00"
         },
         {
             "name": "razorpay/lqext",

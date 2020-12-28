@@ -13,9 +13,9 @@ class Tracing
     public static function getRoutesToExclude(): array
     {
         $allCronRoutes =  Route::$internalApps['cron'];
+        $otherRoutesToExclude = ['merchant_edit_config_logo', 'merchant_checkout_preferences'];
 
-        // for now it's only cron routes. add anything else here
-        $routesToExclude = $allCronRoutes ;
+        $routesToExclude = array_merge($allCronRoutes, $otherRoutesToExclude);
         return $routesToExclude;
     }
 

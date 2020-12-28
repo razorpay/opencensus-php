@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Tracer;
+use OpenCensus\Trace\Span;
 use OpenCensus\Trace\Integrations\Laravel;
 use OpenCensus\Trace\Integrations\PDO;
 use OpenCensus\Trace\Integrations\Redis;
@@ -35,8 +36,12 @@ class OpenCensusProvider extends ServiceProvider
             $currentRoute = $event->route;
 
             $routesToInclude = Tracing::getRoutesToInclude();
+            $routesToInclude = Tracing::getRoutesToExclude();
 
-            if(!(in_array($currentRoute->getName(), $routesToInclude))){
+            if(!(in_array($currentRoute->getName(), $routesToInclude)) or
+                in_array($currentRoute->getName(), $routesToExclude)
+            )
+            {
                 return;
             }
 
@@ -65,6 +70,7 @@ class OpenCensusProvider extends ServiceProvider
         $parametrizedRoute = $route->uri();
 
         $attrs = Tracing::getBasicSpanAttributes($this->app);
+        $attrs['span.kind'] = 'server';
 
         $spanOptions = ['name' => $parametrizedRoute, 'attributes' => $attrs];
 

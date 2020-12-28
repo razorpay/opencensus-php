@@ -82,11 +82,11 @@ class Requests
         }
 
         $spanOptions = ['name' => $name,
-                        'kind'=> Span::KIND_CLIENT,
+                        'kind'=> 'client',
                         'sameProcessAsParentSpan' => false
                     ];
 
-        $attrs = [];
+        $attrs = ['span.kind' => 'client'];
         if (array_key_exists('query', $urlInfo)){
             parse_str($urlInfo['query'], $queryParams);
             $attrs += $queryParams;
