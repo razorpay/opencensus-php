@@ -55,7 +55,10 @@ class Core extends Base\Core
             }
             catch (\RZP\Exception\GatewayErrorException $e)
             {
-                if (($e->getError()->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_REQUEST_ERROR) and
+                if ((in_array($e->getError()->getInternalErrorCode(), [
+                    ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+                ], true) === true) and
                     ($retryCount > 0))
                 {
                     $retryCount--;
