@@ -1021,4 +1021,16 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+
+    'testAdminP2pEntitiesApi' => [
+        'request' => [
+            'url'       => '/admin/entities/all',
+            'method'    => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entities' => []
+            ]
+        ]
+    ],
 ];

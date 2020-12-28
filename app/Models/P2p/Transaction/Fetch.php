@@ -17,6 +17,7 @@ class Fetch extends Base\Fetch
             Entity::FLOW                => 'sometimes|string',
             Entity::RESPONSE            => 'sometimes|string|in:history,pending,full',
             self::EXPAND_EACH           => 'filled|string|in:payer,payee,upi,bank_account,concern',
+            Entity::DEVICE_ID           => 'sometimes|string',
         ],
     ];
 
@@ -30,6 +31,7 @@ class Fetch extends Base\Fetch
             Entity::FLOW,
             Entity::RESPONSE,
             self::EXPAND_EACH,
+            Entity::DEVICE_ID,
         ],
     ];
 }

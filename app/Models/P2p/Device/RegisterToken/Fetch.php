@@ -1,25 +1,24 @@
 <?php
 
-namespace RZP\Models\P2p\Device;
+namespace RZP\Models\P2p\Device\RegisterToken;
 
-use RZP\Base\Fetch as BaseFetch;
+use RZP\Models\P2p\Base;
 use RZP\Http\BasicAuth\Type as AuthType;
 
-class Fetch extends BaseFetch
+class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
             Entity::ID          => 'sometimes|string',
-            Entity::CONTACT     => 'sometimes|string|max:12',
-            Entity::CUSTOMER_ID => 'sometimes|alpha_num|size:14',
+            Entity::DEVICE_ID   => 'sometimes|string',
+            Entity::STATUS      => 'sometimes|string',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
         ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
-            Entity::CONTACT,
-            Entity::CUSTOMER_ID,
+            Entity::DEVICE_ID,
         ],
     ];
 }

@@ -1153,4 +1153,19 @@ class AdminTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testAdminP2pEntitiesApi()
+    {
+        $result = $this->startTest();
+
+        $this->assertArrayKeysExist($result['entities']['p2p_device'], ['contact', 'customer_id']);
+        $this->assertArrayKeysExist($result['entities']['p2p_device_token'], ['device_id']);
+        $this->assertArrayKeysExist($result['entities']['p2p_register_token'], ['device_id']);
+        $this->assertArrayKeysExist($result['entities']['p2p_bank_account'], ['device_id', 'account_number']);
+        $this->assertArrayKeysExist($result['entities']['p2p_vpa'], ['device_id', 'username', 'bank_account_id']);
+        $this->assertArrayKeysExist($result['entities']['p2p_beneficiary'], ['device_id']);
+        $this->assertArrayKeysExist($result['entities']['p2p_transaction'], ['device_id', 'customer_id', 'status']);
+        $this->assertArrayKeysExist($result['entities']['p2p_upi_transaction'], ['device_id', 'rrn']);
+        $this->assertArrayKeysExist($result['entities']['p2p_concern'], ['device_id', 'transaction_id', 'status']);
+    }
 }

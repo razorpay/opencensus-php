@@ -14,12 +14,20 @@ class Fetch extends Base\Fetch
             Entity::BANK_ACCOUNT_ID     => 'sometimes|string',
             Entity::ACTIVE              => 'sometimes',
             self::DELETED               => 'sometimes',
+            Entity::USERNAME            => 'sometimes|string',
+            Entity::HANDLE              => 'sometimes',
         ],
     ];
 
     const ACCESSES = [
-        AuthType::DEVICE_AUTH => [
+        AuthType::DEVICE_AUTH    => [
             self::DELETED,
+        ],
+        AuthType::PRIVILEGE_AUTH => [
+            Entity::DEVICE_ID,
+            Entity::BANK_ACCOUNT_ID,
+            Entity::USERNAME,
+            Entity::HANDLE,
         ],
     ];
 }

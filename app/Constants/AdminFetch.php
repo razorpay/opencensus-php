@@ -18,6 +18,8 @@ use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Models\P2p\Transaction\Status as TransactionStatus;
+use RZP\Models\P2p\Transaction\Concern\Status as ConcernStatus;
 
 /**
  * Class AdminFetch
@@ -2838,10 +2840,113 @@ class AdminFetch
                 ],
             ],
 
-            Entity::P2P_DEVICE  => [
-                'contact'       => [
+            Entity::P2P_DEVICE          => [
+                'contact'         => [
                     Fetch::LABEL    => 'Contact',
                     Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'customer_id'     => [
+                    Fetch::LABEL    => 'Customer ID',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_DEVICE_TOKEN    => [
+                'device_id'       => [
+                   Fetch::LABEL     => 'Device Id',
+                   Fetch::TYPE      => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_REGISTER_TOKEN  => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_BANK_ACCOUNT    => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'account_number'  => [
+                    Fetch::LABEL    => 'Account Number',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_VPA             => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'username'        => [
+                    Fetch::LABEL    => 'Username',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'bank_account_id' => [
+                    Fetch::LABEL    => 'Bank Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::P2P_BENEFICIARY     => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_TRANSACTION     => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'customer_id'     => [
+                    Fetch::LABEL    => 'Customer ID',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'status'          => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => [
+                        TransactionStatus::CREATED,
+                        TransactionStatus::COMPLETED,
+                        TransactionStatus::FAILED,
+                    ],
+                ],
+            ],
+
+            Entity::P2P_UPI_TRANSACTION => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'rrn'             => [
+                    Fetch::LABEL    => 'RRN',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::P2P_CONCERN         => [
+                'device_id'       => [
+                    Fetch::LABEL    => 'Device Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'transaction_id'  => [
+                    Fetch::LABEL    => 'Transaction Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'status'          => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => [
+                        ConcernStatus::CREATED,
+                        ConcernStatus::INITIATED,
+                        ConcernStatus::PENDING,
+                        ConcernStatus::CLOSED,
+                    ],
                 ],
             ],
 
