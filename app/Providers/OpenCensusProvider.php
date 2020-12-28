@@ -36,7 +36,7 @@ class OpenCensusProvider extends ServiceProvider
             $currentRoute = $event->route;
 
             $routesToInclude = Tracing::getRoutesToInclude();
-            $routesToInclude = Tracing::getRoutesToExclude();
+            $routesToExclude = Tracing::getRoutesToExclude();
 
             if(!(in_array($currentRoute->getName(), $routesToInclude)) or
                 in_array($currentRoute->getName(), $routesToExclude)
