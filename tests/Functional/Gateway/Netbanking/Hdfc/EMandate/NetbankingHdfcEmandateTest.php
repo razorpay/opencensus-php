@@ -488,6 +488,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
 
+        $this->assertNotNull($token['expired_at']);
+
         $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
@@ -894,6 +896,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'bank'           => 'HDFC',
                 'ifsc'           => 'HDFC0000186',
                 'account_number' => '50100100708641',
+                'expired_at'     => '1608278260',
             ]
         );
 

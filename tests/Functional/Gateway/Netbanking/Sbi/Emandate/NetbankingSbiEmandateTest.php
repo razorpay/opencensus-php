@@ -88,11 +88,14 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $token = $this->getLastEntity(Entity::TOKEN, true);
 
+        $expiredAt = Carbon::createFromTimestamp($payment['created_at'])->addYears(10)->getTimestamp();
+
         $this->assertArraySelectiveEquals(
             [
                 TokenEntity::RECURRING_STATUS => RecurringStatus::INITIATED,
                 TokenEntity::METHOD           => 'emandate',
                 TokenEntity::BANK             => 'SBIN',
+                TokenEntity::EXPIRED_AT       => $expiredAt,
             ],
             $token
         );
@@ -144,11 +147,14 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $token = $this->getLastEntity(Entity::TOKEN, true);
 
+        $expiredAt = Carbon::createFromTimestamp($payment['created_at'])->addYears(10)->getTimestamp();
+
         $this->assertArraySelectiveEquals(
             [
                 TokenEntity::RECURRING_STATUS => RecurringStatus::INITIATED,
                 TokenEntity::METHOD           => 'emandate',
                 TokenEntity::BANK             => 'SBIN',
+                TokenEntity::EXPIRED_AT       => $expiredAt,
             ],
             $token
         );
@@ -660,9 +666,12 @@ class NetbankingSbiEmandateTest extends TestCase
         $successToken = $successPayment->getGlobalOrLocalTokenEntity();
         $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $entities[0]['payment']['id']]);
 
+        $expiredAt = Carbon::createFromTimestamp($successPayment['created_at'])->addYears(10)->getTimestamp();
+
         $this->assertEquals('captured', $successPayment['status']);
         $this->assertEquals('confirmed', $successToken['recurring_status']);
         $this->assertNotNull($successToken['gateway_token']);
+        $this->assertEquals($successToken['expired_at'], $expiredAt);
         $this->assertEquals('confirmed', $successNetbanking['si_status']);
         $this->assertNotNull($successNetbanking['si_token']);
         $this->assertTrue($successNetbanking['received']);

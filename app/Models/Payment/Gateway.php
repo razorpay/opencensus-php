@@ -500,6 +500,13 @@ class Gateway
         IFSC::SBIN
     ];
 
+    const EMANDATE_DIRECT_INTEGRATION_GATEWAYS = [
+        Gateway::NETBANKING_AXIS,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_SBI,
+    ];
+
     const EMANDATE_NB_DIRECT_DEBIT_BANK = [
         IFSC::ICIC,
         IFSC::HDFC,
@@ -2464,6 +2471,13 @@ class Gateway
         $banks = self::getAllEMandateBanks();
 
         return (in_array($bank, $banks, true) === true);
+    }
+
+    public static function isSupportedEmandateDirectIntegrationGateway($gateway): bool
+    {
+        $gateways = self::EMANDATE_DIRECT_INTEGRATION_GATEWAYS;
+
+        return (in_array($gateway, $gateways, true) === true);
     }
 
     public static function getAllEMandateBanks(): array

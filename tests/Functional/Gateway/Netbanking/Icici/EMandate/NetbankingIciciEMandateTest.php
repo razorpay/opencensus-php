@@ -781,6 +781,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(null, $gatewayToken[GatewayToken::REFERENCE]);
         $this->assertEquals($token[Token::RECURRING], $gatewayToken[GatewayToken::RECURRING]);
         $this->assertEquals($payment[Payment::TERMINAL_ID], $gatewayToken[GatewayToken::TERMINAL_ID]);
+        $this->assertNotNull($token['expired_at']);
     }
 
     /**

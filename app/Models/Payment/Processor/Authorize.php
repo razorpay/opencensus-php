@@ -2234,6 +2234,13 @@ trait Authorize
             $this->addCredParams($payment, $gatewayInput);
         }
 
+        /*
+         * This is required to set the expiry for the emandate tokens this cannot
+         * be done in token build as token does not have context on gateway and hence
+         * doing it here.
+         */
+        $this->updateTokenForEmandate($payment);
+
         // set token for local card saving in gateway input
         $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
 
@@ -2247,6 +2254,28 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function updateTokenForEmandate(Payment\Entity $payment)
+    {
+        if (($payment->isEmandate() === false) or ($payment->isRecurringTypeInitial() === false))
+        {
+            return;
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ((Gateway::isSupportedEmandateDirectIntegrationGateway($payment->getGateway()) === true) and
+            ($token->getExpiredAt() === null))
+        {
+            $expiredAt = Carbon::createFromTimestamp($payment->getCreatedAtAttribute())
+                                ->addYears(Token\Entity::DEFAULT_EXPIRY_YEARS)
+                                ->getTimestamp();
+
+            $token->setExpiredAt($expiredAt);
+
+            $token->saveOrFail();
+        }
     }
 
     protected function addCredParams($payment, array & $gatewayInput)

@@ -97,6 +97,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals($token['gateway_token'], $enach['umrn']);
         $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
+        $this->assertNull($token['expired_at']);
     }
 
     public function testRegistrationOrderForDebitOnlyBank()
@@ -221,6 +222,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($token['gateway_token']);
 
         $this->assertEquals($token['gateway_token'], $enach['umrn']);
+
+        $this->assertNull($token['expired_at']);
     }
 
     public function testPartnerPayment()
@@ -275,6 +278,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(null , $token['recurring_status']);
 
         $this->assertEquals(null, $token['gateway_token']);
+
+        $this->assertNull($token['expired_at']);
     }
 
     public function testPaymentErrorResponse()
@@ -321,6 +326,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(null, $token['recurring_status']);
 
         $this->assertEquals(null, $token['gateway_token']);
+
+        $this->assertNull($token['expired_at']);
     }
 
     public function testPaymentVerify()
@@ -392,6 +399,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
         $this->assertEquals('confirmed', $token['recurring_status']);
         $this->assertNotNull($token['gateway_token']);
+        $this->assertNull($token['expired_at']);
     }
 
     public function testDebitFileGeneration()

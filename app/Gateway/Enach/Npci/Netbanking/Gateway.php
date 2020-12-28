@@ -219,11 +219,20 @@ class Gateway extends Base\Gateway
 
     protected function getSecureData($input)
     {
+        $tokenExpiry = $input['token']->getExpiredAt();
+
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
                         ->format('Y-m-d+05:30');
 
-        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
+        if ($tokenExpiry === null)
+        {
+            $finalCollection = '';
+        }
+        else
+        {
+            $finalCollection = Carbon::createFromTimestamp($tokenExpiry, Timezone::IST)
                                    ->format('Y-m-d+05:30');
+        }
 
         return [
             RequestNpciTags::DEBTOR_ACCOUNT        => $input['token']->getAccountNumber(),
@@ -237,6 +246,11 @@ class Gateway extends Base\Gateway
     protected function getEncryptedData($secureData)
     {
         unset($secureData[RequestNpciTags::COLLECTION_AMOUNT]);
+
+        if ($secureData[RequestNpciTags::FINAL_COLLECTION_DATE] === '')
+        {
+            unset($secureData[RequestNpciTags::FINAL_COLLECTION_DATE]);
+        }
 
         $encryptedData = [];
 
@@ -298,7 +312,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
                 RequestNpciTags::FREQUENCY             => Frequency::ADHOC,
                 RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
-                RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
+                RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE] ?? null,
             ],
 
             RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
@@ -315,6 +329,11 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::IFSC_SPONSOR          => $sponserIfsc,
             ]
         ];
+
+        if ($data[NpciXmlHeaderTags::OCCURENCE][RequestNpciTags::FINAL_COLLECTION_DATE] === null)
+        {
+            unset($data[NpciXmlHeaderTags::OCCURENCE][RequestNpciTags::FINAL_COLLECTION_DATE]);
+        }
 
         return $data;
     }
@@ -917,7 +936,8 @@ class Gateway extends Base\Gateway
                                                        $gatewayPayment = null
                                                       )
     {
-        $bank = $payment['bank'];
+        $bank   = $payment['bank'];
+        $expiry = $token->getExpiredAt();
 
         if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
         {
@@ -934,7 +954,12 @@ class Gateway extends Base\Gateway
         }
 
         $startDate = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y');
-        $endDate   = Carbon::createFromTimestamp($token->getExpiredAt(), Timezone::IST)->format('d/m/Y');
+        $endDate   = Carbon::createFromTimestamp($expiry, Timezone::IST)->format('d/m/Y');
+
+        if ($expiry === null)
+        {
+            $endDate = 'Valid Until Cancelled';
+        }
 
         if ($mode === Mode::TEST)
         {
