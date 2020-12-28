@@ -2,6 +2,8 @@
 
 namespace RZP\Models\User;
 
+use RZP\Constants\Environment;
+
 class Constants
 {
     const CTA           = 'cta';
@@ -185,5 +187,11 @@ class Constants
         "hdbfinservices@gmail.com",
         "ramakishore.sankranthi@hdbfs.com",
         "reshma.sultana@hdbfs.com"
+    ];
+
+    // Only in these environments we will verify the captcha repsonse with google
+    const WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION = [
+        Environment::PRODUCTION,
+        Environment::AXIS,
     ];
 }
