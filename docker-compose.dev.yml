@@ -81,7 +81,7 @@ services:
       APP_MODE: dev
       JAEGER_HOSTNAME: 'jaeger'
   api_db:
-    image: mysql:5.7
+    image: mysql:8
     ports:
       - 23306:3306
     environment:
