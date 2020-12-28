@@ -223,7 +223,10 @@ const App = () => {
 
   const handleContactUsClick = () => {
     window.rzpQ.push(
-      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Contact us' }),
+      window.rzpQ
+        .now()
+        .onbr()
+        .initiated('signup.secondary_links', { source: 'Contact us' }),
     );
     window.rzpAnalytics({
       eventCategory: 'Signup - Steps',
@@ -233,7 +236,10 @@ const App = () => {
 
   const handleLoginClick = () => {
     window.rzpQ.push(
-      window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Login' }),
+      window.rzpQ
+        .now()
+        .onbr()
+        .initiated('signup.secondary_links', { source: 'Login' }),
     );
 
     window.rzpAnalytics({

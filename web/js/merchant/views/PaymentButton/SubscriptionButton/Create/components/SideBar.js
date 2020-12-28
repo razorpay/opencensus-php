@@ -109,7 +109,7 @@ export default class SideBar extends React.Component {
                 title="Review and Create"
                 description="Finalise configuration and create button"
                 isDone={false}
-                onClick={() => track.lj.trackOnClickProgressStep('review_create')}
+                onClick={() => track.lj.trackOnClickProgressStep('review_create' )}
                 isDisabled={
                   !this.isButtonDetailsDone ||
                   !this.isPlansDetailsDone ||

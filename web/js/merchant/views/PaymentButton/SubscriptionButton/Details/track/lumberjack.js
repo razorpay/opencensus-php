@@ -7,7 +7,7 @@ function _track() {
       window.rzpQ.subscriptionButtons().interaction(`button.${event}`, {
         options,
         button_id: buttonId,
-      }),
+      })
     );
   }
 

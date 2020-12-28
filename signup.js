@@ -8,6 +8,7 @@ let content = [].concat
   .apply(
     [],
     [
+      'public/js/jquery/jquery-2.1.4.min.js',
       'public/js/angular/angular.min.js',
       'public/js/angular/angular-cookies.min.js',
       'public/js/angular/angular-animate.min.js',
@@ -15,13 +16,16 @@ let content = [].concat
       'public/js/angular/angular-idle.min.js',
       'public/js/angular/ngStorage.min.js',
       'public/js/angular/ui-load.js',
+      'public/js/angular/ui-jq.js',
       'public/js/angular/ui-validate.js',
+      'public/js/angular/ui-bootstrap-tpls.min.js',
       'public/js/angular/angular-busy.js',
       'public/js/themes/init.js',
       'public/js/themes/theme.js',
+      'public/js/libs/select2.min.js',
       'public/js/merchant/**/*.js',
-      'public/js/filters.js',
-      'public/js/services.js',
+      'public/js/*.js',
+      'web/node_modules/moment/min/moment.min.js',
     ].map((file) => glob(file)),
   )
   .reduce((content, next) => {

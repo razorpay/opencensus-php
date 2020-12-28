@@ -10,33 +10,33 @@ angular
     '$http',
     '$timeout',
     '$idle',
-    function ($q, $http, $timeout, $idle) {
+    function($q, $http, $timeout, $idle) {
       var _identity,
         _isPreSignupDone = false,
         _isVerified = false,
         _authenticated = false;
 
       return {
-        isIdentityResolved: function () {
+        isIdentityResolved: function() {
           return angular.isDefined(_identity);
         },
-        isAuthenticated: function () {
+        isAuthenticated: function() {
           return _authenticated;
         },
-        authenticate: function (identity) {
+        authenticate: function(identity) {
           _identity = identity;
           _authenticated = identity !== null;
         },
-        getIdentity: function () {
+        getIdentity: function() {
           return _identity;
         },
-        isPreSignupDone: function () {
+        isPreSignupDone: function() {
           return _isPreSignupDone;
         },
-        isVerified: function () {
+        isVerified: function() {
           return _isVerified;
         },
-        identity: function (force) {
+        identity: function(force) {
           var deferred = $q.defer();
           if (force === true) _identity = undefined;
           // check and see if we have retrieved the identity data from the server. if we have, reuse it by immediately resolving
@@ -46,7 +46,7 @@ angular
           }
           $http
             .get('/user', { ignoreErrors: true })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success) {
                 try {
                   dataLayer.push({
@@ -59,7 +59,10 @@ angular
                 if (data.data.steps_finished) {
                   _identity.activation_progress = data.data.activation_progress;
                 }
-                if (!_identity.user.merchants.length || _identity.pre_signup.length === 0) {
+                if (
+                  !_identity.user.merchants.length ||
+                  _identity.pre_signup.length === 0
+                ) {
                   _isPreSignupDone = true;
                 } else {
                   _isPreSignupDone = _identity.pre_signup_complete;
@@ -75,15 +78,18 @@ angular
                 deferred.reject(data.errors);
               }
             })
-            .error(function () {
+            .error(function() {
               _identity = null;
               _authenticated = false;
               deferred.resolve(_identity);
             });
           return deferred.promise;
         },
-        getTreatment: function (feature) {
-          return (((_identity || {}).experiments || {})[feature] || {}).result === 'on';
+        getTreatment: function(feature) {
+          return (
+            (((_identity || {}).experiments || {})[feature] || {}).result ===
+            'on'
+          );
         },
       };
     },
@@ -95,10 +101,10 @@ angular
     '$state',
     'user',
     '$location',
-    function ($rootScope, $state, user) {
+    function($rootScope, $state, user) {
       return {
-        authorize: function () {
-          return user.identity().then(function () {
+        authorize: function() {
+          return user.identity().then(function() {
             if ($rootScope.toState.data.role === 'auth') {
               if (!user.isAuthenticated()) {
                 $state.go('access.signin');
@@ -107,7 +113,11 @@ angular
                 $state.go('access.pre_signup');
               }
             } else if ($rootScope.toState.data.role === 'guest') {
-              if (user.isAuthenticated() && user.isVerified() && user.isPreSignupDone()) {
+              if (
+                user.isAuthenticated() &&
+                user.isVerified() &&
+                user.isPreSignupDone()
+              ) {
                 if ($rootScope.role === 'sellerapp') {
                   $state.go('app.invoices');
                 } else {
@@ -125,7 +135,7 @@ angular
     '$localStorage',
     '$rootScope',
     'user',
-    function ($state, $localStorage, $rootScope, user) {
+    function($state, $localStorage, $rootScope, user) {
       var modes = {
         test: 'test',
         live: 'live',
@@ -133,7 +143,7 @@ angular
       var currentMode = 'test';
       if (angular.isDefined($localStorage.rzp_mode)) {
         currentMode = $localStorage.rzp_mode;
-        user.identity().then(function (data) {
+        user.identity().then(function(data) {
           if (currentMode == 'live' && parseInt(data.activated) !== 1) {
             currentMode = 'test';
           }
@@ -142,34 +152,35 @@ angular
         $localStorage.rzp_mode = currentMode;
       }
       $rootScope.$watch(
-        function () {
+        function() {
           return currentMode;
         },
         function watchCallback(newValue) {
           $localStorage.rzp_mode = newValue;
         },
-        true,
+        true
       );
       return {
-        getMode: function () {
+        getMode: function() {
           return currentMode;
         },
-        selectMode: function (mode) {
+        selectMode: function(mode) {
           currentMode = modes[mode];
           $state.go($state.$current, null, { reload: true });
           return currentMode;
         },
-        getModes: function () {
+        getModes: function() {
           return modes;
         },
       };
     },
   ]) //Transforms json array to form post fields, also modifies content type of submission
-  .factory('transformRequestAsFormPost', function () {
+  .factory('transformRequestAsFormPost', function() {
     // I prepare the request data for the form post.
     function transformRequest(data, getHeaders) {
       var headers = getHeaders();
-      headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+      headers['Content-Type'] =
+        'application/x-www-form-urlencoded; charset=utf-8';
       return serializeData(data);
     }
     // Return the factory value.
@@ -184,7 +195,7 @@ angular
       }
       var buffer = [];
 
-      var formalizeData = function (formData, level) {
+      var formalizeData = function(formData, level) {
         var flattened = {};
         for (var key in formData) {
           var val = formData[key];
@@ -220,7 +231,9 @@ angular
           flattenedOb[key] = flattenedOb[key] ? 1 : 0;
         }
 
-        buffer.push(encodeURIComponent(key) + '=' + encodeURIComponent(flattenedOb[key]));
+        buffer.push(
+          encodeURIComponent(key) + '=' + encodeURIComponent(flattenedOb[key])
+        );
       }
 
       // Serialize the buffer and clean it up for transportation.
@@ -229,19 +242,19 @@ angular
     }
   }) //Alerts factory.
   //Used for creating/removing alerts for display in a page.
-  .factory('alertsFactory', function () {
-    var handler = function () {
+  .factory('alertsFactory', function() {
+    var handler = function() {
       this.alerts = [];
 
-      this.getAlerts = function () {
+      this.getAlerts = function() {
         return this.alerts;
       };
 
-      this.closeAlert = function (index) {
+      this.closeAlert = function(index) {
         this.alerts.splice(index, 1);
       };
 
-      this.addAlert = function ($type, $message, reset) {
+      this.addAlert = function($type, $message, reset) {
         $message = $message || 'An error occured.';
         if (reset) {
           this.alerts = [];
@@ -254,7 +267,7 @@ angular
         window.scrollTo(0, 0);
       };
 
-      this.resetAlerts = function (last) {
+      this.resetAlerts = function(last) {
         if (!last) {
           this.alerts = [];
         } else {
@@ -264,13 +277,13 @@ angular
     };
 
     return {
-      getHandler: function () {
+      getHandler: function() {
         return new handler();
       },
     };
   })
-  .factory('dateFactory', function () {
-    var handler = function ($scope) {
+  .factory('dateFactory', function() {
+    var handler = function($scope) {
       this.endDate = new Date();
       this.startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
       this.opened = {};
@@ -279,11 +292,11 @@ angular
         startingDay: 1,
         class: 'datepicker',
       };
-      this.clear = function () {
+      this.clear = function() {
         $scope.date.endDate = null;
         $scope.date.startDate = null;
       };
-      this.open = function ($event, key) {
+      this.open = function($event, key) {
         $event.preventDefault();
         $event.stopPropagation();
         $scope.date.opened = {};
@@ -291,7 +304,7 @@ angular
       };
     };
     return {
-      getHandler: function ($scopeVar) {
+      getHandler: function($scopeVar) {
         return new handler($scopeVar);
       },
     };
@@ -302,24 +315,24 @@ angular
     '$http',
     '$timeout',
     '$idle',
-    function ($q, $http, $timeout, $idle) {
+    function($q, $http, $timeout, $idle) {
       var _identity,
         _authenticated = false;
       return {
-        isIdentityResolved: function () {
+        isIdentityResolved: function() {
           return angular.isDefined(_identity);
         },
-        isAuthenticated: function () {
+        isAuthenticated: function() {
           return _authenticated;
         },
-        authenticate: function (identity) {
+        authenticate: function(identity) {
           _identity = identity;
           _authenticated = identity !== null;
         },
-        isSuperAdmin: function () {
+        isSuperAdmin: function() {
           var roles = _identity.roles;
 
-          var isPresent = roles.some(function (element) {
+          var isPresent = roles.some(function(element) {
             return element.toLowerCase().match('superadmin');
           });
 
@@ -327,7 +340,7 @@ angular
             return true;
           }
         },
-        identity: function (force) {
+        identity: function(force) {
           var deferred = $q.defer();
           if (force === true) _identity = undefined;
           // check and see if we have retrieved the identity data from the server. if we have, reuse it by immediately resolving
@@ -337,14 +350,14 @@ angular
           }
           $http
             .get('/admin/user', { ignoreErrors: true })
-            .success(function (data) {
+            .success(function(data) {
               _identity = data.data;
               _authenticated = data.success === true;
               if (_authenticated) $idle.watch();
               else $idle.unwatch();
               deferred.resolve(_identity);
             })
-            .error(function () {
+            .error(function() {
               _identity = null;
               _authenticated = false;
               deferred.resolve(_identity);
@@ -358,11 +371,11 @@ angular
   .factory('organization', [
     '$q',
     '$http',
-    function ($q, $http) {
+    function($q, $http) {
       var _org, _roles;
 
       return {
-        fetchCurrentOrg: function () {
+        fetchCurrentOrg: function() {
           var deferred = $q.defer();
 
           if (angular.isDefined(_org)) {
@@ -370,7 +383,7 @@ angular
             return deferred.promise;
           }
 
-          $http.get('/org').success(function (data) {
+          $http.get('/org').success(function(data) {
             if (data.success) {
               _org = data.data;
             }
@@ -380,7 +393,7 @@ angular
 
           return deferred.promise;
         },
-        fetchRoles: function () {
+        fetchRoles: function() {
           var deferred = $q.defer();
 
           if (angular.isDefined(_roles)) {
@@ -395,7 +408,7 @@ angular
                 route_name: 'role_get_multiple',
               },
             })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success) {
                 _roles = data.data.items;
                 deferred.resolve(_roles);
@@ -403,14 +416,14 @@ angular
                 deferred.reject(data.errors);
               }
             })
-            .error(function (data) {
+            .error(function(data) {
               deferred.reject(data.errors);
             });
 
           return deferred.promise;
         },
         // No caching implemented
-        fetchGroups: function () {
+        fetchGroups: function() {
           var deferred = $q.defer();
 
           var groups = [];
@@ -421,9 +434,9 @@ angular
                 route_name: 'group_get_multiple',
               },
             })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success === true) {
-                angular.forEach(data.data.items, function (group) {
+                angular.forEach(data.data.items, function(group) {
                   var groupObj = {
                     id: group.id,
                     name: group.name,
@@ -438,13 +451,13 @@ angular
                 groups = [];
               }
             })
-            .error(function (data) {
+            .error(function(data) {
               return data.errors;
             });
 
           return deferred.promise;
         },
-        fetchAllowedGroups: function (groupId) {
+        fetchAllowedGroups: function(groupId) {
           var deferred = $q.defer();
 
           var allowed_groups = [];
@@ -458,10 +471,10 @@ angular
                 },
               },
             })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success === true) {
                 if (data.data) {
-                  angular.forEach(data.data, function (group) {
+                  angular.forEach(data.data, function(group) {
                     var groupObj = {
                       id: group.id,
                       name: group.name,
@@ -477,11 +490,11 @@ angular
                 allowed_groups = [];
               }
             })
-            .error(function () {});
+            .error(function() {});
 
           return deferred.promise;
         },
-        fetchPermissions: function () {
+        fetchPermissions: function() {
           if (this.permissions) {
             return this.permissions;
           }
@@ -494,10 +507,10 @@ angular
                 route_name: 'permission_get_multiple',
               },
             })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success === true) {
                 if (data.data.items.length > 0) {
-                  angular.forEach(data.data.items, function (perm) {
+                  angular.forEach(data.data.items, function(perm) {
                     perms.push(perm);
                   });
                 }
@@ -505,11 +518,11 @@ angular
                 perms = {};
               }
             })
-            .error(function () {});
+            .error(function() {});
           this.permissions = perms;
           return perms;
         },
-        fetchUsers: function () {
+        fetchUsers: function() {
           if (this.users) {
             return this.users;
           }
@@ -522,10 +535,10 @@ angular
                 route_name: 'admin_get_multiple',
               },
             })
-            .success(function (data) {
+            .success(function(data) {
               if (data.success === true) {
                 if (data.data.items.length > 0) {
-                  angular.forEach(data.data.items, function (user) {
+                  angular.forEach(data.data.items, function(user) {
                     users.push(user);
                   });
                 }
@@ -535,7 +548,7 @@ angular
                 users = [];
               }
             })
-            .error(function (data) {
+            .error(function(data) {
               return data.errors;
             });
 
@@ -546,9 +559,9 @@ angular
     },
   ])
   .factory('theme', [
-    function () {
+    function() {
       return {
-        apply: function (themeVars) {
+        apply: function(themeVars) {
           var style = document.createElement('style');
           style.type = 'text/css';
 
@@ -570,10 +583,10 @@ angular
     '$rootScope',
     '$state',
     'admin',
-    function ($rootScope, $state, admin) {
+    function($rootScope, $state, admin) {
       return {
-        authorize: function () {
-          var promise = admin.identity().then(function () {
+        authorize: function() {
+          var promise = admin.identity().then(function() {
             // Direct access to /admin (w/o hash) should always trigger auth
             // if the admin is not logged in
             if (!$rootScope.toState) {
@@ -596,7 +609,7 @@ angular
 
               // user is signed in but not authorized for desired state
               if ($rootScope.toState.data.superadmin) {
-                admin.identity().then(function (data) {
+                admin.identity().then(function(data) {
                   if (data.superadmin != 1) $state.go('app.dashboard');
                 });
               }
@@ -614,8 +627,8 @@ angular
     },
   ])
   .factory('statusClass', [
-    function () {
-      return function (status) {
+    function() {
+      return function(status) {
         var mapper = {
           // Common
           created: 'bg-light',
@@ -661,8 +674,8 @@ angular
   ])
   // Only returns true if we have a valid status value
   .factory('isStatusKey', [
-    function () {
-      return function (key, value) {
+    function() {
+      return function(key, value) {
         if (!value) {
           return false;
         }
@@ -675,8 +688,8 @@ angular
   // Force will pick up from the row.entity field
   // rather than the key
   .factory('getState', [
-    function () {
-      return function (type, force, entityType) {
+    function() {
+      return function(type, force, entityType) {
         var state = '.';
         switch (type) {
           case 'merchant_id':
@@ -690,7 +703,8 @@ angular
             break;
 
           case 'pricing_rule_id':
-            state = 'app.entitiesdetail({id:value, mode:mode, type: "pricing"})';
+            state =
+              'app.entitiesdetail({id:value, mode:mode, type: "pricing"})';
             break;
 
           case 'payment_id':
@@ -704,13 +718,16 @@ angular
 
           default:
             if (force === true) {
-              state = 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
+              state =
+                'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
             }
 
             if (type.substr(-3) === '_id') {
               var key = type.slice(0, -3);
               state =
-                'app.entitiesdetail({id:value, mode:mode, type: "' + (entityType || key) + '"})';
+                'app.entitiesdetail({id:value, mode:mode, type: "' +
+                (entityType || key) +
+                '"})';
             }
         }
         return state;
@@ -718,7 +735,7 @@ angular
     },
   ])
   .factory('riskMap', [
-    function () {
+    function() {
       return {
         1: ['Very Low', 'bg-success'],
         2: ['Low', 'bg-success'],
@@ -728,7 +745,7 @@ angular
       };
     },
   ])
-  .factory('jqTourbusService', function () {
+  .factory('jqTourbusService', function() {
     return {
       start: $.noop,
       next: $.noop,
@@ -736,8 +753,8 @@ angular
       stop: $.noop,
     };
   })
-  .factory('getStateMerchant', function () {
-    return function (key, value) {
+  .factory('getStateMerchant', function() {
+    return function(key, value) {
       switch (key) {
         case 'payment_id':
           return 'app.payments.detail({id: value})';
@@ -756,13 +773,13 @@ angular
       }
     };
   })
-  .factory('permissionsFactory', function () {
+  .factory('permissionsFactory', function() {
     var _permissions = {};
     return {
-      getPermissions: function () {
+      getPermissions: function() {
         return _permissions;
       },
-      setPermissions: function (permissions) {
+      setPermissions: function(permissions) {
         _permissions = permissions;
       },
     };
@@ -770,8 +787,8 @@ angular
   .factory('displayClass', [
     'isStatusKey',
     'statusClass',
-    function (isStatusKey, statusClass) {
-      return function (key, value) {
+    function(isStatusKey, statusClass) {
+      return function(key, value) {
         if (isStatusKey(key, value)) {
           return 'label ' + statusClass(value);
         }
@@ -787,23 +804,27 @@ angular
     },
   ])
   .factory('getEntity', [
-    function () {
-      return function (key) {
+    function() {
+      return function(key) {
         return key.substr(0, key.length - 3);
       };
     },
   ])
   .factory('getType', [
     'getEntity',
-    function (getEntity) {
-      return function (key, value) {
+    function(getEntity) {
+      return function(key, value) {
         var entity = key.substr(0, key.length - 3);
-        var isTimestamp = function (key) {
-          return key.substr(-3) === '_at' || key.substr(-3) === '_on' || key === 'next_run';
+        var isTimestamp = function(key) {
+          return (
+            key.substr(-3) === '_at' ||
+            key.substr(-3) === '_on' ||
+            key === 'next_run'
+          );
         };
         // These have their own views
         var specialEntities = ['merchant_id', 'payment_id'];
-        var isId = function (key) {
+        var isId = function(key) {
           var validEntities = [
             'adjustment',
             'amex',
@@ -855,7 +876,10 @@ angular
           // Base Amounts are always in INR
           // includes base_amount and base_amount_refunded
           return 'amount_inr';
-        } else if (key.substr(-6) === 'amount' || key.substr(0, 7) === 'amount_') {
+        } else if (
+          key.substr(-6) === 'amount' ||
+          key.substr(0, 7) === 'amount_'
+        ) {
           return 'amount';
         } else if (isId(key)) {
           // All other entity links are considered here
@@ -874,8 +898,8 @@ angular
   .factory('displayValue', [
     'getType',
     '$filter',
-    function (getType, $filter) {
-      return function (key, value, entity) {
+    function(getType, $filter) {
+      return function(key, value, entity) {
         if (typeof entity === 'undefined') {
           entity = {};
         }
@@ -884,7 +908,9 @@ angular
         moment().utcOffset(5.5);
         switch (type) {
           case 'timestamp':
-            return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+            return (
+              moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST'
+            );
           case 'amount_inr':
             return $filter('rupee')(value / 100);
           case 'amount':
@@ -908,9 +934,9 @@ angular
   ])
   .factory('utils', [
     '$state',
-    function ($state) {
+    function($state) {
       return {
-        humanize: function (str) {
+        humanize: function(str) {
           var frags = str.split('_');
 
           for (var i = 0; i < frags.length; i++) {
@@ -919,14 +945,15 @@ angular
 
           return frags.join(' ');
         },
-        mergeUnique: function (arr, isCaseSensitive) {
+        mergeUnique: function(arr, isCaseSensitive) {
           isCaseSensitive = isCaseSensitive || false;
           var auxArr = arr.concat();
 
           for (var i = 0; i < auxArr.length; i++) {
             for (var j = i + 1; j < auxArr.length; j++) {
               if (
-                (isCaseSensitive && auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
+                (isCaseSensitive &&
+                  auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
                 auxArr[i] === auxArr[j]
               ) {
                 auxArr.splice(j--, 1);
@@ -936,7 +963,7 @@ angular
 
           return auxArr;
         },
-        isArray: function (val) {
+        isArray: function(val) {
           if (!val) {
             return false;
           }
@@ -944,7 +971,7 @@ angular
           return val instanceof Array;
         },
 
-        isIndexedArray: function (val) {
+        isIndexedArray: function(val) {
           if (this.isArray(val) === false) {
             return false;
           }
@@ -953,7 +980,7 @@ angular
         },
 
         // rightmost obj gets preference for same keys
-        concatObj: function () {
+        concatObj: function() {
           var result = {};
           var len = arguments.length;
           for (var i = 0; i < len; i++) {
@@ -966,7 +993,7 @@ angular
 
           return result;
         },
-        isWorkflow: function (data) {
+        isWorkflow: function(data) {
           if (
             typeof data.id !== 'undefined' &&
             data.id.indexOf('w_action') === 0 &&
@@ -978,7 +1005,7 @@ angular
           return false;
         },
 
-        resolveEntityLinkAndGo: function (entityId, entityName) {
+        resolveEntityLinkAndGo: function(entityId, entityName) {
           var entityMap = {
             merchant: {
               route: 'app.merchants.detail',
@@ -1028,7 +1055,7 @@ angular
         },
 
         // Check if url has http/https, otherwise prefix http
-        autoPrefixUrls: function (url) {
+        autoPrefixUrls: function(url) {
           var regex = /^https?:\/\//i;
           var tempUrl;
 
@@ -1049,7 +1076,7 @@ angular
   ])
   .factory('utilMapping', [
     '$state',
-    function ($state) {
+    function($state) {
       // mapping used in multiple files
       var map = {
         networkMap: {
@@ -1138,14 +1165,14 @@ angular
       };
 
       return {
-        getMap: function (key) {
+        getMap: function(key) {
           return map[key];
         },
       };
     },
   ])
   .factory('tracking', [
-    function () {
+    function() {
       var utm = null;
       var gclid = null;
       var browser_details = {};
@@ -1164,9 +1191,9 @@ angular
         url: document.location.href,
         session_id: window.session_id,
       };
-      angular.extend(commonProperties, browser_details);
+      $.extend(commonProperties, browser_details);
       function pushEvents(data) {
-        var properties = angular.extend({}, commonProperties, data.properties || {});
+        var properties = $.extend({}, commonProperties, data.properties || {});
         switch (data.event_type) {
           case 'initiated':
             window.rzpQ.onbr().initiated('login.' + data.event_name);

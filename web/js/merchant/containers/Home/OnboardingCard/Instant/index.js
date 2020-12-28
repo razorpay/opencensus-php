@@ -52,7 +52,7 @@ export default class OnboardingCardInstant extends Component {
       contentWidth: null,
       activeStep: 0,
       isWebsiteInWorkflow: false,
-      caStatus: null,
+      caStatus: null
     };
 
     this.showAcceptPaymentsModal = this.showAcceptPaymentsModal.bind(this);
@@ -61,9 +61,9 @@ export default class OnboardingCardInstant extends Component {
 
   updateCAstatus = (status) => {
     this.setState({
-      caStatus: status,
-    });
-  };
+      caStatus: status
+    })
+  }
 
   setActiveStep(activeStep = 0) {
     return activeStep !== this.state.activeStep && this.setState({ activeStep });
@@ -167,53 +167,53 @@ export default class OnboardingCardInstant extends Component {
     const showCaFlow = isActivated && hasNeoCouponCode(campaigns);
     return (
       <div className="onboarding-card-instant">
-        {showCaFlow ? (
-          <div className="rx-ca-home-container">
-            <div className="ca-container">
-              <CaInfoContainer updateCAstatus={this.updateCAstatus} />
-            </div>
-            <div className="faq-container">
-              <FAQ caStatus={this.state.caStatus} />
-            </div>
-          </div>
-        ) : (
-          <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
-            <div className={`onboarding-steps active-step-${activeStep}`}>
-              <TestModeCard
-                {...commonModeCardProps}
-                onActive={() => this.setActiveStep(0)}
-                track={trackTestModeCard}
-              />
-              <ActivationStatusCard
-                {...activationCardProps}
-                onActive={() => this.setActiveStep(1)}
-                track={trackActivationCard}
-              />
-              <LiveModeCard
-                instantActivation={instantActivation}
-                isRejected={user.isRejected}
-                isActivated={user.isActivated}
-                isSubmitted={user.isSubmitted}
-                showTransactionsModal={this.showAcceptPaymentsModal}
-                onActive={() => this.setActiveStep(2)}
-                {...commonModeCardProps}
-                track={trackLiveModeCard}
-              />
-            </div>
-            <div className="onboarding-illustration-top">
-              <img src="/dist/css/assets/onboarding/top_bg.png" />
-            </div>
-            <div className="onboarding-illustration" />
-            <div className="onboarding-illustration-bottom">
-              <img src="/dist/css/assets/onboarding/bottom_bg.png" />
-            </div>
-            {isAccepted && integration.paymentsMade && (
-              <div className="btn-close cursor-pointer" onClick={this.onClose}>
-                &times;
+        {
+          showCaFlow
+            ?
+            <div className='rx-ca-home-container'>
+              <div className='ca-container'>
+                <CaInfoContainer updateCAstatus={this.updateCAstatus} />
               </div>
-            )}
-          </div>
-        )}
+              <div className='faq-container'><FAQ caStatus={this.state.caStatus} /></div>
+            </div>
+            :
+            <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
+              <div className={`onboarding-steps active-step-${activeStep}`}>
+                <TestModeCard
+                  {...commonModeCardProps}
+                  onActive={() => this.setActiveStep(0)}
+                  track={trackTestModeCard}
+                />
+                <ActivationStatusCard
+                  {...activationCardProps}
+                  onActive={() => this.setActiveStep(1)}
+                  track={trackActivationCard}
+                />
+                <LiveModeCard
+                  instantActivation={instantActivation}
+                  isRejected={user.isRejected}
+                  isActivated={user.isActivated}
+                  isSubmitted={user.isSubmitted}
+                  showTransactionsModal={this.showAcceptPaymentsModal}
+                  onActive={() => this.setActiveStep(2)}
+                  {...commonModeCardProps}
+                  track={trackLiveModeCard}
+                />
+              </div>
+              <div className="onboarding-illustration-top">
+                <img src="/dist/css/assets/onboarding/top_bg.png" />
+              </div>
+              <div className="onboarding-illustration" />
+              <div className="onboarding-illustration-bottom">
+                <img src="/dist/css/assets/onboarding/bottom_bg.png" />
+              </div>
+              {isAccepted && integration.paymentsMade && (
+                <div className="btn-close cursor-pointer" onClick={this.onClose}>
+                  &times;
+                </div>
+              )}
+            </div>
+        }
         <div className="onboarding-step-switcher">
           {[0, 1, 2].map((stepNum) => (
             <div

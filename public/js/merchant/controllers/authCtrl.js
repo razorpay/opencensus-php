@@ -396,7 +396,7 @@ app
         let button = document.getElementById('gauth');
 
         if (triggerButton) {
-          updateSpinnerState('show');
+          showSpinner();
           if (!isInitiatedEventFired) {
             fireDLInitiatedEvents('login.google_oauth');
             fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
@@ -419,11 +419,11 @@ app
                     attachSignin(button);
                     if (triggerButton) {
                       button.click();
-                      updateSpinnerState('show');
+                      showSpinner();
                     }
                   },
                   function (error) {
-                    updateSpinnerState('hide');
+                    hideSpinner();
                     if (error.details.includes('Cookies are not enabled in current environment')) {
                       if (triggerButton) {
                         $scope.showCookieErrorPopup = true;
@@ -457,7 +457,7 @@ app
               pushPromMetric({ flow: 'login', label: 'login_initiate' });
             }
             button.click();
-            updateSpinnerState('show');
+            showSpinner();
           }
         }
       };
@@ -496,12 +496,12 @@ app
                       userIdentitySuccess(userDetails);
                     })
                     .catch(function (errors) {
-                      updateSpinnerState('hide');
+                      hideSpinner();
                       fireGauthLoginEvt(email, errors[0]);
                       $scope.alerts.addAlert('danger', errors[0]);
                     });
                 } else {
-                  updateSpinnerState('hide');
+                  hideSpinner();
 
                   if (data.errors && data.errors.length) {
                     var firstError = data.errors[0];
@@ -528,13 +528,13 @@ app
                 }
               })
               .error(function (errors) {
-                updateSpinnerState('hide');
+                hideSpinner();
                 fireGauthLoginEvt(email, errors[0]);
                 $scope.alerts.addAlert('danger', errors[0]);
               });
           },
           function (errors) {
-            updateSpinnerState('hide');
+            hideSpinner();
             fireDLFailureEvents('login.google_oauth', { emailId: email, error: errors.error });
           },
         );
@@ -581,7 +581,7 @@ app
       };
 
       $scope.onCreateAccountWithGoogle = function (email) {
-        updateSpinnerState('show');
+        showSpinner();
         fireDLInitiatedEvents('login.create_account', { emailId: email });
         $scope.showGAuthPopup = false;
 
@@ -611,11 +611,11 @@ app
                 userIdentitySuccess(userDetails);
               })
               .catch(function (errors) {
-                updateSpinnerState('hide');
+                hideSpinner();
                 $scope.alerts.addAlert('danger', errors[0]);
               });
           } else {
-            updateSpinnerState('hide');
+            hideSpinner();
             $scope.showGAuthPopup = false;
             if (data.errors && data.errors.length) {
               $scope.alerts.addAlert('danger', data.errors[0]);
@@ -663,7 +663,7 @@ app
             }
           }
 
-          updateSpinnerState('hide');
+          hideSpinner();
 
           if (!signinSuccessCb) {
             $scope.goToDashboard(userDetails);
@@ -888,7 +888,7 @@ app
 
         $scope.alerts.resetAlerts();
         var request = $http(payload);
-        updateSpinnerState('show');
+        showSpinner();
         request.success(function (data) {
           if (data.success) {
             $localStorage.new_user_signup = true;
@@ -940,7 +940,7 @@ app
                     }),
                   );
 
-                updateSpinnerState('hide');
+                hideSpinner();
                 $state.transitionTo(
                   'access.pre_signup',
                   {},
@@ -953,7 +953,7 @@ app
               }
             });
           } else {
-            updateSpinnerState('hide');
+            hideSpinner();
             var signupError = 'Something went wrong. Please try again.';
             if (data.errors && data.errors.length) {
               signupError = data.errors[0].includes('Internal Server Error')
@@ -1011,15 +1011,13 @@ app
         });
       };
 
-      function updateSpinnerState(state) {
-        const loaders = document.querySelectorAll('.loading-animation');
-        for (let i = 0; i < loaders.length; i++) {
-          state === 'show'
-            ? loaders[i].classList.add('active')
-            : loaders[i].classList.remove('active');
-        }
+      function showSpinner() {
+        $('.loading-animation').addClass('active');
       }
 
+      function hideSpinner() {
+        $('.loading-animation').removeClass('active');
+      }
       $scope.goToDashboard = function (data) {
         setCookie('midExists', !!data.current);
 
@@ -1141,10 +1139,10 @@ app
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
-        updateSpinnerState('show');
+        showSpinner();
 
         request.success(function (data) {
-          updateSpinnerState('hide');
+          hideSpinner();
           if (data.success) {
             if ($scope.signup.isWhatsAppOptIn) {
               whatsAppOptIn();
@@ -1192,7 +1190,8 @@ app
               $scope.alerts.addAlert('danger', value);
 
               setTimeout(function () {
-                let alertEle = document.querySelector('.pre_signup_alert');
+                var alertEle = $('.pre_signup_alert');
+
                 window.ga &&
                   ga(
                     'send',
@@ -1201,7 +1200,14 @@ app
                     'Click - Finish',
                     JSON.stringify(data.errors),
                   );
-                alertEle && alertEle.scrollIntoView();
+
+                alertEle[0] &&
+                  $('.auth-substep.name-substep').animate(
+                    {
+                      scrollTop: alertEle.offset().top,
+                    },
+                    500,
+                  );
               }, 100);
             });
           }
@@ -1243,9 +1249,8 @@ app
           }
 
           updateHubSpotContactProperty();
-          let businessTypeEle = document.querySelector('.business-type-substep');
-          businessTypeEle && businessTypeEle.scrollIntoView();
 
+          $('.business-type-substep').scrollTop(0);
           $timeout(function () {
             $scope.signup.showMore = false;
           }, 200);
@@ -1810,7 +1815,7 @@ app
         if (window.parent.isTestEnv || window.isTestEnv || (!isProd && !isAxisBankUATEnv)) {
           login('Faked');
         } else if (isProd || isAxisBankUATEnv) {
-          updateSpinnerState('show');
+          showSpinner();
           if (window.grecaptcha && window.grecaptcha.execute) {
             grecaptcha.reset();
             grecaptcha.execute();
@@ -1821,7 +1826,7 @@ app
              * So this is a work around :)
              */
             setTimeout(function () {
-              updateSpinnerState('hide');
+              hideSpinner();
             }, 5000);
           } else {
             /**
@@ -1839,7 +1844,7 @@ app
               } else {
                 login('Faked');
               }
-              updateSpinnerState('hide');
+              hideSpinner();
             }, 5000);
           }
         }
@@ -1863,7 +1868,7 @@ app
         };
 
         var request = $http(payload);
-        updateSpinnerState('show');
+        showSpinner();
         $scope.alerts.resetAlerts();
         request.success(function (data) {
           if (data.success) {
@@ -1891,7 +1896,7 @@ app
                 }),
               );
             }
-            updateSpinnerState('hide');
+            hideSpinner();
             window.grecaptcha && grecaptcha.reset();
             var firstError = data.errors[0];
 
@@ -2016,7 +2021,7 @@ app
               }
             } else {
               $scope.isLoggedIn = true;
-              updateSpinnerState('hide');
+              hideSpinner();
               if (userDetails) {
                 $scope.login.data.email = userDetails.email;
                 $scope.signup.settings.partner_intent = userDetails.partner_intent;
@@ -2041,7 +2046,7 @@ app
             }
           })
           .catch(function (errors) {
-            updateSpinnerState('hide');
+            hideSpinner();
 
             fireDLFailureEvents('login.login', {
               emailId: $scope.login.data.email,
@@ -2080,10 +2085,10 @@ app
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
-        updateSpinnerState('show');
+        showSpinner();
 
         request.success(function (data) {
-          updateSpinnerState('hide');
+          hideSpinner();
 
           if (data.success) {
             $scope.goToLoginStep(4);
@@ -2114,7 +2119,7 @@ app
         };
 
         var request = $http(payload);
-        updateSpinnerState('show');
+        showSpinner();
         $scope.alerts.resetAlerts();
 
         request.success(function (data) {
@@ -2130,7 +2135,7 @@ app
             );
             pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
           } else {
-            updateSpinnerState('hide');
+            hideSpinner();
             $scope.alerts.addAlert('danger', data.errors[0]);
             window.rzpQ.push(
               window.rzpQ.now().onbr().failed('login.2fa_otp', {
@@ -2159,7 +2164,7 @@ app
         pushPromMetric({ flow: 'login', label: 'login_initiate_2fa' });
 
         const request = $http(payload);
-        updateSpinnerState('show');
+        showSpinner();
         $scope.alerts.resetAlerts();
         request.success(function (data) {
           if (data.success) {
@@ -2183,7 +2188,7 @@ app
                 error: data.errors[0],
               }),
             );
-            updateSpinnerState('hide');
+            hideSpinner();
             const firstError = data.errors[0];
             if (typeof firstError === 'object' && !!firstError.internal_error_code) {
               $scope.handleErrorsWithInternalCode(firstError);
@@ -2288,7 +2293,7 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
-        updateSpinnerState('show');
+        showSpinner();
         var data = {
           email: $scope.login.data.email,
         };
@@ -2298,7 +2303,7 @@ app
           data: data,
         });
         request.success(function (data) {
-          updateSpinnerState('hide');
+          hideSpinner();
           if (data.success) {
             var message =
               'We have sent a reset password link to your email. Didn’t receive the email? Check email address again or look in your spam folder.';
@@ -2797,27 +2802,6 @@ app
             e.preventDefault();
           }
         });
-      };
-    },
-  ])
-  .directive('alert', [
-    '$window',
-    '$timeout',
-    function ($timeout) {
-      return {
-        transclude: true,
-        restrict: 'E',
-        template: `
-            <div class="alert alert-{{type}} alert-dismissable" role="alert">
-              <button type="button" class="close" ng-click="close()">
-                <span aria-hidden="true">×</span>
-              </button>
-            <div ng-transclude></div></div>
-          `,
-        scope: {
-          type: '@',
-          close: '&',
-        },
       };
     },
   ]);
