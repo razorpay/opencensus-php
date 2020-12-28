@@ -53,7 +53,7 @@
             </div>
 
             <div class=" separator-container" ng-if="!isOrgAXIS">
-                <div class="separator" />
+                <div class="separator"></div>
                 <span class="text">or</span>
             </div>
 
@@ -79,8 +79,7 @@
                   {{inlinePasswordError}}
                 </div>
 
-                <div id='login-recaptcha' ng-init="loadCaptcha()" data-size="invisible" />
-
+                <div id='login-recaptcha' ng-init="loadCaptcha()" data-size="invisible"></div>
                 <button override-tab class="full-width btn-primary" type="submit" ng-click="onLogin()">
                   {{lockme ? "Unlock" : "Log in"}}
                 </button>

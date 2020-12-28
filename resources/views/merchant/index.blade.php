@@ -1,6 +1,8 @@
 <?php
     $isOrgHDFC = (json_decode($org, true)['custom_code']) === "hdfc";
 ?>
+
+
 @include('partials/header')
 
 @if ($isConfirmed and $isPreSignupComplete)
@@ -19,6 +21,30 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   @include('partials/common')
 @endif
+
+<script>
+var _dcq = _dcq || [];
+var _dcs = _dcs || {};
+_dcs.account = '9421167';
+
+(function() {
+  var dc = document.createElement('script');
+  dc.type = 'text/javascript'; dc.async = true;
+  dc.src = '//tag.getdrip.com/9421167.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(dc, s);
+})();
+
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-928471290');
+</script>
+<script async defer src="https://apis.google.com/js/api:client.js"></script>
 
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
