@@ -1,23 +1,46 @@
 import { trackMarketingExperimentBanner } from '../ga';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { setItem } from 'common/utils/localStorage';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const RewardsAnnouncment = ({ userId }) => {
   const [hidden, setHidden] = useState(false);
   const bannerID = `rewards-banner-${userId}`;
 
-  const closeAnnoucement = () => {
+  const closeAnnoucement = useCallback(() => {
     setItem(bannerID, 1);
     setHidden(true);
-  };
+  }, [bannerID]);
+
+  const interestClicked = useCallback(() => {
+    analyticsService.track({
+      objectName: 'Rewards Interest Banner',
+      actionName: 'clicked',
+      screen: 'Checkout Rewards',
+      properties: {
+        location: 'rewards',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    closeAnnoucement();
+  }, [closeAnnoucement]);
+
+  useEffect(() => {
+    analyticsService.track({
+      objectName: 'Rewards Interest Banner',
+      actionName: 'appear',
+      screen: 'Checkout Rewards',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, [userId]);
 
   if (hidden) {
     return null;
   }
-
-  trackMarketingExperimentBanner('Checkout Rewards', 'Appear');
 
   return (
     <AnnouncementBanner
@@ -30,13 +53,7 @@ const RewardsAnnouncment = ({ userId }) => {
         Checkout Rewards lets you run promotional offers across thousands of merchants. If you are
         interested to create rewards, let us know here.
       </span>{' '}
-      <button
-        class="btn btn-outline interested-btn"
-        onClick={() => {
-          trackMarketingExperimentBanner('Rewards', 'Clicked Interested', userId);
-          closeAnnoucement();
-        }}
-      >
+      <button class="btn btn-outline interested-btn" onClick={interestClicked}>
         INTERESTED
       </button>
     </AnnouncementBanner>

@@ -1,18 +1,42 @@
 import { trackMarketingExperimentBanner } from '../ga';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getItem, setItem } from 'common/utils/localStorage';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const RewardsOnBoardingAnnouncment = ({ userId }) => {
   const [isInstrested, setIsInstrested] = useState(false);
   const bannerID = `rewards-onboarding-banner-${userId}`;
 
-  const closeAnnoucement = () => {
+  const closeAnnoucement = useCallback(() => {
     setItem(bannerID, 1);
     setIsInstrested(true);
-  };
+  }, [bannerID]);
 
-  trackMarketingExperimentBanner('Checkout Rewards OnBoarding', 'Appear');
+  const interestClicked = useCallback(() => {
+    analyticsService.track({
+      objectName: 'Onboarding Interest Banner',
+      actionName: 'clicked',
+      screen: 'Checkout Rewards',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    closeAnnoucement();
+  }, [closeAnnoucement]);
+
+  useEffect(() => {
+    analyticsService.track({
+      objectName: 'Onboarding Interest Banner',
+      actionName: 'appear',
+      screen: 'Checkout Rewards',
+      properties: {
+        location: 'onboarding',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, [userId]);
 
   if (!isInstrested && getItem(bannerID)) setIsInstrested(!!getItem(bannerID));
 
@@ -32,13 +56,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
           Know More
         </a>
         {!isInstrested && (
-          <button
-            class="btn btn-outline interested-btn"
-            onClick={() => {
-              trackMarketingExperimentBanner('RewardsOnBoarding', 'Clicked Interested', userId);
-              closeAnnoucement();
-            }}
-          >
+          <button class="btn btn-outline interested-btn" onClick={interestClicked}>
             INTERESTED
           </button>
         )}
