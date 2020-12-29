@@ -18,10 +18,6 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE     = 'source_type';
     const PRIORITY        = 'priority';
 
-    const PAYOUT_LINK     = 'payout_links';
-    const VENDOR_PAYMENTS = 'vendor_payments';
-    const TAX_PAYMENTS    = 'tax_payments';
-
     // Relations
     const PAYOUT = 'payout';
 
@@ -30,12 +26,6 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::ID;
 
     protected $entity = 'payout_source';
-
-    protected static $validSourceTypes = [
-        self::PAYOUT_LINK,
-        self::VENDOR_PAYMENTS,
-        self::TAX_PAYMENTS,
-    ];
 
     protected $fillable   = [
         self::PAYOUT_ID,

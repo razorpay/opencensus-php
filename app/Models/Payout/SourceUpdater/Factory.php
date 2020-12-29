@@ -3,7 +3,7 @@
 namespace RZP\Models\Payout\SourceUpdater;
 
 use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
+use RZP\Models\PayoutSource\Validator as PayoutSourceValidator;
 
 class Factory
 {
@@ -21,15 +21,15 @@ class Factory
         {
             switch ($source->getSourceType())
             {
-                case PayoutSourceEntity::VENDOR_PAYMENTS:
+                case PayoutSourceValidator::VENDOR_PAYMENTS:
 
-                case PayoutSourceEntity::TAX_PAYMENTS:
+                case PayoutSourceValidator::TAX_PAYMENTS:
 
                     array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
 
                     break;
 
-                case PayoutSourceEntity::PAYOUT_LINK:
+                case PayoutSourceValidator::PAYOUT_LINKS:
 
                     array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)));
 

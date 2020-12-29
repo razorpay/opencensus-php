@@ -451,7 +451,6 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS                               = 'BAD_REQUEST_WORKFLOW_SERVICE_ILLEGAL_ACCESS';
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                          = 'BAD_REQUEST_PAYOUT_MODE_REQUIRED';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                           = 'BAD_REQUEST_PAYOUT_INVALID_MODE';
-    const BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                                    = 'BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                     = 'BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED';
     const BAD_REQUEST_DECRYPTION_FAILED                                             = 'BAD_REQUEST_DECRYPTION_FAILED';
     const BAD_REQUEST_SIGNING_KEY_EXPIRED                                           = 'BAD_REQUEST_SIGNING_KEY_EXPIRED';

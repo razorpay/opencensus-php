@@ -60,7 +60,6 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends OAuthTestCase
 {
-
     use PayoutTrait;
     use WebhookTrait;
     use PaymentTrait;
@@ -8243,10 +8242,10 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithIncorrectOriginFieldProxyAuth()
     {
-        $testData                                 = $this->testData['testCreatePayoutWithOriginFieldPrivateAuth'];
-        $testData['request']['url']               = '/payouts_with_otp';
-        $testData['request']['content']['token']  = 'BUIj3m2Nx2VvVj';
-        $testData['request']['content']['otp']    = '0007';
+        $testData                                = $this->testData['testCreatePayoutWithOriginFieldPrivateAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
 
         $testData['response']['content']['error']['description'] = 'The selected origin is invalid.';
 
@@ -8271,35 +8270,9 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testCreateVendorPaymentPayoutWithOrigin()
-    {
-        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutLinkPayoutWithOrigin()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->startTest();
-    }
-
     public function testCreateVendorPaymentPayoutWithoutOrigin()
     {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
-
-        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
-
-        unset($testData['request']['content']['origin']);
-
-        $testData['response']['content']['origin'] = Payout\Entity::API;
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
@@ -8308,13 +8281,77 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
 
-        $testData = $this->testData['testCreateVendorPaymentPayoutWithOrigin'];
+        $this->testData[__FUNCTION__] = $this->testData['testCreateVendorPaymentPayoutWithoutOrigin'];
 
-        unset($testData['request']['content']['origin']);
+        $this->startTest();
+    }
 
-        $testData['response']['content']['origin'] = Payout\Entity::API;
+    public function testCreateVendorPaymentPayoutWithOriginAndSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithoutSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithOriginAndSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithExtraFieldsInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithIncorrectPriorityInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithIncorrectPrioritySequenceInSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutOnPrivateAuthWithSourceDetails()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutOnProxyAuthWithSourceDetails()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testCreatePayoutOnPrivateAuthWithSourceDetails'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutLinkPayoutWithSourceDetailsAsNotAnArray()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
 
         $this->startTest();
     }
@@ -8612,63 +8649,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['queued_at']);
     }
 
-    public function testCreatePayoutLinkPayoutWithoutSourceDetails()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $this->startTest();
-    }
-
     public function testCreatePayoutLinkPayoutWithSourceDetails()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutLinkPayoutWithExtraFieldsInSourceDetails()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutLinkPayoutWithIncorrectPriorityInSourceDetails()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutLinkPayoutWithIncorrectPrioritySequenceInSourceDetails()
-    {
-        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutOnPrivateAuthWithSourceDetails()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutOnProxyAuthWithSourceDetails()
-    {
-        $this->ba->proxyAuth();
-
-        $testData = $this->testData['testCreatePayoutOnPrivateAuthWithSourceDetails'];
-        $testData['request']['url']              = '/payouts_with_otp';
-        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
-        $testData['request']['content']['otp']   = '0007';
-
-        $this->testData[__FUNCTION__] = $testData;
-
-        $this->startTest();
-    }
-
-    public function testCreatePayoutLinkPayoutWithSourceDetailsAsNotAnArray()
     {
         $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
 
@@ -10138,5 +10119,19 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('9988776655', $contact['contact']);
         $this->assertEquals('testemail@example.com', $contact['email']);
         $this->assertEquals('batch_abc124', $contact['idempotency_key']);
+    }
+
+    public function testCreateVendorPaymentPayoutWithInvalidSourceType()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreateVendorPaymentPayoutWithInvalidSourceTypeForHighestPriority()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
     }
 }

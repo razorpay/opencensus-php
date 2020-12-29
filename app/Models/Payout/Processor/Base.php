@@ -3,7 +3,6 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
-use Razorpay\Trace\Logger as Trace;
 
 use App;
 use RZP\Models\Vpa;
@@ -809,7 +808,7 @@ class Base extends BaseCore
 
                 $this->trace->traceException(
                     $e,
-                    Trace::ERROR,
+                    Logger::ERROR,
                     TraceCode::PAYOUT_WORKFLOW_SERVICE_WORKFLOW_CREATE_FAILED,
                     [
                         'id'    => optional($payout)->getId(),

@@ -9466,7 +9466,7 @@ return [
         ],
     ],
 
-    'testCreateVendorPaymentPayoutWithOrigin' => [
+    'testCreateVendorPaymentPayoutWithOriginAndSourceDetails' => [
         'request'  => [
             'method'  => 'POST',
             'server' => [
@@ -9486,6 +9486,18 @@ return [
                     'abc' => 'xyz',
                 ],
                 'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 2,
+                    ],
+                ],
             ],
         ],
         'response' => [
@@ -9504,6 +9516,18 @@ return [
                     'abc' => 'xyz',
                 ],
                 'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 2,
+                    ],
+                ],
             ],
         ],
     ],
@@ -9655,23 +9679,18 @@ return [
                 'origin'          => 'dashboard',
             ],
         ],
-        'response' => [
-            'content' => [
-                'entity'          => 'payout',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'narration'       => 'Batman',
-                'purpose'         => 'refund',
-                'status'          => 'processing',
-                'mode'            => 'IMPS',
-                'tax'             => 162,
-                'fees'            => 1062,
-                'notes'           => [
-                    'abc' => 'xyz',
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The source_details field is required.',
                 ],
-                'origin'          => 'dashboard',
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -9698,12 +9717,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_links',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payments',
+                        'source_type' => 'payout_links',
                         'priority'    => 2,
                     ],
                 ],
@@ -9728,12 +9747,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_links',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payments',
+                        'source_type' => 'payout_links',
                         'priority'    => 2,
                     ],
                 ],
@@ -9764,12 +9783,12 @@ return [
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_links',
+                        'source_type' => 'vendor_payments',
                         'priority'    => 1,
                     ],
                     [
                         'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payments',
+                        'source_type' => 'payout_links',
                         'priority'    => 2,
                         'abcd'        => 'efhg',
                     ],
@@ -9989,6 +10008,7 @@ return [
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
+                'origin'          => 'dashboard',
                 'source_details'  => [
                     [
                         'source_id'   => '100000000000sa',
@@ -11144,6 +11164,207 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testCreateVendorPaymentPayoutWithoutOrigin' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The origin field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePayoutLinkPayoutWithOriginAndSourceDetails' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 2,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateVendorPaymentPayoutWithInvalidSourceType' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'hello',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'source_details has source with invalid source_type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateVendorPaymentPayoutWithInvalidSourceTypeForHighestPriority' => [
+        'request'   => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 2,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The source with highest priority has source_type' .
+                                     ' which is not accepted for this app.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];
