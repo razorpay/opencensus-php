@@ -19,4 +19,18 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     {
         return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
     }
+
+    protected function getArn($row)
+    {
+        return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'            =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }
