@@ -264,7 +264,9 @@ export default class SubscriptionButtonsList extends ListContainer {
           }}
           {...this.props}
           EmptyComponent={EmptyComponent}
-          onErrorCloseClick={() => {track.lj.trackErrorCloseClick(this.state.status.message);}}
+          onErrorCloseClick={() => {
+            track.lj.trackErrorCloseClick(this.state.status.message);
+          }}
         />
       </div>
     );

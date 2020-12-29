@@ -3,7 +3,11 @@ import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
-import { isUnregisteredBusiness } from '../services/utils';
+import {
+  isUnregisteredBusiness,
+  isDocmentTabComplete,
+  getDefaultSelectedDocs,
+} from '../services/utils';
 
 export const fetchActivationData = async () => {
   const data = await fetch<any>({ url: 'merchant/activation' });
@@ -86,14 +90,30 @@ export default function useActivation() {
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
+  const hasGSTIN = useActivationFormState((state) => state.has_gstin);
 
   useEffect(() => {
     if (status === 'success') {
+      // get default selected state of documents
+      const addressDoc = getDefaultSelectedDocs(data, 'address');
+      const bankDoc = getDefaultSelectedDocs(data, 'bank');
+      const businessDoc = getDefaultSelectedDocs(data, 'business');
+      const additionalDoc = getDefaultSelectedDocs(data, 'additional');
+
       const isContactDetailsTabComplete = isTabComplete(data, 'contact_details');
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
       const isBusinessDetailsTabComplete = isTabComplete(data, 'business_details');
-      const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
-      const isDocumentsUploadTabComplete = isTabComplete(data, 'documents');
+      const isBankAndCompanyDetailsTabComplete = isTabComplete(
+        { ...data, hasGSTIN },
+        'bank_and_company_details',
+      );
+      const isDocumentsUploadTabComplete = isDocmentTabComplete({
+        ...data,
+        addressDoc,
+        bankDoc,
+        businessDoc,
+        additionalDoc,
+      });
       setContactDetailsCompleted(isContactDetailsTabComplete);
       setBusinessOverviewCompleted(isBusinessOverviewTabComplete);
       setBusinessDetailsCompleted(isBusinessDetailsTabComplete);

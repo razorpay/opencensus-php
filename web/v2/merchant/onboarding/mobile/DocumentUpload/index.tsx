@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade/src/atoms/View';
 import Flex from '@razorpay/blade/src/atoms/Flex';
@@ -11,7 +11,7 @@ import { Select, Option } from 'v2/components/Select';
 import { FileUpload } from 'v2/components/FileUpload';
 import Card from '../../../../components/Card';
 import { FormSection, Field } from '../Form';
-import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
+import { useActivationFormState, isVisible } from '../context/store';
 import {
   ADDRESS_PROOF_TYPES,
   BANK_PROOF_TYPE_DOC,
@@ -20,7 +20,12 @@ import {
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
 } from '../Constants/OnboardingConstants';
 import useActivation from '../hooks/useActivation';
-import { getAdditionalDocCount, getBizCatSubCatPair } from '../services/utils';
+import {
+  getAdditionalDocCount,
+  getBizCatSubCatPair,
+  isDocmentTabComplete,
+  getDefaultSelectedDocs,
+} from '../services/utils';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 
 const StyledSeparator = styled(View)`
@@ -34,22 +39,23 @@ const DocumentUpload: React.FC = () => {
   const documents = data.documents;
 
   const bizCatSubCatPair = getBizCatSubCatPair(data).join('-');
-  const defaultAdditionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]
-    ? Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair])[0]
-    : '';
 
-  const [addressDoc, setAddressDoc] = useState<string>('aadhar');
-  const [businessDoc, setBusinessDoc] = useState<string>('gst_certificate');
-  const [bankDoc, setBankDoc] = useState<string>('cancelled_cheque');
+  const defaultAddressDoc = getDefaultSelectedDocs(data, 'address');
+  const defaultBusinessDoc = getDefaultSelectedDocs(data, 'business');
+  const defaultBankDoc = getDefaultSelectedDocs(data, 'bank');
+  const defaultAdditionalDoc = getDefaultSelectedDocs(data, 'additional');
+
+  const [addressDoc, setAddressDoc] = useState<string>(defaultAddressDoc);
+  const [businessDoc, setBusinessDoc] = useState<string>(defaultBusinessDoc);
+  const [bankDoc, setBankDoc] = useState<string>(defaultBankDoc);
   const [additionalDoc, setAdditionalDoc] = useState<string>(defaultAdditionalDoc);
   const [progress, setProgress] = useState<number>(0);
-  const [error, setError] = useState<string>('');
 
   const setDocumentUploadCompleted = useActivationFormState(
     (state) => state.setDocumentUploadCompleted,
   );
 
-  const onChange = async (e: any, docType: string) => {
+  const onChange = async (e: any, docType: string, formikProps) => {
     const formData = new FormData();
     formData.append('file', e.target.files[0]);
     formData.append('document_type', docType);
@@ -60,15 +66,16 @@ const DocumentUpload: React.FC = () => {
 
     const response = await documentUpload({ formData, progressTracker: onUploadProgress });
 
-    if (!response) setError('something wrong');
+    if (!response) formikProps.setFieldError(docType, 'something went wrong');
 
-    const isComplete = isTabComplete(
-      {
-        ...data,
-        documents: { ...documents, ...response.documents },
-      },
-      'documents',
-    );
+    const isComplete = isDocmentTabComplete({
+      ...data,
+      documents: { ...documents, ...response.documents },
+      addressDoc,
+      businessDoc,
+      bankDoc,
+      additionalDoc,
+    });
     setDocumentUploadCompleted(isComplete);
   };
 
@@ -78,16 +85,40 @@ const DocumentUpload: React.FC = () => {
     if (file && file.length) {
       const curDoc = file[file.length - 1];
       const response = await documentDelete(curDoc);
-      const isComplete = isTabComplete(
-        {
-          ...data,
-          documents: { ...documents, ...response.documents },
-        },
-        'documents',
-      );
+
+      const isComplete = isDocmentTabComplete({
+        ...data,
+        documents: { ...documents, ...response.documents },
+        addressDoc,
+        businessDoc,
+        bankDoc,
+        additionalDoc,
+      });
       setDocumentUploadCompleted(isComplete);
     }
   };
+
+  const getFormikInitialValues = (document) => {
+    const lastDocumentId = document.value ? document.value[document.value.length - 1].id : '';
+    return lastDocumentId;
+  };
+
+  const getFieldError = (formikError, key: string) => {
+    const error = Object.keys(formikError).length ? formikError[key] : '';
+    return error;
+  };
+
+  // update document tab complete checkbox whenever state change
+  useEffect(() => {
+    const isComplete = isDocmentTabComplete({
+      ...data,
+      addressDoc,
+      businessDoc,
+      bankDoc,
+      additionalDoc,
+    });
+    setDocumentUploadCompleted(isComplete);
+  }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
 
   return (
     <>
@@ -107,35 +138,49 @@ const DocumentUpload: React.FC = () => {
       </Card>
       <Formik
         initialValues={{
-          aadhar_front: documents.aadhar_front.value,
-          aadhar_back: documents.aadhar_back.value,
-          passport_front: documents.passport_front.value,
-          passport_back: documents.passport_back.value,
-          voter_id_front: documents.voter_id_front.value,
-          voter_id_back: documents.voter_id_back.value,
-          gst_certificate: documents.gst_certificate.value,
-          msme_certificate: documents.msme_certificate.value,
-          shop_establishment_certificate: documents.shop_establishment_certificate.value,
-          cancelled_cheque: documents.cancelled_cheque.value,
-          bank_statement: documents.bank_statement.value,
-          business_proof_url: documents.business_proof_url.value,
-          business_pan_url: documents.business_pan_url.value,
-          personal_pan: documents.personal_pan.value,
-          form_12a_url: documents.form_12a_url.value,
-          form_80g_url: documents.form_80g_url.value,
-          amfi_certificate: documents.amfi_certificate.value,
-          sla_amfi_certificate: documents.sla_amfi_certificate.value,
-          nbfc_registration_certificate: documents.nbfc_registration_certificate.value,
-          sla_nbfc_registration_certificate: documents.sla_nbfc_registration_certificate.value,
-          irdai_registration_certificate: documents.irdai_registration_certificate.value,
-          sla_irdai_registration_certificate: documents.sla_irdai_registration_certificate.value,
-          ffmc_license: documents.ffmc_license.value,
-          sla_ffmc_license: documents.sla_ffmc_license.value,
-          sebi_registration_certificate: documents.sebi_registration_certificate.value,
-          sla_sebi_registration_certificate: documents.sla_sebi_registration_certificate.value,
-          iata_certificate: documents.iata_certificate.value,
-          sla_iata_certificate: documents.sla_iata_certificate.value,
-          affiliation_certificate: documents.affiliation_certificate.value,
+          aadhar_front: getFormikInitialValues(documents.aadhar_front),
+          aadhar_back: getFormikInitialValues(documents.aadhar_back),
+          passport_front: getFormikInitialValues(documents.passport_front),
+          passport_back: getFormikInitialValues(documents.passport_back),
+          voter_id_front: getFormikInitialValues(documents.voter_id_front),
+          voter_id_back: getFormikInitialValues(documents.voter_id_back),
+          gst_certificate: getFormikInitialValues(documents.gst_certificate),
+          msme_certificate: getFormikInitialValues(documents.msme_certificate),
+          shop_establishment_certificate: getFormikInitialValues(
+            documents.shop_establishment_certificate,
+          ),
+          cancelled_cheque: getFormikInitialValues(documents.cancelled_cheque),
+          bank_statement: getFormikInitialValues(documents.bank_statement),
+          business_proof_url: getFormikInitialValues(documents.business_proof_url),
+          business_pan_url: getFormikInitialValues(documents.business_pan_url),
+          personal_pan: getFormikInitialValues(documents.personal_pan),
+          form_12a_url: getFormikInitialValues(documents.form_12a_url),
+          form_80g_url: getFormikInitialValues(documents.form_80g_url),
+          amfi_certificate: getFormikInitialValues(documents.amfi_certificate),
+          sla_amfi_certificate: getFormikInitialValues(documents.sla_amfi_certificate),
+          nbfc_registration_certificate: getFormikInitialValues(
+            documents.nbfc_registration_certificate,
+          ),
+          sla_nbfc_registration_certificate: getFormikInitialValues(
+            documents.sla_nbfc_registration_certificate,
+          ),
+          irdai_registration_certificate: getFormikInitialValues(
+            documents.irdai_registration_certificate,
+          ),
+          sla_irdai_registration_certificate: getFormikInitialValues(
+            documents.sla_irdai_registration_certificate,
+          ),
+          ffmc_license: getFormikInitialValues(documents.ffmc_license),
+          sla_ffmc_license: getFormikInitialValues(documents.sla_ffmc_license),
+          sebi_registration_certificate: getFormikInitialValues(
+            documents.sebi_registration_certificate,
+          ),
+          sla_sebi_registration_certificate: getFormikInitialValues(
+            documents.sla_sebi_registration_certificate,
+          ),
+          iata_certificate: getFormikInitialValues(documents.iata_certificate),
+          sla_iata_certificate: getFormikInitialValues(documents.sla_iata_certificate),
+          affiliation_certificate: getFormikInitialValues(documents.affiliation_certificate),
         }}
         enableReinitialize
         onSubmit={() => console.log('onSubmit')}
@@ -165,19 +210,13 @@ const DocumentUpload: React.FC = () => {
                 </Field>
                 <Field>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={async (e) => onChange(e, `${addressDoc}_front`, formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
-                    name={addressDoc ? `${addressDoc}_front` : ''}
-                    value={
-                      formikProps.values[`${addressDoc}_front`]
-                        ? formikProps.values[`${addressDoc}_front`][
-                            formikProps.values[`${addressDoc}_front`].length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    name={`${addressDoc}_front`}
+                    value={formikProps.values[`${addressDoc}_front`]}
+                    error={getFieldError(formikProps.errors, `${addressDoc}_front`)}
                   />
                   <Text color="shade.950" size="xsmall">
                     Front Side
@@ -185,19 +224,13 @@ const DocumentUpload: React.FC = () => {
                 </Field>
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, `${addressDoc}_back`, formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
-                    name={addressDoc ? `${addressDoc}_back` : ''}
-                    value={
-                      formikProps.values[`${addressDoc}_back`]
-                        ? formikProps.values[`${addressDoc}_back`][
-                            formikProps.values[`${addressDoc}_back`].length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    name={`${addressDoc}_back`}
+                    value={formikProps.values[`${addressDoc}_back`]}
+                    error={getFieldError(formikProps.errors, `${addressDoc}_back`)}
                   />
                   <Text color="shade.950" size="xsmall">
                     Back Side
@@ -209,19 +242,13 @@ const DocumentUpload: React.FC = () => {
               <FormSection title="Certificate of Incorporation">
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, 'business_proof_url', formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="business_proof_url"
-                    value={
-                      formikProps.values.business_proof_url
-                        ? formikProps.values.business_proof_url[
-                            formikProps.values.business_proof_url.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values.business_proof_url}
+                    error={getFieldError(formikProps.errors, 'business_proof_url')}
                   />
                   <Text color="shade.950" size="xsmall">
                     You can visit pdf merger.com to combine all the pages into one file
@@ -255,23 +282,17 @@ const DocumentUpload: React.FC = () => {
                     ))}
                   </Select>
                 </Field>
-                {data.shop_establishment_verifiable_zone &&
+                {isVisible('shop_establishment_number', data) &&
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, businessDoc, formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={businessDoc}
-                    value={
-                      formikProps.values[businessDoc]
-                        ? formikProps.values[businessDoc][
-                            formikProps.values[businessDoc].length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values[businessDoc]}
+                    error={getFieldError(formikProps.errors, businessDoc)}
                   />
                 </Field>
               </FormSection>
@@ -280,19 +301,13 @@ const DocumentUpload: React.FC = () => {
               <FormSection title="Business Pan">
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, 'business_pan_url', formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="business_pan_url"
-                    value={
-                      formikProps.values.business_pan_url
-                        ? formikProps.values.business_pan_url[
-                            formikProps.values.business_pan_url.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values.business_pan_url}
+                    error={getFieldError(formikProps.errors, 'business_pan_url')}
                   />
                 </Field>
               </FormSection>
@@ -301,19 +316,13 @@ const DocumentUpload: React.FC = () => {
               <FormSection title="Personal Pan">
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, 'personal_pan', formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="personal_pan"
-                    value={
-                      formikProps.values.personal_pan
-                        ? formikProps.values.personal_pan[
-                            formikProps.values.personal_pan.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values.personal_pan}
+                    error={getFieldError(formikProps.errors, 'personal_pan')}
                   />
                 </Field>
               </FormSection>
@@ -322,19 +331,13 @@ const DocumentUpload: React.FC = () => {
               <FormSection title="Form 12A Allotment Letter">
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, 'form_12a_url', formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="form_12a_url"
-                    value={
-                      formikProps.values.form_12a_url
-                        ? formikProps.values.form_12a_url[
-                            formikProps.values.form_12a_url.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values.form_12a_url}
+                    error={getFieldError(formikProps.errors, 'form_12a_url')}
                   />
                 </Field>
               </FormSection>
@@ -343,19 +346,13 @@ const DocumentUpload: React.FC = () => {
               <FormSection title="Form 80G Allotment Letter">
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, 'form_80g_url', formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name="form_80g_url"
-                    value={
-                      formikProps.values.form_80g_url
-                        ? formikProps.values.form_80g_url[
-                            formikProps.values.form_80g_url.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values.form_80g_url}
+                    error={getFieldError(formikProps.errors, 'form_80g_url')}
                   />
                 </Field>
               </FormSection>
@@ -383,17 +380,13 @@ const DocumentUpload: React.FC = () => {
                 </Field>
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => onChange(e, bankDoc, formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
                     name={bankDoc}
-                    value={
-                      formikProps.values[bankDoc]
-                        ? formikProps.values[bankDoc][formikProps.values[bankDoc].length - 1].id
-                        : ''
-                    }
-                    error={error}
+                    value={formikProps.values[bankDoc]}
+                    error={getFieldError(formikProps.errors, bankDoc)}
                   />
                   <Text color="shade.950" size="xsmall">
                     Please ensure the Business Name, Account Number & Branch IFSC are clearly
@@ -447,27 +440,15 @@ const DocumentUpload: React.FC = () => {
                 )}
                 <Field last>
                   <FileUpload
-                    onFileUpload={onChange}
+                    onFileUpload={(e) => {
+                      onChange(e, additionalDoc, formikProps);
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
-                    name={
-                      getAdditionalDocCount(data) > 1 ? additionalDoc : 'affiliation_certificate'
-                    }
-                    value={
-                      getAdditionalDocCount(data) > 1
-                        ? formikProps.values[additionalDoc]
-                          ? formikProps.values[additionalDoc][
-                              formikProps.values[additionalDoc].length - 1
-                            ].id
-                          : ''
-                        : formikProps.values.affiliation_certificate
-                        ? formikProps.values.affiliation_certificate[
-                            formikProps.values.affiliation_certificate.length - 1
-                          ].id
-                        : ''
-                    }
-                    error={error}
+                    name={additionalDoc}
+                    value={additionalDoc ? formikProps.values[additionalDoc] : ''}
+                    error={additionalDoc ? getFieldError(formikProps.errors, additionalDoc) : ''}
                   />
                 </Field>
               </FormSection>

@@ -27,31 +27,3 @@ exports[`Storyshots Onboarding/ActivationModals/Enable Settlements Modal 1`] = `
   />
 </div>
 `;
-
-exports[`Storyshots Onboarding/Enable Settlements Modal 1`] = `
-<div>
-  <div>
-    <div>
-      <button
-        class="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
-        data-testid="ds-button"
-        type="button"
-      >
-        <div
-          class="Textweb__Text-sc-6jf9e4-0 dxOYOr"
-          color="light.900"
-          data-testid="ds-text"
-        >
-          Open Modal
-        </div>
-      </button>
-    </div>
-    <div
-      id="layerHost"
-    />
-  </div>
-  <div
-    id="layerHost"
-  />
-</div>
-`;

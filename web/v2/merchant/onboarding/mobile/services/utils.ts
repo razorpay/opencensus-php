@@ -1,3 +1,4 @@
+import { isVisible } from 'v2/merchant/onboarding/mobile/context/store';
 import {
   CIN_BusinessTypes,
   LLPIN_BusinessTypes,
@@ -7,6 +8,8 @@ import {
   PROPRIETORSHIP,
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
   ADDITIONAL_DOCS_REQUIRED_REG_BIZ,
+  ADDRESS_PROOF_TYPES,
+  BANK_PROOF_TYPE_DOC,
 } from '../Constants/OnboardingConstants';
 
 export const getLabel = (field, data) => {
@@ -160,3 +163,80 @@ function debounce(cb, time) {
   };
 }
 export { debounce };
+
+function onScreenDocuments(data) {
+  const { addressDoc, businessDoc, bankDoc, additionalDoc } = data;
+
+  return Object.entries(data.documents)
+    .filter((item: any) => isVisible(item[0], data))
+    .reduce((prevValue: any, currValue: any[]) => {
+      const [key, value] = currValue;
+      switch (key) {
+        case `${addressDoc}_front`:
+        case `${addressDoc}_back`:
+        case 'business_proof_url':
+        case 'business_pan_url':
+        case 'personal_pan':
+        case bankDoc:
+        case businessDoc:
+        case 'form_80g_url':
+        case 'form_12a_url':
+        case additionalDoc:
+          return { ...prevValue, [key]: value };
+        case 'shop_establishment_number':
+          if (businessDoc === 'shop_establishment_certificate')
+            return { ...prevValue, [key]: value };
+          break;
+        default:
+          break;
+      }
+      return prevValue;
+    }, {});
+}
+
+export function isDocmentTabComplete(data) {
+  const tabData = { ...onScreenDocuments(data) };
+
+  return Object.keys(tabData).every((key) => {
+    return !!tabData[key].value && !tabData[key].error;
+  });
+}
+
+export function getDefaultSelectedDocs(context, type) {
+  const documents = context.documents;
+
+  const bizCatSubCatPair = getBizCatSubCatPair(context).join('-');
+  const defaultAdditionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]
+    ? Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair])[0]
+    : '';
+
+  let defaultSelectedDoc;
+
+  switch (type) {
+    case 'address':
+      defaultSelectedDoc = Object.keys(ADDRESS_PROOF_TYPES).filter(
+        (key) => documents[`${key}_front`].value && documents[`${key}_back`],
+      );
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['aadhar'];
+      break;
+    case 'bank':
+      defaultSelectedDoc = Object.keys(BANK_PROOF_TYPE_DOC).filter((key) => documents[key].value);
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['cancelled_cheque'];
+      break;
+    case 'business':
+      defaultSelectedDoc = Object.keys(BUSINESS_PROOF_TYPE_DOCS).filter(
+        (key) => documents[key].value,
+      );
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['gst_certificate'];
+      break;
+    default:
+      defaultSelectedDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]
+        ? Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]).filter(
+            (key) => documents[key].value,
+          )
+        : [];
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : [defaultAdditionalDoc];
+      break;
+  }
+  return defaultSelectedDoc[0];
+}

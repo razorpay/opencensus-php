@@ -40,6 +40,12 @@ const isVisible = (fieldName, context) => {
         LLPIN_BusinessTypes.includes(Number(context.business_overview.business_type.value))
       );
     case 'address_proof':
+    case 'aadhar_front':
+    case 'aadhar_back':
+    case 'passport_front':
+    case 'passport_back':
+    case 'voter_id_front':
+    case 'voter_id_back':
       return (
         isUnregisteredBusiness(context.business_overview.business_type.value) ||
         isRegAutoKYCEnabled()
@@ -74,11 +80,31 @@ const isVisible = (fieldName, context) => {
     case 'form_12a_url':
       return showForOrgs(context.business_overview.business_type.value);
     case 'bank_prrof':
+    case 'cancelled_cheque':
+    case 'bank_statement':
       return context.activation_status === 'needs_clarification';
     case 'business_proof':
+    case 'gst_certificate':
+    case 'msme_certificate':
+    case 'shop_establishment_certificate':
       return isBusinessProofTypeDocFieldVisible(context);
     case 'additional_doc':
+    case 'amfi_certificate':
+    case 'sla_amfi_certificate':
+    case 'nbfc_registration_certificate':
+    case 'sla_nbfc_registration_certificate':
+    case 'irdai_registration_certificate':
+    case 'sla_irdai_registration_certificate':
+    case 'ffmc_license':
+    case 'sla_ffmc_license':
+    case 'sebi_registration_certificate':
+    case 'sla_sebi_registration_certificate':
+    case 'iata_certificate':
+    case 'sla_iata_certificate':
+    case 'affiliation_certificate':
       return doesHaveAdditionalDocs(context);
+    case 'shop_establishment_number':
+      return context.shop_establishment_verifiable_zone;
     default:
       return true;
   }

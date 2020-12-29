@@ -2,7 +2,7 @@ import { Field } from 'redux-form';
 import ListFilter from 'merchant/components/ListFilter';
 import track from './track';
 
-export default props => {
+export default (props) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">

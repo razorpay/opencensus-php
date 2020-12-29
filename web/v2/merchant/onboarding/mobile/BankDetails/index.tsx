@@ -174,7 +174,8 @@ const BankDetails: React.FC = () => {
                       defaultChecked={hasGSTIN}
                       onChange={(value) => {
                         setHasGSTIN(value);
-                        if (!value) {
+                        if (value) {
+                          formikProps.setFieldTouched('gstin');
                           formikProps.setFieldValue('gstin', '');
                         }
                         setIsBlurCalled(true);

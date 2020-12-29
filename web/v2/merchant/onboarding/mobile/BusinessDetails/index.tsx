@@ -137,6 +137,7 @@ const BusinessDetails: React.FC = () => {
     setBusinessDetailsCompleted(isComplete);
     if (hasSameAdress) {
       reqData = copySameAddress(reqData, updatedDetails);
+      updatedDetails = { ...reqData, ...updatedDetails };
     }
     reqData = getRequestData(businessDetails, updatedDetails);
     if (Object.keys(reqData).length) {

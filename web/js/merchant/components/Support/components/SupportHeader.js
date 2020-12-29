@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
 
-@connect(state => {
+@connect((state) => {
   return {
     closeOnboardingStep: state.home.closeOnboardingStep,
   };
@@ -36,7 +36,7 @@ export default class SupportHeader extends Component {
 
   render() {
     const { notifyCount = 0, isOpened, onToggle } = this.props;
-
+    const isOnBoardingRevempScreen = window.location.pathname.includes('onboarding');
     const content = (
       <>
         {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
@@ -51,7 +51,11 @@ export default class SupportHeader extends Component {
 
     return (
       <div
-        class={classList('support-launcher', isOpened && 'active')}
+        class={classList(
+          'support-launcher',
+          isOpened && 'active',
+          isOnBoardingRevempScreen && 'onboarding-screen',
+        )}
         onClick={onToggle}
       >
         {!this.state.showHelpTooltip ? (
@@ -59,15 +63,9 @@ export default class SupportHeader extends Component {
         ) : (
           <span className="help-content">
             {content}
-            <Popover
-              align="left"
-              theme="dark"
-              persistent={this.state.showHelpTooltip}
-            >
+            <Popover align="left" theme="dark" persistent={this.state.showHelpTooltip}>
               <PopoverBody>
-                <div>
-                  To know how to use the Dashboard, read the Dashboard Guide
-                </div>
+                <div>To know how to use the Dashboard, read the Dashboard Guide</div>
               </PopoverBody>
             </Popover>
           </span>

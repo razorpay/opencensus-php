@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import { isDocmentTabComplete } from 'v2/merchant/onboarding/mobile/services/utils';
 import { Field, GetTouchedFields } from '../Form';
-import { useActivationFormState, isTabComplete } from '../context/store';
+import { useActivationFormState } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 
 const ContactDetails: React.FC = () => {
@@ -21,10 +22,10 @@ const ContactDetails: React.FC = () => {
   };
 
   const handleSubmit = (updatedDetails) => {
-    const isComplete = isTabComplete(
-      { ...data, documents: { ...documents, ...updatedDetails } },
-      'documents',
-    );
+    const isComplete = isDocmentTabComplete({
+      ...data,
+      documents: { ...documents, ...updatedDetails },
+    });
     setDocumentUploadCompleted(isComplete);
     const reqData = getRequestData(documents, updatedDetails);
     if (Object.keys(reqData).length) {
