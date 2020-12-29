@@ -251,6 +251,37 @@ class BucketingTest extends TestCase
         $this->createPaymentAndAssert(10000000000000, 1568889000, 1568964600);
     }
 
+    public function testETMoneySettlementBucket()
+    {
+        $timestamp = Carbon::create(2019, 9, 19, 10, 1, 0, Timezone::IST);
+
+        $this->setTestTime($timestamp);
+
+        $this->initializeMutualFundMerchants(Preferences::MID_ET_MONEY, 10000000000000);
+
+        $this->mockSettlementServiceRamp(false);
+
+        $this->createPaymentAndAssert(10000000000000, 1568871000, 1568874600);
+
+        $timestamp = Carbon::create(2019, 9, 19, 12, 0, 0, Timezone::IST);
+
+        $this->setTestTime($timestamp);
+
+        $this->createPaymentAndAssert(10000000000000, 1568874600, 1568874600);
+
+        $timestamp = Carbon::create(2019, 9, 19, 13, 30, 0, Timezone::IST);
+
+        $this->setTestTime($timestamp);
+
+        $this->createPaymentAndAssert(10000000000000, 1568881800, 1568881800);
+
+        $timestamp = Carbon::create(2019, 9, 19, 15, 1, 0, Timezone::IST);
+
+        $this->setTestTime($timestamp);
+
+        $this->createPaymentAndAssert(10000000000000, 1568889000, 1568961000);
+    }
+
     public function testNoSettlementOnSaturday()
     {
         $timestamp = Carbon::create(2019, 9, 21, 10, 1, 0, Timezone::IST);

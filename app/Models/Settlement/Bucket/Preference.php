@@ -161,6 +161,13 @@ class Preference extends Base\Core
             return $data;
         }
 
+        $data = $this->getEtMoneyMerchantBucket($merchant, $settlementTime);
+
+        if ($data[0] === true)
+        {
+            return $data;
+        }
+
         return [false, $settlementTime->getTimestamp()];
     }
 
@@ -381,6 +388,40 @@ class Preference extends Base\Core
         if (($settlementTime->hour <= Constants::ELEVEN_AM) or ($settlementTime->hour > Constants::ONE_PM))
         {
             $hour = Constants::ELEVEN_AM;
+        }
+
+        $timestamp = self::getNextBucket($settlementTime->getTimestamp(), $hour);
+
+        return [true, $timestamp];
+    }
+
+    /**
+     * ET-Money Merchant Preference
+     * want the settlement at 12PM(T-1 - 2PM to T - 12PM) and 2PM(T - 12PM to T - 2PM)
+     * ref: https://razorpay.slack.com/archives/CAW3Z5Y6P/p1609150557366700
+     * @param Merchant\Entity $merchant
+     * @param Carbon $settlementTime
+     * @return array
+     */
+    protected function getEtMoneyMerchantBucket(Merchant\Entity $merchant, Carbon $settlementTime): array
+    {
+        $merchantId = $merchant->getId();
+
+        $parentMerchantId = $merchant->getParentId();
+
+        if ($merchantId !== Merchant\Preferences::MID_ET_MONEY)
+        {
+            if($parentMerchantId !== Merchant\Preferences::MID_ET_MONEY)
+            {
+                return [false, 0];
+            }
+        }
+
+        $hour = Constants::TWO_PM;
+
+        if (($settlementTime->hour <= Constants::TWELVE_PM) or ($settlementTime->hour > Constants::TWO_PM))
+        {
+            $hour = Constants::TWELVE_PM;
         }
 
         $timestamp = self::getNextBucket($settlementTime->getTimestamp(), $hour);

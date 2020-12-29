@@ -132,6 +132,7 @@ class Preferences
     const MID_BFL                   = 'ChcYXdL7jtknMN';
     const MID_ICICI_PRUDENTIAL      = 'DyP8dTjuXkgcAA';
     const MID_SCRIP_BOX             = 'E8D4A78IIz4SAB';
+    const MID_ET_MONEY              = 'CBcPtPwFgpjdUp';
     const MID_RBL_HEMANT            = 'EgquGKAHJNz0oD';
     const MID_RBL_BANK              = 'Er3H2qzJ3EVt4u';
     const MID_RBL_BANK_LTD          = 'Er4CQHti6YfgOG';
