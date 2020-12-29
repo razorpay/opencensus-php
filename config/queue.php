@@ -329,6 +329,11 @@ return [
         'live'       => env('AWS_ONBOARDING_KYC_VERIFICATION_QUEUE'),
     ],
 
+    'bank_transfer_create' => [
+        'test'       => env('AWS_BANK_TRANSFER_CREATE_TEST_QUEUE'),
+        'live'       => env('AWS_BANK_TRANSFER_CREATE_LIVE_QUEUE'),
+    ],
+    
     'sync_order_pg_router' => [
         'test'      => env('AWS_SYNC_ORDER_PG_ROUTER_TEST_QUEUE'),
         'live'      => env('AWS_SYNC_ORDER_PG_ROUTER_LIVE_QUEUE'),

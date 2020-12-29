@@ -8,19 +8,23 @@ use RZP\Models\Merchant\Account;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\BankTransferHistory;
 use RZP\Models\BankTransferRequest;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\VirtualAccount\Metric;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Jobs\BankTransferCreateProcess;
 
 class Service extends Base\Service
 {
@@ -76,18 +80,32 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex,
+                                         Trace::ERROR,
+                                         TraceCode::BANK_TRANSFER_SAVE_REQUEST_FAILED,
+                                         [
+                                             'transaction_id' => $input[Entity::REQ_UTR]
+                                         ]);
         }
 
         if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null)
         {
-            return $this->processBankTransfer($bankTransferRequest);
+            $dispatchToQueue = $this->isRequestValidForQueueProcessing($provider ?? $this->provider);
+
+            if ($dispatchToQueue === true)
+            {
+                return $this->dispatchBankTransferToQueue($bankTransferRequest);
+            }
+            else
+            {
+                return $this->processBankTransfer($bankTransferRequest);
+            }
         }
 
         return $this->process($input, $provider, $checkForIfsc);
     }
 
-    private function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
+    public function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
@@ -482,6 +500,54 @@ class Service extends Base\Service
         $requestProcessor = 'RZP\\Reconciliator\\RequestProcessor\\' . $source;
 
         return new $requestProcessor();
+    }
+
+    protected function isRequestValidForQueueProcessing($provider)
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $provider,
+            Merchant\RazorxTreatment::BANK_TRANSFER_QUEUE,
+            $this->mode);
+
+        return ($variant === 'on');
+    }
+
+    private function dispatchBankTransferToQueue($bankTransferRequest)
+    {
+        $isPushedToSqs = false;
+        try
+        {
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                [
+                    Entity::GATEWAY         => $bankTransferRequest->getGateway(),
+                    Entity::REQ_UTR         => $bankTransferRequest->getUtr(),
+                    'bankTransferRequestId' => $bankTransferRequest->getId(),
+                ]
+            );
+
+            BankTransferCreateProcess::dispatch($this->mode, $bankTransferRequest->getId());
+
+            $isPushedToSqs = true;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->critical(
+                TraceCode::BANK_TRANSFER_PROCESS_SQS_PUSH_FAILED,
+                [
+                    Entity::GATEWAY => $bankTransferRequest->getGateway(),
+                    Entity::REQ_UTR => $bankTransferRequest->getUtr(),
+                    'message'       => $e->getMessage(),
+                ]);
+        }
+
+        (new Metric())->pushSqsPushMetrics(Constants\Entity::BANK_TRANSFER, $bankTransferRequest->getGateway(), $isPushedToSqs);
+
+        return [
+            'valid'          => true,
+            'message'        => null,
+            'transaction_id' => $bankTransferRequest->getUtr(),
+        ];
     }
 
     protected function checkBlocksAndUpdateRequest(BankTransferRequest\Entity $bankTransferInput)

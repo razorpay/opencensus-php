@@ -12,6 +12,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Refund;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -3496,5 +3497,48 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals($payment['email'], 'test@test.com');
         $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testBankTransferRblAsyncProcessing()
+    {
+        $this->enableRazorXTreatmentForRblBankTransferProcess();
+
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    protected function enableRazorXTreatmentForRblBankTransferProcess()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'bank_transfer_queue')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
     }
 }

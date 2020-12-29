@@ -13,6 +13,7 @@ class Metric extends Base\Core
     const VIRTUAL_ACCOUNT_CLOSE_FAILED          = 'virtual_account_close_failed';
     const VIRTUAL_ACCOUNT_PAYMENT               = 'virtual_account_payment';
     const VIRTUAL_ACCOUNT_REFUND                = 'virtual_account_refund';
+    const VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH      = 'virtual_account_payment_sqs_push';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';
@@ -112,6 +113,20 @@ class Metric extends Base\Core
 
         $this->trace->count(
             Metric::VIRTUAL_ACCOUNT_REFUND,
+            $dimensions
+        );
+    }
+
+    public function pushSqsPushMetrics(string $method, string $gateway, bool $isPushedToQueue)
+    {
+        $dimensions = [
+            'method'          => $method,
+            'isPushedToQueue' => $isPushedToQueue,
+            'gateway'         => $gateway,
+        ];
+
+        $this->trace->count(
+            Metric::VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH,
             $dimensions
         );
     }
