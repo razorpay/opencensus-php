@@ -1205,15 +1205,16 @@ class Entity extends Base\PublicEntity
 
     protected function generateEnabledBanks(array $input)
     {
-        $netbanking = intval($input[self::NETBANKING] ?? 0);
-        $paylater   = intval($input[self::PAYLATER] ?? 0);
+        $netbanking  = intval($input[self::NETBANKING] ?? 0);
+        $paylater    = intval($input[self::PAYLATER] ?? 0);
+        $cardlessEmi = intval($input[self::CARDLESS_EMI] ?? 0);
 
         $gatewayAquirer = $input[self::GATEWAY_ACQUIRER] ?? '';
 
         $gateway = $input[self::GATEWAY];
 
-        if ((($netbanking !== 1) and ($paylater !== 1)) or ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) and
-                (PayLater::isMultilenderProvider($gatewayAquirer) === false)))
+        if ((($netbanking !== 1) and ($paylater !== 1) and ($cardlessEmi !== 1)) or ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) and
+                (PayLater::isMultilenderProvider($gatewayAquirer) === false) and (Payment\Processor\CardlessEmi::isMultilenderProvider($gatewayAquirer)) === false))
         {
             return;
         }
@@ -1235,6 +1236,16 @@ class Entity extends Base\PublicEntity
         elseif ($paylater === 1)
         {
             $enabledBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+        }
+        elseif ($cardlessEmi === 1)
+        {
+            $supportedBanks = Payment\Processor\CardlessEmi::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+
+            $disabledBanks = Payment\Processor\CardlessEmi::getDefaultDisabledBanksForMultilenderProvider($gatewayAquirer);
+
+            $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+            $enabledBanks = array_values($enabledBanks);
         }
 
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);

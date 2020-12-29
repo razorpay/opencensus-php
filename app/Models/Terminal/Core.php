@@ -418,16 +418,18 @@ class Core extends Base\Core
     {
         $gateway = $terminal->getGateway();
 
-        if ((($terminal->isNetbankingEnabled() === false) and ($terminal->isPayLaterEnabled() === false)) or
-            ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false)) and (Payment\Processor\PayLater::isMultilenderProvider($terminal->getGatewayAcquirer()) === false))
+        if ((($terminal->isNetbankingEnabled() === false) and ($terminal->isPayLaterEnabled() === false) and ($terminal->isCardlessEmiEnabled() === false)) or
+            (((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false)) and
+            (Payment\Processor\PayLater::isMultilenderProvider($terminal->getGatewayAcquirer()) === false) and
+            (Payment\Processor\CardlessEmi::isMultilenderProvider($terminal->getGatewayAcquirer()) === false)))
         {
-            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways and some paylater providers');
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways and some paylater/cardless_emi providers');
         }
+
+        $enabledBanks = (array) $terminal->getEnabledBanks();
 
         if ($terminal->isNetbankingEnabled())
         {
-            $enabledBanks = (array) $terminal->getEnabledBanks();
-
             $corporate = $terminal->getCorporate();
             $tpv       = $terminal->getTpv();
 
@@ -436,9 +438,12 @@ class Core extends Base\Core
 
         if ($terminal->isPayLaterEnabled())
         {
-            $enabledBanks = (array) $terminal->getEnabledBanks();
-
             $supportedBanks = Payment\Processor\PayLater::getSupportedBanksForMultilenderProvider($terminal->getGatewayAcquirer());
+        }
+
+        if ($terminal->isCardlessEmiEnabled())
+        {
+            $supportedBanks = Payment\Processor\CardlessEmi::getSupportedBanksForMultilenderProvider($terminal->getGatewayAcquirer());
         }
 
         $disabledBanks = array_values(array_diff($supportedBanks, $enabledBanks));
@@ -456,10 +461,12 @@ class Core extends Base\Core
     {
         $gateway = $terminal->getGateway();
 
-        if (($terminal->isNetbankingEnabled() === false) and(($terminal->isPayLaterEnabled() === false)) or
-            ((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false)) and (Payment\Processor\PayLater::isMultilenderProvider($terminal->getGatewayAcquirer()) === false))
+        if ((($terminal->isNetbankingEnabled() === false) and ($terminal->isPayLaterEnabled() === false) and ($terminal->isCardlessEmiEnabled() === false)) or
+            (((in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false)) and
+            (Payment\Processor\PayLater::isMultilenderProvider($terminal->getGatewayAcquirer()) === false) and
+            (Payment\Processor\CardlessEmi::isMultilenderProvider($terminal->getGatewayAcquirer()) === false)))
         {
-            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways and some paylater providers');
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways and some paylater/cardless_emi providers');
         }
 
         if (is_array($banksToEnable) === false)
@@ -478,6 +485,11 @@ class Core extends Base\Core
         if ($terminal->isPayLaterEnabled())
         {
             $supportedBanks = Payment\Processor\PayLater::getSupportedBanksForMultilenderProvider($terminal->getGatewayAcquirer());
+        }
+
+        if ($terminal->isCardlessEmiEnabled())
+        {
+            $supportedBanks = Payment\Processor\CardlessEmi::getSupportedBanksForMultilenderProvider($terminal->getGatewayAcquirer());
         }
 
         if (empty(array_diff($banksToEnable, $supportedBanks)) === false)

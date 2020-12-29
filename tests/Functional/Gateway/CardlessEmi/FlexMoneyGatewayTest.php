@@ -44,6 +44,29 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
         $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
     }
 
+    public function testPaymentSubProvider()
+    {
+        $this->provider = 'kkbk';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        unset($payment['emi_duration']);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPaymentFlexMoneySubprovider');
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+    }
+
     public function testPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);

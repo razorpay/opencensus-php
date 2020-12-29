@@ -1287,6 +1287,33 @@ return [
         ]
     ],
 
+    'testCreateCardlessEmiFlexmoneyTerminalWithEnabledBanks'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'cardless_emi',
+                'gateway_acquirer'          => 'flexmoney',
+                'category'                  => 1234,
+                'gateway_merchant_id'       => 'abcd',
+                'gateway_merchant_id2'      => 'test merchant',
+                'mode'                      => 1,
+                'cardless_emi'              => 1,
+                'gateway_terminal_password' => '64517b42-7b8d-4137-924a-4b6a065e7e4d'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'abcd',
+                'gateway_merchant_id2' => 'test merchant',
+                'enabled'              => true,
+                'enabled_banks'        => [
+                    "HDFC",
+                    "KKBK",
+                ]
+            ]
+        ]
+    ],
+
     'testCreateUpiAirtelTerminal'  => [
         'request' => [
             'content' => [
@@ -2102,7 +2129,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Banks available only for netbanking gateways and some paylater providers',
+                    'description' => 'Banks available only for netbanking gateways and some paylater/cardless_emi providers',
                 ]
             ],
             'status_code'   => 400,
@@ -2195,7 +2222,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Banks available only for netbanking gateways and some paylater providers',
+                    'description' => 'Banks available only for netbanking gateways and some paylater/cardless_emi providers',
                 ]
             ],
             'status_code'   => 400,
@@ -2258,6 +2285,24 @@ return [
         ],
     ],
 
+    'testGetTerminalBanksForCardlessEmi' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled'  => [
+                    'HDFC'  => 'HDFC Bank',
+                    'KKBK'  => 'Kotak Mahindra Bank',
+                ],
+                'disabled' => [
+                    'FDRL'  => 'Federal Bank',
+                    'IDFB'  => 'IDFC FIRST Bank',
+                ],
+            ],
+        ],
+    ],
+
     'testSetBanksForDirectNetbankingTerminal' => [
         'request' => [
             'method' => 'PATCH',
@@ -2289,6 +2334,27 @@ return [
                     'HDFC'   => 'HDFC Bank',
                 ],
                 'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testSetBanksForCardlessEmiTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['HDFC'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC'   => 'HDFC Bank',
+                ],
+                'disabled' => [
+                    'FDRL'   => 'Federal Bank',
+                    'IDFB'   => 'IDFC FIRST Bank',
+                    'KKBK'   => 'Kotak Mahindra Bank',
                 ],
             ],
         ],

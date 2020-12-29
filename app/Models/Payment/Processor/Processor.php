@@ -685,7 +685,7 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) and
-            (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === false))
+            (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === false))
         {
             return;
         }
@@ -738,7 +738,7 @@ class Processor
         $input['payment_id'] = $payment->getPublicId();
 
         if ((empty($input['emi_duration']) === false) and
-            (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === true))
+            (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === true))
         {
             return;
         }
@@ -812,7 +812,7 @@ class Processor
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
 
-        if (in_array($input['provider'], Payment\Gateway::$redirectFlowProvider) === true)
+        if (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === true)
         {
             $coproto['emi_plans'] = [
                 $input['provider'] => $checkAccountData['emi_plans']

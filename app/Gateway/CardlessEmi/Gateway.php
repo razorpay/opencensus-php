@@ -480,6 +480,12 @@ class Gateway extends Base\Gateway
             $content[RequestFields::BANK_CODE]        = BankCodes::getBankCode($provider);
         }
 
+        if (($this->gateway === Payment\Gateway::CARDLESS_EMI) and (CardlessEmi::getProviderForBank($provider) != null))
+        {
+            $content[RequestFields::TRANSACTION_TYPE] = 'EMI';
+            $content[RequestFields::BANK_CODE]        = BankCodes::getBankCodeForCardlessEmiMultiLender($provider);
+        }
+
         return $content;
     }
 
@@ -886,7 +892,14 @@ class Gateway extends Base\Gateway
 
     public function getEmiPlans($input)
     {
-        $input['provider'] = strtoupper($input['provider']);
+        $provider = strtoupper($input['provider']);
+
+        if (in_array($input['provider'], CardlessEmi::getCardlessEmiDirectAquirers()) === false)
+        {
+            $provider = strtoupper(CardlessEmi::getProviderForBank($input['provider']));
+        }
+
+        $input['provider'] = $provider;
 
         $input = Customer\Validator::validateAndParseContactInInput($input);
 

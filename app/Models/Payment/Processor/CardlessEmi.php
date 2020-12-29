@@ -10,10 +10,22 @@ class CardlessEmi
     const ZESTMONEY    = 'zestmoney';
     const FLEXMONEY    = 'flexmoney';
 
+    const HDFC = 'hdfc';
+    const KKBK = 'kkbk';
+    const FDRL = 'fdrl';
+    const IDFB = 'idfb';
+
     public static $fullName = [
         self::EARLYSALARY  => 'EarlySalary',
         self::ZESTMONEY    => 'ZestMoney',
         self::FLEXMONEY    => 'FlexMoney',
+    ];
+
+    public static $fullNameForSupportedBanks = [
+        self::HDFC    => 'hdfc',
+        self::KKBK    => 'kkbk',
+        self::FDRL    => 'fdrl',
+        self::IDFB    => 'idfb',
     ];
 
     public static $supportedBanks = [
@@ -34,11 +46,19 @@ class CardlessEmi
 
     public static function exists($provider)
     {
+        if (self::getProviderForBank($provider) != null)
+        {
+            return true;
+        }
         return (isset(self::$fullName[$provider]) === true);
     }
 
     public static function getName($provider)
     {
+        if (self::getProviderForBank($provider) != null)
+        {
+            return self::$fullNameForSupportedBanks[$provider];
+        }
         return self::$fullName[$provider];
     }
 
@@ -60,5 +80,17 @@ class CardlessEmi
     public static function getCardlessEmiDirectAquirers()
     {
         return array_keys(self::$fullName);
+    }
+
+    public static function getProviderForBank($bank)
+    {
+        foreach (self::$supportedBanks as $provider => $supportedBanks)
+        {
+            if (in_array(strtoupper($bank), $supportedBanks) === true)
+            {
+                return $provider;
+            }
+        }
+        return null;
     }
 }

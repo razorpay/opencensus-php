@@ -1267,7 +1267,7 @@ trait Authorize
             return;
         }
 
-        if (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$redirectFlowProvider, true) === true)
+        if (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input[Payment\Entity::PROVIDER]))
         {
             return;
         }
@@ -3272,7 +3272,14 @@ trait Authorize
                 $paymentIdString = '';
             }
 
-            $cacheKey = strtoupper($input[Payment\Entity::PROVIDER]) . '_' . $contact . '_' . $merchantId . $paymentIdString;
+            $provider = $input[Payment\Entity::PROVIDER];
+
+            if (in_array($provider, CardlessEmi::getCardlessEmiDirectAquirers()) === false)
+            {
+                $provider = CardlessEmi::getProviderForBank($provider);
+            }
+
+            $cacheKey = strtoupper($provider) . '_' . $contact . '_' . $merchantId . $paymentIdString;
 
             $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 

@@ -592,6 +592,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCardlessEmiFlexmoneyTerminalWithEnabledBanks()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $res = $this->startTest();
+    }
+
     public function testCreateUpiAirtelTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
@@ -1364,6 +1373,19 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetTerminalBanksForCardlessEmi()
+    {
+        $terminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGetTpvTerminalBanks()
     {
         $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
@@ -1432,6 +1454,19 @@ class TerminalTest extends TestCase
     public function testSetBanksForPaylaterTerminal()
     {
         $terminal = $this->fixtures->create('terminal:paylater_flexmoney_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForCardlessEmiTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneyTerminal');
 
         $url = '/terminals/' . $terminal['id'] . '/banks';
 

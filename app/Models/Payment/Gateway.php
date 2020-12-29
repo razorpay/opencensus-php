@@ -2344,6 +2344,12 @@ class Gateway
         return in_array($gateway, self::$nonTerminalGateways, true);
     }
 
+    public static function isCardlessEmiProviderAndRedirectFlowProvider($provider)
+    {
+        return ((in_array($provider, Payment\Gateway::$redirectFlowProvider, true) === true) or
+                (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$redirectFlowProvider, true) === true));
+    }
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];

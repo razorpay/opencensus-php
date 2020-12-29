@@ -243,6 +243,9 @@ function disableEmptyInputs(form) {
                 <option value="getsimpl">Simpl</option>
                 <option value="icic">Icici Paylater</option>
                 <option value="hdfc">HDFC Bank Paylater</option>
+                <option value="kkbk">Kotak Bank</option>
+                <option value="idfb">IDFC First Bank</option>
+                <option value="fdrl">Federal Bank</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>
