@@ -30,14 +30,14 @@ class Unpaid extends Mailable
 
     protected function addReplyTo()
     {
-        $this->replyTo(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT]);
+        $this->replyTo(Constants::MAIL_ADDRESSES[Constants::NOREPLY]);
 
         return $this;
     }
 
     protected function addSender()
     {
-        return $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+        return $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY],
                            Constants::HEADERS[Constants::NOREPLY]);
     }
 
