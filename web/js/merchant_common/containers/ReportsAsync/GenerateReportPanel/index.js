@@ -21,10 +21,7 @@ export default class GenerateReportPanel extends React.PureComponent {
   static getDerivedStateFromProps(nextProps, prevState) {
     const { accounts } = nextProps;
     const { selectedAccount } = prevState;
-    if (
-      accounts &&
-      !selectedAccount && !accounts.loading && isPresent(accounts.accounts)
-    ) {
+    if (accounts && !selectedAccount && !accounts.loading && isPresent(accounts.accounts)) {
       return {
         selectedAccount: accounts.accounts[0],
       };
@@ -35,11 +32,11 @@ export default class GenerateReportPanel extends React.PureComponent {
 
   state = {};
 
-  onConfigChange = selectedConfig => {
+  onConfigChange = (selectedConfig) => {
     this.setState({ selectedConfig });
   };
 
-  onAccountChange = selectedAccount => {
+  onAccountChange = (selectedAccount) => {
     this.setState({ selectedAccount });
   };
 
@@ -58,7 +55,7 @@ export default class GenerateReportPanel extends React.PureComponent {
           config_id: id,
           config_name: name,
           config_report_type: report_type,
-        })
+        }),
       );
     } catch (err) {
       console.error({ err });
@@ -114,10 +111,7 @@ export default class GenerateReportPanel extends React.PureComponent {
     const selectedConfigId = this.state.selectedConfig.id;
     const { month, year } = this.selectPeriod.getCustomConfigYear();
 
-    window.open(
-      `/${mode}/reports/${selectedConfigId}/?year=${year}&month=${month}`,
-      '_blank'
-    );
+    window.open(`/${mode}/reports/${selectedConfigId}/?year=${year}&month=${month}`, '_blank');
   };
 
   render() {
@@ -131,7 +125,7 @@ export default class GenerateReportPanel extends React.PureComponent {
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     let allConfigs = [...configs.items, ...customConfigs];
 
-    allConfigs = allConfigs.filter(config => config.type !== 'payment_links'); // Filtering out payment pages
+    allConfigs = allConfigs.filter((config) => config.type !== 'payment_links'); // Filtering out payment pages
 
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
     const isFormDisabled = !selectedConfig;
@@ -148,8 +142,7 @@ export default class GenerateReportPanel extends React.PureComponent {
     ) : (
       <div className="GenerateReportPanel">
         <div className="m-b">
-          You can generate new reports or download from the list of recently
-          generated reports
+          You can generate new reports or download from the list of recently generated reports
         </div>
         <Form onChange={this.onChange}>
           <SelectConfig
@@ -171,8 +164,9 @@ export default class GenerateReportPanel extends React.PureComponent {
             ))}
 
           <SelectPeriod
+            selectedConfig={selectedConfig}
             avlblPeriodOptions={avlblPeriodOptions}
-            ref={ref => (this.selectPeriod = ref)}
+            ref={(ref) => (this.selectPeriod = ref)}
             isCustomConfig={isCustomConfig}
             isFormDisabled={isFormDisabled}
             dateRangeError={dateRangeError}
@@ -186,13 +180,13 @@ export default class GenerateReportPanel extends React.PureComponent {
                 <SelectFormat
                   selectedConfigId={(selectedConfig || {}).id}
                   allConfigs={configs.items}
-                  ref={ref => (this.selectFormat = ref)}
+                  ref={(ref) => (this.selectFormat = ref)}
                   isFormDisabled={isFormDisabled}
                 />
               )}
 
               <EmailReport
-                ref={ref => (this.emailReport = ref)}
+                ref={(ref) => (this.emailReport = ref)}
                 emails={this.props.emailReportOptions}
                 isFormDisabled={isFormDisabled}
               />
@@ -231,19 +225,10 @@ const dailyPeriodOptions = [
   { label: 'Daily', name: 'daily' },
 ];
 
-const marketplaceConfigTypes = [
-  'transactions',
-  'payments',
-  'refunds',
-  'settlements',
-];
+const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 
-function getAvlblPeriodOptions({
-  onlyDailyOptionsInReferredAccounts,
-  selectedConfig = {},
-}) {
-  const isReferredAccountsAll =
-    (selectedConfig.template || {}).referred_accounts === 'all';
+function getAvlblPeriodOptions({ onlyDailyOptionsInReferredAccounts, selectedConfig = {} }) {
+  const isReferredAccountsAll = (selectedConfig.template || {}).referred_accounts === 'all';
   if (onlyDailyOptionsInReferredAccounts && isReferredAccountsAll) {
     return dailyPeriodOptions;
   }
@@ -252,9 +237,7 @@ function getAvlblPeriodOptions({
 
 function getDateRangeError(startAt, endAt) {
   const difference = endAt.diff(startAt, 'days');
-  if (difference > 7) {
-    return 'Date range cannot exceed period of 7 days';
-  } else if (difference < 0) {
+  if (difference < 0) {
     return "Start at date can't exceed end at date";
   }
   return false;

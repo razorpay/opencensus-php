@@ -18,7 +18,7 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
   return (
     <div className="SelectConfig">
       <Banner>
-        <div className="Input Input--large">
+        <div className="Input Input--large invoice-select-container">
           <Label text="Select Report Type" />
           <div className="Input-content m-t">
             <div className="Input-elWrapper">
@@ -33,17 +33,31 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
                 searchEnabled
                 searchIndices={['label', 'name']}
                 searchPlaceholder="Search..."
-                showClear
                 class="ps-in-modal"
+                showClear={false}
               />
             </div>
           </div>
+          {selectedConfig &&
+            (selectedConfig.id === 'invoice' ||
+              selectedConfig.name === 'Monthly Invoice Report') && (
+              <span class="faq-link">
+                The December invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30,
+                2020 and is generated on Dec-31, 2020 due to new GST guidelines effective from 1st
+                Jan 2020. The charges for Dec 31, 2020 will be added to the next billing cycle.{' '}
+                <a
+                  href="https://razorpay.com/docs/announcements/gst-changes/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Learn more.
+                </a>
+              </span>
+            )}
         </div>
         <div>
           {(selectedConfig || {}).description && (
-            <span className="text-muted text-small">
-              {selectedConfig.description}
-            </span>
+            <span className="text-muted text-small">{selectedConfig.description}</span>
           )}
         </div>
       </Banner>
@@ -52,9 +66,7 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
 }
 
 function getConfigOptions(configs = []) {
-  return configs.map(config =>
-    pickProps(config, ['id', 'name', 'description'])
-  );
+  return configs.map((config) => pickProps(config, ['id', 'name', 'description']));
 }
 
 function ConfigOption({ option }) {
@@ -83,8 +95,5 @@ function ConfigSelected({ option }) {
 
 function getShortDescription(description) {
   const indexOfFullStop = description.indexOf('.');
-  return description.substring(
-    0,
-    indexOfFullStop > 0 ? indexOfFullStop : description.length
-  );
+  return description.substring(0, indexOfFullStop > 0 ? indexOfFullStop : description.length);
 }

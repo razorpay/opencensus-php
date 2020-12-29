@@ -5,18 +5,10 @@ import { isNone } from 'common/utils/rzp-utils';
 
 import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
 
-const DEFAULT_SELECTED_DATE = moment()
-  .subtract(1, 'day')
-  .startOf('day');
-const DEFAULT_SELECTED_END_AT = moment()
-  .subtract(1, 'day')
-  .endOf('day');
-const DEFAULT_SELECTED_START_AT = moment()
-  .subtract(2, 'day')
-  .startOf('day');
-const DEFAULT_SELECTED_MONTH = moment()
-  .subtract(1, 'month')
-  .startOf('month');
+const DEFAULT_SELECTED_DATE = moment().subtract(1, 'day').startOf('day');
+const DEFAULT_SELECTED_END_AT = moment().subtract(1, 'day').endOf('day');
+const DEFAULT_SELECTED_START_AT = moment().subtract(2, 'day').startOf('day');
+const DEFAULT_SELECTED_MONTH = moment().subtract(1, 'month').startOf('month');
 const DEFAULT_PERIOD = 'yesterday';
 
 const DATE_DISPLAY_FORMAT = 'll';
@@ -48,7 +40,7 @@ export default class SelectPeriod extends React.Component {
           const { selectedStartAt, selectedEndAt } = this.state.values;
           this.props.onDateRangeChanges(selectedStartAt, selectedEndAt);
         }
-      }
+      },
     );
   };
 
@@ -63,10 +55,7 @@ export default class SelectPeriod extends React.Component {
       value = dateValue.add(timeInUnix, 'seconds');
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
-      value = value
-        .clone()
-        .startOf('day')
-        .add(timeInUnix, 'seconds');
+      value = value.clone().startOf('day').add(timeInUnix, 'seconds');
     }
 
     const target = { value, name };
@@ -144,6 +133,7 @@ export default class SelectPeriod extends React.Component {
       isCustomConfig,
       isFormDisabled,
       dateRangeError,
+      selectedConfig,
     } = this.props;
 
     return !isCustomConfig ? (
@@ -160,9 +150,7 @@ export default class SelectPeriod extends React.Component {
               disabled={isFormDisabled}
               defaultValue="yesterday"
             />
-            {!isFormDisabled && (
-              <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />
-            )}
+            {!isFormDisabled && <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />}
 
             {selectedPeriod === 'dateRange' && (
               <div class="m-t">
@@ -183,10 +171,16 @@ export default class SelectPeriod extends React.Component {
             withTime={withTime}
             defaults={defaults}
           />
-          {!!dateRangeError &&
-            selectedPeriod === 'dateRange' && (
-              <div class="m-t text-danger text-small">{dateRangeError}</div>
-            )}
+          {!!dateRangeError && selectedPeriod === 'dateRange' && (
+            <div class="m-t text-danger text-small">{dateRangeError}</div>
+          )}
+          {selectedConfig && selectedConfig.name === 'Monthly Invoice Report' && (
+            <div class="m-t text-small">
+              To reconcile the monthly invoice of December 20 and January 21 with the monthly
+              invoice report, please use the custom period option as per the billing period
+              mentioned above.
+            </div>
+          )}
         </div>
       </Input.Group>
     ) : (
@@ -195,13 +189,7 @@ export default class SelectPeriod extends React.Component {
   }
 }
 
-function SelectInterval({
-  selectedPeriod,
-  onDateChange,
-  onDateTimeChange,
-  withTime,
-  defaults,
-}) {
+function SelectInterval({ selectedPeriod, onDateChange, onDateTimeChange, withTime, defaults }) {
   switch (selectedPeriod) {
     case 'monthly':
       return (
@@ -322,10 +310,7 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
   let fromDate, toDate;
   switch (selectedPeriod) {
     case 'yesterday':
-      fromDate = today
-        .clone()
-        .subtract(1, 'day')
-        .format(DATE_DISPLAY_FORMAT);
+      fromDate = today.clone().subtract(1, 'day').format(DATE_DISPLAY_FORMAT);
       break;
 
     case 'last_7_days':
@@ -337,14 +322,9 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
       break;
 
     case 'last_month':
-      const lastDayOfLastMonth = today
-        .clone()
-        .startOf('month')
-        .subtract(1, 'day');
+      const lastDayOfLastMonth = today.clone().startOf('month').subtract(1, 'day');
       toDate = lastDayOfLastMonth.format(DATE_DISPLAY_FORMAT);
-      fromDate = lastDayOfLastMonth
-        .startOf('month')
-        .format(DATE_DISPLAY_FORMAT);
+      fromDate = lastDayOfLastMonth.startOf('month').format(DATE_DISPLAY_FORMAT);
       break;
 
     default:
@@ -361,24 +341,14 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
 }
 
 // default month is last month
-function getStartAndEndUnixTimeStampsForMonth(
-  momentDate = moment().subtract(1, 'month')
-) {
+function getStartAndEndUnixTimeStampsForMonth(momentDate = moment().subtract(1, 'month')) {
   const lastDayOfLastMonthEndOfDayUnix = momentDate.endOf('month').format('X');
-  const firstDayOfLastMonthStartOfDayUnix = momentDate
-    .startOf('month')
-    .format('X');
+  const firstDayOfLastMonthStartOfDayUnix = momentDate.startOf('month').format('X');
 
-  return [
-    Number(firstDayOfLastMonthStartOfDayUnix),
-    Number(lastDayOfLastMonthEndOfDayUnix),
-  ];
+  return [Number(firstDayOfLastMonthStartOfDayUnix), Number(lastDayOfLastMonthEndOfDayUnix)];
 }
 
 const dateRangeKeys = ['selectedStartAt', 'selectedEndAt'];
 function valuesRelatedToDateRange(name, value) {
-  return (
-    dateRangeKeys.includes(name) ||
-    (name === 'selectedPeriod' && value === 'dateRange')
-  );
+  return dateRangeKeys.includes(name) || (name === 'selectedPeriod' && value === 'dateRange');
 }
