@@ -129,15 +129,11 @@ class InstrumentRequestController extends BaseController
     {
         $input = Request::all();
 
-        $query = $input['query'];
-
-        $body = $input['body'];
-
         $response = $this->app['terminals_service']->proxyTerminalService(
-            $body,
+            $input,
             \Requests::POST,
-            'v2/internal_instrument_request?' . $query,
-            [],
+            'v2/internal_instrument_request',
+            ['timeout' => 300],
             $this->getAdminHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
