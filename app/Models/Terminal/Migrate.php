@@ -270,7 +270,8 @@ trait Migrate
             Entity::SYNC_STATUS,
             Entity::SHARED,
             Entity::USED_COUNT,
-            Entity::DIRECT
+            Entity::DIRECT,
+            Entity::MPAN
         ];
 
         $mismatchData = [];
@@ -333,6 +334,13 @@ trait Migrate
 
             return false;
         }
+        $data = [
+            'route' => $this->app['request.ctx']->getRoute(),
+            'message' => null,
+            Terminal\Entity::TERMINAL_ID => $terminalResponse[Entity::ID],
+        ];
+
+        $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
 
         return true;
     }

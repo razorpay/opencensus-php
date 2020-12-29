@@ -147,15 +147,19 @@ class Service extends Base\Service
 
             $dataToCompare = $data["items"];
 
+            foreach ($dataToCompare as $index => $value)
+            {
+                $response[$index]["id"] = "term_" . $response[$index]["id"];
+            }
+
             if ((new Terminal\Service())->compareArrayOfTerminalArrays($dataToCompare, $response) === false)
             {
                 $traceData = ["content" => $content];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_FETCH_ONBOARDING_COMPARISON_FAILED, $traceData);
-
-                // once comparison has run for sometime, next line will be uncommented
-                // return $response;
             }
+
+            return $response;
         }
 
         return $data;

@@ -52,6 +52,26 @@ trait TerminalTrait
 
         $response =  new \Requests_Response;
 
+        $data['entity'] = 'terminal';
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+    protected function getTerminalServiceCheckSecretResponse() : \Requests_Response
+    {
+        $data = [
+            'gateway_terminal_password' => true,
+            'gateway_terminal_password2' => true,
+            'gateway_secure_secret' => true,
+            'gateway_secure_secret2' => true
+        ];
+
+        $response = new \Requests_Response;
+
         $responseData = ['data' => $data];
 
         $response->body = json_encode($responseData);

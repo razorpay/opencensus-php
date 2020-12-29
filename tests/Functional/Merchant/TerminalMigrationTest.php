@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use RZP\Exception\IntegrationException;
 use Symfony\Component\HttpFoundation\Response;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 
 class TerminalMigrationTest extends TestCase
@@ -1679,6 +1680,148 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminFetchTerminalByIdTerminalServiceValidResponseProxy()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+
+            $this->assertEquals("", $content);
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertStringEndsWith($terminal['id'], $path);
+
+            $response = new \Requests_Response;
+
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+
+            return $this->getDefaultTerminalServiceResponse($data);
+
+        }, 1);
+
+        $this->razorxValue = 'proxy';
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'admin_fetch_terminal_by_id',
+            'message'       => null,
+            'terminal_id'   => 'term_'.$terminal['id'],
+
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+
+        $url = '/admin/terminal/' . $terminal['id'] . '/';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCheckEncryptedValueTerminalServiceValidResponseProxy()
+    {
+        $data = [
+            'gateway_terminal_password' => 'testpassword',
+            'gateway_terminal_password2' => 'testpassword',
+            'gateway_secure_secret' => 'testsecret',
+            'gateway_secure_secret2' => 'testsecret'
+        ];
+
+        $terminal = $this->fixtures->create(
+            'terminal', $data);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal, $data) {
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $this->assertStringEndsWith('/terminals/'.$terminal['id'].'/secrets', $path);
+
+            return $this->getTerminalServiceCheckSecretResponse();
+
+        }, 1);
+
+        $this->razorxValue = 'proxy';
+
+        $url = '/terminals/' . $terminal['id'] . '/secret/';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testFetchTerminalProxy()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', ['merchant_id' => '10000000000000']);
+
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $this->ba->privateAuth();
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $data = [
+                "merchant_ids" => ['10000000000000']
+            ];
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $this->assertStringEndsWith('/public/merchants/terminals', $path);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            $data[0]['entity'] = 'terminal';
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 1);
+
+        $this->razorxValue = 'proxy';
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'terminal_fetch',
+            'message'       => null,
+            'terminal_id'   => 'term_'.$terminal['id'],
+
+        ];
+
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+
+        $url = '/terminals/';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
     {
         $this->razorxValue = 'migrate';
@@ -1797,8 +1940,76 @@ class TerminalMigrationTest extends TestCase
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
 
         $this->startTest();
+    }
 
+    public function testFetchTerminalsAdminAuthProxy()
+    {
+        DB::table('terminals')->delete();
 
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->razorxValue = 'proxy';
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used' => true,
+            'enabled' => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $this->assertEquals("v1/merchants/terminals", $path);
+
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "deleted" => true];
+
+            $this->assertEquals(json_encode($expectedContent), $content);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            $data[0]['entity'] = 'terminal';
+            $data[1]['entity'] = 'terminal';
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+        $expectedSuccess1 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => 'term_1n25f6uN5S1Z5a',
+        ];
+
+        $expectedSuccess2 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => 'term_'.$terminal['id'],
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
+
+        $mock->expects($this->at(2))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
+
+        $this->startTest();
     }
 
     public function testFetchTerminalsAdminAuthTerminalIdMismatch()

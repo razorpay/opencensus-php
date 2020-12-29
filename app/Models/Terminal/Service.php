@@ -87,8 +87,6 @@ class Service extends Base\Service
 
             $content["sub_merchant"] = $subMerchantFlag;
 
-            $content["status"] = Status::ACTIVATED;
-
             $content["deleted"] = true;
 
             $path = "v1/merchants/terminals";

@@ -53,10 +53,9 @@ class TerminalController extends Controller
                 $traceData = ["api" => $data, "terminals" => $response];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_CHECK_SECRETS_COMPARISON_FAILED, $traceData);
-
-                // once comparison has run for sometime, next line will be uncommented
-                // return ApiResponse::json($response);
             }
+
+            return ApiResponse::json($response);
         }
 
         return ApiResponse::json($data);

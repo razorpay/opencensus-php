@@ -46,8 +46,7 @@ return [
             ],
         ],
     ],
-        
-                
+
     'testAssignTerminalInternalAuthMigrateVariantPaysecure' => [
         'request' => [
             'content' => [
@@ -405,6 +404,54 @@ return [
         ],
     ],
 
+    'testAdminFetchTerminalByIdTerminalServiceValidResponseProxy' => [
+        'request'    => [
+            'method'    => 'GET'
+        ],
+        'response'   => [
+            'content'   => [
+                'merchant_id' => '100000Razorpay',
+                'procurer' => 'razorpay',
+                'enabled' => true,
+                'gateway' => 'axis_migs'
+            ],
+        ],
+    ],
+
+    'testCheckEncryptedValueTerminalServiceValidResponseProxy' => [
+        'request'    => [
+            'method'    => 'POST',
+            'content'   => [
+                'gateway_terminal_password' => 'testpassword',
+                'gateway_terminal_password2' => 'testpassword',
+                'gateway_secure_secret' => 'testsecret',
+                'gateway_secure_secret2' => 'testsecret'
+            ]
+        ],
+        'response'   => [
+            'content'   => [
+
+            ],
+        ],
+    ],
+
+    'testFetchTerminalProxy' => [
+        'request'    => [
+            'method'    => 'GET',
+        ],
+        'response'   => [
+            'content'   => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'entity' => 'terminal',
+                    'procurer' => 'razorpay',
+                    'enabled' => true,
+                    'gateway' => 'hdfc'
+                ]
+            ],
+        ],
+    ],
+
     'testAdminFetchTerminalByIdTerminalServiceInvalidResponse' => [
         'request'    => [
             'method'    => 'GET'
@@ -446,6 +493,17 @@ return [
         'response' => [
             'content' => [
 
+            ],
+        ],
+    ],
+    'testFetchTerminalsAdminAuthProxy' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/merchants/10000000000000/terminals'
+        ],
+        'response' => [
+            'content' => [
+                "count" => 2
             ],
         ],
     ],
