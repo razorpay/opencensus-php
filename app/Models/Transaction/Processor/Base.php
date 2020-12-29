@@ -128,20 +128,27 @@ abstract class Base extends BaseCore
         {
             $startTime = microtime(true);
 
-            // update merchant credits an balances
-            $this->setMerchantBalanceLockForUpdate();
+            try
+            {
+                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
 
-            $this->updateCredits($negativeLimit);
+                // update merchant credits an balances
+                $this->setMerchantBalanceLockForUpdate();
 
-            $this->updateBalances($negativeLimit);
+                $this->updateCredits($negativeLimit);
 
-            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
-                [
-                    'txn_type'              => $this->txn->getType(),
-                    'async_update'          => false,
-                    'balance_update_time'   => (microtime(true) - $startTime) * 1000
-                ]
-            );
+                $this->updateBalances($negativeLimit);
+            }
+            finally
+            {
+                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
+                    [
+                        'txn_type'              => $this->txn->getType(),
+                        'async_update'          => false,
+                        'balance_update_time'   => (microtime(true) - $startTime) * 1000
+                    ]
+                );
+            }
         }
 
         //
