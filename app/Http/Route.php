@@ -314,6 +314,7 @@ class Route
         'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
         'merchant_invoice_pdf_control'             => ['post',     'merchants/invoice/pdf_control',                  'MerchantInvoiceController@pdfControl'                              ],
         'merchant_invoice_control'                 => ['post',     'merchants/invoice/control',                      'MerchantInvoiceController@generationControl'                       ],
+        'merchant_invoice_entity_create_admin'     => ['post',     'merchants/invoice/entity/create',                'MerchantInvoiceController@entityCreateAdmin'                       ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
@@ -3955,7 +3956,10 @@ class Route
         'user_roles_mapping_bulk',
 
         'merchant_invoice_pdf_control',
+
+        //merchant invoice
         'merchant_invoice_control',
+        'merchant_invoice_entity_create_admin',
 
         // P2p Routes
         'p2p_admin_add_handle',
@@ -4850,6 +4854,7 @@ class Route
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
 
         'merchant_invoice_pdf_control'              => Permission::MERCHANT_INVOICE_CONTROL,
+        'merchant_invoice_entity_create_admin'      => Permission::MERCHANT_INVOICE_CONTROL,
 
         // Razorpay Capital
         // Financial Data Service

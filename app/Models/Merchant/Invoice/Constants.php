@@ -25,4 +25,5 @@ final class Constants
     const REMOVE_FROM_SKIPPED_MIDS_LIST = 'remove';
 
     const SHOW_SKIPPED_MIDS_LIST = 'show';
+
 }

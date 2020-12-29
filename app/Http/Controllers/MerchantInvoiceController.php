@@ -69,4 +69,13 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json($result);
     }
+
+    public function entityCreateAdmin()
+    {
+        $input = Request::all();
+
+        $result = $this->service()->createInvoiceEntities($input);
+
+        return ApiResponse::json($result);
+    }
 }
