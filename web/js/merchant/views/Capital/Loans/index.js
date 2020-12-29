@@ -13,6 +13,7 @@ import {
   CAPITAL_PRODUCT_NAME_CODE_MAP,
   HOTJAR_TRIGGERS,
   TOOLTIP_DESCRIPTIONS,
+  GA_CATEGORY_BY_PRODUCT
 } from './constants';
 import EditPanModal from './EditPanModal';
 import CircularProgress from 'common/new-ui/CircularProgress';
@@ -35,15 +36,15 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export const PROS = [
-  <React.Fragment>
+  <React.Fragment key={1}>
     <i className="i i-bullet" />
     <span>Get competitive interest rates for your risk profile</span>
   </React.Fragment>,
-  <React.Fragment>
+  <React.Fragment key={2}>
     <i class="i i-bullet" />
     <span>Apply online in 5 minutes with support when you need</span>
   </React.Fragment>,
-  <React.Fragment>
+  <React.Fragment key={3}>
     <i class="i i-bullet" />
     <span>Repay easily from daily settlements with more options</span>
   </React.Fragment>,
@@ -80,7 +81,9 @@ class LoanApplicationOverview extends React.Component {
 
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location;
-    eventObject.eventCategory = eventCategory ? eventCategory : 'Dashboard - WCL LOS';
+    eventObject.eventCategory = eventCategory
+      ? eventCategory
+      : GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
     window.rzpAnalytics(eventObject);
   };
 
@@ -107,7 +110,6 @@ class LoanApplicationOverview extends React.Component {
     if (searchParams) {
       const params = new URLSearchParams(searchParams);
       const action = params.get('action');
-      const loanId = params.get('id');
       this.onLoadHandlers.push((activeApplication) => {
         if (action === 'open') {
           this.openLoanEntity();

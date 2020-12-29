@@ -32,17 +32,19 @@ import NachEntity from './Forms/NachEntity';
 import VerificationSlotSelection from './Forms/VerificationSlotSelection';
 import LoanApproved from './Forms/LoanApproved';
 import FormSectionLoadingSkeleton from '../components/FormSectionLoadingSkeleton';
-import { isCashAdvanceProduct, isLoanProduct, isPreceedingState } from '../utils';
+import { isCashAdvanceProduct, isLoanProduct, isPreceedingState, getStepIndex } from '../utils';
 import {
   APPLICATION_STATES,
   APPLICATION_STATE_MESSAGE_MAP,
   APPLICATION_STATE_TITLE_MAP,
+  GA_CATEGORY_BY_PRODUCT,
 } from './constants';
 import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
 import CashAdvanceApproved from './Forms/CashAdvanceApproved';
 import OfflineDocumentCollection from './Forms/OfflineDocumentCollection';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
 const stateFormMap = {
   BUSINESS_INFO_PENDING: BusinessInfoEntity,
@@ -139,7 +141,7 @@ class FormSectionRenderer extends Component {
       !meta.loading
     ) {
       this.fetchStateDetails(this.getToBeRenderedState());
-      this.props.changeActiveState(meta.data.application.status);
+      this.changeActiveState(meta.data.application.status);
     }
 
     if (this.formContainer) {
@@ -634,17 +636,48 @@ class FormSectionRenderer extends Component {
     );
   };
 
+  trackNavigationEvent = (from, to, product) => {
+    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+    const stepIndex = getStepIndex(
+      from,
+      this.getUserFlowConfiguration().getApplicationStateGroups(),
+    );
+
+    const toStepLabel = APPLICATION_STATE_DESCRIPTIONS[to].short_description;
+    const fromStepLabel = APPLICATION_STATE_DESCRIPTIONS[from].short_description;
+    this.gaEventDispatcher({
+      eventAction: `Step ${stepIndex} | ${fromStepLabel} - ${toStepLabel}`,
+      eventLabel: this._getProgressPercentage(),
+      eventCategory: GA_CATEGORY_BY_PRODUCT[product],
+    });
+  };
+
+  _getProgressPercentage = () => {
+    const { meta } = this.props.loanApplicationDetails;
+    if (!meta.data.application.status) return 0;
+    return getApplicationProgressPercentage(
+      meta.data.application.status,
+      meta.configuration.getApplicationStateGroups(),
+    );
+  };
+
+  changeActiveState = (nextState, data) => {
+    const { changeActiveState, loanApplicationDetails } = this.props;
+    const { meta, context } = loanApplicationDetails;
+    this.trackNavigationEvent(context.activeState, nextState, meta.product);
+    changeActiveState(nextState, data);
+  };
+
   getNavigationActions = (activeState) => {
     const nextState = this.getNextState(activeState);
     const previousState = this.getPreviousState(activeState);
-
-    const { changeActiveState } = this.props;
+    const thisRef = this;
     return {
       next(data = null) {
-        if (nextState) changeActiveState(nextState, data);
+        if (nextState) thisRef.changeActiveState(nextState, data);
       },
       back(data = null) {
-        if (previousState) changeActiveState(previousState, data);
+        if (previousState) thisRef.changeActiveState(previousState, data);
       },
     };
   };
@@ -679,7 +712,8 @@ class FormSectionRenderer extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    eventObject['eventCategory'] =
+      GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
     window.rzpAnalytics(eventObject);
   };
 
@@ -726,7 +760,7 @@ class FormSectionRenderer extends Component {
             <LoanStatusBanner
               loanApplicationDetails={this.props.loanApplicationDetails}
               ref={this.bannerMessageContainer}
-              changeActiveState={this.props.changeActiveState}
+              changeActiveState={this.changeActiveState}
             />
             <div className="application-form-container" ref={(node) => (this.formContainer = node)}>
               <div className="loan-application-form-section">

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import { ERROR_STATES, PENDING_APPLICATION_STATES, GA_CATEGORY_BY_PRODUCT } from './constants';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
-import { ERROR_STATES, PENDING_APPLICATION_STATES } from './constants';
 import { connect } from 'react-redux';
 import { changeActiveState } from 'merchant/reducers/capital';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
@@ -214,7 +214,7 @@ class SideNavigation extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
     window.rzpAnalytics(eventObject);
   };
 

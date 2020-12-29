@@ -3,6 +3,7 @@ import Note from '../../components/Note';
 import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 import { isPreceedingState } from '../../utils';
+import { GA_CATEGORY_BY_PRODUCT } from '../constants';
 import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalculator';
 
 @connect((state) => ({
@@ -14,7 +15,7 @@ import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalc
 }))
 class PendingState extends Component {
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.props.product];
     window.rzpAnalytics(eventObject);
   };
 

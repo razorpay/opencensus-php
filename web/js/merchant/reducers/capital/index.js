@@ -1,6 +1,7 @@
 import LoanOrigination from 'merchant/models/Capital/LoanOrigination';
 import { merge } from 'common/utils/immutable';
 import ConfigFactory from '../../views/Capital/ConfigFactory';
+import { GA_CATEGORY_BY_PRODUCT } from '../../views/Capital/Loans/constants';
 
 const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_PRODUCTS = 'FETCH_PRODUCTS';

@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { isLoanProduct, isPreceedingState } from '../utils';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import CircularProgress from 'common/new-ui/CircularProgress';
 import { getAcceptedOffer, fetchCreditOffers, changeActiveState } from 'merchant/reducers/capital';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import { isLoanProduct, isPreceedingState } from '../utils';
 import {
   APPLICATION_STATES,
   CAPITAL_PRODUCT_NAME_CODE_MAP,
   TENURE_UNIT_LABELS,
   TOOLTIP_DESCRIPTIONS,
+  GA_CATEGORY_BY_PRODUCT
 } from './constants';
 
 @connect(
@@ -136,8 +137,13 @@ class ApplicationSummary extends Component {
     ];
   };
 
+  getProductCode = () => {
+    const { meta } = this.props.loanApplicationDetails;
+    return meta.product;
+  };
+
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
     window.rzpAnalytics(eventObject);
   };
 

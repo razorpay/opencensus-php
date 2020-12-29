@@ -533,3 +533,8 @@ export const OFFLINE_COLLECTION_DOCUMENTS = {
     },
   ],
 };
+
+export const GA_CATEGORY_BY_PRODUCT = {
+  [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: 'Cash Advance - LOS',
+  [CAPITAL_PRODUCT_CODES.LOAN]: 'Loans - LOS',
+}

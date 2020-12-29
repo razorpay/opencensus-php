@@ -379,7 +379,6 @@ class PromoterDetailsEntity extends Component {
       }
     } else {
       this.props.navigation.next({ from: 'next' });
-      this.props._trackNavigationActions('NEXT', APPLICATION_STATES.CREDIT_PULL_PENDING);
     }
   };
 
