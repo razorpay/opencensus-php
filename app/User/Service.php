@@ -1406,7 +1406,8 @@ class Service extends Base\Service
             'AnnouncementIconDec2020',
             'show_rx_vp_announcement_2',
             'bulk_payouts_improvements_rollout',
-            'block_bank_account_update_merchant_dashboard'
+            'block_bank_account_update_merchant_dashboard',
+            'rx_opfin_announcement_v2',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

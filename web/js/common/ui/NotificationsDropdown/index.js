@@ -11,6 +11,7 @@ import { trackLoad, trackExpand, trackAnnouncement } from './ga';
 import HubspotCAForm from './HubspotCAForm';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncement from './components/OpfinAnnouncement';
+import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -231,6 +232,16 @@ export default class NotificationsDropdown extends Component {
     });
   };
 
+  showOpfinAnnouncementV2 = (id) => {
+    const { closeModal, openModal } = this.props;
+
+    openModal({
+      component: <OpfinAnnouncementV2 id={id} onClose={closeModal} />,
+      size: 'xlarge',
+      className: 'OpfinAnnouncement--Modal',
+    });
+  };
+
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -243,6 +254,9 @@ export default class NotificationsDropdown extends Component {
         this.showOpfinAnnouncement(id);
 
         break;
+
+      case 'announcement-Nov20-Opfin-NitroV3-cta1':
+        this.showOpfinAnnouncementV2(id);
 
       case 'NOV20-RZP-FESTIVEOFFER-BUTTON':
         this.props.showAcceptPaymentsModal();
@@ -272,6 +286,7 @@ export default class NotificationsDropdown extends Component {
       'Nov20-Opfin-NitroV2',
       'DEC20-PayPal-GTM',
       'DEC20-VP-C1',
+      'Nov20-Opfin-NitroV3',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>

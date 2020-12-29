@@ -307,6 +307,25 @@ class Constants
                 'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-3'],
             ],
         ],
+        [
+            'title'       => 'Festive Special: Exclusive Offer For You',
+            'description' => 'Get ₹5,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
+            'icon'        => '/dist/css/assets/products/opfin.svg',
+            'id'          => 'Nov20-Opfin-NitroV3',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-Nov20-Opfin-NitroV3-cta1',
+                ],
+            ],
+            'start_ts'    => 1609308877,
+            'end_ts'      => 1623994200,
+            'filters'     => [
+                'experiments_with_variant'  => ['rx_opfin_announcement_v2' => 'cohort-4'],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array
