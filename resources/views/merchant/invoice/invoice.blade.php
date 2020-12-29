@@ -541,7 +541,21 @@
 
             <li>Invoicing is per IST timezone</li>
 
+            @if($billing_period == '01/12/2020-30/12/2020')
+            <li>If you are a registered entity, the invoice raised for the next billing cycle will be registered on the
+                GST IRP (Invoice Registration Portal) as per GST guidelines.</li>
+
+            <li>Please ensure that your GSTIN, Registered Address and PIN code is updated as per GST portal.
+                You can click here to learn more:<a href="https://razorpay.com/docs/announcements/gst-changes/">
+                    https://razorpay.com/docs/announcements/gst-changes/</a></li><br>
+            @endif
+
         </ol>
+        @if($billing_period == '01/12/2020-30/12/2020')
+            <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
+                This invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30, 2020. The charges for December 31, 2020 will be added to the next billing cycle.
+            </div>
+        @endif
 
     </div>
 

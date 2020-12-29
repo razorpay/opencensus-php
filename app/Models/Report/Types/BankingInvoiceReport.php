@@ -169,14 +169,23 @@ class BankingInvoiceReport extends BaseReport
                       ->startOfDay()
                       ->getTimestamp();
 
-        $to = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST)
-                    ->endOfMonth()
-                    ->getTimestamp();
+        $to = $this->getPatchedEndDateForBillingPeriod();
 
         $from = Carbon::createFromTimestamp($from,Timezone::IST)->format(self::BILLING_PERIOD_DATE_FORMAT);
         $to = Carbon::createFromTimestamp($to,Timezone::IST)->format(self::BILLING_PERIOD_DATE_FORMAT);
 
         return $from . '-' . $to;
+    }
+
+    protected function getPatchedEndDateForBillingPeriod()
+    {
+        $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+        if ($this->month == 12 and $this->year == 2020) {
+            return $date->lastOfMonth()->subDays(1)->endOfDay()->getTimestamp();
+        }
+        else {
+            return $date->endOfMonth()->getTimestamp();
+        }
     }
 
     protected function getTaxComponents(string $gstin = null): array
