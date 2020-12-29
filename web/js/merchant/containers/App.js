@@ -156,11 +156,12 @@ export default class App extends Component {
 
   componentWillMount() {
     const user = window.rzp_user;
-
-    analyticsService.identify({
-      id: user.id,
-      properties: getCommonAnalyticsProperties(window.rzp_user),
-    });
+    if (user) {
+      analyticsService.identify({
+        id: user.id,
+        properties: getCommonAnalyticsProperties(window.rzp_user),
+      });
+    }
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
       self.registerPendingRequests(e.detail.continueAjax);
@@ -357,7 +358,7 @@ export default class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => {});
+          .catch((err) => { });
         break;
       case 2:
         this.fireMTUAudienceEvents(user);

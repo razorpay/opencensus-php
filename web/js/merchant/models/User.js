@@ -186,7 +186,7 @@ export default class User {
           return true;
         }
 
-        if (this.activated === 1) {
+        if (!!this.activated) {
           return true;
         }
         if (!this.isUnregisteredBusiness) {
