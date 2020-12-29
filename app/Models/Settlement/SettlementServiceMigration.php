@@ -132,6 +132,7 @@ class SettlementServiceMigration
                     Preferences::MID_KARVY => 'FbgzY8mEQohG09',
                     Preferences::MID_SCRIP_BOX => 'Fbh07JzgaM1Owh',
                     Bucket\Constants::MERCHANT_DSP => 'FbgwZ8rMIeZge0',
+                    Preferences::MID_ET_MONEY => 'GIsrgdePEHYf60',
                 ],
                 'test' => [
                     Constants::ES_AUTOMATIC => 'FaBc8jORXUmwcC',
@@ -144,6 +145,7 @@ class SettlementServiceMigration
                     Preferences::MID_KARVY => 'FbgzY8IqB25BQ7',
                     Preferences::MID_SCRIP_BOX => 'Fbh07KpzvxqKeA',
                     Bucket\Constants::MERCHANT_DSP => 'FbgwJHq7sB3jMJ',
+                    Preferences::MID_ET_MONEY => 'GIsrgfsZi13Mt7',
                 ],
             ],
             'international' => [
