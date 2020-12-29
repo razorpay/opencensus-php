@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
+import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
 import {
@@ -46,8 +47,10 @@ export const deleteFile = (curDoc) =>
   fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE' });
 
 export default function useActivation() {
+  const snackbar = useSnackbar();
   const { status, data } = useQuery('activation', fetchActivationData, {
     staleTime: Infinity,
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
 
   const queryCache = useQueryCache();
@@ -55,21 +58,27 @@ export default function useActivation() {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
+      snackbar.success('Successfully saved');
     },
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
 
   const [documentUpload] = useMutation(saveFile, {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
+      snackbar.success('Successfully file uploaded');
     },
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
 
   const [documentDelete] = useMutation(deleteFile, {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
+      snackbar.success('Successfully file deleted');
     },
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
 
   const setContactDetailsCompleted = useActivationFormState(

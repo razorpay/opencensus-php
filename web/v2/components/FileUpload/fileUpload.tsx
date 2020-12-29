@@ -57,6 +57,7 @@ const Uploaded = ({ fileName, progress, onCancel }) => {
                     variantColor="shade"
                     icon="close"
                     onClick={onCancel}
+                    testID="ds-fileUpload"
                   />
                 </View>
               </Space>

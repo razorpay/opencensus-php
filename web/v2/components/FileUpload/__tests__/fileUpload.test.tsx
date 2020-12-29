@@ -28,7 +28,7 @@ describe('fileUpload component', () => {
     fireEvent.change(uploadInput, { target: { files: [file] } });
     expect(fileUploadfn).toBeCalledTimes(1);
     expect(screen.getByText('abc.png')).toBeInTheDocument();
-    const closeButton = screen.getByTestId('ds-button');
+    const closeButton = screen.getByTestId('ds-fileUpload');
     expect(closeButton).toBeInTheDocument();
     fireEvent.click(closeButton);
     expect(remove).toBeCalledTimes(1);

@@ -9,6 +9,7 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
 import { CenterLoader } from 'v2/components/Loader';
+import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import useActivation from '../hooks/useActivation';
 import { isUnregisteredBusiness } from '../services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
@@ -259,6 +260,7 @@ const fetchWebsiteWorkflowStatus = () =>
   fetch<any>({ url: 'merchant/activation/websites/status', mode: 'live' });
 
 const AcceptPaymentsCard: React.FC = () => {
+  const snackbar = useSnackbar();
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: internationalWorkflowQueryStatus, data: internationalWorkflowData } = useQuery(
     'internationalWorkflowStatus',
@@ -266,6 +268,7 @@ const AcceptPaymentsCard: React.FC = () => {
     {
       retry: false,
       staleTime: Infinity,
+      onError: (err: any) => snackbar.error(err.response.errors[0]),
     },
   );
   const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery(
@@ -274,6 +277,7 @@ const AcceptPaymentsCard: React.FC = () => {
     {
       retry: false,
       staleTime: Infinity,
+      onError: (err: any) => snackbar.error(err.response.errors[0]),
     },
   );
 

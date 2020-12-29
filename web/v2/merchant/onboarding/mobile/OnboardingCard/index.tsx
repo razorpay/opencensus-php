@@ -8,6 +8,7 @@ import Space from '@razorpay/blade/src/atoms/Space';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import { CenterLoader } from 'v2/components/Loader';
 import { ProgressBar } from 'v2/components/ProgressBar';
+import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import Card from '../../../../components/Card';
 import useActivation from '../hooks/useActivation';
 import BusinessModelDetails from './BusinessModelDetails';
@@ -29,8 +30,11 @@ const HeadingContainer = styled(View)`
 `;
 
 const OnboardingCard: React.FC = () => {
+  const snackbar = useSnackbar();
   const { status: activationQueryStatus, data: activationData } = useActivation();
-  const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments);
+  const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments, {
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
+  });
 
   if (activationQueryStatus === 'loading' || paymentsQueryStatus === 'loading') {
     return <CenterLoader />;
