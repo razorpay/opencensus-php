@@ -95,6 +95,20 @@ class Repository extends Base\Repository
                     ->pluck('id');
     }
 
+    public function retrieveIdsByNamesAndOrgWithPermissionList(array $permissionList, string $orgId)
+    {
+        $pid = $this->dbColumn(Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        return $this->newQuery()
+            ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+            ->where($pmTable . '.entity_id', '=', $orgId)
+            ->where($pmTable . '.entity_type', '=', 'org')
+            ->whereIn(Entity::NAME, $permissionList)
+            ->pluck('id');
+    }
+
     /**
      * Enable workflows for orgs which are assigned to a permission
      * Worklows can only be enabled for orgs if the permission is assigned to

@@ -161,6 +161,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getOpenActionOnEntityOperationWithPermissionList(
+        string $entityId,
+        string $entityName,
+        array $permissionIdList)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::ENTITY_NAME, $entityName)
+            ->whereIn(Entity::PERMISSION_ID, $permissionIdList)
+            ->whereIn(Entity::STATE, State\Name::OPEN_ACTION_STATES)
+            ->get();
+    }
+
     public function getOpenActionOnEntityListOperation(
         array $entityIdList,
         string $entityName,

@@ -585,11 +585,11 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function close(Entity $action, Admin\Entity $admin)
+    public function close(Entity $action, $maker, $autoclose = false)
     {
-        $action->getValidator()->validateCloseAction($admin);
+        $action->getValidator()->validateCloseAction($maker, $autoclose);
 
-        $this->repo->transactionOnLiveAndTest(function () use($action, $admin){
+        $this->repo->transactionOnLiveAndTest(function () use($action, $maker){
 
             $state = State\Name::CLOSED;
 
@@ -597,16 +597,16 @@ class Core extends Base\Core
                 State\Entity::NAME      => $state,
             ];
 
-            if ($admin->isSuperAdmin() === true)
+            if ($maker->isSuperAdmin() === true)
             {
-                $this->updateStateAndStateChanger($action, $state, $admin, $admin->getSuperAdminRole());
+                $this->updateStateAndStateChanger($action, $state, $maker, $maker->getSuperAdminRole());
             }
             else
             {
-                $this->updateStateAndStateChanger($action, $state, $admin, null);
+                $this->updateStateAndStateChanger($action, $state, $maker, null);
             }
 
-            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $maker, $action);
 
             $documents = (new Differ\Core)->getDocumentsFromEs($action->getId());
 
@@ -712,6 +712,21 @@ class Core extends Base\Core
         return $actions;
     }
 
+    public function fetchOpenActionOnEntityOperationWithPermissionList(
+        string $entityId,
+        string $entityName,
+        array $permissionList,
+        string $orgId = null)
+    {
+        $permissionIdList = $this->fetchPermissionListId($permissionList, $orgId);
+
+        $actions = $this->repo
+            ->workflow_action
+            ->getOpenActionOnEntityOperationWithPermissionList($entityId, $entityName, $permissionIdList);
+
+        return $actions;
+    }
+
     public function fetchOpenActionOnEntityListOperation(
         array $entityIdList,
         string $entityName,
@@ -770,6 +785,26 @@ class Core extends Base\Core
         $permissionId = $permissionIdList[0];
 
         return $permissionId;
+    }
+
+    private function fetchPermissionListId(array $permissionList, $orgId)
+    {
+        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $permissionIdList = $this->repo
+            ->permission
+            ->retrieveIdsByNamesAndOrgWithPermissionList($permissionList, $orgId)
+            ->toArray();
+
+        if (empty($permissionIdList) === true)
+        {
+            throw new
+            Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PERMISSION);
+        }
+
+        return array_unique($permissionIdList);
     }
 
     public function fetchActionStatus(
@@ -889,8 +924,8 @@ class Core extends Base\Core
      */
     public function autoCloseActivationWorkflowActionIfOpen(string $entityId, string $entityType)
     {
-        $actions = $this->fetchOpenActionOnEntityOperation(
-            $entityId, $entityType, Permission\Name::EDIT_ACTIVATE_MERCHANT);
+        $actions = $this->fetchOpenActionOnEntityOperationWithPermissionList(
+            $entityId, $entityType, Constants::AUTO_CLOSE_WF_NAMES_ON_NC);
 
         // If there are any action in progress
         if (empty($actions) === false)
@@ -898,7 +933,7 @@ class Core extends Base\Core
             $maker = $this->app['workflow']->getWorkflowMaker();
             foreach ($actions as $action)
             {
-                $this->close($action, $maker);
+                $this->close($action, $maker, true);
             }
         }
 

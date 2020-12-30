@@ -57,7 +57,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCloseAction($admin)
+    public function validateCloseAction($maker, bool $autoclose)
+    {
+        if ($autoclose === false)
+        {
+            $this->canClose($maker);
+        }
+    }
+
+    private function canClose($maker)
     {
         $action = $this->entity;
 
@@ -70,8 +78,8 @@ class Validator extends Base\Validator
         {
             // If admin is the creator of action
             // or admin is SuperAdmin then close should be allowed
-            if (($action->getMakerId() === $admin->getId()) or
-                ($admin->isSuperAdmin() === true))
+            if (($action->getMakerId() === $maker->getId()) or
+                ($maker->isSuperAdmin() === true))
             {
                 $canCloseAction = true;
             }
@@ -83,7 +91,7 @@ class Validator extends Base\Validator
             // Other admins should just reject, we'll see
             // later if they want any admin to be able to close
             // or not.
-            if ($admin->isSuperAdmin() === true)
+            if ($maker->isSuperAdmin() === true)
             {
                 $canCloseAction = true;
             }
@@ -93,7 +101,7 @@ class Validator extends Base\Validator
         {
             $data = [
                 'action_admin_id' => $action->getMakerId(),
-                'auth_admin_id'   => $admin->getId(),
+                'auth_admin_id'   => $maker->getId(),
             ];
 
             throw new Exception\BadRequestException(
