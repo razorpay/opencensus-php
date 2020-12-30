@@ -1134,6 +1134,7 @@ class Route
         'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                        'WorkflowServiceController@createWorkflowStateMap'                  ],
         'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
 
+
         //Vendor Payments
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                   'VendorPaymentController@executeVendorPaymentBulk'                  ],
         'vendor_payment_upcoming_mail_cron'        => ['post',     'vendor-payments/sendUpcomingMailCron',           'VendorPaymentController@sendUpcomingMailCron'                      ],
@@ -2155,6 +2156,22 @@ class Route
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
+
+        //Routes related to app framework
+        'app_mapping_create'                      => ['post',    'app/mapping',                                             'ApplicationFrameworkController@createAppMapping'              ],
+        'app_mapping_delete'                      => ['delete',  'app/tags/mapping',                                        'ApplicationFrameworkController@deleteAppMapping'              ],
+        'app_tags_delete'                         => ['delete',  'app/tags',                                                'ApplicationFrameworkController@deleteTag'                     ],
+
+        'app_create'                              => ['post',    'app',                                                     'ApplicationFrameworkController@createApp'                     ],
+        'app_update'                              => ['patch',   'app/{id}',                                                'ApplicationFrameworkController@updateApp'                     ],
+        'app_get'                                 => ['get',     'app/{id}',                                                'ApplicationFrameworkController@getApp'                        ],
+
+        'app_merchant_mapping_create'             => ['post',     'merchant/app/mapping',                                   'ApplicationFrameworkController@createMerchantMapping'         ],
+        'app_merchant_mapping_update'             => ['patch',    'merchant/app/mapping',                                   'ApplicationFrameworkController@updateMerchantMapping'         ],
+        'app_merchant_mapping_get'                => ['get',      'merchant/{id}/app/mapping',                              'ApplicationFrameworkController@getAppsForMerchant'            ],
+
+        'merchant_tag_map_create'                 => ['post',     'merchant/{id}/tag',                                      'ApplicationFrameworkController@createMerchantTag'             ],
+        'merchant_tag_map_update'                 => ['patch',    'merchant/{id}/tag',                                      'ApplicationFrameworkController@updateMerchantTag'             ],
         'checkout_rewards'                        => ['get',     'checkout/rewards',                                        'MerchantController@getRewardsForCheckout'                     ],
         'reward_terms'                            => ['get',     'reward/{id}/terms',                                       'RewardController@getRewardTerms'                              ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
@@ -2871,6 +2888,11 @@ class Route
         'partner_config_bulk_upsert',
         //Accounting Payouts
         'accounting_payouts_sync_internal',
+
+        //Application Framework
+        'app_merchant_mapping_create',
+        'app_merchant_mapping_update',
+
         'payment_links_sign_payload_internal',
 
         //GupShup Callbacks
@@ -3390,6 +3412,7 @@ class Route
         'virtual_account_create_for_internal',
         'payment_links_switch_versions',
         'subscription_get_revenue_by_source',
+
         'payouts_bulk_sample_file',
 
         'setl_fetch_source_details',
@@ -3405,6 +3428,9 @@ class Route
         'disable_merchant_notification_config',
         'enable_merchant_notification_config',
 
+        'app_merchant_mapping_get',
+        'merchant_tag_map_create',
+        'merchant_tag_map_update',
         //AppStore on Dashboard
         'merchant_install_app_on_appstore',
         'merchant_get_apps_on_appstore',
@@ -4133,6 +4159,14 @@ class Route
         'delete_merchant_notification_config_admin',
         'disable_merchant_notification_config_admin',
         'enable_merchant_notification_config_admin',
+
+        //Application Framework
+        'app_create',
+        'app_update',
+        'app_get',
+        'app_mapping_create',
+        'app_mapping_delete',
+        'app_tags_delete',
     ];
 
     public static $routePermission = [
@@ -4963,6 +4997,13 @@ class Route
         'enable_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
 
         'merchant_invoice_control'                            => Permission::MERCHANT_INVOICE_CONTROL,
+
+        'app_create'                                          => '*',
+        'app_update'                                          => '*',
+        'app_get'                                             => '*',
+        'app_mapping_create'                                  => '*',
+        'app_mapping_delete'                                  => '*',
+        'app_tags_delete'                                     => '*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -5365,6 +5406,8 @@ class Route
             'banking_accounts_list_internal',
             'vendor_payment_send_email_generic',
             'accounting_payouts_sync_internal',
+            'app_merchant_mapping_create',
+            'app_merchant_mapping_update',
         ],
 
         'dashboard' => [
@@ -5426,7 +5469,9 @@ class Route
             'payout_links_send_email',
             'user_fetch',
             'payout_purpose_validate_internal',
-            'banking_accounts_list_internal'
+            'banking_accounts_list_internal',
+            'app_merchant_mapping_create',
+            'app_merchant_mapping_update',
         ],
 
         'express' => [
@@ -5850,6 +5895,11 @@ class Route
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
+
+            'app_merchant_mapping_create',
+            'app_merchant_mapping_update',
+
+            'partner_config_bulk_upsert',
             'scrooge_refunds_retry_custom_fund_transfers',
             'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',

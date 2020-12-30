@@ -34,6 +34,7 @@
           <exclude>./tests/Functional/PaymentLink/</exclude>
           <exclude>./tests/Functional/Reminders/</exclude>
           <exclude>./tests/Functional/Payout/</exclude>
+          <exclude>./tests/Functional/AppFramework/</exclude>
           <exclude>./tests/Functional/PayoutLink/</exclude>
           <exclude>./tests/Functional/TaxPayments/</exclude>
           <exclude>./tests/Functional/Contact/</exclude>
@@ -96,6 +97,7 @@
           <directory>./tests/Functional/Order/</directory>
           <directory>./tests/Functional/PaymentLink/</directory>
           <directory>./tests/Functional/Payout/</directory>
+          <directory>./tests/Functional/AppFramework/</directory>
           <directory>./tests/Functional/Pricing/</directory>
           <directory>./tests/Functional/Promotion/</directory>
           <directory>./tests/Functional/RazorX/</directory>

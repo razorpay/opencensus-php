@@ -532,6 +532,9 @@ class Name
     const ACCOUNTING_PAYOUTS_SYNC                       = 'accounting_payouts_sync';
     const ACCOUNTING_PAYOUTS_WAITLIST                   = 'accounting_payouts_waitlist';
 
+    const APP_REGISTRATION                              = 'app_registration';
+    const APP_MAPPING                                   = 'app_mapping';
+
     const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
 
     public static $actionMap = [

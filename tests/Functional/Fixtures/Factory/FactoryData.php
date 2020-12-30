@@ -1571,6 +1571,20 @@ final class FactoryData
             'status'         => 'available'
         ]);
 
+        $factory(\RZP\Models\Application\Entity::class, [
+            'id'                  => 'GAX5zcOdI0Y664',
+            'name'                => 'Factory App',
+            'title'               => 'Factory App',
+            'type'                => 'app',
+            'description'         => 'This is factory app',
+        ]);
+
+        $factory(\RZP\Models\Application\ApplicationTags\Entity::class, [
+            'id'                  => 'GAX5zcOdI0Y664',
+            'tag'                 => 'ecommerce',
+            'app_id'              => 'GAX5zcOdI0Y664',
+        ]);
+
         $factory(\RZP\Models\Merchant\MerchantNotificationConfig\Entity::class, [
             MerchantNotificationConfigEntity::ID                          => $faker->uniqueid,
             MerchantNotificationConfigEntity::MERCHANT_ID                 => '10000000000000',

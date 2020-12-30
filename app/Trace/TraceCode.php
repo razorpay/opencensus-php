@@ -3846,6 +3846,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APPSTORE_CREATE_PL_REQUEST                = 'APPSTORE_CREATE_PL_REQUEST';
     const APPSTORE_CREATE_PL_RESPONSE               = 'APPSTORE_CREATE_PL_RESPONSE';
 
+    const APPLICATION_TAG_MAPPING_NOT_PRESENT       = 'APPLICATION_TAG_MAPPING_NOT_PRESENT';
+    const APPLICATION_PAYOUT_BULK_NOT_PRESENT       = 'APPLICATION_PAYOUT_BULK_NOT_PRESENT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

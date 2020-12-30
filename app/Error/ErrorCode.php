@@ -463,6 +463,18 @@ class ErrorCode
     const BAD_REQUEST_INVALID_ACTION                                                = 'BAD_REQUEST_INVALID_ACTION';
     const BAD_REQUEST_ENTITY_DOES_NOT_EXIST                                         = 'BAD_REQUEST_ENTITY_DOES_NOT_EXIST';
 
+    const BAD_REQUEST_APP_ID_INVALID                                                = 'BAD_REQUEST_APP_ID_INVALID';
+    const BAD_REQUEST_MERCHANT_APP_MAPPING_DOES_NOT_EXIST                           = 'BAD_REQUEST_MERCHANT_APP_MAPPING_DOES_NOT_EXIST';
+    const BAD_REQUEST_DUPLICATE_TAG                                                 = 'BAD_REQUEST_DUPLICATE_TAG';
+    const BAD_REQUEST_APP_DOES_NOT_EXIST                                            = 'BAD_REQUEST_APP_DOES_NOT_EXIST';
+    const BAD_REQUEST_DUPLICATE_MERCHANT_TAG                                        = 'BAD_REQUEST_DUPLICATE_MERCHANT_TAG';
+    const BAD_REQUEST_MERCHANT_TAG_DOES_NOT_EXIST                                   = 'BAD_REQUEST_MERCHANT_TAG_DOES_NOT_EXIST';
+    const BAD_REQUEST_APP_ALREADY_EXIST                                             = 'BAD_REQUEST_APP_ALREADY_EXIST';
+    const BAD_REQUEST_MERCHANT_TAG_IN_USE                                           = 'BAD_REQUEST_MERCHANT_TAG_IN_USE';
+    const BAD_REQUEST_APP_ALREADY_IN_USE                                            = 'BAD_REQUEST_APP_ALREADY_IN_USE';
+    const BAD_REQUEST_APP_TAG_MAPPING_DOES_NOT_EXIST                                = 'BAD_REQUEST_APP_TAG_MAPPING_DOES_NOT_EXIST';
+    const BAD_REQUEST_EMPTY_DELETE_LIST                                             = 'BAD_REQUEST_EMPTY_DELETE_LIST';
+
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE             = 'BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE';
     const BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS              = 'BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS';

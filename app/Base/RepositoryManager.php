@@ -101,6 +101,10 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Counter\Repository                           $counter
  * @property Models\Workflow\Service\Config\Repository           $workflow_config
  * @property Models\Workflow\Service\EntityMap\Repository        $workflow_entity_map
+ * @property Models\Application\Repository                               $application
+ * @property Models\Application\ApplicationTags\Repository               $application_mapping
+ * @property Models\Application\ApplicationMerchantMaps\Repository       $application_merchant_mapping
+ * @property Models\Application\ApplicationMerchantTags\Repository       $application_merchant_tag
  * @property Models\Workflow\Service\StateMap\Repository         $workflow_state_map
  * @property Models\Merchant\BvsValidation\Repository            $bvs_validation
  * @property Models\UpiTransfer\Repository                       $upi_transfer

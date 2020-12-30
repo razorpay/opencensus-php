@@ -300,13 +300,19 @@ class Table
 
     const UPI_MANDATE          = 'upi_mandates';
 
-    const PROMOTION_EVENT = 'promotions_events';
+    const PROMOTION_EVENT      = 'promotions_events';
     //Payout downtimes table
     const PAYOUT_DOWNTIMES     = 'payout_downtimes';
 
-    const WORKFLOW_CONFIG                = 'workflow_config';
-    const WORKFLOW_ENTITY_MAP            = 'workflow_entity_map';
-    const WORKFLOW_STATE_MAP             = 'workflow_state_map';
+    const WORKFLOW_CONFIG      = 'workflow_config';
+    const WORKFLOW_ENTITY_MAP  = 'workflow_entity_map';
+    const WORKFLOW_STATE_MAP   = 'workflow_state_map';
+
+    //App framework
+    const APPLICATION                      = 'application';
+    const APPLICATION_MAPPING              = 'application_mapping';
+    const APPLICATION_MERCHANT_MAPPING     = 'application_merchant_mapping';
+    const APPLICATION_MERCHANT_TAG         = 'application_merchant_tag';
 
     const BVS_VALIDATION  = 'bvs_validation';
 

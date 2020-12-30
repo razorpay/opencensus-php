@@ -25,6 +25,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
@@ -44,6 +45,11 @@ class Service extends Base\Service
      */
     protected $contactCore;
 
+    /**
+     * @var ApplicationMerchantMaps\Core
+     */
+    protected $appframeworkCore;
+
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
 
     public function __construct()
@@ -55,6 +61,8 @@ class Service extends Base\Service
         $this->contactCore = new Contact\Core;
 
         $this->fundAccountService = new FundAccountService;
+
+        $this->appframeworkCore = new ApplicationMerchantMaps\Core;
     }
 
     public function fundAccountPayoutOnInternalContact(array $input): array
@@ -727,6 +735,10 @@ class Service extends Base\Service
                 'input'          => $input
             ]);
 
+        //This is to create an entry in App Framework Merchant Mapping table, to signify
+        //the merchant is using bulk payout feature
+//        $this->createAppFrameworkMerchantMapping();
+
         foreach ($input as $item)
         {
             try
@@ -831,6 +843,25 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_RESPONSE, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
+    }
+
+    public function createAppFrameworkMerchantMapping()
+    {
+        $bulkPayoutApp = $this->repo->application->getAppByName(Entity::BULK_PAYOUT_APP);
+
+        if (empty($bulkPayoutApp) === false)
+        {
+            $input = [
+                ApplicationMerchantMaps\Entity::APP_ID      => $bulkPayoutApp['id'],
+                ApplicationMerchantMaps\Entity::MERCHANT_ID => $this->merchant->getMerchantId(),
+            ];
+
+            $this->appframeworkCore->create($input);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::APPLICATION_PAYOUT_BULK_NOT_PRESENT, ['bulk_payout' => Entity::BULK_PAYOUT_APP]);
+        }
     }
 
     /**

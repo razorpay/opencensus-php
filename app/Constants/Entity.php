@@ -163,6 +163,12 @@ class Entity
     const WORKFLOW_ENTITY_MAP        = 'workflow_entity_map';
     const WORKFLOW_STATE_MAP         = 'workflow_state_map';
 
+    //App framework
+    const APPLICATION                            = 'application';
+    const APPLICATION_MAPPING                    = 'application_mapping';
+    const APPLICATION_MERCHANT_MAPPING           = 'application_merchant_mapping';
+    const APPLICATION_MERCHANT_TAG               = 'application_merchant_tag';
+
     //ondemand
     const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';
     const SETTLEMENT_ONDEMAND               = 'settlement.ondemand';
@@ -782,6 +788,12 @@ class Entity
         self::WORKFLOW_CONFIG               => \RZP\Models\Workflow\Service\Config::class,
         self::WORKFLOW_ENTITY_MAP           => \RZP\Models\Workflow\Service\EntityMap::class,
         self::WORKFLOW_STATE_MAP            => \RZP\Models\Workflow\Service\StateMap::class,
+
+        //App framework
+        self::APPLICATION                   => \RZP\Models\Application::class,
+        self::APPLICATION_MAPPING           => \RZP\Models\Application\ApplicationTags::class,
+        self::APPLICATION_MERCHANT_MAPPING  => \RZP\Models\Application\ApplicationMerchantMaps::class,
+        self::APPLICATION_MERCHANT_TAG      => \RZP\Models\Application\ApplicationMerchantTags::class,
 
         self::MERCHANT_DETAIL   => \RZP\Models\Merchant\Detail::class,
         self::STAKEHOLDER       => \RZP\Models\Merchant\Stakeholder::class,

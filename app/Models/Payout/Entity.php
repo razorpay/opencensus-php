@@ -267,6 +267,9 @@ class Entity extends Base\PublicEntity
     const EXISTING_BULK_USER_RUPEES = 'existing_bulk_user_rupees';
     const MERCHANT_IDS              = 'merchant_ids';
 
+    //App Framework
+    const BULK_PAYOUT_APP           = 'bulk_payout_app';
+
     protected $queueFlag = false;
 
     protected $composite = false;
