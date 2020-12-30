@@ -123,8 +123,7 @@ class MobileVerification extends Component {
       } else {
         this.setState({
           hasError: true,
-          otpSubmissionError: e,
-          errorMessages: otpResponse.errors,
+          otpSubmissionError: otpResponse.errors,
         });
       }
     } catch (e) {

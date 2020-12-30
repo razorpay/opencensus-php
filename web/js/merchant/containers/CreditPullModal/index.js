@@ -20,7 +20,7 @@ import {
 } from 'merchant/views/Account/components/TwoFAVerification/TwoFaModals';
 import CreditPullClose from './components/CreditPullClose';
 import CreditPullSuccess from './components/CreditPullSuccess';
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
 
@@ -48,7 +48,7 @@ const validate = (values) => {
     ...ModalActions,
     bMerchantReducer,
     updateSession,
-  }
+  },
 )
 @reduxForm({
   form: 'b-merchant',
@@ -59,16 +59,6 @@ export default class CreditPullModal extends Component {
     super(props);
     this.SMALL_MODAL = 'small';
     this.dateFormatType = 'YYYY-MM-DD';
-    this.errorMessages = {
-      error_wrong_otp: 'Verification failed because of incorrect OTP.',
-      error_wrong_phone:
-        'Looks like your phone number could not be found in our existing database. Please check your phone number',
-      error_wrong_merchant:
-        'Sorry We could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.',
-      error_max_attempts: 'OTP verification failed because attempt threshold has been reached',
-      error_otp_required: 'The otp field is required.',
-      error_otp_length: 'The otp must be at least 4 characters.',
-    };
     this.timeoutTime = 300000; //OTP expiry time
     this.dateContainer = React.createRef();
     this.state = {
@@ -120,16 +110,22 @@ export default class CreditPullModal extends Component {
       .then((merchant) => {
         return Promise.all([this.sendReqForOtp(mobile), merchant]);
       })
-      .then(([{ data: { token } }, { id: merchantId, contact_mobile: mobile }]) => {
-        this.openVerify(token, merchantId, mobile);
-      })
+      .then(
+        ([
+          {
+            data: { token },
+          },
+          { id: merchantId, contact_mobile: mobile },
+        ]) => {
+          this.openVerify(token, merchantId, mobile);
+        },
+      )
       .catch((error) => {
         this.props.showNotification({
           type: 'error',
           message: 'Something went wrong',
           hidePrevious: true,
         });
-        this.props.closeModal();
       });
   };
 
@@ -179,7 +175,7 @@ export default class CreditPullModal extends Component {
               ([{ report, score, max_loan_amount, id: reportId, ntc_score }, userResponse]) => {
                 this.props.updateSession({ user: userResponse.data });
                 this.openReportScreen(report, score, max_loan_amount, reportId, ntc_score);
-              }
+              },
             );
           }}
           onResend={() => {
@@ -230,61 +226,31 @@ export default class CreditPullModal extends Component {
       token,
     };
     payload['contact_mobile'] = parseInt(mobile);
-    return ajax(
-      {
-        url: `d2c_bureau_details/${merchantId}/otp_submit`,
-        method: 'POST',
-        data: payload,
-      },
-      {},
-      '/merchant/api'
-    )
+    return merchantFetch({
+      url: `d2c_bureau_details/${merchantId}/otp_submit`,
+      method: 'POST',
+      data: payload,
+    })
       .then(({ data }) => {
         clearTimeout(this.timer);
         let updatedUser = new User(this.props.user);
         return Promise.all([data, updatedUser.fetch()]);
       })
-      .catch((errorResponse) => {
-        this.handleOTPError(errorResponse);
+      .catch((err) => {
+        this.handleOTPError(err);
+        throw null;
       });
   };
 
   handleOTPError = (errorResponse) => {
-    let {
-      error_wrong_otp,
-      error_wrong_phone,
-      error_wrong_merchant,
-      error_max_attempts,
-      error_otp_required,
-      error_otp_length,
-    } = this.errorMessages;
     const error = (errorResponse.errors || [])[0];
     let gaPayload = {
       eventAction: `Error`,
-      eventLabel: `${error} ? ${error} : "Some unexpected error occurred"`,
+      eventLabel: error ? error : 'Some unexpected error occurred',
     };
     this.fireGAEvent(gaPayload);
-    if (error === error_wrong_otp || error === error_otp_required || error === error_otp_length) {
-      throw errorResponse;
-    } else if (error === error_wrong_phone) {
-      this.props.showNotification({
-        type: 'error',
-        message: error,
-        hidePrevious: true,
-      });
-    } else if (error === error_wrong_merchant || error === error_max_attempts) {
-      clearTimeout(this.timer);
-      this.props.closeModal();
-      this.openErrorScreen(error);
-    } else {
-      clearTimeout(this.timer);
-      this.props.showNotification({
-        type: 'error',
-        message: 'Some unexpected error occurred',
-        hidePrevious: true,
-      });
-      this.props.closeModal();
-    }
+    this.props.closeModal();
+    this.openErrorScreen(error);
   };
 
   initialAlign = () => {
@@ -314,7 +280,7 @@ export default class CreditPullModal extends Component {
         data: payload,
       },
       {},
-      '/merchant/api'
+      '/merchant/api',
     );
   };
 
@@ -407,7 +373,10 @@ export default class CreditPullModal extends Component {
                   component={RadioGroup}
                   name="gender"
                   required={true}
-                  options={[{ title: 'Male', value: 'male' }, { title: 'Female', value: 'female' }]}
+                  options={[
+                    { title: 'Male', value: 'male' },
+                    { title: 'Female', value: 'female' },
+                  ]}
                 />
               </div>
             </div>
