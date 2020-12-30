@@ -25,7 +25,6 @@ use RZP\Models\PayoutSource\Entity as PayoutSource;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
-use RZP\Models\PayoutSource\Validator as PayoutSourceValidator;
 
 class Validator extends Base\Validator
 {
@@ -66,8 +65,6 @@ class Validator extends Base\Validator
     const VALIDATE_PAYOUT_PURPOSE = 'validate_payout_purpose';
 
     const PAYOUT_BULK_SAMPLE_FILE = 'payout_bulk_sample_file';
-
-    const APP_NAME = 'app_name';
 
     //
     // This is required for build. Currently, build does not
@@ -148,7 +145,7 @@ class Validator extends Base\Validator
         Entity::ORIGIN                                             => 'sometimes|filled',
         Entity::SOURCE_DETAILS                                     => 'sometimes|filled|array',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
-        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1'
     ];
 
@@ -801,8 +798,6 @@ class Validator extends Base\Validator
 
     protected function validateOrigin($input)
     {
-        $this->validateIfFieldIsRequiredForInternalApps($input, Entity::ORIGIN);
-
         if (isset($input[Entity::ORIGIN]) === true)
         {
             $origin = $input[Entity::ORIGIN];
@@ -814,10 +809,10 @@ class Validator extends Base\Validator
             $origin               = strtolower($origin);
             $acceptedOriginValues = array_keys(Entity::ORIGIN_SERIALIZER);
 
-            if (in_array($origin, $acceptedOriginValues, true) === false)
+            if (in_array($origin, $acceptedOriginValues) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid origin.',
+                    "Invalid origin.",
                     Entity::ORIGIN,
                     [
                         Entity::ORIGIN               => $origin,
@@ -828,25 +823,12 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIfFieldIsRequiredForInternalApps(array $input, string $fieldName)
-    {
-        if ((isset($input[Entity::FUND_ACCOUNT_ID]) === true) and
-            ((new Service)->isAllowedInternalApp() === true) and
-            ((isset($input[$fieldName]) === false)))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The ' . $fieldName . ' field is required.',
-                $fieldName
-            );
-        }
-    }
-
     protected function validateIfFieldShouldBeSentWithCompositeApi(array $input, string $fieldName, $fieldValue)
     {
         if (isset($input[Entity::FUND_ACCOUNT]) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $fieldName . ' is/are not required and should not be sent',
+                $fieldName . " is/are not required and should not be sent",
                 $fieldName,
                 [
                     $fieldName => $fieldValue,
@@ -860,7 +842,7 @@ class Validator extends Base\Validator
         if ((new Service)->isAllowedInternalApp() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $fieldName . ' is/are not required and should not be sent',
+                $fieldName . " is/are not required and should not be sent",
                 $fieldName,
                 [
                     $fieldName => $fieldValue,
@@ -871,8 +853,6 @@ class Validator extends Base\Validator
 
     protected function validateSourceDetails($input)
     {
-        $this->validateIfFieldIsRequiredForInternalApps($input, Entity::SOURCE_DETAILS);
-
         if (isset($input[Entity::SOURCE_DETAILS]) === true)
         {
             $sourceDetails = $input[Entity::SOURCE_DETAILS];
@@ -882,8 +862,6 @@ class Validator extends Base\Validator
             $this->validateIfFieldShouldBeSentBasedOnAuth(Entity::SOURCE_DETAILS, $sourceDetails);
 
             $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
-
-            $this->validateSourceTypes($input[Entity::SOURCE_DETAILS]);
         }
     }
 
@@ -901,63 +879,13 @@ class Validator extends Base\Validator
         if (count($priorities) !== count($sourceDetails))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'source_details has sources with duplicate priorities',
+                "source_details has sources with duplicate priorities",
                 Entity::SOURCE_DETAILS,
                 [
                     Entity::SOURCE_DETAILS => $sourceDetails,
                 ]
             );
         }
-    }
-
-    protected function validateSourceTypes(array $sourceDetails)
-    {
-        // This will store a map of priority and source type for that priority with priority as key and source type as
-        // value.
-        $mapPrioritiesAndSourceType = [];
-
-        $highestPriority = 0;
-
-        foreach ($sourceDetails as $sourceDetail)
-        {
-            $sourceType = $sourceDetail[PayoutSource::SOURCE_TYPE];
-
-            $priority = $sourceDetail[PayoutSource::PRIORITY];
-
-            if ((new PayoutSourceValidator)->isValidSourceType($sourceType) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'source_details has source with invalid ' . PayoutSource::SOURCE_TYPE,
-                    PayoutSource::SOURCE_TYPE,
-                    [
-                        PayoutSource::SOURCE_TYPE => $sourceType,
-                    ]
-                );
-            }
-
-            $highestPriority = max($highestPriority, $priority);
-
-            $mapPrioritiesAndSourceType[$priority] = $sourceType;
-
-        }
-
-        $appName = $this->getInternalAppName();
-
-        $highestPrioritySourceType = $mapPrioritiesAndSourceType[$highestPriority];
-
-        $this->validateIfSourcetypeMappingIsPresentForApp($appName);
-
-        $this->validateHighestPrioritySourceTypeWithTheAppName($highestPrioritySourceType, $appName);
-    }
-
-    protected function getInternalAppName()
-    {
-        $app = App::getFacadeRoot();
-
-        /** @var BasicAuth $auth */
-        $auth = $app['basicauth'];
-
-        return $auth->getInternalApp();
     }
 
     public function validateChannelAndModeForPayouts(string $merchantId,
@@ -983,37 +911,5 @@ class Validator extends Base\Validator
             }
 
         return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
-    }
-
-    protected function validateIfSourceTypeMappingIsPresentForApp(string $appName)
-    {
-        if ((new PayoutSourceValidator)->isSourceTypeMappingPresentForApp($appName) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'There is no ' . PayoutSource::SOURCE_TYPE . ' mapping present for this app.',
-                null,
-                [
-                    self::APP_NAME => $appName,
-                ]
-            );
-        }
-    }
-
-    protected function validateHighestPrioritySourceTypeWithTheAppName(string $highestPrioritySourceType,
-                                                                       string $appName)
-    {
-        // This checks whether the highest priority source type is accepted for that app or not.
-        if ((new PayoutSourceValidator)->isValidSourceTypeForApp($highestPrioritySourceType, $appName) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The source with highest priority has ' . PayoutSource::SOURCE_TYPE .
-                ' which is not accepted for this app.',
-                PayoutSource::SOURCE_TYPE,
-                [
-                    PayoutSource::SOURCE_TYPE => $highestPrioritySourceType,
-                    self::APP_NAME            => $appName,
-                ]
-            );
-        }
     }
 }

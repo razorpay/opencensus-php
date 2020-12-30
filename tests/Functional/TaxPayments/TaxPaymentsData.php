@@ -255,19 +255,6 @@ return [
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'origin'          => 'dashboard',
-                'source_details'  => [
-                    [
-                        'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_links',
-                        'priority'    => 1,
-                    ],
-                    [
-                        'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payments',
-                        'priority'    => 2,
-                    ],
-                ],
             ],
         ],
         'response' => [
@@ -283,19 +270,6 @@ return [
                 'fees'      => 1062,
                 'notes'     => [
                     'abc' => 'xyz',
-                ],
-                'origin'          => 'dashboard',
-                'source_details'  => [
-                    [
-                        'source_id'   => '100000000000sa',
-                        'source_type' => 'payout_links',
-                        'priority'    => 1,
-                    ],
-                    [
-                        'source_id'   => '100000000001sa',
-                        'source_type' => 'vendor_payments',
-                        'priority'    => 2,
-                    ],
                 ],
             ]
         ],
