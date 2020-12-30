@@ -43,7 +43,7 @@ return [
         'TransactionAmount'             => '500.00',
         'PaymentGatewayReferenceNumber' => '',
         'BankTransactionReferenceNo'    => '1234'
-        ],
+    ],
     'testIobSuccessRecon' => [
         'Bank Code'                             => 'IOB',
         'payment reference number'              => '',
@@ -51,14 +51,14 @@ return [
         'date and time DD/MM/YYYY HH24:mm:ss'   => Carbon::today()->format("d/m/Y H:i:s"),
         'Status of transaction'                 => 'Y',
         'bank ref no.'                          => '123456'
-        ],
+    ],
     'testUbiSuccessRecon' => [
         'Trasanction Date (YYYY-MM-DD)'         => Carbon::today()->format("Y-m-d"),
         'PRN                     '              => '123456',
         'RazorPay(Hardcoded Value)'             => '',
         'Account Number'                        => '123456789',
         'Amount'                                => '500.00',
-        ],
+    ],
     'testCbiSuccessRecon' => [
         'Bank Code'                             => 'CBIN',
         'payment reference number'              => '',
@@ -66,5 +66,18 @@ return [
         'date'                                  => Carbon::today()->format("Ymd"),
         'Status of transaction'                 => 'Y',
         'bank ref no.'                          => '123456'
-        ],
-    ];
+    ],
+    'testIbkSuccessRecon' => [
+        'pid'             => 'PAYGATE16',
+        'Biller Name'     => 'Razorpay',
+        'Date & Time'     => '',
+        'Merchant Ref No' => '',
+        'Amount'          => '500',
+        'Currency'        => 'INR',
+        'Customer_no'     => '3189671675',
+        'Date_bank'       => '2020-12-29 15:39:54.0',
+        'bank_ref_no'     => '1234',
+        'Journal_no'      => '012371800',
+        'Paidstatus'      => 'Y',
+    ],
+];

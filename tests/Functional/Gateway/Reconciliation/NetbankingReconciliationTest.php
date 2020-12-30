@@ -1393,6 +1393,8 @@ class NetbankingReconciliationTest extends TestCase
 
     public function testIbkSuccessRecon()
     {
+        $this->markTestSkipped('migrated to nbplus');
+
         $this->gateway = 'netbanking_ibk';
 
         $payment = $this->createPayment($this->gateway);
@@ -1420,6 +1422,8 @@ class NetbankingReconciliationTest extends TestCase
 
     public function testIbkAmountMismatch()
     {
+        $this->markTestSkipped('migrated to nbplus');
+
         $this->gateway = 'netbanking_ibk';
 
         $payment = $this->createPayment($this->gateway);
@@ -1450,6 +1454,8 @@ class NetbankingReconciliationTest extends TestCase
 
     public function testIbkReconcileFailedPayment()
     {
+        $this->markTestSkipped('migrated to nbplus');
+
         $this->gateway = 'netbanking_ibk';
 
         $payment = $this->createFailedPayment($this->gateway);
