@@ -168,7 +168,10 @@ class UserRolesScope
             'virtual_account_fetch'          => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'virtual_account_fetch_multiple' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'virtual_account_fetch_payments' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
-            'virtual_account_update'         => Role::WRITER_ROLES,
+            'virtual_account_edit'           => Role::WRITER_ROLES,
+            'virtual_account_close'          => Role::WRITER_ROLES,
+            'virtual_account_add_receivers'  => Role::WRITER_ROLES,
+            'virtual_vpa_prefix_save'        => Role::WRITER_ROLES,
 
             // subscriptions
             'plan_account_fetch'          => [Role::OWNER, Role::MANAGER, Role::ADMIN],
