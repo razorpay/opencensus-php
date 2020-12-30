@@ -60,7 +60,7 @@ export default class RefundsListContainer extends ListContainer {
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
-            this.search()
+            this.search(args)
               .then(() => {
                 analyticsService.track({
                   objectName: 'refunds search',
