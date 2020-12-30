@@ -302,10 +302,12 @@ class Repository extends Base\Repository
 
             $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS",  $mode);
 
-            $data = ["function" => "findByGatewayAndTerminalData", "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
+            $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
 
             if ($variantFlag === 'proxy')
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($terminalData);
 
                 $content["gateway"] = $gateway;
@@ -581,6 +583,8 @@ class Repository extends Base\Repository
 
             if ($variantFlag === 'proxy')
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
                 $path = "v1/merchants/terminals";
@@ -626,6 +630,8 @@ class Repository extends Base\Repository
 
             if ($variantFlag === 'proxy')
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
                 $content['statuses'] = [Status::ACTIVATED, Status::CREATED, Status::PENDING];
