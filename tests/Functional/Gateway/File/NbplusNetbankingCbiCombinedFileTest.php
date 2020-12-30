@@ -132,11 +132,11 @@ class NbplusNetbankingCbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         $dateInFile1 = substr($refundsFileContents[0], -10);
         $refundTimestamp = $refundTransaction1['created_at'];
-        $dateInRefundEntity1 = Carbon::createFromTimestamp($refundTimestamp)->format('dmY');
+        $dateInRefundEntity1 = Carbon::createFromTimestamp($refundTimestamp, Timezone::IST)->format('dmY');
 
         $dateInFile2 = substr($refundsFileContents[1], -10);
         $refundTimestamp = $refundTransaction2['created_at'];
-        $dateInRefundEntity2 = Carbon::createFromTimestamp($refundTimestamp)->format('dmY');
+        $dateInRefundEntity2 = Carbon::createFromTimestamp($refundTimestamp, Timezone::IST)->format('dmY');
 
         $this->assertEquals(trim($dateInFile1), $dateInRefundEntity1);
         $this->assertEquals(trim($dateInFile2), $dateInRefundEntity2);
