@@ -98,7 +98,7 @@ export default function OverView(props) {
         <Input.Check
           required
           name="creation_terms_accepted"
-          label="Checkout Visibility"
+          label="Terms and Conditions"
           className="Input--vTop"
           fieldLabel="I understand that the discount/cashback given in this offer will be borne by me and not Razorpay"
           defaultValue={creation_terms_accepted}
