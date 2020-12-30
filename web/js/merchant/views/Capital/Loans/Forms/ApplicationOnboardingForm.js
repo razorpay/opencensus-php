@@ -63,7 +63,10 @@ class ApplicationOnboardingForm extends Component {
   constructor() {
     super();
     this.state = {
-      formData: {},
+      formData: {
+        state: Object.entries(states)[0][0],
+        gender: GENDER_OPTIONS[0].name,
+      },
     };
   }
 
@@ -72,30 +75,21 @@ class ApplicationOnboardingForm extends Component {
   }
 
   fetch = async () => {
-    try {
-      const businessDetails = await this.props.getBusinessByMerchantId({
-        reference_id: this.props.user.current,
-        reference_type: 'MID',
+    const businessDetails = await this.props.getBusinessByMerchantId({
+      reference_id: this.props.user.current,
+      reference_type: 'MID',
+    });
+    if (businessDetails && businessDetails.data && businessDetails.data.applicant_ids) {
+      const applicantDetails = await this.props.fetchApplicantDetails({
+        applicant_id: businessDetails.data.applicant_ids[0],
       });
-      if (businessDetails.data.applicant_ids) {
-        const applicantDetails = await this.props.fetchApplicantDetails({
-          applicant_id: businessDetails.data.applicant_ids[0],
+      if (applicantDetails.data.applicant) {
+        this.derivePromoterDetailsFormValues(applicantDetails.data.applicant);
+      } else {
+        this.setState({
+          formData: this.props.initialValues,
         });
-        if (applicantDetails.data.applicant) {
-          this.derivePromoterDetailsFormValues(applicantDetails.data.applicant);
-        } else {
-          this.setState({
-            formData: this.props.initialValues,
-          });
-        }
       }
-    } catch (e) {
-      this.setState({
-        formData: {
-          state: Object.entries(states)[0][0],
-          gender: GENDER_OPTIONS[0].name,
-        },
-      });
     }
   };
 
