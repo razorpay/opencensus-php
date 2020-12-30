@@ -31,7 +31,7 @@ class BankingAccountStatement extends Job
      * as account statement process takes 1-2 mins to complete.
      * @var integer
      */
-    public $timeout = 300;
+    public $timeout = 1800;
 
     /**
      * @param string $mode
