@@ -170,7 +170,7 @@ class Repository extends Base\Repository
 
                 $content["fetch_where_submerchant"] = false;
 
-                $content["api_type"] = $type;
+                $content["api_type"] = [$type];
 
                 $path = "v1/merchants/terminals";
 
@@ -272,6 +272,44 @@ class Repository extends Base\Repository
         $query->where(Entity::STATUS, Status::ACTIVATED);
 
         $terminals = $query->get();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($mId, "ROUTE_PROXY_TS", $mode);
+
+            if ($variantFlag === 'proxy')
+            {
+                $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $content["merchant_ids"] = [$mId];
+
+                $content["status"] = "activated";
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                if (count($response) > 0)
+                {
+                    $terminals2 = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                    if (Terminal\Service::compareTerminalCollection($terminals, $terminals2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
 
         return $terminals->filter(function ($terminal) {
             return (($terminal->isDirectSettlementWithoutRefund() === true) or ($terminal->isDirectSettlementWithRefund() === true));
@@ -704,6 +742,8 @@ class Repository extends Base\Repository
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
+        $gateways = Payment\Gateway::getEmandateGatewaysForAuthType($authType);
+
         //
         // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
         // This is because we don't have different terminals for the first
@@ -714,11 +754,52 @@ class Repository extends Base\Repository
                       ->enabled()
                       ->where(Entity::EMANDATE, true)
                       ->whereIn(Entity::TYPE, [6, 32774])
-                      ->whereIn(Entity::GATEWAY, Payment\Gateway::getEmandateGatewaysForAuthType($authType));
+                      ->whereIn(Entity::GATEWAY, $gateways);
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
-        return $query->get();
+        $terminals = $query->get();
+
+        try
+        {
+            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
+
+            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(), "ROUTE_PROXY_TS",  $mode);
+
+            if ($variantFlag === 'proxy')
+            {
+                $data = ["function" => "getEmandateTerminalsForMerchantAndSharedMerchant", "gateways" => $gateways];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $content['merchant_ids'] = $merchantIds;
+
+                $content['gateways'] = $gateways;
+
+                $content['enabled'] = true;
+
+                $content['api_type'] = [Type::RECURRING_3DS, Type::RECURRING_NON_3DS];
+
+                $path = "v1/merchants/terminals";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $data['message'] = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+        }
+
+        return $terminals;
     }
 
     public function getAllBankTransferTerminals($gateway): PublicCollection
