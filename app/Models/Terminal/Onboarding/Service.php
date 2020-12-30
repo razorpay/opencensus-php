@@ -147,11 +147,6 @@ class Service extends Base\Service
 
             $dataToCompare = $data["items"];
 
-            foreach ($dataToCompare as $index => $value)
-            {
-                $response[$index]["id"] = "term_" . $response[$index]["id"];
-            }
-
             if ((new Terminal\Service())->compareArrayOfTerminalArrays($dataToCompare, $response) === false)
             {
                 $traceData = ["content" => $content];

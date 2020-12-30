@@ -1701,6 +1701,8 @@ class TerminalMigrationTest extends TestCase
 
             $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
 
+            $data['id'] = 'term_'.$data['id'];
+
             return $this->getDefaultTerminalServiceResponse($data);
 
         }, 1);
@@ -1788,6 +1790,8 @@ class TerminalMigrationTest extends TestCase
             $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
 
             $data[0]['entity'] = 'terminal';
+
+            $data[0]['id'] = 'term_'.$data[0]['id'];
 
             $body = json_encode(['data' => $data]);
 

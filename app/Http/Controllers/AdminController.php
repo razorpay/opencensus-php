@@ -57,8 +57,6 @@ class AdminController extends Controller
 
             $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
-            $response['id'] = 'term_' . $response['id'];
-
             if ((new Terminal\Service())->compareTerminalArray($data, $response) === false)
             {
                 $traceData = ["api" => $data["id"], "terminals" => $response["id"]];
