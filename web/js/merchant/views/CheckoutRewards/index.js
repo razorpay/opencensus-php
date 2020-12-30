@@ -13,6 +13,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import CheckoutRewardsAnnouncement from 'merchant/components/Announcements/CheckoutRewards';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import OnBoarding, { getIsRewardsEnabled, getIsAllowedResetRewardsOnBoarding } from './OnBoarding';
 
@@ -76,9 +78,14 @@ export default class CheckoutRewardsIndex extends Component {
   };
 
   documentationClicked = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Checkout Rewards',
-      eventAction: 'Go To - Documentation',
+    analyticsService.track({
+      objectName: 'Documentation',
+      actionName: 'clicked',
+      screen: 'Checkout Rewards',
+      properties: {
+        location: 'rewards',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 

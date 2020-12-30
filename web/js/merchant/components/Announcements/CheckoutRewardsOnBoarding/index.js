@@ -1,4 +1,3 @@
-import { trackMarketingExperimentBanner } from '../ga';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { useState, useEffect, useCallback } from 'react';

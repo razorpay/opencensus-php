@@ -8,6 +8,8 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import * as RewardsListActions from 'merchant/reducers/checkoutRewards';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import QueueConfirm from './QueueConfirm';
 
@@ -100,9 +102,14 @@ export default class Rewards extends Component {
   }
 
   analytics = (action) => {
-    window.rzpAnalytics({
-      eventCategory: 'Checkout Rewards',
-      eventAction: `${action} Reward Clicked`,
+    analyticsService.track({
+      objectName: `Reward ${action}`,
+      actionName: 'clicked',
+      screen: 'Checkout Rewards',
+      properties: {
+        location: 'rewards',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 
@@ -192,15 +199,27 @@ export default class Rewards extends Component {
             }
 
             if (response.status === 'queue') {
-              window.rzpAnalytics({
-                eventCategory: `Merchant_queued_reward ${response.live_reward_id}`,
-                eventAction: `Queued Reward`,
+              analyticsService.track({
+                objectName: 'Reward',
+                actionName: 'moved to queue',
+                screen: 'Checkout Rewards',
+                properties: {
+                  location: 'rewards',
+                  rewardId: response.live_reward_id,
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
               });
               message = 'Reward added into queue successfully.';
             } else if (response.status === 'live') {
-              window.rzpAnalytics({
-                eventCategory: `Merchant_went_live ${response.live_reward_id}`,
-                eventAction: `Live Reward`,
+              analyticsService.track({
+                objectName: 'Reward',
+                actionName: 'moved to live',
+                screen: 'Checkout Rewards',
+                properties: {
+                  location: 'rewards',
+                  rewardId: response.live_reward_id,
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
               });
             }
 
@@ -319,9 +338,14 @@ export default class Rewards extends Component {
               <div>Your customers will get below coupons after payment.</div>
               <span
                 onClick={() => {
-                  window.rzpAnalytics({
-                    eventCategory: 'Checkout Rewards',
-                    eventAction: `Preview Checkout Clicked`,
+                  analyticsService.track({
+                    objectName: 'Preview Checkout',
+                    actionName: 'clicked',
+                    screen: 'Checkout Rewards',
+                    properties: {
+                      location: 'rewards',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
                   });
                   return this.props.openModal({
                     size: 'xlarge',
