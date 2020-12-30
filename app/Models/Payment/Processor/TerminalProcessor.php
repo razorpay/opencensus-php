@@ -181,11 +181,11 @@ class TerminalProcessor extends Base\Core
             if ($ex->getMessage() === 'No terminal found for bank transfer.')
             {
                 $this->trace->traceException($ex);
-                
+
                 $terminal = $this->repo->terminal->findByGatewayAndTerminalData(
                     $gateway,
                     [
-                        Terminal\Entity::SHARED                 => true,
+                        Terminal\Entity::MERCHANT_ID            => Account::SHARED_ACCOUNT,
                         Terminal\Entity::BANK_TRANSFER          => true,
                     ]
                 );
