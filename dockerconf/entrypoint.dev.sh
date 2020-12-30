@@ -3,7 +3,7 @@ set -euo pipefail
 
 db_wait(){
   echo "Waiting for DB to intialize"
-  until mysqladmin -h "$DB_LIVE_HOST" -u "$DB_LIVE_USERNAME" -p"$DB_LIVE_PASSWORD" processlist &> /dev/null; do
+  until mysqladmin ping -h "$DB_LIVE_HOST" -u "$DB_LIVE_USERNAME" -p"$DB_LIVE_PASSWORD" --silent; do
         echo "Mysql DB is unavailable"
         sleep 1
     done
