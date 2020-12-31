@@ -94,7 +94,7 @@
                 "
                     >
                         We would request you to check if the bank account details
-                        mentioned in your Razorpay account are correct and also verify
+                        mentioned in your {{$org_name}} account are correct and also verify
                         with your bank if the account is active.
                     </p>
                 </div>

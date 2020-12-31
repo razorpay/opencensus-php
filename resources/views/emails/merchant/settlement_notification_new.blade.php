@@ -21,10 +21,12 @@
     >
       <!-- Razorpay logo -->
       <div style="text-align: center; margin-bottom: 30px">
+      @if ($custom_branding === false)
         <img
           style="margin-top: 30px; height: 30px"
           src="https://cdn.razorpay.com/logo_invert.png"
         />
+      @endif
       </div>
       ​
       <div style="max-width: 588px; margin: auto">
@@ -424,13 +426,18 @@
           </div>
 
           <p style="font-size: 14px; text-align: center; color: #7b8199">
-            If you have any issue with the service from Razorpay, please raise
+            If you have any issue with the service from {{$org_name}}, please raise
             your request
             <a href="https://dashboard.razorpay.com/#/app/dashboard#request"
               >here</a
             >
           </p>
         </div>
+        @if ($custom_branding)
+                <div style="text-align: center; margin-top: 20px; margin-bottom: 5px">
+                    <img src="{{ $email_logo }}" style="height: 32px;" />
+                </div>
+        @endif
       </div>
     </div>
   </body>
