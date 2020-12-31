@@ -1102,6 +1102,34 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsTypeFilter' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'type' => 'referred'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'name'             => 'random_name_1',
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [
             'url'     => '/submerchants',

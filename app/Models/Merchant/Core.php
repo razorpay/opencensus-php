@@ -2550,6 +2550,19 @@ class Core extends Base\Core
                 'params'     => $params,
             ]);
 
+        if ((empty($params[MerchantApplications\Entity::TYPE]) === false) and (empty($appIds) === false))
+        {
+            $type = $params[MerchantApplications\Entity::TYPE];
+
+            $merchantApps = $this->repo
+                                 ->merchant_application
+                                 ->fetchMerchantAppFromAppIdsByAppType($appIds, $type);
+
+            $appIds = $merchantApps->pluck(MerchantApplications\Entity::APPLICATION_ID)->toArray();
+
+            unset($params[MerchantApplications\Entity::TYPE]);
+        }
+
         if (empty($params[Constants::APPLICATION_ID]) === false)
         {
             $inputAppId = $params[Constants::APPLICATION_ID];

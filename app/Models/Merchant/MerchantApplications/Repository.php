@@ -46,4 +46,17 @@ class Repository extends Base\Repository
                     ->where($entityType, $entityId)
                     ->get();
     }
+
+    /**
+     * @param array $appIds
+     * @param string $type
+     * @return Base\PublicCollection
+     */
+    public function fetchMerchantAppFromAppIdsByAppType(array $appIds, string $type) : Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::TYPE, $type)
+                    ->whereIn(Entity::APPLICATION_ID, $appIds)
+                    ->get();
+    }
 }

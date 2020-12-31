@@ -303,16 +303,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $listSubmerchantsRules = [
-        Entity::NAME                     => 'sometimes|string',
-        Entity::ID                       => 'sometimes|alpha_num|size:14',
-        Entity::EMAIL                    => 'sometimes|email',
-        Constants::APPLICATION_ID        => 'sometimes|string|size:14',
-        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
-        Constants::FROM                  => 'integer',
-        Constants::TO                    => 'integer',
-        Constants::COUNT                 => 'integer|min:1|max:50',
-        Constants::SKIP                  => 'integer',
-        Entity::MERCHANT_ID              => 'sometimes|array',
+        Entity::NAME                      => 'sometimes|string',
+        Entity::ID                        => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                     => 'sometimes|email',
+        Constants::APPLICATION_ID         => 'sometimes|string|size:14',
+        Detail\Entity::ACTIVATION_STATUS  => 'sometimes|string|max:30',
+        Constants::FROM                   => 'integer',
+        Constants::TO                     => 'integer',
+        Constants::COUNT                  => 'integer|min:1|max:50',
+        Constants::SKIP                   => 'integer',
+        Entity::MERCHANT_ID               => 'sometimes|array',
+        MerchantApplications\Entity::TYPE => 'sometimes|string|in:managed,referred,oauth',
     ];
 
     protected static $partnerSubmerchantMapRules = [

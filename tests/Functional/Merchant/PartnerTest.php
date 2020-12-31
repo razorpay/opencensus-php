@@ -1146,6 +1146,40 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsTypeFilter()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser();
+
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+
+        $this->allowAdminToAccessMerchant($submerchantId);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsPurePlatform()
     {
         $this->allowAdminToAccessPartnerMerchant();
