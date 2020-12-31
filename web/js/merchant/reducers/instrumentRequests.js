@@ -822,6 +822,7 @@ export default function (state = initialState, action) {
           `${path}.merchant_instrument_request_id`,
           s.merchant_instrument_request_id,
         );
+        lodashset(stateClone, `${path}.path`, s.instrument);
         lodashset(stateClone, `${path}.status`, s.status);
         if (['action_required', 'rejected'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);

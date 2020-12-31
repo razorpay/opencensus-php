@@ -105,7 +105,11 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    let { instrument, intermediateInstrument } = this.props;
+    let {
+      instrument,
+      intermediateInstrument,
+      leafInstrument: { actionItems },
+    } = this.props;
     let ctaClass = {
       Request: 'btn btn-primary',
       requestable: 'btn btn-primary',
@@ -174,6 +178,18 @@ class LeafListItem extends React.Component {
           <div class="detail raise-request">
             <div>
               {displayName(instrument.name)}
+              {Object.keys(actionItems).includes(instrument.path) ? (
+                <span>
+                  <span class="notify-badge">1</span>
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left' }}>
+                        item requires user action. Please complete your activation form.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </span>
+              ) : null}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
             {['rejected', 'action_required'].includes(instrument.status) && (
