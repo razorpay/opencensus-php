@@ -24,6 +24,7 @@ class Upi
     const ASBL = 'ASBL';
     const AUBL = 'AUBL';
     const AUGX = 'AUGX';
+    const AXIS = 'AXIS';   // for Axis UAT
     const BACB = 'BACB';
     const BARB_R = 'BARB_R';
     const BCBM = 'BCBM';
@@ -176,6 +177,7 @@ class Upi
         self::ASBL,
         self::AUBL,
         self::AUGX,
+        self::AXIS,   // for Axis UAT
         self::BACB,
         self::BARB_R,
         self::BCBM,

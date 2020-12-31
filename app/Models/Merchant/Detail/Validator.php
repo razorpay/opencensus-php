@@ -408,7 +408,7 @@ class Validator extends Base\Validator
 
     public function isValidAutomationEnv(): bool
     {
-        return ($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt' );
+        return ($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt');
     }
 
     public function validateBankDetailsVerificationStatus($attribute, $value)

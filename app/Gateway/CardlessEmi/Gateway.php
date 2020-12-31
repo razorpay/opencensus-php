@@ -67,6 +67,11 @@ class Gateway extends Base\Gateway
         $this->gateway = $terminal['gateway'];
     }
 
+    protected function getAxisWrapperUrl(string $type, string $urlDomain )
+    {
+        return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
+    }
+
     /**
      * Checks customer's account with provider and sends otp for authentication. This function is called from
      * fetchGlobalCustomerStatus function in customer service.The EMI Plans and loan URL received in the response will

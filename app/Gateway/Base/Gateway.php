@@ -1331,10 +1331,15 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt') and
+        if (($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt' ) and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);
+        }
+
+        if ($this->env === 'axis')
+        {
+            return $this->getAxisWrapperUrl($type,$urlDomain);
         }
 
         return $urlDomain . $this->getRelativeUrl($type);
@@ -1677,6 +1682,11 @@ class Gateway
     protected function getExternalMockUrl(string $type)
     {
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
+    }
+
+    protected function getAxisWrapperUrl(string $type, string $urlDomain)
+    {
+        return $urlDomain . $this->getRelativeUrl($type);
     }
 
     protected function pushDimensions($action, $input, $status, $excData = null)

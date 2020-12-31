@@ -23,6 +23,7 @@ class BankCodes
     const IFSC_APMC = 'APMC0000013';
     const IFSC_ASBL = 'ASBL0000058';
     const IFSC_AUBL = 'AUBL0002366';
+    const IFSC_AXIS = 'AXIS0000004';    // for Axis UAT
     const IFSC_BACB = 'BACB0000102';
     const IFSC_BARB = 'BARB0MAINOF';
     const IFSC_BARC = 'BARC0INBBIR';
@@ -141,6 +142,7 @@ class BankCodes
         'ARL'   => self::IFSC_AIRP,
         'ASB'   => self::IFSC_APBL,
         'AUS'   => self::IFSC_AUBL,
+        'AXIS'  => self::IFSC_AXIS,   // for Axis UAT
         'AXB'   => self::IFSC_UTIB,
         'BCC'   => self::IFSC_BACB,
         'BDN'   => self::IFSC_BDBL,

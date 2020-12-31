@@ -325,6 +325,10 @@ class Gateway extends Base\Gateway
         return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . $this->getRelativeUrl($type);
     }
 
+    protected function getAxisWrapperUrl(string $type, string $urlDomain )
+    {
+        return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . $this->getRelativeUrl($type);
+    }
     /**
      * We only store the VPA because the rest of the fields
      * are filled by the callback
