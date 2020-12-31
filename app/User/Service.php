@@ -839,9 +839,6 @@ class Service extends Base\Service
                     {
                         $options = [
                             'client_type' => 'merchant',
-                            'headers'     => [
-                                'X-Request-Origin' => null,
-                            ],
                         ];
 
                         $request = new \App\Admin\ApiRequestAny($options);
