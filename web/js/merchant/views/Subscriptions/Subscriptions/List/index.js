@@ -68,6 +68,8 @@ export default class SubscriptionsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Clear Search Params - Subscriptions',
     });
+
+    this.onFilterChange();
   };
 
   onFilterChange = () => {
