@@ -397,7 +397,7 @@ class Entity
     const CREDIT_REPAYMENT               = 'credit_repayment';
     const CAPITAL_TRANSACTION            = 'capital_transaction';
     const REPAYMENT_BREAKUP              = 'repayment_breakup';
-    const INSTALMENT                     = 'instalment';
+    const INSTALLMENT                    = 'installment';
     const CHARGE                         = 'charge';
 
     const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
@@ -801,7 +801,7 @@ class Entity
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
 
         self::REPAYMENT_BREAKUP => \RZP\Models\CapitalTransaction::class,
-        self::INSTALMENT        => \RZP\Models\CapitalTransaction::class,
+        self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,

@@ -324,7 +324,7 @@ class Table
 
     const CAPITAL_TRANSACTION = 'capital_transaction';
     const REPAYMENT_BREAKUP   = 'repayment_breakup';
-    const INSTALMENT          = 'instalment';
+    const INSTALLMENT         = 'installment';
     const CHARGE              = 'charge';
 
     // API Request Log

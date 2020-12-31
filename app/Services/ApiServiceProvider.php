@@ -823,7 +823,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'repayment_breakup'         => RZP\Models\CapitalTransaction\Entity::class,
 
-            'instalment'                => RZP\Models\CapitalTransaction\Entity::class,
+            'installment'               => RZP\Models\CapitalTransaction\Entity::class,
 
             'charge'                    => RZP\Models\CapitalTransaction\Entity::class,
         ]);

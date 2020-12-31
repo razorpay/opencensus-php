@@ -23,7 +23,7 @@ class Type
     const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const CREDIT_REPAYMENT        = 'credit_repayment';
-    const INSTALMENT              = 'instalment';
+    const INSTALLMENT             = 'installment';
     const CHARGE                  = 'charge';
     const REPAYMENT_BREAKUP       = 'repayment_breakup';
 
@@ -58,7 +58,7 @@ class Type
 
     const CAPITAL_TYPE = [
         self::REPAYMENT_BREAKUP,
-        self::INSTALMENT,
+        self::INSTALLMENT,
         self::CHARGE,
     ];
 
