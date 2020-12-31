@@ -54,7 +54,7 @@ function _track() {
       cancelConfirm: (options) => send('cancel_confirm', options),
       create: () => send('issue'),
       success: () => send('success'),
-      fail: () => send('fail'),
+      fail: (option) => send('fail', option),
     },
 
     init({ track: _track }) {
