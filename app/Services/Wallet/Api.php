@@ -78,7 +78,7 @@ class Api extends Base
             'notes'                   => isset($data['notes']) ? $data['notes'] : null,
         ];
 
-        return $this->makeRequest(Requests::POST, self::RECHARGE_URL, $body, self::USER);
+        return $this->makeRequest(Requests::POST, self::REFUND_URL, $body, self::USER);
     }
 
     /**
