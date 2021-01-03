@@ -643,7 +643,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->payment[Payment::CARD]['number'] = '4000400000000004';
 
-        $this->payment[Payment::CARD]['expiry_year'] = '20';
+        $this->payment[Payment::CARD]['expiry_year'] = '25';
 
         $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
 
@@ -670,7 +670,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->payment[Payment::CARD]['number'] = '40004 000 0000 0004';
 
-        $this->payment[Payment::CARD]['expiry_year'] = '20';
+        $this->payment[Payment::CARD]['expiry_year'] = '25';
 
         $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
 
@@ -801,7 +801,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->payment[Payment::CARD]['number'] = '4000400000000004';
 
-        $this->payment[Payment::CARD]['expiry_year'] = '20';
+        $this->payment[Payment::CARD]['expiry_year'] = '25';
 
         $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
 
