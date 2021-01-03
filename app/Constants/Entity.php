@@ -400,7 +400,9 @@ class Entity
     const INSTALLMENT                    = 'installment';
     const CHARGE                         = 'charge';
 
-    const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
+    const PAYMENTS_NBPLUS_NETBANKING   = 'payments_nbplus.netbanking';
+    const NBPLUS_EMANDATE_REGISTRATION = 'payments_nbplus.emandate_registration';
+    const NBPLUS_EMANDATE_DEBIT        = 'payments_nbplus.emandate_debit';
 
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
@@ -918,6 +920,8 @@ class Entity
         self::FTS_CHANNEL_HEALTH_EVENTS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
+        self::NBPLUS_EMANDATE_REGISTRATION  => \RZP\Services\NbPlus\Emandate::class,
+        self::NBPLUS_EMANDATE_DEBIT         => \RZP\Services\NbPlus\Emandate::class,
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,
     ];

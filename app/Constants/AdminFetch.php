@@ -344,6 +344,10 @@ class AdminFetch
 
             Entity::PAYMENTS_NBPLUS_NETBANKING => [],
 
+            Entity::NBPLUS_EMANDATE_REGISTRATION => [],
+
+            Entity::NBPLUS_EMANDATE_DEBIT => [],
+
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,

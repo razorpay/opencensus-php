@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Mockery;
 
+use RZP\Models\Terminal\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 trait PaymentNbplusTrait
@@ -12,7 +13,7 @@ trait PaymentNbplusTrait
     use DbEntityFetchTrait;
 
     /**
-     * @var array
+     * @var Entity
      */
     protected $terminal;
 

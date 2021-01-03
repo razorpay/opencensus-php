@@ -19,6 +19,9 @@ class Service extends NbPlusService
             case 'netbanking':
                 $class = new Netbanking();
                 break;
+            case Payment\Method::EMANDATE;
+                $class = new Emandate();
+                break;
             default:
                 throw new Exception\LogicException('Should not have reached here');
         }

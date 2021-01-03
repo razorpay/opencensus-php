@@ -22,6 +22,12 @@ class Response
     const ACCOUNT_INFO             = 'account_info';
     const PAYMENT_ID               = 'payment_id';
 
+    // Emandate Response Fields
+    const RECURRING_STATUS         = 'recurring_status';
+    const GATEWAY_TOKEN            = 'gateway_token';
+    const RECURRING_FAILURE_REASON = 'recurring_failure_reason';
+    const BANK_REFERENCE_ID        = 'bank_reference_id';
+
     // verify
     const GATEWAY_STATUS = 'gateway_status';
 }

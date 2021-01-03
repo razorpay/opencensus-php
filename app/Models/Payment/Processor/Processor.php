@@ -1384,7 +1384,7 @@ class Processor
             return;
         }
 
-        if ((in_array($method, [Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI], true) === false) or
+        if ((in_array($method, [Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI, Payment\Method::EMANDATE], true) === false) or
             ($payment->isGooglePayCard() === true))
         {
             $payment->disableCpsRoute();
