@@ -472,114 +472,122 @@
             {{{$dates['startDate']}}} to
             <br>
             {{{$dates['endDate']}}}</td>
-        <td class=xl70>₹ @format_money($razorpay_fee)</td>
-        <td colspan=5 style='mso-ignore:colspan'></td>
-    </tr>
-    @foreach($taxes as $taxName => $taxValue)
-        <tr height=36 style='mso-height-source:userset;height:27.0pt'>
-            <td colspan=2 height=36 class=xl88 width=370 style='border-right:.5pt solid white;
-  height:27.0pt;width:278pt'>&nbsp;</td>
-            <td class=xl76 width=185 style='border-left:none;width:139pt'>{{{$taxName}}}</td>
-            <td class=xl71 style='border-left:none'>₹ @format_money($taxValue)</td>
-            <td colspan=5 style='mso-ignore:colspan'></td>
-        </tr>
-    @endforeach
-    <tr height=35 style='mso-height-source:userset;height:26.0pt'>
-        <td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
-  height:26.0pt;width:278pt'>&nbsp;</td>
-        <td class=xl77 width=185 style='border-left:none;width:139pt'>Total</td>
-        <td class=xl72>₹ @format_money($total_fee)</td>
-        <td colspan=5 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=35 style='mso-height-source:userset;height:26.0pt'>
-        <td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
-  height:26.0pt;width:278pt'>&nbsp;</td>
-        <td class=xl77 width=185 style='border-left:none;width:139pt'>Already Done</td>
-        <td class=xl72>₹ @format_money($total_fee)</td>
-        <td colspan=5 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=33 style='mso-height-source:userset;height:25.0pt'>
-        <td colspan=2 height=33 class=xl90 width=370 style='border-right:.5pt solid white;
-  height:25.0pt;width:278pt'>&nbsp;</td>
-        <td class=xl77 width=185 style='border-left:none;width:139pt'>Due</td>
-        <td class=xl72>₹ 0.00</td>
-        <td colspan=5 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 colspan=9 style='height:16.0pt;mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='mso-height-source:userset;height:16.0pt'>
-        <td height=21 colspan=8 style='height:16.0pt;mso-ignore:colspan'></td>
-        <td class=xl69 width=87 style='width:65pt'></td>
-    </tr>
-    <tr height=25 style='height:19.0pt'>
-        <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>Razorpay
-            Software Pvt Ltd</td>
-        <td colspan=7 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=25 style='height:19.0pt'>
-        <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>PAN
-            No.<span style='mso-spacerun:yes'>&nbsp; </span> - <code>AAGCR4375J</code></td>
-        <td colspan=7 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=25 style='height:19.0pt'>
-        <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>TAN
-            No.<span style='mso-spacerun:yes'>&nbsp; </span>- <code>AAGCR4375JSD001</code></td>
-        <td colspan=7 style='mso-ignore:colspan'></td>
-    </tr>
+        <td class=xl70>&#x20B9 @include('merchant/pg_invoice/components/currency',
+                                                 ['value'    => $razorpay_fee,
+                                                 'currency'=> '',])</td>
+<td colspan=5 style='mso-ignore:colspan'></td>
+</tr>
+@foreach($taxes as $taxName => $taxValue)
+<tr height=36 style='mso-height-source:userset;height:27.0pt'>
+    <td colspan=2 height=36 class=xl88 width=370 style='border-right:.5pt solid white;
+height:27.0pt;width:278pt'>&nbsp;</td>
+    <td class=xl76 width=185 style='border-left:none;width:139pt'>{{{$taxName}}}</td>
+    <td class=xl71 style='border-left:none'>&#x20B9 @include('merchant/pg_invoice/components/currency',
+                                                 ['value'    => $taxValue,
+                                                 'currency'=> '',])</td>
+    <td colspan=5 style='mso-ignore:colspan'></td>
+</tr>
+@endforeach
+<tr height=35 style='mso-height-source:userset;height:26.0pt'>
+<td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
+height:26.0pt;width:278pt'>&nbsp;</td>
+<td class=xl77 width=185 style='border-left:none;width:139pt'>Total</td>
+<td class=xl72>&#x20B9 @include('merchant/pg_invoice/components/currency',
+                                                 ['value'    => $total_fee,
+                                                 'currency'=> '',])</td>
+<td colspan=5 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=35 style='mso-height-source:userset;height:26.0pt'>
+<td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
+height:26.0pt;width:278pt'>&nbsp;</td>
+<td class=xl77 width=185 style='border-left:none;width:139pt'>Already Done</td>
+<td class=xl72>&#x20B9 @include('merchant/pg_invoice/components/currency',
+                                                 ['value'    => $total_fee,
+                                                 'currency'=> '',]) </td>
+<td colspan=5 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=33 style='mso-height-source:userset;height:25.0pt'>
+<td colspan=2 height=33 class=xl90 width=370 style='border-right:.5pt solid white;
+height:25.0pt;width:278pt'>&nbsp;</td>
+<td class=xl77 width=185 style='border-left:none;width:139pt'>Due</td>
+<td class=xl72>&#x20B9 0.00</td>
+<td colspan=5 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 colspan=9 style='height:16.0pt;mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='mso-height-source:userset;height:16.0pt'>
+<td height=21 colspan=8 style='height:16.0pt;mso-ignore:colspan'></td>
+<td class=xl69 width=87 style='width:65pt'></td>
+</tr>
+<tr height=25 style='height:19.0pt'>
+<td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>Razorpay
+    Software Pvt Ltd</td>
+<td colspan=7 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=25 style='height:19.0pt'>
+<td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>PAN
+    No.<span style='mso-spacerun:yes'>&nbsp; </span> - <code>AAGCR4375J</code></td>
+<td colspan=7 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=25 style='height:19.0pt'>
+<td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>TAN
+    No.<span style='mso-spacerun:yes'>&nbsp; </span>- <code>AAGCR4375JSD001</code></td>
+<td colspan=7 style='mso-ignore:colspan'></td>
+</tr>
 
-    @if ($isGstApplicable)
-        <tr height=25 style='height:19.0pt'>
-            <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>GSTIN
-                <span style='mso-spacerun:yes'>&nbsp; </span>- <code>29AAGCR4375J1ZU</code></td>
-            <td colspan=7 style='mso-ignore:colspan'></td>
-        </tr>
-    @endif
+@if ($isGstApplicable)
+<tr height=25 style='height:19.0pt'>
+    <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>GSTIN
+        <span style='mso-spacerun:yes'>&nbsp; </span>- <code>29AAGCR4375J1ZU</code></td>
+    <td colspan=7 style='mso-ignore:colspan'></td>
+</tr>
+@endif
 
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 class=xl80 style='height:16.0pt'></td>
-        <td colspan=8 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=23 style='height:17.0pt'>
-        <td height=23 class=xl81 colspan=3 style='height:17.0pt;mso-ignore:colspan'>Note:
-            This is an auto generated invoice, no signature required.</td>
-        <td colspan=6 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=42 style='height:32.0pt;mso-xlrowspan:2'>
-        <td height=42 colspan=9 style='height:32.0pt;mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 colspan=7 style='height:16.0pt;mso-ignore:colspan'></td>
-        <td></td>
-        <td></td>
-    </tr>
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 colspan=9 style='height:16.0pt;mso-ignore:colspan'></td>
-    </tr>
-    <tr height=23 style='height:17.0pt'>
-        <td height=23 style='height:17.0pt'></td>
-        <td colspan=2 class=xl92>Razorpay Software Pvt. Ltd.</td>
-        <td colspan=6 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='mso-height-source:userset;height:16.0pt'>
-        <td height=21 style='height:16.0pt'></td>
-        <td colspan=2 rowspan=3 class=xl84 width=370 style='width:278pt'>
-            Corporate & Registered Address<br>
-            1st Floor, SJR Cyber 22, Laskar Hosur Road<br>
-            Adugodi, Bengaluru - 560030<br>
-        <td colspan=6 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 style='height:16.0pt'></td>
-        <td colspan=6 style='mso-ignore:colspan'></td>
-    </tr>
-    <tr height=21 style='height:16.0pt'>
-        <td height=21 style='height:16.0pt'></td>
-        <td colspan=6 style='mso-ignore:colspan'></td>
-    </tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 class=xl80 style='height:16.0pt'></td>
+<td colspan=8 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=23 style='height:17.0pt'>
+<td height=23 class=xl81 colspan=3 style='height:17.0pt;mso-ignore:colspan'>Note:
+    This is an auto generated invoice, no signature required.</td>
+<td colspan=6 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=42 style='height:32.0pt;mso-xlrowspan:2'>
+<td height=42 colspan=9 style='height:32.0pt;mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 colspan=7 style='height:16.0pt;mso-ignore:colspan'></td>
+<td></td>
+<td></td>
+</tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 colspan=9 style='height:16.0pt;mso-ignore:colspan'></td>
+</tr>
+<tr height=23 style='height:17.0pt'>
+<td height=23 style='height:17.0pt'></td>
+<td colspan=2 class=xl92>Razorpay Software Pvt. Ltd.</td>
+<td colspan=6 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='mso-height-source:userset;height:16.0pt'>
+<td height=21 style='height:16.0pt'></td>
+<td colspan=2 rowspan=3 class=xl84 width=370 style='width:278pt'>
+    Corporate & Registered Address<br>
+    1st Floor, SJR Cyber 22, Laskar Hosur Road<br>
+    Adugodi, Bengaluru - 560030<br>
+<td colspan=6 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 style='height:16.0pt'></td>
+<td colspan=6 style='mso-ignore:colspan'></td>
+</tr>
+<tr height=21 style='height:16.0pt'>
+<td height=21 style='height:16.0pt'></td>
+<td colspan=6 style='mso-ignore:colspan'></td>
+</tr>
 </table>
 <script>
-    window.print()
+window.print()
 </script>
 </body>
 
