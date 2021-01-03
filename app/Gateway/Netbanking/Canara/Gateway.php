@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $content = $input['gateway'];
+        $content = $this->preProcessServerCallback($input['gateway']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,

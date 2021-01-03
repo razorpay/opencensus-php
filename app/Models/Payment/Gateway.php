@@ -1956,6 +1956,7 @@ class Gateway
      */
     public static $staticCallbackGateways = [
         Gateway::NETBANKING_KVB,
+        Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ATOM,
     ];

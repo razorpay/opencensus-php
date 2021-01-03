@@ -11,7 +11,8 @@ use RZP\Services\NbPlus\Netbanking as NetbankingBase;
 class Netbanking extends NetbankingBase
 {
     static $staticCallbackRouteMap = [
-        Payment\Gateway::NETBANKING_KVB => 'gateway_payment_static_callback_post',
+        Payment\Gateway::NETBANKING_KVB    => 'gateway_payment_static_callback_post',
+        Payment\Gateway::NETBANKING_CANARA => 'gateway_payment_callback_canara_post',
     ];
 
     public function sendRawRequest($request)
