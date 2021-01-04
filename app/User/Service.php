@@ -23,6 +23,7 @@ use Lcobucci\JWT\Builder as JWTBuilder;
 use Razorpay\Api\Errors\BadRequestError;
 use Lcobucci\JWT\Parser as JWTParser;
 use Illuminate\Support\Facades\Crypt;
+use App\Splitz\Service as SplitzService;
 use Lcobucci\JWT\ValidationData as JWTValidation;
 use Illuminate\Auth\Access\AuthorizationException;
 
@@ -830,6 +831,8 @@ class Service extends Base\Service
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
 
                     $data['features'] = $merchantService->getMerchantFeatures();
+
+                    $data['splitz_experiments'] = (new SplitzService())->getSplitzVariant($currentMerchantId);
 
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
 

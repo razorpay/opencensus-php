@@ -52,6 +52,7 @@ class TraceCode
 
     const DEBUG_MERCHANT_TRUTHY_VALUE               = 'DEBUG_MERCHANT_TRUTHY_VALUE';
 
+    const SPLITZ_EVALUATE_FAILED                    = 'SPLITZ_EVALUATE_FAILED';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

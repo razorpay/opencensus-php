@@ -3,6 +3,7 @@
 namespace App\Merchant\Notifications;
 
 use App\Base;
+use App\Lib\Util;
 
 class Service extends Base\Service
 {
@@ -161,6 +162,24 @@ class Service extends Base\Service
                     }
 
                     $isUserEligible = in_array("on", $value);
+
+                    break;
+
+                case 'splitz_experiments':
+
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
+
+                    $userFilterValue = $user[$key];
+
+                    foreach ($userFilterValue as $key => $subValue)
+                    {
+                        $userFilterValue[$key] = isset($userFilterValue[$key]['variables']) === true ? $userFilterValue[$key]['variables'] : '';
+                    }
+
+                    $isUserEligible = (empty(Util::array_recursive_diff($value, $userFilterValue)) === true);
 
                     break;
 
