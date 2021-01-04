@@ -561,6 +561,11 @@ trait Migrate
             $identifiers["gateway_terminal_id2"] = $terminalData["gateway_terminal_id2"];
         }
 
+        if (empty($terminalData["vpa"]) === false)
+        {
+            $identifiers["vpa"] = $terminalData["vpa"];
+        }
+
         $mpans = [];
 
         if (empty($terminalData["mc_mpan"]) === false)

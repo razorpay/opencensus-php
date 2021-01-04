@@ -360,7 +360,7 @@ class Repository extends Base\Repository
 
                 $tsTerminal = $terminals->first();
 
-                if (Terminal\Service::compareTerminalEntity($tsTerminal, $terminal) === false)
+                if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
@@ -631,7 +631,7 @@ class Repository extends Base\Repository
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($tsTerminals, $terminals) === false)
+                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
@@ -680,7 +680,7 @@ class Repository extends Base\Repository
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($tsTerminals, $terminals) === false)
+                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
@@ -1135,7 +1135,8 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                if (count($response) > 0) {
+                if (count($response) > 0)
+                {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
@@ -1188,7 +1189,8 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                if (count($response) > 0) {
+                if (count($response) > 0)
+                {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
@@ -1694,7 +1696,8 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                if (count($response) > 0) {
+                if (count($response) > 0)
+                {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)

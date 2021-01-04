@@ -67,13 +67,6 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        $sync = $this->app['config']->get('applications.terminals_service.sync');
-
-        if ($sync === true)
-        {
-            $this->runGetTerminalsForMerchantComparison($terminals, $merchant, $subMerchantFlag);
-        }
-
         $data = $terminals->toArrayAdmin($subMerchantFlag);
 
         // proxy code
@@ -86,6 +79,8 @@ class Service extends Base\Service
             $content = ["merchant_ids" => [$merchant->getId()]];
 
             $content["sub_merchant"] = $subMerchantFlag;
+
+            $content["statuses"] = ["activated", "deactivated"];
 
             $content["deleted"] = true;
 

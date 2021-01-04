@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\PublicEntity;
@@ -601,7 +602,9 @@ class TerminalsService
 
     protected function getMode()
     {
-        return $this->app['rzp.mode'];
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        return $mode;
     }
 
     protected function isMerchantRampedForInstrumentRequests(string $merchantId) : bool
