@@ -428,7 +428,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xls',
-            'name'        => 'citi/nach/RAZORP_SUMMARY_07032020_test'
+            'name'        => 'citi/nach/RAZORP_SUMMARY_shared_utility_code_07032020_test'
         ];
 
         $expectedFileContentDebit = [
@@ -505,29 +505,46 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $files = $this->getEntities('file_store', [], true);
 
-        $this->assertCount(3, $files['items']);
+        $this->assertCount(4, $files['items']);
 
-        $directTerminalFile = $files['items'][1];
-        $sharedTerminalFile = $files['items'][2];
+        $directTerminalSummaryFile = $files['items'][0];
+        $directTerminalDebitFile   = $files['items'][1];
+        $sharedTerminalSummaryFile = $files['items'][2];
+        $sharedTerminalDebitFile   = $files['items'][3];
 
         // TODO add assertion for file name
-        $expectedFileContentForDirectTerminal = [
+        $expectedFileContentForDirectTerminalDebit = [
             'type'        => 'citi_nach_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
         ];
 
-        $expectedFileContentForSharedTerminal = [
+        $expectedFileContentForDirectTerminalSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+        ];
+
+        $expectedFileContentForSharedTerminalDebit = [
             'type'        => 'citi_nach_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
         ];
 
+        $expectedFileContentForSharedTerminalSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+        ];
 
-        $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminal, $directTerminalFile);
-        $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminal, $sharedTerminalFile);
+        $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminalDebit, $directTerminalDebitFile);
+        $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminalSummary, $directTerminalSummaryFile);
+        $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminalDebit, $sharedTerminalDebitFile);
+        $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminalSummary, $sharedTerminalSummaryFile);
 
         Queue::assertPushed(BeamJob::class, 1);
 

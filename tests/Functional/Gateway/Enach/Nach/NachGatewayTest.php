@@ -206,7 +206,7 @@ class NachGatewayTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xls',
-            'name'        => 'citi/nach/RAZORP_SUMMARY_11022020_test'
+            'name'        => 'citi/nach/RAZORP_SUMMARY_NACH00000000013149_11022020_test'
         ];
 
         $expectedFileContentDebit = [
@@ -343,6 +343,10 @@ class NachGatewayTest extends TestCase
         $this->startTest($data);
 
         $files = $this->getEntities('file_store', ['type' => 'citi_nach_debit'], true);
+
+        $this->assertCount(4, $files['items']);
+
+        $files = $this->getEntities('file_store', ['type' => 'citi_nach_debit_summary'], true);
 
         $this->assertCount(4, $files['items']);
     }

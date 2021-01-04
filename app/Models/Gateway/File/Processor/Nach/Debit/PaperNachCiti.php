@@ -33,7 +33,7 @@ class PaperNachCiti extends Debit\Base
     const FILE_TYPE         = FileStore\Type::CITI_NACH_DEBIT;
     const SUMMARY_FILE_TYPE = FileStore\Type::CITI_NACH_DEBIT_SUMMARY;
     const FILE_NAME         = 'citi/nach/RAZORP_COLLECT_{$utilityCode}_{$date}';
-    const SUMMARY_FILE_NAME = 'citi/nach/RAZORP_SUMMARY_{$date}';
+    const SUMMARY_FILE_NAME = 'citi/nach/RAZORP_SUMMARY_{$utilityCode}_{$date}';
     const SUMMARY_EXTENSION = FileStore\Format::XLS;
     const STEP              = 'debit';
     const REFERENCE_PREFIX  = 'CTTATAAIAA';
@@ -67,8 +67,6 @@ class PaperNachCiti extends Debit\Base
             {
                 $this->pageCount = 3;
             }
-
-            $summaryData = [];
 
             $allFilesData = $this->formatDataForFile($data);
 
@@ -112,46 +110,51 @@ class PaperNachCiti extends Debit\Base
 
                     $fileStoreIds[] = $file->getId();
 
-                    $presentCount = $presentCount + $this->pageCount;
+                    $amount = 0;
+
+                    foreach ($fileDataPerSheet as $data)
+                    {
+                        $amount = $amount + $data[Headings::AMOUNT];
+                    }
+
+                    $date = Carbon::now(Timezone::IST)->format('dmY');
+
+                    $summaryRow = [
+                        0 => [
+                            Headings::UTILITY_CODE    => $key,
+                            Headings::NO_OF_RECORDS   => count($fileDataPerSheet),
+                            Headings::TOTAL_AMOUNT    => $amount,
+                            Headings::SETTLEMENT_DATE => $date,
+                        ]
+                    ];
+
+                    $summaryFileName = $this->getFileToWriteNameWithoutExt(
+                                       [
+                                           'fileName'     => static::SUMMARY_FILE_NAME,
+                                           'utilityCode'  => $key,
+                                           'serialNumber' => $serialNumber,
+                                       ]);
+
+                    $creatorSummary = new FileStore\Creator;
+
+                    $creatorSummary->extension(static::SUMMARY_EXTENSION)
+                                   ->content($summaryRow)
+                                   ->name($summaryFileName)
+                                   ->store(FileStore\Store::S3)
+                                   ->type(static::SUMMARY_FILE_TYPE)
+                                   ->entity($this->gatewayFile)
+                                   ->metadata(static::FILE_METADATA)
+                                   ->save();
+
+                    $file = $creatorSummary->getFileInstance();
+
+                    $fileStoreIds[] = $file->getId();
 
                     $serialNumber++;
+
+                    $presentCount = $presentCount + $this->pageCount;
                 }
-
-                $amount = 0;
-
-                foreach ($fileData as $data)
-                {
-                    $amount = $amount + $data[Headings::AMOUNT];
-                }
-
-                $date = Carbon::now(Timezone::IST)->format('dmY');
-
-                $row = [
-                    Headings::UTILITY_CODE                  => $key,
-                    Headings::NO_OF_RECORDS                 => $totalCount,
-                    Headings::TOTAL_AMOUNT                  => $amount,
-                    Headings::SETTLEMENT_DATE               => $date,
-                ];
-
-                $summaryData[] = $row;
             }
-
-            $creatorSummary = new FileStore\Creator;
-
-            $summaryFileName = $this->getFileToWriteNameWithoutExt(['fileName' => static::SUMMARY_FILE_NAME]);
-
-            $creatorSummary->extension(static::SUMMARY_EXTENSION)
-                           ->content($summaryData)
-                           ->name($summaryFileName)
-                           ->store(FileStore\Store::S3)
-                           ->type(static::SUMMARY_FILE_TYPE)
-                           ->entity($this->gatewayFile)
-                           ->metadata(static::FILE_METADATA)
-                           ->save();
-
-            $file = $creatorSummary->getFileInstance();
-
-            $fileStoreIds[] = $file->getId();
 
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
