@@ -380,6 +380,7 @@
       position: absolute
       right: 5px
       top: 5px
+      line-height: 1
 
     &:not(:last-child)
       margin-right 20px
@@ -392,11 +393,12 @@
         position: absolute
         width: 0
         height: 0
-        border-left: 10px solid transparent
-        border-right: 10px solid transparent
-        border-top: 10px solid #528FF0
+        border-left: 8px solid transparent
+        border-right: 8px solid transparent
+        border-top: 8px solid #528FF0
         left: 50%
-        bottom -10px
+        transform: translateX(-50%)
+        bottom -8px
 
   .count
     font-size: 24px
