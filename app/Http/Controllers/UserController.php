@@ -440,9 +440,6 @@ class UserController extends Controller
     {
         list($error, $data) = (new User\Service)->getUserDetails();
 
-        $this->traceMerchantTruthyValue($data);
-
-
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -656,17 +653,5 @@ class UserController extends Controller
         $isOauthLogin = Session::get(User\Constants::OAUTH_LOGIN, false);
 
         return $isOauthLogin === true ? MetricConstants::OAUTH : MetricConstants::PASSWORD;
-    }
-
-    private function traceMerchantTruthyValue($data)
-    {
-        if (isset($data['activated']) === false)
-        {
-            return;
-        }
-
-        $this->trace->info(TraceCode::DEBUG_MERCHANT_TRUTHY_VALUE, [
-            'activated' =>  $data['activated'] ?? 'fallback',
-        ]);
     }
 }

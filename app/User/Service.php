@@ -767,6 +767,8 @@ class Service extends Base\Service
 
         $data = $data + $currentMerchant->toArray();
 
+        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
+
         if ($currentMerchant->role === 'owner')
         {
             $data['primaryOwner'] = true;
@@ -790,6 +792,8 @@ class Service extends Base\Service
             $merchantService = new Merchant\Service;
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
+
+            $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
             $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
 
@@ -846,6 +850,8 @@ class Service extends Base\Service
                         list($error, $x) = $request->send("merchants/product-switch", "POST");
 
                         $data = $this->updateUserDetails($data, $user);
+
+                        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
                     }
 
                     if (($isBankingRequest === false))
@@ -931,6 +937,8 @@ class Service extends Base\Service
                 $data['pre_signup_complete'] = true;
             }
         }
+
+        $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
         return [[], $data];
     }
@@ -1517,5 +1525,21 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    /*
+     * https://razorpay.slack.com/archives/C01HL41R1NF/p1609256502017900
+     */
+    private function traceMerchantActivatedTruthyValue($data, $line)
+    {
+        if (isset($data['activated']) === false)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::DEBUG_MERCHANT_TRUTHY_VALUE, [
+            'activated' =>  $data['activated'] ?? 'fallback',
+            'line'      =>  $line,
+        ]);
     }
 }
