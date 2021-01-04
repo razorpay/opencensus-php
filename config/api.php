@@ -13,5 +13,5 @@ return array(
     'auth_guest_pass'       =>  env('API_GUEST_AUTH_PASS'),
     'auth_internal_pass'    =>  env('API_INTERNAL_AUTH_PASS'),
     'mock'                  =>  env('API_MOCK'),
-    'request_timeout'       =>  300,
+    'request_timeout'       =>  900, // 15 minutes
 );
