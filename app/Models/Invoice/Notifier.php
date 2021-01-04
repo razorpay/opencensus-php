@@ -1183,7 +1183,7 @@ class Notifier extends Base\Core
 
         $invoiceIssuedMail = new InvoiceMail\MerchantIssued($viewPayload, $fileData);
 
-        Mail::queue($invoiceIssuedMail);
+        Mail::send($invoiceIssuedMail);
 
         return true;
     }
