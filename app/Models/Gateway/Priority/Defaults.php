@@ -19,6 +19,7 @@ class Defaults
             *
             */
             Mode::LIVE => [
+                Gateway::FULCRUM,
                 Gateway::PAYSECURE,
                 Gateway::HDFC,
                 Gateway::AXIS_MIGS,

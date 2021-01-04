@@ -1474,6 +1474,10 @@ class Gateway
             Network::MC,
             Network::VISA,
         ],
+        self::FULCRUM => [
+            Network::MC,
+            Network::VISA,
+        ],
         self::HITACHI => [
             Network::MC,
             Network::VISA,
@@ -1626,6 +1630,7 @@ class Gateway
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::FULCRUM,
     ];
 
     public static $verifyDisabled = [
@@ -1646,6 +1651,7 @@ class Gateway
 
     public static $captureVerifyEnabled = [
         self::HITACHI,
+        self::FULCRUM,
         self::AXIS_MIGS,
         self::CYBERSOURCE,
         self::FIRST_DATA,
@@ -1710,6 +1716,7 @@ class Gateway
         Gateway::NACH_ICICI,
         Gateway::AMEX,
         Gateway::UPI_ICICI,
+        Gateway::FULCRUM,
     ];
 
     public static $upiRecurringGateways = [
@@ -2273,11 +2280,13 @@ class Gateway
     // changes done here won't be reflected in routing
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::FULCRUM,
         Gateway::ENACH_RBL,
     ];
 
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
+        Gateway::FULCRUM     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
@@ -3065,6 +3074,7 @@ class Gateway
             self::FIRST_DATA,
             self::PAYU,
             self::CASHFREE,
+            self::FULCRUM,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3098,6 +3108,7 @@ class Gateway
             self::ISG,
             self::PAYU,
             self::CASHFREE,
+            self::FULCRUM,
         ];
 
         return (in_array($gateway, $gateways, true));
