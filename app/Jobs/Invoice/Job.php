@@ -102,6 +102,8 @@ class Job extends BaseJob
                         'time_taken_ms'  => $timeTaken,
                         'handler_result' => $handlerResult,
                     ]));
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {
