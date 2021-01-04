@@ -1166,6 +1166,11 @@ class BasicAuth
             $merchant = null;
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_FETCH,
+            ['merchant' => $merchant]
+        );
+
         $this->authCreds->setMerchant($merchant);
 
         // If merchant id isn't found, then return false.
