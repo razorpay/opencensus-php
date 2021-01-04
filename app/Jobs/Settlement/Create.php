@@ -53,6 +53,8 @@ class Create extends Job
 
     protected $pendingMerchantsForSettlement;
 
+    protected $settlementPerChannelCount;
+
     /**
      * if the job takes more time then it'll be terminated
      *
@@ -136,7 +138,9 @@ class Create extends Job
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
-                         $response);
+                $response);
+
+            $this->incrementChannelCount($channel, $setlResponse['settlement_count']);
 
             if (empty($setlResponse['settlement_ids']) === false)
             {
@@ -207,11 +211,29 @@ class Create extends Job
                     'channel' => $channel,
                 ]);
 
-            if (isset($this->params['daily_settlement']) === false)
-            {
-                $this->dispatchForSettlementInitiateIfRequired($channel);
-            }
+            $shouldInitiate = isset($this->params['daily_settlement']) ? false : true ;
+
+            $this->dispatchForSettlementInitiateIfRequired($channel, $shouldInitiate);
         }
+    }
+
+    protected function incrementChannelCount(string $channel, int $count)
+    {
+        //
+        // update the count for channel here
+        // this would help to maintain the exact settlement create count
+        //
+        $redis = app('redis')->Connection('mutex_redis');
+
+        $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        $this->settlementPerChannelCount = (int) $redis->hincrby($key, $channel, $count);
+
+        $this->trace->count(
+            Metric::SETTLEMENT_CREATED_COUNT,
+            [
+                'channel' => $channel,
+            ]);
     }
 
     /**
@@ -220,14 +242,15 @@ class Create extends Job
      * it'll also trigger the same if settlement create process is complete
      *
      * @param string $channel
+     * @param bool $shouldInitiate
      */
-    protected function dispatchForSettlementInitiateIfRequired(string $channel)
+    protected function dispatchForSettlementInitiateIfRequired(string $channel, $shouldInitiate = true)
     {
         $redis = app('redis')->Connection('mutex_redis');
 
         $channelCount = $redis->hGetAll($this->channelWiseCountKey);
 
-        $count = (int) $channelCount[$channel];
+        $count = $this->settlementPerChannelCount;
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
@@ -247,9 +270,9 @@ class Create extends Job
             ]);
 
         // if there enough settlement to transfer then initiate the transfer
-        if ($count === $batchSize)
+        if ($count >= $batchSize)
         {
-            $this->dispatchForSettlementInitiate($redis, $channel, $count);
+            $this->dispatchForSettlementInitiate($redis, $channel, $count, $shouldInitiate);
 
             return;
         }
@@ -267,7 +290,7 @@ class Create extends Job
 
             if ($count !== 0)
             {
-                $this->dispatchForSettlementInitiate($redis, $ch, $count);
+                $this->dispatchForSettlementInitiate($redis, $ch, $count, $shouldInitiate);
             }
         }
     }
@@ -278,25 +301,29 @@ class Create extends Job
      * @param        $redis
      * @param string $channel
      * @param        $count
+     * @param bool $shouldInitiate
      */
-    protected function dispatchForSettlementInitiate($redis, string $channel, int $count)
+    protected function dispatchForSettlementInitiate($redis, string $channel, int $count, $shouldInitiate = true)
     {
         // decrement the size by count as those are dispatched to initiate
         $redis->hincrby($this->channelWiseCountKey, $channel, -1 * $count);
 
-        Initiate::dispatch($this->mode, $channel);
+        if ($shouldInitiate === true)
+        {
+            Initiate::dispatch($this->mode, $channel);
 
-        $this->trace->info(
-            TraceCode::DISPATCH_FOR_SETTLEMENT_INITIATE,
-            [
-                'channel' => $channel,
-                'count'   => $count,
-            ]);
+            $this->trace->info(
+                TraceCode::DISPATCH_FOR_SETTLEMENT_INITIATE,
+                [
+                    'channel' => $channel,
+                    'count'   => $count,
+                ]);
 
-        $this->trace->count(
-            Metric::DISPATCH_FOR_SETTLEMENT_INITIATE,
-            [
-                'channel' => $channel,
-            ]);
+            $this->trace->count(
+                Metric::DISPATCH_FOR_SETTLEMENT_INITIATE,
+                [
+                    'channel' => $channel,
+                ]);
+        }
     }
 }
