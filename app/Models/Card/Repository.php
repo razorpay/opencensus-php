@@ -63,7 +63,7 @@ class Repository extends Base\Repository
 
     public function getByParams($params, $relations = [], $limit = 1)
     {
-        $query = $this->newQuery();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
 
         foreach ($params as $key => $value)
         {
@@ -194,7 +194,7 @@ class Repository extends Base\Repository
 
         $timestamp = time() - $window;
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->leftJoin($paymentTable, $IdColumn, $paymentCardIdColumn)
                     ->whereNull($paymentCardIdColumn)
                     ->where(Entity::VAULT, '=', $vault)

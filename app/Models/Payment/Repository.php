@@ -1943,7 +1943,7 @@ class Repository extends Base\Repository
 
         $paymentCardIdColumn  = $this->dbColumn(Entity::CARD_ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join($cardTableName, $paymentCardIdColumn, '=', $cardIdColumn)
                     ->where($cardVaultColumn, '=', $vault)
                     ->where($createdAt, '<=', $timestamp)
