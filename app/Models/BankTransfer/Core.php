@@ -25,6 +25,10 @@ class Core extends Base\Core
 {
     protected $mutex;
 
+    protected $bankTransferRequestCore;
+
+    protected $virtualAccountMetrics;
+
     const MUTEX_KEY = 'bank_transfer_processing_%s_%s';
 
     const NRE_FAILURE_MESSAGES = [
@@ -37,6 +41,10 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->bankTransferRequestCore = new BankTransferRequest\Core();
+
+        $this->virtualAccountMetrics = new VirtualAccount\Metric();
     }
 
     /**
@@ -126,7 +134,7 @@ class Core extends Base\Core
                 $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
             }
 
-            $this->updateBankTransferRequest($input[Entity::REQ_UTR], $paymentSuccess, $errorMessage);
+            $this->bankTransferRequestCore->updateBankTransferRequest($input[Entity::REQ_UTR], $paymentSuccess, $errorMessage);
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
 
@@ -138,37 +146,15 @@ class Core extends Base\Core
 
     public function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)
     {
-        $this->trace->info(
-            TraceCode::BANK_TRANSFER_PROCESSING,
-            $bankTransferRequest->toArrayTrace()
-        );
-
         $bankTransferInput = $bankTransferRequest->getBankTransferProcessInput();
-        $provider          = $bankTransferRequest->getGateway();
-
-        $bankTransfer   = null;
+        $provider = $bankTransferRequest->getGateway();
         $paymentSuccess = false;
-        $errorMessage   = null;
+        $bankTransfer = null;
+        $errorMessage = null;
 
         try
         {
-            $bankTransfer = $this->create($bankTransferInput, $provider);
-
-            $processor = new Processor();
-
-            $mutexKey = sprintf(self::MUTEX_KEY, $bankTransferInput[Entity::REQ_UTR], $bankTransferInput[Entity::PAYEE_ACCOUNT]);
-
-            $bankTransfer = $this->mutex->acquireAndRelease(
-                $mutexKey,
-                function() use ($processor, $bankTransfer)
-                {
-                    return $processor->process($bankTransfer);
-                },
-                60,
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-                10,
-                200,
-                400);
+            $bankTransfer = $this->processBankTransferRequest($bankTransferRequest, $bankTransferInput, $provider);
 
             $paymentSuccess = ($bankTransfer !== null);
         }
@@ -189,21 +175,71 @@ class Core extends Base\Core
         }
         finally
         {
-            $isExpected = null;
-
-            if ($bankTransfer !== null)
-            {
-                $isExpected = $bankTransfer->isExpected();
-
-                $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
-            }
-
-            $this->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
-
-            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
+            $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess);
         }
 
         return true;
+    }
+
+    public function processBankTransferRequest(
+        BankTransferRequest\Entity $bankTransferRequest,
+        $bankTransferInput,
+        $provider
+    )
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESSING,
+            $bankTransferRequest->toArrayTrace()
+        );
+
+        $bankTransfer = null;
+        $errorMessage = null;
+
+        $bankTransfer = $this->create($bankTransferInput, $provider);
+
+        $processor = new Processor();
+
+        $mutexKey = sprintf(self::MUTEX_KEY, $bankTransferInput[Entity::REQ_UTR], $bankTransferInput[Entity::PAYEE_ACCOUNT]);
+
+        $bankTransfer = $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($processor, $bankTransfer) 
+            {
+                return $processor->process($bankTransfer);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+            10,
+            200,
+            400);
+
+        return $bankTransfer;
+    }
+
+    public function postProcessBankTransferUpdation(
+        $bankTransfer,
+        $bankTransferInput,
+        $bankTransferRequest,
+        $errorMessage = null,
+        $paymentSuccess = false
+    )
+    {
+        $provider = $bankTransferRequest->getGateway();
+
+        $isExpected = null;
+
+        if ($bankTransfer !== null)
+        {
+            $isExpected = $bankTransfer->isExpected();
+
+            $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
+        }
+
+        $this->bankTransferRequestCore
+            ->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
+
+        $this->virtualAccountMetrics
+            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
     }
 
     public function getAccountForRefund(Entity $bankTransfer)
@@ -630,6 +666,7 @@ class Core extends Base\Core
 
             case 'bank_transfer_process_rbl':
             case 'bank_transfer_process_icici':
+            case 'bank_transfer_process_hdfc_ecms':
                 $properties = [
                     'source'        => 'callback',
                     'request_from'  => 'bank',
@@ -729,39 +766,5 @@ class Core extends Base\Core
         }
 
         return $array;
-    }
-
-    protected function updateBankTransferRequest(
-        string $utr,
-        bool $isCreated,
-        string $errorMessage = null,
-        BankTransferRequest\Entity $bankTransferRequest = null
-    )
-    {
-        try
-        {
-            if ($bankTransferRequest !== null)
-            {
-                $bankTransferRequest->setIsCreated($isCreated);
-                $bankTransferRequest->setErrorMessage(substr($errorMessage, 0, 255));
-
-                $bankTransferRequest->save();
-            }
-            else
-            {
-                $data = [
-                    BankTransferRequest\Entity::IS_CREATED => $isCreated,
-                    BankTransferRequest\Entity::ERROR_MESSAGE => substr($errorMessage, 0, 255),
-                ];
-
-                $this->repo
-                     ->bank_transfer_request
-                     ->updateByUtr($utr, $data);
-            }
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-        }
     }
 }

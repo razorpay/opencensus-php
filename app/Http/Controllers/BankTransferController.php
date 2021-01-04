@@ -12,12 +12,14 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Models\BankTransfer\HdfcEcms;
 use RZP\Models\BankTransfer\Validator;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class BankTransferController extends Controller
 {
+
     public function processBankTransfer()
     {
         $input = Request::all();
@@ -155,6 +157,17 @@ class BankTransferController extends Controller
         }
 
         return $this->getIciciResponse($input, '');
+    }
+
+    public function processHdfcEcmsBankTransfer()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::HDFC_ECMS_VA_CALLBACK, $input);
+
+        $serviceResponse = (new HdfcEcms\Service())->saveAndProcessRequest($input);
+
+        return ApiResponse::json($serviceResponse);
     }
 
     protected function validateRequestToken($validateReqToken)

@@ -1557,6 +1557,30 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createHdfcEcmsBankAccountTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'ECMSBANKACCTER',
+            'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::BT_HDFC_ECMS,
+            'gateway_merchant_id'       => 'HB4589',
+            'gateway_merchant_id2'      => '00',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'bank_transfer'             => '1',
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING                    => '1',
+                Type::NUMERIC_ACCOUNT                  => '1',
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1'
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedBankAccountTerminalAlphaNum(array $attributes = [])
     {
         $defaultValues = [

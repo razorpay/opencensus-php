@@ -1975,11 +1975,89 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_icici', $payment['gateway']);
     }
 
+    public function testHdfcEcmsBankTransferCallback()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UniqueID']);
+        $this->assertEquals(1000000, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(1000000, $payment['amount']);
+        $this->assertEquals('bt_hdfc_ecms', $payment['gateway']);
+    }
+
     public function testIciciBankTransferCallbackInvalid()
     {
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->iciciAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackBadRequest()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferDuplicateTransaction()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $request = $testData['request'];
+
+        $request['content']['UniqueID'] = '02081900018';
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferTransactionNotFound()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackAlreadyProcessed()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
 
         $this->startTest($testData);
     }
@@ -3036,6 +3114,15 @@ class BankTransferTest extends TestCase
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
 
         $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
+    }
+
+    protected function getHdfcEcmsVaBankAccount()
+    {
+        $order = $this->fixtures->create('order');
+
+        $bankAccount = $this->createVirtualAccountForOrder($order)['receivers'][0];
 
         return $bankAccount['account_number'];
     }

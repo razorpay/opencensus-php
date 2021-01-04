@@ -244,6 +244,9 @@ return [
     VirtualAccount\Provider::ICICI => [
         'secret'    => env('ICICI_SECRET'),
     ],
+    VirtualAccount\Provider::HDFC_ECMS => [
+        'secret'    => env('HDFC_ECMS_SECRET'),
+    ],
 
     'rbl_va'    => [
         'org_token' => env('RBL_VA_SECRET'),

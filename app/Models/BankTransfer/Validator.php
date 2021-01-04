@@ -6,8 +6,6 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
-use RZP\Models\VirtualAccount\Provider;
-use RZP\Models\Bank\BankCodes;
 
 class Validator extends Base\Validator
 {

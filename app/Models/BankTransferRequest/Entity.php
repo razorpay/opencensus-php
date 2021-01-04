@@ -248,6 +248,7 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process':
             case 'bank_transfer_process_rbl':
             case 'bank_transfer_process_icici':
+            case 'bank_transfer_process_hdfc_ecms':
                 $requestSource = [
                     'source'        => 'callback',
                     'request_from'  => 'bank',

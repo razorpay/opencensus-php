@@ -380,8 +380,9 @@ class Route
         'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
-        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransferCallback'                 ],
+        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransferCallback'           ],
         'bank_transfer_process_icici_internal'     => ['post',     'ecollect/validate/icici/internal',               'BankTransferController@processIciciBankTransfer'                   ],
+        'bank_transfer_process_hdfc_ecms'          => ['post',     'ecollect/validate/hdfc/ecms',                    'BankTransferController@processHdfcEcmsBankTransfer'                ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
         'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
@@ -2617,6 +2618,7 @@ class Route
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_process_icici_internal',
+        'bank_transfer_process_hdfc_ecms',
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account_internal',
         'batch_process_file',
@@ -2944,6 +2946,7 @@ class Route
         'subscription_registration_cancel_link',
         'user_resend_verification_otp',
         'bank_transfer_process_icici',
+        'bank_transfer_process_hdfc_ecms',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -5722,6 +5725,10 @@ class Route
 
         'icici' => [
             'bank_transfer_process_icici',
+        ],
+
+        'hdfc_ecms' => [
+            'bank_transfer_process_hdfc_ecms',
         ],
 
         'rbl' => [

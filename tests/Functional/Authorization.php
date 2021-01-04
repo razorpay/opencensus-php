@@ -402,6 +402,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function hdfcEcmsAuth($mode = 'test')
+    {
+        $hdfcEcmsConfig = \Config::get('applications.hdfc_ecms');
+
+        $pwd = $hdfcEcmsConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function authServiceAuth($mode = 'test')
     {
         $authServiceConfig = \Config::get('applications.auth_service');

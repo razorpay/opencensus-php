@@ -64,6 +64,7 @@ class Provider
         self::DASHBOARD => 'RAZR0000001',
         self::ICICI     => 'ICIC0000104',
         self::RBL       => 'RATN0VAAPIS',
+        self::HDFC_ECMS => 'HDFC0000113',
     ];
 
     // The default details are fixed by each provider, most specifically
@@ -86,6 +87,9 @@ class Provider
         ],
         self::RBL => [
             BankAccount::IFSC_CODE => self::IFSC[self::RBL],
+        ],
+        self::HDFC_ECMS => [
+            BankAccount::IFSC_CODE => self::IFSC[self::HDFC_ECMS],
         ],
     ];
 
@@ -121,6 +125,9 @@ class Provider
             '*'
         ],
         self::RBL => [
+            '*',
+        ],
+        self::HDFC_ECMS => [
             '*',
         ]
     ];

@@ -15,6 +15,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
@@ -86,7 +87,6 @@ abstract class Processor extends Base\Core
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do nothing.
             //
-
             if ($entity->getEntityName() === Constants\Entity::BANK_TRANSFER)
             {
                 throw new LogicException(TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR);
@@ -98,6 +98,13 @@ abstract class Processor extends Base\Core
         $paymentExpected = $this->checkPaymentExpectedAndSetVirtualAccount($entity);
 
         $entity->setExpected($paymentExpected);
+
+        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+            ($entity->getGateway() === Provider::HDFC_ECMS) and
+            ($entity->getUnexpectedReason() !== null))
+        {
+            return $entity;
+        }
 
         $this->setMerchant();
 
@@ -302,7 +309,19 @@ abstract class Processor extends Base\Core
 
         if ($this->useSharedVirtualAccount($entity) === true)
         {
+            if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+                ($entity->getGateway() === Provider::HDFC_ECMS))
+            {
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_ECMS_PAYMENT_CALLBACK_UNEXPECTED,
+                    $entity->toArray()
+                );
+
+                return false;
+            }
+
             $data = [];
+
             switch ($entity->getEntityName())
             {
                 case Constants\Entity::BANK_TRANSFER:
@@ -346,15 +365,53 @@ abstract class Processor extends Base\Core
 
         if ($this->virtualAccount->isDueToBeClosed() === true)
         {
-            $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED);
+            if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+                ($entity->getGateWay() === Provider::HDFC_ECMS))
+            {
+                $this->setUnexpectedReason($entity, StatusCode::CHALLAN_EXPIRED);
 
-            $this->trace->info(
-                TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
-                $entity->toArray());
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_ECMS_DUE_TO_BE_CLOSED,
+                    $entity->toArray());
+            }
+            else
+            {
+                $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED);
+
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
+                    $entity->toArray());
+            }
 
             $this->pushVaPaymentFailedDueToClosedVaEventToLake($entity);
 
             return true;
+        }
+
+        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+            ($entity->getGateway() === Provider::HDFC_ECMS))
+        {
+            if ($this->virtualAccount->getStatus() === Status::PAID)
+            {
+                $this->setUnexpectedReason($entity, StatusCode::DUPLICATE_TRANSACTION);
+
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_ECMS_DUPLICATE_TRANSACTION,
+                    $entity->toArray());
+
+                return true;
+            }
+
+            if ($this->virtualAccount->getAmountExpected() !== $entity->getAmount())
+            {
+                $this->setUnexpectedReason($entity, StatusCode::AMOUNT_MISMATCH);
+
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_ECMS_AMOUNT_MISMATCH,
+                    $entity->toArray());
+
+                return true;
+            }
         }
 
         $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();

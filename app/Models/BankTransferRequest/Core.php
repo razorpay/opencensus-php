@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Models\BankTransferRequest;
 
 use RZP\Models\Base;
@@ -9,13 +8,13 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
-    public function create(array $input, string $gateway, $requestPayload) : Entity
+    public function create(array $input, string $gateway, $requestPayload): Entity
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_SAVE_REQUEST,
             [
-                Entity::GATEWAY         => $gateway,
-                Entity::TRANSACTION_ID  => $input[Entity::TRANSACTION_ID],
+                Entity::GATEWAY        => $gateway,
+                Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
             ]
         );
 
@@ -41,8 +40,8 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::BANK_TRANSFER_SAVE_REQUEST_FAILED,
                 [
-                    Entity::GATEWAY         => $gateway,
-                    Entity::TRANSACTION_ID  => $input[Entity::TRANSACTION_ID],
+                    Entity::GATEWAY        => $gateway,
+                    Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
                 ]
             );
 
@@ -58,12 +57,55 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANK_TRANSFER_REQUEST_SAVED,
             [
-                Entity::ID              => $bankTransferRequest->getPublicId(),
-                Entity::GATEWAY         => $gateway,
-                Entity::TRANSACTION_ID  => $input[Entity::TRANSACTION_ID],
+                Entity::ID             => $bankTransferRequest->getPublicId(),
+                Entity::GATEWAY        => $gateway,
+                Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
             ]
         );
 
         return $bankTransferRequest;
+    }
+
+    public function updateBankTransferRequest(
+        string $utr,
+        bool $isCreated,
+        string $errorMessage = null,
+        Entity $bankTransferRequest = null
+    )
+    {
+        try
+        {
+            if ($bankTransferRequest !== null)
+            {
+                $bankTransferRequest->setIsCreated($isCreated);
+                $bankTransferRequest->setErrorMessage(substr($errorMessage, 0, 255));
+
+                $bankTransferRequest->save();
+            }
+            else
+            {
+                $data = [
+                    Entity::IS_CREATED    => $isCreated,
+                    Entity::ERROR_MESSAGE => substr($errorMessage, 0, 255),
+                ];
+
+                $this->repo
+                    ->bank_transfer_request
+                    ->updateByUtr($utr, $data);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::BANK_TRANSFER_REQUEST_UPDATION_FAILED,
+                [
+                    'utr'           => $utr,
+                    'is_created'    => $isCreated,
+                    'error_message' => $errorMessage
+                ]
+            );
+        }
     }
 }

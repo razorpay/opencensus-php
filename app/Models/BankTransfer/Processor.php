@@ -24,7 +24,9 @@ use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -97,6 +99,12 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
+        if (($bankTransfer->getGateway() === VirtualAccount\Provider::HDFC_ECMS) and
+            ($bankTransfer->getUnexpectedReason() !== null))
+        {
+            return null;
+        }
+
         $this->checkIfAccountIsBlocked($bankTransfer);
 
         $deadlockRetryAttempts = 2;
@@ -174,7 +182,16 @@ class Processor extends VirtualAccount\Processor
 
             $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
-            $this->createPaymentOrUnexpected($bankTransfer, $paymentInput, $gatewayData);
+            switch ($bankTransfer->getGateway())
+            {
+                case VirtualAccount\Provider::HDFC_ECMS:
+                    $this->createEcmsPayment($bankTransfer, $paymentInput, $gatewayData);
+
+                    break;
+
+                default:
+                    $this->createPaymentOrUnexpected($bankTransfer, $paymentInput, $gatewayData);
+            }
 
             $payment = $this->getPaymentProcessor()->getPayment();
 
@@ -278,6 +295,28 @@ class Processor extends VirtualAccount\Processor
                     'channel'  => Config::get('slack.channels.x_finops'),
                 ]
             );
+        }
+    }
+
+    protected function createEcmsPayment(&$bankTransfer, array $input, array $gatewayData)
+    {
+        try
+        {
+            $this->getPaymentProcessor()->process($input, $gatewayData);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
+
+            if ($e->getMessage() === PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH)
+            {
+                $this->pushVaPaymentFailedDueToOrderAmountMismatchEventToLake($input, $e);
+
+                $bankTransfer->setUnexpectedReason(StatusCode::ORDER_AMOUNT_MISMATCH);
+            }
+
+            throw $e;
         }
     }
 
@@ -419,7 +458,16 @@ class Processor extends VirtualAccount\Processor
     {
         if ($this->virtualAccount === null)
         {
-            $bankTransfer->setUnexpectedReason(self::VIRTUAL_ACCOUNT_NOT_FOUND);
+            switch ($bankTransfer->getGateway())
+            {
+                case VirtualAccount\Provider::HDFC_ECMS:
+                    $bankTransfer->setUnexpectedReason(HdfcEcms\StatusCode::TRANSACTION_NOT_FOUND);
+
+                    break;
+
+                default:
+                    $bankTransfer->setUnexpectedReason(self::VIRTUAL_ACCOUNT_NOT_FOUND);
+            }
 
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
