@@ -193,4 +193,9 @@ class PayoutLinkController extends Controller
 
         return ApiResponse::json($entities);
     }
+
+    public function adminActions()
+    {
+        return $this->service()->adminActions($this->input);
+    }
 }

@@ -931,7 +931,11 @@ return [
             Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE => [
                 'description' => 'Allow executing admin tax-payment apis',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE => [
+                'description' => 'Allow executing admin payout-link apis',
+                'assignable'  => true,
+            ],
         ],
 
         // Razorpay Capital Services

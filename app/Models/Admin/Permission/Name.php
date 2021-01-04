@@ -501,6 +501,8 @@ class Name
 
     const TAX_PAYMENT_ADMIN_AUTH_EXECUTE      = 'tax_payment_admin_auth_execute';
 
+    const PAYOUT_LINK_ADMIN_AUTH_EXECUTE      = 'payout_link_admin_auth_execute';
+
     const PAYOUT_STATUS_UPDATE_MANUALLY       = 'payout_status_update_manually';
 
     const BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY = 'banking_account_statement_run_manually';

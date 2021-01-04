@@ -1203,6 +1203,7 @@ class Route
 
 
         // Payout Links
+        'payout_links_admin_auth_api'              => ['post',      'payout-links/admin',                            'PayoutLinkController@adminActions'                                 ],
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
         'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
@@ -4142,6 +4143,9 @@ class Route
         'payouts_bulk_amount_type',
         'tax_payments_admin_auth_api',
 
+        // payout-links admin route
+        'payout_links_admin_auth_api',
+
         // subscriptions admin route
         'subscription_clear_feature',
 
@@ -4968,6 +4972,7 @@ class Route
 
         'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
+        'payout_links_admin_auth_api'                 => Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
         'salesforce_event'                            => '*',
         'salesforce_opportunity_details'              => '*',
 

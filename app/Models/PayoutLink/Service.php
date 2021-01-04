@@ -712,6 +712,13 @@ class Service extends Base\Service
         return $this->app['payout-links']->fetchMultiple($input);
     }
 
+    public function adminActions(array $input): array
+    {
+        $this->checkIfPLServiceIsDown();
+
+        return $this->app['payout-links']->adminActions($input);
+    }
+
     protected function formatFundAccountsArray(array &$fundAccountsArray)
     {
         $oldFundAccountsItems = $fundAccountsArray["items"];

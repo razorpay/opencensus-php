@@ -1022,6 +1022,46 @@ return [
         ],
     ],
 
+    'testPayoutLinkAdminRouteHitsServiceMethod'                           => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/payout-links/admin',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testPayoutLinkAdminRouteFailsWithoutPermission'                           => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/payout-links/admin',
+            'content' => [
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+      ],
+
     'testAdminP2pEntitiesApi' => [
         'request' => [
             'url'       => '/admin/entities/all',

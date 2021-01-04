@@ -50,6 +50,7 @@ class PayoutLinks
     const RESEND_NOTIFICATION                      = 'twirp/payoutlinks.Payoutlinks/ResendNotification';
     const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
     const SUMMARY                                  = 'twirp/payoutlinks.Payoutlinks/Summary';
+    const ADMIN_ACTIONS                            = 'twirp/payoutlinks.Payoutlinks/AdminActions';
     const FUND_ACCOUNT_ID                          = 'fund_account_id';
     const ACCOUNT_NUMBER                           = 'account_number';
     const CANCELLED_AT                             = 'cancelled_at';
@@ -484,6 +485,15 @@ class PayoutLinks
         ];
 
         return $this->makeRequest($url, $request);
+    }
+
+    public function adminActions(array $input)
+    {
+        $this->rzpModeCheck();
+
+        $url = $this->getConstructedUrl(self::ADMIN_ACTIONS);
+
+        return $this->makeRequest($url, $input);
     }
 
     /**

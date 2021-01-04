@@ -1154,6 +1154,36 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutLinkAdminRouteHitsServiceMethod()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'payout_link_admin_auth_execute'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('adminActions')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->startTest();
+
+        $plMock->shouldHaveReceived('adminActions');
+    }
+
+    public function testPayoutLinkAdminRouteFailsWithoutPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'some_other_permission'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+  
     public function testAdminP2pEntitiesApi()
     {
         $result = $this->startTest();
