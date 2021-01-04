@@ -8,7 +8,8 @@ use RZP\Reconciliator\FileProcessor;
 class Reconciliate extends Base\Reconciliate
 {
     const SUCCESS = [
-        'mis_report_razorpay' => self::PAYMENT
+        'mis_report_razorpay' => self::PAYMENT,
+        'reconciliation'      => self::PAYMENT
     ];
 
     const TYPE_TO_COLUMN_HEADER_MAP = [

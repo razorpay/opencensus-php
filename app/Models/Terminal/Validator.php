@@ -1095,12 +1095,16 @@ class Validator extends Base\Validator
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingFederalEditTerminalRules = [
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
-        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingRblTerminalRules = [

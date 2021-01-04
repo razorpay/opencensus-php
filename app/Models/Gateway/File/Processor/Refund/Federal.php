@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Netbanking\Federal\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
@@ -38,7 +39,7 @@ class Federal extends Base
                 'Date'          => $date,
                 'PRN'           => $row['payment']['id'],
                 'FREEFIELD'     => Constants::FREEFIELD,
-                'BID'           => $row['gateway']['bank_payment_id'],
+                'BID'           => $this->fetchBankPaymentId($row),
                 'TXN Amount'    => $row['payment']['amount'] / 100,
                 'Refund Amount' => $row['refund']['amount'] / 100
             ];
@@ -54,5 +55,15 @@ class Federal extends Base
         $date = Carbon::now(Timezone::IST)->format('d_m_Y');
 
         return self::FILE_NAME . '_' . $date;
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID];
+        }
+
+        return $data['gateway']['bank_payment_id'];
     }
 }

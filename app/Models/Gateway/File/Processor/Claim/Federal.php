@@ -4,7 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\Payment;
 
-class Federal extends Base
+class Federal extends NetbankingBase
 {
     const GATEWAY = Payment\Gateway::NETBANKING_FEDERAL;
 
