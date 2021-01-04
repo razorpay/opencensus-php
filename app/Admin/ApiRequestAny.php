@@ -134,6 +134,9 @@ class ApiRequestAny
 
         $this->client = new Guzzle([
             'base_url' => ApiUrl::getApiBaseUrl(),
+            'defaults' => [
+                'timeout' => Config::get('api.request_timeout'),
+            ]
         ]);
 
         // === Get API Route map config

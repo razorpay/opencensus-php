@@ -51,7 +51,8 @@ class RawApiRequest
                         'X-User-Agent'                => Request::header('User-Agent'),
                         'X-IP-Address'                => Request::ip(),
                         'X-Dashboard-User-Session-Id' => Session::getId(),
-                ]
+                ],
+                'timeout' => Config::get('api.request_timeout'),
             ]
         ];
 

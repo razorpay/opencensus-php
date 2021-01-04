@@ -2,7 +2,9 @@
 
 namespace App\RZP;
 
+use Trace;
 use App\Http\ApiUrl;
+use App\Trace\TraceCode;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 
@@ -42,7 +44,12 @@ class Admin extends Entity
     public function makeGuzzleFileRequest($input, $mode = 'live')
     {
         // Creates a new Guzzle client
-        $client = new Guzzle(['base_url' => ApiUrl::getApiBaseUrl()]);
+        $client = new Guzzle([
+            'base_url' => ApiUrl::getApiBaseUrl(),
+            'defaults' => [
+                'timeout' => Config::get('api.request_timeout'),
+            ]
+        ]);
 
         // Sets the options for the request. Auth should be part of this.
         $options = array(
@@ -100,6 +107,13 @@ class Admin extends Entity
         }
         catch (\Exception $ex)
         {
+
+            Trace::error(
+                TraceCode::API_REQUEST_FAILURE,
+                [
+                    'message'           => $ex->getMessage(),
+                ]);
+
             $exceptionResponse = $ex->getResponse();
 
             if ($exceptionResponse->getReasonPhrase() === 'Bad Request')

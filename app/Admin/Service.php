@@ -1409,10 +1409,21 @@ class Service extends Base\Service
             // removing the /v1/ part at the end in the apiURL obtained from config
             $apiURL = substr($apiBaseUrl, 0, -4);
 
-            $APIConnection = Requests::request($apiURL);
+            $options = [
+                'timeout' => Config::get('api.request_timeout')
+            ];
+
+            $APIConnection = Requests::request($apiURL, array(), array(), array(), $options);
         }
         catch (Exception $e)
         {
+
+            Trace::error(
+                TraceCode::API_REQUEST_FAILURE,
+                [
+                    'message'           => $e->getMessage(),
+                ]);
+
             $response['statusMessage'] = 'API Connection Error';
 
             $response['statusCode'] = $e->getCode();
