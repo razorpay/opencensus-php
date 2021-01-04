@@ -294,9 +294,10 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $merchant, null, $customProperties);
         }
 
-        $response['id']    = $merchant->getId();
-        $response['name']  = $merchant->getName();
-        $response['email'] = $user->getEmail();
+        $response['id']      = $merchant->getId();
+        $response['name']    = $merchant->getName();
+        $response['email']   = $user->getEmail();
+        $response['user_id'] = $user->getId();
 
         return $response;
     }
