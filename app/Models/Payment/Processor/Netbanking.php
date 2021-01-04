@@ -200,7 +200,6 @@ class Netbanking
                 IFSC::BACB,
                 IFSC::BBKM,
                 IFSC::BDBL,
-                IFSC::BKDN,
                 IFSC::BKID,
                 IFSC::CBIN,
                 IFSC::CIUB,
@@ -433,7 +432,6 @@ class Netbanking
                 self::BARB_C,
                 self::BARB_R,
                 IFSC::BBKM,
-                IFSC::BKDN,
                 IFSC::BKID,
                 IFSC::CBIN,
                 IFSC::CIUB,
@@ -741,7 +739,6 @@ class Netbanking
 
     const DEFAULT_DISABLED_BANKS = [
         IFSC::AUBL,
-        IFSC::BKDN,
         IFSC::BBKM,
         IFSC::BKID,
         IFSC::COSB,

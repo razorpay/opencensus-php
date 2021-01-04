@@ -452,7 +452,7 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(84, $count);
+        $this->assertEquals(83, $count);
     }
 
     public function testServerToServerCallback()
