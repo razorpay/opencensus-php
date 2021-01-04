@@ -1555,6 +1555,17 @@ final class FactoryData
             'settlement_ondemand_transfer_id' => NULL,
         ]);
 
+        $factory(\RZP\Models\Settlement\Ondemand\Transfer\Entity::class,[
+            'id'                              => $faker->uniqueid,
+            'amount'                          => 20000,
+            'attempts'                        => 0,
+        ]);
+
+        $factory(\RZP\Models\Settlement\Ondemand\Attempt\Entity::class,[
+            'id'                              => $faker->uniqueid,
+            'settlement_ondemand_transfer_id' => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Reward\Entity::class, [
             'id'             => $faker->uniqueid,
             'advertiser_id'  => '100000Razorpay',

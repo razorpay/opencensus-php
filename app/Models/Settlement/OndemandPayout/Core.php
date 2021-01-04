@@ -62,7 +62,7 @@ class Core extends Base\Core
     {
         if((new Ondemand\Service)->isMerchantWithXSettlementAccount($this->merchant->getId()))
         {
-            return FundTransfer\Mode::NEFT;
+            return null;
         }
         else
         {
@@ -95,7 +95,20 @@ class Core extends Base\Core
         }
     }
 
-    protected function isOutsideBankingHours($time): bool
+    public function isOutsideBankingHoursWithBufferTime(): bool
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $isCurrentTimeOutsideBankingHours = $this->isOutsideBankingHours($currentTime);
+
+        $time = $currentTime + self::MODE_BUFFER_TIME;
+
+        $isOutsideBankingHours = $this->isOutsideBankingHours($time);
+
+        return $isOutsideBankingHours or $isCurrentTimeOutsideBankingHours;
+    }
+
+    public function isOutsideBankingHours($time): bool
     {
         $date = Carbon::createFromTimestamp($time, Timezone::IST);
 
@@ -319,6 +332,7 @@ class Core extends Base\Core
 
                 break;
 
+            case null:
             case FundTransfer\Mode::NEFT:
                 array_push($splitAmount , $totalAmountRemaining);
 

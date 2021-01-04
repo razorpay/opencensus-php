@@ -91,11 +91,6 @@ class Core extends Base\Core
 
         $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());
 
-        if ((new Service)->isMerchantWithXSettlementAccount($merchant->getId()))
-        {
-            (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand);
-        }
-
         $this->repo->saveOrFail($settlementOndemand);
 
         return [$settlementOndemand, $settlementOndemandPayouts, $txn];

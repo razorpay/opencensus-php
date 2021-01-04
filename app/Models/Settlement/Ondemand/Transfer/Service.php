@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Ondemand\Transfer;
 
 use RZP\Models\Base;
+use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
 class Service extends Base\Service
@@ -26,4 +27,26 @@ class Service extends Base\Service
 
         return $transfer;
     }
+
+    public function processXSettlementTransfer($settlementOndemand)
+    {
+       [$transfers, $attempts] = $this->repo->transaction(function () use($settlementOndemand)
+       {
+
+           [$transfers, $attempts] = $this->core()->createMultipleSettlementOndemandTransfer($settlementOndemand);
+
+            foreach ($transfers as $transfer)
+            {
+                (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $transfer->getAmount(), $transfer->getId());
+            }
+
+            return [$transfers, $attempts];
+       });
+
+        for ($i = 0; $i < sizeof($transfers); $i++)
+        {
+            CreateSettlementOndemandBulkTransfer::dispatch($this->mode, $attempts[$i]->getId(), $transfers[$i]);
+        }
+    }
+
 }

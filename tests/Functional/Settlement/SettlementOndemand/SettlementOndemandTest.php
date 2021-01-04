@@ -148,6 +148,53 @@ class SettlementOndemandTest extends TestCase
         $settlementOndemandBulk2->save();
     }
 
+    public function createSampleSettlementTransfer($status, $secondStatus = null)
+    {
+        $amount = $this->getAmountWithStatus($status) + 200000;
+
+        $secondAmount = $secondStatus !== null ? $this->getAmountWithStatus($secondStatus) + 200000 : $amount ;
+
+        $settlementOndemandTransfer1 = $this->fixtures
+                                            ->on('live')
+                                            ->create('settlement.ondemand.transfer',[
+                                                'amount'                  => $amount,
+                                                'attempts'                => 0,
+                                                'status'                  => 'created',
+                                                'mode'                    => 'IMPS'
+                                                ]);
+
+        $settlementOndemandTransfer1->save();
+
+        $settlementOndemandAttempt1 = $this->fixtures
+                                            ->on('live')
+                                            ->create('settlement.ondemand.attempt',[
+                                                'settlement_ondemand_transfer_id' => $settlementOndemandTransfer1['id'],
+                                                'status'                          => 'created',
+                                            ]);
+
+        $settlementOndemandAttempt1->save();
+
+        $settlementOndemandTransfer2 = $this->fixtures
+                                            ->on('live')
+                                            ->create('settlement.ondemand.transfer',[
+                                                'amount'                  => $secondAmount,
+                                                'attempts'                => 0,
+                                                'status'                  => 'created',
+                                                'mode'                    => 'IMPS'
+                                            ]);
+
+        $settlementOndemandTransfer2->save();
+
+        $settlementOndemandAttempt2 = $this->fixtures
+                                           ->on('live')
+                                           ->create('settlement.ondemand.attempt',[
+                                                'settlement_ondemand_transfer_id' => $settlementOndemandTransfer2['id'],
+                                                'status'                          => 'created',
+                                           ]);
+
+        $settlementOndemandAttempt2->save();
+    }
+
     public function processLastCycleSettlements()
     {
         $this->ba->cronAuth('live');
@@ -556,7 +603,7 @@ class SettlementOndemandTest extends TestCase
             'user_id'        => '20000000000000',
             'entity_type'    => 'adjustment',
             'payout_id'      =>  $adjustment['id'],
-            'mode'           => 'NEFT',
+            'mode'           => NULL,
             'reversed_at'    => NULL,
             'fees'           => 472708,
             'tax'            => 72108,
@@ -571,6 +618,481 @@ class SettlementOndemandTest extends TestCase
             'amount'                          => 19557292,
             'settlement_ondemand_transfer_id' => NULL,
         ], $settlementOndemandBulk);
+    }
+
+    public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimit()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->on(Mode::TEST)->create('bank_account',[
+            'merchant_id'       => $this->merchantDetail['merchant_id'],
+            'type'              => 'merchant',
+            'ifsc_code'         => 'ICIC0000104',
+            'account_number'    => '10010101011',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('balance', [
+            'balance' => 10000000000,
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_x_settlement']);
+
+        $this->fixtures
+            ->base
+            ->editEntity(
+                'balance',
+                '10000000000000',
+                [   'balance'        => 10000000000,
+                    'account_type'   => 'shared',
+                    'type'           => 'banking',
+                    'account_number' => '10010101011']);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $nonBankingHour = Carbon::create(2020, 12, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($nonBankingHour);
+
+        $this->startTest();
+
+        $txns = $this->getEntities(
+            'transaction',
+            ['count' => 2],
+            true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'adjustment',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 29292000,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'debit'                 => 0,
+            'credit'                => 29292000,
+            'currency'              => 'INR',
+        ], $txns['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'settlement.ondemand',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 29292000,
+            'fee'                   => 708000,
+            'tax'                   => 108000,
+            'debit'                 => 30000000,
+            'credit'                => 0,
+            'currency'              => 'INR',
+        ], $txns['items'][1]);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => '10000000000000',
+            'user_id'               => '20000000000000',
+            'amount'                => 30000000,
+            'total_amount_settled'  => 29292000,
+            'total_fees'            => 708000,
+            'total_tax'             => 108000,
+            'total_amount_reversed' => 0,
+            'total_amount_pending'  => 0,
+            'currency'              => 'INR',
+            'status'                => 'processed',
+            'narration'             => 'Demo Narration - optional',
+            'notes'                 => [
+                'key1' => 'note3',
+                'key2' => 'note5',
+            ],
+            'transaction_type'      => 'transaction',
+        ], $settlementOndemand);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id' => '10000000000000',
+            'amount'      => 29292000,
+            'description' => 'ondemand settlement for OndemandID - '.substr($settlementOndemand['id'],7),
+            'currency'    => 'INR',
+        ], $adjustment);
+
+        $settlementOndemandPayout = $this->getLastEntity('settlement.ondemand_payout', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'    => '10000000000000',
+            'user_id'        => '20000000000000',
+            'entity_type'    => 'adjustment',
+            'payout_id'      =>  $adjustment['id'],
+            'mode'           => NULL,
+            'reversed_at'    => NULL,
+            'fees'           => 708000,
+            'tax'            => 108000,
+            'status'         => 'processed',
+            'amount'         => 30000000,
+            'failure_reason' => NULL,
+        ], $settlementOndemandPayout);
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 9292000,
+            'status'                          => 'processing',
+       ], $settlementOndemandTransfers['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 20000000,
+            'status'                          => 'processing',
+        ], $settlementOndemandTransfers['items'][1]);
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempts['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][1]['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempts['items'][1]);
+
+        $settlementOndemandBulks = $this->getEntities(
+            'settlement.ondemand.bulk',
+            ['count' => 2],
+            true);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 9292000,
+            'settlement_ondemand_transfer_id' => $settlementOndemandTransfers['items'][0]['id'],
+        ], $settlementOndemandBulks['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 20000000,
+            'settlement_ondemand_transfer_id' => $settlementOndemandTransfers['items'][1]['id'],
+        ], $settlementOndemandBulks['items'][1]);
+    }
+
+    public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursLessThanIMPSLimit()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->on(Mode::TEST)->create('bank_account',[
+            'merchant_id'       => $this->merchantDetail['merchant_id'],
+            'type'              => 'merchant',
+            'ifsc_code'         => 'ICIC0000104',
+            'account_number'    => '10010101011',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('balance', [
+            'balance' => 10000000000,
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_x_settlement']);
+
+        $this->fixtures
+            ->base
+            ->editEntity(
+                'balance',
+                '10000000000000',
+                [   'balance'        => 10000000000,
+                    'account_type'   => 'shared',
+                    'type'           => 'banking',
+                    'account_number' => '10010101011']);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $nonBankingHour = Carbon::create(2020, 12, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($nonBankingHour);
+
+        $this->startTest();
+
+        $txns = $this->getEntities(
+            'transaction',
+            ['count' => 2],
+            true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'adjustment',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 5858,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'debit'                 => 0,
+            'credit'                => 5858,
+            'currency'              => 'INR',
+        ], $txns['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'settlement.ondemand',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 5858,
+            'fee'                   => 142,
+            'tax'                   => 22,
+            'debit'                 => 6000,
+            'credit'                => 0,
+            'currency'              => 'INR',
+        ], $txns['items'][1]);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => '10000000000000',
+            'user_id'               => '20000000000000',
+            'amount'                => 6000,
+            'total_amount_settled'  => 5858,
+            'total_fees'            => 142,
+            'total_tax'             => 22,
+            'total_amount_reversed' => 0,
+            'total_amount_pending'  => 0,
+            'currency'              => 'INR',
+            'status'                => 'processed',
+            'narration'             => 'Demo Narration - optional',
+            'notes'                 => [
+                'key1' => 'note3',
+                'key2' => 'note5',
+            ],
+            'transaction_type'      => 'transaction',
+        ], $settlementOndemand);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id' => '10000000000000',
+            'amount'      => 5858,
+            'description' => 'ondemand settlement for OndemandID - '.substr($settlementOndemand['id'],7),
+            'currency'    => 'INR',
+        ], $adjustment);
+
+        $settlementOndemandPayout = $this->getLastEntity('settlement.ondemand_payout', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'    => '10000000000000',
+            'user_id'        => '20000000000000',
+            'entity_type'    => 'adjustment',
+            'payout_id'      =>  $adjustment['id'],
+            'mode'           => NULL,
+            'reversed_at'    => NULL,
+            'fees'           => 142,
+            'tax'            => 22,
+            'status'         => 'processed',
+            'amount'         => 6000,
+            'failure_reason' => NULL,
+        ], $settlementOndemandPayout);
+
+        $settlementOndemandTransfer = $this->getLastEntity('settlement.ondemand.transfer', true);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 5858,
+            'status'                          => 'processing',
+        ], $settlementOndemandTransfer);
+
+        $settlementOndemandAttempt = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT, true);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfer['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempt);
+
+        $settlementOndemandBulk = $this->getLastEntity('settlement.ondemand.bulk', true);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 5858,
+            'settlement_ondemand_transfer_id' => $settlementOndemandTransfer['id'],
+        ], $settlementOndemandBulk);
+
+    }
+
+    public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursProcessedWebhook()
+    {
+       $this->createSampleSettlementTransfer('processed');
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true,
+            'live');
+
+       for($i = 0; $i < sizeof($settlementOndemandTransfers['items']); $i++)
+       {
+           $this->mockWebHook($settlementOndemandAttempts['items'][$i], $settlementOndemandTransfers['items'][$i]);
+       }
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 429616,
+            'status'                          => 'processed',
+        ], $settlementOndemandTransfers['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 429616,
+            'status'                          => 'processed',
+        ], $settlementOndemandTransfers['items'][1]);
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'processed',
+        ], $settlementOndemandAttempts['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][1]['id'],
+            'status'                                => 'processed',
+        ], $settlementOndemandAttempts['items'][1]);
+    }
+
+    public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursReversedWebhook()
+    {
+       $this->createSampleSettlementTransfer('processing');
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true,
+            'live');
+
+        for($i = 0; $i < sizeof($settlementOndemandTransfers['items']); $i++)
+        {
+            $this->mockWebHook($settlementOndemandAttempts['items'][$i], $settlementOndemandTransfers['items'][$i]);
+        }
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 450000,
+            'status'                          => 'processing',
+        ], $settlementOndemandTransfers['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 450000,
+            'status'                          => 'processing',
+        ], $settlementOndemandTransfers['items'][1]);
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 4],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][1]['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempts['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempts['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'reversed',
+        ], $settlementOndemandAttempts['items'][2]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][1]['id'],
+            'status'                                => 'reversed',
+        ], $settlementOndemandAttempts['items'][3]);
+    }
+
+    public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursProcessedAndReversedWebhook()
+    {
+        $this->createSampleSettlementTransfer('processed', 'processing');
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true,
+            'live');
+
+        for($i =0; $i < sizeof($settlementOndemandTransfers['items']); $i++)
+        {
+            $this->mockWebHook($settlementOndemandAttempts['items'][$i], $settlementOndemandTransfers['items'][$i]);
+        }
+
+        $settlementOndemandTransfers = $this->getEntities(
+            'settlement.ondemand.transfer',
+            ['count' => 2],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 450000,
+            'status'                          => 'processing',
+        ], $settlementOndemandTransfers['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'amount'                          => 429616,
+            'status'                          => 'processed',
+        ], $settlementOndemandTransfers['items'][1]);
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 4],
+            true,
+            'live');
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'processing',
+        ], $settlementOndemandAttempts['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][0]['id'],
+            'status'                                => 'reversed',
+        ], $settlementOndemandAttempts['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfers['items'][1]['id'],
+            'status'                                => 'processed',
+        ], $settlementOndemandAttempts['items'][2]);
+
     }
 
     public function testFundAccountCreationOnEsOndemandAssigning()

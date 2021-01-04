@@ -107,6 +107,15 @@ class Service extends Base\Service
                     $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
                 }
             });
+
+            if((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
+            {
+                (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+            }
+            else
+            {
+                (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
+            }
         }
         else
         {

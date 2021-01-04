@@ -756,4 +756,70 @@ return [
             ]
         ]
     ],
+
+    'testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimit' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 30000000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 30000000,
+                'fees'                  => 708000,
+                'tax'                   => 108000,
+                'amount_pending'        => 0,
+                'amount_settled'        => 29292000,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'processed',
+                'description'             => 'Demo Narration - optional',
+                'notes'                 => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ]
+        ]
+    ],
+
+    'testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursLessThanIMPSLimit' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 6000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 6000,
+                'fees'                  => 142,
+                'tax'                   => 22,
+                'amount_pending'        => 0,
+                'amount_settled'        => 5858,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'processed',
+                'description'             => 'Demo Narration - optional',
+                'notes'                 => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ]
+        ]
+    ],
 ];

@@ -36,7 +36,8 @@ class CreateSettlementOndemandPayoutsTable extends Migration
             $table->string(Entity::ENTITY_TYPE)
                   ->nullable();
 
-            $table->string(Entity::MODE);
+            $table->string(Entity::MODE)
+                  ->nullable();
 
             $table->integer(Entity::INITIATED_AT)
                   ->nullable();

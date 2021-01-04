@@ -6,14 +6,20 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\Ondemand\Bulk;
+use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\Attempt;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer as BulkJob;
 
 class Core extends Base\Core
 {
-    public function createSettlementTransfer($amount)
+    const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
+
+    const MIN_SPLIT_AMOUNT = 10000;
+
+    public function createSettlementTransfer($amount, $mode = FundTransfer\Mode::NEFT)
     {
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TRANSFER_CREATE, [
             'amount' => $amount,
@@ -23,7 +29,7 @@ class Core extends Base\Core
             Entity::AMOUNT    => $amount,
             Entity::ATTEMPTS  => 0,
             Entity::STATUS    => Ondemand\Status::CREATED,
-            Entity::MODE      => 'NEFT',
+            Entity::MODE      => $mode,
         ];
 
         $transfer = (new Entity)->build($data);
@@ -58,6 +64,60 @@ class Core extends Base\Core
         }
 
         return [null, null];
+    }
+
+    public function createMultipleSettlementOndemandTransfer($settlementOndemand)
+    {
+        $splitAmounts = $this->splitAmount($settlementOndemand->getAmountToBeSettled());
+
+        $transfers = [];
+
+        $attempts = [];
+
+        foreach($splitAmounts as $splitAmount)
+        {
+            [$transfer, $attempt] = $this->createSettlementTransfer($splitAmount, FundTransfer\Mode::IMPS);
+
+            array_push($transfers, $transfer);
+
+            array_push($attempts, $attempt);
+        }
+
+        return [$transfers, $attempts];
+    }
+
+    public function splitAmount($amount)
+    {
+        $totalAmountRemaining = $amount;
+
+        $splitAmount = [];
+
+        while($totalAmountRemaining > 0)
+        {
+            if ($totalAmountRemaining > self::MAX_IMPS_AMOUNT)
+            {
+                $totalAmountRemaining -= self::MAX_IMPS_AMOUNT;
+
+                $payoutAmount = self::MAX_IMPS_AMOUNT;
+
+                if(($totalAmountRemaining < self::MIN_SPLIT_AMOUNT) and ($totalAmountRemaining > 0))
+                {
+                    $payoutAmount -= self::MIN_SPLIT_AMOUNT;
+
+                    $totalAmountRemaining += self::MIN_SPLIT_AMOUNT;
+                }
+
+                array_push($splitAmount, $payoutAmount);
+            }
+            else
+            {
+                array_push($splitAmount, $totalAmountRemaining);
+
+                $totalAmountRemaining = 0;
+            }
+        }
+
+        return $splitAmount;
     }
 
     public function updateStatusAfterPayoutRequest($payoutStatus, $settlementOndemandTransfer, $payoutId)
