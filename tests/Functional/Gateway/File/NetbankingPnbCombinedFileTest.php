@@ -127,35 +127,49 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         // full refund
         $refundFull = $this->refundPayment($payment1['id']);
+        $refundEntity1 = $this->getDbLastEntity('refund');
 
         //partial refund
         $refundPartial1 = $this->refundPayment($payment2['id'], 25000);
+        $refundEntity2 = $this->getDbLastEntity('refund');
 
         $refundPartial2 = $this->refundPayment($payment2['id'], 25000);
+        $refundEntity3 = $this->getDbLastEntity('refund');
 
         $refundPartial3 = $this->refundPayment($payment3['id'], 25000);
+        $refundEntity4 = $this->getDbLastEntity('refund');
 
         $refundPartial4 = $this->refundPayment($payment3['id'], 25000);
-
-        $refundEntity2 = $this->getDbLastEntity('refund');
+        $refundEntity5 = $this->getDbLastEntity('refund');
 
         $createdAt = Carbon::tomorrow(Timezone::IST)->addHours(6)->timestamp;
 
-        $this->fixtures->edit('refund', $refundEntity2['id'], ['created_at' => $createdAt]);
+        $this->fixtures->edit('refund', $refundEntity5['id'], ['created_at' => $createdAt]);
 
         $refundPartial5 = $this->refundPayment($payment4['id'], 25000);
+        $refundEntity6 = $this->getDbLastEntity('refund');
 
         $refundFullOld = $this->refundPayment($payment5['id']);
+        $refundEntity7 = $this->getDbLastEntity('refund');
 
         $this->ba->adminAuth();
 
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+        $this->assertEquals(1, $refundEntity3['is_scrooge']);
+        $this->assertEquals(1, $refundEntity4['is_scrooge']);
+        $this->assertEquals(1, $refundEntity6['is_scrooge']);
+        $this->assertEquals(1, $refundEntity7['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2, $refundEntity3, $refundEntity4 ,$refundEntity6, $refundEntity7]);
+
         $claimsToBeAsserted = [
             str_replace('pay_','',$payment1['id']) => [
-                'status' =>'failed',
+                'status' =>'successful',
                 'amount' =>$payment1['amount'],
                 ],
             str_replace('pay_','',$payment2['id']) => [
-                'status' =>'failed',
+                'status' =>'successful',
                 'amount' =>$payment2['amount'],
             ],
             str_replace('pay_','',$payment3['id'])  => [
@@ -169,6 +183,18 @@ class NetbankingPnbCombinedFileTest extends TestCase
         ];
 
         $refundsToBeAsserted = [
+            str_replace('rfnd_','',$refundFull['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundFull['payment_id']),
+                'amount' =>$refundFull['amount'],
+            ],
+            str_replace('rfnd_','',$refundPartial1['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundPartial1['payment_id']),
+                'amount' =>$refundPartial1['amount'],
+            ],
+            str_replace('rfnd_','',$refundPartial2['id']) => [
+                'payment_id' =>str_replace('pay_','',$refundPartial2['payment_id']),
+                'amount' =>$refundPartial2['amount'],
+            ],
             str_replace('rfnd_','',$refundPartial3['id']) => [
                 'payment_id' =>str_replace('pay_','',$refundPartial3['payment_id']),
                 'amount' =>$refundPartial3['amount'],
@@ -258,7 +284,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $str = explode("\r\n", $fileData);
 
-        for ($i = 0; $i < 3; $i++)
+        for ($i = 0; $i < 6; $i++)
         {
             $row = str_getcsv($str[$i], '|');
 

@@ -101,7 +101,7 @@ class Pnb extends Base
                 ClaimFields::PAYMENT_ID         => $row['payment']['id'],
                 ClaimFields::PID                => $row['terminal']['gateway_merchant_id'],
                 ClaimFields::ACCOUNT_NO         => $row['gateway']['account_number'],
-                ClaimFields::STATUS             => $this->getstatus($row),
+                ClaimFields::STATUS             => 'successful',
             ];
         }
 
@@ -118,15 +118,5 @@ class Pnb extends Base
     protected function getFormattedAmount($amount): String
     {
         return number_format($amount / 100, 2, '.', '');
-    }
-
-    protected function getStatus($row)
-    {
-        if ($row['is_reversed'])
-        {
-            return "failed";
-        }
-
-        return "successful";
     }
 }

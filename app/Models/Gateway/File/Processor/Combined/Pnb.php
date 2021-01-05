@@ -8,10 +8,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Services\Beam\Service;
-use RZP\Models\Gateway\File\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\FileStore\Storage\Base\Bucket;
@@ -44,15 +42,12 @@ class Pnb extends Base
 
         if (isset($data['claims']) === true)
         {
-            foreach ($data['claims'] as $claim)
+            $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
-                if ($claim['is_reversed'] === true)
-                {
-                    $amount['refunds'] += $claim['payment']->getAmount();
-                }
+                $sum += $item['payment']->getAmount();
 
-                $amount['claims'] += $claim['payment']->getAmount();
-            }
+                return $sum;
+            });
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
@@ -170,109 +165,6 @@ class Pnb extends Base
         $fileLocation = $file->getLocation();
 
         return $fileLocation;
-    }
-
-    public function generateData(PublicCollection $entities)
-    {
-        $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
-
-        $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
-
-        $refundPaymentsArray = [];
-        $filteredRefunds = [];
-        $reversedPayments = [];
-
-        if ($entities->get('refunds')->isNotEmpty() === true)
-        {
-            $data['refunds'] = $refundFileProcessor->generateData($entities->get('refunds'));
-
-            /*
-             * PNB Claims file has to be same as their recon file with the status column filled for every payment
-             * if a payment was refunded on the same day it was authorized it has to be sent as 'failed' in the claim file
-             *
-             * Please note that the payment sent as failed in claims file CANNOT be sent in the refund file.
-             *
-             * A payment can be there in claims file as 'success' and have a corresponding refund to that payment in the refund file
-             * only if it is a partial refund
-            */
-
-            /*
-             * Following code traverses through the refunds and calculates the total refund amount for that payment
-             *
-             * if the refunded amount is not equal to the payment amount or authorized_at is less than begin date of gateway file
-             * then it means that the payment is partially refunded therefore we add it to the filteredRefunds
-             * else it will mean that the payment was fully refunded on the same day (with either partial refunds or a full refund)
-             * therefore we maintain a different array of all those payments which were reversed
-             */
-
-            foreach ($data['refunds'] as $refund)
-            {
-                $totalRefunds = $refund['refund']['amount'];
-
-                $refundId = $refund['refund']['id'];
-
-                $paymentId = $refund['payment']['id'];
-
-                if (in_array($paymentId, $refundPaymentsArray) === false)
-                {
-                    foreach ($data['refunds'] as $ref)
-                    {
-                        if (($ref['refund']['id'] != $refundId) and ($ref['payment']['id'] === $paymentId))
-                        {
-                            $totalRefunds += $ref['refund']['amount'];
-                        }
-                    }
-
-                    $refundPaymentsArray [] = $paymentId;
-
-                    if (($totalRefunds != $refund['payment']['amount']) or ($refund['payment']['authorized_at'] < $this->gatewayFile->getBegin()))
-                    {
-                        $filteredRefunds[] = $refund;
-                    }
-                    else
-                    {
-                        $reversedPayments[] = $paymentId;
-                    }
-                }
-            }
-
-            $data['refunds'] = $filteredRefunds;
-
-            if (empty($filteredRefunds) === true)
-            {
-                unset($data['refunds']);
-            }
-        }
-
-        if ($entities->get('claims')->isNotEmpty() === true)
-        {
-            $data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
-
-            $data = $this->updateClaimsWithReversedFlag($data, $reversedPayments);
-        }
-
-        return $data;
-    }
-
-    public function updateClaimsWithReversedFlag($data, $reversedPayments)
-    {
-        /*
-         * The payment's which were seen as reversed before are marked here with flag 'is_reversed' => true
-         */
-
-        foreach ($data['claims'] as $key => $value)
-        {
-            if (in_array($value['payment']['id'], $reversedPayments))
-            {
-                $data['claims'][$key]['is_reversed'] = true;
-            }
-            else
-            {
-                $data['claims'][$key]['is_reversed'] = false;
-            }
-        }
-
-        return $data;
     }
 
     protected function getFormattedAmount($amount): string
