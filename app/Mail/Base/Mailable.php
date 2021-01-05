@@ -5,6 +5,7 @@ namespace RZP\Mail\Base;
 use App;
 use \Swift_Mailer;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\MailTags;
@@ -427,20 +428,21 @@ class Mailable extends BaseMailable
 
     protected function getOrgData($orgId)
     {
-        $customBranding = true;
+        $customBranding = false;
 
         $orgData = [];
-
-        if ($orgId === Org\Entity::RAZORPAY_ORG_ID)
-        {
-            $customBranding = false;
-        }
 
         $app = App::getFacadeRoot();
 
         $repo = $app['repo'];
 
         $org = $repo->org->findOrFail($orgId);
+
+        if (($orgId !== Org\Entity::RAZORPAY_ORG_ID) &&
+            ($org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING)))
+        {
+            $customBranding = true;
+        }
 
         $orgData['org_name'] = $org->getDisplayName();
 
