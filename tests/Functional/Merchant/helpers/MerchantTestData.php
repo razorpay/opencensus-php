@@ -3262,7 +3262,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3353,6 +3353,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ORBC',
                         ],
                     ],
                     [
@@ -3480,7 +3487,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 31,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3578,6 +3585,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ORBC',
                         ],
                     ],
                     [
@@ -3921,6 +3935,7 @@ return [
                                 'MSNU',
                                 'NESF',
                                 'NKGS',
+                                'ORBC',
                                 'SURY',
                                 'SYNB',
                                 'TBSB',

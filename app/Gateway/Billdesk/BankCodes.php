@@ -48,7 +48,7 @@ class BankCodes
         IFSC::MSNU => 'MSB',                    // Mehsana Urban Bank
         IFSC::NESF => 'NEB',                    // North East Small Finance Bank
         IFSC::NKGS => 'NKB',                    // Nkgsb Co-Op Bank Ltd
-        IFSC::ORBC => 'OBC',                    // Oriental Bank Of Commerce
+        IFSC::ORBC => 'PNB',                    // Oriental Bank Of Commerce
         IFSC::PMCB => 'PMC',                    // Punjab And Maharashtra Co-Op Bank Ltd
         IFSC::PSIB => 'PSB',                    // Punjab And Sind Bank
         IFSC::RATN => 'RBL',                    // Ratnakar Bank Ltd. (RBL Bank)
@@ -70,7 +70,7 @@ class BankCodes
         IFSC::TNSC => 'TNC',                    // Tamilnadu State Apex Co-Op Bank Ltd
         IFSC::UBIN => 'UBI',                    // Union Bank Of India
         IFSC::UCBA => 'UCO',                    // UCO Bank
-        IFSC::UTBI => 'UNI',                    // United Bank Of India
+        IFSC::UTBI => 'PNB',                    // United Bank Of India
         IFSC::UTIB => 'UTI',                    // Axis Bank
         IFSC::VARA => 'VRB',                    // Varachha Co-operative Bank Limited
         IFSC::VIJB => 'VJB',                    // Vijaya Bank

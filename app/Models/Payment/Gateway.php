@@ -1121,7 +1121,6 @@ class Gateway
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
-            self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,

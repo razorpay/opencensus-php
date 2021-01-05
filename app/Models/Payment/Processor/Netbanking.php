@@ -99,7 +99,6 @@ class Netbanking
         IFSC::SCBL,
         IFSC::JAKA,
         IFSC::INDB,
-        IFSC::ORBC,
         IFSC::CSBK,
         IFSC::ALLA,
         IFSC::CNRB,
@@ -651,11 +650,6 @@ class Netbanking
                 IFSC::RATN,
             ]
         ],
-        Gateway::NETBANKING_OBC => [
-            'retail' => [
-                IFSC::ORBC
-            ]
-        ],
         Gateway::NETBANKING_CSB => [
             'retail' => [
                 IFSC::CSBK,
@@ -667,6 +661,8 @@ class Netbanking
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
+                IFSC::ORBC,
+                IFSC::UTBI,
             ],
             'corp' => [
                 self::PUNB_C

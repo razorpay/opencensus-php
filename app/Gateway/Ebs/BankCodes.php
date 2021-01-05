@@ -33,7 +33,7 @@ class BankCodes
         IFSC::SRCB => '1380',
         IFSC::UCBA => '1383',
         IFSC::UBIN => '1216',
-        IFSC::UTBI => '1212',
+        IFSC::UTBI => '1381',
         Netbanking::PUNB_R => '1381',
 
         IFSC::UTIB => '1004',
