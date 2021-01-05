@@ -46,7 +46,10 @@ export default class SupportDetails extends Component {
           <div className="list-group-item">
             <span>Phone number</span>
             {support_detail.data.phone ? (
-              <span>{isMobile(support_detail.data.phone) ? '+91-' : ''}{support_detail.data.phone}</span>
+              <span>
+                {isMobile(support_detail.data.phone) ? '+91-' : ''}
+                {support_detail.data.phone}
+              </span>
             ) : (
               <span>--</span>
             )}

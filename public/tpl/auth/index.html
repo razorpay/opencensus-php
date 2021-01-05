@@ -126,10 +126,10 @@
       <div class="auth-main-container" ng-class="{'right-align': rightLayout}">
         <div class="overflow-container">
           <div class="translate-container">
-            <div class="auth-signup-container" ng-include="'tpl/auth/signup.html'">
+            <div class="auth-signup-container" ng-if="!rightLayout" ng-include="'tpl/auth/signup.html'">
 
             </div>
-            <div class="auth-signin-container" ng-include="'tpl/auth/signin.html'">
+            <div class="auth-signin-container" ng-if="rightLayout" ng-include="'tpl/auth/signin.html'">
 
             </div>
           </div>
