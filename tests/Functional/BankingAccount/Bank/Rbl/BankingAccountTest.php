@@ -818,6 +818,41 @@ class BankingAccountTest extends TestCase
             $bankingAccount->getStatusLastUpdatedAt());
     }
 
+    public function testBankingAccountActivationOpenAndLoginDateAsNull()
+    {
+        $this->ba->proxyAuth();
+
+        $bankingAccount = $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccountData = [
+            'activation_detail' => [
+                'account_open_date' => 1109748304,
+                'account_login_date' => 1109748397,
+        ]];
+
+        $this->updateBankingAccount($bankingAccount, $bankingAccountData);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals($bankingAccountData['activation_detail']['account_open_date'], $bankingAccountActivationDetail['account_open_date']);
+
+        $this->assertEquals($bankingAccountData['activation_detail']['account_login_date'], $bankingAccountActivationDetail['account_login_date']);
+
+        //updating of account_open_date and account_login_date to null
+        $this->updateBankingAccount($bankingAccount, [
+            'activation_detail' => [
+                'account_open_date' => null,
+                'account_login_date' => null,
+            ]
+        ]);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals(null, $bankingAccountActivationDetail['account_open_date']);
+
+        $this->assertEquals(null, $bankingAccountActivationDetail['account_login_date']);
+    }
+
     protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus,
                                                               string $finalStatus,
                                                               string $initialSubStatus = null,

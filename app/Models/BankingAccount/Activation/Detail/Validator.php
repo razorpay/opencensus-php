@@ -101,8 +101,8 @@ class Validator extends Base\Validator
         Entity::ASSIGNEE_TEAM                       => 'sometimes|string|nullable|in:ops,bank,sales',
         Entity::RM_NAME                             => 'sometimes|string|max:255',
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|max:255',
-        Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch',
-        Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch',
+        Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch|nullable',
+        Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch|nullable',
     ];
 
     protected static $allowedBusinessCategories = [

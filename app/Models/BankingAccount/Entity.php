@@ -113,7 +113,8 @@ class Entity extends Base\PublicEntity
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
-    const DETAILS       = 'details';
+    const DETAILS                 = 'details';
+    const ACTIVATION_DETAIL       = 'activation_detail';
 
     // Constants for fee recovery details
     const LAST_DEDUCTED_AT   = 'last_deducted_at';

@@ -126,6 +126,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME                => 'filled|custom',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
         Entity::DETAILS                         => 'sometimes|array',
+        Entity::ACTIVATION_DETAIL               => 'sometimes|array',
     ];
 
     protected static $internalEditValidators = [
