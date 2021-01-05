@@ -173,7 +173,11 @@ class CardPaymentServiceTest extends TestCase
             ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
             {
                 return [
-                    'data' => null,
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
                     'payment' => [
                         'auth_type' => null,
                         'terminal_id'  => $terminal->getId(),
@@ -1553,6 +1557,47 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+    protected function mockCpsEmptyAuthCode($url, $input, $terminal)
+    {
+        $input = $input['input'];
+        switch ($url)
+        {
+            case 'action/authorize':
+                $payment = $input['payment'];
+                return [
+                    'data' => [
+                        'content' => [
+                            'TermUrl' => $input['callbackUrl'],
+                            'PaReq' => "eJxcUt1u2jAUvucprNwvjt0fKDpxFQpsuWBru6GK3kyucwapgpM6zgZc7q32OnuSyoFgaKRI5/tRzsn5Dtxu1gX5jabOSx0HLIwCglqVWa6XcdDYX58GAamt1JksSo1xoMvgVvTgx8ogjr+jagyKHiEww7qWSyR5FgeV3P6cJNPdUzGYyvy1KeaB8xAC98kjvu1rQuDQVrAwCjnQDnbyDI1aSW07ghCQ6m2UfhWXjEX9K6AH6PU1mnQsjNyVppJboHvsdS3XKFKtDGb5S4FAW8Lrqmy0NVtxcXUNtANebkwhVtZWQ0rZDQ/Z9SBkYZ8DdUI3Nv04N9w3jqhPG23yTMzGyR/3Ps6nn7HI6m+T55V8qtjLdB4DdQ7vz6RFwSMeRYzfEBYNOR8yDrTlT/azdjOL/3//ERb2GdAD4R2VmyXZs8w5TomTRTTGoFbdJjrkDbipSo3aCg70WB9X8PGP4e7LWYrKpmORjB6eVTJ5HT0syrt0sUsWy+TwxC7b1nTWMTdbwS+iy7Zl7qMB2n0f6PHEXBDtTYoe0PN7fQ8AAP//9qvT/g==",
+                            'MD' => $payment['id'],
+                        ],
+                        'method' => 'post',
+                        'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                    ],
+                    'payment' => [
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+
+            case 'action/callback':
+                return [
+                    'data' => [
+                        'acquirer' => [],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+
+            default:
+                return null;
+        }
+
+    }
+
     protected function mockCpsErrorVerify($terminal, $responder)
     {
         $cardService = $this->getMockBuilder(CardPaymentService::class)
@@ -1578,6 +1623,33 @@ class CardPaymentServiceTest extends TestCase
                 }';
         $response->body = $body;
         $this->app['card.payments']->method('sendRawRequest')->willReturn($response);
+    }
+
+    protected function mockCpsVerifyRequest()
+    {
+        $cardService = $this->getMockBuilder(CardPaymentService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRawRequest'])
+            ->getMock();
+        $this->app->instance('card.payments', $cardService);
+        $response = new Requests_Response();
+        $response->status_code = 200;
+        $response->headers = ['Content-Type' => 'application/json'];
+        $body = '{
+                  "payment": {
+                    "reference2" : "test111",
+                    "two_factor_auth" : "test111"
+                  },
+                  "data": {
+                    "amount" : 50000,
+                    "gateway_success" : true
+                  },
+                  "headless": {},
+                  "ivr" :{}
+                }';
+        $response->body = $body;
+        $this->app['card.payments']->method('sendRawRequest')->willReturn($response);
+
     }
 
     protected function mockCps($terminal, $responder)
@@ -1608,6 +1680,8 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsCaptureGatewayError($method, $url, $input, $terminal);
                     case 'callback_split':
                         return $this->mockCpsCallbackSplit($method, $url, $input, $terminal);
+                    case 'empty_auth_code':
+                        return $this->mockCpsEmptyAuthCode($url, $input, $terminal);
                 }
             });
 
@@ -1717,5 +1791,78 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals("test", $payment['reference2']);
         $this->assertEquals('authorized', $payment['status']);
         $this->disbaleCpsConfig();
+    }
+
+    public function testAuthorizeWithoutAuthCodeFailure()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+        $this->mockCps($terminal, 'empty_auth_code');
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            Exception\LogicException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->disbaleCpsConfig();
+        $this->razorxValue = "on";
+    }
+
+    public function testLateAuthorizeViaCps()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input)
+            {
+                return null;
+            });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->mockCpsVerifyRequest();
+        $this->authorizedFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('authorized', $payment['status']);
+
     }
 }

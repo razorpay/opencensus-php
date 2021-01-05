@@ -267,8 +267,7 @@ trait CardPaymentService
             );
         }
 
-
-        $response = $this->app['card.payments']->checkForErrors($response);
+        $this->app['card.payments']->checkForErrors($response);
     }
 
 

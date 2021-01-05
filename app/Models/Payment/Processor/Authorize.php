@@ -7046,6 +7046,8 @@ trait Authorize
     {
         $payment = $this->payment;
 
+        $this->validateAuthCode($data, $wasFailed);
+
         $updated = $this->repo->transaction(function() use ($payment, $data, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
@@ -8261,6 +8263,41 @@ trait Authorize
                 }
             }
         }
+    }
 
+    /* Validates that if we are authorizing a payment then an auth code should
+     * be present otherwise throws and exception.
+     *
+     * Added a check on wasFailed to verify whether this is a case of lateAuth or not.
+     * We should skip this auth code verification in case this is a late auth payment.
+     *
+     * Skipping the Cashfree and PayU gateways as we are currently getting auth code null
+     * for them.
+     *
+     * @param array $data
+     * @throws Exception\LogicException
+     */
+    protected function validateAuthCode(array $data = [], bool $wasFailed)
+    {
+        $payment = $this->payment;
+
+        if (($wasFailed === false) and
+            ($payment->getGateway() !== Payment\Gateway::CASHFREE and $payment->getGateway() !== Payment\Gateway::PAYU) and
+            ($payment->isMethodCardOrEmi() === true) and
+            ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE) and
+            ($payment->getStatus() !== Payment\Status::AUTHORIZED) and
+            (empty($data['acquirer']['reference2']) === true))
+        {
+            throw new Exception\LogicException(
+                'Authorization cannot be done without an auth code.',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $payment->getGateway(),
+                    'status'        => $payment->getStatus(),
+                    'method'        => $payment->getMethod(),
+                ]
+            );
+        }
     }
 }

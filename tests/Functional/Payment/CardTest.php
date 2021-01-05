@@ -21,6 +21,12 @@ class CardTest extends TestCase
 
     public function testFetchCardDetails()
     {
+        $this->disbaleCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment = $this->doAuthAndGetPayment($payment);
