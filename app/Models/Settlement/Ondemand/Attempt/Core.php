@@ -155,7 +155,7 @@ class Core extends Base\Core
                         Status::REVERSED,
                         $settlementOndemandAttempt);
 
-                    if( $attempts <= CreateSettlementOndemandBulkTransfer::PAYOUT_REVERSAL_RETRY_LIMIT)
+                    if( $attempts < CreateSettlementOndemandBulkTransfer::PAYOUT_REVERSAL_RETRY_LIMIT)
                     {
                         $settlementOndemandAttemptNew = $this->createAttempt($settlementOndemandTransfer);
 

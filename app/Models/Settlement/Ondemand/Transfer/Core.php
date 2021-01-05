@@ -171,7 +171,7 @@ class Core extends Base\Core
 
         $settlementOndemandTransfer->setReversedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
-        $settlementOndemandTransfer->setProccesedAt(null);
+        $settlementOndemandTransfer->setProcessedAt(null);
 
         $this->repo->saveOrFail($settlementOndemandTransfer);
     }

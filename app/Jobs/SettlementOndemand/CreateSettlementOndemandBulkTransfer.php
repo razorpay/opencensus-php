@@ -89,8 +89,8 @@ class CreateSettlementOndemandBulkTransfer extends Job
                     'settlement_ondemand_attempt_id' => $this->settlementOndemandAttemptId,
                 ]);
 
-            if ( $this->settlementOndemandTransfer->getAttempts() <= self::PAYOUT_REVERSAL_RETRY_LIMIT or
-                 $this->attempts() <= self::PAYOUT_CREATION_FAILURE_RETRY_LIMIT)
+            if ( $this->settlementOndemandTransfer->getAttempts() < self::PAYOUT_REVERSAL_RETRY_LIMIT or
+                 $this->attempts() < self::PAYOUT_CREATION_FAILURE_RETRY_LIMIT)
             {
                 if ($e->getCode() === ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL)
                 {
