@@ -4,6 +4,7 @@ import RTracking from 'react-tracking';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
+import { isMobile } from 'common/utils/validators';
 
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
@@ -45,7 +46,7 @@ export default class SupportDetails extends Component {
           <div className="list-group-item">
             <span>Phone number</span>
             {support_detail.data.phone ? (
-              <span>+91-{support_detail.data.phone}</span>
+              <span>{isMobile(support_detail.data.phone) ? '+91-' : ''}{support_detail.data.phone}</span>
             ) : (
               <span>--</span>
             )}

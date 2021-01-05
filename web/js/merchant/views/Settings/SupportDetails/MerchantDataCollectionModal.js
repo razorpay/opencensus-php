@@ -9,7 +9,7 @@ import {
   trackSupportDetailPopupClose,
 } from 'merchant/containers/Home/ga';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { required, isMobile, isEmail, isUrlLenient } from 'common/utils/validators';
+import { required, isMobile, isEmail, isUrlLenient, isPhone } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
 import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
@@ -47,7 +47,7 @@ export default class MerchantDataCollectionModal extends Component {
       });
       return;
     }
-    if (phone && !isMobile(phone)) {
+    if (phone && !(isMobile(phone) || isPhone(phone))) {
       showNotification({
         type: 'error',
         message: 'Invalid number',
