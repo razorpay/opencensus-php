@@ -325,6 +325,13 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testNachOrderWithCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->startTest();
+    }
+
     public function testEmandateRegistrationOrderWithZeroRupee()
     {
         $order = $this->startTest();

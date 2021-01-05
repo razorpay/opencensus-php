@@ -217,14 +217,22 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
+        if (($input[Entity::METHOD] === Payment\Method::EMANDATE) or
+            ($input[Entity::METHOD] === Payment\Method::NACH))
         {
             $merchant = $this->entity->merchant;
 
             if ($merchant->isFeeBearerCustomerOrDynamic() === true)
             {
+                $errorMessage = $input[Entity::METHOD] . ' is not supported for customer fee bearer model. Please contact support for more details.';
                 throw new Exception\BadRequestValidationFailureException(
-                    'Order creation failed. Please contact Razorpay for further assistance.');
+                    $errorMessage,
+                    Entity::METHOD,
+                    [
+                        'method'        =>  $input[Entity::METHOD],
+                        'fee_bearer'    =>  $merchant->fee_bearer,
+                    ]
+                );
             }
         }
     }
