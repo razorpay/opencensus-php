@@ -611,6 +611,13 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
+
+        if ($vpa === 'vpagatewayerror@razorpay')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
+
     }
 
     public function preDebit(array $input): array

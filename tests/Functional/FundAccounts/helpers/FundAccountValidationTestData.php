@@ -639,6 +639,41 @@ return [
             ],
         ],
     ],
+    'testVpaFundAccValidationForFailedStatus' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT    => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES           => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "vpagatewayerror@razorpay"
+                    ],
+                ],
+                'amount'       => null,
+                'currency'     => null,
+                'status'       => 'created',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
     'testFixTransactionSettledAt' => [
         'request' => [
             'url'     => '/transactions/fund_account_validation/settled/fix',

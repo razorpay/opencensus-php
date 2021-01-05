@@ -12,6 +12,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
@@ -81,28 +82,48 @@ class FaVpaValidation extends Job
 
             $data = $this->getVpaValidateResponse($vpaInput);
 
-            $faValidation->setRegisteredName($data['name']);
+            if ((array_key_exists('fav_status', $data)) and
+                ($data['fav_status'] === Status::COMPLETED))
+            {
+                $faValidation->setRegisteredName($data['name']);
 
-            $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
+                $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
 
-            $name = array_key_exists('name', $data) ? $data['name'] : null;
+                $name = array_key_exists('name', $data) ? $data['name'] : null;
 
-            $success = array_key_exists('success', $data) ? $data['success'] : null;
+                $success = array_key_exists('success', $data) ? $data['success'] : null;
 
-            $traceable = [
-                'account_status'   =>  $accountStatus,
-                'customer_name'    =>  $name,
-                'fav_status'       =>  'completed',
-                'id'               =>  $faValidation->getId(),
-                'success'          =>  $success
-            ];
+                $traceable = [
+                    'account_status'   =>  $accountStatus,
+                    'customer_name'    =>  $name,
+                    'fav_status'       =>  $data['fav_status'],
+                    'id'               =>  $faValidation->getId(),
+                    'success'          =>  $success
+                ];
 
-            $this->trace->info(
-                TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
-                $traceable
-            );
+                $this->trace->info(
+                    TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
+                    $traceable
+                );
 
-            $vpaProcessor->markValidationAsCompleted($data['account_status']);
+                $vpaProcessor->markValidationAsCompleted($data['account_status']);
+
+            }
+            else
+            {
+                $traceable = [
+                    'fav_status'  =>  $data['fav_status'],
+                    'id'          =>  $faValidation->getId()
+                ];
+
+                $this->trace->info(
+                    TraceCode::VPA_VALIDATION_FINAL_RESPONSE,
+                    $traceable
+                );
+
+                $vpaProcessor->markValidationAsFailed();
+            }
+
         }
         catch (RuntimeException $e) {
 
@@ -171,11 +192,14 @@ class FaVpaValidation extends Job
 
             $data['success'] = $response['success'];
 
+            $data['fav_status'] = Status::COMPLETED;
+
         }
         catch (GatewayErrorException $e)
         {
-            //gateway error as per payments api can mean some gateway error or also invalid vpa for some gateways
-            //So currently we dont have a clarity on fav status in case of gateway exception
+            //gateway error as per payments api can mean some gateway error where we cannot get any response from the gateway
+            //or invalid vpa for some gateways
+            //The invalid vpa gateway errors are caught by payments api and only the other gateway errors are been thrown to us
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
@@ -185,7 +209,7 @@ class FaVpaValidation extends Job
                 ]
             );
 
-            $data['account_status'] = AccountStatus::INVALID;
+            $data['fav_status'] = Status::FAILED;
 
         }
         catch (BadRequestException $e)
@@ -207,6 +231,8 @@ class FaVpaValidation extends Job
             $data['account_status'] = AccountStatus::INVALID;
 
             $data['name'] = null;
+
+            $data['fav_status'] = Status::COMPLETED;
 
         }
 
