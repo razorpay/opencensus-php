@@ -10,6 +10,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
@@ -671,15 +672,18 @@ class Service extends Base\Service
             'branding_logo' => '',
         ];
 
-        switch ($org->getCustomCode())
+        if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
-            case 'axis':
+            switch ($org->getCustomCode())
+            {
+                case 'axis':
 
-                $branding['show_rzp_logo'] = false;
+                    $branding['show_rzp_logo'] = false;
 
-                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
+                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
 
-                break;
+                    break;
+            }
         }
 
         return [

@@ -2731,4 +2731,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(Merchant\MerchantNotificationConfig\Entity::class);
     }
+
+    public function shouldShowCustomOrgBranding(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING);
+    }
 }

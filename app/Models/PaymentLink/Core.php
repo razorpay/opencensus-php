@@ -1536,15 +1536,18 @@ class Core extends Base\Core
             'branding_logo' => '',
         ];
 
-        switch ($org->getCustomCode())
+        if($merchant->shouldShowCustomOrgBranding() === true)
         {
-            case 'axis':
+            switch ($org->getCustomCode())
+            {
+                case 'axis':
 
-                $branding['show_rzp_logo'] = false;
+                    $branding['show_rzp_logo'] = false;
 
-                $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
 
-                break;
+                    break;
+            }
         }
 
         return [
