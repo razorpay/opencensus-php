@@ -75,6 +75,17 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateFdInstance($attribute, string $fdInstance)
+    {
+        if (Instance::isValidFdInstance($fdInstance) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid fd instance: ' . $fdInstance,
+                Constants::FD_INSTANCE
+            );
+        }
+    }
+
     public function validateCustomerFreshDeskTicketIdFromMerchantNotes($id)
     {
         $idRegex = '/^.*[0-9]+.*$/';

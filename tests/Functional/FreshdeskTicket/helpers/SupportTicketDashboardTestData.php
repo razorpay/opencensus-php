@@ -238,7 +238,7 @@ return [
 
     'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataDoesntExist' => [
         'request'   => [
-            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'url'           => '/fd/webhook/support_ticket_first_agent_reply',
             'method'        => 'POST',
             'content'       => [
                 'ticket_id'         =>  '12',
@@ -255,7 +255,7 @@ return [
     ],
     'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataExist' => [
         'request'   => [
-            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'url'           => '/fd/webhook/support_ticket_first_agent_reply',
             'method'        => 'POST',
             'content'       => [
                 'ticket_id'         =>  '12',
@@ -273,7 +273,7 @@ return [
 
     'testReceiveFreshdeskWebhookOnTicketReplyNoRazorpayResponseYet' => [
         'request'   => [
-            'url'           => '/fd/webhook/support_dashboard_ticket_reply',
+            'url'           => '/fd/webhook/support_ticket_first_agent_reply',
             'method'        => 'POST',
             'content'       => [
                 'ticket_id'         =>  '12',
@@ -306,6 +306,27 @@ return [
         'response' => [
             'content' => [
                 'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testReceiveFreshdeskWebhookOnTicketCreated' => [
+        'request'   => [
+            'url'           => '/fd/webhook/ticket_create_callback',
+            'method'        => 'POST',
+            'content'       => [
+                'merchant_id'       => '10000000000000',
+                'ticket_id'         => '1234',
+                'type'              => 'support_dashboard',
+                'ticket_details'    => [
+                    'fd_instance'   => 'rzp',
+                    'fr_due_by'     => '2020-12-08T16:04:20Z',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'success' => true,
             ],
         ],
     ],

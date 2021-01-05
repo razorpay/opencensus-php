@@ -562,9 +562,16 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function getQueryParamMerchantIdForSearchAPI(): string
+    protected function getQueryParamMerchantIdForSearchAPI($merchant = null): string
     {
-        $merchantId = $this->auth->getMerchantId();
+        if ($merchant === null)
+        {
+            $merchantId = $this->auth->getMerchantId();
+        }
+        else
+        {
+            $merchantId = $merchant->getId();
+        }
 
         //
         // We are now querying the new ticket field `cf_merchant_id_dashboard`

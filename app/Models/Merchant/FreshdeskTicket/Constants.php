@@ -10,9 +10,10 @@ class Constants
     const STATUS   = 'status';
     const PER_PAGE = 'per_page';
 
+    const CUSTOM_FIELDS             = 'custom_fields';
+    // custom fields
     const CATEGORY                  = 'cf_requester_category';
     const SUB_CATEGORY              = 'cf_requestor_subcategory';
-    const CUSTOM_FIELDS             = 'custom_fields';
     const TRANSACTION_ID            = 'cf_transaction_id';
     const PAYMENT_ID                = 'cf_razorpay_payment_id';
     const REFUND_ID                 = 'cf_refund_id';
@@ -20,6 +21,7 @@ class Constants
     const MERCHANT_ID               = 'cf_merchant_id';
     const PAYMENT_CUSTOMER_EMAIL    = 'cf_payment_email';
     const PAYMENT_CUSTOMER_PHONE    = 'cf_payment_phone';
+    const CF_MERCHANT_ID_DASHBOARD  = 'cf_merchant_id_dashboard';
 
     //Flows
     const CUSTOMER = 'Customer';
@@ -85,5 +87,8 @@ class Constants
 
     const ROUTE             = 'route';
     const RESPONSE_CODE     = 'response_code';
+
+    // Webhook response
+    const SUCCESS    = 'success';
 
 }

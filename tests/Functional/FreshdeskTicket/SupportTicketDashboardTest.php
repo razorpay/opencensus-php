@@ -609,6 +609,25 @@ class SupportTicketDashboardTest extends TestCase
         $this->assertEquals(strtotime($frDueByBasedOnWeekAverageFreshdeskFormat), strtotime($response['fr_due_by']), '', 100);
     }
 
+    public function testReceiveFreshdeskWebhookOnTicketCreated()
+    {
+        $this->ba->freshdeskWebhookAuth();
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'       => '10000000000000',
+            'ticket_id'         => '1234',
+            'type'              => 'support_dashboard',
+            'ticket_details'    => [
+                'fd_instance'       => 'rzp',
+                'fr_due_by'         => '2020-12-08T16:04:20Z',
+            ],
+        ], $ticket);
+    }
+
     protected function checkFreshdeskCorrectInstanceCallAndRespondWith($expectedPath,
                                                                        $expectedMethod,
                                                                        $expectedFdInstance,

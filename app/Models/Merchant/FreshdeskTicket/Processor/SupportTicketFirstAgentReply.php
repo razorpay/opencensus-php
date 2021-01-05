@@ -9,9 +9,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\FreshdeskTicket;
+use RZP\Models\Merchant\FreshdeskTicket\Constants;
 use RZP\Exception\BadRequestValidationFailureException;
 
-class SupportDashboardTicketReply extends Base
+class SupportTicketFirstAgentReply extends Base
 {
     const RAZORPAY_FROM_EMAILS = [
         'Integration <integrations@razorpay.com>',
@@ -68,7 +69,7 @@ class SupportDashboardTicketReply extends Base
             $this->trace->info(TraceCode::FRESHDESK_SUPPORT_DASHBOARD_WEBHOOK_NO_FIRST_RESPONSE, []);
         }
 
-        return ['success' => true];
+        return [Constants::SUCCESS => true];
     }
 
     protected function getRedactedInput($input)
