@@ -74,6 +74,7 @@ class CompositePayoutTest extends TestCase
 
         $this->assertEquals($bankAccounts[4]['id'], $fta['bank_account_id']);
         $this->assertEquals('PUNB0168510',$bankAccounts[4]['ifsc']);
+        $this->assertEquals('contact', $bankAccounts[4]['type']);
 
         // Assert that the last entities in db are created by the composite payout request
         $this->assertEquals('pout_' . $payout['id'], $response['id']);

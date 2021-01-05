@@ -839,6 +839,40 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreateCustomerWalletPayoutWithOldNewIfsc()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->liveSetUp();
+
+        $this->fixtures
+            ->on('live')
+            ->create('bank_account',
+                [
+                    'ifsc_code'         => 'ORBC0101685',
+                    'account_number'    => '2224440041626905',
+                    'beneficiary_name'  => 'Ambar',
+                    'type'              => 'customer',
+                    'entity_id'         => 'GHz4VlBkkiUBwh',
+                ]);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->fixtures->on('live')
+            ->edit('fund_account', '100000000000fa',
+                [
+                    'account_id' => $bankAccount->getId()
+                ]);
+
+        // creating payout from a primary balance in queued state
+        $payout = $this->createCustomerWalletPayout();
+
+        $newBankAccount = $this->getDbLastEntity('bank_account', 'live');
+        $this->assertEquals('PUNB0168510', $newBankAccount['ifsc_code']);
+        $this->assertEquals('customer', $bankAccount['type']);
+        $this->assertEquals('GHz4VlBkkiUBwh', $bankAccount['entity_id']);
+    }
+
     public function testDashboardSummaryForPayoutsOnNonBankingBalance()
     {
         $this->liveSetUp();

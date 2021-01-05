@@ -117,12 +117,39 @@ class Base extends BaseCore
                     BankAccount\Entity::IFSC_CODE         => $ifscCode,
                     BankAccount\Entity::ACCOUNT_NUMBER    => $bankAccount->getAccountNumber(),
                     BankAccount\Entity::BENEFICIARY_NAME  => $bankAccount->getBeneficiaryName(),
+                    BankAccount\Entity::TYPE              => $bankAccount->getType(),
+                    BankAccount\Entity::ENTITY_ID         => $bankAccount->getEntityId(),
                 ];
 
-                $bankAccount = (new BankAccount\Core)->createOrFetchBankAccount($input, $merchant, $this->mode);
+                $existingBankAccount =  $this->repo->bank_account->fetchBankAccount(
+                                                                    $merchant,
+                                                                    $input);
+
+                if ($existingBankAccount !== null)
+                {
+                    $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
+                        [
+                            'bank_account_id' => $existingBankAccount->getId(),
+                        ]);
+
+                    return $existingBankAccount;
+                }
+
+                // The below fields will be filled when bank account gets associated to its source
+                unset($input[BankAccount\Entity::TYPE]);
+                unset($input[BankAccount\Entity::ENTITY_ID]);
+
+                $bankAccount = (new BankAccount\Core)->createBankAccountForSource($input,
+                                                                                  $merchant,
+                                                                                  $bankAccount->source,
+                                                                         "add_bank_account");
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED,
+                    [
+                        'bank_account_id' => $bankAccount->getId(),
+                    ]);
             }
         }
-
         return $bankAccount;
     }
 

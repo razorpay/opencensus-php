@@ -414,50 +414,6 @@ class Core extends Base\Core
         return $ba;
     }
 
-    /**
-     * This is used to check if the bank account exists or
-     * we need to create one
-     * @param $input
-     * @param $merchant
-     * @param $mode
-     * @return $this|Entity
-     */
-    public function createOrFetchBankAccount($input, $merchant, $mode)
-    {
-        $name = $input[Entity::BENEFICIARY_NAME] ?? null;
-
-        $accountNumber = $input[Entity::ACCOUNT_NUMBER] ?? null;
-
-        $ifsc = $input[Entity::IFSC_CODE] ?? null;
-
-        $ba = $this->repo->bank_account->fetchBankAccountWithNameAndBeneDetails(
-            $merchant,
-            $name,
-            $accountNumber,
-            $ifsc);
-
-        if ($ba !== null)
-        {
-            $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
-                [
-                    'bank_account_id' => $ba->getId(),
-                    'input' => $input
-                ]);
-
-            return $ba;
-        }
-
-        $ba = $this->buildBankAccount($input, $merchant, $mode);
-
-        $ba->associateMerchant($merchant);
-
-        $ba->generateBeneficiaryCode();
-
-        $this->repo->saveOrFail($ba);
-
-        return $ba;
-    }
-
     protected function buildBankAccount($input, $merchant, $mode)
     {
         $ba = new BankAccount\Entity;

@@ -1495,6 +1495,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED               = 'BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED';
     const EXISTING_BANK_ACCOUNT_FOUND                           = 'EXISTING_BANK_ACCOUNT_FOUND';
+    const BANK_ACCOUNT_CREATED                                  = 'BANK_ACCOUNT_CREATED';
     const MERCHANT_FORCE_ACTIVATED                              = 'MERCHANT_FORCE_ACTIVATED';
     const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC                     = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
 

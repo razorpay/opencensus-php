@@ -428,16 +428,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBankAccountWithNameAndBeneDetails(
+    // Not really sure if the method should be called as fetchExistingBankAccount ,
+    // in case you realise it can't be reused for your use case please modify it
+    // accordingly and also rename it at correctly from different places it is
+    // being called from.
+    public function fetchBankAccount(
         Merchant\Entity $merchant,
-        string $name = null,
-        string $accountNumber = null,
-        string $ifsc = null)
+        $input)
     {
+        $name = $input[Entity::BENEFICIARY_NAME] ?? null;
+
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER] ?? null;
+
+        $ifsc = $input[Entity::IFSC_CODE] ?? null;
+
+        $entityId = $input[Entity::ENTITY_ID] ?? null;
+
+        $entityType = $input[Entity::TYPE] ?? null;
+
         return $this->newQuery()
                     ->where(Entity::BENEFICIARY_NAME, $name)
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::IFSC_CODE, $ifsc)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::TYPE, $entityType)
                     ->where(Entity::MERCHANT_ID, $merchant->getId())
                     ->first();
     }
