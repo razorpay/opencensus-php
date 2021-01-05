@@ -19,7 +19,7 @@ class InstantActivationTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
     }
 
     /**

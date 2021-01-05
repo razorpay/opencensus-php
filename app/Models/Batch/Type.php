@@ -135,9 +135,9 @@ class Type
 
     const PAYOUT_APPROVAL = 'payout_approval';
 
-    // 
+    //
     // Support admin action for bulk retrying refunds via FTA to custom sources
-    // 
+    //
     const RETRY_REFUNDS_TO_BA = 'retry_refunds_to_ba';
 
     const CANCEL_DEBIT = 'cancel_debit';
@@ -153,6 +153,7 @@ class Type
     ];
 
     public static $appTypes = [
+        self::INSTANT_ACTIVATION,
         self::RECONCILIATION,
         self::EMANDATE,
         self::NACH,

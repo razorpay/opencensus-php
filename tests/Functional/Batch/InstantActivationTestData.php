@@ -6,7 +6,7 @@ use RZP\Error\PublicErrorCode;
 return [
     'testCreateBatchOfInstantActivation' => [
         'request'  => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'instant_activation',
@@ -30,7 +30,7 @@ return [
 
     'testVerifyBatchDataMigration' => [
         'request'  => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'instant_activation',
@@ -48,7 +48,7 @@ return [
 
     'testVerifyBatchForGreylistActivation' => [
         'request'  => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'instant_activation',
@@ -66,7 +66,7 @@ return [
 
     'testVerifyBatchForSuccessAndFailureCount' => [
         'request'  => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'instant_activation',
