@@ -129,6 +129,9 @@
         font-size: 16px;
         cursor: pointer;
       }
+      button:disabled {
+        opacity: 0.5;
+      }
     </style>
 </head>
 <body>
@@ -177,7 +180,7 @@
     <span class="dblock text-center">Accept, process and disburse digital payments for your business.
     <a href="https://razorpay.com" target="_blank">Know More.</a>
     </span>
-    
+
     <div>
         <img class="rzp-logo" height="26" src="https://cdn.razorpay.com/logo.svg">
     </div>

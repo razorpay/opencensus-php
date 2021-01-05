@@ -1,11 +1,11 @@
 @extends('layouts.nach')
 @section('content')
-  <form name="form1" action="{{$data['request']['url']}}" method="post" style="margin: 40px 0 0; line-height: 46px; text-align: center;">
+  <form name="form1" action="{{$data['request']['url']}}" method="post" style="margin: 40px 0 0; line-height: 46px; text-align: center;" onsubmit="disableSubmitButton()">
     <span onclick="cancelPayment(this)" style="color: #528FF0; cursor: pointer;">Cancel Payment</span>
     @foreach ($data['request']['content'] as $key => $value)
       <input type="hidden" name="{{$key}}" value="{{$value}}">
     @endforeach
-    <button type="submit">Proceed</button>
+    <button type="submit" id="submit-btn">Proceed</button>
   </form>
   <script>
     function cancelPayment(target) {
@@ -22,6 +22,10 @@
       }
       x.open('get', base + 'cancel');
       x.send();
+    }
+    function disableSubmitButton() {
+      var button = document.getElementById("submit-btn");
+      button.disabled = true;
     }
   </script>
 @endsection
