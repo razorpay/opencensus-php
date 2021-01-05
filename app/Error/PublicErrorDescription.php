@@ -35,6 +35,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
     const GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED                              = 'Terminal onboarding failed on gateway';
 
+    const GATEWAY_ERROR_INVALID_TRANSACTION                                     = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
+    const GATEWAY_ERROR_NO_RECORDS_FOUND                                        = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
+
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
@@ -459,7 +462,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                      = 'One or more required fields are missing';
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_REFUNDED                      = 'Total amount passed is more than the Return/Void amount.';
-    const BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN                     = 'Transaction not permitted to cardholder';
+    const BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN                     = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
     const BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID                                 = 'Invalid card type.';
     const BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY                        = 'Invalid amount or currency.';
     const BAD_REQUEST_PAYMENT_INVALID_CAPTURE                                   = 'No approved preauth transaction was found.';
@@ -1053,7 +1056,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
     const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
-    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
     const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by bank';
@@ -1063,6 +1066,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
     const GATEWAY_ERROR_DEBIT_FAILED                                                = 'Payment failed. Please try again with another bank account.';
     const GATEWAY_ERROR_REVERSAL_ALREADY_SENT                                       = 'Payment failed. Reversal has already been sent';
+    const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.';
 
     // cardless emi error codes
     const BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH                         = 'Contact given is invalid';

@@ -26,7 +26,7 @@ return [
             'content'     => [
                 'error'         => [
                     'code'              => PublicErrorCode::GATEWAY_ERROR,
-                    'description'       => PublicErrorDescription::GATEWAY_ERROR,
+                    'description'       => PublicErrorDescription::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
                 ],
             ],
             'status_code' => 502,

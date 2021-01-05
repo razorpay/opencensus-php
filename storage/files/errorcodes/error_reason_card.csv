@@ -1,7 +1,7 @@
 internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
 BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,Payment verification failed,payment_timed_out,Technical,gateway,Retry with another card,payment_authorization,N
 GATEWAY_ERROR_TRANSACTION_NOT_PRESENT,Payment Failed,gateway_technical_error,Technical,gateway,Non actionable,payment_authorization,N
-GATEWAY_ERROR_NO_RECORDS_FOUND,Payment Failed,gateway_technical_error,Technical,gateway,Non actionable,payment_authorization,N
+GATEWAY_ERROR_NO_RECORDS_FOUND,Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.,gateway_technical_error,Technical,gateway,Non actionable,payment_authorization,N
 GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED,The card does not support this type of purchase.,card_network_not_enabled,Business,business,,payment_initiation,I
 BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Customer has cancelled the transaction,payment_cancelled,Business,customer,Please retry again,payment_authentication,D
 BAD_REQUEST_PAYMENT_CANCELLED,Customer has cancelled the transaction,payment_cancelled,Business,customer,Please retry again,payment_authentication,D
@@ -10,7 +10,7 @@ BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,Customer has cancelled the transaction
 GATEWAY_ERROR_INVALID_MERCHANT,The merchant is not registered with gateway,server_error,Business,internal,Post failure Communication to merchant,payment_initiation,I
 BAD_REQUEST_MERCHANT_INVALID,The merchant is not registered with gateway,server_error,Business,internal,Post failure Communication to merchant,payment_initiation,I
 GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED,The selected terminal is not allowed for payments,server_error,Business,internal,Post failure Communication to merchant,payment_initiation,N
-GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED,The card has been declined for an unknown reason,card_declined,Business,issuer_bank,Please contact the card issuer for more information,payment_authorization,N
+GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED,Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.,card_declined,Business,issuer_bank,Please contact the card issuer for more information,payment_authorization,N
 GATEWAY_ERROR_CARD_INVALID_AMOUNT,Invalid amount or currency,transaction_limit_exceeded,Business,customer,Check with merchant/ gateway,payment_authorization,D
 GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,Invalid amount or currency,invalid_currency,Business,business,Check with merchant/ gateway,payment_initiation,D
 GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,Certificate validation failed,gateway_technical_error,Technical,gateway,Check with merchant/ gateway,payment_authorization,D
@@ -23,7 +23,7 @@ GATEWAY_ERROR_DATA_MISMATCH,Invalid Payment Data,server_error,Technical,internal
 GATEWAY_ERROR_PAYMENT_MISSING_DATA,Missing Payment Data,gateway_technical_error,Technical,gateway,System Retry,payment_authorization,I
 GATEWAY_ERROR_INVALID_FORMAT,Invalid payment format,server_error,Technical,internal,System Retry,payment_initiation,I
 GATEWAY_ERROR_INVALID_JSON,Invalid payment format,server_error,Technical,internal,System Retry,payment_initiation,I
-GATEWAY_ERROR_INVALID_TRANSACTION,Invalid transaction,server_error,Technical,internal,System Retry,payment_initiation,I
+GATEWAY_ERROR_INVALID_TRANSACTION,Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.,server_error,Technical,internal,System Retry,payment_initiation,I
 GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,Transaction type is not not supported,server_error,Technical,internal,System Retry,payment_initiation,I
 GATEWAY_ERROR_AGGREGATOR_DOWN,Aggregator not available,payment_timed_out,Technical,gateway,System Retry,payment_authorization,I
 BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,The request was received but a timeout occurred at the payment processor.,payment_timed_out,Technical,gateway,System Retry,payment_authorization,I
@@ -48,7 +48,7 @@ BAD_REQUEST_ORDER_EXISTS,Duplicate order ID used for payment.,input_validation_f
 BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,Invalid amount or currency,invalid_amount,Business,business,Retry with another card,payment_initiation,D
 GATEWAY_ERROR_INVALID_PAYMENT_DATA,Payment Failed,server_error,Technical,internal,Non actionable,payment_initiation,N
 BAD_REQUEST_PAYMENT_INVALID_FORMAT,Payment Failed,input_validation_failed,Technical,business,Non actionable,payment_initiation,N
-BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,Transaction not permitted by card holder,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,N
+BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED,Insufficient Balance - Razorpay limit exceeded,transaction_limit_exceeded,Business,customer,Non actionable,payment_authorization,N
 server_error_LOGICAL_ERROR,Unknown Error,server_error,Technical,internal,Non actionable,payment_initiation,N
 server_error_INVALID_ARGUMENT,Unknown Error,server_error,Technical,internal,Non actionable,payment_initiation,N
@@ -111,7 +111,7 @@ GATEWAY_ERROR_INVALID_PARES_XML,Invalid payment format,server_error,Technical,in
 GATEWAY_ERROR_PARES_DATA_MISMATCH,Invalid Payment Data,gateway_technical_error,Technical,gateway,System Retry,payment_authentication,I
 GATEWAY_ERROR_ISSUER_UNAVAILABLE,Issuing Bank not available,bank_technical_error,Technical,issuer_bank,System Retry,payment_authorization,I
 GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,Issuing Bank not available,bank_technical_error,Technical,issuer_bank,System Retry,payment_authorization,I
-GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,Issuer's ACS system failed,bank_technical_error,Technical,issuer_bank,System Retry,payment_authorization,I
+GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.,bank_technical_error,Technical,issuer_bank,System Retry,payment_authorization,I
 BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,Issuing Bank not available,bank_technical_error,Technical,issuer_bank,System Retry,payment_authorization,I
 BAD_REQUEST_INVALID_CARD_DETAILS,Invalid card details,incorrect_card_details,Business,customer,Retry with correct details/ another card,payment_authentication,D
 BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED,Invalid CVV,incorrect_cvv,Business,customer,Retry with correct details/ another card,payment_authentication,D
