@@ -1513,7 +1513,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function shouldForwardToPaymentLinkService(): bool
+    public function shouldForwardToPaymentLinkService(): bool
     {
         if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
         {

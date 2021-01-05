@@ -222,6 +222,28 @@ class Service extends Base\Service
         {
             $this->app->batchService->forwardNotify($batchId, $input, $this->merchant);
 
+            // forward call PL service
+            if ($this->core->shouldForwardToPaymentLinkService() === true)
+            {
+                try
+                {
+                    $paymentLinkService = $this->app['paymentlinkservice'];
+
+                    $response = $paymentLinkService->sendRequest($this->app->request);
+
+                    $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_RESPONSE,
+                        [
+                            'batch'    => $batchId,
+                            'response' => $response['response']
+                        ]);
+                }
+                catch(\Throwable $e)
+                {
+                    // in case of error, just log and continue for normal API flow
+                    $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batchId]);
+                }
+            }
+
             $batchId = Batch\Entity::verifyIdAndStripSign($batchId);
 
             InvoiceBatchNotifyJob::dispatch($this->mode, $batchId, $input);
