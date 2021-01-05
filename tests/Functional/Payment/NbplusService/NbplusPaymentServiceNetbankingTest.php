@@ -102,7 +102,14 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
             switch ($action)
             {
                 case NbPlusPaymentService\Action::AUTHORIZE:
-                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    if($assertContent['input']['payment']['gateway'] === 'netbanking_canara')
+                    {
+                        $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], array_merge(self::AUTHORIZE_ACTION_INPUT, ['payment_fee']));
+                    }
+                    else
+                    {
+                        $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    }
                     break;
                 case NbPlusPaymentService\Action::CALLBACK:
                     $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);

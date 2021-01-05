@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 use Carbon\Carbon;
 
-class Canara extends Base
+class Canara extends NetbankingBase
 {
     use FileHandler;
 
@@ -40,7 +42,7 @@ class Canara extends Base
 
             $formattedData[] = [
                 $row['payment']['id'],
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankAccountNumber($row),
                 $date,
                 number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 'SUCCESS'
@@ -59,5 +61,14 @@ class Canara extends Base
         $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
         return self::FILE_NAME . $date;
+    }
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id'];
     }
 }

@@ -3170,6 +3170,7 @@ class Gateway
             self::NETBANKING_IBK,
             self::NETBANKING_CBI,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_CANARA,
         ];
 
         return (in_array($gateway, $gateways, true));

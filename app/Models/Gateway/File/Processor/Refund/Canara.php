@@ -10,6 +10,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -56,7 +57,7 @@ class Canara extends Base
             $content[] = [
                             $transactionDate,
                             $refundDate,
-                            $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                            $this->fetchBankAccountNumber($row, $netbanking),
                             $paymentId,
                             $row[ConstantsEntity::REFUND][RefundEntity::ID],
                             $this->getFormattedAmount($row[ConstantsEntity::PAYMENT]
@@ -100,5 +101,14 @@ class Canara extends Base
         ];
 
         return $mailData;
+    }
+    protected function fetchBankAccountNumber($data, $netbanking)
+    {
+        if ($data['payment']['cps_route'] === PaymentEntity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $netbanking[NetbankingEntity::BANK_PAYMENT_ID];
     }
 }

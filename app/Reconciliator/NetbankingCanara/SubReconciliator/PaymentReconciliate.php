@@ -7,7 +7,7 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Reconciliator\NetbankingCanara\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
 
     const BLACKLISTED_COLUMNS = [];
