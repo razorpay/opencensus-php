@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
-use RZP\Models\RequestLog;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Channel;
@@ -828,7 +827,6 @@ class RequestLogsTest extends TestCase
         $this->fixtures->create('vpa', $this->createVpaEntityArray());
         $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
         $this->fixtures->create('payout', $this->createPayoutEntityArray(['status' => 'queued']));
-        //sd($this->getDbLastEntity('payout'));
 
         $request = [
             'url' => '/payouts/pout_' . '10000000000001' . '/cancel',
@@ -865,7 +863,20 @@ class RequestLogsTest extends TestCase
          * 3. Check if the results in the entity match the expected result.
          */
 
-        // for low balance config test to work
+        $this->makeCreateLowBalanceConfigRequestAndGetContent();
+
+        // Fetch the last record from request_logs table
+        $observedDbContent = $this->getDbLastEntity('request_log', 'live');
+        $expectedDbContent = [
+            'merchant_id' => '10000000000000',
+            'route_name' => 'create_low_balance_config',
+            'request_method' => 'POST',
+        ];
+        $this->assertArraySelectiveEquals($expectedDbContent, $observedDbContent->toArray());
+    }
+
+    protected function makeCreateLowBalanceConfigRequestAndGetContent()
+    {
         $this->setUpMerchantForBusinessBankingLive(true, 10000);
 
         $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
@@ -885,15 +896,6 @@ class RequestLogsTest extends TestCase
             ],
         ];
 
-        $this->makeRequestAndGetContent($request);
-
-        // Fetch the last record from request_logs table
-        $observedDbContent = $this->getDbLastEntity('request_log', 'live');
-        $expectedDbContent = [
-            'merchant_id' => '10000000000000',
-            'route_name' => 'create_low_balance_config',
-            'request_method' => 'POST',
-        ];
-        $this->assertArraySelectiveEquals($expectedDbContent, $observedDbContent->toArray());
+        return $this->makeRequestAndGetContent($request);
     }
 }
