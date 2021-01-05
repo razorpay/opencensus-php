@@ -1202,8 +1202,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
-        Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
