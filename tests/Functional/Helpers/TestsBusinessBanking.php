@@ -311,7 +311,8 @@ trait TestsBusinessBanking
                                            string $useWorkflowMicroService = 'off',
                                            string $bulkPayoutsImprovementsRollout = 'on',
                                            string $oldToNewIfscForMergedBank = 'on',
-                                           string $rejectCommentInWebhook = 'off')
+                                           string $rejectCommentInWebhook = 'off',
+                                           string $allowVAToVAPayouts = 'control')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -336,7 +337,8 @@ trait TestsBusinessBanking
                     $useWorkflowMicroService,
                     $bulkPayoutsImprovementsRollout,
                     $oldToNewIfscForMergedBank,
-                    $rejectCommentInWebhook
+                    $rejectCommentInWebhook,
+                    $allowVAToVAPayouts
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -398,6 +400,11 @@ trait TestsBusinessBanking
                     if ($feature === 'payouts_reject_comment_in_webhook_filter')
                     {
                         return strtolower($rejectCommentInWebhook);
+                    }
+
+                    if ($feature === 'rx_allow_va_to_va_payouts')
+                    {
+                        return strtolower($allowVAToVAPayouts);
                     }
 
                     return strtolower($defaultBehaviour);

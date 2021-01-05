@@ -62,6 +62,16 @@ class Entity extends Base\PublicEntity
 
     const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';
 
+    const ICICI_PREFIX_TO_BLOCK = [
+        '5656',
+        '3434',
+    ];
+
+    const YES_BANK_PREFIX_TO_BLOCK = [
+        '787878',
+        '456456',
+    ];
+
     protected $generateIdOnCreate = true;
 
     protected $composite = false;

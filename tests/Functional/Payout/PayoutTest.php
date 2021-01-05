@@ -10173,4 +10173,235 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('testemail@example.com', $contact['email']);
         $this->assertEquals('batch_abc124', $contact['idempotency_key']);
     }
+
+    protected function createFundAccountOfIciciVA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'ICIC0000104',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '3434000111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createFundAccountOfYesbankVA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'YESB0000104',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '7878780111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockRazorxToAllowVAToVAPayouts()
+    {
+        $this->mockRazorxTreatment('yesbank',
+            'off' ,
+            'off' ,
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on' ,
+            'off',
+            'on');
+    }
+
+    protected function createFundAccountOfRBLCA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'RATN0000104',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '40080111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
+    public function testBlockVAtoVAPayoutsWithICICIDestination()
+    {
+        $fundAccount = $this->createFundAccountOfIciciVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest($testData);
+    }
+
+    // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
+    public function testBlockVAtoVAPayoutsWithYesbankDestination()
+    {
+        $fundAccount = $this->createFundAccountOfYesbankVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest($testData);
+    }
+
+    // Since this is a VA to VA payout but the razorx returns 'on' meaning we have allowed this merchant
+    // to make VA to VA payouts, we shall allow this payout to go through
+    public function testAllowVAtoVAPayoutsWithRazorXExperimentWithICICIDestination()
+    {
+        $fundAccount = $this->createFundAccountOfIciciVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->startTest($testData);
+    }
+
+    // Since this is a VA to VA payout but the razorx returns 'on' meaning we have allowed this merchant
+    // to make VA to VA payouts, we shall allow this payout to go through
+    public function testAllowVAtoVAPayoutsWithRazorXExperimentWithYesbankDestination()
+    {
+        $fundAccount = $this->createFundAccountOfYesbankVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->startTest($testData);
+    }
+
+    // CA to VA payouts should go through since this flow should be untouched by VA to VA payouts being bloacked
+    public function testCAtoVAPayout()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->setupDirectAccount();
+
+        $fundAccount = $this->createFundAccountOfIciciVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // This should go through
+    public function testVAtoCAPayout()
+    {
+        $fundAccount = $this->createFundAccountOfRBLCA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest($testData);
+    }
+
+    // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
+    public function testBlockVAtoVACompositePayouts()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // Since this is a VA to VA payout but the razorx returns 'on' meaning we have allowed this merchant
+    // to make VA to VA payouts, we shall allow this payout to go through
+    public function testAllowVAtoVACompositePayoutsWithRazorXExperiment()
+    {
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testBlockBulkVAToVAPayouts()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testAllowBulkVAToVAPayoutsWithRazorXExperiment()
+    {
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
 }

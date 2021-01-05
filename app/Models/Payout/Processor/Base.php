@@ -1016,6 +1016,81 @@ class Base extends BaseCore
                 Payout\Entity::FUND_ACCOUNT_ID);
         }
 
+        $blockVAToVAPayouts = false;
+
+        // We are adding another check here. This is to block VA to VA payouts
+        // Step 1: We are making sure that the source account is VA
+        if ($this->balance->getAccountType() === Balance\AccountType::SHARED)
+        {
+            // Step 2: We make sure that the destination FA is type bank account
+            if ($fundAccount->getAccountType() === FundAccount\Type::BANK_ACCOUNT)
+            {
+                $bankAccount = $fundAccount->account;
+
+                $firstFourDigitsOfIfsc = substr($bankAccount->getIfscCode(), 0, 4);
+
+                // For ICICI
+
+                if ($firstFourDigitsOfIfsc === 'ICIC')
+                {
+                    $firstFourDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 4);
+
+                    if (in_array($firstFourDigitsOfAccountNumber,
+                            FundAccount\Entity::ICICI_PREFIX_TO_BLOCK, true) === true)
+                    {
+                        $blockVAToVAPayouts = true;
+                    }
+                }
+
+                // For YesBank
+
+                if ($firstFourDigitsOfIfsc === 'YESB')
+                {
+                    $firstSixDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 6);
+
+                    if (in_array($firstSixDigitsOfAccountNumber,
+                            FundAccount\Entity::YES_BANK_PREFIX_TO_BLOCK, true) === true)
+                    {
+                        $blockVAToVAPayouts = true;
+                    }
+                }
+            }
+        }
+
+        // Below mentioned variable will only be true when destination accountNumber is of type VA and the
+        // first 4 characters of the IFSC match with `ICIC` or `YESB`
+        // We shall now check if the merchant has been allowed VA to VA payouts via the experiment
+        if ($blockVAToVAPayouts === true)
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
+                $this->mode,
+                3);
+
+            // This will be control when:
+            // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
+            // 2. If RazorX request fails
+            if ($variant === 'control')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
+                    null,
+                    [
+                        'merchant_id'       => $payout->getMerchantId(),
+                        'fund_account_id'   => $fundAccountId
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED,
+                    [
+                        'merchant_id'       => $payout->getMerchantId(),
+                        'fund_account_id'   => $fundAccountId
+                    ]);
+            }
+        }
+
         $this->validateFundAccountContact($fundAccount);
 
         $payout->fundAccount()->associate($fundAccount);

@@ -200,4 +200,7 @@ final class RazorxTreatment
     const BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT = 'banking_account_statement_special_attempt_limit';
 
     const API_EMAILS_MAILGUN_DRIVER = 'api_emails_mailgun_driver';
+
+    // This is to be used to block VA to VA payouts
+    const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';
 }

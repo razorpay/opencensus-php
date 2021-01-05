@@ -1003,6 +1003,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE                   = 'Payout Link service is under maintainence';
 
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
+    const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
