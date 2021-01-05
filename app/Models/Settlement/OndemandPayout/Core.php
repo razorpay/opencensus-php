@@ -42,6 +42,8 @@ class Core extends Base\Core
 
     const ADJUSTMENT = 'adjustment';
 
+    const PAYOUT = 'payout';
+
     const MIN_SPLIT_AMOUNT = 10000;
 
     public function __construct()
@@ -201,6 +203,10 @@ class Core extends Base\Core
         {
             $settlementOndemandPayout->setInitiatedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
+            $settlementOndemandPayout->setPayoutId($payoutId);
+
+            $settlementOndemandPayout->setEntityType(self::PAYOUT);
+
             if ($payoutStatus === Status::PROCESSED)
             {
                 return $this->handlePayoutProcessedEvent($settlementOndemandPayout, $response['utr']);
@@ -212,8 +218,6 @@ class Core extends Base\Core
             }
 
             $settlementOndemandPayout->setStatus(Status::INITIATED);
-
-            $settlementOndemandPayout->setPayoutId($payoutId);
 
             $this->repo->saveOrFail($settlementOndemandPayout);
         }
