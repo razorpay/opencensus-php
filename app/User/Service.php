@@ -943,6 +943,11 @@ class Service extends Base\Service
 
         $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
+        if (isset($data['activated']) === true)
+        {
+            $data['activated'] = (int) $data['activated'];
+        }
+
         return [[], $data];
     }
 
