@@ -3,13 +3,14 @@ import { connect } from 'react-redux';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/views/Settings/Reminders';
 import Webhooks from 'merchant/views/Settings/Webhooks/List';
 import Applications from 'merchant/views/Settings/Applications/';
+import Application from 'merchant/models/Application';
 import Configuration from 'merchant/views/Settings/Configuration';
 import ApplicationsNew from 'merchant/views/Settings/Applications/new';
 import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
@@ -29,12 +30,19 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 export default class Settings extends Component {
   state = {
     isWebsiteInWorkflow: false,
+    isConnectedAppsFound: false,
   };
 
   componentWillMount() {
     this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
       this.setState({
         isWebsiteInWorkflow: data,
+      });
+    });
+    let application = new Application();
+    application.fetchConnected().then((resp) => {
+      this.setState({
+        isConnectedAppsFound: Boolean(resp?.data?.count),
       });
     });
   }
@@ -60,6 +68,7 @@ export default class Settings extends Component {
 
   render() {
     const { tracking } = this.props;
+
     return (
       <tabbed-container>
         <header id="settings-header">
@@ -115,12 +124,12 @@ export default class Settings extends Component {
             Reminders
           </NavLink>
 
-          <ShowWhen
-            featureEnabled="Oauth"
-            additionalCondition={(user) => user.isAllowedView('applications')}
-          >
-            <NavLink to="/applications">Applications</NavLink>
-          </ShowWhen>
+          {this.state.isConnectedAppsFound ? (
+            <ShowWhen additionalCondition={(user) => user.isAllowedView('applications')}>
+              <NavLink to="/applications">Applications</NavLink>
+            </ShowWhen>
+          ) : null}
+
           <ShowWhen additionalCondition={(user) => this.isPaymentMethodEnabled(user)}>
             <NavLink to="/payment-methods" onClick={() => analyticsGoTo('Payment Methods')}>
               Payment Methods
@@ -142,11 +151,11 @@ export default class Settings extends Component {
             )}
           />
           <Route path="/reminders" component={Reminders} />
-          <Switch>
+
+          {this.state.isConnectedAppsFound ? (
             <Route exact path="/applications" component={Applications} />
-            <Route exact path="/applications/new" component={ApplicationsNew} />
-            <Route path="/applications/:id" component={ApplicationsNew} />
-          </Switch>
+          ) : null}
+
           <Route path="/payment-methods" component={PaymentMethods} />
         </content>
       </tabbed-container>

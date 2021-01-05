@@ -14,13 +14,13 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
 
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       applications: state.applications,
     };
   },
-  { ...ApplicationActions, ...NotificationActions, ...ModalActions }
+  { ...ApplicationActions, ...NotificationActions, ...ModalActions },
 )
 export default class ApplicationContainer extends Component {
   static contextTypes = {
@@ -32,12 +32,11 @@ export default class ApplicationContainer extends Component {
     this.props.fetchConnectedApplications();
   }
 
-  deleteApp = application => {
+  deleteApp = (application) => {
     this.context.confirm({
       message: () => (
         <span>
-          Merchants mapped to this application will no longer be associated with
-          it.
+          Merchants mapped to this application will no longer be associated with it.
           <br />
           <br />
           Are you sure you want to delete <b>{application.name}</b>?
@@ -48,13 +47,13 @@ export default class ApplicationContainer extends Component {
       action: () =>
         this.props
           .deleteApplication(application.id)
-          .then(response => {
+          .then((response) => {
             this.props.showNotification({
               type: 'success',
               message: 'Application deleted successfully',
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.props.showNotification({
               type: 'error',
               message: err.errors,
@@ -63,23 +62,21 @@ export default class ApplicationContainer extends Component {
     });
   };
 
-  revokeAccess = token => {
+  revokeAccess = (token) => {
     this.context.confirm({
-      message: `Are you sure you want to revoke access to ${
-        token.application.name
-      }?`,
+      message: `Are you sure you want to revoke access to ${token.application.name}?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
       action: () =>
         this.props
           .revokeAccess(token.id)
-          .then(response => {
+          .then((response) => {
             this.props.showNotification({
               type: 'success',
               message: 'Access revoked successfully',
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.props.showNotification({
               type: 'error',
               message: err.errors,
@@ -98,7 +95,7 @@ export default class ApplicationContainer extends Component {
         {connectedAppsloading ? (
           <LoadingConnectedApps />
         ) : tokens.length ? (
-          tokens.map(data => (
+          tokens.map((data) => (
             <AppDetails
               data={data}
               key={data.id}
@@ -121,24 +118,26 @@ export default class ApplicationContainer extends Component {
     return (
       <div class="application-index-page">
         {pathname === '/applications' && this.renderConnectedApplications()}
-        <div class="content-box">
-          <div class="content-header">
-            <strong>Created Applications</strong>
+        {pathname === '/partners/applications' ? (
+          <div class="content-box">
+            <div class="content-header">
+              <strong>Created Applications</strong>
+            </div>
+            <div class="text-center content-body">
+              <NewAppLink toNewApplication={`${pathname}/new`} />
+              {items.map((data) => (
+                <AppDetails
+                  data={data}
+                  key={data.id}
+                  onBtnClick={this.deleteApp}
+                  entityDetailLink={`${pathname}/${data.id}`}
+                />
+              ))}
+              {createdAppsloading && <AppDetailsLoader />}
+              <div class="clearfix" />
+            </div>
           </div>
-          <div class="text-center content-body">
-            <NewAppLink toNewApplication={`${pathname}/new`} />
-            {items.map(data => (
-              <AppDetails
-                data={data}
-                key={data.id}
-                onBtnClick={this.deleteApp}
-                entityDetailLink={`${pathname}/${data.id}`}
-              />
-            ))}
-            {createdAppsloading && <AppDetailsLoader />}
-            <div class="clearfix" />
-          </div>
-        </div>
+        ) : null}
       </div>
     );
   }
