@@ -287,12 +287,98 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function bulkCloseVirtualAccount($input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANTS_BULK_CLOSE_REQUEST, $input);
+
+        if (isset($input['merchant_ids']) and isset($input['virtual_account_ids']))
+        {
+            return ['message' => 'Please pass either merchant ids or virtual account ids'];
+        }
+
+        (new Validator())->validateInput('bulkCloseVirtualAccount', $input);
+
+        $closedVirtualAccountIds = [];
+        $failedVirtualAccountIds = [];
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            foreach ($input['merchant_ids'] as $merchantId)
+            {
+                do
+                {
+                    $virtualAccounts = $this->repo
+                                            ->virtual_account
+                                            ->fetchActiveVirtualAccountsForMerchantId($merchantId,
+                                                                                      array_keys($failedVirtualAccountIds),
+                                                                                      Constant::FETCH_LIMIT);
+
+                    $this->closeMultipleVirtualAccounts($virtualAccounts,
+                                                        $closedVirtualAccountIds,
+                                                        $failedVirtualAccountIds);
+                } while (sizeof($virtualAccounts) === Constant::FETCH_LIMIT);
+            }
+        }
+        else if (isset($input['virtual_account_ids']) === true)
+        {
+            $virtualAccounts = $this->repo
+                                    ->virtual_account
+                                    ->fetchActiveVirtualAccountIds($input['virtual_account_ids']);
+
+            $this->closeMultipleVirtualAccounts($virtualAccounts,
+                                                $closedVirtualAccountIds,
+                                                $failedVirtualAccountIds);
+        }
+
+        $response = [
+            'success' => $closedVirtualAccountIds,
+            'failed'  => $failedVirtualAccountIds
+        ];
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANTS_BULK_CLOSE_RESPONSE, $response);
+
+        return $response;
+    }
+
+    private function closeMultipleVirtualAccounts(
+        array $virtualAccounts,
+        &$closedVirtualAccountIds,
+        &$failedVirtualAccountIds
+    )
+    {
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            try
+            {
+                array_push($closedVirtualAccountIds, $this->closeVirtualAccountEntity($virtualAccount)['id']);
+            }
+            catch (\Throwable $ex)
+            {
+                $failedVirtualAccountIds = array_merge($failedVirtualAccountIds, [
+                    $virtualAccount->getId()   =>  $ex->getMessage()
+                ]);
+
+                $this->trace->traceException(
+                    $ex, Trace::ERROR, TraceCode::VIRTUAL_ACCOUNT_MERCHANTS_BULK_CLOSE_FAILURES,
+                    [
+                        'virtual_account_id' => $virtualAccount->getId(),
+                        'mechant_id'         => $virtualAccount->merchant->getId(),
+                    ]);
+            }
+        }
+    }
+
     public function closeVirtualAccount(string $id)
     {
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
+        return $this->closeVirtualAccountEntity($virtualAccount);
+    }
+
+    private function closeVirtualAccountEntity($virtualAccount)
+    {
         $virtualAccount = $this->core->close($virtualAccount);
 
         $this->pushVaEventToDataLake($virtualAccount, EventCode::VIRTUAL_ACCOUNT_CLOSED);

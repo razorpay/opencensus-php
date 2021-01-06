@@ -204,6 +204,15 @@ class VirtualAccountController extends Controller
         return $response;
     }
 
+    public function bulkCloseVirtualAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkCloseVirtualAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function debugVA()
     {
         $input = Request::all();

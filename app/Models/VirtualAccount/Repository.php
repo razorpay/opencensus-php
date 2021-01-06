@@ -215,6 +215,39 @@ class Repository extends Base\Repository
 
     }
 
+    /**
+     *
+     * select  * from `virtual_accounts`
+     *         where `status` = ? and
+     *        `merchant_id` in (?)
+     *        `id` not in (?)
+     *         limit 100
+     *
+     * @param array $merchantIds
+     *
+     * @return array
+     */
+    public function fetchActiveVirtualAccountsForMerchantId($merchantId, $skipVirtualAccountIds, $limit = 100): array
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereNotIn(Entity::ID, $skipVirtualAccountIds)
+                    ->limit($limit)
+                    ->get()
+                    ->all();
+    }
+
+    public function fetchActiveVirtualAccountIds(array $virtualAccountIds, $limit = 100)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->whereIn(Entity::ID, $virtualAccountIds)
+                    ->limit($limit)
+                    ->get()
+                    ->all();
+    }
+
     public function findActiveVirtualAccountForOrderByCustomer(Customer\Entity $customer)
     {
         return $this->newQuery()
