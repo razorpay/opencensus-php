@@ -309,7 +309,7 @@ class Constants
         ],
         [
             'title'       => 'Festive Special: Exclusive Offer For You',
-            'description' => 'Get ₹5,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
+            'description' => "Get ₹5,00,000 of free credits & 3 months of Opfin’s Payroll software for free.",
             'icon'        => '/dist/css/assets/products/opfin.svg',
             'id'          => 'Nov20-Opfin-NitroV3',
             'buttons'     => [
@@ -324,6 +324,43 @@ class Constants
             'end_ts'      => 1623994200,
             'filters'     => [
                 'experiments_with_variant'  => ['rx_opfin_announcement_v2' => 'cohort-4'],
+            ],
+        ],
+        [
+            'title'       => 'New Year Offer',
+            'description' => "Get ₹10,00,000 worth of free credits & 3 months of Opfin's Payroll software for free.",
+            'icon'        => '/dist/css/assets/products/opfin.svg',
+            'id'          => 'Nov20-Opfin-NitroV4',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-Nov20-Opfin-NitroV4-cta1',
+                ],
+            ],
+            'start_ts'    => 1609922446,
+            'end_ts'      => 1623994200,
+            'filters'     => [
+                'experiments_with_variant'  => ['rx_opfin_announcement_v2' => 'cohort-5'],
+            ],
+        ],
+        [
+            'title'       => 'Introducing Payroll by RazorpayX',
+            'description' => "Simplify and process payroll for employees, automate PF, TDS, PT payments, and pay your contractors",
+            'icon'        => '/dist/css/assets/products/opfin.svg',
+            'id'          => 'opfin-sso-check',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Explore Now',
+                    'url'   => 'https://payroll.razorpay.com/dashboard',
+                ],
+            ],
+            'start_ts'    => 1609922446,
+            'end_ts'      => 1623994200,
+            'filters'     => [
+                'experiments_with_variant'  => ['rx_opfin_sso_announcement' => 'on'],
             ],
         ],
     ];
