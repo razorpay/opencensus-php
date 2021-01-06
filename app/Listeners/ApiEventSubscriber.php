@@ -379,6 +379,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTransferFailed(Transfer\Entity $transfer)
+    {
+        $payload = $this->getTransferPayload($transfer);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onTransferSettled($transfer)
     {
         $payload = $this->getTransferPayloadWithSettlement($transfer);

@@ -110,6 +110,7 @@ abstract class AbstractTransfer
 
                     $this->repo->saveOrFail($transfer);
 
+                    $this->fireTransferFailedWebhookIfApplicable($transfer);
                 }
             }
 
@@ -122,8 +123,8 @@ abstract class AbstractTransfer
 
         $istransferProcessed = true;
 
-        if ($transfer->isFailed() === true and
-                    $transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+        if (($transfer->isFailed() === true) and
+            ($transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
         {
             $this->trace->info($this->invalidCode,
                         [
@@ -253,5 +254,18 @@ abstract class AbstractTransfer
         $this->repo->saveOrFail($payment);
     }
 
+    protected function fireTransferFailedWebhookIfApplicable(Entity $transfer)
+    {
+        $source = $transfer->getSourceType();
 
+        //
+        // Payment transfers are not retried on failure whereas order transfers are
+        // retried thrice. The webhook is being triggered below based on this.
+        //
+        if (($source === Constant::PAYMENT) or
+            (($source === Constant::ORDER) and ($transfer->getAttempts() === Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)))
+        {
+            (new Core())->eventTransferFailed($transfer);
+        }
+    }
 }

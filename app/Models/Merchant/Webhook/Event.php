@@ -70,6 +70,7 @@ class Event
     const REFUND_ARN_UPDATED                = 'refund.arn_updated';
     const TRANSFER_PROCESSED                = 'transfer.processed';
     const TRANSFER_SETTLED                  = 'transfer.settled';
+    const TRANSFER_FAILED                   = 'transfer.failed';
     const TERMINAL_CREATED                  = 'terminal.created';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
     const TERMINAL_FAILED                   = 'terminal.failed'; // Terminal Creation failed on gateway
@@ -161,6 +162,7 @@ class Event
         self::REFUND_ARN_UPDATED,
         self::TRANSFER_PROCESSED,
         self::TRANSFER_SETTLED,
+        self::TRANSFER_FAILED,
         self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
@@ -258,6 +260,7 @@ class Event
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
         self::TRANSFER_SETTLED,
+        self::TRANSFER_FAILED,
         self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
@@ -384,6 +387,7 @@ class Event
         self::PAYMENT_PAGE_PAID                 => 18,
         self::REFUND_ARN_UPDATED                => 19,
         self::BANKING_ACCOUNTS_ISSUED           => 20,
+        self::TRANSFER_FAILED                   => 21,
     ];
 
     /**
@@ -441,6 +445,7 @@ class Event
         self::REFUND_CREATED                    => [Product::PRIMARY],
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
         self::TRANSFER_SETTLED                  => [Product::PRIMARY],
+        self::TRANSFER_FAILED                   => [Product::PRIMARY],
         self::TERMINAL_CREATED                  => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
         self::TERMINAL_FAILED                   => [Product::PRIMARY],
@@ -534,6 +539,7 @@ class Event
         self::REFUND_CREATED                    => Entity::REFUND,
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
         self::TRANSFER_SETTLED                  => Entity::SETTLEMENT,
+        self::TRANSFER_FAILED                   => Entity::TRANSFER,
         self::TERMINAL_CREATED                  => Entity::TERMINAL,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
         self::TERMINAL_FAILED                   => Entity::TERMINAL,
@@ -596,6 +602,7 @@ class Event
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TRANSFER_SETTLED                  => Feature\Constants::TRANSFER_SETTLED_WEBHOOK,
+        self::TRANSFER_FAILED                   => Feature\Constants::MARKETPLACE,
         self::TERMINAL_CREATED                  => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,

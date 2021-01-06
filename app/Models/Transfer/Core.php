@@ -722,4 +722,13 @@ class Core extends Base\Core
 
         $this->app['events']->fire('api.transfer.processed', $eventPayload);
     }
+
+    public function eventTransferFailed(Entity $transfer)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $transfer
+        ];
+
+        $this->app['events']->fire('api.transfer.failed', $eventPayload);
+    }
 }

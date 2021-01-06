@@ -261,6 +261,72 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
     }
 
+    public function testTransferFailedWebhook()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->expectWebhookEventWithContents('transfer.failed', $this->testData[__FUNCTION__]);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        for ($i = 1; $i < 4; $i++)
+        {
+            $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+
+            $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+            $this->ba->cronAuth();
+
+            $this->runRequestResponseFlow($data);
+        }
+
+        $transfer->reload();
+
+        $this->assertEquals(4, $transfer['attempts']);
+    }
+
+    public function testNoTransferFailedWebhookWhenRetriesLeft()
+    {
+        $attempts = 2;
+        
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->dontExpectWebhookEvent('transfer.failed');
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        for ($i = 1; $i < $attempts; $i++)
+        {
+            $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+
+            $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+            $this->ba->cronAuth();
+
+            $this->runRequestResponseFlow($data);
+        }
+
+        $transfer->reload();
+
+        $this->assertEquals($attempts, $transfer['attempts']);
+    }
+
     protected function capturePaymentProcessOrderTransfers($order, $paymentAmount = null)
     {
         $payment = $this->getDefaultPaymentArray();

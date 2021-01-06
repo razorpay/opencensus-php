@@ -155,4 +155,23 @@ return [
             ],
         ],
     ],
+
+    'testTransferFailedWebhook' => [
+        'entity'=> 'event',
+        'account_id'=> 'acc_10000000000000',
+        'event'=> 'transfer.failed',
+        'contains'=> [
+            'transfer'
+        ],
+        'payload'=> [
+            'transfer'=> [
+                'entity'=> [
+                    'entity'=> 'transfer',
+                    'recipient'=> 'acc_10000000000001',
+                    'amount'=> 50000,
+                    'currency'=> 'INR',
+                ],
+            ],
+        ],
+    ],
 ];

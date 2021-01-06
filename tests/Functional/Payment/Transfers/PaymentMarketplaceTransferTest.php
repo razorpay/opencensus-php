@@ -6,6 +6,8 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
@@ -14,6 +16,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+    use DbEntityFetchTrait;
+    use TestsWebhookEvents;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -365,5 +369,26 @@ class PaymentMarketplaceTransferTest extends TestCase
             BadRequestException::class,
             'bro_code is an invalid account_code.'
         );
+    }
+
+    public function testTransferFailedWebhook()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $this->expectWebhookEventWithContents('transfer.failed', $this->testData[__FUNCTION__]);
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
     }
 }
