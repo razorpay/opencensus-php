@@ -969,6 +969,7 @@ class Route
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'offer_fetch_subscription'                 => ['get',      'offers/subscription',                            'OfferController@fetchOffersSubscription'                           ],
+        'subscription_offer_fetch_usage'           => ['get',      'offers/{id}/subscription/usage',                 'OfferController@fetchOffersUsage'                                  ],
         'subscription_offer_fetch_discount'        => ['get',      'offers/subscription/discounted_amount',          'OfferController@fetchOffersDiscountForSubscription'                ],
         'subscription_offer_preference'            => ['get',      'offers/subscription/preference',                 'OfferController@fetchOffersPreferenceForSubscription'              ],
         'validate_checkout_offers'                 => ['post',     'validate/checkout/offers',                       'OfferController@validateCheckoutOffers'                            ],
@@ -3275,6 +3276,7 @@ class Route
         'offer_fetch_subscription',
         'subscription_offer_fetch_discount',
         'subscription_offer_preference',
+        'subscription_offer_fetch_usage',
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
@@ -6281,6 +6283,7 @@ class Route
         'subscription_resume',
         'subscription_delete_offer',
         'subscription_get_revenue_by_source',
+        'subscription_offer_fetch_usage',
     ];
 
     const EXCEL_STORE_PROXY_ROUTES = [
