@@ -3,14 +3,27 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import FileUploadButton from 'common/ui/FileUpload/Button';
-import { uploadLogo } from 'merchant/reducers/config';
+import {
+  uploadLogo,
+  fetchLocale,
+  updateLocale,
+  saveLocale,
+} from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './components/paymentMethodIcons';
 
+const languageOptions = [
+  { name: 'English', code: 'en' },
+  { name: 'Hindi', code: 'hi' },
+];
+
 @connect(state => ({ ...state.config, user: state.session.user }), {
   uploadLogo,
   showNotification,
+  fetchLocale,
+  updateLocale,
+  saveLocale,
 })
 @reduxForm({})
 export default class CheckoutTheme extends Component {
@@ -18,6 +31,7 @@ export default class CheckoutTheme extends Component {
 
   componentWillMount() {
     this.props.initialize(this.props.config);
+    this.props.fetchLocale();
 
     const script = document.createElement('script');
 
@@ -82,6 +96,31 @@ export default class CheckoutTheme extends Component {
     this.updatePreviewTextClr();
   };
 
+  onChangeLocale = e => {
+    this.props.updateLocale(e.target.value);
+  };
+
+  saveLocale = e => {
+    e.preventDefault();
+    const data = {
+      type: 'locale',
+      config: this.props.locale.config,
+    };
+    if (this.props.locale.id) {
+      data.id = this.props.locale.id;
+    } else {
+      data.name = '_';
+      data.is_default = true;
+    }
+
+    return this.props.saveLocale(data).then(() => {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Default language updated',
+      });
+    });
+  };
+
   render() {
     const { textClr, colorVariations } = this.state;
 
@@ -117,7 +156,7 @@ export default class CheckoutTheme extends Component {
                 <div class="col-md-3 col-sm-6">
                   <AsyncButton
                     class="btn btn-primary"
-                    text="Save Changes"
+                    text="Save"
                     pendingText="Saving..."
                     onClick={this.onSave}
                   />
@@ -164,6 +203,39 @@ export default class CheckoutTheme extends Component {
                   </div>
                 </div>
               </div>
+              {this.props.locale && (
+                <div class="form-group">
+                  <label class="col-md-12" style={{ marginTop: 12 }}>
+                    <strong>Default Language</strong>
+                  </label>
+                  <div class="col-md-6" style={{ marginTop: 0 }}>
+                    <select
+                      class="form-control"
+                      defaultValue={this.props.locale.config.language_code}
+                      onChange={this.onChangeLocale}
+                    >
+                      {languageOptions.map(l => (
+                        <option key={l.code} value={l.code}>
+                          {l.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                    <AsyncButton
+                      class="btn btn-primary"
+                      text="Save"
+                      pendingText="Saving..."
+                      onClick={this.saveLocale}
+                    />
+                  </div>
+                  <div class="col-md-12">
+                    <br />
+                    Default language will be used on the Checkout page if
+                    customer doesn’t specify a language.
+                  </div>
+                </div>
+              )}
             </form>
             <div class="footer-note">
               Changes will reflect on{' '}

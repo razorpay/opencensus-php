@@ -5,6 +5,9 @@ import { param_to_qs } from 'merchant/views/TicketSupport/components/data';
 import { ACTIVE_TICKETS } from '../views/TicketSupport/components/data';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
+const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
+const LOCALE_UPDATE = 'CONFIG_LOCALE_UPDATE';
+const LOCALE_SAVE = 'CONFIG_LOCALE_SAVE';
 const FEATURES_FETCH = 'FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
@@ -100,6 +103,31 @@ export const fetchConfig = () => {
   return {
     type: CONFIG_FETCH,
     payload: fetchConfigAjax(),
+  };
+};
+
+export const fetchLocale = () => {
+  return {
+    type: LOCALE_FETCH,
+    payload: merchantFetch('payment/config/locale?count=1'),
+  };
+};
+
+export const updateLocale = locale => {
+  return {
+    type: LOCALE_UPDATE,
+    payload: locale,
+  };
+};
+
+export const saveLocale = data => {
+  return {
+    type: LOCALE_SAVE,
+    payload: merchantFetch({
+      url: 'payment/config',
+      method: data.id ? 'patch' : 'post',
+      data,
+    }),
   };
 };
 
@@ -270,6 +298,7 @@ let initialState = {
   error: null,
   refund_pricing: { rules: [], custom_pricing: true, not_loaded: true },
   config: {},
+  locale: null,
   isBrandColorDark: false,
   features: [],
   lateAuthConfig: {
@@ -293,6 +322,13 @@ let initialState = {
     error: null,
   },
   isCallEnabled: false,
+};
+
+const defaultLocale = {
+  config: {
+    language_code: 'en',
+  },
+  name: '_',
 };
 
 export default function (state = initialState, action) {
@@ -354,6 +390,19 @@ export default function (state = initialState, action) {
     case `${CONFIG_SAVE}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
+
+    case `${LOCALE_FETCH}::SUCCESS`:
+      const locale = action.payload.data.items[0];
+      return set(state, 'locale', locale || defaultLocale);
+
+    case `${LOCALE_UPDATE}`:
+      return set(state, 'locale', {
+        ...state.locale,
+        config: { language_code: action.payload },
+      });
+
+    case `${LOCALE_SAVE}::SUCCESS`:
+      return set(state, 'locale', action.payload.data);
 
     case `${FEATURES_SAVE}::SUCCESS`:
       return set(state, 'features', action.payload.data.features);
