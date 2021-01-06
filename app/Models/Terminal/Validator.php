@@ -734,6 +734,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
     ];
 
     protected static $walletPhonepeswitchEditTerminalRules = [
