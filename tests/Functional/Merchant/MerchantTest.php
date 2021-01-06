@@ -9333,43 +9333,11 @@ class MerchantTest extends TestCase
 
     }
 
-    public function testGetCheckoutPreferencesWithPreferredMethods()
-    {
-        $this->ba->publicAuth();
-
-        $order = $this->fixtures->order->create();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['order_id'] = $order->getPublicId();
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $this->assertArrayHasKey('preferred_methods', $response);
-
-    }
-
     public function testGetPreferencesInternal()
     {
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    public function testGetCheckoutPersonalisation()
-    {
-        $this->ba->publicAuth();
-
-        $order = $this->fixtures->order->create();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['order_id'] = $order->getPublicId();
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $this->assertArrayHasKey('preferred_methods', $response);
-
     }
 
     public function testGetAutoDisabledMethodsForMerchant()

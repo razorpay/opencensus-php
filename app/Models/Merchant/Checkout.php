@@ -114,12 +114,6 @@ class Checkout
 
         $this->checkAndFillOrgDetails($merchant, $data);
 
-        if ((isset($input['personalisation']) === true) and
-            (($input['personalisation'] === true) or $input['personalisation'] === '1'))
-        {
-            $this->fillPreferredMethods($merchant, $input, $data);
-        }
-
         return $data;
     }
 
@@ -1100,7 +1094,6 @@ class Checkout
      *
      * @return array
      */
-
     public function getPersonalisedMethods($merchant, $mode, $input)
     {
         $this->tracePersonalisationRequest($merchant, $mode, $input);
@@ -1115,7 +1108,8 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
-        $this->fillPreferredMethods($merchant, $input, $data);
+        //commented to solve security issue
+        //$this->fillPreferredMethods($merchant, $input, $data);
 
         return $data;
     }

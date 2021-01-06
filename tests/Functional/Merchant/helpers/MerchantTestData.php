@@ -7017,40 +7017,6 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithPreferredMethods' => [
-        'request' => [
-            'url'     => '/preferences',
-            'method'  => 'get',
-            'content' => [
-                'currency' => 'INR',
-                'personalisation' => true,
-                'order_id' => 'null',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'preferred_methods' => [
-                    'default' => [
-                        'instruments' =>[
-                            [
-                                'instrument' => 'abcd@okhdfc',
-                                'method'     => 'upi',
-                                'score'      =>  0.54,
-                            ],
-                            [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
-                                'score'      =>  0.54,
-                            ],
-                        ],
-                        "is_customer_identified"    => true,
-                        "user_aggregates_available" => false
-                    ],
-                ]
-            ],
-        ],
-    ],
-
     'testGetPreferencesInternal' => [
         'request' => [
             'url'      => '/internal/preferences/10000000000000',
@@ -7062,38 +7028,6 @@ return [
                 'methods' => [
 
                 ],
-            ],
-        ],
-    ],
-
-    'testGetCheckoutPersonalisation' => [
-        'request' => [
-            'url'     => '/personalisation',
-            'method'  => 'get',
-            'content' => [
-                'order_id' => 'null',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'preferred_methods' => [
-                    'default' => [
-                        'instruments' => [
-                            [
-                                'instrument' => 'abcd@okhdfc',
-                                'method'     => 'upi',
-                                'score'      =>  0.54,
-                            ],
-                            [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
-                                'score'      =>  0.54,
-                            ],
-                        ],
-                        "is_customer_identified"    => true,
-                        "user_aggregates_available" => false
-                    ],
-                ]
             ],
         ],
     ],
@@ -7159,7 +7093,7 @@ return [
             ],
         ],
     ],
-  
+
     'testGetAutoDisabledMethodsForMerchantWithRandomCategory' => [
         'request' => [
             'url'      => '/internal/auto_disabled_methods/10000000000000',
@@ -7321,20 +7255,6 @@ return [
                             ]
                         ]
                     ]
-                ],
-                'preferred_methods' => [
-                    '+919955555555' => [
-                        'instruments' => [
-                            [],
-                            [],
-                            [
-                                'method'   => 'card',
-                                'issuer'   => 'SBIN',
-                                'type'     => 'credit',
-                                'network'  => 'Mastercard',
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ],
