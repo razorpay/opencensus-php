@@ -45,8 +45,11 @@ class Service extends Base\Service
         ];
 
         $count = $input['count'] ?? 100;
-
-        $qrCodes = $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);
+        
+        $qrCodes = $this->repo->useSlave(function() use ($count)
+            {
+                return $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);;
+            });
 
         foreach($qrCodes as $qrCode)
         {

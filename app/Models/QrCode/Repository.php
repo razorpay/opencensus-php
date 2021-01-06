@@ -51,12 +51,13 @@ class Repository extends Base\Repository
 
         $provider = $this->dbColumn(Entity::PROVIDER);
 
-        // using slave connection as there are too many qr_codes and the query columns below are not indexed
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
-
-        return $query->take($count)
+        $createdAt = $this->dbColumn(Entity::CREATED_AT);
+        
+        return $this->newQuery()
+                     ->take($count)
                      ->where($provider, '=', 'bharat_qr')
                      ->whereNull($mpanTokenized)
+                     ->where($createdAt, '>', 1552500000) // picking only after 13 mar 2019, as before this date 16 digit mc mpan was stored. https://github.com/razorpay/api/commit/34e9256fc94dc9c61e75f60b993f30a48ef48186 
                      ->get();
     }
 }
