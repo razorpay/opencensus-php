@@ -12,9 +12,11 @@ class SettlementFailure extends Mailable
 
     public function __construct(array $data)
     {
-        $this->data = $data;
-
         parent::__construct();
+
+        parent::addMailData();
+
+        $this->data = array_merge($this->data, $data);
     }
 
     protected function addRecipients()
