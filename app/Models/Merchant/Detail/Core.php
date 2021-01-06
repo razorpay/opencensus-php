@@ -324,7 +324,8 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $this->autoUpdateMerchantActivationFlows($merchant, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
+        $this->autoUpdateMerchantActivationFlows(
+            $merchant, null, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
 
         // If a merchant does not have website or app, we would need to activate them
         // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
@@ -427,12 +428,13 @@ class Core extends Base\Core
      * For unregistered business bucket we skip activation flow
      *
      * @param Merchant\Entity      $merchant
-     *
+     * @param Entity|null          $merchantDetails
      * @param Merchant\Entity|null $partner
      * @param array|string[]       $activationFlowTypes
      * @param bool                 $batchFlow
      */
     public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
+                                                      Merchant\Detail\Entity $merchantDetails = null,
                                                       Merchant\Entity $partner = null,
                                                       array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
                                                       bool $batchFlow = false
@@ -441,7 +443,7 @@ class Core extends Base\Core
     {
         $this->repo->assertTransactionActive();
 
-        $merchantDetails = $this->getMerchantDetails($merchant);
+        $merchantDetails = $merchantDetails ?: $this->getMerchantDetails($merchant);
 
         if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
                                                                  $merchantDetails->isUnregisteredBusiness()) === true)
@@ -452,7 +454,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateActivationFlows($merchant, $partner, $activationFlowTypes, $batchFlow);
+        $this->updateActivationFlows($merchant, $merchantDetails, $partner, $activationFlowTypes, $batchFlow);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -469,10 +471,9 @@ class Core extends Base\Core
                                                  $eventAttributes);
     }
 
-    protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null, bool $batchFlow = false)
+    protected function autoUpdateActivationFlow(
+        Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails, $partner = null, bool $batchFlow = false)
     {
-        $merchantDetails = $this->getMerchantDetails($merchant);
-
         $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, $partner, $batchFlow);
 
         $merchantDetails->setActivationFlow($activationFlow);
@@ -710,7 +711,7 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        $this->autoUpdateMerchantActivationFlows($merchant);
+        $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
         if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
         {
@@ -741,11 +742,12 @@ class Core extends Base\Core
      */
     protected function processInstantActivationBatch(Merchant\Entity $merchant, bool $batchFlow = true)
     {
-        $this->autoUpdateMerchantActivationFlows($merchant, null, Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
+        $merchantDetails = $merchant->merchantDetail;
+
+        $this->autoUpdateMerchantActivationFlows(
+            $merchant, $merchantDetails, null,Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
 
         $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);
-
-        $merchantDetails = $merchant->merchantDetail;
 
         (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $batchFlow);
     }
@@ -2488,12 +2490,13 @@ class Core extends Base\Core
 
 
     /**
-     * @param Merchant\Entity      $merchant
+     * @param Merchant\Entity $merchant
+     * @param Entity $merchantDetails
      * @param Merchant\Entity|null $partner
-     * @param array|string[]       $activationFlowTypes
-     * @param bool                 $batchFlow
+     * @param array|string[] $activationFlowTypes
+     * @param bool $batchFlow
      */
-    protected function updateActivationFlows(Merchant\Entity $merchant,
+    protected function updateActivationFlows(Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails,
                                              Merchant\Entity $partner = null,
                                              array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
                                              bool $batchFlow = false): void
@@ -2504,7 +2507,7 @@ class Core extends Base\Core
             {
                 case Detail\Constants::ACTIVATION:
 
-                    $this->autoUpdateActivationFlow($merchant, $partner, $batchFlow);
+                    $this->autoUpdateActivationFlow($merchant, $merchantDetails, $partner, $batchFlow);
 
                     break;
                 case Detail\Constants::INTERNATIONAL_ACTIVATION:

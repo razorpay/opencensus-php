@@ -265,7 +265,7 @@ class Core extends Merchant\Core
     {
         $merchantDetailsCore = new Detail\Core;
 
-        $merchantDetailsCore->autoUpdateMerchantActivationFlows($subMerchant, $partner);
+        $merchantDetailsCore->autoUpdateMerchantActivationFlows($subMerchant, null, $partner);
 
         // fetch merchant details and save to db as above method does not save it
         $subMerchantDetails = $merchantDetailsCore->getMerchantDetails($subMerchant);
