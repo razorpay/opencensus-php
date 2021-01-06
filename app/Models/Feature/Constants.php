@@ -526,6 +526,11 @@ class Constants
      */
     const ORG_CUSTOM_BRANDING = 'org_custom_branding';
 
+    /**
+     * Marks the seller eligible for automated loc as per https://jira.corp.razorpay.com/browse/CAP-519
+     */
+    const AUTOMATED_LOC_ELIGIBLE = 'automated_loc_eligible';
+
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
@@ -802,6 +807,7 @@ class Constants
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
         self::WALLET                          => true,
+        self::AUTOMATED_LOC_ELIGIBLE          => true,
     ];
 
     // Entity type constants
@@ -1144,6 +1150,11 @@ class Constants
         self::REWARD_MERCHANT_DASHBOARD => [
             'feature'       => self::REWARD_MERCHANT_DASHBOARD,
             'display_name'  => 'Checkout Reward on merchant dashboard',
+            'documentation' => '',
+        ],
+        self::AUTOMATED_LOC_ELIGIBLE => [
+            'feature'       => self::AUTOMATED_LOC_ELIGIBLE,
+            'display_name'  => 'Mark the merchant eligible for Automated Withdrawals',
             'documentation' => '',
         ],
     ];
