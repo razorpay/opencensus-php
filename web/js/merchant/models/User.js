@@ -445,7 +445,7 @@ export default class User {
   }
 
   get isAnnouncementIconEnabled() {
-    return this.getExpStatus('AnnouncementIconDec2020');
+    return this.getExpStatus('AnnouncementIconJan2021');
   }
 
   get isUxRevampPhase2Enabled() {

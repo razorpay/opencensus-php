@@ -1416,12 +1416,12 @@ class Service extends Base\Service
             'whatsapp_notification_enablement',
             'rx_vp_inline_recommendation',
             'partner_app_store',
-            'AnnouncementIconDec2020',
             'show_rx_vp_announcement_2',
             'bulk_payouts_improvements_rollout',
             'block_bank_account_update_merchant_dashboard',
             'rx_opfin_announcement_v2',
             'rx_opfin_sso_announcement',
+            'AnnouncementIconJan2021',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
