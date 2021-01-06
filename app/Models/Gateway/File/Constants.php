@@ -79,7 +79,6 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::PAYLATER_ICICI,
-            self::IBK,
             self::CSB,
             self::ALLA,
             self::ISG,
@@ -129,6 +128,7 @@ class Constants
             self::JKB,
             self::DCB,
             self::UBI,
+            self::IBK,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -187,7 +187,6 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::PAYLATER_ICICI=> ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::IBK           => ['refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
@@ -225,6 +224,7 @@ class Constants
             self::FSB         => ['fsb-netbanking-refunds@razorpay.com'],
             self::DCB         => ['dcb-netbanking-refunds@razorpay.com'],
             self::UBI         => ['ubi-netbanking-refunds@razorpay.com'],
+            self::IBK         => ['ibk-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

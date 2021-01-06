@@ -1648,6 +1648,7 @@ class Gateway
         self::NETBANKING_IDBI,
         self::NETBANKING_FSB,
         self::NETBANKING_DCB,
+        self::NETBANKING_IBK,
     ];
 
     public static $captureVerifyEnabled = [
@@ -2155,6 +2156,7 @@ class Gateway
         IFSC::IBKL => Gateway::NETBANKING_IDBI,
         IFSC::DCBL => Gateway::NETBANKING_DCB,
         IFSC::UBIN => Gateway::NETBANKING_UBI,
+        IFSC::IDIB => Gateway::NETBANKING_IBK,
     ];
 
     /**
