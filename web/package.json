@@ -10,7 +10,7 @@
     "@types/yup": "0.29.10",
     "@universe/services": "1.0.30",
     "@universe/utils": "1.0.30",
-    "axios": "0.19.2",
+    "axios": "0.21.1",
     "bezier-easing": "2.1.0",
     "bootstrap-styl": "5.0.9",
     "chart.js": "2.9.3",
