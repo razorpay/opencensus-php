@@ -178,7 +178,7 @@ class LeafListItem extends React.Component {
           <div class="detail raise-request">
             <div>
               {displayName(instrument.name)}
-              {Object.keys(actionItems).includes(instrument.path) ? (
+              {actionItems && Object.keys(actionItems).includes(instrument.path) ? (
                 <span>
                   <span class="notify-badge">1</span>
                   <Popover align="bottom" theme="dark">
