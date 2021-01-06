@@ -5686,6 +5686,7 @@ class Route
             'credit_note_apply',
             'subscription_offer_fetch_discount',
             'subscription_offer_preference',
+            'offer_fetch_by_id',
         ],
 
         'payment_links' => [

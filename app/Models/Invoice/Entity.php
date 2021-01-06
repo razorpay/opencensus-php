@@ -663,6 +663,24 @@ class Entity extends Base\PublicEntity
             $publicArray[self::NACH_FORM_URL] = $nachFormUrl;
         }
 
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            if ($this->getOfferAmount() !== null and
+                ($this->getOfferAmount() > 0) === true)
+            {
+                $publicArray[Entity::OFFER_AMOUNT] = $this->getOfferAmount();
+
+                if ($this->getComment() !== null)
+                {
+                    $comment = explode(';#$', $this->getComment());
+
+                    $publicArray['offer_name'] = $comment[0] ?? '';
+
+                    $publicArray['offer_display_text'] = $comment[1] ?? '';
+                }
+            }
+        }
+
         return $publicArray;
     }
 
@@ -1230,6 +1248,14 @@ class Entity extends Base\PublicEntity
         if ($this->hasSubscription() === true)
         {
             $this->setAttribute(self::COMMENT, $comment);
+        }
+    }
+
+    public function setNotes(array $notes)
+    {
+        if ($this->hasSubscription() === true)
+        {
+            $this->setAttribute(self::NOTES, $notes);
         }
     }
 

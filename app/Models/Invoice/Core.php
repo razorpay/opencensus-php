@@ -471,6 +471,13 @@ class Core extends Base\Core
         else if($invoiceEntity->getComment() !== null and
                 $invoiceEntity->getOfferAmount() === null)
         {
+            $invoiceEntity->setNotes(
+                [
+                    "offer_note"       => 'offer could not be applied as per offer conditions',
+                    "original_comment" => $invoiceEntity->getComment()
+                ]
+            );
+
             $invoiceEntity->setComment(null);
 
             $this->repo->saveOrFail($invoiceEntity);

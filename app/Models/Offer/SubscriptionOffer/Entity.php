@@ -53,4 +53,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::APPLICABLE_ON);
     }
+
+    public function getRedemptionType()
+    {
+        return $this->getAttribute(self::REDEMPTION_TYPE);
+    }
+
+    public function getNoOfCycles()
+    {
+        return $this->getAttribute(self::NO_OF_CYCLES);
+    }
 }

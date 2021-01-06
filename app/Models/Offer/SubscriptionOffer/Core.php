@@ -25,6 +25,11 @@ class Core extends Base\Core
 
         $offerSubscription = $offerSubscription->build($input);
 
+        // Since Laravel required_only_if does not work
+        $validator = $offerSubscription->getValidator();
+
+        $validator->validateNoOfCycles();
+
         $this->repo->saveOrFail($offerSubscription);
 
         return $offerSubscription;

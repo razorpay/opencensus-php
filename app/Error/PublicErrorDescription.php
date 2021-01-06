@@ -1287,4 +1287,7 @@ class PublicErrorDescription
     const BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED                              = 'Company Search retries exhausted';
 
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
+
+    const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
+    const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';
 }

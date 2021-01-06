@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
@@ -43,9 +44,10 @@ class Core extends Base\Core
             {
                 return $this->repo->transaction(function() use ($input, $merchant)
                 {
-                    if (isset($input[Entity::PRODUCT_TYPE]) === true and $input[Entity::PRODUCT_TYPE] === 'subscription')
+                    if (isset($input[Entity::PRODUCT_TYPE]) === true and
+                        $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
                     {
-                        $subscriptionInput = array_pull($input, 'subscription');
+                        $subscriptionInput = array_pull($input, Order\ProductType::SUBSCRIPTION);
                     }
 
                     $this->verifyIdAndStripSignForLinkedOfferIds($input);
@@ -62,10 +64,11 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($offer);
 
-                    if (isset($input[Entity::PRODUCT_TYPE]) and $input[Entity::PRODUCT_TYPE] === 'subscription')
+                    if (isset($input[Entity::PRODUCT_TYPE]) and
+                        $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
                     {
                         // create entry in subscription_offers_master
-                        $this->addSubscriptionData($offer, $subscriptionInput);
+                        $this->addSubscriptionData($offer, $subscriptionInput ?? []);
                     }
 
                     $this->traceNonExistingIins($offer, $merchant);
@@ -491,14 +494,23 @@ class Core extends Base\Core
 
     }
 
-    private function addSubscriptionData(Entity $offer, array $subscriptionInput)
+    private function addSubscriptionData(Entity $offer, array $subscriptionInput = [])
     {
-        if ($this->isSubscriptionOffersEnabled() === true)
+        if ($this->isSubscriptionOffersEnabled() === false)
         {
-            $subscriptionInput[SubscriptionOffer\Entity::OFFER_ID] = $offer->getId();
-
-            (new SubscriptionOffer\Core())->create($subscriptionInput);
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED);
         }
+
+        if (empty($subscriptionInput) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT);
+        }
+
+        $subscriptionInput[SubscriptionOffer\Entity::OFFER_ID] = $offer->getId();
+
+        (new SubscriptionOffer\Core())->create($subscriptionInput);
     }
 
     /**
@@ -513,15 +525,16 @@ class Core extends Base\Core
             $this->mode
         );
 
+        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [
+            'merchant_id' => $this->merchant->getId(),
+            'enabled' => ($treatment === null or $treatment !== 'on') ? false : true,
+        ]);
+
         if (($treatment === null) or
             ($treatment !== 'on'))
         {
-            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => false ]);
-
             return false;
         }
-
-        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
 
         return true;
     }
