@@ -1857,6 +1857,7 @@ class Repository extends Base\Repository
                       ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
                       ->where(Entity::TYPE, E::COMMISSION)
                       ->where(Entity::SETTLED, 0)
+                      ->where(Entity::ON_HOLD, 1)
                       ->with('source')
                       ->orderBy(Entity::ID);
 

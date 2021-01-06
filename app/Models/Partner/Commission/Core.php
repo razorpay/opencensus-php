@@ -15,9 +15,10 @@ use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Channel;
-use RZP\Jobs\CommissionOnHoldClear;
+use RZP\Jobs\CommissionTdsSettlement;
 use RZP\Models\Partner\Commission\Tds;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Jobs\CommissionFinanceTriggeredOnHoldClear;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 
 class Core extends Base\Core
@@ -106,11 +107,12 @@ class Core extends Base\Core
 
             $data[Constants::INVOICE_ID] = $input[Constants::INVOICE_ID];
 
-            CommissionOnHoldClear::dispatch($this->mode, $partner->getId(), $data);
+            CommissionTdsSettlement::dispatch($this->mode, $partner->getId(), $data);
         }
         else
         {
-            CommissionOnHoldClear::dispatch($this->mode, $partner->getId(), $input);
+            // finance triggered payout.
+            CommissionFinanceTriggeredOnHoldClear::dispatch($this->mode, $partner->getId(), $input);
         }
 
         return [];
@@ -200,10 +202,8 @@ class Core extends Base\Core
         (new Adjustment\Core)->createAdjustment($input, $partner);
     }
 
-    public function setOnHoldFalse(Transaction\Entity $transaction): Transaction\Entity
+    public function setOnHoldFalse($transactionId): Transaction\Entity
     {
-        $transactionId = $transaction->getId();
-
         $result = $this->repo->transaction(function () use ($transactionId)
         {
             $txn = $this->repo->transaction->lockForUpdate($transactionId);
