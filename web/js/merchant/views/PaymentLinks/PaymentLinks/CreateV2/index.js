@@ -264,7 +264,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
           message: error,
         });
 
-        track.lj.form.fail({ error });
+        track.lj.form.fail({ response: error });
 
         this.setState({
           isFormLocked: false,
