@@ -25,6 +25,8 @@ class TraceCode
     // Request made to API has failed
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
 
+    const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
+
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
     const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';

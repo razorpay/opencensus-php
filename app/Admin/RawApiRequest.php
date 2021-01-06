@@ -373,9 +373,23 @@ class RawApiRequest
 
             $method = $this->input['method'];
 
+            $start_time = microtime(true);
+
             $response = $this->client
                              ->$method($this->path, $this->params)
                              ->json();
+
+            $end_time = microtime(true);
+
+            $time_taken = $end_time - $start_time;
+
+            // log if response time is more then 180 seconds
+            if ($time_taken > 180)
+            {
+                Trace::info(TraceCode::API_SLOW_RESPONSE_CALL, [
+                    'api_response_time' => $time_taken,
+                ]);
+            }
 
             return [null, $response];
         }
