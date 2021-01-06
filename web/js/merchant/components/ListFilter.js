@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils';
@@ -7,6 +7,18 @@ import { withRouter } from 'react-router-dom';
 @reduxForm({})
 @withRouter
 export default class ListFilter extends Component {
+  constructor(props) {
+    super(props);
+
+    const MAX_FILTERS = 9;
+    const hasMoreFilters = this.props.children.length >= MAX_FILTERS;
+
+    this.state = {
+      hasMoreFilters,
+      showAllFilters: !hasMoreFilters,
+    };
+  }
+
   // populate the search filters based on query params
   componentWillMount() {
     this.initSearchForm(this.props);
@@ -71,6 +83,11 @@ export default class ListFilter extends Component {
 
   render() {
     let { handleSubmit, onSubmit, form } = this.props;
+    const { hasMoreFilters, showAllFilters } = this.state;
+
+    const filters = this.props.children;
+    let visibleFilters = showAllFilters ? filters : filters.slice(0, 8);
+
     return (
       <form
         name={form}
@@ -79,8 +96,20 @@ export default class ListFilter extends Component {
           this.props.additionalClass ? this.props.additionalClass : ''
         }`}
       >
-        {this.props.children}
+        {visibleFilters}
+
         <div class="form-group list-filter-item btn-toolbar">
+          {hasMoreFilters && (
+            <button
+              class="btn btn-sm"
+              onClick={() => {
+                this.setState({ showAllFilters: !showAllFilters });
+              }}
+            >
+              {showAllFilters ? 'Hide Filters' : 'Show All Filters'}
+              <i class={'m-l i i-chevron-' + (showAllFilters ? 'up' : 'down')} />
+            </button>
+          )}
           <button class="btn btn-primary btn-sm" onClick={handleSubmit(this.handleOnSubmit)}>
             Search
           </button>

@@ -18,6 +18,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
+import DateRangePicker from 'common/ui/DateRangePicker';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
@@ -30,6 +31,12 @@ import { trackSearchFilterForInternational } from './ga';
 })
 @RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
 export default class PaymentLinksContainer extends ListContainer {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...this.state, date: { from: '', to: '' } };
+  }
+
   componentDidMount() {
     this.props.fetchReminders();
   }
@@ -110,6 +117,17 @@ export default class PaymentLinksContainer extends ListContainer {
     );
   };
 
+  onDatesChange = (from, to) => {
+    const date = {
+      from: from.unix(),
+      to: to.unix(),
+    };
+
+    this.setState({
+      date,
+    });
+  };
+
   render() {
     let { loading, paymentlinks, user, mode, tracking } = this.props;
     let status = this.state.status;
@@ -175,13 +193,14 @@ export default class PaymentLinksContainer extends ListContainer {
           form="InvoiceListFilter"
           type="link"
           count={this.state.count}
+          date={this.state.date}
           onSubmit={this.search}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           trackSearchFilterForInternational={trackSearchFilterForInternational}
           isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
-          extraFields={getExtraFields(user, this.props.tracking)}
+          extraFields={getExtraFields(user, this.props.tracking, this.onDatesChange)}
         />
 
         <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
@@ -229,10 +248,18 @@ const EmptyComponent = () => (
   />
 );
 
-const getExtraFields = (user, tracking) => {
+const dateRangePresets = [
+  ['Past 7 Days', -7, 'days'],
+  ['Past 30 Days', -30, 'days'],
+  ['Past 90 Days', -90, 'days'],
+];
+
+const getExtraFields = (user, tracking, onDatesChange) => {
+  const fields = [];
+
   if (user.isPaymentLinkCreationV2Enabled) {
-    return (
-      <div class="form-group list-filter-item">
+    fields.push(
+      <div key="upi_link" class="form-group list-filter-item">
         <label>Payment Link Type</label>
         <Field
           name="upi_link"
@@ -254,9 +281,16 @@ const getExtraFields = (user, tracking) => {
             UPI Payment Link
           </option>
         </Field>
-      </div>
+      </div>,
     );
   }
 
-  return;
+  fields.push(
+    <div key="duration" class="form-group datepicker-group">
+      <label>Duration</label>
+      <DateRangePicker presets={dateRangePresets} onDatesChange={onDatesChange} />
+    </div>,
+  );
+
+  return fields;
 };
