@@ -8,6 +8,8 @@ use RZP\Models\Batch\Status;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Batch\Helpers\BankTransfer as Helper;
 use RZP\Models\BankTransfer\Core as BankTransferCore;
+use RZP\Models\VirtualAccount\Provider as VirtualAccountProvider;
+use RZP\Models\BankTransferRequest\Core as BankTransferRequestCore;
 
 class BankTransfer extends Base
 {
@@ -29,7 +31,27 @@ class BankTransfer extends Base
 
         $provider = $entry[Header::PROVIDER];
 
-        $valid = $this->core->process($bankTransferInsertInput, $provider);
+        if (in_array($provider, VirtualAccountProvider::LIVE_PROVIDERS, true) === false)
+        {
+            $entry[Header::STATUS]            = Status::FAILURE;
+            $entry[Header::ERROR_DESCRIPTION] = 'Invalid entry';
+
+            return;
+        }
+
+        $bankTransferRequest = (new BankTransferRequestCore())->create($bankTransferInsertInput,
+                                                                       $provider,
+                                                                       $bankTransferInsertInput,
+                                                                       [
+                                                                           'source'       => 'file',
+                                                                           'request_from' => 'admin',
+                                                                       ]
+        );
+
+        if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null)
+        {
+            $valid = $this->core->processBankTransfer($bankTransferRequest);
+        }
 
         $entry[Header::STATUS] = $valid ? Status::SUCCESS : Status::FAILURE;
     }
