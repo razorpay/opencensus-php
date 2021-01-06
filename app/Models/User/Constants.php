@@ -186,12 +186,15 @@ class Constants
         "qa+rzp@razorpay.com",
         "hdbfinservices@gmail.com",
         "ramakishore.sankranthi@hdbfs.com",
-        "reshma.sultana@hdbfs.com"
+        "reshma.sultana@hdbfs.com",
+        "annapurna.pal+008@razorpay.com",
+        "annapurna.pal+007@razorpay.com"
     ];
 
     // Only in these environments we will verify the captcha repsonse with google
     const WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION = [
         Environment::PRODUCTION,
         Environment::AXIS,
+
     ];
 }
