@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
+use RZP\Services\MerchantRiskClient;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
@@ -68,6 +69,10 @@ class Core extends Base\Core
 
     protected $mutex;
 
+    private $mrclient;
+
+    private $mcore;
+
     public function __construct()
     {
         parent::__construct();
@@ -75,6 +80,10 @@ class Core extends Base\Core
         $this->kycServiceRetryDelayInSecond = (int) $this->app['config']['applications.kyc']['retry_delay'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->mrclient = new MerchantRiskClient();
+
+        $this->mcore = new Merchant\Core();
     }
 
     public function saveMerchantDetails(array $input,
@@ -3281,7 +3290,7 @@ class Core extends Base\Core
      * @return string
      * @throws Exception\BadRequestException
      */
-    private function getActivationFlow(Merchant\Entity $merchant, Entity $merchantDetails, $partner, bool $batchFlow)
+    public function getActivationFlow(Merchant\Entity $merchant, Entity $merchantDetails, $partner, bool $batchFlow)
     {
         $subcategory = $merchantDetails->getBusinessSubcategory();
 
@@ -3315,6 +3324,21 @@ class Core extends Base\Core
         if (empty($partner) === false)
         {
             return ActivationFlow::GREYLIST;
+        }
+
+        $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::DEDUPE_FUNCTIONALITY);
+
+        if ($isDedupeEnabled === true)
+        {
+            // here the activation flow is modified based on if the MRS marks the merchant as risky/impersonating
+            $riskFactor = $this->mrclient->getMerchantRiskFactor($merchant);
+
+            if (isset($riskFactor['impersonated']) === true and
+                $riskFactor['impersonated'] === true)
+            {
+                return ActivationFlow::GREYLIST;
+            }
         }
 
         return $activationFlow;
@@ -3489,5 +3513,15 @@ class Core extends Base\Core
                 $input[$field] = $stateCode;
             }
         }
+    }
+
+    public function setMerchantRiskClient($mrclient)
+    {
+        $this->mrclient = $mrclient;
+    }
+
+    public function setMerchantCoreForRazorx($mcore)
+    {
+        $this->mcore = $mcore;
     }
 }

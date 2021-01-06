@@ -182,6 +182,9 @@ final class RazorxTreatment
     // experiment to enable whatsapp notifications and also refactoring notifications;
     const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
 
+    // experiment to enable dedupe functionality
+    const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
+
     // experiment to enable whatsapp notifications for settlements
     const WHATSAPP_NOTIFICATIONS_SETTLEMENTS = 'whatsapp_notification_enablement';
 

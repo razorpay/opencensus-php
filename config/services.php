@@ -71,7 +71,7 @@ return [
         'username'              => env('DE_PERSONALISATION_KEY'),
         'password'              => env('DE_PERSONALISATION_SECRET'),
         'mock'                  => env('DE_PERSONALISATION_MOCK', true),
-        ],
+    ],
 
     // See razorpay/credcase.
     'credcase' => [
@@ -88,5 +88,15 @@ return [
         'user'         => env('BVS_USER'),
         'password'     => env('BVS_PASSWORD'),
         'client_id'    => env('BVS_CLIENT_ID', 'API')
+    ],
+
+    'merchants_risk' => [
+        // Api url for merchant risks service.
+        'url' => env('MERCHANT_RISKS_URL'),
+
+        'auth' => [
+            'key'       => env('MERCHANT_RISKS_CLIENT_KEY'),
+            'secret'    => env('MERCHANT_RISKS_CLIENT_SECRET')
+        ],
     ],
 ];

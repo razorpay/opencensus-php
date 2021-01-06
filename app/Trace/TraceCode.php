@@ -3670,6 +3670,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_WHATSAPP_MESSAGE_FAILED                       = 'STORK_WHATSAPP_MESSAGE_FAILED';
     const STORK_WHATSAPP_REQUEST                              = 'STORK_WHATSAPP_REQUEST';
 
+    const DOWNSTREAM_SERVICE_REQUEST                    = 'DOWNSTREAM_SERVICE_REQUEST';
+    const DOWNSTREAM_SERVICE_REQUEST_FAILED             = 'DOWNSTREAM_SERVICE_REQUEST_FAILED';
+    const DOWNSTREAM_SERVICE_RESPONSE                   = 'DOWNSTREAM_SERVICE_RESPONSE';
+
     // Self Serve enablement trace code
     const SELF_SERVE_ESCALATION_ATTEMPT         = 'SELF_SERVE_ESCALATION_ATTEMPT';
     const SELF_SERVE_CRON                       = 'SELF_SERVE_CRON';
