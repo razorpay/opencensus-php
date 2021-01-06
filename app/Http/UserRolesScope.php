@@ -228,6 +228,26 @@ class UserRolesScope
             'enable_merchant_notification_config'         => [Role::OWNER],
 
             'create_merchant_notification_config_admin'   => [Role::ADMIN],
+
+            'payment_page_images'                      => Role::WRITER_ROLES,
+            'payment_page_get'                         => Role::WRITER_ROLES,
+            'payment_page_get_details'                 => Role::WRITER_ROLES,
+            'payment_page_list'                        => Role::WRITER_ROLES,
+            'payment_page_create'                      => Role::WRITER_ROLES,
+            'payment_page_update'                      => Role::WRITER_ROLES,
+            'payment_page_notify'                      => Role::WRITER_ROLES,
+            'payment_page_deactivate'                  => Role::WRITER_ROLES,
+            'payment_page_activate'                    => Role::WRITER_ROLES,
+            'payment_page_slug_exists'                 => Role::WRITER_ROLES,
+            'payment_page_item_update'                 => Role::WRITER_ROLES,
+            'payment_page_items_migrate'               => Role::WRITER_ROLES,
+            'payment_page_items_migrate_min_purchase'  => Role::WRITER_ROLES,
+            'payment_page_set_merchant_details'        => Role::WRITER_ROLES,
+            'payment_page_fetch_merchant_details'      => Role::WRITER_ROLES,
+            'payment_page_set_receipt_details'         => Role::WRITER_ROLES,
+            'payment_page_get_invoice_details'         => Role::WRITER_ROLES,
+            'payment_page_send_receipt'                => Role::WRITER_ROLES,
+            'payment_page_save_receipt_for_payment'    => Role::WRITER_ROLES,
         ];
 
         /*
