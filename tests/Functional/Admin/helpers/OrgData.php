@@ -265,6 +265,21 @@ return [
         ],
     ],
 
+    'testGetOrgWithFeatureEnabled' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'sreeram12@gmail.com',
+                'permissions'          => [],
+                'workflow_permissions' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testGetOtherOrg' => [
         'request' => [
             'url' => '/orgs',

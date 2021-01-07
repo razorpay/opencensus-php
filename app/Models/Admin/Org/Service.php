@@ -94,7 +94,11 @@ class Service extends Base\Service
 
         $hostnames = $this->getArrayOfHostnames($org);
 
+        $enabledFeatures = $org->getEnabledFeatures();
+
         $org = $org->toArrayPublic();
+
+        $org['features'] = $enabledFeatures;
 
         $org['hostname'] = implode($hostnames, ', ');
 
@@ -105,7 +109,11 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findOrFailByHostname($hostname);
 
+        $enabledFeatures = $org->getEnabledFeatures();
+
         $org = $org->toArrayPublic();
+
+        $org['features'] = $enabledFeatures;
 
         // find a way to fix this
         $org['hostname'] = $hostname;

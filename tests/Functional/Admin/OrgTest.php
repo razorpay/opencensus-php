@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -187,10 +188,47 @@ class OrgTest extends TestCase
 
         $this->assertNotEmpty($result['hostname']);
 
+        $this->assertArrayHasKey('features', $result);
+
         $hostnames = $result['hostname'];
         $hostnames = explode(',', $result['hostname']);
 
         $this->assertEquals(2, count($hostnames));
+    }
+
+    public function testGetOrgWithFeatureEnabled()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::ORG_CUSTOM_BRANDING,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
+
+        $result = $this->startTest();
+
+        $this->assertNotEmpty($result['hostname']);
+
+        $this->assertNotEmpty($result['features']);
+
+        $hostnames = $result['hostname'];
+        $hostnames = explode(',', $result['hostname']);
+
+        $features = $result['features'];
+
+        $expectedFeatures = [Constants::ORG_CUSTOM_BRANDING,];
+
+        $this->assertEquals(2, count($hostnames));
+        $this->assertEquals($expectedFeatures, $features);
     }
 
     public function testGetOtherOrg()
