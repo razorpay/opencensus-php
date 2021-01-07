@@ -125,7 +125,13 @@ export default class GenerateReportPanel extends React.PureComponent {
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     let allConfigs = [...configs.items, ...customConfigs];
 
-    allConfigs = allConfigs.filter((config) => config.type !== 'payment_links'); // Filtering out payment pages
+    const skipConfigs = [];
+
+    allConfigs = allConfigs.filter((config) => {
+      const isInSkipConfigs = skipConfigs.indexOf(config.type) > -1;
+
+      return !isInSkipConfigs;
+    }); // Filtering out configs from skipConfigs
 
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
     const isFormDisabled = !selectedConfig;
