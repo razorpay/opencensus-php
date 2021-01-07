@@ -41,15 +41,18 @@ class Core
         return $entities;
     }
 
-    public function fetch(string $id): Entity
+    public function fetch(string $id, $withTrashed = false): Entity
     {
         $query = $this->repo->newP2pQuery();
 
         $query->getModel()->verifyIdAndSilentlyStripSign($id);
 
-        $entity = $query->findOrFailPublic($id);
+        if ($withTrashed === true)
+        {
+            return $query->withTrashed()->findOrFailPublic($id);
+        }
 
-        return $entity;
+        return $query->findOrFailPublic($id);
     }
 
     public function find(string $id, bool $signed = true): Entity

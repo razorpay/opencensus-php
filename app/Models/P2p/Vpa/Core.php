@@ -210,6 +210,8 @@ class Core extends Base\Core
 
     public function assignBankAccount(Entity $vpa, BankAccount\Entity $bankAccount): Entity
     {
+        $vpa->restore();
+
         $vpa->associateBankAccount($bankAccount);
 
         $vpa->setBeneficiaryName($bankAccount->getBeneficiaryName());

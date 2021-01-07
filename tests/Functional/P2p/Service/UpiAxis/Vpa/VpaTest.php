@@ -151,6 +151,27 @@ class VpaTest extends TestCase
         $this->assertNotNull($vpas[1]['bank_account']);
     }
 
+    public function testAssignBankAccountForDeletedVpa()
+    {
+        $helper = $this->getVpaHelper();
+
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
+
+        $helper->deleteVpa($vpa->getPublicId());
+
+        $bankAccount = $this->fixtures->createBankAccount([
+            'gateway_data' => [
+                'referenceId' => 'SomeReferenceId'
+            ]
+        ]);
+
+        $vpa = $helper->assignBankAccount($vpa->getPublicId(), $bankAccount->getPublicId());
+
+        $this->assertNull($vpa['deleted_at']);
+    }
+
     public function testInitiateVpaAvailability()
     {
         $helper = $this->getVpaHelper();

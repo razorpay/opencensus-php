@@ -104,7 +104,7 @@ class Processor extends Base\Processor
 
         // Since we have same handle in context, we can assure that both
         // the vpa and bank account belongs to same handle
-        $vpa         = $this->core->fetch($this->input->get(Entity::ID));
+        $vpa         = $this->core->fetch($this->input->get(Entity::ID), true);
         $bankAccount = (new BankAccount\Core)->fetch($this->input->get(Entity::BANK_ACCOUNT_ID));
 
         $this->gatewayInput->put(Entity::VPA, $vpa);
@@ -119,7 +119,7 @@ class Processor extends Base\Processor
 
         // Since we have same handle in context, we can assure that both
         // the vpa and bank account belongs to same handle
-        $vpa         = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID]);
+        $vpa         = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID], true);
         $bankAccount = (new BankAccount\Core)->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
 
         $this->core->assignBankAccount($vpa, $bankAccount);
