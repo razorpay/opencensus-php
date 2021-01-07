@@ -473,7 +473,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'Beneficiary\'s Bank Account number' => '1111111111111',
             'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
             'User Number' => 'shared_utility_cod',
-            'Transaction Reference' => 'CTTATAAIAA' . $response['razorpay_payment_id'],
+            'Transaction Reference' => 'TESTMERCHA' . $response['razorpay_payment_id'],
             'Product Type' => '10',
             'UMRN' => 'UTIB6000000005844847'
         ];

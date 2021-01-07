@@ -36,7 +36,6 @@ class PaperNachCiti extends Debit\Base
     const SUMMARY_FILE_NAME = 'citi/nach/RAZORP_SUMMARY_{$utilityCode}_{$date}';
     const SUMMARY_EXTENSION = FileStore\Format::XLS;
     const STEP              = 'debit';
-    const REFERENCE_PREFIX  = 'CTTATAAIAA';
     const GATEWAY           = Payment\Gateway::NACH_CITI;
     const USER_NAME         = 'CTRAZORPAY';
     const FILE_METADATA     = [
@@ -376,7 +375,11 @@ class PaperNachCiti extends Debit\Base
         $size = FieldsLength::USER_NUMBER;
         $utilityCode = $this->getPaddedValue($utilityCode, $size, ' ', STR_PAD_RIGHT);
 
-        $transactionReference = implode("", [self::REFERENCE_PREFIX, $paymentId]);
+        $label = $token->merchant->getFilteredDba();
+        $label = preg_replace('/\s+/', '', $label);
+        $merchantName = $this->getPaddedValue($label, 10, 'X', STR_PAD_RIGHT);
+        $merchantName = strtoupper($merchantName);
+        $transactionReference = implode("", [$merchantName, $paymentId]);
         $size = FieldsLength::TRANSACTION_REFERENCE;
         $transactionReference = $this->getPaddedValue($transactionReference, $size,
                                                  ' ', STR_PAD_RIGHT);
