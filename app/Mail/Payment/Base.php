@@ -79,6 +79,11 @@ class Base extends Mailable
 
         $subject = "$action successful for $label";
 
+        if (isset($this->data['rewards']) === true)
+        {
+            $subject = "Your payment for $label is successful. Here’s your checkout reward 🎁";
+        }
+
         if ($this->isMerchantEmail === true)
         {
             $subject = "Razorpay | $subject";

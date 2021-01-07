@@ -144,6 +144,8 @@ class Mailable extends BaseMailable
 
                 $rewardEventProperties['merchant_id'] = $this->data['merchant']['id'];
 
+                $rewardEventProperties['payment_id'] = $this->data['payment']['id'];
+
                 foreach ($rewards as $reward)
                 {
                     $rewardEventProperties['reward_ids'][] = $reward['id'];
