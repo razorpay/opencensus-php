@@ -13,4 +13,7 @@ class Constants
     const MERCHANT_ID_NOT_FOUND = '920';
 
     const SUCCESS               = '000';
+
+    // undefined as checksum in response (in case of cancelled by user)
+    const UNDEFINED             = 'undefined';
 }

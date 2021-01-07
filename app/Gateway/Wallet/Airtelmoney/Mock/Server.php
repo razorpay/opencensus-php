@@ -59,11 +59,15 @@ class Server extends Base\Mock\Server
                 Constants::TIME_FORMAT),
         ];
 
-        $this->content($hashContent);
+        $this->content($hashContent, 'callback');
 
         $content = array_merge($content, $hashContent);
 
         $content[AuthFields::HASH] = $this->generateHash($content, 'response');
+
+        $this->content($hashContent, 'hash');
+
+        $content = array_merge($content, $hashContent);
 
         $params = http_build_query($content);
 

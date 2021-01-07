@@ -49,7 +49,10 @@ class AirtelmoneyGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            $content['TRAN_AMT'] = '1.00';
+            if($action === 'callback')
+            {
+                $content['TRAN_AMT'] = '1.00';
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -335,4 +338,71 @@ class AirtelmoneyGatewayTest extends TestCase
         });
     }
 
+    public function testUndefinedHashFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = ((float) TestAmount::FAIL_PAYMENT_AMOUNT) * 100;
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if($action === 'hash')
+            {
+                $content['STATUS'] = 'FAL';
+                $content['CODE']   = '900';
+                $content['HASH']   = 'undefined';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testEmptyHashFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = ((float) TestAmount::FAIL_PAYMENT_AMOUNT) * 100;
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if($action === 'hash')
+            {
+                $content['STATUS'] = 'FAL';
+                $content['CODE']   = '900';
+                $content['HASH']   = '';
+            }
+        });
+
+        $data = $this->testData['testUndefinedHashFailedPayment'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testUndefinedHashSuccessPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if($action === 'hash')
+            {
+                $content['HASH'] = 'undefined';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
 }

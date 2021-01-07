@@ -182,6 +182,8 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException(Constants::ACTION_ERROR);
         }
 
+        $this->checkIfHashEmptyOrUndefined($actual, $content);
+
         $generated = $this->generateHash($content);
 
         $this->compareHashes($actual, $generated);
@@ -763,5 +765,16 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    public function checkIfHashEmptyOrUndefined($actual, $content)
+    {
+        if (($actual === Constants::UNDEFINED) or (empty($actual) === true))
+        {
+            //When the user cancels the transaction ,the hash is provided as undefined from the bank.
+            $this->checkActionStatus($content);
+            // Checks if the bank sends hash as undefined for a successful payment
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+        }
     }
 }
