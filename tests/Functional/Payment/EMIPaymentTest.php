@@ -25,8 +25,6 @@ class EMIPaymentTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/EMIPaymentTestData.php';
-
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -435,11 +433,10 @@ class EMIPaymentTest extends TestCase
         $this->payment['emi_duration'] = 9;
         $this->payment['card']['number'] = '4000400000000004';
 
-        $testData = $this->testData[__FUNCTION__];
+        $this->changeEnvToNonTest();
+        $content = $this->doAuthPayment($this->payment);
 
-        $this->runRequestResponseFlow( $testData, function ()
-        {
-            $this->doAuthPayment($this->payment);
-        });
+        $this->assertEquals($content['error']['http_status_code'], 400);
+        $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD');
     }
 }
