@@ -370,7 +370,7 @@ class TransactionFailureTest extends TestCase
         {
             $this->assertArraySubset([
                 'code'          => 'BAD_REQUEST_ERROR',
-                'description'   => 'Payer/Payee can not belong to same device'
+                'description'   => 'Payer and Payee bank account should not be same'
             ], $error);
         });
 
@@ -392,7 +392,7 @@ class TransactionFailureTest extends TestCase
         {
             $this->assertArraySubset([
                 'code'          => 'BAD_REQUEST_ERROR',
-                'description'   => 'Payer/Payee can not belong to same device'
+                'description'   => 'Payer and Payee bank account should not be same'
             ], $error);
         });
 

@@ -401,11 +401,6 @@ class Processor extends Base\Processor
 
         (new Rules($transaction))->validate();
 
-        if ($transaction->payer->getDeviceId() === $transaction->payee->getDeviceId())
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_PAYER_PAYEE_SAME);
-        }
-
         $upi = $this->core->buildUpi($transaction, $action, $upiInput->toArray());
 
         $lock = $upi->getAction() . $upi->getNetworkTransactionId();

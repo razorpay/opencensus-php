@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
+use RZP\Models\P2p\Vpa;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Rules
@@ -103,6 +104,25 @@ class Rules
 
         ],
 
+        'payer_payee_check' => [
+            'function' => 'payer_payee_check_applicable',
+            'values'   => [
+                0 => true,
+                1 => [
+                    'function' => 'is_payer_payee_not_same',
+                    'values' => [
+                        0 => 'Payer and Payee should not be same',
+                        1 => [
+                            'function' => 'is_payer_payee_bank_account_not_same',
+                            'values' => [
+                                0 => 'Payer and Payee bank account should not be same',
+                                1 => true
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
     ];
 
     /**
@@ -298,5 +318,24 @@ class Rules
     public function getRules()
     {
         return $this->rules;
+    }
+
+    protected function payerPayeeCheckApplicable(): bool
+    {
+        return (
+            ($this->transaction->payer->getDeviceId() === $this->transaction->payee->getDeviceId()) and
+            ($this->transaction->getPayerType() === Vpa\Entity::VPA) and
+            ($this->transaction->getPayerType() === $this->transaction->getPayeeType())
+        );
+    }
+
+    protected function isPayerPayeeNotSame(): bool
+    {
+        return $this->transaction->payer->getId() !== $this->transaction->payee->getId();
+    }
+
+    protected function isPayerPayeeBankAccountNotSame(): bool
+    {
+        return $this->transaction->payer->getBankAccountId() !== $this->transaction->payee->getBankAccountId();
     }
 }
