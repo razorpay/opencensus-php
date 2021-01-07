@@ -1340,7 +1340,9 @@ EOT;
         ];
         $response = $this->makeRequestParent($request);
 
-        $response->assertRedirect('https://api-dark.razorpay.com/v1/callback/recurring/upi_icici');
+        $queryParams = $this->getMockServer()->getQueryParams($upiEntity, $payment->toArray());
+
+        $response->assertRedirect('https://api-dark.razorpay.com/v1/callback/upi_icici?' . $queryParams);
 
         $this->assertTrue($payment->refresh()->isCreated());
 

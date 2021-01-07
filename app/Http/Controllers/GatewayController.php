@@ -394,6 +394,23 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_ICICI:
+                $content = Request::getContent();
+
+                if (empty($content) === false)
+                {
+                    $input = $content;
+                }
+                else
+                {
+                    // This condition is applicable when we receive a GET method callback with data
+                    // as query params. One use case in when API redirects request to dark.
+                    // $input contains query params data in array form, converting to json string.
+                    $input = json_encode($input);
+                }
+
+                $data = $this->processServerCallback($input, $gateway);
+
+                break;
             case Gateway::UPI_AIRTEL:
                 $input = Request::getContent();
 

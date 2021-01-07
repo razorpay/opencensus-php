@@ -383,21 +383,7 @@ class Server extends Base\Mock\Server
         $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at']);
         $completeDate = $initDate->copy()->addMinutes(1);
 
-        $response = [
-            'merchantId'        => $upiEntity['gateway_merchant_id'],
-            'subMerchantId'     => '1234',
-            'terminalId'        => '1234',
-            'BankRRN'           => $upiEntity['gateway_payment_id'] ?? '12345678987654321',
-            'merchantTranId'    => $upiEntity['payment_id'],
-            'PayerName'         => 'payer name not available',
-            'PayerMobile'       => $payment['contact'],
-            'PayerVA'           => $upiEntity['vpa'],
-            'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
-            'TxnStatus'         => 'SUCCESS',
-            'TxnInitDate'       => $initDate->format('Ymdhis'),
-            'TxnCompletionDate' => $completeDate->format('Ymdhis'),
-            'originalBankRRN'   => $payment['status'] === 'created' ? null : '12345678987654321',
-        ];
+        $response = $this->getCallbackContentArray($upiEntity,$payment);
 
         $this->content($response);
 
@@ -443,5 +429,39 @@ class Server extends Base\Mock\Server
         $response["data"] = $response;
 
         return $response;
+    }
+
+    protected function getCallbackContentArray(array $upiEntity, array $payment): array
+    {
+        // Format is 20160830152240
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at']);
+        $completeDate = $initDate->copy()->addMinutes(1);
+
+        $content = [
+            'merchantId'        => $upiEntity['gateway_merchant_id'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'BankRRN'           => $upiEntity['gateway_payment_id'] ?? '12345678987654321',
+            'merchantTranId'    => $upiEntity['payment_id'],
+            'PayerName'         => 'payer name not available',
+            'PayerMobile'       => $payment['contact'],
+            'PayerVA'           => $upiEntity['vpa'],
+            'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
+            'TxnStatus'         => 'SUCCESS',
+            'TxnInitDate'       => $initDate->format('Ymdhis'),
+            'TxnCompletionDate' => $completeDate->format('Ymdhis'),
+            'originalBankRRN'   => $payment['status'] === 'created' ? null : '12345678987654321',
+        ];
+
+        return $content;
+    }
+
+    public function getQueryParams(array $upiEntity, array $payment): string
+    {
+        $content = $this->getCallbackContentArray($upiEntity,$payment);
+
+        $queryParams = http_build_query($content);
+
+        return $queryParams;
     }
 }

@@ -44,9 +44,13 @@ trait RecurringTrait
             // Only if we are not on dark, we need to redirect
             if ($this->isRunningOnDark() === false)
             {
-                $uri = $this->app['request']->getRequestUri();
+                $uri = route('gateway_payment_callback_get', ["gateway" => $this->gateway],false);
 
                 $url = 'https://api-dark.razorpay.com' . $uri;
+
+                $queryParams = http_build_query($response);
+
+                $url = $url . "?" .$queryParams;
 
                 $this->trace->info(TraceCode::MISC_TRACE_CODE, [
                     'message'       => 'callback redirected',
