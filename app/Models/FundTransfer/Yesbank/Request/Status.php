@@ -348,6 +348,12 @@ class Status extends Base
             return $this->generateSyncMockFailureResponseForBeneficiaryNotAccepted();
         }
 
+        if (($this->entity->source instanceof Entity) and
+            ($this->entity->source->getReceipt() === 'failed_resp_beneficiary_details_invalid'))
+        {
+            return $this->generateSyncMockFailureResponseForBeneficiaryDetailsInvalid();
+        }
+
         if ($failure === 'merchant_error')
         {
             return $this->generateMerchantFailureResponse();
@@ -385,6 +391,31 @@ class Status extends Base
                 Constants::TRANSACTION_STATUS     => [
                     Constants::STATUS_CODE              => ValidStatus::FAILED,
                     Constants::SUB_STATUS_CODE          => 'ns:E402',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
+                ],
+            ],
+        ]);
+    }
+
+
+    protected function generateSyncMockFailureResponseForBeneficiaryDetailsInvalid(): string
+    {
+        $source = $this->entity->source;
+
+        $amount = ($source->getAmount() / 100);
+
+        return json_encode([
+            $this->responseIdentifier => [
+                Constants::VERSION                => '2.0',
+                Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
+                Constants::TRANSFER_AMOUNT        => $amount,
+                Constants::TRANSFER_CURRENCY_CODE => Constants::DEFAULT_CURRENCY,
+                Constants::TRANSACTION_STATUS     => [
+                    Constants::STATUS_CODE              => ValidStatus::INVALID_BENEFICIARY_DETAILS,
+                    Constants::SUB_STATUS_CODE          => 'npci:E200',
                     Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
                     Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
                 ],

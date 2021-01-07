@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Monolog\Logger;
 use RZP\Error\ErrorCode;
+use RZP\Models\FundAccount\Validation\ErrorCodesMapping;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\FundTransfer\Attempt;
@@ -368,7 +369,11 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaFailed(array $input)
     {
-        if ($input['internal_error'] === false)
+        //for fav we are now not relying on is_internal_error field sent by fts..
+        //we will have the mapping at fav side and will mark according the bank status codes
+        if ((array_key_exists('bank_status_code', $input)) and
+            ($input['bank_status_code'] != null) and
+            ($this->isStatusCodeInCompletedStateMap($input['bank_status_code'])))
         {
             $this->markValidationAsCompleted(AccountStatus::INVALID, $input[Validation::UTR]);
 
@@ -385,6 +390,18 @@ class BankAccount extends Base
         $this->markValidationAsFailed();
 
         (new Reversal\Core)->reverseForFundAccountValidation($this->validation);
+    }
+
+    protected function isStatusCodeInCompletedStateMap($bankStatusCode)
+    {
+        //ErrorCodesMapping file has all the bank status codes which are non internal errors
+        //so fav for all such error codes can be marked as completed
+        if (in_array($bankStatusCode, ErrorCodesMapping::BANK_STATUS_CODE_MAP_FOR_COMPLETED_STATE, true) === true)
+        {
+            return true;
+        }
+        return false;
+
     }
 
     public function validateFundAccountBeforeCreating()

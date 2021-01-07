@@ -217,7 +217,7 @@ class FundAccountValidationTest extends TestCase
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
-        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response';
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_resp_beneficiary_details_invalid';
 
         $response = $this->startTest();
 
@@ -391,7 +391,7 @@ class FundAccountValidationTest extends TestCase
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
-        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_beneficiary_not_accepted';
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_resp_beneficiary_details_invalid';
 
         $response = $this->startTest();
 
@@ -400,6 +400,29 @@ class FundAccountValidationTest extends TestCase
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('invalid', $fav['results']['account_status']);
+
+        // Retry At will be calculated and set because
+        // beneficiary not accepted is not an internal error
+        // and there is not need to retry.
+        $this->assertNull($fav['retry_at']);
+    }
+
+    public function testFundAccValidationWhenFailedDuringReconWithInternalError()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $response = $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('failed', $fav['status']);
+        $this->assertEquals(null, $fav['results']['account_status']);
 
         // Retry At will be calculated and set because
         // beneficiary not accepted is not an internal error

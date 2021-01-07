@@ -44,15 +44,17 @@ abstract class Base extends ApiProcessor
 
     protected $isRequestFailure = false;
 
-    const FAILED_RESPONSE                           = 'failed_response';
-    const FAILED_RESPONSE_INSUFFICIENT_FUNDS        = 'failed_response_insufficient_funds';
-    const FAILED_RESPONSE_BENEFICIARY_NOT_ACCEPTED  = 'failed_response_beneficiary_not_accepted';
+    const FAILED_RESPONSE                              = 'failed_response';
+    const FAILED_RESPONSE_INSUFFICIENT_FUNDS           = 'failed_response_insufficient_funds';
+    const FAILED_RESPONSE_BENEFICIARY_NOT_ACCEPTED     = 'failed_response_beneficiary_not_accepted';
+    const FAILED_RESP_BENEFICIARY_DETAILS_INVALID      = 'failed_resp_beneficiary_details_invalid';
 
     const MOCK_FAILURE_RESPONSE_TYPE =
         [
             self::FAILED_RESPONSE,
             self::FAILED_RESPONSE_INSUFFICIENT_FUNDS,
             self::FAILED_RESPONSE_BENEFICIARY_NOT_ACCEPTED,
+            self::FAILED_RESP_BENEFICIARY_DETAILS_INVALID
         ];
 
     public function __construct(string $type = null)
