@@ -1,4 +1,6 @@
-FROM razorpay/onggi:php-7.2-api as php-builder
+ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api
+
+FROM $ONGGI_IMAGE as php-builder
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN

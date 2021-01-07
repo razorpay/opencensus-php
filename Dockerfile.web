@@ -1,13 +1,16 @@
-FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
+ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-web
+ARG ARMORY_IMAGE=razorpay/armory:wkhtmltopdf-v182
+ARG OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
 
-FROM razorpay/opencensus-php:v2020.10.28 as opencensus-ext
+FROM $ARMORY_IMAGE as wkhtmltopdf
 
-FROM razorpay/onggi:php-7.2-api-web
+FROM $OPENCENSUS_IMAGE as opencensus-ext
+
+FROM $ONGGI_IMAGE
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ARG GIT_USERNAME
-
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 
 WORKDIR /app

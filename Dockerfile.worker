@@ -1,6 +1,9 @@
-FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
+ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-worker
+ARG ARMORY_IMAGE=razorpay/armory:wkhtmltopdf-v182
 
-FROM razorpay/onggi:php-7.2-api-worker
+FROM $ARMORY_IMAGE as wkhtmltopdf
+
+FROM $ONGGI_IMAGE
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN

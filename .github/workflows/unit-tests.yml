@@ -19,6 +19,12 @@ jobs:
   validate_php_syntax:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Validate PHP Syntax
     steps:
@@ -26,24 +32,116 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: validate_php_syntax
-      id: validate_php_syntax
-      uses: docker://php:7.2-cli-alpine
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/validate_php_syntax.sh
+      run: ci-assets/validate_php_syntax.sh
   build-web:
     runs-on: [self-hosted]
     needs: [cancel]
     continue-on-error: false
-    name: Build Web
+    name: Build Web Harbor
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: ${{ github.sha }}
+          dockerfile: Dockerfile.web
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182,OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
+  build-worker:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Worker Harbor
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: worker-${{ github.sha }}
+          dockerfile: Dockerfile.worker
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-worker,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+  build-checkout:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build Checkout Harbor
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: checkout-${{ github.sha }}
+          dockerfile: Dockerfile.checkout
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+  build-openresty:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build Openresty Harbor
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: openresty-${{ github.sha }}
+          dockerfile: Dockerfile.openresty
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api
+  build-dockerhub-web:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Web Dockerhub
     steps:
       - name: checkout
         id: checkout
@@ -57,11 +155,11 @@ jobs:
           tags: ${{ github.sha }}
           dockerfile: Dockerfile.web
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
-  build-worker:
+  build-dockerhub-worker:
     runs-on: [ self-hosted ]
     needs: [ cancel ]
     continue-on-error: false
-    name: Build Worker
+    name: Build Worker Dockerhub
     steps:
       - name: checkout
         id: checkout
@@ -75,11 +173,11 @@ jobs:
           tags: worker-${{ github.sha }}
           dockerfile: Dockerfile.worker
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
-  build-checkout:
-    runs-on: [self-hosted]
-    needs: [cancel]
+  build-dockerhub-checkout:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
     continue-on-error: false
-    name: Build Checkout
+    name: Build Checkout Dockerhub
     steps:
       - name: checkout
         id: checkout
@@ -93,11 +191,11 @@ jobs:
           tags: checkout-${{ github.sha }}
           dockerfile: Dockerfile.checkout
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
-  build-openresty:
-    runs-on: [self-hosted]
-    needs: [cancel]
+  build-dockerhub-openresty:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
     continue-on-error: false
-    name: Build Openresty
+    name: Build Openresty Dockerhub
     steps:
       - name: checkout
         id: checkout
@@ -114,6 +212,12 @@ jobs:
   application_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Application Test Suite
     steps:
@@ -123,19 +227,11 @@ jobs:
       env:
         ACTIONS_STEP_DEBUG: true
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: application_test_suite
-      id: application_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/application_test_suite.sh
+      run: ci-assets/application_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -168,6 +264,12 @@ jobs:
   features_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Features-1 Test Suite
     steps:
@@ -175,19 +277,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: features_test_suite
-      id: features_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/features_test_suite.sh
+      run: ci-assets/features_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -220,6 +314,12 @@ jobs:
   features_2_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Features-2 Test Suite
     steps:
@@ -227,19 +327,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: features_2_test_suite
-      id: features_2_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/features_2_test_suite.sh
+      run: ci-assets/features_2_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -272,6 +364,12 @@ jobs:
   features_3_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Features-3 Test Suite
     steps:
@@ -279,19 +377,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: features_3_test_suite
-      id: features_3_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/features_3_test_suite.sh
+      run: ci-assets/features_3_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -324,6 +414,12 @@ jobs:
   features_4_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Features-4 Test Suite
     steps:
@@ -331,19 +427,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: features_4_test_suite
-      id: features_4_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/features_4_test_suite.sh
+      run: ci-assets/features_4_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -376,6 +464,12 @@ jobs:
   features_6_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Features-6 Test Suite
     steps:
@@ -383,19 +477,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: features_6_test_suite
-      id: features_6_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/features_6_test_suite.sh
+      run: ci-assets/features_6_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -433,6 +519,12 @@ jobs:
   gateway_1_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Gateway-1 Test Suite
     steps:
@@ -440,19 +532,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: gateway_1_test_suite
-      id: gateway_1_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/gateway_1_test_suite.sh
+      run: ci-assets/gateway_1_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -488,6 +572,12 @@ jobs:
   gateway_2_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Gateway-2 Test Suite
     steps:
@@ -495,19 +585,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: gateway_2_test_suite
-      id: gateway_2_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/gateway_2_test_suite.sh
+      run: ci-assets/gateway_2_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -543,6 +625,12 @@ jobs:
   gateway_3_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Gateway-3 Test Suite
     steps:
@@ -550,19 +638,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: gateway_3_test_suite
-      id: gateway_3_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/gateway_3_test_suite.sh
+      run: ci-assets/gateway_3_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -598,6 +678,12 @@ jobs:
   payment_test_suite:
     runs-on: [self-hosted]
     needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
     continue-on-error: false
     name: Payment Test Suite
     steps:
@@ -605,19 +691,11 @@ jobs:
       id: checkout
       uses: actions/checkout@v2
     - name: prepare_test
-      id: prepare_test
-      uses: docker://razorpay/onggi:php-7.2-api-web
+      run: ci-assets/prepare_test.sh
       env:
         GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/prepare_test.sh
     - name: payment_test_suite
-      id: payment_test_suite
-      uses: docker://razorpay/onggi:php-7.2-api-web
-      with:
-        entrypoint: /bin/sh
-        args: ci-assets/payment_test_suite.sh
+      run: ci-assets/payment_test_suite.sh
       env:
         DB_LIVE_HOST: mysql
         DB_TEST_HOST: mysql
@@ -669,7 +747,11 @@ jobs:
       build-web,
       build-worker,
       build-checkout,
-      build-openresty
+      build-openresty,
+      build-dockerhub-web,
+      build-dockerhub-worker,
+      build-dockerhub-checkout,
+      build-dockerhub-openresty
       ]
     if: always()
     steps:
