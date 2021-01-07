@@ -98,6 +98,7 @@ export default class InvoiceDetail extends Component {
       plan,
       nextChargeAt,
       onManualAttempt,
+      isSubscriptionOffersEnabled,
     } = this.props;
 
     let invoiceContent;
@@ -249,6 +250,19 @@ export default class InvoiceDetail extends Component {
                 />
 
                 {this.getAddOnList()}
+
+                {isSubscriptionOffersEnabled && (
+                  <EntityDetailRow
+                    label="Offer Discount"
+                    value={() =>
+                      invoice.offer_amount ? (
+                        <Amount currency={invoice.currency} value={invoice.offer_amount} />
+                      ) : (
+                        '--'
+                      )
+                    }
+                  />
+                )}
 
                 <EntityDetailRow
                   label="Total Amount"

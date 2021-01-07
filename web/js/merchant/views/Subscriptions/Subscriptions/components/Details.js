@@ -31,7 +31,7 @@ export default (props) => {
   const {
     mode,
     plan,
-    selectedOffer,
+    selectedOffer = {},
     customer,
     invoices,
     goToLink,
@@ -48,6 +48,7 @@ export default (props) => {
     cancelUpdateSubscription,
     onClickPauseAndResume,
     isSubscriptionOffersEnabled,
+    removeOffer,
   } = props;
 
   let showTestChargeBtn =
@@ -87,6 +88,9 @@ export default (props) => {
   const showPauseAndResumeBtn =
     ['active', 'paused'].indexOf(subscription.status) !== -1 &&
     props.isSubscriptionPauseAndResumeEnabled;
+
+  const showOfferCancelBtn =
+    ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
 
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
@@ -181,10 +185,23 @@ export default (props) => {
                   {/* TODO: Add offers full details */}
                   {subscription.offer_id ? (
                     <>
-                      <Link to={`/offers/${subscription.offer_id}`}>{subscription.offer_id}</Link>
-                      <div class="label--primary">{selectedOffer.name}</div>
-                      <div class="label--secondary">{selectedOffer.display_text}</div>
-                      <div class="label--secondary">{selectedOffer.terms}</div>
+                      {showOfferCancelBtn && (
+                        <div>
+                          <Link to={`/offers/${subscription.offer_id}`}>
+                            {subscription.offer_id}
+                          </Link>{' '}
+                          <button class="m-l btn btn-default btn-xs" onClick={removeOffer}>
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                      <div class="label--primary">{selectedOffer ? selectedOffer.name : ''}</div>
+                      {subscription.offer && (
+                        <div class="label--secondary">
+                          Redeemed on {subscription.offer.applied_count}/
+                          {subscription.offer.cycle_count} cycles(s)
+                        </div>
+                      )}
                     </>
                   ) : (
                     '--'

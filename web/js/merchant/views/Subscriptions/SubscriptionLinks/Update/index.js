@@ -357,7 +357,7 @@ export default class UpdateSubscription extends React.Component {
     this.setState({
       fields: {
         ...this.state.fields,
-        offer_id: option.id,
+        offer_id: option.id || null,
       },
     });
   };

@@ -117,6 +117,18 @@ export const updateSubscription = (params) => {
   };
 };
 
+export const removeOffersOnSubscription = (id, offer_id) => {
+  const subscription = new Subscription({
+    id,
+    offer_id,
+  });
+
+  return {
+    type: SUBSCRIPTION_UPDATE,
+    payload: subscription.removeOffer(),
+  };
+};
+
 export const cancelUpdateSubscription = (id) => {
   const subscription = new Subscription({ id });
 

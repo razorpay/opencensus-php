@@ -28,6 +28,7 @@ import {
   pauseAndResumeSubscription,
 } from 'merchant/reducers/subscriptions';
 import { fetchOffer } from 'merchant/reducers/offers/offerDetails';
+import { removeOffersOnSubscription } from 'merchant/reducers/subscriptions';
 
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
@@ -72,6 +73,7 @@ const scheduledChangesInitValue = {
     fetchInvoices,
     fetchCustomer,
     showNotification,
+    removeOffersOnSubscription,
     pauseAndResumeSubscription,
   },
 )
@@ -705,6 +707,39 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   resetScheduledChanges = () => this.setState({ scheduledChanges: scheduledChangesInitValue });
 
+  removeOffer = () => {
+    return this.context.confirm({
+      header: 'Remove Offer!',
+      message: (
+        <div>
+          This offer is still being used to discount upcoming payment(s) of this subscription.
+          <br />
+          <br />
+          Are you sure you want to remove this offer?
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Remove',
+      affirmativePendingLabel: 'Removing...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return this.props
+          .removeOffersOnSubscription(this.props.id, this.props.entity.offer_id)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Offer is removed for this subscription successfully',
+            });
+          })
+          .catch((err) => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          });
+      },
+    });
+  };
+
   render() {
     let {
       user,
@@ -854,6 +889,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           }}
           statusMsg={makeErrorStatus(invoiceErrors)}
           curInvoiceIndex={this.state.curInvoiceIndex}
+          isSubscriptionOffersEnabled={user.isSubscriptionOffersEnabled}
         />
       );
     }
@@ -900,6 +936,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           onClickPauseAndResume={this.onClickPauseAndResume}
           isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
           isSubscriptionOffersEnabled={user.isSubscriptionOffersEnabled}
+          removeOffer={this.removeOffer}
         />
 
         {invoice_id && invoiceSecView}

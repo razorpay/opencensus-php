@@ -26,7 +26,7 @@ export default class InvoiceLineItemTable extends Component {
    * Removes an item from the Invoice.
    * @param {Number} index
    */
-  onRemove = index => {
+  onRemove = (index) => {
     const { fields } = this.props;
     fields.remove(index);
     if (fields.length === 1) {
@@ -117,15 +117,27 @@ export default class InvoiceLineItemTable extends Component {
                             <td />
                             <td class="text-right">Total Tax</td>
                             <td class="text-right" width="30%">
-                              <Amount
-                                value={invoiceTotal.tax * 100}
-                                currency={invoice.currency}
-                              />
+                              <Amount value={invoiceTotal.tax * 100} currency={invoice.currency} />
                             </td>
                           </tr>
                         )}
                       </Fragment>
                     )}
+
+                    {invoice.offer_amount && (
+                      <tr class="total">
+                        <td />
+                        <td class="text-right">
+                          <b>Offer Discount</b>
+                        </td>
+                        <td class="text-right" width="30%">
+                          <b>
+                            - <Amount value={invoice.offer_amount} currency={invoiceCurrency} />
+                          </b>
+                        </td>
+                      </tr>
+                    )}
+
                     <tr class="total">
                       <td />
                       <td class="text-right">
@@ -133,25 +145,21 @@ export default class InvoiceLineItemTable extends Component {
                       </td>
                       <td class="text-right" width="30%">
                         <b>
-                          <Amount
-                            value={invoiceTotal.total * 100}
-                            currency={invoiceCurrency}
-                          />
+                          <Amount value={invoiceTotal.total * 100} currency={invoiceCurrency} />
                         </b>
                       </td>
                     </tr>
-                    {!invoice.subscription_id &&
-                      invoiceCurrency === 'INR' && (
-                        <tr class="total amount-words">
-                          <td colSpan="3" class="text-right">
-                            <AmountInWords
-                              amount={invoiceTotal.total}
-                              prefix="(In Words)"
-                              suffix="/-"
-                            />
-                          </td>
-                        </tr>
-                      )}
+                    {!invoice.subscription_id && invoiceCurrency === 'INR' && (
+                      <tr class="total amount-words">
+                        <td colSpan="3" class="text-right">
+                          <AmountInWords
+                            amount={invoiceTotal.total}
+                            prefix="(In Words)"
+                            suffix="/-"
+                          />
+                        </td>
+                      </tr>
+                    )}
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />
@@ -160,10 +168,7 @@ export default class InvoiceLineItemTable extends Component {
                         </td>
                         <td class="text-right" width="30%">
                           <b>
-                            <Amount
-                              value={invoice.amount_paid}
-                              currency={invoice.currency}
-                            />
+                            <Amount value={invoice.amount_paid} currency={invoice.currency} />
                           </b>
                         </td>
                       </tr>
@@ -177,10 +182,7 @@ export default class InvoiceLineItemTable extends Component {
                         </td>
                         <td class="text-right" width="30%">
                           <b>
-                            <Amount
-                              value={invoice.amount_due}
-                              currency={invoice.currency}
-                            />
+                            <Amount value={invoice.amount_due} currency={invoice.currency} />
                           </b>
                         </td>
                       </tr>

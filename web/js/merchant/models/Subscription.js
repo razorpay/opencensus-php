@@ -47,4 +47,11 @@ export default class Subscription extends GenericEntity {
       method: 'post',
     }).then(this.serializeResponse);
   };
+
+  removeOffer = () => {
+    return this.makeGenericAjaxCall({
+      url: `subscriptions/${this.id}/${this.offer_id}`,
+      method: 'DELETE',
+    }).then(this.serializeResponse);
+  };
 }

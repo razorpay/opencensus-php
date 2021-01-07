@@ -121,7 +121,7 @@ export function changeData({
       heading: 'Offer',
       changes: [
         {
-          current: prevSubscription.offer_id,
+          current: prevSubscription.offer_id || 'No Offer Applied',
           change: fields.offer_id || 'Offer Removed',
         },
       ],
