@@ -203,7 +203,7 @@ app
 
         // disable signup/login submission before captcha only in prod
         submissionDisabled: isProd || isAxisBankUATEnv,
-        isWhatsAppOptIn: false,
+        isWhatsAppOptIn: true,
       };
 
       // login state container
