@@ -43,6 +43,8 @@ class Core extends Base\Core
         {
             $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
+            $this->updateOndemandFundAccountIfRequired($ba);
+
             if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
             {
                 app('settlements_dashboard')->createBankAccount($ba, $this->mode);
