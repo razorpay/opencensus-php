@@ -41,7 +41,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_NUMBER      => 'sometimes|nullable|string|size:12',
         Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
         Entity::START_TIME          => 'sometimes_if:method,upi,nach,emandate',
-        Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount',
+        Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
         Entity::FREQUENCY           => 'required_only_if:auth_type,migrated|string|in:adhoc,monthly,quarterly,yearly',
     ];
 
