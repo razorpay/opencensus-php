@@ -55,10 +55,14 @@ export default class PaymentLinkCreateV2 extends React.Component {
     super();
 
     let linkType;
+    const params = getURLQueryParams(props.location.search);
+
     // For PL duplication loading state
     const searchQuery = getURLQueryParams(props.location.search);
     if (searchQuery.duplicate_id) {
       linkType = 'base';
+    } else if (params.link_type && PAYMENT_LINK_FORMS.hasOwnProperty(params.link_type)) {
+      linkType = params.link_type;
     }
 
     this.isIntentDuplicate = !!searchQuery.duplicate_id;
