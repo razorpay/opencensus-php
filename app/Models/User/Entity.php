@@ -246,6 +246,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PASSWORD_RESET_EXPIRY, $expiry);
     }
 
+    public function setPasswordNull()
+    {
+        $this->attributes[self::PASSWORD] = null;
+    }
+
     public function getOauthProvider()
     {
         return $this->getAttribute(self::OAUTH_PROVIDER);

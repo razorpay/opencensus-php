@@ -370,9 +370,13 @@ class Core extends Base\Core
 
                 // For this User signs up via email/password and drops off in the middle
                 // comes back and logs in via Google OAUth
+                // We will reset and invalidate user's password for security reasons.
                 if ($user->getConfirmedAttribute() === false)
                 {
                     $this->confirm($user);
+
+                    // reset the password of the user as well.
+                    $this->invalidatePassword($user);
                 }
             }
         }
@@ -417,6 +421,14 @@ class Core extends Base\Core
         ]);
 
         return $response;
+    }
+
+    // We are invalidating the password for the user who has signed up from google oauth
+    protected function invalidatePassword(Entity $user)
+    {
+        $user->setPasswordNull();
+
+        $this->repo->saveOrFail($user);
     }
 
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check

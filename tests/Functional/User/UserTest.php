@@ -385,6 +385,23 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testOauthLoginInvalidatePassword()
+    {
+        $this->fixtures->create('user', ['id' => 'FL0nl7kME8j3Dd', 'email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => 'confirm_token']);
+
+        $testData =   &$this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        // check if password is set as null
+
+        $user = $this->getDbEntityById('user', 'FL0nl7kME8j3Dd');
+
+        $this->assertEmpty($user['password']);
+    }
+
     public function testOauthLoginFail()
     {
         $user = $this->fixtures->create('user', [
