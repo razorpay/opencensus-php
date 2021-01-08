@@ -354,7 +354,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Explore Now',
-                    'url'   => 'https://payroll.razorpay.com/dashboard',
+                    'url'   => 'https://payroll.razorpay.com/sso',
                 ],
             ],
             'start_ts'    => 1609922446,
