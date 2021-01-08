@@ -2,12 +2,9 @@ import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 const SURVEY_LINKS = {
-  PL: 'https://razorpay.typeform.com/to/LOb8O1a1',
-  PP: 'https://razorpay.typeform.com/to/rC2nqalJ',
-  PG_1m: 'https://razorpay.typeform.com/to/FtXjOpIi',
-  // PG_6m: 'https://razorpay.typeform.com/to/RvgxGRGM',
-  // PG_12m: 'https://razorpay.typeform.com/to/mZcTfb8R',
-  // other_products: 'https://razorpay.typeform.com/to/suSnn21l',
+  PL: 'https://razorpay.typeform.com/to/UL0aop3u',
+  PP: 'https://razorpay.typeform.com/to/mRppQcGi',
+  PG_1m: 'https://razorpay.typeform.com/to/RbXpVNJD',
 };
 
 const getLink = (user) => {
@@ -22,18 +19,6 @@ const getLink = (user) => {
   if (user.isFeatureEnabled('nps_survey_pg_1m')) {
     return { link: SURVEY_LINKS['PG_1m'], cohort: 'pg_1m' };
   }
-
-  // if (user.isFeatureEnabled('nps_survey_pg_6m')) {
-  //   return { link: SURVEY_LINKS['PG_6m'], cohort: 'pg_6m' };
-  // }
-
-  // if (user.isFeatureEnabled('nps_survey_pg_12m')) {
-  //   return { link: SURVEY_LINKS['PG_12m'], cohort: 'pg_12m' };
-  // }
-
-  // if (user.isFeatureEnabled('nps_survey_other_products')) {
-  //   return { link: SURVEY_LINKS['other_products'], cohort: 'other_products' };
-  // }
 
   return null;
 };
