@@ -1792,6 +1792,11 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('updateMerchantsBulk', $input);
 
+        if (isset($input['action']) === true)
+        {
+            (new Validator)->validateAdminPermissionForAction($input['action']);
+        }
+
         $merchantIds = $input['merchant_ids'];
 
         unset($input['merchant_ids']);

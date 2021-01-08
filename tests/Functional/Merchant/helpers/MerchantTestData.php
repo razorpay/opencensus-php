@@ -60,6 +60,50 @@ return [
         ],
     ],
 
+    'testSuspendMerchantBulk' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => "suspend",
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 2,
+                'success'   => 2,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSuspendMerchantBulkWithoutPermissionFail' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => "suspend",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
     'testEditBulkMerchantAttributes' => [
         'request'  => [
             'method'  => 'PUT',

@@ -50,6 +50,7 @@ class Name
     const EDIT_MERCHANT_ARCHIVE               = 'edit_merchant_archive';
     const EDIT_MERCHANT_UNARCHIVE             = 'edit_merchant_unarchive';
     const EDIT_MERCHANT_SUSPEND               = 'edit_merchant_suspend';
+    const EDIT_MERCHANT_SUSPEND_BULK          = 'edit_merchant_suspend_bulk';
     const EDIT_MERCHANT_UNSUSPEND             = 'edit_merchant_unsuspend';
     const EDIT_MERCHANT_METHODS               = 'edit_merchant_methods';
     const EDIT_MERCHANT_TERMINAL              = 'edit_merchant_terminal';

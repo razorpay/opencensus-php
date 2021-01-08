@@ -492,6 +492,45 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testSuspendMerchantBulk()
+    {
+        $this->createMerchantsForSuspendMerchantBulkTest();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_suspend_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSuspendMerchantBulkWithoutPermissionFail()
+    {
+        $this->createMerchantsForSuspendMerchantBulkTest();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    protected function createMerchantsForSuspendMerchantBulkTest()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->createMerchant([
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
+    }
+
     public function testEditBulkMerchantAttributes()
     {
         $this->createMerchant([

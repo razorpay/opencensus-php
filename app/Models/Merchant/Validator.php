@@ -19,6 +19,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
@@ -71,6 +72,10 @@ class Validator extends Base\Validator
         'jpeg'  => 'image/jpeg',
         'jpg'   => 'image/jpeg',
         'png'   => 'image/png',
+    ];
+
+    const ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK = [
+        Action::SUSPEND               => Permission::EDIT_MERCHANT_SUSPEND_BULK
     ];
 
     protected static $createRules = [
@@ -797,6 +802,20 @@ class Validator extends Base\Validator
                 $merchants->pluck(Entity::ID)->toArray(),
                 $description
             );
+        }
+    }
+
+    public function validateAdminPermissionForAction($action)
+    {
+
+        if (array_key_exists($action, self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK) === true)
+        {
+            $app = App::getFacadeRoot();
+
+            $admin = $app['basicauth']->getAdmin();
+
+            // Check for admin permissions
+            $admin->hasPermissionOrFail(self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK[$action]);
         }
     }
 
