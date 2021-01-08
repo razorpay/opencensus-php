@@ -25,7 +25,7 @@ class Core extends Base\Core
 
     const MOZART_GET_REPORT_ACTION = 'get_report';
 
-    const INVALID_EMAIL_OR_CONTACT_REGEX = '/(mobile number [0-9,X]+)/';
+    const INVALID_EMAIL_OR_CONTACT_REGEX = '/mobile number ([0-9,X]+)/';
 
     public function saveAndReturnReport(D2cBureauDetail\Entity $bureauDetail, Merchant\Entity $merchant, User\Entity $user): Entity
     {
@@ -84,11 +84,15 @@ class Core extends Base\Core
                 if ($e->getCode() === ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT)
                 {
                     preg_match(self::INVALID_EMAIL_OR_CONTACT_REGEX, $e->getData()['data']['error'], $matches);
-                    $errorDesc = 'The phone number entered isn\'t linked to your PAN.';
+                    $errorDesc = 'No records found for this phone number.';
                     if (sizeof($matches) !== 0)
                     {
-                        $errorDesc .= ' Please use ' . $matches['0'];
-                    };
+                        $errorDesc .= ' Please try again with ' . $matches['1'];
+                    }
+                    else
+                    {
+                        $errorDesc .= ' Please contact support - capital.support@razorpay.com';
+                    }
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT,
                         null,

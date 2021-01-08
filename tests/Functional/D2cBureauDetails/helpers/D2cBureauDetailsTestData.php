@@ -147,7 +147,46 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The phone number entered isn\'t linked to your PAN. Please use mobile number 99XXXXX243',
+                    'description' => 'No records found for this phone number. Please try again with 99XXXXX243',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT,
+        ],
+    ],
+
+    'testFetchBureauReportWithInvalidContactFailureNoPhoneNumber' => [
+        'request' => [
+            'url' => '/los/d2c_bureau_details',
+            'method' => 'post',
+            'content'   => [
+                'merchant_id'   => '10000000000000',
+                'user_id'       => '20000000000000',
+                'otp'           => '0007',
+                'token'         => 'BUIj3m2Nx2VvVj',
+                'd2c_bureau_detail'    => [
+                    'first_name'      => 'john',
+                    'last_name'       => 'doe',
+                    'contact_mobile'  => '9999999999',
+                    'email'           => 'test@razorpay.com',
+                    'address'         => 'Adress',
+                    'city'            => 'city',
+                    'state'           => 'PB',
+                    'pincode'         => '560030',
+                    'pan'             => 'ABCDE1234F',
+                    'date_of_birth'   => '1996-10-10',
+                    'gender'          => 'male'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No records found for this phone number. Please contact support - capital.support@razorpay.com',
                 ],
             ],
             'status_code' => 400,

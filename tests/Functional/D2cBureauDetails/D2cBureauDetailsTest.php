@@ -275,6 +275,80 @@ class D2cBureauDetailsTest extends TestCase
         $this->mozartServiceMock = $mozartMockCopy;
     }
 
+    public function testFetchBureauReportWithInvalidContactFailureNoPhoneNumber()
+    {
+        $mozartMockCopy = $this->mozartServiceMock;
+
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendMozartRequest'])
+                                        ->getMock();
+
+        $this->mozartServiceMock->method('sendMozartRequest')
+                                ->will($this->returnCallback(
+                                    function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                                    {
+                                        $this->assertArraySelectiveEquals([
+                                                                              'first_name'    => 'john',
+                                                                              'address'       => 'Adress',
+                                                                              'city'          => 'city',
+                                                                          ], $input['d2c_bureau_details']);
+
+                                        throw new GatewayErrorException(
+                                            'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT',
+                                            'Email Vali',
+                                            'Email Validation Failed or phone Validation Failed',
+                                            [
+                                                'error' => [
+                                                    'description'               => 'Email Validation Failed or phone Validation Failed',
+                                                    'gateway_error_code'        => 'Email Vali',
+                                                    'gateway_error_description' => 'Email Validation Failed or phone Validation Failed',
+                                                    'gateway_status_code'       => 200,
+                                                    'internal_error_code'       => 'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT'
+                                                ],
+                                                'data'  => [
+                                                    'error' => 'Email Validation Failed or phone Validation Failed. Please try to invoke CRQ externally.',
+                                                    'raw_report' => null
+                                                ]
+                                            ],
+                                            null,
+                                            'http://api.razorpay.com/v1/los/d2c_bureau_details/');
+                                    }));
+
+        $this->app->instance('mozart', $this->mozartServiceMock);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->startTest();
+
+        $d2cOwnerDetails = $this->getLastEntity('d2c_bureau_detail', true);
+
+        $this->assertArraySelectiveEquals([
+//            'id'              => 'd2cbd_EeKAdZlPeSM4mM',
+            'first_name'      => 'john',
+            'last_name'       => 'doe',
+            'date_of_birth'   => '1996-10-10',
+            'gender'          => 'male',
+            'contact_mobile'  => '9999999999',
+            'email'           => 'test@razorpay.com',
+            'address'         => 'Adress',
+            'city'            => 'city',
+            'state'           => 'PB',
+            'pincode'         => '560030',
+            'pan'             => 'ABCDE1234F',
+//            'created_at'      => 1586858252
+                                          ], $d2cOwnerDetails);
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+                                              'error_code'        => 'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT',
+                                              'provider'          => 'experian',
+                                          ], $d2cBureauReport);
+
+        $this->mozartServiceMock = $mozartMockCopy;
+    }
+
     public function testNtcFlow()
     {
         $mozartMockCopy = $this->mozartServiceMock;

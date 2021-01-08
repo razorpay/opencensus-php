@@ -1171,7 +1171,7 @@ class PublicErrorDescription
     const BAD_REQUEST_D2C_WRONG_OTP                                                 = 'Wrong OTP, Make sure to enter the correct OTP.';
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'No records found. Please contact support.';
-    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'The phone number entered isn\'t linked to your PAN. Please mention the correct phone number.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'No records found for this phone number.';
     const BAD_REQUEST_D2C_MANDATORY_FIELD_MISSING                                   = 'Mandatory field missing';
     const BAD_REQUEST_D2C_INVALID_DATA_IN_INPUT                                     = 'Invalid Data in input';
     const BAD_REQUEST_D2C_INVALID_PAN                                               = 'Invalid PAN';
