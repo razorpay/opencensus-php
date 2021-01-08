@@ -25,16 +25,22 @@ const THEMES = {
     borderColor: '#fff',
   },
   axis: {
-    navBg: '#97144d',
-    primary: '#97144d',
-    sidebarLinkActive: 'pink',
-    sidebarLinkActiveBg: '#78103D',
-    brandBg: 'transparent',
-    borderColor: 'pink',
-    actStatusBg: '#78103D',
-    actText: 'white',
+    navBg: '#2e3345',
+    primary: '#528ff0',
   },
 };
+
+// TODO: revert changes later
+// axis: {
+//   navBg: '#2e3345',
+//   primary: '#528ff0',
+//   sidebarLinkActive: '#528ff0',
+//   sidebarLinkActiveBg: '#252939',
+//   brandBg: 'transparent',
+//   borderColor: '#528ff0',
+//   actStatusBg: '#78103D',
+//   actText: 'white',
+// }
 
 export const applyTheme = (org) => {
   var style = document.createElement('style');
