@@ -451,27 +451,22 @@ class Validator extends Base\Validator
 
         $orderBank = $order->getBank();
 
-        $tpvBanks = [];
+        $tpvBanks = Netbanking::getSupportedBanksForTPV();
 
-        switch ($method)
-        {
-            case Payment\Method::UPI:
-                $tpvBanks = Payment\Processor\Upi::getAllUpiBanks();
-                break;
+    // bypassing upi as payment create fails for tpv merchants because the bank codes we receive are different
+    // from payment entity than what we have in order entity.In case of UPI TPV, the validation is actually done by
+    // the acquiring bank using Account Number and IFSC code. We don't really need the 'bank' field.
 
-            case Payment\Method::NETBANKING:
-                $tpvBanks = Netbanking::getSupportedBanksForTPV();
-                break;
-        }
-
-        if (($method !== null) and
+        if (($method !== null and
+            $method === Payment\Method::NETBANKING) and
             (in_array($orderBank, $tpvBanks, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order bank does not support TPV');
         }
 
-        if ((empty($payment) === false) and
+        if ((empty($payment) === false and
+             $method === Payment\Method::NETBANKING) and
             ($orderBank !== $payment->getBank()))
         {
             throw new Exception\BadRequestValidationFailureException(
