@@ -9,6 +9,7 @@ class Constants
     const API_CALL_SUCCESSFUL     = 'api_call_successful';
     const SUCCESS                 = 'success';
     const DOCUMENT_TYPE           = 'document_type';
+    const PURPOSE                 = 'purpose';
     const OCR_MATCHING_THRESHOLD  = 'ocr_matching_threshold';
     const OCR_MATCHING_PERCENTAGE = 'ocr_matching_percentage';
     const OCR_NAME                = 'ocr_name';
@@ -21,6 +22,12 @@ class Constants
     const SOURCE    = 'source';
     const ENTITY    = 'entity';
     const MERCHANT  = 'merchant';
+    const SIGNED_URL = 'signed_url';
+    const URL        = 'url';
+    const MIME_TYPE  = 'mime_type';
+    const MIME       = 'mime';
+    const SIZE       = 'size';
+
 
     const OCR_MATCH_TYPE = 'ocr_match_type';
 

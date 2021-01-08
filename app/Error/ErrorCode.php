@@ -2012,4 +2012,8 @@ class ErrorCode
 
     const BAD_REQUEST_CALLBACK_URL_INCORRECT                                        = 'BAD_REQUEST_CALLBACK_URL_INCORRECT';
 
+
+    // Accounts/ stakeholder V2 document upload errorcodes
+    const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS';
+
 }

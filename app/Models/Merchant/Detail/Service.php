@@ -1165,7 +1165,7 @@ class Service extends Base\Service
      * @return string
      * @throws \Exception
      */
-    protected function getFileName($file, string $merchantId): string
+    public function getFileName($file, string $merchantId): string
     {
         //
         // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.

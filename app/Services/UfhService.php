@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
@@ -138,31 +139,14 @@ class UfhService
                                         $entity,
                                         array $metadata = []): array
     {
+
         $ext = strtolower($file->getClientOriginalExtension());
 
         $storageFileName = strtolower($storageFileName);
 
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 
-        $requestData = [
-            self::FILE          => fopen($movedFile->getPathname(), 'r'),
-            self::NAME          => $storageFileName,
-            self::TYPE          => $type,
-            self::STORE         => $this->getStoreForEnv(),
-            self::DISPLAY_NAME  => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-            self::METADATA      => $metadata,
-        ];
-
-        if (($entity instanceof Entity) === true)
-        {
-            $requestData[self::ENTITY_ID]   = $entity->getId();
-            $requestData[self::ENTITY_TYPE] = $entity->getEntityName();
-        }
-        else
-        {
-            $requestData[self::ENTITY_ID]   = $entity[self::ID] ?? null;
-            $requestData[self::ENTITY_TYPE] = $entity[self::TYPE] ?? null;
-        }
+        $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);
 
         $this->trace->info(
             TraceCode::AWS_FILE_UPLOAD,
@@ -172,7 +156,7 @@ class UfhService
         {
             $response = $this->ufhClient->upload($requestData);
         }
-        catch(\Throwable $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e);
 
@@ -189,6 +173,51 @@ class UfhService
             self::RELATIVE_LOCATION => $response[self::LOCATION],
             self::LOCAL_FILE        => $movedFile,
         ];
+    }
+
+    /**
+     * @param UploadedFile $file
+     * @param string       $storageFileName
+     * @param string       $type
+     * @param              $entity
+     * @param array        $metadata
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    public function uploadFileAndGetResponse(UploadedFile $file,
+                                             string $storageFileName,
+                                             string $type,
+                                             $entity,
+                                             array $metadata = []): array
+    {
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        $storageFileName = strtolower($storageFileName);
+
+        $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+
+        $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);
+
+        $this->trace->info(
+            TraceCode::UFH_FILE_UPLOAD,
+            array_except($requestData, [self::FILE]));
+
+        try
+        {
+            $response = $this->ufhClient->upload($requestData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE
+            );
+        }
+
+        return $response;
     }
 
     public function fetchFiles(array $queryParams): array
@@ -320,5 +349,35 @@ class UfhService
     protected function getStoreForEnv(): string
     {
         return in_array($this->env, ['dev', 'testing'], true) ? 'local' : 's3';
+    }
+
+    protected function getRequestData(UploadedFile $file,
+                                    File $movedFile,
+                                    string $storageFileName,
+                                    string $type,
+                                    $entity,
+                                    array $metadata = []) : array
+    {
+        $requestData = [
+            self::FILE          => fopen($movedFile->getPathname(), 'r'),
+            self::NAME          => $storageFileName,
+            self::TYPE          => $type,
+            self::STORE         => $this->getStoreForEnv(),
+            self::DISPLAY_NAME  => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            self::METADATA      => $metadata,
+        ];
+
+        if (($entity instanceof Entity) === true)
+        {
+            $requestData[self::ENTITY_ID]   = $entity->getId();
+            $requestData[self::ENTITY_TYPE] = $entity->getEntityName();
+        }
+        else
+        {
+            $requestData[self::ENTITY_ID]   = $entity[self::ID] ?? null;
+            $requestData[self::ENTITY_TYPE] = $entity[self::TYPE] ?? null;
+        }
+
+        return $requestData;
     }
 }

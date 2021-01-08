@@ -428,6 +428,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT                      = 'Minimum amount that can be settled is ₹ 1.';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
+    const BAD_REQUEST_DOCUMENT_UPLOAD_PURPOSE_INVALID                           = 'invalid document upload purpose';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
@@ -1287,6 +1288,9 @@ class PublicErrorDescription
     const BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED                              = 'Company Search retries exhausted';
 
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
+
+    // Accounts/ stakeholder V2 document upload error descriptions
+    const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';

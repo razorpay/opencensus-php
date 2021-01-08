@@ -57,6 +57,27 @@ class Type
     const MSME_CERTIFICATE               = "msme_certificate";
     const BANK_STATEMENT                 = "bank_statement";
 
+    //proof types
+    const INDIVIDUAL_PROOF_OF_ADDRESS           = 'individual_proof_of_address';
+    const INDIVIDUAL_PROOF_OF_IDENTIFICATION    = 'individual_proof_of_identification';
+    const BUSINESS_PROOF_OF_IDENTIFICATION      = 'business_proof_identification';
+    const POI_IDENTIFICATION_NUMBER             = 'poi_identification_number';
+    const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
+
+    const PROOF_TYPE = [
+        self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
+        self::BUSINESS_PROOF_OF_IDENTIFICATION
+    ];
+
+    const KYC_PROOF = 'kyc_proof';
+    const TRADE_MARK_LOGO = 'trademark_logo';
+
+    const PURPOSE = [
+        self::KYC_PROOF,
+        self::TRADE_MARK_LOGO
+    ];
+
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
         self::IRDAI_REGISTRATION_CERTIFICATE,
@@ -127,5 +148,15 @@ class Type
         }
 
         return in_array($documentType, self::$documentsToPerformOcr, true);
+    }
+
+    public static function isValidProofType($value)
+    {
+        return (in_array($value,self::PROOF_TYPE) === true);
+    }
+
+    public static function isValidPurpose(string $value)
+    {
+        return (in_array($value, self::PURPOSE) === true);
     }
 }

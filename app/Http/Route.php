@@ -1957,6 +1957,9 @@ class Route
         'merchant_document_fetch'                 => ['get',      'merchant/documents',                                        'DocumentController@getMerchantDocuments'                   ],
         'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
+        //account and stakeholder document related routes
+        'document_upload_v2'                         => ['post',      'documents/upload',                                         'DocumentControllerV2@uploadDocuments'                      ],
+
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
         'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -2565,6 +2568,9 @@ class Route
         'payment_page_list',
         'payment_page_deactivate',
         'payment_page_activate',
+
+        // routes for account and stakeholder documents
+        'document_upload_v2'
     ];
 
     // Only routes defined in internalApps go here

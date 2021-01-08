@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Service extends Base\Service
 {
@@ -31,6 +33,36 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
 
         $this->entityRepo = $this->repo->merchant_document;
+    }
+
+    /**
+     * This function is used when partner uploads files on behalf of account/ stakeholder
+     * For both account / stakeholder, partner auth is used with X-Account-Id header
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function uploadDocument(array $input)
+    {
+        $merchant = $this->merchant;
+
+        return $this->mutex->acquireAndRelease(
+
+            $merchant->getId(),
+
+            function() use ($merchant, $input) {
+
+                $accountV2Service = new Merchant\AccountV2\Service();
+
+                $uploadResponse = $accountV2Service->uploadDocument($merchant, $input);
+
+                return ResponseHelper::getUploadFileResponse($uploadResponse);
+            },
+            PartnerConstants::PARTNER_DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS,
+            PartnerConstants::PARTNER_MUTEX_RETRY_COUNT);
     }
 
     /**

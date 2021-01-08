@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Entity;
 use RZP\Services\UfhService as BaseUfhClient;
@@ -14,13 +15,12 @@ class UfhService extends BaseUfhClient
     /**
      * {@inheritDoc}
      */
-    public function uploadFileAndGetUrl(
-                                        UploadedFile $file,
+    public function uploadFileAndGetUrl(UploadedFile $file,
                                         string $storageFileName,
-                                        string $type,
-                                        $entity,
+                                        string $type, $entity,
                                         array $metadata = []): array
     {
+
         $ext = $file->getClientOriginalExtension();
 
         $movedFile = $file;
@@ -33,26 +33,7 @@ class UfhService extends BaseUfhClient
             $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
         }
 
-        $pathName = $movedFile->getPathname();
-
-        $requestData = [
-            'file'          => fopen($pathName, 'r'),
-            'name'          => $storageFileName,
-            'type'          => $type,
-            'store'         => $this->getStoreForEnv(),
-            'metadata'      => $metadata,
-        ];
-
-        if (($entity instanceof Entity) === true)
-        {
-            $requestData[self::ENTITY_ID]   = $entity->getPublicId();
-            $requestData[self::ENTITY_TYPE] = $entity->getEntityName();
-        }
-        else
-        {
-            $requestData[self::ENTITY_ID]   = $entity[self::ID] ?? null;
-            $requestData[self::ENTITY_TYPE] = $entity[self::TYPE] ?? null;
-        }
+        $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);
 
         $this->trace->info(
             TraceCode::AWS_FILE_UPLOAD,
@@ -62,6 +43,31 @@ class UfhService extends BaseUfhClient
             self::FILE_ID           => self::MOCK_FILE_ID,
             self::RELATIVE_LOCATION => $storageFileName,
             self::LOCAL_FILE        => $movedFile,
+        ];
+    }
+
+    public function uploadFileAndGetResponse(UploadedFile $file,
+                                             string $storageFileName,
+                                             string $type,
+                                             $entity,
+                                             array $metadata = []): array
+    {
+
+        $storageFileName = strtolower($storageFileName);
+
+        $requestData = $this->getRequestData($file, $file, $storageFileName, $type, $entity, $metadata);
+
+        $this->trace->info(
+            TraceCode::UFH_FILE_UPLOAD,
+            array_except($requestData, [self::FILE]));
+
+        return [
+            'id'         => self::MOCK_FILE_ID,
+            'type'       => $type,
+            'name'       => $storageFileName,
+            'created_at' => time(),
+            'mime'       => 'image/png',
+            'location'   => $storageFileName
         ];
     }
 
