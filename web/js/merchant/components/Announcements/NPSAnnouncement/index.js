@@ -34,7 +34,7 @@ const NPSAnnouncement = ({ user }) => {
     <AnnouncementBanner
       title="Your Feedback Matters"
       theme="success"
-      bannerKey={`nps-banner-dec-20-${survey.cohort}-${user.current}`}
+      bannerKey={`nps-banner-jan-21-${survey.cohort}-${user.current}`}
       canBeClosed={true}
     >
       Hello! Request you to fill in this quick feedback survey about your experience with Razorpay.
