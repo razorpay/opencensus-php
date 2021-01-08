@@ -13,6 +13,7 @@ import {
   prevent,
   classList,
   checkIsObjectEmpty,
+  getCommonSegmentProperties,
 } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
@@ -68,6 +69,7 @@ import {
   validateCompanyAB,
   validateCompanyPAN,
 } from 'common/utils/validators';
+import analyticsService from '@commander/services/analytics';
 
 import L1FormFieldNames from './L1FormFieldNames';
 import * as activationUtils from './ActivationUtils';
@@ -1017,6 +1019,15 @@ export default class ActivationWizard extends React.Component {
 
       handleInstantActivationSuccess(props);
       this.saveCurrentTab();
+      analyticsService.track({
+        objectName: 'SignUp',
+        actionName: 'Submit L1 CTA Clicked',
+        screen: 'L1 form',
+        properties: {
+          ...getCommonSegmentProperties(),
+        },
+      });
+  
 
       this.setState({ callingAPI: false }, () => {
         if (

@@ -51,6 +51,14 @@ export function getCommonAnalyticsProperties(user) {
   };
 }
 
+export const getCommonSegmentProperties = () => {
+  const properties = {
+    pageUrl: window.location.href,
+    userId: window.rzp_user.id,
+  }
+  return properties
+}
+
 export function makeArray(obj) {
   if (!obj) {
     return [];

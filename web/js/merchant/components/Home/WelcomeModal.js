@@ -1,10 +1,20 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import analyticsService from '@commander/services/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
   const handleActivationClick = () => {
     onActivate();
+    analyticsService.track({
+      objectName: 'SignUp',
+      actionName: 'Activate Account CTA Clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonSegmentProperties(),
+      },
+    });
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('act.form_fill', {
         clickSource: 'First_Login_Popup',
@@ -25,6 +35,14 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
 
   const handleTryOutClick = () => {
     onClose();
+    analyticsService.track({
+      objectName: 'SignUp',
+      actionName: 'Try Dashboard CTA Clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonSegmentProperties(),
+      },
+    });
     tracking.trackEvent(
       window.rzpQ.onbr().success('login.first_login_modal', {
         action: 'Try_Dashboard',

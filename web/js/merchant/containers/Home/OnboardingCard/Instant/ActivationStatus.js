@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
+import analyticsService from '@commander/services/analytics';
 import { activationDuration } from 'merchant/helpers/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { trackGoToActivationFromError } from '../../ga';
 import RTracking from 'react-tracking';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+
 
 const initialState = {
   status: null,
@@ -125,6 +128,14 @@ export default class ActivationCard extends Component {
                       clickSource: 'Dashboard_CTA',
                     }),
                   );
+                  analyticsService.track({
+                    objectName: 'SignUp',
+                    actionName: 'Activate Account_Progress Bar CTA Clicked',
+                    screen: 'home page',
+                    properties: {
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
                 }}
               >
                 Activate Account
