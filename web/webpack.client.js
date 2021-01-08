@@ -34,6 +34,13 @@ module.exports = ({ config, project }) => {
     '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
   );
 
+  //add limit to svg loader
+  config.module.rules[2].use[0].options = {
+    limit: 1024,
+    outputPath: 'images',
+    name: isProd ? '[name].[hash:8].[ext]' : '[name].[ext]',
+  };
+
   //css
   config.module.rules.push(
     {

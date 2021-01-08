@@ -14,7 +14,7 @@ const StyledActivationProgressHeader = styled(View)`
   background-color: ${({ theme }) => theme.colors.background['200']};
 `;
 
-const ActivationProgressHeader: React.FC = () => {
+const ActivationProgressHeader: React.FC<{ progress: number }> = ({ progress }) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
 
   return (
@@ -27,7 +27,7 @@ const ActivationProgressHeader: React.FC = () => {
                 Account Activation
               </Text>
               <Text size="xsmall" weight="bold" color="positive.960">
-                20% complete
+                {progress}% complete
               </Text>
             </View>
             <Space padding={[0.5, 0]}>

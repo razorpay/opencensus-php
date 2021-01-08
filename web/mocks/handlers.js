@@ -91,6 +91,11 @@ export const handlers = [
       if (req.body.submit) {
         req.body.submitted = true;
       }
+      if (req.body.business_subcategory === 'computer_software_stores') {
+        req.body.activation_flow = 'blacklist';
+      } else if (req.body.business_subcategory) {
+        req.body.activation_flow = 'whitelist';
+      }
       ActivationDB.update(req.body);
     }
 

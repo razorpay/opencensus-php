@@ -5,6 +5,8 @@ import Space from '@razorpay/blade/src/atoms/Space';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Link from '@commander/shield/src/shared/Link';
 import Text from '@razorpay/blade/src/atoms/Text';
+import { useApp } from 'v2/context/App';
+import { switchMode } from 'v2/services/mode';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import BannerModal from './Frame.svg';
 
@@ -18,8 +20,10 @@ const Container = styled(View)`
 `;
 
 const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen }) => {
+  const { user } = useApp();
   const onEnableSettlementsClick = () => {
-    window.location.href = '/onboarding/form';
+    switchMode(user.current, 'live');
+    window.location.href = '/app/onboarding/form';
   };
   const onExploreToAcceptPaymentsLinkClick = () => {
     window.location.href = '/';

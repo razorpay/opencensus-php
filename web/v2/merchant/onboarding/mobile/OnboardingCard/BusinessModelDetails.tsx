@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import Text from '@razorpay/blade/src/atoms/Text';
 import Space from '@razorpay/blade/src/atoms/Space';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
@@ -24,6 +25,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
   const [hasBusinessModel, setHasBusinessModel] = useState(
     onboardingCardDetails.business_subcategory.value === 'others',
   );
+  const isBlackListed = data.activation_flow === 'blacklist';
 
   const handleSubmit = (updatedDetails) => {
     const reqData = getRequestData(onboardingCardDetails, updatedDetails);
@@ -76,6 +78,10 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
         onSubmit={() => console.log('onSubmit')}
       >
         {(formikProps) => {
+          let isFormValid = false;
+          if (formikProps.isValid && !isBlackListed) {
+            isFormValid = true;
+          }
           return (
             <form
               onChange={formikProps.handleChange}
@@ -122,9 +128,16 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                   helpText="Tell us a bit about your business model"
                 />
               </Field>
+              {isBlackListed ? (
+                <Space margin={[2, 0, 0, 0]}>
+                  <Text color="red.900" size="small">
+                    We do not have the support for your business category selected as of now.
+                  </Text>
+                </Space>
+              ) : null}
               <Space margin={[2.5, 0, 0, 0]}>
                 <View>
-                  <Button block onClick={handleStartActivation} disabled={!formikProps.isValid}>
+                  <Button block onClick={handleStartActivation} disabled={!isFormValid}>
                     Start Activation
                   </Button>
                 </View>

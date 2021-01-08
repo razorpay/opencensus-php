@@ -97,7 +97,7 @@ const Select: React.FC<SelectPropsT> = ({
         if (!searchable || !filterOptions || !inputValue) {
           return true;
         }
-        return child.props.label.includes(inputValue);
+        return child.props.label.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase());
       })
       .map((child: ReactElement<OptionsPropsT>, index) => {
         return (
