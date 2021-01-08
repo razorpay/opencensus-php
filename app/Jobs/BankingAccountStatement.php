@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
@@ -11,9 +12,9 @@ use RZP\Models\BankingAccountStatement as BAS;
 class BankingAccountStatement extends Job
 {
     //TODO: Move these constants to config
-    const MAX_RETRY_ATTEMPT = 3;
+    const MAX_RETRY_ATTEMPT = 7;
 
-    const MAX_RETRY_DELAY = 60;
+    const MAX_RETRY_DELAY = 120;
 
     /**
      * @var string
@@ -61,7 +62,18 @@ class BankingAccountStatement extends Job
                     'account_number'    => $this->params['account_number']
                 ]);
 
+            $workerStartTime = Carbon::now()->getTimestamp();
+
             $result = (new BAS\Core)->processStatementForAccount($this->params);
+
+            $workerEndTime = Carbon::now()->getTimestamp();
+
+            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                [
+                    'result'        => $result,
+                    'start_time'    => $workerStartTime,
+                    'end_time'      => $workerEndTime
+                ]);
 
             $this->trace->info(
                 TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
@@ -87,11 +99,15 @@ class BankingAccountStatement extends Job
     {
         if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
-            $this->release(self::MAX_RETRY_DELAY);
+            $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attempts());
+
+            $this->release($workerRetryDelay);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
-                'channel'           => $this->params['channel'],
-                'account_number'    => $this->params['account_number']
+                'channel'               => $this->params['channel'],
+                'account_number'        => $this->params['account_number'],
+                'attempt_number'        => 1 + $this->attempts(),
+                'worker_retry_delay'    => $workerRetryDelay
             ]);
         }
         else
