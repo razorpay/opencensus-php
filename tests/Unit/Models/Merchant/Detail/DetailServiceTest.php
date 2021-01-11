@@ -21,28 +21,455 @@ class DetailServiceTest extends TestCase
     protected $merchantMethodsMock;
     protected $merchantDocumentCoreMock;
     protected $merchantDetailValidator;
+    protected $merchantAccountCore;
+    protected $adminEntityMock;
 
     public function setUp()
     {
-
         parent::setUp();
         $this->createTestDependencyMocks();
-        $this->merchantService = new MerchantService($this->coreMock);
+        $this->merchantService = new MerchantService($this->coreMock, $this->merchantDetailValidator, $this->merchantAccountCore);
     }
 
     public function testFetchMerchantAndServiceDetails()
     {
-        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
+        $this->getMerchantEditMocks();
 
-        $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
+        $response = $this->merchantService->fetchMerchantDetails();
 
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+        $verification = $response['verification'];
+
+        $this->assertEquals('disabled', $verification['status']);
+
+        $this->assertEquals(false, $response['live']);
+
+        $this->assertEquals(false, $response['international']);
+    }
+
+    public function testGetDisabledBanksMoreInfo()
+    {
+        $methodRepoMock = Mockery::mock('RZP\Models\Merchant\Methods\Repository');
+
+        $this->repoMock->shouldReceive('driver')->with('methods')->andReturn($methodRepoMock);
+
+        $methodEntityMock = Mockery::mock('RZP\Models\Merchant\Methods\Entity');
+
+        $methodRepoMock->shouldReceive('getMethodsForMerchant')->andReturn($methodEntityMock);
+
+        $disabledBanks = [IFSC::IOBA, IFSC::JAKA, IFSC::KKBK, IFSC::MAHB];
+
+        $enabledBanks = [IFSC::UBIN, IFSC::UTIB, IFSC::YESB];
+
+        $methodEntityMock->shouldReceive('getDisabledBanks')->andReturn($disabledBanks);
+
+        $methodEntityMock->shouldReceive('getEnabledBanks')->andReturn($enabledBanks);
+
+        $response = $this->merchantService->getDisabledBanks();
+
+        $this->assertEquals('Bank of Maharashtra', $response['MAHB']);
+    }
+
+    public function testFetchActivationFiles()
+    {
+        $this->getAdminAndPublicAuthMock();
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->getMerchantDetailAttributeMock();
+
+        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
+
+        $this->merchantDetailEntityMock->shouldReceive('offsetExists')->andReturn(true);
+
+        $this->merchantDetailEntityMock->shouldReceive('offsetGet')->andReturn(false);
+
+        $response = $this->merchantService->fetchActivationFiles("100002Razorpay");
+
+        $filesArray = $response['files'];
+
+        $this->assertEquals("paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf", $filesArray['business_proof']);
+    }
+
+    public function testSaveMerchantDetailForPreSignUp()
+    {
+        $merchantData = [
+        'merchant_id'           => '1cXSLlUU8V9sXl',
+        'product'               => 'banking',
+        'role'                  => 'manager',
+        'action'                => 'edit'];
+
+        $this->createMerchantTestDependencyMocks();
+
+        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+
+        $this->coreMock->shouldReceive('setModeAndDefaultConnection')->andReturn();
+
+        $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function testSaveMerchantDetailsForActivation()
+    {
+        $merchantData = [
+            'merchant_id'           => '1cXSLlUU8V9sXl',
+            'product'               => 'banking',
+            'role'                  => 'manager',
+            'action'                => 'edit'];
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->getMerchantIdMock();
+
+        $this->createMerchantTestDependencyMocks();
+
+        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+
+        $response = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function testSaveInstantActivationDetails()
+    {
+        $input = [
+            'business_operation_state' => 'ANDAMAN & NICOBAR ISLANDS',
+            'business_registered_state' => 'CHANDIGARH',
+        ];
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->getMerchantIdMock();
+
+        $this->createMerchantTestDependencyMocks();
+
+        $response = [
+            'need_kyc' => 1,
+            'linked_account' => true,
+            'marketplace_merchant_name' => 'dummy',
+            'marketplace_merchant_id' => '1cXSLlUU8V9sXl',
+            'verification' => [
+                'status'              => 'disabled',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => '',
+                'optional_fields'     => '',
+                'activation_progress' => 50,
+            ]
+        ];
+
+        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn($response);
+
+        $this->merchantEntityMock->shouldReceive('toArrayEvent')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('getPoiVerificationStatus')->andReturn();
+
+        $harvesterMock = Mockery::mock('RZP\Services\Harvester\HarvesterClient');
+
+        $harvesterMock->shouldReceive('trackEvents')->andReturn([]);
+
+        $this->app->instance('eventManager', $harvesterMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getActivationFlow')->andReturn('whitelist');
+
+        $response = $this->merchantService->saveInstantActivationDetails($input);
+
+        $this->assertEquals(false, $response['auto_activated']);
+
+    }
+
+    public function testPatchMerchantDetails()
+    {
+        $merchantData = [
+            'merchant_id'           => '1cXSLlUU8V9sXl',
+            'product'               => 'banking',
+            'role'                  => 'manager',
+            'action'                => 'edit'];
+
+        $this->getMerchantDetailAttributeMock();
+
+        $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
+
+        $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategory')->andReturn();
+
+        $this->merchantDetailEntityMock->shouldReceive('edit')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessCategory')->andReturn(1);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessSubcategory')->andReturn(0);
+
+        $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);
+
+        $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
+
+        $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
 
+        $response = $this->merchantService->patchMerchantDetails($merchantData);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function testUploadActivationFileAdmin()
+    {
+        $merchantData = [];
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $returnResp = [
+            'need_kyc' => 1,
+            'linked_account' => true,
+            'marketplace_merchant_name' => 'dummy',
+            'marketplace_merchant_id' => '1cXSLlUU8V9sXl',
+            'verification' => [
+                'status'              => 'pending',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => '',
+                'optional_fields'     => '',
+                'activation_progress' => 50,
+            ],
+            'can_submit' => false,
+            'activated' => 1,
+            'live' => false,
+            'international' => true
+        ];
+
+        $this->getUploadActivationFileMocks($returnResp);
+
+        $response = $this->merchantService->uploadActivationFileAdmin('1cXSLlUU8V9sXl', $merchantData);
+
+        $verification = $response['verification'];
+
+        $this->assertEquals('pending', $verification['status']);
+
+        $this->assertEquals(false, $response['live']);
+
+        $this->assertEquals(true, $response['international']);
+    }
+
+    public function testUploadActivationFileMerchant()
+    {
+        $merchantData = [];
+
+        $returnResp = [
+            'linked_account' => true,
+            'marketplace_merchant_name' => 'dummy',
+            'marketplace_merchant_id' => '1cXSLlUU8V9sXl',
+            'can_submit' => false,
+            'activated' => 1,
+        ];
+
+        $this->getUploadActivationFileMocks($returnResp);
+
+        $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
+
+        $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
+
+        $response = $this->merchantService->uploadActivationFileMerchant($merchantData);
+
+        $this->assertEquals(true, $response['linked_account']);
+
+        $this->assertEquals('1cXSLlUU8V9sXl', $response['marketplace_merchant_id']);
+
+        $this->assertEquals(1, $response['activated']);
+    }
+
+    public function testEditMerchantDetails()
+    {
+        $input = [];
+
+        $this->getMerchantEditMocks();
+
+        $this->getFindOrFailPublic();
+
+        $this->getDriverAsMerchantMock();
+
+        $this->merchantDetailEntityMock->shouldReceive('edit')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getKycClarificationReasons')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessCategory')->andReturn(1);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessSubcategory')->andReturn(0);
+
+        $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);
+
+        $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
+
+        $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessName')->andReturn('dummy-business');
+
+        $this->merchantEntityMock->shouldReceive('getDbaName')->andReturn('dummy-dba');
+
+        $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getLegalEntityId')->andReturn();
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDocuments')->andReturn($this->merchantDetailEntityMock);
+
+        $response = $this->merchantService->editMerchantDetails('100002Razorpay', $input);
+
+        $verification = $response['verification'];
+
+        $this->assertEquals('disabled', $verification['status']);
+
+        $this->assertEquals(false, $response['live']);
+    }
+
+    public function testEditMerchantDetailsByPartnerFeature()
+    {
+        $merchantData = [
+            'merchant_id'           => '1cXSLlUU8V9sXa',
+            'product'               => 'banking',
+            'role'                  => 'manager',
+            'action'                => 'edit'];
+
+        $this->merchantEntityMock->shouldReceive('getAccountCore')->andReturn($this->merchantAccountCore);
+
+        $this->merchantAccountCore->shouldReceive('validatePartnerAccess')->andReturn();
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getMerchantDetailAttributeMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->merchantDetailEntityMock->shouldReceive('fill')->andReturn();
+
+        $this->merchantDetailEntityMock->shouldReceive('edit')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getKycClarificationReasons')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessCategory')->andReturn(1);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessSubcategory')->andReturn(0);
+
+        $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);
+
+        $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
+
+        $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBusinessName')->andReturn('dummy-business');
+
+        $this->merchantEntityMock->shouldReceive('getDbaName')->andReturn('dummy-dba');
+
+        $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $response = $this->merchantService->editMerchantDetailsByPartner('acc_1cXSLlUU8V9sXa', $merchantData);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function testUpdateActivationArchive()
+    {
+        $merchantData = [
+            'merchant_id'           => '1cXSLlUU8V9sXl',
+            'product'               => 'banking',
+            'role'                  => 'manager',
+            'action'                => 'edit'];
+
+        $this->getDriverAsMerchantMock();
+
+        $this->getFindOrFailPublic();
+
+        $this->getMerchantDetailAttributeMock();
+
+        $this->app->instance('basicauth', $this->basicAuthMock);
+
+        $this->basicAuthMock->shouldReceive('getAdmin')->andReturn($this->adminEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
+
+        $this->merchantDetailValidator->shouldReceive('validateInput')->andReturn();
+
+        $this->adminEntityMock->shouldReceive('hasMerchantActionPermissionOrFail')->andReturn();
+
+        $this->merchantDetailEntityMock->shouldReceive('setArchivedAt')->andReturn();
+
+        $workflowService = Mockery::mock('RZP\Services\Workflow\Service');
+
+        $workflowVpaEntity = Mockery::mock('RZP\Models\P2p\Vpa\Entity');
+
+        $workflowVpaEntity->shouldReceive('setPermission')->andReturn($workflowService);
+
+        $workflowService->shouldReceive('handle')->andReturn();
+
+        $this->app->instance('workflow', $workflowVpaEntity);
+
+        $this->getMerchantAttributeMock();
+
+        $this->coreMock->shouldReceive('logActionToSlack')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $response = $this->merchantService->updateActivationArchive('1cXSLlUU8V9sXl', $merchantData);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function getDriverAsMerchantMock()
+    {
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+    }
+
+    public function getAdminAndPublicAuthMock()
+    {
+        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
+
+        $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
+    }
+
+    public function getMerchantDetailAttributeMock()
+    {
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+    }
+
+    public function getMerchantAttributeMock()
+    {
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('merchant')->andReturn($this->merchantEntityMock);
+    }
+
+    public function getFindOrFailPublic()
+    {
+        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantEntityMock);
+    }
+
+    public function getMerchantIdMock()
+    {
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+    }
+
+    public function getMerchantEditMocks()
+    {
+        $this->getAdminAndPublicAuthMock();
+
+        $this->getMerchantDetailAttributeMock();
+
         $this->merchantDetailEntityMock->shouldReceive('load')->andReturn();
 
-        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('merchant')->andReturn($this->merchantEntityMock);
+        $this->getMerchantAttributeMock();
 
         $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
@@ -110,137 +537,7 @@ class DetailServiceTest extends TestCase
 
         $creditBalanceRepoMock->shouldReceive('getTypeAggregatedMerchantCreditsForProductForDashboard')->andReturn([]);
 
-        $response = $this->merchantService->fetchMerchantDetails();
-
-        $verification = $response['verification'];
-
-        $this->assertEquals('disabled', $verification['status']);
-
-        $this->assertEquals(false, $response['live']);
-
-        $this->assertEquals(false, $response['international']);
-    }
-
-    public function testGetDisabledBanksMoreInfo()
-    {
-        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
-
-        $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
-
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchant')->andReturn($this->merchantEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('id')->andReturn('1cXSLlUU8V9sXl');
-
-        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('merchant')->andReturn($this->merchantEntityMock);
-
-        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
-
-        $this->repoMock->shouldReceive('driver')->with('merchantDetail')->andReturn($this->merchantRepoMock);
-
-        $methodRepoMock = Mockery::mock('RZP\Models\Merchant\Methods\Repository');
-
-        $this->repoMock->shouldReceive('driver')->with('methods')->andReturn($methodRepoMock);
-
-        $methodEntityMock = Mockery::mock('RZP\Models\Merchant\Methods\Entity');
-
-        $methodRepoMock->shouldReceive('getMethodsForMerchant')->andReturn($methodEntityMock);
-
-        $disabledBanks = [IFSC::IOBA, IFSC::JAKA, IFSC::KKBK, IFSC::MAHB];
-
-        $enabledBanks = [IFSC::UBIN, IFSC::UTIB, IFSC::YESB];
-
-        $methodEntityMock->shouldReceive('getDisabledBanks')->andReturn($disabledBanks);
-
-        $methodEntityMock->shouldReceive('getEnabledBanks')->andReturn($enabledBanks);
-
-        $response = $this->merchantService->getDisabledBanks();
-
-        $this->assertEquals('Bank of Maharashtra', $response['MAHB']);
-    }
-
-    public function testFetchActivationFiles()
-    {
-        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
-
-        $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
-
-        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
-
-        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
-
-        $this->merchantDetailEntityMock->shouldReceive('offsetExists')->andReturn(true);
-
-        $this->merchantDetailEntityMock->shouldReceive('offsetGet')->andReturn(false);
-
-        $response = $this->merchantService->fetchActivationFiles("100002Razorpay");
-
-        $filesArray = $response['files'];
-
-        $this->assertEquals("paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf", $filesArray['business_proof']);
-    }
-
-    public function testSaveMerchantDetailForPreSignUp()
-    {
-        $merchantData = [
-        'merchant_id'           => '1cXSLlUU8V9sXl',
-        'product'               => 'banking',
-        'role'                  => 'manager',
-        'action'                => 'edit'];
-
-        $this->createMerchantTestDependencyMocks();
-
-        $this->coreMock->shouldReceive('setModeAndDefaultConnection')->andReturn();
-
-        $diagMock = Mockery::mock('RZP\Services\DiagClient');
-
-        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
-
-        $this->app->instance('diag', $diagMock);
-
-        $this->hubspotMock->shouldReceive('trackPreSignupEvent')->andReturn([]);
-
-        $this->app->instance('hubspot', $this->hubspotMock);
-
-        $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
-
-        $this->assertEquals([], $response);
-    }
-
-    public function testSaveMerchantDetailsForActivation()
-    {
-        $merchantData = [
-            'merchant_id'           => '1cXSLlUU8V9sXl',
-            'product'               => 'banking',
-            'role'                  => 'manager',
-            'action'                => 'edit'];
-
-        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
-
-        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
-
-        $this->createMerchantTestDependencyMocks();
-
-        $this->hubspotMock->shouldReceive('trackL2ContactProperties')->andReturn([]);
-
-        $this->app->instance('hubspot', $this->hubspotMock);
-
-        $diagMock = Mockery::mock('RZP\Services\DiagClient');
-
-        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
-
-        $this->app->instance('diag', $diagMock);
-
-        $response = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
-
-        $this->assertEquals([], $response);
+        $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
     }
 
     public function createMerchantTestDependencyMocks()
@@ -251,13 +548,15 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
-        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+        $this->getMerchantDetailAttributeMock();
 
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
         $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
 
         $this->merchantDetailValidator->shouldReceive('blockInstantActivationCriticalFields')->andReturn();
+
+        $this->merchantDetailValidator->shouldReceive('performInstantActivationValidations')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('edit')->andReturn($this->merchantDetailEntityMock);
 
@@ -274,8 +573,6 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('setShopEstbVerificationStatus')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('setCinVerificationStatus')->andReturn();
-
-        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
     }
 
     public function createTestDependencyMocks()
@@ -325,5 +622,28 @@ class DetailServiceTest extends TestCase
 
         // merchant detail Validator mocking
         $this->merchantDetailValidator = Mockery::mock('RZP\Models\Merchant\Detail\Validator');
+
+        $this->diagClientMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
+
+        $this->hubspotMock->shouldReceive('trackL1ContactProperties')->andReturn([]);
+
+        $this->hubspotMock->shouldReceive('trackL2ContactProperties')->andReturn([]);
+
+        $this->hubspotMock->shouldReceive('trackPreSignupEvent')->andReturn([]);
+
+        $this->merchantAccountCore = Mockery::mock('RZP\Models\Merchant\Account\Core');
+
+        $this->adminEntityMock = Mockery::mock('RZP\Models\Admin\Admin\Entity')->makePartial()->shouldAllowMockingProtectedMethods();
+    }
+
+    public function getUploadActivationFileMocks(array $returnResp)
+    {
+        $this->merchantDetailValidator->shouldReceive('validateDocumentUpload')->andReturn();
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
+        $this->getMerchantAttributeMock();
+
+        $this->repoMock->shouldReceive('transaction')->andReturn($returnResp);
     }
 }

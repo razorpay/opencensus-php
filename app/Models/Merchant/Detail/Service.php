@@ -41,11 +41,19 @@ class Service extends Base\Service
 
     protected $methodsCore;
 
-    public function __construct(Core $core = null)
+    protected $validator;
+
+    protected $accountCore;
+
+    public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
 
         $this->core = $core ?? new Core();
+
+        $this->validator = $validator ?? new Validator();
+
+        $this->accountCore = $accountCore ?? new Account\Core();
 
     }
 
@@ -293,7 +301,7 @@ class Service extends Base\Service
                                          bool $validateLock = true)
     {
 
-        (new Validator)->validateDocumentUpload($input);
+        $this->validator->validateDocumentUpload($input);
 
         $core = new Core;
 
@@ -472,7 +480,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantDetailCore = new Core;
+        $merchantDetailCore = $this->core;
 
         $merchantDetails = $merchantDetailCore->editMerchantDetailFields($merchant, $input);
 
@@ -488,7 +496,7 @@ class Service extends Base\Service
     {
         $partnerMerchant = $this->app['basicauth']->getMerchant();
 
-        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+        $this->accountCore->validatePartnerAccess($partnerMerchant, $merchantId);
 
         Account\Entity::verifyIdAndStripSign($merchantId);
 
@@ -588,7 +596,7 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input, $admin);
+        $merchantDetails = $this->core->updateActivationArchive($merchantDetails, $input, $admin);
 
         return $merchantDetails->toArrayPublic();
     }
