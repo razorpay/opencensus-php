@@ -1969,6 +1969,7 @@ class Gateway
         Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ATOM,
+        Gateway::NETBANKING_KOTAK,
     ];
 
     /**
@@ -2053,6 +2054,7 @@ class Gateway
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
         Netbanking::BARB_C => Gateway::NETBANKING_BOB,
         Netbanking::PUNB_C => Gateway::NETBANKING_PNB,
+        Netbanking::KKBK_C => Gateway::NETBANKING_KOTAK,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
@@ -3139,6 +3141,7 @@ class Gateway
     {
         $gatewayPartiallyMigrated = [
             self::NETBANKING_BOB,
+            self::NETBANKING_KOTAK,
         ];
 
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
@@ -3175,6 +3178,7 @@ class Gateway
             self::NETBANKING_CBI,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_CANARA,
+            self::NETBANKING_KOTAK,
         ];
 
         return (in_array($gateway, $gateways, true));

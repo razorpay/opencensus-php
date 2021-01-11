@@ -1183,6 +1183,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::CORPORATE               => 'sometimes|in:0,1,2',
         Entity::ACCOUNT_TYPE            => 'sometimes|string',
     ];
 

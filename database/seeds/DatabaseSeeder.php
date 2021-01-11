@@ -1633,6 +1633,7 @@ class DatabaseSeeder extends Seeder
                 'gateway'               => Gateway::NETBANKING_KOTAK,
                 'card'                  => '0',
                 'netbanking'            => '1',
+                'corporate'             => '1',
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),

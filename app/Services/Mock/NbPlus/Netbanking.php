@@ -13,6 +13,7 @@ class Netbanking extends NetbankingBase
     static $staticCallbackRouteMap = [
         Payment\Gateway::NETBANKING_KVB    => 'gateway_payment_static_callback_post',
         Payment\Gateway::NETBANKING_CANARA => 'gateway_payment_callback_canara_post',
+        Payment\Gateway::NETBANKING_KOTAK  => 'gateway_payment_callback_kotak_corp_post',
     ];
 
     public function sendRawRequest($request)

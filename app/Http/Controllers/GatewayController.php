@@ -459,9 +459,11 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function staticCallbackGateway($method, $gateway, $mode)
+    public function staticCallbackGateway($method, $gateway, $mode, $gatewayInput = [])
     {
         $input = Request::all();
+
+        $input = array_merge($input, $gatewayInput);
 
         $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
 
@@ -523,6 +525,21 @@ class GatewayController extends Controller
     public function callbackKotakCancel()
     {
         return $this->callbackKotak();
+    }
+
+    public function callbackKotakCorp()
+    {
+        $method = Payment\Method::NETBANKING;
+
+        $input['method_type'] = 'corporate';
+
+        $input['bank'] = Payment\Processor\Netbanking::KKBK_C;
+
+        $gateway = Payment\Gateway::NETBANKING_KOTAK;
+
+        $mode = Mode::LIVE;
+
+        return $this->staticCallbackGateway($method, $gateway, $mode, $input);
     }
 
     public function callbackKotak()
@@ -1425,7 +1442,14 @@ class GatewayController extends Controller
         if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
         {
             // method is added as a part of feature flag because emandate and netbanking have same gateways.
-            $featureFlag = $method . '_' . Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX . '_' . $gatewayName;
+            $featureFlag = $method . '_' . Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX;
+
+            if (Payment\Gateway::gatewaysPartiallyMigratedToNbPlusWithBankCode($gatewayName))
+            {
+                $featureFlag .= '_' . strtolower($input['bank']);
+            }
+
+            $featureFlag .= '_' . $gatewayName;
 
             $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
 

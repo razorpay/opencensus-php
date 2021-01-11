@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-<?php 
+<?php
 require('../scripts/sanitizeParams.php');
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
@@ -136,6 +136,7 @@ function disableEmptyInputs(form) {
                 <option value="FSFB">Fincare Small Finance Bank</option>
                 <option value="DCBL">Development Credit Bank</option>
                 <option value="BKDN">Dena bank</option>
+                <option value="KKBK_C">Kotak Mahindra Bank - Corporate</option>
             </select>
         </td>
     </tr>

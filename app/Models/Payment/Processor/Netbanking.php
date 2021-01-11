@@ -27,6 +27,7 @@ class Netbanking
     const RATN_C = 'RATN_C';
     const SVCB_C = 'SVCB_C';
     const DLXB_C = 'DLXB_C';
+    const KKBK_C = 'KKBK_C';
 
     // These are the IFSC's that are to be used for these
     // banks even if we integrate them directly.
@@ -57,6 +58,7 @@ class Netbanking
         self::SVCB_C,
         self::UTIB_C,
         self::YESB_C,
+        self::KKBK_C,
     ];
 
     protected static $names = [
@@ -75,6 +77,7 @@ class Netbanking
         self::SVCB_C => 'Shamrao Vithal Bank - Corporate Banking',
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
+        self::KKBK_C => 'Kotak Mahindra Bank - Corporate Banking',
         IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
         IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)'
@@ -130,6 +133,7 @@ class Netbanking
         self::UTIB_C,
         self::BARB_C,
         self::PUNB_C,
+        self::KKBK_C,
     ];
 
     protected static $selfTPV = [
@@ -641,6 +645,9 @@ class Netbanking
             'tpv' => [
                 IFSC::KKBK
             ],
+            'corp' => [
+                self::KKBK_C
+            ],
         ],
         Gateway::NETBANKING_RBL => [
             'retail' => [
@@ -772,6 +779,7 @@ class Netbanking
         self::BARB_C,
         self::PUNB_C,
         self::ICIC_C,
+        self::KKBK_C,
     ];
 
     public static function isSupportedBank($bank)
