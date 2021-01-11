@@ -45,8 +45,8 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
         Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa',
         Entity::AMOUNT_RANGE_ACTIVE     => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:20000000000',
-        Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:20000000000',
+        Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:500000000000',
+        Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:500000000000', // max 500 cr
         Entity::PERCENT_RATE            => 'sometimes|integer|max:20000',
         Entity::FIXED_RATE              => 'sometimes|integer|max:200000',
         Entity::MIN_FEE                 => 'sometimes|integer|max:100000',
