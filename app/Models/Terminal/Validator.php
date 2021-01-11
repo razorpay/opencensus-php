@@ -1224,8 +1224,18 @@ class Validator extends Base\Validator
 
     protected static $netbankingIdfcEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::TPV                         => 'sometimes|in:0,2',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::TYPE                        => 'sometimes|array',
+    ];
+
+    protected static $netbankingIdfcTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_IDFC,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $cardFssTerminalRules = [

@@ -19,17 +19,17 @@ class NbplusNetbankingIdfcCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $this->testDataFilePath = __DIR__ . '/NetbankingIdfcGatewayTestData.php';
 
         parent::setUp();
+    }
+
+    public function testNetbankingIdfcCombinedFile()
+    {
+        Mail::fake();
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_idfc_terminal');
 
         $this->bank = 'IDFB';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
-    }
-
-    public function testNetbankingIdfcCombinedFile()
-    {
-        Mail::fake();
 
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -188,5 +188,107 @@ class NbplusNetbankingIdfcCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $this->assertEquals("SUCCESS", $payment1RowData[3]);
 
         $this->assertEquals("SUCCESS", $payment2RowData[3]);
+    }
+
+    public function testRefundFileDirectSettlement()
+    {
+        Mail::fake();
+
+        $this->terminal = $this->fixtures->create('terminal:direct_settlement_idfc_terminal');
+
+        $this->bank = 'IDFB';
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $paymentEntity1 = $this->doAuthPayment($this->payment);
+
+        $transaction1 = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction1['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $this->refundPayment($paymentEntity1['razorpay_payment_id']);
+
+        $refundEntity1 = $this->getDbLastRefund();
+
+        $paymentEntity2 = $this->doAuthPayment($this->payment);
+
+        $transaction2 = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction2['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $this->refundPayment($paymentEntity2['razorpay_payment_id'], 500);
+
+        $refundEntity2 = $this->getDbLastRefund();
+
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testNetbankingIdfcCombinedFile'];
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $content = $content['items'][0];
+
+        $tran1 = $this->getDbEntityById('transaction', $transaction1['id']);
+        $tran2 = $this->getDbEntityById('transaction', $transaction2['id']);
+
+        $this->assertNotNull($tran1[Entity::RECONCILED_AT]);
+        $this->assertNotNull($tran2[Entity::RECONCILED_AT]);
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', ['count' => 2], true);
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'idfc_netbanking_summary',
+                ],
+                [
+                    'type' => 'idfc_netbanking_refund',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        $this->checkRefundExcelData($files['items'][1]);
+
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($refundEntity1, $refundEntity2, $paymentEntity1, $paymentEntity2)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Idfc Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  =>  0,
+                    'refunds' =>  505,
+                    'total'   =>  -505,
+                ],
+                'count' => [
+                    'claims'  => 0,
+                    'refunds' => 2,
+                    'total'   => 2
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertCount(2, $mail->attachments);
+
+            return true;
+        });
     }
 }

@@ -39,6 +39,7 @@ class Gateway
     const YESB                   = 'yesb';
     const RBL                    = 'rbl';
     const AXIS                   = 'axis';
+    const IDFC                   = 'idfc';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
@@ -291,6 +292,7 @@ class Gateway
         self::PAYU                  => self::PAYU,
         self::CASHFREE              => self::CASHFREE,
         self::NETBANKING_YESB       => self::YESB,
+        self::NETBANKING_IDFC       => self::IDFC,
     ];
 
     /**

@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Idfc extends NetbankingBase
@@ -47,6 +48,26 @@ class Idfc extends NetbankingBase
         $formattedData = $this->getTextData($formattedData, $initialLine, '|');
 
         return $formattedData;
+    }
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
+        $end   = Carbon::createFromTimestamp($end)->addDay()->timestamp;
+
+        $claims = $this->repo->payment->fetchReconciledPaymentsForGateway(
+            $begin,
+            $end,
+            static::GATEWAY,
+            $statuses
+        );
+
+        $claims = $claims->reject(function($claim)
+        {
+            return ($claim->terminal->isDirectSettlement() === true);
+        });
+
+        return $claims;
     }
 
     protected function getFileToWriteNameWithoutExt()

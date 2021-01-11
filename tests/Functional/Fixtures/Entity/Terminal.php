@@ -2471,6 +2471,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementIdfcTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_IDFC_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => Gateway::NETBANKING_IDFC,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'netbanking'                => 1,
+            'gateway_secure_secret'     => 'random_idfc_code',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::NON_RECURRING                 => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingBobTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
