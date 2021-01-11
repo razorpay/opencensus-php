@@ -406,6 +406,29 @@ class Entity extends Base\PublicEntity
         return $merchant->getRestricted();
     }
 
+
+    public function getMerchantEntity()
+    {
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
+
+        if (count($merchantIds) !== 1)
+        {
+            return null;
+        }
+
+        return (new Merchant\Repository)->find($merchantIds[0]);
+    }
+
+    public function setContactMobileNull()
+    {
+        $this->setAttribute(self::CONTACT_MOBILE, null);
+    }
+
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
+
     public function getAllSettings(): array
     {
         $settings = $this->getSettingsAccessor()->all()->toArray();

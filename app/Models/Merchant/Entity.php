@@ -1910,6 +1910,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::WEBSITE] = $website;
     }
 
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
+
     protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)

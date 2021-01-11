@@ -2011,6 +2011,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
     const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
+    const INVALIDATE_CONTACT_DETAILS_ERROR                      = 'INVALIDATE_CONTACT_DETAILS_ERROR';
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
@@ -2034,6 +2035,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_EMAIL_OTP_SEND                                   = 'USER_EMAIL_OTP_SEND';
     const USER_EMAIL_VERIFY_WITH_OTP                            = 'USER_EMAIL_VERIFY_WITH_OTP';
     const USER_2FA_LOCKED                                       = 'USER_2FA_LOCKED';
+    const USER_INVALIDATE_MERCHANT_ERROR                        = 'USER_INVALIDATE_MERCHANT_ERROR';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';

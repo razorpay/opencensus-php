@@ -970,6 +970,31 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->setAttribute(self::KYC_CLARIFICATION_REASONS, $reasons);
     }
 
+    public function setBusinessNameNull()
+    {
+        $this->setAttribute(self::BUSINESS_NAME, null);
+    }
+
+    public function setContactNameNull()
+    {
+        $this->setAttribute(self::CONTACT_NAME, null);
+    }
+
+    public function setContactMobileNull()
+    {
+        $this->setAttribute(self::CONTACT_MOBILE, null);
+    }
+
+    public function setBusinessTypeNull()
+    {
+        $this->setAttribute(self::BUSINESS_TYPE, null);
+    }
+
+    public function setTransactionVolumeNull()
+    {
+        $this->setAttribute(self::TRANSACTION_VOLUME, null);
+    }
+
     public function getBusinessCategory()
     {
         return $this->getAttribute(self::BUSINESS_CATEGORY);

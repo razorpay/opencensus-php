@@ -402,6 +402,53 @@ class UserTest extends TestCase
         $this->assertEmpty($user['password']);
     }
 
+    public function testOauthLoginInvalidateContactDetails()
+    {
+        $user = $this->fixtures->create('user', ['id'             => 'FL0nl7kME8j3Dd',
+                                                 'email'          => 'hello123@gmail.com',
+                                                 'password'       => 'hello123',
+                                                 'contact_mobile' => '9999999999',
+                                                 'confirm_token'  => 'confirm_token']);
+
+        $merchant = $user->getMerchantEntity();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',
+                                                   ['merchant_id'        => $merchant->getId(),
+                                                    'business_name'      => $merchant['name'],
+                                                    'contact_name'       => $merchant['name'],
+                                                    'business_type'      => '1',
+                                                    'transaction_volume' => '1',
+                                                    'contact_mobile'     => '9999999999']);
+
+        $testData =   &$this->testData['testOauthLoginInvalidatePassword'];
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
+
+        // check if password is set as null
+
+        $user = $this->getDbEntityById('user', 'FL0nl7kME8j3Dd');
+
+        $this->assertEmpty($user['password']);
+
+        $merchant = $this->getDbEntityById('merchant', $merchant->getId());
+
+        // check if name is set as empty
+        $this->assertEquals('', $merchant['name']);
+        $this->assertEquals('', $user['name']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        // check if contact details are set as null.
+        $this->assertEmpty($merchantDetails['business_name']);
+        $this->assertEmpty($merchantDetails['contact_name']);
+        $this->assertEmpty($merchantDetails['contact_mobile']);
+        $this->assertEmpty($merchantDetails['business_type']);
+        $this->assertEmpty($merchantDetails['transaction_volume']);
+    }
+
+
     public function testOauthLoginFail()
     {
         $user = $this->fixtures->create('user', [

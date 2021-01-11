@@ -377,6 +377,11 @@ class Core extends Base\Core
 
                     // reset the password of the user as well.
                     $this->invalidatePassword($user);
+
+                    $this->repo->transactionOnLiveAndTest(function() use ($user)
+                    {
+                        $this->invalidateContactInfo($user);
+                    });
                 }
             }
         }
@@ -429,6 +434,62 @@ class Core extends Base\Core
         $user->setPasswordNull();
 
         $this->repo->saveOrFail($user);
+    }
+
+    /** Invalidating contact_name, contact_number, transaction_volume, business_type from
+     *  merchants, merchant_details, users table for security reasons.
+     *
+     * @param Entity $user
+     */
+    protected function invalidateContactInfo(Entity $user)
+    {
+        try
+        {
+            $this->invalidateUserContactInfo($user);
+
+            $merchant = $user->getMerchantEntity();
+
+            if (empty($merchant) === true)
+            {
+                $this->trace->info(TraceCode::USER_INVALIDATE_MERCHANT_ERROR, ['user_id' => $user->getId()]);
+
+                return;
+            }
+
+            $this->invalidateMerchantContactInfo($merchant);
+
+            $this->invalidateMerchantDetailInfo($merchant);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::INVALIDATE_CONTACT_DETAILS_ERROR,
+                                         ['user_id' => $user->getId()]);
+        }
+    }
+
+    protected function invalidateUserContactInfo($user)
+    {
+        $user->setName('');
+        $user->setContactMobileNull();
+        $this->repo->saveOrFail($user);
+    }
+
+    protected function invalidateMerchantContactInfo($merchant)
+    {
+        $merchant->setName('');
+        $this->repo->saveOrFail($merchant);
+    }
+
+    protected function invalidateMerchantDetailInfo($merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantDetail->setContactNameNull();
+        $merchantDetail->setBusinessTypeNull();
+        $merchantDetail->setBusinessNameNull();
+        $merchantDetail->setContactMobileNull();
+        $merchantDetail->setTransactionVolumeNull();
+        $this->repo->saveOrFail($merchantDetail);
     }
 
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
