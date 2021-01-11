@@ -263,6 +263,8 @@ class OrderTransferTest extends TestCase
 
     public function testTransferFailedWebhook()
     {
+        $this->fixtures->merchant->addFeatures(['transfer_failed_webhook']);
+
         $order = $this->testCreateOrderTransfers();
 
         $this->fixtures->merchant->editBalance(100);
@@ -295,8 +297,10 @@ class OrderTransferTest extends TestCase
 
     public function testNoTransferFailedWebhookWhenRetriesLeft()
     {
+        $this->fixtures->merchant->addFeatures(['transfer_failed_webhook']);
+
         $attempts = 2;
-        
+
         $order = $this->testCreateOrderTransfers();
 
         $this->fixtures->merchant->editBalance(100);

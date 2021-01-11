@@ -256,6 +256,11 @@ abstract class AbstractTransfer
 
     protected function fireTransferFailedWebhookIfApplicable(Entity $transfer)
     {
+        if ($transfer->merchant->hasTransferFailedWebhookFeature() === false)
+        {
+            return;
+        }
+
         $source = $transfer->getSourceType();
 
         //

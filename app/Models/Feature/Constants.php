@@ -532,6 +532,7 @@ class Constants
     const AUTOMATED_LOC_ELIGIBLE = 'automated_loc_eligible';
 
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
+    const TRANSFER_FAILED_WEBHOOK           = 'transfer_failed_webhook';
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
 
@@ -803,6 +804,7 @@ class Constants
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
+        self::TRANSFER_FAILED_WEBHOOK         => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
@@ -1130,6 +1132,11 @@ class Constants
         self::TRANSFER_SETTLED_WEBHOOK => [
             'feature'       => self::TRANSFER_SETTLED_WEBHOOK,
             'display_name'  => 'transfer.settled webhook',
+            'documentation' => '',
+        ],
+        self::TRANSFER_FAILED_WEBHOOK => [
+            'feature'       => self::TRANSFER_FAILED_WEBHOOK,
+            'display_name'  => 'transfer.failed webhook',
             'documentation' => '',
         ],
         self::PAYPAL_GTM_NOTIFICATION  => [

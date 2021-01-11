@@ -373,7 +373,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testTransferFailedWebhook()
     {
-        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'transfer_failed_webhook']);
 
         $this->fixtures->merchant->editBalance(100);
 
@@ -384,6 +384,27 @@ class PaymentMarketplaceTransferTest extends TestCase
         ];
 
         $this->expectWebhookEventWithContents('transfer.failed', $this->testData[__FUNCTION__]);
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+    }
+
+    public function testNoTransferFailedWebhookWithoutFeatureFlag()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $this->dontExpectWebhookEvent('transfer.failed');
 
         $this->transferPayment($this->payment['id'], $transfers);
 

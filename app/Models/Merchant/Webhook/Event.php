@@ -602,7 +602,7 @@ class Event
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TRANSFER_SETTLED                  => Feature\Constants::TRANSFER_SETTLED_WEBHOOK,
-        self::TRANSFER_FAILED                   => Feature\Constants::MARKETPLACE,
+        self::TRANSFER_FAILED                   => Feature\Constants::TRANSFER_FAILED_WEBHOOK,
         self::TERMINAL_CREATED                  => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
