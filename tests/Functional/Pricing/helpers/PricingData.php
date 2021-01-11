@@ -1855,6 +1855,7 @@ return [
                 'max_fee'      => 10000,
                 'percent_rate' => 450,
                 'fixed_rate'   => 0,
+                'procurer'     => 'merchant'
             ],
             'method' => 'PATCH'
         ],
@@ -1865,6 +1866,7 @@ return [
                 'fixed_rate'   => 0,
                 'min_fee'      => 101,
                 'max_fee'      => 10000,
+                'procurer'     => 'merchant'
             ],
         ],
     ],
