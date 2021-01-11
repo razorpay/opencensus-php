@@ -117,4 +117,11 @@ class IinController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getIssuerDetails($id)
+    {
+        $data = $this->service()->getIssuerDetails($id);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -339,6 +339,13 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetIssuerDetails()
+    {
+        $this->ba->mandateHQAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCardPaymentFlowAndIinDetailsWithEmiNotEnabled()
     {
         $this->ba->publicAuth();

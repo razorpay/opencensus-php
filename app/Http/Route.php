@@ -107,6 +107,7 @@ class Route
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_get_iin_details'                  => ['get',      'payment/iin',                                    'IinController@getIinDetails'                                       ],
+        'get_issuer_from_iin'                      => ['get',      'mandate_hq/iin/{id}',                            'IinController@getIssuerDetails'                                    ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
@@ -3441,6 +3442,9 @@ class Route
         'disable_merchant_notification_config',
         'enable_merchant_notification_config',
 
+        // mandate HQ
+        'get_issuer_from_iin',
+
         'app_merchant_mapping_get',
         'merchant_tag_map_create',
         'merchant_tag_map_update',
@@ -5728,6 +5732,10 @@ class Route
             'invoice_send_notification_proxy',
             'virtual_account_create_for_internal',
             'payment_links_sign_payload_internal',
+        ],
+
+        'mandate_hq' => [
+            'get_issuer_from_iin',
         ],
 
         'kotak' => [

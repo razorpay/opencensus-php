@@ -84,6 +84,18 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getIssuerDetails($id)
+    {
+        $iinEntity = $this->repo->iin->findOrFailPublic($id);
+
+        return [
+            Entity::ISSUER      => $iinEntity->getIssuer(),
+            Entity::ISSUER_NAME => $iinEntity->getIssuerName(),
+            Entity::NETWORK     => $iinEntity->getNetwork(),
+            Entity::TYPE        => $iinEntity->getType(),
+        ];
+    }
+
     public function editIinBulk($input)
     {
         $this->trace->info(TraceCode::IIN_UPDATE_BULK, [

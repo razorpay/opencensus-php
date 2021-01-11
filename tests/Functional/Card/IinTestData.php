@@ -611,6 +611,21 @@ return [
         ]
     ],
 
+    'testGetIssuerDetails' => [
+        'request' => [
+            'url'     => '/mandate_hq/iin/401200',
+            'content' => [],
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content'     => [
+                'issuer'      => 'HDFC',
+                'issuer_name' => 'HDFC Bank',
+                'network'     => 'Visa'
+            ]
+        ]
+    ],
+
     'testGetCardPaymentFlowAndIinDetailsWithEmiNotEnabled' => [
         'request' => [
             'url'     => '/payment/iin',

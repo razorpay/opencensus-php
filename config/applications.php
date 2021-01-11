@@ -516,6 +516,10 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'mandate_hq' => [
+        'secret'   => env('APP_MANDATE_HQ_SECRET'),
+    ],
+
     'loan_origination_system' => [
         'url'           => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),
         'username'      => 'key',

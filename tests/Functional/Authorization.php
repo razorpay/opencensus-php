@@ -106,6 +106,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function mandateHQAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.mandate_hq')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function batchAuth($user = 'rzp_test_10000000000000')
     {
         $this->appAuth($user, \Config::get('applications.batch')['secret']);
