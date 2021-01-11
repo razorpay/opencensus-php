@@ -141,7 +141,7 @@ class HyperVerge extends Base\Core
             $input[self::EMAIL_ID] = substr($bankAccount->getBeneficiaryEmail(), 0, 30);
         }
 
-        $input[self::COMPANY_NAME] = $this->getCompanyName($paperMandate);
+        $input[self::COMPANY_NAME] = substr($this->getCompanyName($paperMandate), 0, 50);
 
         $input[self::FREQUENCY] = self::$frequencyMapping[$paperMandateDetails[Entity::FREQUENCY]];
 
