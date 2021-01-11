@@ -113,14 +113,14 @@ export const fetchLocale = () => {
   };
 };
 
-export const updateLocale = locale => {
+export const updateLocale = (locale) => {
   return {
     type: LOCALE_UPDATE,
     payload: locale,
   };
 };
 
-export const saveLocale = data => {
+export const saveLocale = (data) => {
   return {
     type: LOCALE_SAVE,
     payload: merchantFetch({

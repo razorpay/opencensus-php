@@ -1,0 +1,17 @@
+name: Bundle Size Diff
+
+on: [pull_request]
+
+jobs:
+  bundle-anlayzer:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - uses: preactjs/compressed-size-action@v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
