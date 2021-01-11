@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Base;
 
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Exception\LogicException;
 use RZP\Models\UpiMandate\Status as Status;
@@ -83,6 +84,16 @@ class UpiMandateTransformer extends UpiTransanformer
             if ($this->isSuccess() === true)
             {
                 $this->item->setStatus(Status::CONFIRMED);
+            }
+            else
+            {
+                $internalErrorCode = $this->exception->getError()->getInternalErrorCode();
+
+                // If the mandate is rejected by user, update mandate status as rejected.
+                if ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED)
+                {
+                    $this->item->setStatus(Status::REJECTED);
+                }
             }
 
             $this->item->setUmn($this->response(Mandate::UMN))

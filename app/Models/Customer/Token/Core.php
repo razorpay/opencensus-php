@@ -470,6 +470,14 @@ class Core extends Base\Core
                 $token->setRecurringStatus(RecurringStatus::INITIATED);
             }
         }
+        else if ($input[Entity::RECURRING_STATUS] === RecurringStatus::REJECTED)
+        {
+            // Check if the previous recurring status of token is initiated.
+            if ($token->getRecurringStatus() === RecurringStatus::INITIATED)
+            {
+                $token->setRecurringStatus(RecurringStatus::REJECTED);
+            }
+        }
 
         $this->repo->saveOrFail($token);
     }

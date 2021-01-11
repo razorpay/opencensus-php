@@ -195,7 +195,11 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upiMetadata = $this->getDbLastEntity('upi_metadata');
 
+        $token = $this->getDbLastEntity('token');
+
         $this->assertEquals('created', $upiMandate['status']);
+
+        $this->assertEquals(Token\RecurringStatus::INITIATED, $token[Token\Entity::RECURRING_STATUS]);
 
         $this->mockServerContentFunction(function (& $content, $action)
         {
@@ -215,13 +219,17 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $upiMetadata->reload();
 
+        $token->reload();
+
         $payment = $this->assertUpiDbLastEntity('payment', [
             'status'                => 'failed',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
         ]);
         $this->assertNotEmpty($payment->getVerifyAt());
 
-        $this->assertEquals('created', $upiMandate['status']);
+        $this->assertEquals(Token\RecurringStatus::REJECTED, $token[Token\Entity::RECURRING_STATUS]);
+
+        $this->assertEquals(Status::REJECTED, $upiMandate['status']);
 
         $this->assertEquals('failed', $upiMetadata['internal_status']);
     }

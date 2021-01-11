@@ -1056,10 +1056,13 @@ trait UpiRecurring
             return;
         }
 
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
         // As this is made sure that the payment will be created only for local token
-        $upiMandate = $payment->getGlobalOrLocalTokenEntity()->upiMandate;
+        $upiMandate = $token->upiMandate;
         $prevStatus = $upiMandate->getStatus();
         $confirmed  = false;
+        $tokenRejected   = false;
 
         $attributes = $data['upi_mandate'];
 
@@ -1078,6 +1081,12 @@ trait UpiRecurring
                 $upiMandate->setVpa($data['upi'][UpiMetadata\Entity::VPA] ?? null);
                 $upiMandate->setLateConfirmed($wasFailed);
                 $confirmed = true;
+            }
+            // When the mandate was in created status and now it was reject by user
+            else if (($prevStatus === UpiMandate\Status::CREATED) and
+                     ($status === UpiMandate\Status::REJECTED))
+            {
+                $tokenRejected = true;
             }
         }
 
@@ -1114,8 +1123,15 @@ trait UpiRecurring
 
         if ($tokenInitiated === true)
         {
-            (new Token\Core)->updateTokenForUpi($payment->getGlobalOrLocalTokenEntity(), [
+            (new Token\Core)->updateTokenForUpi($token, [
                 Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::INITIATED,
+            ]);
+        }
+        // This is the case when mandate create callback is rejected by user
+        else if ($tokenRejected === true)
+        {
+            (new Token\Core)->updateTokenForUpi($token, [
+                Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::REJECTED,
             ]);
         }
 
