@@ -16,6 +16,7 @@
     "postinstall": "cd web && npm ci",
     "start": "node signup.js; cd web && npm start",
     "serve": "REDIRECTOR=true npm run start",
+    "serve:signup": "nodemon signup.js --watch public/js/merchant/",
     "build": "node signup.js; cd web && npm run production:build",
     "test": "node test.js; cd web && npm run test",
     "test:jest": "cd web && npm run test:jest"
@@ -30,6 +31,7 @@
     "http-server": "^0.12.3",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.11",
+    "nodemon": "^2.0.7",
     "prettier": "^2.0.5",
     "typescript": "3.9.5"
   },
