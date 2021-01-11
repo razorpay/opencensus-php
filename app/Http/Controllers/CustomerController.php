@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
 
 class CustomerController extends Controller
 {
@@ -58,6 +59,8 @@ class CustomerController extends Controller
 
     public function deleteCustomer($id)
     {
+        $this->trace->info(TraceCode::CUSTOMER_DELETE, ["customer_id" => $id]);
+
         $data = $this->service()->delete($id);
 
         return ApiResponse::json($data);

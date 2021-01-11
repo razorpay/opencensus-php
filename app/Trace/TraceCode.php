@@ -574,6 +574,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IIN_MESSAGE_TYPE_MISSING                              = 'IIN_MESSAGE_TYPE_MISSING';
 
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
+    const CUSTOMER_DELETE                                       = 'CUSTOMER_DELETE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_CREATE                                 = 'CUSTOMER_TOKEN_CREATE';
     const SUBSCRIPTION_TOKEN_CREATE                             = 'SUBSCRIPTION_TOKEN_CREATE';
