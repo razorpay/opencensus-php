@@ -689,7 +689,7 @@ export default class User {
   }
 
   get isNetBankingEnabled() {
-    return this.isFeatureEnabled('allow_netbanking_fetch');
+    return true;
   }
 
   get isUnregisteredBusiness() {
