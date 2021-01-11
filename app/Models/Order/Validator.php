@@ -395,8 +395,23 @@ class Validator extends Base\Validator
 
     protected function validateOrderBank($bank)
     {
-        if (($this->entity->getBank() !== null) and
-            ($this->entity->getBank() !== $bank))
+        // bypassing upi as payment create fails for tpv merchants because the bank codes we receive are different
+        // from payment entity than what we have in order entity.In case of UPI TPV, the validation is actually done by
+        // the acquiring bank using Account Number and IFSC code. We don't really need the 'bank' field.
+
+        $order = $this->entity;
+
+        $tpvRequired = $order->merchant->isTPVRequired();
+        $method = $order->getMethod();
+
+        if (($tpvRequired === true) and
+            ($method === Payment\Method::UPI))
+        {
+            return;
+        }
+
+        if (($order->getBank() !== null) and
+            ($order->getBank() !== $bank))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);

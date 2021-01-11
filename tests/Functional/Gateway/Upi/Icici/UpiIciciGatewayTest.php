@@ -143,6 +143,102 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
+    public function testIntentTpvPaymentWithBankAsNull()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData['testTpvPayment']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+        $payment['amount'] = $order['amount'];
+        // Passing bank as null
+        $payment['bank'] = null;
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
+    public function testIntentTpvPaymentWithDifferentBankFromOrderBank()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData['testTpvPayment']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+        $payment['amount'] = $order['amount'];
+        // Passing bank as ALLA
+        $payment['bank'] = 'ALLA';
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
     public function testIntentTpvWithoutZeroesForSbi()
     {
         $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
