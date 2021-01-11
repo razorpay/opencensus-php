@@ -5,10 +5,6 @@ namespace RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 
-//
-// Added for future use in retrieving the
-// status, soft deletes, etc, for pivot table
-//
 class Entity extends Base\PublicEntity
 {
     protected $entity      = 'subscription_offers_master';
@@ -19,6 +15,20 @@ class Entity extends Base\PublicEntity
     const NO_OF_CYCLES           = 'no_of_cycles';
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
+
+    /**
+     * Subscription related offer constants to be used in offer payload
+     */
+    const SUBSCRIPTION_ID = 'subscription_id';
+    const PAYMENT_ID = 'payment_id';
+    const DISCOUNTED_AMOUNT = 'discounted_amount';
+    const ORIGINAL_AMOUNT = 'original_amount';
+    const OFFER_VALID = 'offer_valid';
+    const MESSAGE = 'message';
+    const OFFER_NAME = 'offer_name';
+    const OFFER_DESC = 'offer_desc';
+    const ACTIVE = 'active';
+    const EXPIRED = 'expired';
 
     protected $table = Table::SUBSCRIPTION_OFFERS_MASTER;
 

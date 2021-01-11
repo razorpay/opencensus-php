@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -519,6 +520,13 @@ class Core extends Base\Core
      */
     protected function isSubscriptionOffersEnabled()
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::OFFER_ON_SUBSCRIPTION) === true)
+        {
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
+
+            return true;
+        }
+
         $treatment = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
             Merchant\RazorxTreatment::OFFER_ON_SUBSCRIPTION,
@@ -550,58 +558,110 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_CALCULATION, ['input' => $input]);
 
         $offerId      = Entity::verifyIdAndStripSign($input['offer']);
-        $fetchActive  = $input['active'] ?? true;
-        $fetchExpired = $input['expired'] ?? false;
+        $fetchActive  = $input[SubscriptionOffer\Entity::ACTIVE] ?? true;
+        $fetchExpired = $input[SubscriptionOffer\Entity::EXPIRED] ?? false;
 
         $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $fetchActive, $fetchExpired);
 
         $data = [
-            'original_amount' => (int)$input['amount'],
-            'offer_valid'     => 0,
-            'message'         => null,
-            'offer_name'      => '',
-            'offer_desc'      => '',
+            SubscriptionOffer\Entity::DISCOUNTED_AMOUNT => (int)$input['amount'],
+            SubscriptionOffer\Entity::ORIGINAL_AMOUNT   => (int)$input['amount'],
+            SubscriptionOffer\Entity::OFFER_VALID       => 0,
+            SubscriptionOffer\Entity::MESSAGE           => null,
+            SubscriptionOffer\Entity::OFFER_NAME        => '',
+            SubscriptionOffer\Entity::OFFER_DESC        => '',
         ];
 
         if ($offer === null)
         {
-            $data['discounted_amount'] = (int)$input['amount'];
-            $data['message']           = 'Offer Not Found';
+            $data[SubscriptionOffer\Entity::MESSAGE]    = 'Offer Not Found';
 
             return $data;
         }
 
         try
         {
-            $data['discounted_amount'] = $offer->getDiscountedAmount($input['amount']);
+            $data[SubscriptionOffer\Entity::OFFER_NAME]  = $offer->getName();
+            $data[SubscriptionOffer\Entity::OFFER_DESC]  = $offer->getDisplayText();
 
-            if ($data['discounted_amount'] === $data['original_amount'])
+            $data[SubscriptionOffer\Entity::DISCOUNTED_AMOUNT] = $offer->getDiscountedAmount($input['amount']);
+
+            // Checking this separately as -
+            // 1. there will be cases where payment id won't be present
+            // 2. Don't need to have db calls when amount it self is not discountable
+            if ($data[SubscriptionOffer\Entity::DISCOUNTED_AMOUNT] === $data[SubscriptionOffer\Entity::ORIGINAL_AMOUNT])
             {
-                $data['message']     = 'Offer No Discount Applied';
+                $data[SubscriptionOffer\Entity::MESSAGE]    = PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT;
             }
             else
             {
-                $data['offer_name']  = $offer->getName();
-                $data['offer_desc']  = $offer->getDisplayText();
-                $data['offer_valid'] = 1;
-            }
+                // We will do payment entity validation, iff present
+                if (isset($input[SubscriptionOffer\Entity::PAYMENT_ID]) === true)
+                {
+                    $this->validateForFutureSubscriptionPayment($offerId, $offer, $input);
+                }
 
-            return $data;
+                $data[SubscriptionOffer\Entity::OFFER_VALID] = 1;
+            }
         }
         catch (\Exception $e)
         {
             // Not an error for just the calculation, so printing in info
             $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_NA,
-                ['input'  => $input,
-                 'reason' => $e->getMessage()
+                [
+                    'input'  => $input,
+                    'reason' => $e->getMessage()
                 ]
             );
 
-            $data['discounted_amount'] = (int)$input['amount'];
-            $data['message']           = $e->getMessage();
-
-            return $data;
+            $data[SubscriptionOffer\Entity::MESSAGE]    = $e->getMessage();
         }
+
+        return $data;
+    }
+
+    private function validateForFutureSubscriptionPayment($offerId, $offer, $input)
+    {
+        $payment = $this->repo->payment->fetchByIdandSubscriptionId(
+            'pay_' . $input[SubscriptionOffer\Entity::PAYMENT_ID],
+            $input[SubscriptionOffer\Entity::SUBSCRIPTION_ID]
+        );
+
+        if ($payment->getMethod() !== $offer->getPaymentMethod())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH,
+                null,
+                [
+                    'payment_method' => $payment->getMethod(),
+                    'offer_method'   => $offer->getPaymentMethod()
+                ]
+            );
+        }
+
+        $baseOffer = $this->repo->offer->findByPublicId(Entity::getSignedId($offerId));
+        $checker   = new Checker($baseOffer, false);
+
+        $this->repo->beginTransactionAndRollback(
+            function () use ($checker, $baseOffer, $payment, $input) {
+
+                $orderInput = [
+                    'amount'   => $input['amount'],
+                    'currency' => 'INR',
+                ];
+
+                $order = (new Order\Core())->create($orderInput, $this->merchant);
+
+                if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $order) === false)
+                {
+                    if ($baseOffer->shouldBlockPayment() === true)
+                    {
+                        $errorMessage = $baseOffer->getErrorMessage();
+
+                        throw new Exception\BadRequestValidationFailureException($errorMessage);
+                    }
+                }
+            });
     }
 
     /**

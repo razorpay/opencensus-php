@@ -536,6 +536,11 @@ class Constants
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
 
+    /**
+     * Enables Offers on Subscription
+     */
+    const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -809,6 +814,7 @@ class Constants
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
         self::WALLET                          => true,
+        self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
     ];
 
@@ -1157,6 +1163,11 @@ class Constants
         self::REWARD_MERCHANT_DASHBOARD => [
             'feature'       => self::REWARD_MERCHANT_DASHBOARD,
             'display_name'  => 'Checkout Reward on merchant dashboard',
+            'documentation' => '',
+        ],
+        self::OFFER_ON_SUBSCRIPTION => [
+            'feature'       => self::OFFER_ON_SUBSCRIPTION,
+            'display_name'  => 'Enable Offers on Subscription Payment',
             'documentation' => '',
         ],
         self::AUTOMATED_LOC_ELIGIBLE => [

@@ -1906,6 +1906,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByInvoiceId(string $invoiceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::INVOICE_ID, $invoiceId)
+                    ->first();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()

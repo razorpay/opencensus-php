@@ -772,6 +772,13 @@ class Checkout
 
     protected function isSubscriptionOffersEnabled(Merchant\Entity $merchant, $mode)
     {
+        if ($merchant->isFeatureEnabled(Feature\Constants::OFFER_ON_SUBSCRIPTION) === true)
+        {
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
+
+            return true;
+        }
+
         $treatment = $this->app->razorx->getTreatment(
             $merchant->getId(),
             Merchant\RazorxTreatment::OFFER_ON_SUBSCRIPTION,
