@@ -8802,20 +8802,20 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        // Assert that 2 payouts are found
-        $this->assertEquals(2, $response['count']);
+        // Now only one payout will be found. because of the same I-Key
+        $this->assertEquals(1, $response['count']);
 
-        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+        $this->assertEquals($payout1->getPublicId(), $payout2->getPublicId());
 
-        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+        $responsePayoutIds = [$response['items'][0]['id']];
+
+        $payoutIds = [$payout1->getPublicId()];
 
         $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
 
         $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payoutSources];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
-
-        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][1]);
     }
 
     public function testFetchPayoutsOnProxyAuth()
@@ -8838,20 +8838,18 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        // Assert that 2 payouts are found
-        $this->assertEquals(2, $response['count']);
+        // Now only one payout will be found. because of the same I-Key
+        $this->assertEquals(1, $response['count']);
 
-        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+        $responsePayoutIds = [$response['items'][0]['id']];
 
-        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+        $payoutIds = [$payout1->getPublicId()];
 
         $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
 
         $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout1->getSourceDetails()->toArray()];
 
         $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
-
-        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][1]);
     }
 
     public function testFetchPayoutsOnPrivateAuth()
@@ -8878,19 +8876,17 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        // Assert that 2 payouts are found
-        $this->assertEquals(2, $response['count']);
+        // Now only one payout will be found. because of the same I-Key
+        $this->assertEquals(1, $response['count']);
 
-        $responsePayoutIds = [$response['items'][0]['id'], $response['items'][1]['id']];
+        $responsePayoutIds = [$response['items'][0]['id']];
 
-        $payoutIds = [$payout1->getPublicId(), $payout2->getPublicId()];
+        $payoutIds = [$payout1->getPublicId()];
 
         $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
 
         $this->assertFalse(array_key_exists(Payout\Entity::SOURCE_DETAILS, $response['items'][0]));
-        $this->assertFalse(array_key_exists(Payout\Entity::SOURCE_DETAILS, $response['items'][1]));
 
-        $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
         $this->assertFalse(array_key_exists(Payout\Entity::ORIGIN, $response['items'][0]));
     }
 

@@ -86,7 +86,8 @@ class MerchantIdempotencyHandler
         // to make sure multiple payouts for the same req are not created.
         //
         if (($this->basicauth->isStrictPrivateAuth() === false) and
-            ($this->basicauth->isVendorPaymentApp() === false))
+            ($this->basicauth->isVendorPaymentApp() === false) and
+            ($this->basicauth->isPayoutLinkApp() === false))
         {
             return $next($request);
         }

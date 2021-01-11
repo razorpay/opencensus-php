@@ -65,6 +65,7 @@ class PayoutLinks
     const MODE                                     = 'mode';
     const NOTES                                    = 'notes';
     const COUNT                                    = 'count';
+    const ITEMS                                    = 'items';
 
     const INVALID_REQUEST_ERROR_MSG                = 'the json request could not be decoded';
     const INVALID_REQUEST_RESPONSE_MSG             = 'Invalid request payload';
@@ -328,6 +329,8 @@ class PayoutLinks
         $response = $this->makeRequest($url, $input);
 
         $response[self::COUNT] = array_pull($response, self::COUNT, 0);
+
+        $response[self::ITEMS] = array_pull($response, self::ITEMS, []);
 
         return $response;
     }
