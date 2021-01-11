@@ -981,6 +981,33 @@ return [
         ],
     ],
 
+    'testFetchOrderDetailForExpressAuth' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'order',
+            ],
+        ],
+    ],
+
+    'testFetchOrderDetailNotExpressAuthError' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testStatusAfterPayment' => [
         'response' => [
             'content' => [

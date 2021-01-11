@@ -144,6 +144,7 @@ class Route
         'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
         'payment_edit'                             => ['patch',    'payments/{id}',                                  'PaymentController@update'                                          ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
+        'payment_fetch_by_id_internal'             => ['get',      'payments_internal/{id}',                         'PaymentController@getPaymentById'                              ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
@@ -727,6 +728,7 @@ class Route
         'order_create'                             => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
         'order_fetch'                              => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                        => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
+        'order_fetch_by_id_internal'               => ['get',      'orders_internal/{id}',                           'OrderController@fetchOrderDetailById'                            ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
@@ -2895,6 +2897,8 @@ class Route
         'fts_channel_notification',
         'dispute_reason_fetch_internal',
         'payment_meta_fetch_by_payment_id_action',
+        'payment_fetch_by_id_internal',
+        'order_fetch_by_id_internal',
         'user_details',
 
         'reward_expire_cron',
@@ -5516,6 +5520,8 @@ class Route
             'dispute_fetch',
             'dispute_reason_fetch_internal',
             'payment_meta_fetch_by_payment_id_action',
+            'payment_fetch_by_id_internal',
+            'order_fetch_by_id_internal'
         ],
 
         'cron' => [

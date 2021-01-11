@@ -220,6 +220,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const DETAILED_REASON        = 'detailed_reason';
 
+    const ORDER                  = 'order';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;

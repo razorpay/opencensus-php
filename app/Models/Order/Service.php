@@ -280,6 +280,13 @@ class Service extends Base\Service
         return $order->toArrayPublic();
     }
 
+    public function fetchById($id)
+    {
+        $order = $this->repo->order->findByPublicId($id);
+
+        return $order->toArrayPublic();
+    }
+
     public function fetchMultiple($input)
     {
         $orders = $this->repo->order->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE);

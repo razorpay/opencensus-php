@@ -242,6 +242,42 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayNotHasKey('dcc_mark_up_percent', $content);
     }
 
+    public function testFetchByIdForExpressAuth()
+    {
+        $this->ba->expressAuth();
+
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId(), 'order_id' => $order->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+    }
+
+    public function testFetchByIdNotExpressAuthError()
+    {
+        $this->ba->privateAuth();
+
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId(), 'order_id' => $order->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+    }
+
     public function testFetchStatusCountForPrivateAuth()
     {
         $paymentArray = $this->getDefaultPaymentArray();

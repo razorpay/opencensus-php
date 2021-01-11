@@ -474,6 +474,30 @@ class OrderTest extends TestCase
         $this->assertArrayNotHasKey('virtual_account', $response);
     }
 
+    public function testFetchOrderDetailForExpressAuth()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders_internal/order_' . $order['id'];
+
+        $this->ba->expressAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('virtual_account', $response);
+    }
+
+    public function testFetchOrderDetailNotExpressAuthError()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders_internal/order_' . $order['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('virtual_account', $response);
+    }
+
     public function testRetrieveOrderWithReceipt()
     {
         $order = $this->fixtures->create('order');

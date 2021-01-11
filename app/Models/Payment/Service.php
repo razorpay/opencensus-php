@@ -1358,6 +1358,28 @@ class Service extends Base\Service
         return $entity;
     }
 
+    public function fetchById(string $id, array $input = []): array
+    {
+
+        $id = Entity::stripSignWithoutValidation($id);
+
+        $payment = $this->repo
+                        ->payment
+                        ->findOrFailByPublicIdWithParams($id, $input);
+
+        $paymentMerchantId = $payment->getMerchantId();
+
+        $entity = $payment->toArrayPublicWithExpand();
+
+        $order = $this->repo
+                      ->order
+                      ->findByPublicId($entity['order_id']);
+
+        $entity['order'] = $order->toArrayPublic();
+
+        return $entity;
+    }
+
     protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)
     {
         if($this->merchant->isPartner() === false)

@@ -236,6 +236,36 @@ return [
         ],
     ],
 
+    'testFetchByIdForExpressAuth' => [
+        'request' => [
+            'url'     => '/payments_internal/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'order' => [
+                    'entity' => 'order',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByIdNotExpressAuthError' => [
+        'request' => [
+            'url'     => '/payments_internal/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFetchWithExpandsForProxyAuth' => [
         'request' => [
             'url'     => '/payments',
