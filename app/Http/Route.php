@@ -6022,7 +6022,11 @@ class Route
 
         'gupshup' => [
             'gupshup_incoming_messages_callback',
-        ]
+        ],
+
+        'bvs' => [
+            'fund_account_validate',
+        ],
     ];
 
     //

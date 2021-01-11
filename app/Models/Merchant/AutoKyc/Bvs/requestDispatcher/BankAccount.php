@@ -31,18 +31,17 @@ class BankAccount extends Base
             Constant::BANK_ACCOUNT_UNREG :
             Constant::BANK_ACCOUNT_REG;
 
-        $payload = [
+        return [
             Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
             Constant::CONFIG_NAME     => $configName,
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
             Constant::DETAILS         => [
                 Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
                 Constant::IFSC                 => $this->merchantDetails->getBankBranchIfsc(),
+                Constant::BENEFICIARY_NAME     => $this->merchantDetails->getBankAccountName(),
                 Constant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
             ],
         ];
-
-        return $payload;
     }
 
     public function performPostProcessOperation(): void

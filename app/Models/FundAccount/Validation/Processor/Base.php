@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+use RZP\Models\FundAccount\Validation\Constants;
 use Slack;
 use Config;
 use Monolog\Logger;
@@ -9,6 +10,7 @@ use Monolog\Logger;
 use RZP\Exception;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
+use RZP\Services\KafkaProducer;
 use RZP\Models\FundAccount\Type;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Preferences;
@@ -148,6 +150,19 @@ abstract class Base extends Core
         if ((in_array($this->validation->getMerchantId(), $whitelistMidsForEvent, true) === true)
             and ($this->validation->fundAccount->getAccountType() === Type::BANK_ACCOUNT))
         {
+            $notes = $this->validation->getNotes();
+
+            //
+            // Here decision making to route results to BVS or API is done based on Notes.
+            // because While triggering FAV create call, API passes notes with merchant_id but BVS does not.
+            //
+            if (isset($notes[Constants::MERCHANT_ID]) === false)
+            {
+                $this->PushFundAccountValidationEventToKafka();
+
+                return;
+            }
+
             FundAccountValidation::dispatch($this->mode, $this->validation->getId());
         }
     }
@@ -155,5 +170,28 @@ abstract class Base extends Core
     public function validateFundAccountBeforeCreating()
     {
         // do nothing
+    }
+
+    public function PushFundAccountValidationEventToKafka()
+    {
+        $topic = env('BVS_BANK_ACCOUNT_RESPONSE_TOPIC', 'fav-bvs-result-events');
+
+        $data = [
+            Entity::ID      => $this->validation->getId(),
+            Entity::STATUS  => $this->validation->getStatus(),
+            Entity::RESULTS => [
+                Entity::ACCOUNT_STATUS  => $this->validation->getAccountStatus(),
+                Entity::REGISTERED_NAME => [
+                    $this->validation->getRegisteredName(),
+                ],
+            ],
+        ];
+
+        $message = [
+            Constants::KAFKA_MESSAGE_TASK_NAME => Constants::BANK_ACCOUNT_VALIDATION_RESULTS,
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+        ];
+
+        (new KafkaProducer($topic, stringify($message)))->Produce();
     }
 }

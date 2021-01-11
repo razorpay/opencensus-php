@@ -18,32 +18,6 @@ class Bank_account_unreg extends BaseConfig
         'version'    => 'v2',
         'rules_list' => [
             '0' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  => [
-                    'equals' => [
-                        [
-                            'var' => 'artefact.details.account_number.value',
-                        ],
-                        [
-                            'var' => 'enrichments.online_provider.details.account_number.value',
-                        ],
-                    ],
-                ],
-            ],
-            '1' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  => [
-                    'equals' => [
-                        [
-                            'var' => 'artefact.details.ifsc.value',
-                        ],
-                        [
-                            'var' => 'enrichments.online_provider.details.ifsc.value',
-                        ],
-                    ],
-                ],
-            ],
-            '2' => [
                 'rule_type' => 'array_comparison_rule',
                 'rule_def'  => [
                     "some" => [

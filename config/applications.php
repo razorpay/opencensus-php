@@ -780,5 +780,10 @@ return [
 
     'gupshup' => [
         'secret' => env('GUPSHUP_CALLBACK_SECRET')
+    ],
+
+    'bvs' => [
+        'username' => env("BVS_APP_USERNAME"),
+        'secret'   => env('BVS_APP_SECRET')
     ]
 ];

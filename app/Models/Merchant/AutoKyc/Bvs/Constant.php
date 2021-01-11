@@ -38,6 +38,7 @@ class Constant
     const BANK_ACCOUNT         = 'bank_account';
     const ACCOUNT_NUMBER       = 'account_number';
     const IFSC                 = 'ifsc';
+    const BENEFICIARY_NAME     = 'beneficiary_name';
     const ACCOUNT_HOLDER_NAMES = 'account_holder_names';
 
     const SHOP_REGISTRATION_NUMBER = 'registration_number';
