@@ -89,54 +89,52 @@ class CreateSettlementOndemandBulkTransfer extends Job
                     'settlement_ondemand_attempt_id' => $this->settlementOndemandAttemptId,
                 ]);
 
-            if ( $this->settlementOndemandTransfer->getAttempts() < self::PAYOUT_REVERSAL_RETRY_LIMIT or
-                 $this->attempts() < self::PAYOUT_CREATION_FAILURE_RETRY_LIMIT)
+            if ($e->getCode() === ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL)
             {
-                if ($e->getCode() === ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL)
-                {
-                    (new Attempt\Service)->updateStatusAfterPayoutRequest(
+                (new Attempt\Service)->updateStatusAfterPayoutRequest(
                         Status::REVERSED,
                         $e->getData()['response']['id'],
                         $this->settlementOndemandAttempt,
                         $e->getData()['response'],
                         $e->getData()['response']['failure_reason']);
 
+                if ((new Attempt\Core)->canRetry($this->settlementOndemandTransfer->getAttempts(),
+                    $this->settlementOndemandTransfer))
+                {
                     $this->settlementOndemandAttempt = (new Attempt\Core)
                                                             ->createAttempt($this->settlementOndemandTransfer);
 
                     $this->settlementOndemandAttemptId = $this->settlementOndemandAttempt->getId();
-                }
 
-                $this->release(10 * $this->attempts() + random_int(0, 10));
+                    $this->release(10 * $this->attempts() + random_int(0, 10));
+                }
+                else
+                {
+                    $this->delete();
+                }
             }
             else
             {
-                if ($e->getCode() === ErrorCode::SERVER_ERROR_RAZORPAYX_PAYOUT_REVERSAL)
+                if($this->attempts() < self::PAYOUT_CREATION_FAILURE_RETRY_LIMIT)
                 {
-                    $failureReason = $e->getData()['response']['failure_reason'];
-
-                    $response = $e->getData()['response'];
-
-                    $payoutId = $e->getData()['response']['id'];
+                    $this->release(10 * $this->attempts() + random_int(0, 10));
                 }
                 else
                 {
                     $failureReason = $e->getMessage() ?? self::DEFAULT_FAILURE_REASON;
 
-                    $response = null;
+                    $payoutId = $this->settlementOndemandTransfer->getPayoutId() ?? null;
 
-                    $payoutId = null;
-                }
-
-                (new Attempt\Service)->updateStatusAfterPayoutRequest(
+                    (new Attempt\Service)->updateStatusAfterPayoutRequest(
                     Status::REVERSED,
                     $payoutId,
                     $this->settlementOndemandAttempt,
-                    $response ,
+                    null,
                     $failureReason);
 
-                $this->delete();
+                    $this->delete();
+                }
             }
-        }
+       }
     }
 }

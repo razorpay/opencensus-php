@@ -128,8 +128,8 @@ class Core extends Base\Core
 
         $settlementOndemandTransfer->setAttempts($presentAttempts + 1);
 
-        if($payoutStatus === Status::REVERSED and
-           $settlementOndemandTransfer->getAttempts() > BulkJob::PAYOUT_REVERSAL_RETRY_LIMIT)
+        if((($payoutStatus === Status::REVERSED) and
+            ((new Attempt\Core)->canRetry($presentAttempts + 1, $settlementOndemandTransfer) === false)))
         {
             $this->setReversed($settlementOndemandTransfer);
         }
@@ -152,8 +152,9 @@ class Core extends Base\Core
         {
            $this->setProcessed($settlementOndemandTransfer);
         }
-        else if ($payoutStatus === Status::REVERSED and
-                 $settlementOndemandTransfer->getAttempts() > BulkJob::PAYOUT_REVERSAL_RETRY_LIMIT)
+        else if ((($payoutStatus === Status::REVERSED) and
+                 ((new Attempt\Core)->canRetry($settlementOndemandTransfer->getAttempts(),
+                                               $settlementOndemandTransfer) === false)))
         {
             $this->setReversed($settlementOndemandTransfer);
         }

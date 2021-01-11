@@ -155,7 +155,7 @@ class Core extends Base\Core
                         Status::REVERSED,
                         $settlementOndemandAttempt);
 
-                    if( $attempts < CreateSettlementOndemandBulkTransfer::PAYOUT_REVERSAL_RETRY_LIMIT)
+                    if($this->canRetry($attempts, $settlementOndemandTransfer) === true)
                     {
                         $settlementOndemandAttemptNew = $this->createAttempt($settlementOndemandTransfer);
 
@@ -192,5 +192,11 @@ class Core extends Base\Core
 
         (new Transfer\Core)
             ->updateStatusAfterWebhookResponse($payoutStatus, $settlementOndemandAttempt->settlementOndemandTransfer);
+    }
+
+    public function canRetry($attempts, $settlementOndemandTransfer): bool
+    {
+        return (($attempts < CreateSettlementOndemandBulkTransfer::PAYOUT_REVERSAL_RETRY_LIMIT) and
+               ($settlementOndemandTransfer->getCreatedAt() >= Carbon::now()->subDays(2)->getTimestamp()));
     }
 }
