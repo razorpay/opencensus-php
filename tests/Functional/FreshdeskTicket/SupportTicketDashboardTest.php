@@ -4,6 +4,8 @@
 namespace Functional\FreshdeskTicket;
 
 use Mockery;
+use RZP\Services\RazorXClient;
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -42,6 +44,24 @@ class SupportTicketDashboardTest extends TestCase
             'created_at'     => '1600000000',
             'updated_at'     => '1600000000',
         ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => '10000000000000',
+            'contact_mobile' => '9876543210',
+        ]);
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'On')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 
     protected function expectFreshdeskRequestAndRespondWith($expectedPath, $expectedMethod, $expectedContent, $respondWith = [], $times = 1)
@@ -283,11 +303,6 @@ class SupportTicketDashboardTest extends TestCase
 
     public function testCreateTicketRzp()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'    => '10000000000000',
-            'contact_mobile' => '9876543210',
-        ]);
-
         $frDueBy = time() + self::DAY * 2;
 
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
@@ -342,11 +357,6 @@ class SupportTicketDashboardTest extends TestCase
 
     public function testCreateTicketRzpSol()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'    => '10000000000000',
-            'contact_mobile' => '9876543210',
-        ]);
-
         $frDueBy = time() + self::DAY * 2;
 
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
@@ -394,11 +404,6 @@ class SupportTicketDashboardTest extends TestCase
 
     public function testCreateTicketFreshdeskError()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'    => '10000000000000',
-            'contact_mobile' => '9876543210',
-        ]);
-
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
             [
                 'description' => 'ticket description',
@@ -422,6 +427,44 @@ class SupportTicketDashboardTest extends TestCase
                     ]
                 ]
             ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateTicketWithAttachment()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateTicketRzp'];
+
+        $this->addAttachmentToRequest(__FUNCTION__, 'abc.jpg');
+
+        $this->mockRazorxTreatment('on');
+
+        $this->freshdeskClientMock
+            ->shouldReceive('makeCurlRequest')
+            ->times(1)
+            ->andReturnUsing(function () {
+                return json_encode([
+                    'id'            => '99',
+                    'description'   => 'ticket description',
+                    'fr_due_by'     => '2020-11-30T16:52:00Z',
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    ],
+                    'priority' =>  1,
+                ]);
+            });
+
+        $this->startTest();
+    }
+
+    public function testCreateTicketInvalidAttachmentExtension()
+    {
+
+        $this->addAttachmentToRequest(__FUNCTION__, 'a.exe');
+
+        $this->mockRazorxTreatment('on');
 
         $this->startTest();
     }
@@ -559,12 +602,6 @@ class SupportTicketDashboardTest extends TestCase
 
     public function testCreateTicketWithRewrittenFrDueBy()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id' => '10000000000000',
-            'contact_mobile' => '9876543210',
-        ]);
-
-
         //  we are testing the following scenario
         // in freshdesk, we have set an SLA of FR_DUE_BY as 2 days
         // but the last week average is 4 days
@@ -692,5 +729,14 @@ class SupportTicketDashboardTest extends TestCase
         }
 
         return true;
+    }
+
+    protected function addAttachmentToRequest(string $caller, string $filename, int $size = 1)
+    {
+        $uploadedFile = UploadedFile::fake()->create($filename, $size);
+
+        $this->testData[$caller]['request']['files']['attachments'] = $this->testData[$caller]['request']['files']['attachments'] ?? [];
+
+        array_push($this->testData[$caller]['request']['files']['attachments'], $uploadedFile);
     }
 }

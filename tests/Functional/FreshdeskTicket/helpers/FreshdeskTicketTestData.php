@@ -447,4 +447,37 @@ return [
             ]
         ]
     ],
+
+    'testCreateTicketAttachmentsInvalidExtensions' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'description' => 'Description',
+                'email' => 'test@gmail.com',
+                'mode' => 'test',
+                'otp'  => '0007',
+                'custom_fields' => [
+                    'cf_transaction_id' => '',
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
+                ]
+            ]
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'Invalid Extension',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
 ];

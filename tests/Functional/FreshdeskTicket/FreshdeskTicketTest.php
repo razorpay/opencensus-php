@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FreshdeskTicket;
 
 use Illuminate\Http\UploadedFile;
 use Mail;
+use RZP\Services\RazorXClient;
 use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -19,6 +20,19 @@ class FreshdeskTicketTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/FreshdeskTicketTestData.php';
 
         parent::setUp();
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'On')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 
     public function testStoreReserveBalanceTicketDetails()
@@ -279,6 +293,43 @@ class FreshdeskTicketTest extends TestCase
             true);
 
         $testData['request']['files']['attachments'] = [$file1];
+
+        $this->mockRazorxTreatment('on');
+
+        $this->startTest();
+    }
+
+    public function testCreateTicketAttachmentsInvalidExtensions()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->publicAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+
+        $file1 = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.exe',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+
+        $testData['request']['files']['attachments'] = [$file1];
+
+        $this->ba->directAuth();
+
+        $this->mockRazorxTreatment('on');
 
         $this->startTest();
     }

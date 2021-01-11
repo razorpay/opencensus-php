@@ -20,31 +20,8 @@ use RZP\Models\Merchant\FreshdeskTicket\Processor as FreshdeskWebhookProcessor;
 
 class Service extends Base\Service
 {
-    protected $createRules = [
-        'email'                                  => 'required|email',
-        'otp'                                    => 'required|string|min:4|max:6',
-        'name'                                   => 'required|string|max:100',
-        'phone'                                  => 'sometimes|contact_syntax',
-        'description'                            => 'required|string|max:1000',
-        'subject'                                => 'required|string|max:500',
-        'attachments'                            => 'sometimes',
-        'custom_fields'                          => 'required|array',
-        'custom_fields.cf_requester_category'    => 'required|string|max:50',
-        'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
-        'custom_fields.cf_transaction_id'        => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
-        'custom_fields.cf_razorpay_payment_id'   => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
-    ];
-
     protected $otpRules = [
         'email'     =>     'required|email',
-    ];
-
-    protected $grievanceRules = [
-        'id'                                  => 'required',
-        'email'                               => 'required|email',
-        'description'                         => 'required|string|max:1000',
-        'attachments'                         => 'sometimes',
-        'custom_fields'                       => 'sometimes|array',
     ];
 
     /*
@@ -122,7 +99,7 @@ class Service extends Base\Service
      */
     public function postTicket(array $input): array
     {
-        (new JitValidator)->setStrictFalse()->rules($this->createRules)->input($input)->validate();
+        $validator = (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('create_customer_ticket', $input);
 
         (new Core)->verifyOtp($input['email'], $input['otp']);
 
@@ -231,7 +208,7 @@ class Service extends Base\Service
 
     public function raiseGrievance($input)
     {
-        (new JitValidator)->setStrictFalse()->rules($this->grievanceRules)->input($input)->validate();
+        (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('raise_grievance', $input);
 
         $ticketId = $input['id'];
 

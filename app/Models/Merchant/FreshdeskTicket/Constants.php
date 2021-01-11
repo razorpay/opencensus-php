@@ -91,4 +91,7 @@ class Constants
     // Webhook response
     const SUCCESS    = 'success';
 
+    // razorx flags
+    const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION = 'validate_freshdesk_attachment_extension';
+
 }
