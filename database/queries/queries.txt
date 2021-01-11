@@ -6103,3 +6103,6 @@ ALTER TABLE merchant_details
 
 ALTER TABLE settlement_ondemand_payouts
     MODIFY COLUMN mode VARCHAR(255);
+
+ALTER TABLE action_state
+    ADD INDEX action_state_merchant_id_index (merchant_id);

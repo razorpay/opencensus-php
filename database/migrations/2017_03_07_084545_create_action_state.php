@@ -63,6 +63,7 @@ class CreateActionState extends Migration
                   ->on_delete('restrict');
 
             $table->index(State::ENTITY_TYPE);
+            $table->index(State::MERCHANT_ID);
             $table->index(State::USER_ID);
             $table->index(State::CREATED_AT);
             $table->index([State::ENTITY_ID, State::ENTITY_TYPE]);
