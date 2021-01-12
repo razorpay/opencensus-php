@@ -502,9 +502,26 @@ return [
             'url'     => '/merchants/10000000000000/terminals'
         ],
         'response' => [
+            'content' => [],
+        ],
+    ],
+    'testFetchTerminalBanksAdminAuthProxy' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/terminals/1n25f6uN5S1Z5a/banks'
+        ],
+        'response' => [
             'content' => [
-                "count" => 2
-            ],
+                'enabled' => [
+                    'SBBJ' => 'State Bank of Bikaner and Jaipur',
+                    'SBHY' => 'State Bank of Hyderabad',
+                    'SBIN' => 'State Bank of India',
+                    'SBMY' => 'State Bank of Mysore',
+                    'STBP' => 'State Bank of Patiala',
+                    'SBTR' => 'State Bank of Travancore'
+                ],
+                'disabled' => []
+            ]
         ],
     ],
     'testSyncDeletedTerminals' => [

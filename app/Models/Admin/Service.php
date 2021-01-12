@@ -94,6 +94,11 @@ class Service extends Base\Service
 
     public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
+
+        $data = ["function" => "fetchEntityById", "entity" => $entity];
+
+        $this->app['trace']->info(TraceCode::FETCH_ENTITY_BY_ID, $data);
+
         $this->validateEntityTypeForRestrictedOrg($entity);
 
         $retEntity = $this->handleExternalEntity($entity, $input, $id);
@@ -258,6 +263,10 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input)
     {
+        $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $input];
+
+        $this->app['trace']->info(TraceCode::FETCH_MULTIPLE_ENTITIES, $data);
+
         $this->traceActiveDbConnections();
 
         $this->validateEntityTypeForRestrictedOrg($entity);

@@ -99,9 +99,9 @@ class Service extends Base\Service
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_MERCHANT_TERMINAL_FETCH_COMPARISON_FAILED, $content);
 
-                // once comparison has run for sometime, next line will be uncommented
-                // return $response;
             }
+
+            return $response;
         }
 
         return $data;

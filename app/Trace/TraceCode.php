@@ -634,6 +634,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
     const BATCH_NOT_FOUND                                       = 'BATCH_NOT_FOUND';
     const ADMIN_BATCH_UPDATE                                    = 'ADMIN_BATCH_UPDATE';
+    const FETCH_MULTIPLE_ENTITIES                               = 'FETCH_MULTIPLE_ENTITIES';
+    const FETCH_ENTITY_BY_ID                                    = 'FETCH_ENTITY_BY_ID';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';

@@ -1950,8 +1950,6 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuthProxy()
     {
-        $this->markTestSkipped("until terminal service response is returned");
-
         DB::table('terminals')->delete();
 
         $terminal = $this->fixtures->create(
@@ -1977,7 +1975,7 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertEquals("v1/merchants/terminals", $path);
 
-            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "deleted" => true];
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "statuses" => ["activated","deactivated"], "deleted" => true];
 
             $this->assertEquals(json_encode($expectedContent), $content);
 
@@ -2018,6 +2016,70 @@ class TerminalMigrationTest extends TestCase
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
 
         $this->startTest();
+    }
+
+    public function testFetchTerminalBanksAdminAuthProxy()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+            'netbanking' => 1,
+            'gateway' => 'netbanking_sbi'
+        ]);
+
+        $data = [
+            'enabled' => [
+                'SBBJ' => 'State Bank of Bikaner and Jaipur',
+                'SBHY' => 'State Bank of Hyderabad',
+                'SBIN' => 'State Bank of India',
+                'SBMY' => 'State Bank of Mysore',
+                'STBP' => 'State Bank of Patiala',
+                'SBTR' => 'State Bank of Travancore'
+            ],
+            'disabled' => []
+        ];
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(function ($mid, $feature, $mode)
+            {
+                if ($feature === 'ROUTE_PROXY_TS_BANK_FETCH')
+                {
+                    return 'proxy';
+                }
+
+                return 'migrate';
+            }));
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal, $data) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/terminals/". $terminal->getId() . "/banks", $path);
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($data, $response);
     }
 
     /* this is to assert that terminal doesnt get synced in normal payment callback
