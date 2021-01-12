@@ -88,6 +88,8 @@ class Validator extends Base\Validator
             Entity::PAYER_IFSC_CODE              => 'sometimes',
             Entity::PAYEE_ACCOUNT_NUMBER         => 'sometimes',
             Entity::PAYEE_IFSC_CODE              => 'sometimes',
+            Entity::REF_URL                      => 'sometimes',
+            Entity::MCC                          => 'sometimes',
         ]);
 
         return $rules;

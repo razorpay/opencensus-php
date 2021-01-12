@@ -168,6 +168,8 @@ class UpiTransactionTransformer extends Transformer
             Entity::RRN                         => $this->input[Fields::GATEWAY_REFERENCE_ID],
             Entity::GATEWAY_ERROR_CODE          => $this->input[Fields::GATEWAY_RESPONSE_CODE],
             Entity::GATEWAY_ERROR_DESCRIPTION   => $this->input[Fields::GATEWAY_RESPONSE_MESSAGE],
+            Entity::MCC                         => $this->input[Fields::PAYEE_MCC] ?? '',
+            Entity::REF_URL                     => $this->input[Fields::REF_URL] ?? '',
         ];
 
         $output[Entity::GATEWAY_DATA] = array_only($this->input, [
@@ -192,6 +194,8 @@ class UpiTransactionTransformer extends Transformer
             Entity::RRN                         => $this->input[Fields::GATEWAY_REFERENCE_ID],
             Entity::GATEWAY_ERROR_CODE          => $this->input[Fields::GATEWAY_RESPONSE_CODE],
             Entity::GATEWAY_ERROR_DESCRIPTION   => $this->input[Fields::GATEWAY_RESPONSE_MESSAGE],
+            Entity::MCC                         => $this->input[Fields::PAYEE_MCC] ?? '',
+            Entity::REF_URL                     => $this->input[Fields::REF_URL] ?? '',
         ];
 
         $output[Entity::GATEWAY_DATA] = array_only($this->input, [

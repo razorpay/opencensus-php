@@ -61,6 +61,11 @@ class TransactionEventTest extends TestCase
                     'is_pending_collect'    => true,
                 ], $event['payload']);
 
+                $this->assertArraySubset([
+                    'mcc'                   => '2222',
+                    'ref_url'               => 'https::example.com',
+                ], $event['payload']['upi']);
+
                 $this->assertNotNull($event['payload']['upi']['ref_id']);
                 $this->assertNotNull($event['payload']['upi']['rrn']);
                 $this->assertNotNull($event['payload']['upi']['network_transaction_id']);
@@ -171,6 +176,11 @@ class TransactionEventTest extends TestCase
                     'flow'      => 'credit',
                     'status'    => 'failed'
                 ], $event['payload']);
+
+                $this->assertArraySubset([
+                    'mcc'                   => '2222',
+                    'ref_url'               => 'https::example.com',
+                ], $event['payload']['upi']);
 
                 $this->assertNotNull($event['payload']['upi']['ref_id']);
                 $this->assertNotNull($event['payload']['upi']['rrn']);

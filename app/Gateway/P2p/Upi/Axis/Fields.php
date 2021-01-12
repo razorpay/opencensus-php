@@ -43,6 +43,7 @@ class Fields
     const MERCHANT_ID                   = 'merchantId';
     const CURRENCY                      = 'currency';
     const MCC                           = 'mcc';
+    const PAYEE_MCC                     = 'payeeMcc';
     const MERCHANT_CHANNEL_ID           = 'merchantChannelId';
 
     // --------------- RESPONSE FIELDS --------------- //

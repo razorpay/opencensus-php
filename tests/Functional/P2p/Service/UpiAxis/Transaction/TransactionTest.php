@@ -116,6 +116,8 @@ class TransactionTest extends TestCase
         $this->assertArraySubset([
             UpiTransaction\Entity::NETWORK_TRANSACTION_ID => $gatewayTransactionId,
             UpiTransaction\Entity::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+            UpiTransaction\Entity::MCC                    => 2222,
+            UpiTransaction\Entity::REF_URL                => 'https::example.com',
         ], $transaction->upi->toArray());
 
         $coproto = $helper->initiateAuthorize($transaction->getPublicId());
@@ -230,6 +232,8 @@ class TransactionTest extends TestCase
         $this->assertArraySubset([
             UpiTransaction\Entity::NETWORK_TRANSACTION_ID => $gatewayTransactionId,
             UpiTransaction\Entity::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+            UpiTransaction\Entity::MCC                    => 2222,
+            UpiTransaction\Entity::REF_URL                => 'https::example.com',
         ], $transaction->upi->toArray());
     }
 
@@ -276,6 +280,11 @@ class TransactionTest extends TestCase
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->reload()->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::MCC        => 2222,
+            UpiTransaction\Entity::REF_URL    => 'https::example.com',
+        ], $transaction->upi->reload()->toArray());
     }
 
     public function testCollectAccepted()
@@ -304,6 +313,11 @@ class TransactionTest extends TestCase
             Entity::STATUS            => Status::COMPLETED,
             Entity::INTERNAL_STATUS   => Status::COMPLETED,
         ], $transaction->reload()->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::MCC      => 2222,
+            UpiTransaction\Entity::REF_URL  => 'https::example.com',
+        ], $transaction->upi->reload()->toArray());
     }
 
     public function testCollectPendingToSuccess()
@@ -335,6 +349,11 @@ class TransactionTest extends TestCase
             UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
             UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
         ], $transaction->upi->toArrayPublic());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::MCC      => 2222,
+            UpiTransaction\Entity::REF_URL  => 'https::example.com',
+        ], $transaction->upi->reload()->toArray());
     }
 
     public function testPayPendingToSuccess()
@@ -376,6 +395,11 @@ class TransactionTest extends TestCase
             UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
             UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
         ], $transaction->upi->toArrayPublic());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::MCC      => 2222,
+            UpiTransaction\Entity::REF_URL  => 'https::example.com',
+        ], $transaction->upi->reload()->toArray());
     }
 
     public function testCollectOnus()
@@ -426,6 +450,11 @@ class TransactionTest extends TestCase
             Entity::TYPE              => Type::COLLECT,
             Entity::FLOW              => Flow::DEBIT,
         ], $transaction2->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::MCC        => 2222,
+            UpiTransaction\Entity::REF_URL    => 'https::example.com',
+        ], $transaction2->upi->toArray());
 
         $this->assertSame($transaction1->upi->getNetworkTransactionId(), $transaction2->upi->getNetworkTransactionId());
         $this->assertSame($transaction1->upi->getRrn(), $transaction2->upi->getRrn());
@@ -593,7 +622,9 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             UpiTransaction\Entity::GATEWAY_ERROR_CODE           => '00',
-            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved',
+            UpiTransaction\Entity::MCC                          => 2222,
+            UpiTransaction\Entity::REF_URL                      => 'https::example.com',
         ], $transaction->upi->toArrayPublic());
     }
 
@@ -627,7 +658,9 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             UpiTransaction\Entity::GATEWAY_ERROR_CODE           => '00',
-            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved',
+            UpiTransaction\Entity::MCC                          => 2222,
+            UpiTransaction\Entity::REF_URL                      => 'https::example.com',
         ], $transaction->upi->toArrayPublic());
     }
 
@@ -902,6 +935,8 @@ class TransactionTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->upi->getRefId(),
+            Fields::PAYEE_MCC                   => $transaction->upi->getMcc(),
+            Fields::REF_URL                     => $transaction->upi->getRefUrl(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -1057,7 +1092,9 @@ class TransactionTest extends TestCase
 
         $this->assertArraySubset([
             UpiTransaction\Entity::GATEWAY_ERROR_CODE        => '00',
-            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION => 'Your transaction is approved'
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION => 'Your transaction is approved',
+            UpiTransaction\Entity::MCC                          => 2222,
+            UpiTransaction\Entity::REF_URL                      => 'https::example.com',
         ], $transaction->upi->toArrayPublic());
 
         $this->assertSame('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT', $transaction->upi->getGatewayData()['type']);
