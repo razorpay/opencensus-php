@@ -29,6 +29,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function syncStakeholderFromMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->syncStakeholderFromMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateSubMerchant()
     {
         $input = Request::all();

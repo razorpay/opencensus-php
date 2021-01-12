@@ -17,6 +17,7 @@ class DetailServiceTest extends TestCase
     protected $userEntityMock;
     protected $deviceEntityMock;
     protected $merchantDetailEntityMock;
+    protected $stakeholderEntityMock;
     protected $merchantRepoMock;
     protected $merchantMethodsMock;
     protected $merchantDocumentCoreMock;
@@ -34,6 +35,9 @@ class DetailServiceTest extends TestCase
     public function testFetchMerchantAndServiceDetails()
     {
         $this->getMerchantEditMocks();
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
 
         $response = $this->merchantService->fetchMerchantDetails();
 
@@ -84,6 +88,8 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('offsetExists')->andReturn(true);
 
         $this->merchantDetailEntityMock->shouldReceive('offsetGet')->andReturn(false);
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
 
         $response = $this->merchantService->fetchActivationFiles("100002Razorpay");
 
@@ -211,6 +217,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+
         $response = $this->merchantService->patchMerchantDetails($merchantData);
 
         $this->assertEquals([], $response);
@@ -244,6 +252,8 @@ class DetailServiceTest extends TestCase
 
         $this->getUploadActivationFileMocks($returnResp);
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+
         $response = $this->merchantService->uploadActivationFileAdmin('1cXSLlUU8V9sXl', $merchantData);
 
         $verification = $response['verification'];
@@ -272,6 +282,8 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
         $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
 
         $response = $this->merchantService->uploadActivationFileMerchant($merchantData);
 
@@ -311,6 +323,10 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
 
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+
+        $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('getBusinessName')->andReturn('dummy-business');
 
@@ -376,6 +392,8 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getDbaName')->andReturn('dummy-dba');
 
         $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
 
         $response = $this->merchantService->editMerchantDetailsByPartner('acc_1cXSLlUU8V9sXa', $merchantData);
 
@@ -550,6 +568,8 @@ class DetailServiceTest extends TestCase
 
         $this->getMerchantDetailAttributeMock();
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
         $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
@@ -563,6 +583,7 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('isRazorpayOrgId')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('setPoiVerificationStatus')->andReturn();
+        $this->stakeholderEntityMock->shouldReceive('setPoiStatus')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('getBusinessTypeValue')->andReturn(0);
 
@@ -588,6 +609,9 @@ class DetailServiceTest extends TestCase
 
         // Merchant Mocking
         $this->merchantDetailEntityMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+
+        // Stakeholder Mocking
+        $this->stakeholderEntityMock = Mockery::mock('RZP\Models\Merchant\Stakeholder\Entity');
 
         // Merchant Mocking
         $this->merchantDocumentCoreMock = Mockery::mock('RZP\Models\Merchant\Document\Core');

@@ -1167,6 +1167,10 @@ return [
                 'business_registered_state'   => 'DL',
                 'business_registered_city'    => 'Delhi',
                 'business_registered_pin'     => '560050',
+                'stakeholder'                 => [
+                    'poi_status'                => 'verified',
+                    'poi_identification_number' => 'ABCPE0000Z',
+                ],
                 'verification'                => [
                     'status'              => 'disabled',
                     'disabled_reason'     => 'required_fields',
@@ -1469,6 +1473,10 @@ return [
                 'submitted_at'            => null,
                 'activation_status'       => 'instantly_activated',
                 'poi_verification_status' => 'verified',
+                'stakeholder'             => [
+                    'poi_status' => 'verified',
+                    'poi_identification_number' => 'ABCPE0000Z',
+                ],
                 'cin_verification_status' => null,
                 'business_type'           => "11",
                 'can_submit'              => false,
@@ -1511,6 +1519,9 @@ return [
                 'activation_status'       => null,
                 'poi_verification_status' => 'not_matched',
                 'business_type'           => "11",
+                'stakeholder'             => [
+                    'poi_status' => 'not_matched',
+                ],
                 'verification'            => [
                     'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
@@ -1563,6 +1574,9 @@ return [
                 'submitted_at'            => null,
                 'activation_status'       => null,
                 'poi_verification_status' => 'incorrect_details',
+                'stakeholder'             => [
+                    'poi_status' => 'incorrect_details',
+                ],
                 'business_type'           => "11",
                 'can_submit'              => false,
                 'activated'               => 0,
@@ -1603,6 +1617,9 @@ return [
                 'submitted_at'            => null,
                 'activation_status'       => null,
                 'poi_verification_status' => 'failed',
+                'stakeholder'             => [
+                    'poi_status' => 'failed',
+                ],
                 'business_type'           => "11",
                 'can_submit'              => false,
                 'activated'               => 0,
@@ -2123,7 +2140,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'promoter_pan_name'    => 'John Doe',
                 'gstin'                => null,
                 'p_gstin'              => null,
@@ -2166,7 +2183,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'promoter_pan_name'    => 'John Doe',
                 'gstin'                => null,
                 'p_gstin'              => null,

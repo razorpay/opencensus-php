@@ -8,6 +8,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Jobs\SyncStakeholder;
 use RZP\Listeners\ApiEventSubscriber;
 use Razorpay\OAuth\Application as OAuthApp;
 
@@ -34,6 +35,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Admin\Group;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\Action;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Entity as CE;
@@ -142,6 +144,44 @@ class Core extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
+    }
+
+    public function syncStakeholderFromMerchant(array $input)
+    {
+        RuntimeManager::setTimeLimit(1800);
+
+        if (empty($input['merchant_ids']) === false)
+        {
+            SyncStakeholder::dispatch($this->mode, $input['merchant_ids']);
+
+            return [];
+        }
+
+        $afterId = null;
+
+        $count = 0;
+
+        while (true)
+        {
+            $repo = $this->repo;
+
+            $merchantIds = $repo->useSlave(function () use ($afterId, $repo) {
+                return $repo->merchant_detail->findMerchantsWithoutStakeholders(1000, $afterId);
+            });
+
+            if (empty($merchantIds) === true)
+            {
+                break;
+            }
+
+            $afterId = end($merchantIds);
+
+            $count += count($merchantIds);
+
+            SyncStakeholder::dispatch($this->mode, $merchantIds);
+        }
+
+        return ['count' => $count];
     }
 
     /**

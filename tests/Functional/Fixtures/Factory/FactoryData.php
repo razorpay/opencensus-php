@@ -763,6 +763,12 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Merchant\Stakeholder\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+            ]
+        );
+
         $factory(\RZP\Models\User\Entity::class, [
             'id'         => $faker->uniqueid,
             'name'       => $faker->word,

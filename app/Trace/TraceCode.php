@@ -1954,6 +1954,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_MERCHANT_CONTEXT_REQUEST                       = 'UPDATE_MERCHANT_CONTEXT_REQUEST';
     const SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30         = 'SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30';
 
+    // Trace code for stakeholders
+    const MERCHANT_SAVE_STAKEHOLDER_DETAILS                     = 'MERCHANT_SAVE_STAKEHOLDER_DETAILS';
+    const MERCHANT_CREATE_STAKEHOLDER_DETAILS                   = 'MERCHANT_CREATE_STAKEHOLDER_DETAILS';
+    const MERCHANT_STAKEHOLDER_SYNC                             = 'MERCHANT_STAKEHOLDER_SYNC';
+    const MERCHANT_STAKEHOLDER_SYNC_JOB_ERROR                   = 'MERCHANT_STAKEHOLDER_SYNC_JOB_ERROR';
+    const MERCHANT_STAKEHOLDER_SYNC_JOB_DELETE                  = 'MERCHANT_STAKEHOLDER_SYNC_JOB_DELETE';
+    const STAKEHOLDER_DOES_NOT_EXIST                            = 'STAKEHOLDER_DOES_NOT_EXIST';
+
     // temporary tracecodes, will be removed
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';
     const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';

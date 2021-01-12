@@ -257,6 +257,10 @@ class MerchantDocumentTest Extends TestCase
         $this->mockRazorX('testDocumentUpload', 'bvs_personal_pan_ocr', 'on');
 
         $this->uploadDocument('personal_pan', 'personal_pan_doc_verification_status');
+
+        $stakeholder = $this->getDbEntities('stakeholder', ['merchant_id' => '1cXSLlUU8V9sXl'])->first();
+        $this->assertNotNull($stakeholder);
+        $this->assertEquals('pending', $stakeholder->getPanDocStatus());
     }
 
     public function testUpdateDocumentVerifyPendingVerificationStatusForBusinessPan()

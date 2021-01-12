@@ -1694,6 +1694,8 @@ class Route
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
+        'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
+
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
         'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
@@ -3828,6 +3830,7 @@ class Route
         'merchants_access_map_update',
         'backfill_merchant_applications',
         'backfill_referred_application',
+        'merchant_sync_stakeholder',
 
         // Scrooge - ODS Dashboard
         'scrooge_dashboard_init',
@@ -4701,6 +4704,7 @@ class Route
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
+        'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',

@@ -161,6 +161,8 @@ class BvsValidationTest extends TestCase
 
         $mid = $merchantDetail->getId();
 
+        $this->fixtures->create('stakeholder', ['merchant_id' => $mid]);
+
         $capturedBvsValidation = $this->fixtures->create('bvs_validation',
                                                          [
                                                              'owner_id'      => $mid,
@@ -377,6 +379,14 @@ class BvsValidationTest extends TestCase
         $updatedMerchantDetails = $this->getDbEntityById('merchant_detail', $mid);
 
         $this->assertEquals($input['activation_status'], $updatedMerchantDetails->getActivationStatus());
+
+        if ($input['documentVerificationKey'] === 'poa_verification_status')
+        {
+            $stakeholder = $this->getDbEntities('stakeholder', ['merchant_id' => $mid])->first();
+            $this->assertNotNull($stakeholder);
+            $this->assertEquals($input['documentVerificationStatus'], $stakeholder->getPoaStatus());
+            $this->assertEquals($updatedMerchantDetails->getPoaVerificationStatus(), $stakeholder->getPoaStatus());
+        }
     }
 
     public function testUpdateBvsValidationStatusGstin()

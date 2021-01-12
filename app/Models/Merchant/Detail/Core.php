@@ -37,6 +37,7 @@ use RZP\lib\ConditionParser\Parser;
 use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
@@ -50,13 +51,11 @@ use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
-use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
-use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConst;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 
@@ -588,6 +587,9 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'instant_activation');
 
+        // dual write promoter related fields to stakeholder entity
+        (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
+
         //
         // do pan validation
         //
@@ -708,6 +710,9 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'instant_activation_batch');
 
+        // dual write promoter related fields to stakeholder entity
+        (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
+
         return $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail);
     }
 
@@ -791,6 +796,7 @@ class Core extends Base\Core
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             $merchantDetails->setPoiVerificationStatus(null);
+            $merchantDetails->stakeholder->setPoiStatus(null);
 
             return;
         }
@@ -833,6 +839,7 @@ class Core extends Base\Core
         }
 
         $merchantDetails->setPoiVerificationStatus($verificationStatus);
+        $merchantDetails->stakeholder->setPoiStatus($verificationStatus);
 
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
 
@@ -940,6 +947,9 @@ class Core extends Base\Core
             // if merchant details are created, load relation in $merchant
             $merchant->load('merchantDetail');
         }
+
+        // to create if not exists or fetch and set in $details->stakeholder relation
+        (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
 
         return $merchantDetails;
     }
@@ -1149,6 +1159,9 @@ class Core extends Base\Core
 
         // Sync few input fields to merchant entity
         (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
+
+        // dual write promoter related fields to stakeholder entity
+        (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
 
         $this->repo->saveOrFail($merchant);
 

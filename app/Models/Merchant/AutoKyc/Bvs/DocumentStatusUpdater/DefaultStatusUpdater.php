@@ -50,6 +50,8 @@ class DefaultStatusUpdater extends BaseStatusUpdater
 
             $this->merchantDetails->setAttribute($this->documentTypeStatusKey, $documentValidationStatus);
 
+            $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
+
             //
             // if $documentValidationStatus is null then don't send any metrics
             //
@@ -78,5 +80,7 @@ class DefaultStatusUpdater extends BaseStatusUpdater
     public function updateStatusToPending(): void
     {
         $this->merchantDetails->setAttribute($this->documentTypeStatusKey, Constants::PENDING);
+
+        $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
     }
 }

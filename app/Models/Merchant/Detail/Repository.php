@@ -7,6 +7,8 @@ use DB;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Repository extends Base\Repository
@@ -25,12 +27,23 @@ class Repository extends Base\Repository
      * merchant. This handling is required as merchant detail relation is part
      * of merchant index content.
      *
+     * We doesn't do cascade save of related entities when the main entity is saved.
+     * Since merchantDetails entity is passed around multiple functions, we trigger the stakeholder save
+     * whenever the merchantDetails get saved.
+     *
      * @param Entity $merchantDetail
      * @param array  $options
      */
     public function saveOrFail($merchantDetail, array $options = [])
     {
         $this->saveOrFailTestAndLive($merchantDetail, $options);
+
+        $stakeholder = $merchantDetail->relationLoaded(Entity::STAKEHOLDER) ? $merchantDetail->getRelation(Entity::STAKEHOLDER) : null;
+
+        if ((empty($stakeholder) === false) and ($stakeholder->exists === true) and ($stakeholder->isDirty() === true))
+        {
+            $this->repo->stakeholder->saveOrFail($stakeholder);
+        }
 
         $merchant = $merchantDetail->merchant;
 
@@ -61,6 +74,30 @@ class Repository extends Base\Repository
         $merchant->setRelation('merchantDetail', $merchantDetail);
 
         return $merchantDetail;
+    }
+
+    public function findMerchantsWithoutStakeholders($limit, $afterId = null)
+    {
+        $detailsMerchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $stakeholderMerchantIdCol = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::MERCHANT_ID);
+        $stakeholderDeletedAtCol = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::DELETED_AT);
+
+        $query = $this->newQuery()->select($detailsMerchantIdCol)
+                      ->leftJoin(Table::STAKEHOLDER, $detailsMerchantIdCol, '=', $stakeholderMerchantIdCol)
+                      ->whereNull($stakeholderMerchantIdCol)
+                      ->whereNull($stakeholderDeletedAtCol);
+
+        if (empty($limit) === false)
+        {
+            $query->limit($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where($detailsMerchantIdCol, '>', $afterId);
+        }
+
+        return $query->orderBy($detailsMerchantIdCol, 'asc')->get()->pluck(Entity::MERCHANT_ID)->toArray();
     }
 
     public function getMerchantDetailsToBeMigrated($count = 1000, $skip = 0)

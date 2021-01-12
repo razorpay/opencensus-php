@@ -41,6 +41,7 @@ class POA extends BaseStatusUpdater
         }
 
         $this->merchantDetails->setPoaVerificationStatus($documentValidationStatus);
+        $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
 
         $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS, [
             'merchant_id'                  => $this->merchantDetails->getId(),

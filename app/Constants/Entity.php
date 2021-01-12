@@ -940,6 +940,7 @@ class Entity
         self::MERCHANT_ACCESS_MAP,
         self::BVS_VALIDATION,
         self::MERCHANT_APPLICATION,
+        self::STAKEHOLDER,
         self::APP_STORE,
     ];
 

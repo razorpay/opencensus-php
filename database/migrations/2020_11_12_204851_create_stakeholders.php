@@ -29,6 +29,7 @@ class CreateStakeholders extends Migration
             $table->integer(Entity::PERCENTAGE_OWNERSHIP)->nullable()->unsigned();
             $table->string(Entity::POI_IDENTIFICATION_NUMBER)->nullable();
             $table->string(Entity::POI_STATUS)->nullable();
+            $table->string(Entity::PAN_DOC_STATUS)->nullable();
             $table->string(Entity::POA_STATUS)->nullable();
             $table->text(Entity::NOTES)->nullable();
 

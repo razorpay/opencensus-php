@@ -3,8 +3,18 @@
 namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\Traits\NotesTrait;
 
+/**
+ * Class Entity
+ *
+ * @property Merchant\Entity $merchant
+ * @property Detail\Entity $merchantDetail
+ *
+ * @package RZP\Models\Merchant\Stakeholder
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -25,6 +35,7 @@ class Entity extends Base\PublicEntity
     const NOTES                     = 'notes';
     const POI_IDENTIFICATION_NUMBER = 'poi_identification_number';
     const POI_STATUS                = 'poi_status';
+    const PAN_DOC_STATUS            = 'pan_doc_status';
     const POA_STATUS                = 'poa_status';
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
@@ -32,6 +43,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
+        self::MERCHANT_ID,
         self::EMAIL,
         self::NAME,
         self::PHONE_PRIMARY,
@@ -41,6 +53,11 @@ class Entity extends Base\PublicEntity
         self::PERCENTAGE_OWNERSHIP,
         self::NOTES,
         self::POI_IDENTIFICATION_NUMBER,
+        // added here because these are copied from merchant details during create
+        // will be removed once dual write is removed
+        self::POI_STATUS,
+        self::PAN_DOC_STATUS,
+        self::POA_STATUS,
     ];
 
     protected $public = [
@@ -56,11 +73,47 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::POI_IDENTIFICATION_NUMBER,
         self::POI_STATUS,
+        self::PAN_DOC_STATUS,
         self::POA_STATUS,
     ];
 
-    public function merchant()
+    public function merchantDetail()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
+        return $this->belongsTo('RZP\Models\Merchant\Detail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
+    public function setPoiStatus(string $status = null)
+    {
+        $this->setAttribute(self::POI_STATUS, $status);
+    }
+
+    public function getPoiStatus()
+    {
+        return $this->getAttribute(self::POI_STATUS);
+    }
+
+    public function setPanDocStatus(string $status = null)
+    {
+        $this->setAttribute(self::PAN_DOC_STATUS, $status);
+    }
+
+    public function getPanDocStatus()
+    {
+        return $this->getAttribute(self::PAN_DOC_STATUS);
+    }
+
+    public function setPoaStatus(string $status = null)
+    {
+        $this->setAttribute(self::POA_STATUS, $status);
+    }
+
+    public function getPoaStatus()
+    {
+        return $this->getAttribute(self::POA_STATUS);
+    }
+
+    public function getPoiIdentificationNumber()
+    {
+        return $this->getAttribute(self::POI_IDENTIFICATION_NUMBER);
     }
 }

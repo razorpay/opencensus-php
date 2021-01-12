@@ -16,7 +16,7 @@ class D2cBureauDetail extends Base
         'city'              => 'city',
         'state'             => 'PB',
         'pincode'           => '123455',
-        'pan'               => 'ABCDE1234F',
+        'pan'               => 'ABCPE1234F',
     ];
 
     public function createCreatedOwner(array $attributes = array())

@@ -144,6 +144,13 @@ class Service extends Base\Service
         return $merchantData;
     }
 
+    public function syncStakeholderFromMerchant($input)
+    {
+        $data = $this->core()->syncStakeholderFromMerchant($input);
+
+        return $data;
+    }
+
     public function createSubMerchantViaBatch(array $input)
     {
         $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;

@@ -242,6 +242,24 @@ abstract class BaseStatusUpdater implements StatusUpdater
         );
     }
 
+    protected function updateStakeholderStatusIfApplicable($status)
+    {
+        switch ($this->documentTypeStatusKey)
+        {
+            case DetailEntity::PERSONAL_PAN_DOC_VERIFICATION_STATUS:
+                $this->merchantDetails->stakeholder->setPanDocStatus($status);
+                break;
+
+            case DetailEntity::POI_VERIFICATION_STATUS:
+                $this->merchantDetails->stakeholder->setPoiStatus($status);
+                break;
+
+            case DetailEntity::POA_VERIFICATION_STATUS:
+                $this->merchantDetails->stakeholder->setPoaStatus($status);
+                break;
+        }
+    }
+
     /**
      * @param Validation $validation
      * @param string $documentValidationStatus

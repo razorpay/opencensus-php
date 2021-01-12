@@ -102,7 +102,7 @@ class D2cBureauDetailsTest extends TestCase
             'address'           => 'Adress',
             'city'              => 'city',
             'pincode'           => '123455',
-            'pan'               => 'ABCDE1234F',
+            'pan'               => 'ABCPE1234F',
 //                'created_at'        => 1571374473
         ], $d2cOwnerDetails);
     }
@@ -127,7 +127,7 @@ class D2cBureauDetailsTest extends TestCase
             'city'            => 'city',
             'state'           => 'PB',
             'pincode'         => '560030',
-            'pan'             => 'ABCDE1234F',
+            'pan'             => 'ABCPE1234F',
 //            'created_at'      => 1586858252
         ], $d2cOwnerDetails);
     }
@@ -187,7 +187,7 @@ class D2cBureauDetailsTest extends TestCase
             'city'            => 'city',
             'state'           => 'PB',
             'pincode'         => '560030',
-            'pan'             => 'ABCDE1234F',
+            'pan'             => 'ABCPE1234F',
 //            'created_at'      => 1586858252
         ], $d2cOwnerDetails);
 
@@ -261,7 +261,7 @@ class D2cBureauDetailsTest extends TestCase
             'city'            => 'city',
             'state'           => 'PB',
             'pincode'         => '560030',
-            'pan'             => 'ABCDE1234F',
+            'pan'             => 'ABCPE1234F',
 //            'created_at'      => 1586858252
                                           ], $d2cOwnerDetails);
 

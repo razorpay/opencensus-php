@@ -8,12 +8,14 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
 /**
  * Class Entity
  *
  * @property Merchant\Entity $merchant
+ * @property Merchant\Stakeholder\Entity $stakeholder
  *
  * @package RZP\Models\Merchant\Detail
  */
@@ -151,6 +153,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const PENNY_TESTING_UPDATED_AT                 = 'penny_testing_updated_at';
     const SHOP_ESTABLISHMENT_NUMBER                = "shop_establishment_number";
     const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = "shop_establishment_verification_status";
+
+    // relation name
+    const STAKEHOLDER    = 'stakeholder';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -360,6 +365,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BANK_BENEFICIARY_PIN,
         self::ROLE,
         self::DEPARTMENT,
+        self::STAKEHOLDER,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
@@ -460,6 +466,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
+    }
+
+    /**
+     * Every detail entity will have one stakeholder entity to start with to store the promoter attributes
+     *
+     * @return HasOne
+     */
+    public function stakeholder()
+    {
+        return $this->hasOne('RZP\Models\Merchant\Stakeholder\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
     public function reviewer()

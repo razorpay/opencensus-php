@@ -19,7 +19,7 @@ return [
                 'address'           => 'Adress',
                 'city'              => 'city',
                 'pincode'           => '123455',
-                'pan'               => 'ABCDE1234F',
+                'pan'               => 'ABCPE1234F',
 //                'created_at'        => 1571374473
             ],
         ],
@@ -43,7 +43,7 @@ return [
                     'city'            => 'city',
                     'state'           => 'PB',
                     'pincode'         => '560030',
-                    'pan'             => 'ABCDE1234F',
+                    'pan'             => 'ABCPE1234F',
                     'date_of_birth'   => '1996-10-10',
                     'gender'          => 'male'
                 ],
@@ -98,7 +98,7 @@ return [
                     'city'            => 'city',
                     'state'           => 'PB',
                     'pincode'         => '560030',
-                    'pan'             => 'ABCDE1234F',
+                    'pan'             => 'ABCPE1234F',
                     'date_of_birth'   => '1996-10-10',
                     'gender'          => 'male'
                 ],
@@ -137,7 +137,7 @@ return [
                     'city'            => 'city',
                     'state'           => 'PB',
                     'pincode'         => '560030',
-                    'pan'             => 'ABCDE1234F',
+                    'pan'             => 'ABCPE1234F',
                     'date_of_birth'   => '1996-10-10',
                     'gender'          => 'male'
                 ],
@@ -221,7 +221,7 @@ return [
                 'city'              => 'city',
                 'state'             => 'PB',
                 'pincode'           => '123455',
-                'pan'               => 'ABCDE1234F',
+                'pan'               => 'ABCPE1234F',
 //                'created_at'        => 1571374473
             ],
         ],
