@@ -1,7 +1,8 @@
 name: PR Workflow
 
 on:
-  [pull_request]
+  pull_request:
+    types: [opened, synchronize,reopened,edited]
 
 jobs:
   pull_request: 
@@ -15,3 +16,32 @@ jobs:
         GITHUB_TOKEN:  ${{ github.token }}
       run: |
         sh ./.github/actions/triggerBvtSuite.sh
+    - name: Check Test file has changed or added
+      uses: actions/github-script@0.9.0
+      id: service-changed
+      with:
+        result-encoding: string
+        script: |
+          const result = await github.pulls.listFiles({
+            owner: context.payload.repository.owner.login,
+            repo: context.payload.repository.name,
+            pull_number: context.payload.number,
+            per_page: 100
+          })
+          const testsChanged = result.data.filter(f => f.filename.toLowerCase().includes("test")).length > 0
+          const passStep = function(testsChanged){
+            let returnValue = testsChanged
+            if(!testsChanged){
+              const regex = /skiput.*true/i;
+              console.log(context.payload.pull_request.body.toLowerCase())
+              returnValue = regex.test(context.payload.pull_request.body.toLowerCase())
+            }
+            return returnValue
+          }
+          return Boolean(passStep(testsChanged))
+    - name : skip/fail step for PR
+      if: ${{ steps.service-changed.outputs.result == 'false' }}
+      run: |
+        echo "Step failed as no test file added or change"
+        echo "change skipUT variable to true in pr description to skip this step"
+        exit 1     
