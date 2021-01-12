@@ -1,6 +1,8 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import store from 'merchant/store';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -11,6 +13,7 @@ const ADD_WEBSITE_WORKFLOW_STATUS = 'ADD_WEBSITE_WORKFLOW_STATUS';
 const FETCH_RESERVE_BALANCE = 'FETCH_RESERVE_BALANCE';
 const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
 const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
+const FETCH_TLS_VERSION = 'FETCH_TLS_VERSION'
 
 export const fetchBankAccount = () => {
   return {
@@ -19,6 +22,35 @@ export const fetchBankAccount = () => {
       url: 'account/bank_account',
       mode: 'live',
     }),
+  };
+};
+
+export const fetchTlsVersion = () => {
+  return {
+    type: FETCH_TLS_VERSION,
+    payload: axios({
+      url: 'https://tls.rzp.io/protocol'
+    }).then(d => {
+      const result = d.data.replace('TLSv', '');
+      if (result === '1.0' || result === '1.1') {
+        analyticsService.track({
+          objectName: 'TLS-banner',
+          actionName: 'displayed',
+          screen: 'home page',
+          properties: {
+            tls_version: result,
+            location: 'banners',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      }
+
+      return {
+        data: result,
+        success: true,
+        status_code: 200
+      }
+    })
   };
 };
 
@@ -95,7 +127,7 @@ export const fetchGST = () => {
     payload: merchantFetch({
       url: 'merchant/gst',
       mode: 'live',
-    }),
+    })
   };
 };
 
@@ -232,6 +264,7 @@ let initialState = {
   rzp_gst: {
     gstin: '29AAGCR4375J1ZU',
   },
+  tls_version: null,
   merchant_gst: {},
   reserve_balance: {
     loading: true,
@@ -254,6 +287,9 @@ export default function (state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
+
+    case `${FETCH_TLS_VERSION}::SUCCESS`:
+      return set(state, 'tls_version', action.payload.data);
 
     case `${GST_FETCH}::SUCCESS`:
     case `${GST_SAVE}::SUCCESS`:

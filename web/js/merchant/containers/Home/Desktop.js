@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -43,12 +43,12 @@ import NCModal from 'merchant/components/Activation/NCModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
     config: state.config,
+    tls_version: state.profile.tls_version,
     internationalProductsStatus: state.config.internationalProductsStatus,
   }),
   {
@@ -263,160 +263,163 @@ class AnalyticsDesktop extends Component {
       balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';
     }
-
     return (
       <div className="home-analytics-desktop">
         <div
           ref={(node) => onExtraContentMount(node)}
-          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
-            !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
-          }`}
+          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${!showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
+            }`}
         >
-          {/* nps banner */}
-          {user.isAccepted && <NPSAnnouncement user={user} />}
+          {/* security upgrade browser banner */}
+          {(this.props.tls_version === '1.0' || this.props.tls_version === '1.1') ? <AnnouncementBanner title="Upgrade your browser" theme="danger" canBeClosed={true}>
+            Please upgrade your browser to continue accessing this site. We are disabling support for browsers which use TLS 1.0 and 1.1 for security reasons.
+          </AnnouncementBanner> :
+            <Fragment>
+              {/* nps banner */}
+              {user.isAccepted && <NPSAnnouncement user={user} />}
 
-          {/* onboarding banner */}
-          {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
+              {/* onboarding banner */}
+              {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
 
-          {/* international onboarding banner */}
-          {mode === 'live' &&
-            user.instantActivation.isGraylistFlow &&
-            user.internationalActivationFlow.isGraylistFlow && (
-              <InternationalRequestStatusAnnouncement
-                internationalProductsStatus={this.props.internationalProductsStatus}
-              />
-            )}
+              {/* international onboarding banner */}
+              {mode === 'live' &&
+                user.instantActivation.isGraylistFlow &&
+                user.internationalActivationFlow.isGraylistFlow && (
+                  <InternationalRequestStatusAnnouncement
+                    internationalProductsStatus={this.props.internationalProductsStatus}
+                  />
+                )}
 
-          {/* needs clarification modal */}
-          {this.state.showNcPopup && user.needsClarification && (
-            <NCModal onClose={this.onNcModalClose} />
-          )}
+              {/* needs clarification modal */}
+              {this.state.showNcPopup && user.needsClarification && (
+                <NCModal onClose={this.onNcModalClose} />
+              )}
 
-          {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
-            <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
-              Currently all payments with order id are being captured by default, click{' '}
-              <Link
-                onClick={() => {
-                  analyticsService.track({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'here',
-                      title: 'Capture Settings',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to={'/config'}
-                target="_blank"
-              >
-                here
-              </Link>{' '}
-              to configure your capture setting.
-            </AnnouncementBanner>
-          )}
+              {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
+                <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
+                  Currently all payments with order id are being captured by default, click{' '}
+                  <Link
+                    onClick={() => {
+                      analyticsService.track({
+                        objectName: 'banner',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          hyperlinkClicked: 'here',
+                          title: 'Capture Settings',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                    to={'/config'}
+                    target="_blank"
+                  >
+                    here
+    </Link>{' '}
+    to configure your capture setting.
+                </AnnouncementBanner>
+              )}
 
-          {current_balance.data.balance < 0 && (
-            <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
-              Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
-              <Link
-                onClick={() => {
-                  analyticsService.track({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Funds',
-                      title: 'Add Funds',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to={'/addfunds'}
-                target="_blank"
-              >
-                {' '}
-                Add Funds
-              </Link>
-            </AnnouncementBanner>
-          )}
+              {current_balance.data.balance < 0 && (
+                <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
+                  Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
+                  <Link
+                    onClick={() => {
+                      analyticsService.track({
+                        objectName: 'banner',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          hyperlinkClicked: 'Add Funds',
+                          title: 'Add Funds',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                    to={'/addfunds'}
+                    target="_blank"
+                  >
+                    {' '}
+      Add Funds
+    </Link>
+                </AnnouncementBanner>
+              )}
 
-          {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
-            <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
-              Your current balance had reached the maximum negative limit. Transactions will start
-              to fail now. Please add funds to avoid transaction failures.{' '}
-              <Link
-                onClick={() => {
-                  analyticsService.track({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Funds',
-                      title: 'On Hold!',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to={'/addfunds'}
-                target="_blank"
-              >
-                {' '}
-                Add Funds
-              </Link>
-            </AnnouncementBanner>
-          )}
-          {hasMinTransactionSD && !isValueFilled && roleToShowSupportDetailForm && (
-            <AnnouncementBanner title="Add Support Details" theme="primary" canBeClosed={true}>
-              <span className="support-tagline">
-                Let your customers know how to reach you for any queries.
-              </span>
-              <Link
-                onClick={() => {
-                  analyticsService.track({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Details',
-                      title: 'Add Support Details',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to={'/profile'}
-              >
-                <button
-                  className="pull-right primary btn-support"
-                  type="button"
-                  onClick={() => openSupportDetailModal(false)}
-                >
-                  Add Details
-                </button>
-              </Link>
-            </AnnouncementBanner>
-          )}
+              {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
+                <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
+                  Your current balance had reached the maximum negative limit. Transactions will start
+    to fail now. Please add funds to avoid transaction failures.{' '}
+                  <Link
+                    onClick={() => {
+                      analyticsService.track({
+                        objectName: 'banner',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          hyperlinkClicked: 'Add Funds',
+                          title: 'On Hold!',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                    to={'/addfunds'}
+                    target="_blank"
+                  >
+                    {' '}
+      Add Funds
+    </Link>
+                </AnnouncementBanner>
+              )}
+              {hasMinTransactionSD && !isValueFilled && roleToShowSupportDetailForm && (
+                <AnnouncementBanner title="Add Support Details" theme="primary" canBeClosed={true}>
+                  <span className="support-tagline">
+                    Let your customers know how to reach you for any queries.
+    </span>
+                  <Link
+                    onClick={() => {
+                      analyticsService.track({
+                        objectName: 'banner',
+                        actionName: 'clicked',
+                        screen: 'home page',
+                        properties: {
+                          hyperlinkClicked: 'Add Details',
+                          title: 'Add Support Details',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                    to={'/profile'}
+                  >
+                    <button
+                      className="pull-right primary btn-support"
+                      type="button"
+                      onClick={() => openSupportDetailModal(false)}
+                    >
+                      Add Details
+      </button>
+                  </Link>
+                </AnnouncementBanner>
+              )}
+              {this.isWhatsappNotificationEnabled(user) && this.renderWhatsappNotification()}
 
-          {this.isWhatsappNotificationEnabled(user) && this.renderWhatsappNotification()}
+              {/* capital banner*/}
+              {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
-          {/* capital banner*/}
-          {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
+              {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
 
-          {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
-
-          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-            {showOnboardingBanner && (
-              <NewUserOnboardingCard
-                payments={payments}
-                onClose={onHideOnboardingBanner}
-                onFirstStepClose={onFirstStepClose}
-                isFirstStep={showOnboardingBannerFirstStep}
-                showInstantActivation={showInstantActivation}
-              />
-            )}
-          </div>
-
+              <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+                {showOnboardingBanner && (
+                  <NewUserOnboardingCard
+                    payments={payments}
+                    onClose={onHideOnboardingBanner}
+                    onFirstStepClose={onFirstStepClose}
+                    isFirstStep={showOnboardingBannerFirstStep}
+                    showInstantActivation={showInstantActivation}
+                  />
+                )}
+              </div>
+            </Fragment>
+          }
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
@@ -434,9 +437,8 @@ class AnalyticsDesktop extends Component {
             />
           </div>
           <div
-            className={`pull-right ${
-              this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
-            }`}
+            className={`pull-right ${this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
+              }`}
           >
             <Group>
               {this.props.user.isOrgAllowedFunctionality('current_balance') && (
@@ -521,21 +523,21 @@ class AnalyticsDesktop extends Component {
               )}
               <GroupItem>
                 {this.props.user.isOndemandSettlementEnabled &&
-                this.props.user.isAllowedView('early_settlement') ? (
-                  <Button.Primary
-                    class="settle-btn btn-outline"
-                    onClick={this.showOndemandSettlementForm}
-                    disabled={current_balance.loading || current_balance.data.balance < 100}
-                  >
-                    Settle Now
-                  </Button.Primary>
-                ) : (
-                  <Link className="pull-right" to="/settlements">
-                    <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                      View Settlements
+                  this.props.user.isAllowedView('early_settlement') ? (
+                    <Button.Primary
+                      class="settle-btn btn-outline"
+                      onClick={this.showOndemandSettlementForm}
+                      disabled={current_balance.loading || current_balance.data.balance < 100}
+                    >
+                      Settle Now
+                    </Button.Primary>
+                  ) : (
+                    <Link className="pull-right" to="/settlements">
+                      <span className="text-no-wrap" onClick={trackSettlementsClick}>
+                        View Settlements
                     </span>
-                  </Link>
-                )}
+                    </Link>
+                  )}
               </GroupItem>
             </Group>
           </div>
@@ -596,9 +598,8 @@ class AnalyticsDesktop extends Component {
 
           <div className="row">
             <div
-              className={`col-md-12 traffic-activity-row clearfix${
-                showGroupingByPtfm ? '' : ' traffic-hidden'
-              }`}
+              className={`col-md-12 traffic-activity-row clearfix${showGroupingByPtfm ? '' : ' traffic-hidden'
+                }`}
             >
               {showGroupingByPtfm && (
                 <div className="traffic-container">
