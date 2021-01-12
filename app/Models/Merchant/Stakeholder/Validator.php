@@ -30,5 +30,131 @@ class Validator extends Base\Validator
         Entity::EXECUTIVE                 => 'sometimes|boolean',
         Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
         Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|personalPan',
+        Entity::NOTES                     => 'sometimes|notes',
     ];
+
+    protected static $createStakeholderRules = [
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer',
+        Entity::NAME                  => 'required|max:255',
+        Entity::EMAIL                 => 'required|email|max:255',
+        Constants::RELATIONSHIP       => 'sometimes|array',
+        Constants::PHONE              => 'sometimes|array',
+        Constants::ADDRESSES          => 'sometimes|array',
+        Constants::KYC                => 'sometimes|array',
+        Entity::NOTES                 => 'sometimes|array',
+    ];
+
+    protected static $editStakeholderRules = [
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer',
+        Entity::NAME                  => 'sometimes|max:255',
+        Entity::EMAIL                 => 'sometimes|email|max:255',
+        Constants::RELATIONSHIP       => 'sometimes|array',
+        Constants::PHONE              => 'sometimes|array',
+        Constants::ADDRESSES          => 'sometimes|array',
+        Constants::KYC                => 'sometimes|array',
+        Entity::NOTES                 => 'sometimes|array',
+    ];
+
+    protected static $relationshipInputRules = [
+        Constants::EXECUTIVE  => 'sometimes|boolean',
+        Constants::DIRECTOR   => 'sometimes|boolean',
+    ];
+
+    protected static $phoneInputRules = [
+        Constants::PRIMARY     => 'sometimes|numeric|digits_between:8,11',
+        Constants::SECONDARY   => 'sometimes|numeric|digits_between:8,11',
+    ];
+
+    protected static $addressesInputRules = [
+        Constants::RESIDENTIAL => 'sometimes|array',
+    ];
+
+    protected static $kycInputRules = [
+        Constants::PAN => 'sometimes|personalPan',
+    ];
+
+    protected static $createResidentialAddressRules = [
+        Constants::STREET      => 'required|string|between:10,255',
+        Constants::CITY        => 'required|string|between:2,32',
+        Constants::STATE       => 'required|string|between:2,32',
+        Constants::POSTAL_CODE => 'required|string|between:2,10',
+        Constants::COUNTRY     => 'required|string|between:2,64',
+    ];
+
+    protected static $editResidentialAddressRules = [
+        Constants::STREET      => 'sometimes|string|between:10,255',
+        Constants::CITY        => 'sometimes|string|between:2,32',
+        Constants::STATE       => 'sometimes|string|between:2,32',
+        Constants::POSTAL_CODE => 'sometimes|string|between:2,10',
+        Constants::COUNTRY     => 'sometimes|string|between:2,64',
+    ];
+
+    protected static $createStakeholderValidators = [
+        'relationship_input',
+        'phone_input',
+        'create_addresses_input',
+        'kyc_input',
+    ];
+
+    protected static $editStakeholderValidators = [
+        'relationship_input',
+        'phone_input',
+        'edit_addresses_input',
+        'kyc_input',
+    ];
+
+    protected function validateRelationshipInput(array $input)
+    {
+        if (isset($input[Constants::RELATIONSHIP]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('relationship_input', $input[Constants::RELATIONSHIP]);
+    }
+
+    protected function validatePhoneInput(array $input)
+    {
+        if (isset($input[Constants::PHONE]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('phone_input', $input[Constants::PHONE]);
+    }
+
+    protected function validateCreateAddressesInput(array $input)
+    {
+        $this->validateAddressesInput($input, 'create');
+    }
+
+    protected function validateEditAddressesInput(array $input)
+    {
+        $this->validateAddressesInput($input, 'edit');
+    }
+
+    protected function validateAddressesInput(array $input, string $action = 'create')
+    {
+        if (isset($input[Constants::ADDRESSES]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('addresses_input', $input[Constants::ADDRESSES]);
+
+        if (isset($input[Constants::ADDRESSES][Constants::RESIDENTIAL]) === true)
+        {
+            $this->validateInput($action.'_residential_address', $input[Constants::ADDRESSES][Constants::RESIDENTIAL]);
+        }
+    }
+
+    protected function validateKycInput(array $input)
+    {
+        if (isset($input[Constants::KYC]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('kyc_input', $input[Constants::KYC]);
+    }
 }

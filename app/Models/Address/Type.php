@@ -8,13 +8,16 @@ class Type
 {
     const CUSTOMER          = 'customer';
     const PAYMENT           = 'payment';
+    const STAKEHOLDER       = 'stakeholder';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
     const BILLING_ADDRESS   = 'billing_address';
+    const RESIDENTIAL       = 'residential';
 
     protected static $validEntityTypes = [
         self::CUSTOMER,
         self::PAYMENT,
+        self::STAKEHOLDER,
     ];
 
     protected static $validTypes = [
@@ -24,6 +27,9 @@ class Type
         ],
         self::PAYMENT  => [
             self::BILLING_ADDRESS,
+        ],
+        self::STAKEHOLDER => [
+            self::RESIDENTIAL,
         ],
     ];
 

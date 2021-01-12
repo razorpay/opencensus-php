@@ -40,6 +40,8 @@ class Core extends Base\Core
 
         $address = (new Entity)->build($input);
 
+        Type::validateType($input[Entity::TYPE], $entityType);
+
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
             $entity, [Entity::TYPE => $input[Entity::TYPE]]);
 
@@ -65,6 +67,27 @@ class Core extends Base\Core
         });
     }
 
+    public function edit(Entity $address, $input)
+    {
+        if ((isset($input[Entity::TYPE]) === true) and ($address->getType() !== $input[Entity::TYPE] ))
+        {
+            throw new Exception\BadRequestValidationFailureException('You cannot change address type during edit');
+        }
+
+        unset($input[Entity::TYPE]);
+
+        $this->repo->transaction(function () use ($address, $input) {
+            $address->edit($input);
+
+            if ($address->isPrimary() === true)
+            {
+                $this->handlePrimaryAddressSwitch($address);
+            }
+
+            $this->repo->saveOrFail($address);
+        });
+    }
+
     /*
      * We cannot/dont use create() for 2 reasons
      * 1) the validation rules for billing address for payment is different. Eg: state is optional for
@@ -75,6 +98,8 @@ class Core extends Base\Core
     protected function createForPayment(Payment\Entity $payment, array $input)
     {
         $address = (new Entity)->buildForPayment($input);
+
+        Type::validateType($input[Entity::TYPE], $payment->getEntity());
 
         $address->sourceAssociate($payment);
 
@@ -179,7 +204,7 @@ class Core extends Base\Core
             $address->setPrimary(true);
             $this->repo->saveOrFail($address);
 
-            if ($currentPrimaryAddress->count() === 1)
+            if (($currentPrimaryAddress->count() === 1) and ($currentPrimaryAddress->getId() !== $address->getId()))
             {
                 $currentPrimaryAddress = $currentPrimaryAddress->first();
 

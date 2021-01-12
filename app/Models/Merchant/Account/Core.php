@@ -168,7 +168,7 @@ class Core extends Merchant\Core
 
         if ($accountId !== null)
         {
-            Entity::verifyIdAndStripSign($accountId);
+            Entity::verifyIdAndSilentlyStripSign($accountId);
 
             $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
 

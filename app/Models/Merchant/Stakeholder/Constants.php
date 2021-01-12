@@ -6,6 +6,23 @@ use RZP\Models\Merchant\Detail;
 
 class Constants
 {
+    // request constants
+    const RELATIONSHIP = 'relationship';
+    const DIRECTOR     = 'director';
+    const EXECUTIVE    = 'executive';
+    const PRIMARY      = 'primary';
+    const SECONDARY    = 'secondary';
+    const ADDRESSES    = 'addresses';
+    const RESIDENTIAL  = 'residential';
+    const STREET       = 'street';
+    const CITY         = 'city';
+    const STATE        = 'state';
+    const POSTAL_CODE  = 'postal_code';
+    const COUNTRY      = 'country';
+    const KYC          = 'kyc';
+    const PAN          = 'pan';
+    const PHONE        = 'phone';
+
     const MERCHANT_DETAILS_COMMON_FIELDS = [
         Entity::MERCHANT_ID               => Detail\Entity::MERCHANT_ID,
         Entity::NAME                      => Detail\Entity::PROMOTER_PAN_NAME,

@@ -77,6 +77,12 @@ class Entity extends Base\PublicEntity
         self::POA_STATUS,
     ];
 
+    protected $casts = [
+        self::DIRECTOR             => 'bool',
+        self::EXECUTIVE            => 'bool',
+        self::PERCENTAGE_OWNERSHIP => 'integer',
+    ];
+
     public function merchantDetail()
     {
         return $this->belongsTo('RZP\Models\Merchant\Detail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
@@ -115,5 +121,40 @@ class Entity extends Base\PublicEntity
     public function getPoiIdentificationNumber()
     {
         return $this->getAttribute(self::POI_IDENTIFICATION_NUMBER);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getPhonePrimary()
+    {
+        return $this->getAttribute(self::PHONE_PRIMARY);
+    }
+
+    public function getPhoneSecondary()
+    {
+        return $this->getAttribute(self::PHONE_SECONDARY);
+    }
+
+    public function getDirector()
+    {
+        return $this->getAttribute(self::DIRECTOR);
+    }
+
+    public function getExecutive()
+    {
+        return $this->getAttribute(self::EXECUTIVE);
+    }
+
+    public function getPercentageOwnership()
+    {
+        return $this->getAttribute(self::PERCENTAGE_OWNERSHIP);
     }
 }

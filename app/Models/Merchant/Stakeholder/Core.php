@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Merchant\Stakeholder;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Address;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Trace\TraceCode;
 
@@ -36,6 +40,96 @@ class Core extends Base\Core
         $stakeholder->edit($stakeholderInput);
 
         $this->repo->stakeholder->saveOrFail($stakeholder);
+    }
+
+    public function create(string $merchantId, array $input): Entity
+    {
+        $this->trace->info(TraceCode::MERCHANT_CREATE_STAKEHOLDER_REQUEST, [
+            'merchant_id' => $merchantId,
+            'input'       => $input,
+        ]);
+
+        $stakeholders = $this->repo->stakeholder->fetchStakeholders($merchantId);
+        if ($stakeholders->isNotEmpty() === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_STAKEHOLDER_ALREADY_EXISTS);
+        }
+
+        return $this->saveStakeholder(null, $merchantId, $input);
+    }
+
+    private function saveStakeholder($id, string $merchantId, array $input): Entity
+    {
+        return $this->repo->transactionOnLiveAndTest(function () use ($id, $merchantId, $input) {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $merchantDetailInput = Helper::getMerchantDetailInput($input);
+
+            $merchantDetailCore  = new Detail\Core;
+
+            if (empty($merchantDetailInput) === false)
+            {
+                $merchantDetailCore->saveMerchantDetails($merchantDetailInput, $merchant);
+            }
+
+            $stakeholderInput = Helper::getStakeholderInput($input);
+
+            if (empty($id) === false)
+            {
+                $stakeholder = $this->repo->stakeholder->findByIdAndMerchantId($id, $merchantId);
+            }
+            else
+            {
+                $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+                $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
+            }
+
+            $this->editStakeholder($stakeholder, $stakeholderInput);
+
+            return $stakeholder;
+        });
+    }
+
+    public function fetch(string $merchantId, string $id): Entity
+    {
+        return $this->repo->stakeholder->findByIdAndMerchantId($id, $merchantId);
+    }
+
+    public function update(string $merchantId, string $id, array $input): Entity
+    {
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_STAKEHOLDER_REQUEST, [
+            'merchant_id' => $merchantId,
+            'input'       => $input,
+            'id'          => $id,
+        ]);
+
+        return $this->saveStakeholder($id, $merchantId, $input);
+    }
+
+    protected function editStakeholder(Entity $stakeholder, $input)
+    {
+        if (isset($input[Constants::ADDRESSES]) === true)
+        {
+            $addressCore = new Address\Core;
+
+            foreach ($input[Constants::ADDRESSES] as $addressArr)
+            {
+                $address = $this->repo->address->fetchPrimaryAddressOfEntityOfType($stakeholder, $addressArr[Address\Entity::TYPE]);
+
+                if (empty($address) === true)
+                {
+                    $addressCore->create($stakeholder, $stakeholder->getEntity(), $addressArr);
+                }
+                else
+                {
+                    $addressCore->edit($address, $addressArr);
+                }
+            }
+        }
+        unset($input[Constants::ADDRESSES]);
+
+        $stakeholder->edit($input);
+
+        $this->repo->saveOrFail($stakeholder);
     }
 
     /**

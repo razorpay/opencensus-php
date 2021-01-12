@@ -1644,9 +1644,12 @@ class Route
         'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
+        'stakeholder_create_v2'                    => ['POST',    'accounts/{id}/stakeholders',                      'StakeholderController@create'                                      ],
+        'stakeholder_update_v2'                    => ['PATCH',   'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@update'                                      ],
+        'stakeholder_fetch_v2'                     => ['GET',     'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@fetch'                                       ],
+
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
-
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
@@ -2538,6 +2541,10 @@ class Route
         'account_fetch_by_external_id',
         'account_edit',
         'account_action',
+
+        'stakeholder_create_v2',
+        'stakeholder_update_v2',
+        'stakeholder_fetch_v2',
 
         'account_create_v2',
         'account_fetch_v2',
@@ -6541,6 +6548,9 @@ class Route
     ];
 
     public static $routesWithV2Prefix = [
+        'stakeholder_create_v2',
+        'stakeholder_update_v2',
+        'stakeholder_fetch_v2',
         'account_create_v2',
         'account_fetch_v2',
     ];

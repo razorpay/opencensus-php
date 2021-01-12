@@ -779,6 +779,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                            = 'Merchant handle must be in uppercase.';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
+    const BAD_REQUEST_STAKEHOLDER_ALREADY_EXISTS                                = 'Stakeholder already exists fot the merchant';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
     const BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT                    = 'Extra details present in input';
