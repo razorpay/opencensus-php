@@ -10,14 +10,70 @@
 
         <script>
             'use strict';
+
+            function noop() {}
+
+            // Empty Interface for rzpQ
+            window.rzpQ = {
+                interaction: noop, // Track components
+                initiated: noop, // User starts an activity
+                dropped: noop, // User drops an activity
+                success: noop, // Successfully completes activity
+                failed: noop, // A failure occured
+                viewed: noop,
+                push: noop, // Explicitly push as custom event to the queue
+                now: function() {
+                    return window.rzpQ;
+                },
+                setUser:noop, // Set a user one time
+                defineEventModifiers: noop, // Extends to set custom event properties
+                merchantActions: function() {
+                    return window.rzpQ;
+                },
+            };
+
             (function (global) {
         
                 function initAnalytics() {
-                    analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
-                    analytics.track('ga', 'pageview', {
-                        eventCategory: 'Checkout Rewards',
-                        eventAction: `Visited Terms page - ${$data['id']}`
+                    const environment = window.location.hostname.indexOf('razorpay.com') < 0 ? 'dev' : 'prod';
+
+                    analytics.init(
+                        ['lj'],
+                        {
+                            lj: "{{env('LUMBERJACK_STATIC_KEY')}}" // "96df432a283745908a06f711acd9e5eb"
+                        },
+                        false,
+                        environment,
+                        false,
+                        { appName: 'pg-dashboard' }
+                    );
+                    
+                    if(analytics.createQ){
+                        window.rzpQ = analytics.createQ({ pollFreq:500 });
+                    }
+
+                    window.rzpQ.defineEventModifiers({
+                        'merchantActions':[
+                            {
+                                propertyName:'event_type',
+                                value:'pg-dashboard'
+                            },
+                            {
+                                propertyName:'mode',
+                                value:'live'
+                            }
+                        ]
                     });
+
+                    window.rzpQ.push(
+                        window.rzpQ.now().merchantActions().success(
+                            'reward_terms_page.visited',
+                            {
+                                reward_id: "{{$data['id']}}",
+                                coupon_code: "{{$data['coupon_code']}}"
+                            }
+                        )
+                    );
                 }
 
                 global.initAnalytics = initAnalytics;
