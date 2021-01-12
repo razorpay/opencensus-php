@@ -98,4 +98,13 @@ class Core extends Base\Core
             return true;
         }
     }
+
+    public function getMerchantAppIds(string $merchantId, array $types = []): array
+    {
+        return $this->repo
+                    ->merchant_application
+                    ->fetchMerchantApplications($merchantId, $types)
+                    ->pluck(Entity::APPLICATION_ID)
+                    ->toArray();
+    }
 }

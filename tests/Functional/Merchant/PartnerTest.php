@@ -1128,17 +1128,6 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsFilters()
     {
-        $app = $this->fixtures->merchant->createDummyPartnerApp([
-            'id'          => self::DUMMY_APP_ID_2,
-            'type'        => null,
-            'name'        => 'App 1',
-            'merchant_id' => self::DEFAULT_MERCHANT_ID,
-            'partner_type'=> 'reseller',
-        ]);
-
-        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
-        $this->fixtures->create('merchant_access_map', $accessMap);
-
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();

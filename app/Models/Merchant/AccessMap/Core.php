@@ -343,31 +343,10 @@ class Core extends Base\Core
      */
     public function isMerchantMappedToPartnerWithAppType(Merchant\Entity $partner, Merchant\Entity $merchant, string $appType) : bool
     {
-        $accessMaps = $this->repo
-                           ->merchant_access_map
-                           ->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partner->getId(), [$appType]);
 
-        foreach ($accessMaps as $accessMap)
-        {
-            $appId = $accessMap->getAttribute(Merchant\AccessMap\Entity::ENTITY_ID);
+        $mappings = $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchant->getId(), $appIds, Entity::APPLICATION);
 
-            $merchantAppRepo = (new MerchantApplications\Repository());
-
-            $merchantApp = $merchantAppRepo->fetchMerchantApplication($appId, MerchantApplications\Entity::APPLICATION_ID);
-
-            if ($merchantApp->isEmpty() === true)
-            {
-                continue;
-            }
-
-            $merchantAppType = $merchantApp->first()->getApplicationType();
-
-            if ($merchantAppType === $appType)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return ($mappings->isEmpty() === false);
     }
 }

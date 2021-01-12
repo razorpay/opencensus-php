@@ -56,6 +56,7 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -1584,10 +1585,6 @@ class Core extends Base\Core
     /**
      * Returns an array of the partner's application ids.
      *
-     * If the partner is -
-     *      a pure platform partner, the result will be the list of all the ids of the apps created by the partner.
-     *      a non pure platform partner, the result will have all the internal dummy apps created.
-     *
      * @param Entity $merchant
      *
      * @return array
@@ -1597,14 +1594,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateIsPartner($merchant);
 
-        $appType = ($merchant->isPurePlatformPartner() === true) ? null : OAuthApp\Type::PARTNER;
-
-        // Fetch all the active applications that the partner has created
-        $apps = (new OAuthApp\Repository)->findActiveApplicationsByMerchantIdAndType($merchant->getId(), $appType);
-
-        $appIds = $apps->getIds();
-
-        return $appIds;
+        return (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId());
     }
 
     /**
@@ -2470,14 +2460,14 @@ class Core extends Base\Core
 
         (new Validator)->validateIsNonPurePlatformPartner($partner);
 
-        $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationsByAppType($partnerId, MerchantApplications\Entity::MANAGED);
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, [MerchantApplications\Entity::MANAGED]);
 
-        if ($merchantApps->isEmpty() === true)
+        if (empty($appIds) === true)
         {
             return false;
         }
 
-        $appId = $merchantApps->first()->getApplicationId();
+        $appId = $appIds[0];
 
         $mapping = (new AccessMap\Repository)
             ->findMerchantAccessMapOnEntityId($merchantId, $appId, AccessMap\Entity::APPLICATION);
@@ -2502,9 +2492,9 @@ class Core extends Base\Core
             $appType = (new MerchantApplications\Core)->getDefaultAppTypeForPartner($merchant);
         }
 
-        $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationsByAppType($merchant->getId(), $appType);
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId(), [$appType]);
 
-        if ($merchantApps->isEmpty() === true)
+        if (empty($appIds) === true)
         {
             throw new Exception\LogicException('merchant application not found for the partner');
         }
@@ -2513,7 +2503,7 @@ class Core extends Base\Core
         //  - one for referral and one for managed sub-merchants
         // for other non-pure platform partners there will be only one application
         // but there can be only one application for each type for non-pure platform partners
-        $appId = $merchantApps->first()->getApplicationId();
+        $appId = $appIds[0];
 
         try
         {
@@ -2552,13 +2542,7 @@ class Core extends Base\Core
 
         if ((empty($params[MerchantApplications\Entity::TYPE]) === false) and (empty($appIds) === false))
         {
-            $type = $params[MerchantApplications\Entity::TYPE];
-
-            $merchantApps = $this->repo
-                                 ->merchant_application
-                                 ->fetchMerchantAppFromAppIdsByAppType($appIds, $type);
-
-            $appIds = $merchantApps->pluck(MerchantApplications\Entity::APPLICATION_ID)->toArray();
+            $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partner->getId(), [$params[MerchantApplications\Entity::TYPE]]);
 
             unset($params[MerchantApplications\Entity::TYPE]);
         }

@@ -22,16 +22,20 @@ class Repository extends Base\Repository
 
     /**
      * @param string $merchantId
-     * @param string $type
+     * @param array $types
      *
      * @return Base\PublicCollection
      */
-    public function fetchMerchantApplicationsByAppType(string $merchantId, string $type) : Base\PublicCollection
+    public function fetchMerchantApplications(string $merchantId, array $types = []) : Base\PublicCollection
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::TYPE, $type)
-                    ->get();
+        $query = $this->newQuery()->merchantId($merchantId);
+
+        if (empty($types) === false)
+        {
+            $query->whereIn(Entity::TYPE, $types);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -44,19 +48,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where($entityType, $entityId)
-                    ->get();
-    }
-
-    /**
-     * @param array $appIds
-     * @param string $type
-     * @return Base\PublicCollection
-     */
-    public function fetchMerchantAppFromAppIdsByAppType(array $appIds, string $type) : Base\PublicCollection
-    {
-        return $this->newQuery()
-                    ->where(Entity::TYPE, $type)
-                    ->whereIn(Entity::APPLICATION_ID, $appIds)
                     ->get();
     }
 }
