@@ -17,6 +17,7 @@ class TraceCode
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
+    const USER_REGISTER_OAUTH_PROVIDER_ERROR        = 'USER_REGISTER_OAUTH_PROVIDER_ERROR';
 
     const ADMIN_ACTION_SLACK_LOG                    = 'ADMIN_ACTION_SLACK_LOG';
     const SLACK_QUERY_LOG                           = 'SLACK_QUERY_LOG';

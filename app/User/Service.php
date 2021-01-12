@@ -98,6 +98,8 @@ class Service extends Base\Service
 
         $request = new \App\Admin\ApiRequestAny($options);
 
+        $this->checkOauthProviderInPayload($input);
+
         list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
 
         if (empty($error) === false)
@@ -110,6 +112,28 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    /**
+     *  For security reasons, checking explicitly for oauth_provider key in the payload.
+     *  If exists, not allowing to hit users/register route.
+     *
+     * @param $input
+     *
+     * @throws BadRequestError
+     */
+    protected function checkOauthProviderInPayload($input)
+    {
+        if (isset($input[Constants::OAUTH_PROVIDER]) === true)
+        {
+            $this->trace->info(TraceCode::USER_REGISTER_OAUTH_PROVIDER_ERROR, ['email' => $input['email'] ?? null]);
+
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'invalid payload',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
     }
 
     /**
