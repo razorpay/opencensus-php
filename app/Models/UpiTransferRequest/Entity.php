@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_REFERENCE     = 'transaction_reference';
     const TRANSACTION_TIME          = 'transaction_time';
     const REQUEST_PAYLOAD           = 'request_payload';
+    const REQUEST_SOURCE            = 'request_source';
 
     const INTENDED_VIRTUAL_ACCOUNT_ID   = 'intended_virtual_account_id';
     const ACTUAL_VIRTUAL_ACCOUNT_ID     = 'actual_virtual_account_id';
@@ -52,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REFERENCE,
         self::TRANSACTION_TIME,
         self::REQUEST_PAYLOAD,
+        self::REQUEST_SOURCE,
         self::INTENDED_VIRTUAL_ACCOUNT_ID,
         self::ACTUAL_VIRTUAL_ACCOUNT_ID,
         self::UPI_TRANSFER_ID,
@@ -125,6 +127,11 @@ class Entity extends Base\PublicEntity
     public function setRequestPayload($requestPayload)
     {
         $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
+    }
+
+    public function setRequestSource($requestSource)
+    {
+        $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
     }
 
     // -------------------- End Setters --------------------
