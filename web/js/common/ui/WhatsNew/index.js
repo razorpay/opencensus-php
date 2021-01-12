@@ -490,9 +490,13 @@ const NotificationCard = ({
 
   useEffect(() => {
     if (video_url && video_url.length) {
-      window.onYouTubePlayerAPIReady = () => {
+      if (typeof YT == 'undefined' || typeof YT.Player == 'undefined') {
+        window.onYouTubePlayerAPIReady = () => {
+          onYouTubePlayer();
+        };
+      } else {
         onYouTubePlayer();
-      };
+      }
     }
   }, []);
 
@@ -561,26 +565,15 @@ const NotificationCard = ({
           ) : null}
         </div>
         {video_url && video_url.length ? (
-          <React.Fragment>
-            <div class={classList('whats-new__video-small', isLoading ? '' : 'hide')}>
-              <div className="whats-new__video-loader">
-                <Spinner />
-              </div>
-            </div>
-            <div
-              id={`player-${id}`}
-              class={classList('whats-new__video-small', isLoading ? 'hide' : '')}
-            >
-              <iframe
-                src={video_url}
-                frameBorder="0"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-                title={title}
-                onLoad={() => setIsLoading(false)}
-              />
-            </div>
-          </React.Fragment>
+          <div id={`player-${id}`} className="whats-new__video-small">
+            <iframe
+              src={video_url}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              title={title}
+            />
+          </div>
         ) : null}
         <div class="description">{description}</div>
         <div class="action-buttons">
