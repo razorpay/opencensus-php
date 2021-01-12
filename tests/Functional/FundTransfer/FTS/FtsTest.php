@@ -128,9 +128,28 @@ class FtsTest extends TestCase
             'url'     => '/fts/channel/notify',
             'method'  => 'post',
             'content' => [
-                'mode' => 'IMPS',
-                'channel' => 'ICICI',
-                'type' => 'partner',
+                'contains'=> ['bene_health'],
+                'entity'  =>'event',
+                'event'   =>'bene_health.started',
+                'payload'=> [
+                    'bene_health' => [
+                        'entity'=> [
+                            'begin' => 1610430729,
+                            'created_at'=>1610430729,
+                            'end'=>0,
+                            'entity'=>'bene_health',
+                            'id'=>'GOHp6DSA5odXTu',
+                            'instrument'=> [
+                                'bank'=>'UTIB'
+                            ],
+                            'method' => ['IMPS'],
+                            'scheduled'=>false,
+                            'source'=>'BENEFICIARY',
+                            'status'=>'started',
+                            'updated_at'=>1610430729
+                        ]
+                    ]
+                ]
             ],
         ];
 

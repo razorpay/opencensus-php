@@ -6,6 +6,7 @@ use Mail;
 use Razorpay\IFSC\IFSC;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Event\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Payout\DowntimeNotification;
 
@@ -40,14 +41,14 @@ class ChannelNotification
     ];
 
     protected $templateMap = [
-        'partner_resolved_sms_template'   => 'sms.payout.partner_downtime_resolved',
-        'partner_downtime_sms_template'   => 'sms.payout.partner_downtime_created',
-        'partner_downtime_email_template' => 'emails.payout.partner_bank_downtime_email',
-        'partner_resolved_email_template' => 'emails.payout.partner_bank_downtime_resolution_email',
-        'bene_resolved_sms_template'      => 'sms.payout.bene_downtime_resolved',
-        'bene_downtime_sms_template'      => 'sms.payout.bene_downtime_created',
-        'bene_downtime_email_template'    => 'emails.payout.bene_bank_downtime_email',
-        'bene_resolved_email_template'    => 'emails.payout.bene_bank_downtime_resolution_email',
+        'partner_resolved_sms_template'       => 'sms.payout.partner_downtime_resolved',
+        'partner_started_sms_template'        => 'sms.payout.partner_downtime_created',
+        'partner_started_email_template'      => 'emails.payout.partner_bank_downtime_email',
+        'partner_resolved_email_template'     => 'emails.payout.partner_bank_downtime_resolution_email',
+        'beneficiary_resolved_sms_template'   => 'sms.payout.bene_downtime_resolved',
+        'beneficiary_started_sms_template'    => 'sms.payout.bene_downtime_created',
+        'beneficiary_started_email_template'  => 'emails.payout.bene_bank_downtime_email',
+        'beneficiary_resolved_email_template' => 'emails.payout.bene_bank_downtime_resolution_email',
     ];
 
     public function __construct($app)
@@ -70,10 +71,11 @@ class ChannelNotification
      */
     public function channelNotify(array $input)
     {
-        // TODO: Add notification specific logic here and fill the data section accordingly
-        $result = $input;
+        $result = $this->preProcessNotification($input);
 
         $this->getConfigAndSendNotification($result);
+
+        $this->processWebhook($input);
     }
 
     protected function sendEmail($result, $toEmailIds)
@@ -125,13 +127,12 @@ class ChannelNotification
 
     protected function getTemplate($result, $mode)
     {
-        $type = ((isset($result[Constants::TYPE]) === true) and
-            $result[Constants::TYPE] === 'partner') ? 'partner' : 'bene';
+        $source = strtolower($result[Constants::SOURCE]);
 
-        $templateKey = strtolower($type) . '_';
+        $templateKey = strtolower($source) . '_';
 
         $templateKey .= ((isset($result['status']) === true) and
-            $result['status'] === 'UP') ? 'resolved_' : 'downtime_';
+            $result['status'] === 'started') ? 'started_' : 'resolved_';
 
         $templateKey .= strtolower($mode) . '_template';
 
@@ -140,7 +141,7 @@ class ChannelNotification
         $this->trace->info(
             TraceCode::FTS_NOTIFY_TEMPLATE,
             [
-                'type'     => $type,
+                'type'     => $source,
                 'key'      => $templateKey,
                 'template' => $templateName,
             ]);
@@ -203,14 +204,14 @@ class ChannelNotification
     protected function getParams($data)
     {
         $params = [
-            'transfer_mode' => $data['mode'],
+            'transfer_mode' => $data['method'][0],
         ];
 
-        if (isset($data[Constants::TYPE]) === true and $data[Constants::TYPE] === 'bene')
+        if (isset($data[Constants::SOURCE]) === true and $data[Constants::SOURCE] === 'BENEFICIARY')
         {
             $params +=  [
-                'bank_name'       => IFSC::getBankName($data['channel']),
-                'ifsc_short_code' => $data['channel'],
+                'bank_name'       => IFSC::getBankName($data['instrument']['bank']),
+                'ifsc_short_code' => $data['instrument']['bank'],
             ];
         }
 
@@ -221,9 +222,9 @@ class ChannelNotification
     {
         $subject = '';
 
-        if (isset($result[Constants::TYPE]) === true and $result[Constants::TYPE] === 'partner')
+        if (isset($result[Constants::SOURCE]) === true and $result[Constants::SOURCE] === 'PARTNER')
         {
-            if ((isset($result['status']) === true) and $result['status'] === 'UP')
+            if ((isset($result['status']) === true) and $result['status'] === 'resolved')
             {
                 $subject = 'RazorpayX: Service available | You can now process payouts through RazorpayX';
             }
@@ -234,15 +235,15 @@ class ChannelNotification
         }
         else
         {
-            if ((isset($result['status']) === true) and $result['status'] === 'UP')
+            if ((isset($result['status']) === true) and $result['status'] === 'resolved')
             {
                 $subject = 'RazorpayX: Service resumed | ' .
-                    $result['channel'] . '  beneficiaries are now available to accept payouts.';
+                    $result['instrument']['bank'] . '  beneficiaries are now available to accept payouts.';
             }
             else
             {
                 $subject = 'RazorpayX: Service downtime | ' .
-                    $result['channel'] . ' beneficiaries are facing failures in receiving payouts.';
+                    $result['instrument']['bank'] . ' beneficiaries are facing failures in receiving payouts.';
             }
         }
 
@@ -266,6 +267,57 @@ class ChannelNotification
             $contactList = explode(',', $config->getNotificationMobileNumbers());
 
             $this->processSms($result, $contactList);
+        }
+    }
+
+    protected function preProcessNotification($input): array
+    {
+        $entity = $input['contains'][0];
+
+        return $input['payload'][$entity]['entity'];
+    }
+
+    // TODO: Needs to be changed entirely with API
+    protected function getWebhookRequest($input)
+    {
+        $entity = $input['contains'][0];
+
+        $input['contains'] = [Constants::PAYOUT_DOWNTIME];
+
+        $input['event'] = str_replace('bene_health', Constants::PAYOUT_DOWNTIME, $input['event']);
+
+        $input['payload'][$entity]['entity']['entity'] = Constants::PAYOUT_DOWNTIME;
+
+        $input['payload'][$entity]['entity']['id'] = Constants::PAYOUT_DOWNTIME_PREFIX . $input['payload'][$entity]['entity']['id'];
+
+        $input['payload'] = [
+            Constants::PAYOUT_DOWNTIME => $input['payload'][$entity],
+        ];
+    }
+
+    protected function processWebhook($input)
+    {
+        try
+        {
+            $webhookData = $this->getWebhookRequest($input);
+
+            $this->trace->info(
+                TraceCode::FTS_DOWNTIME_NOTIFY_WEBHOOK_INIT,
+                [
+                    'request' => $webhookData,
+                ]);
+            // Add webhook implementation here
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_DOWNTIME_NOTIFY_WEBHOOK_FAILURE,
+                [
+                    'data' => $input,
+                ]
+            );
         }
     }
 }

@@ -178,6 +178,12 @@ final class Constants
 
     const DEFAULT_SOURCE                 = "fts.channel.notify";
 
+    const SOURCE                         = 'source';
+
+    const PAYOUT_DOWNTIME                = 'payout.downtime';
+
+    const PAYOUT_DOWNTIME_PREFIX         = 'poutdown_';
+
     public static function getProducts(): array
     {
         return [
