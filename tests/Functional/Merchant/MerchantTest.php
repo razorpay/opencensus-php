@@ -9441,24 +9441,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateSubmerchantWithCodeWhenFeatureDisabled()
-    {
-        $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $testData = $this->testData['testCreateSubmerchantWithCode'];
-
-        $this->makeRequestAndCatchException(
-            function() use ($testData)
-            {
-                $this->ba->proxyAuth();
-
-                $this->runRequestResponseFlow($testData);
-            },
-            BadRequestException::class,
-            'code is not allowed for this merchant.'
-        );
-    }
-
     public function testEditMerchantCategoryShouldResetMethods()
     {
         $this->createMerchant();

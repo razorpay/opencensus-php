@@ -4392,19 +4392,6 @@ class Core extends Base\Core
 
     protected function validateCode(string $code, Entity $parentMerchant, bool $isLinkedAccount)
     {
-        if (($isLinkedAccount === false) or
-            ($parentMerchant->isMarketplace() === false))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ACCOUNT_CODE_NOT_ENABLED,
-                Entity::CODE,
-                $code,
-                'code is not allowed for this merchant.'
-            );
-        }
-
-        $this->checkRouteCodeFeature($parentMerchant);
-
         $parentMerchant->getValidator()->validateCode(Entity::CODE, $code);
 
         if ($this->isCodeAlreadyInUse($code, $parentMerchant) === true)

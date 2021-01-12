@@ -66,20 +66,7 @@ class AccountTest extends TestCase
 
         $this->startTest();
     }
-
-    public function testCreateLinkedAccountWithCodeAndFeatureDisabled()
-    {
-        $testData = $this->testData['testCreateLinkedAccountWithCode'];
-
-        $this->makeRequestAndCatchException(
-            function() use ($testData)
-            {
-                $this->runRequestResponseFlow($testData);
-            },
-            BadRequestException::class,
-            'code is not allowed for this merchant.'
-        );
-    }
+    
 
     public function testCreateLinkedAccountWithCodeAlreadyInUse()
     {

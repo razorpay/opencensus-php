@@ -47,6 +47,29 @@ class Core extends Merchant\Core
             ->findOrFailPublicWithRelations($accountId, $relations);
     }
 
+    public function editAccountV2(Merchant\Entity $partner, string $accountId, array $input)
+    {
+        $accountCoreV1 = new Merchant\Account\Core();
+
+        $accountCoreV1->validatePartnerAccess($partner, $accountId);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        (new Validator)->validateInput('edit_account', $input);
+
+        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
+        {
+            $subMerchant = $this->fillSubMerchant($accountId, $input);
+            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
+            $this->upsertMerchantEmails($subMerchant, $input);
+
+            return $subMerchant;
+        });
+
+        return $account;
+    }
+
     protected function createSubmerchantAndAssociatedEntities(Merchant\Entity $partner, array $input): Merchant\Entity
     {
         $this->repo->assertTransactionActive();
@@ -73,9 +96,9 @@ class Core extends Merchant\Core
 
         $subMerchantInput = InputHelper::getSubMerchantInput($input);
 
-        $subMerchant->fill($subMerchantInput);
+        $merchantCore = new Merchant\Core;
 
-        $this->repo->saveOrFail($subMerchant);
+        $merchantCore->editConfig($subMerchant, $subMerchantInput);
 
         return $subMerchant;
     }
@@ -88,7 +111,7 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore = new Detail\Core;
 
-        $subMerchantDetails = $merchantDetailsCore->editMerchantDetailFields($subMerchant, $detailInput);
+        $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
 
         return $subMerchant;
     }

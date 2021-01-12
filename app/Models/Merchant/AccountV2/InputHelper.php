@@ -21,6 +21,11 @@ class InputHelper
             Merchant\Entity::EMAIL => $input[Constants::EMAIL]
         ];
 
+        if (isset($input[Constants::ACCOUNT_CODE]) === true)
+        {
+            $data[Merchant\Entity::CODE] = $input[Constants::ACCOUNT_CODE];
+        }
+
         return $data;
     }
 
@@ -43,12 +48,6 @@ class InputHelper
             }
         }
 
-        if (isset($input[Constants::ACCOUNT_CODE]) === true)
-        {
-            $subMerchant[Merchant\Entity::ACCOUNT_CODE] = $input[Constants::ACCOUNT_CODE];
-        }
-
-
         if (isset($input[Constants::NOTES]) === true)
         {
             $subMerchant[Merchant\Entity::NOTES] = $input[Constants::NOTES];
@@ -61,9 +60,12 @@ class InputHelper
     {
         $detailInput = [];
 
-        $businessType = $input[Constants::BUSINESS_TYPE];
+        if (isset($input[Constants::BUSINESS_TYPE]) === true)
+        {
+            $businessType = $input[Constants::BUSINESS_TYPE];
 
-        $detailInput[Detail\Entity::BUSINESS_TYPE] = Detail\BusinessType::getIndexFromKey($businessType);
+            $detailInput[Detail\Entity::BUSINESS_TYPE] = Detail\BusinessType::getIndexFromKey($businessType);
+        }
 
         if (isset($input[Constants::EMAIL]) === true)
         {

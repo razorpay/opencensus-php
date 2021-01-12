@@ -169,6 +169,7 @@ class Validator extends Base\Validator
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
         Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum',
         Entity::FEE_BEARER               => 'sometimes|in:customer,platform',
+        Entity::NOTES                    => 'sometimes|notes',
     ];
 
     protected static $actionRules = [

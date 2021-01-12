@@ -24,11 +24,33 @@ class Validator extends Merchant\Validator
         Constants::NOTES               => 'sometimes|notes',
     ];
 
+    protected static $editAccountRules = [
+        Constants::PHONE               => 'filled|numeric',
+        Constants::LEGAL_BUSINESS_NAME => 'sometimes|string',
+        Constants::DOING_BUSINESS_AS   => 'sometimes|string',
+        Constants::PROFILE             => 'sometimes|array',
+        Constants::LEGAL_INFO          => 'sometimes|array',
+        Constants::CONTACT_INFO        => 'sometimes|array',
+        Constants::APPS                => 'sometimes|array',
+        Constants::BRAND               => 'sometimes|array',
+        Constants::TOS_ACCEPTANCE      => 'sometimes|array',
+        Constants::NOTES               => 'sometimes|notes',
+    ];
+
     protected static $profileRules = [
         Constants::ADDRESSES         => 'required|array|max:2',
         Constants::ADDRESSES . '.*'  => 'filled|array',
         Constants::CATEGORY          => 'required|string',
         Constants::SUBCATEGORY       => 'required|string',
+        Constants::DESCRIPTION       => 'sometimes|string',
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
+    ];
+
+    protected static $editProfileRules = [
+        Constants::ADDRESSES         => 'sometimes|array|max:2',
+        Constants::ADDRESSES . '.*'  => 'filled|array',
+        Constants::CATEGORY          => 'sometimes|string',
+        Constants::SUBCATEGORY       => 'sometimes|string',
         Constants::DESCRIPTION       => 'sometimes|string',
         Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
     ];
@@ -42,9 +64,23 @@ class Validator extends Merchant\Validator
         Constants::COUNTRY     => 'required|string',
     ];
 
+    protected static $editAccountAddressRules = [
+        Constants::STREET1     => 'filled|string|max:100',
+        Constants::STREET2     => 'filled|string|max:100',
+        Constants::CITY        => 'filled|string',
+        Constants::STATE       => 'filled|string',
+        Constants::POSTAL_CODE => 'filled|integer',
+        Constants::COUNTRY     => 'filled|string',
+    ];
+
     protected static $addressTypeRules = [
         Constants::OPERATION  => 'sometimes|array',
         Constants::REGISTERED => 'required|array',
+    ];
+
+    protected static $editAddressTypeRules = [
+        Constants::OPERATION  => 'sometimes|array',
+        Constants::REGISTERED => 'sometimes|array',
     ];
 
     protected static $legalInfoRules = [
@@ -53,7 +89,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $brandRules = [
-        Constants::COLOR => 'required|string',
+        Constants::COLOR => 'required|regex:(^[0-9a-fA-F]{6}$)',
     ];
 
     protected static $tosAcceptanceRules = [
@@ -95,8 +131,21 @@ class Validator extends Merchant\Validator
         'apps',
     ];
 
+    protected static $editAccountValidators = [
+        'edit_profile_input',
+        'legal_info',
+        'brand',
+        'tos_acceptance',
+        'contact_info',
+        'apps',
+    ];
+
     protected static $addressTypeValidators = [
         'address_check'
+    ];
+
+    protected static $editAddressTypeValidators = [
+        'edit_address_check'
     ];
 
     protected function validateAddressCheck(array $input)
@@ -107,11 +156,19 @@ class Validator extends Merchant\Validator
         }
     }
 
+    protected function validateEditAddressCheck(array $input)
+    {
+        foreach ($input as $address)
+        {
+            $this->validateInput('EditAccountAddress', $address);
+        }
+    }
+
     protected function validateAddresses(array $profileInput, string $action = '')
     {
         $addresses = $profileInput[Constants::ADDRESSES];
 
-        $this->validateInput('addressType',$addresses);
+        $this->validateInput($action. 'AddressType', $addresses);
     }
 
     protected function validateProfileInput(array $input)
@@ -121,6 +178,23 @@ class Validator extends Merchant\Validator
         $this->validateInput('profile', $profileInput);
 
         $this->validateAddresses($profileInput);
+    }
+
+    protected function validateEditProfileInput(array $input)
+    {
+        if (isset($input[Constants::PROFILE]) === false)
+        {
+            return;
+        }
+
+        $profileInput = $input[Constants::PROFILE];
+
+        $this->validateInput('edit_profile', $profileInput);
+
+        if (isset($profileInput[Constants::ADDRESSES]) === true)
+        {
+            $this->validateAddresses($profileInput, 'edit');
+        }
     }
 
     protected function validateLegalInfo(array $input)
@@ -142,9 +216,9 @@ class Validator extends Merchant\Validator
             return;
         }
 
-        $legalInfo = $input[Constants::BRAND];
+        $brand = $input[Constants::BRAND];
 
-        $this->validateInput('brand', $legalInfo);
+        $this->validateInput('brand', $brand);
     }
 
     protected function validateTosAcceptance(array $input)
@@ -154,9 +228,9 @@ class Validator extends Merchant\Validator
             return;
         }
 
-        $legalInfo = $input[Constants::TOS_ACCEPTANCE];
+        $tosAcceptance = $input[Constants::TOS_ACCEPTANCE];
 
-        $this->validateInput('tosAcceptance', $legalInfo);
+        $this->validateInput('tosAcceptance', $tosAcceptance);
     }
 
     protected function validateBusinessModel($attribute, $value)

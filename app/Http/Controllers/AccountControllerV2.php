@@ -26,4 +26,13 @@ class AccountControllerV2 extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function editAccount(string $accountId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editAccountV2($accountId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

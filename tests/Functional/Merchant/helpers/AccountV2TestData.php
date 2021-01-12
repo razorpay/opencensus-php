@@ -228,6 +228,195 @@ return [
         ],
     ],
 
+    'testEditAccountV2ProfileAddress' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'profile' => [
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'Maharashtra',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'active',
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'doing_business_as'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'MAHARASHTRA',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditAccountV2OtherDetails' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFAAA',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.yahoo.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpayx'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/reddit/id1064216828',
+                            'name' => 'reddit'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business update',
+                    'key2'             => 'updateValue2',
+                ],
+                'tos_acceptance' => [
+                    'date'   => '1661110415',
+                    'ip' => '202.189.12.23',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'active',
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '9999999999',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'doing_business_as'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info'          => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => '#FFFAAA',
+                ],
+                'contact_info' => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps' => [
+                    'websites' => [
+                        'https://www.yahoo.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpayx'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/reddit/id1064216828',
+                            'name' => 'reddit'
+                        ]
+                    ]
+                ],
+                'notes'           => [
+                    'business_details' => 'This is a test business update',
+                    'key2'             => 'updateValue2',
+                ],
+                'tos_acceptance' => [
+                    'date'   => '1661110415',
+                    'ip' => '202.189.12.23',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchAccountV2' => [
         'request' => [
             'url'    => '/v2/accounts/{accountId}',

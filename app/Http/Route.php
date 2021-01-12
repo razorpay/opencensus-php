@@ -1650,6 +1650,7 @@ class Route
 
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
+        'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
@@ -2548,6 +2549,7 @@ class Route
 
         'account_create_v2',
         'account_fetch_v2',
+        'account_edit_v2',
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
@@ -6553,6 +6555,7 @@ class Route
         'stakeholder_fetch_v2',
         'account_create_v2',
         'account_fetch_v2',
+        'account_edit_v2',
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

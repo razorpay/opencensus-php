@@ -41,6 +41,36 @@ class AccountV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testEditAccountV2ProfileAddress()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
+    public function testEditAccountV2OtherDetails()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchAccountV2()
     {
         $this->setUpPartnerWithKycHandled();
