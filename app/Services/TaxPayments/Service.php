@@ -420,7 +420,10 @@ class Service
 
         $headers[self::X_TASK_ID] = $this->app['request']->getId();
 
-        $options = ['auth' => ['api', $this->config['secret']]];
+        $options = [
+            'auth' => ['api', $this->config['secret']],
+            'timeout' => $this->config['timeout']
+        ];
 
         $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
 

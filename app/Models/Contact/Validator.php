@@ -31,16 +31,20 @@ class Validator extends Base\Validator
         Entity::REFERENCE_ID            => 'sometimes|string|max:40',
         Entity::NOTES                   => 'sometimes|notes',
         Entity::IDEMPOTENCY_KEY         => 'sometimes|nullable|string',
+        Entity::PAYMENT_TERMS           => 'sometimes|numeric|integer|min:0',
+        Entity::TDS_CATEGORY            => 'sometimes|numeric|integer|min:0',
     ];
 
     protected static $editRules = [
-        Entity::NAME         => 'sometimes|string|max:50|custom',
-        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL        => 'sometimes|nullable|email',
-        Entity::TYPE         => 'sometimes|nullable|max:40|alpha_dash_space',
-        Entity::REFERENCE_ID => 'sometimes|nullable|string|max:40',
-        Entity::ACTIVE       => 'sometimes|boolean',
-        Entity::NOTES        => 'sometimes|notes',
+        Entity::NAME          => 'sometimes|string|max:50|custom',
+        Entity::CONTACT       => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL         => 'sometimes|nullable|email',
+        Entity::TYPE          => 'sometimes|nullable|max:40|alpha_dash_space',
+        Entity::REFERENCE_ID  => 'sometimes|nullable|string|max:40',
+        Entity::ACTIVE        => 'sometimes|boolean',
+        Entity::NOTES         => 'sometimes|notes',
+        Entity::PAYMENT_TERMS => 'sometimes|numeric|integer|min:0',
+        Entity::TDS_CATEGORY  => 'sometimes|numeric|integer|min:0',
     ];
 
     protected static $createTypeRules = [

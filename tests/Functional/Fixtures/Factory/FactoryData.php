@@ -1205,7 +1205,7 @@ final class FactoryData
             'name'         => $faker->word,
             'email'        => $faker->email,
             'contact'      => '9123456789',
-            'type'         => $faker->randomElement(Contact\Type::$defaults),
+            'type'         => $faker->randomElement(array_diff(Contact\Type::$defaults, [Contact\Type::VENDOR])),
             'reference_id' => $faker->uniqueid,
             'notes'        => null,
             'merchant_id'  => '10000000000000',

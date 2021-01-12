@@ -3,9 +3,12 @@
 namespace RZP\Tests\Functional\Contacts;
 
 use RZP\Error\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Services\VendorPayments\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -36,6 +39,66 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetContactWithTypeVendorAndPrivateAuth()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor']);
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorByContactId'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorByContactId')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testGetContactWithTypeVendorAndProxyAuth()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor']);
+
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorByContactId'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorByContactId')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testGetContactWithTypeVendorAndExternalServiceFailure()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor']);
+
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorByContactId'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorByContactId')
+            ->willThrowException(
+                new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED)
+            );
+
+        $this->startTest();
+    }
+
     public function testFetchContacts()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
@@ -49,10 +112,103 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchContactsWithTypeVendorAndPrivateAuth()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor']);
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y', 'type' => 'customer']);
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorBulk'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorBulk')
+            ->willReturn(
+                [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1]
+                    ]
+                ]
+            );
+
+        $this->startTest();
+    }
+
+    public function testFetchContactsWithTypeVendorAndProxyAuth()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor']);
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y', 'type' => 'customer']);
+
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorBulk'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorBulk')
+            ->willReturn(
+                [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1]
+                    ]
+                ]
+            );
+
+        $this->startTest();
+    }
+
+    public function testFetchContactsWithTypeVendorAndExternalServiceFailure()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor']);
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y', 'type' => 'customer']);
+
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getVendorBulk'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('getVendorBulk')
+            ->willThrowException(
+                new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED)
+            );
+
+        $this->startTest();
+    }
+
     public function testFetchContactsWithEmailsFetchesExactMatchesOnly()
     {
-        $this->fixtures->create('contact', ['id' => '1000005contact', 'name' => 'Contact1A', 'email' => 'contact1@test.com']);
-        $this->fixtures->create('contact', ['id' => '1000006contact', 'name' => 'Contact2B', 'email' => 'contact2@test.com']);
+        $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'name' => 'Contact1A',
+                'email' => 'contact1@test.com',
+            ]
+        );
+        $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000006contact',
+                'name' => 'Contact2B',
+                'email' => 'contact2@test.com',
+            ]
+        );
 
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 
@@ -81,6 +237,103 @@ class ContactsTest extends TestCase
 
     public function testCreateContact()
     {
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorAndPrivateAuth()
+    {
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorAndProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorExternalServiceFailure()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willThrowException(
+                new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED)
+            );
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorWithoutPaymentTerms()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorWithoutTdsCategory()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorWithoutVendorDetails()
+    {
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -149,7 +402,15 @@ class ContactsTest extends TestCase
 
     public function testFetchContactsByNameActiveAndType()
     {
-        $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test4.com', 'contact' => '8888888888', 'name' => 'Test Contact']);
+        $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'email' => 'test@test4.com',
+                'contact' => '8888888888',
+                'name' => 'Test Contact',
+            ]
+        );
 
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 
@@ -158,7 +419,14 @@ class ContactsTest extends TestCase
 
     public function testFetchContactByAccountNumber()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888']);
+        $contact = $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'email' => 'test@test5.com',
+                'contact' => '8888888888',
+            ]
+        );
 
         $this->createFundAccount($contact->getPublicId());
 
@@ -167,7 +435,14 @@ class ContactsTest extends TestCase
 
     public function testFetchContactByFundAccountId()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888']);
+        $contact = $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'email' => 'test@test5.com',
+                'contact' => '8888888888',
+            ]
+        );
 
         $fundAccount = $this->createFundAccount($contact->getPublicId());
 
@@ -180,7 +455,15 @@ class ContactsTest extends TestCase
 
     public function testFetchContactByActive()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1]);
+        $contact = $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'email' => 'test@test5.com',
+                'contact' => '8888888888',
+                'active' => 1,
+            ]
+        );
 
         $fundAccount = $this->createFundAccount($contact->getPublicId());
 
@@ -193,7 +476,16 @@ class ContactsTest extends TestCase
 
     public function testFetchContactByType()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1, 'type' => 'customer']);
+        $contact = $this->fixtures->create(
+            'contact',
+            [
+                'id' => '1000005contact',
+                'email' => 'test@test5.com',
+                'contact' => '8888888888',
+                'active' => 1,
+                'type' => 'customer',
+            ]
+        );
 
         $fundAccount = $this->createFundAccount($contact->getPublicId());
 
@@ -375,10 +667,10 @@ class ContactsTest extends TestCase
                 'url'     => '/fund_accounts',
                 'method'  => 'post',
                 'content' => [
-                    'account_type' => "bank_account",
+                    'account_type' => 'bank_account',
                     'contact_id'   => $contactId,
                     'bank_account'      => [
-                        'name'           => "test",
+                        'name'           => 'test',
                         'ifsc'           => 'SBIN0007105',
                         'account_number' => '111000',
                     ],
@@ -387,7 +679,7 @@ class ContactsTest extends TestCase
             'response' => [
                 'content' => [
                 ],
-                'status_code' =>201
+                'status_code' => 201
             ],
         ];
 
@@ -489,7 +781,7 @@ class ContactsTest extends TestCase
 
         $content = [];
 
-        for ($count = 0 ; $count < 16 ; $count++)
+        for ($count = 0; $count < 16; $count++)
         {
             $contentData = [
                 'fund'  => [
@@ -501,7 +793,7 @@ class ContactsTest extends TestCase
                 ],
                 'contact'  => [
                     'id'                => '',
-                    'type'              => 'vendor',
+                    'type'              => 'self',
                     'name'              => 'Test rzp' . $count,
                     'email'             => 'sample@example' . $count . '.com',
                     'mobile'            => '998899889' . $count,

@@ -15,6 +15,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
+use RZP\Services\VendorPayments\Service as VendorPaymentService;
 
 /**
  * Class Core
@@ -24,6 +25,18 @@ use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 class Core extends Base\Core
 {
     use TrimSpace;
+
+    /**
+     * @var VendorPaymentService
+     */
+    protected $vendorPaymentService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->vendorPaymentService = $this->app['vendor-payment'];
+    }
 
     public function create(
         array $input,
@@ -126,6 +139,8 @@ class Core extends Base\Core
                 Constants\Entity::CONTACT => $contact->getId(),
             ]);
 
+        $contact = $this->saveAppSpecificInformation($contact, $input, $merchant);
+
         return $contact;
     }
 
@@ -173,6 +188,8 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($contact);
+
+        $this->updateAppSpecificInformation($contact, $input);
 
         return $contact;
     }
@@ -240,9 +257,16 @@ class Core extends Base\Core
 
     public function fetch($id, $merchant, $input = [])
     {
-        $contact =  $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
+        $contact = $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
 
-        return $contact;
+        return $this->getAppSpecificInformation($contact);
+    }
+
+    public function fetchMultiple($merchant, $input = [])
+    {
+        $contact = $this->repo->contact->fetch($input, $merchant->getId());
+
+        return $this->getBulkAppSpecificInformation($contact);
     }
 
     public function createRZPFeesContact($merchant)
@@ -259,6 +283,26 @@ class Core extends Base\Core
         $contact = $this->create($contactData, $merchant, null, true, true);
 
         return $contact;
+    }
+
+    public function getAppSpecificInformation(Entity $contact): Entity
+    {
+        return $this->getVendorDetails($contact);
+    }
+
+    public function getBulkAppSpecificInformation(Base\PublicCollection $contacts): Base\PublicCollection
+    {
+        return $this->getBulkVendorDetails($contacts);
+    }
+
+    public function saveAppSpecificInformation(Entity $contact, array $input, Merchant\Entity $merchant): Entity
+    {
+        return $this->saveVendorDetails($contact, $input, $merchant);
+    }
+
+    function updateAppSpecificInformation(Entity $contact, array $input): Entity
+    {
+        return $this->updateVendorDetails($contact, $input);
     }
 
     /**
@@ -504,5 +548,150 @@ class Core extends Base\Core
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
         );
+    }
+
+    private function getVendorDetails(Entity $contact): Entity
+    {
+        if ($contact->getType() == Type::VENDOR)
+        {
+            try {
+                $vendor = $this->vendorPaymentService->getVendorByContactId(
+                    $this->merchant,
+                    ['contact_id' => $contact->getPublicId()]
+                );
+            } catch (BadRequestException $exception) {
+                $this->trace->traceException($exception);
+
+                return $contact;
+            }
+
+            $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+            $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+        }
+
+        return $contact;
+    }
+
+    private function saveVendorDetails(Entity $contact, array $input, Merchant\Entity $merchant): Entity
+    {
+        if ($contact->getType() == Type::VENDOR)
+        {
+            $createParams = [];
+            if (isset($input[Entity::PAYMENT_TERMS]))
+            {
+                $createParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
+            }
+
+            if (isset($input[Entity::TDS_CATEGORY]))
+            {
+                $createParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+            }
+
+            if (empty($createParams))
+            {
+                return $contact;
+            }
+
+            $createParams['contact_id'] = $contact->getPublicId();
+
+            try {
+                $vendor = $this->vendorPaymentService->createVendor(
+                    $merchant,
+                    $createParams
+                );
+            } catch (BadRequestException $exception) {
+                $this->trace->traceException($exception);
+
+                return $contact;
+            }
+
+            $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+            $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+        }
+
+        return $contact;
+    }
+
+    private function updateVendorDetails(Entity $contact, array $input): Entity
+    {
+        if ($contact->getType() == Type::VENDOR)
+        {
+            $updateParams = [];
+            if (isset($input[Entity::PAYMENT_TERMS]))
+            {
+                $updateParams[Entity::PAYMENT_TERMS] = $input[Entity::PAYMENT_TERMS];
+            }
+
+            if (isset($input[Entity::TDS_CATEGORY]))
+            {
+                $updateParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+            }
+
+            if (empty($updateParams)) {
+                return $this->getAppSpecificInformation($contact);
+            }
+
+            $updateParams['contact_id'] = $contact->getPublicId();
+
+            try {
+                $vendor = $this->vendorPaymentService->updateVendor($this->merchant, $updateParams);
+            } catch (BadRequestException $exception) {
+                $this->trace->traceException($exception);
+
+                return $contact;
+            }
+
+            $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+            $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+        }
+
+        return $contact;
+    }
+
+    private function getBulkVendorDetails(Base\PublicCollection $contacts): Base\PublicCollection
+    {
+        $contactIds = [];
+        /**
+         * @var Entity[] $contacts
+         */
+        foreach ($contacts as $contact)
+        {
+            if ($contact->getType() == Type::VENDOR)
+            {
+                $contactIds[] = $contact->getPublicId();
+            }
+        }
+
+        if (empty($contactIds))
+        {
+            return $contacts;
+        }
+
+        try {
+            $vendors = $this->vendorPaymentService->getVendorBulk(
+                $this->merchant,
+                ['contact_ids' => $contactIds]
+            )['items'];
+        } catch (BadRequestException $exception) {
+            $this->trace->traceException($exception);
+
+            return $contacts;
+        }
+
+        $contactIdVendorMap = [];
+        foreach ($vendors as $vendor) {
+            $contactIdVendorMap[$vendor['contact_id']] = $vendor;
+        }
+
+        foreach ($contacts as $contact) {
+            if (array_key_exists($contact->getPublicId(), $contactIdVendorMap))
+            {
+                $vendor = $contactIdVendorMap[$contact->getPublicId()];
+                $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
+                $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+            }
+        }
+
+        return $contacts;
     }
 }

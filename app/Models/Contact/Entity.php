@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER  = 'account_number';
     const FUND_ACCOUNT_ID = 'fund_account_id';
     const IDEMPOTENCY_KEY = 'idempotency_key';
+    const PAYMENT_TERMS   = 'payment_terms';
+    const TDS_CATEGORY    = 'tds_category';
 
     const RESPONSE_CODE   = 'response_code';
 
@@ -76,7 +78,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::NOTES,
         self::FUND_ACCOUNTS,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::PAYMENT_TERMS,
+        self::TDS_CATEGORY
     ];
 
     protected $defaults = [
@@ -104,6 +108,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::BATCH_ID,
         self::FUND_ACCOUNTS,
+        self::PAYMENT_TERMS,
+        self::TDS_CATEGORY,
     ];
 
     protected $publicAuth = [
@@ -124,6 +130,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'cont';
 
     protected $entity = 'contact';
+
+    protected $paymentTerms = null;
+
+    protected $tdsCategory = null;
 
     // --------------- Getters ---------------
 
@@ -176,18 +186,28 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NAME, $name);
     }
 
+    public function setPaymentTerms(int $paymentTerms)
+    {
+        $this->paymentTerms = $paymentTerms;
+    }
+
+    public function setTdsCategory(int $tdsCategory)
+    {
+        $this->tdsCategory = $tdsCategory;
+    }
+
     // ------------- End Setters -------------
 
     // ----------- Public Setters ------------
 
-    public function setPublicBatchIdAttribute(array & $attributes)
+    public function setPublicBatchIdAttribute(array &$attributes)
     {
         $batchId = $this->getAttribute(self::BATCH_ID);
 
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
     }
 
-    public function setPublicFundAccountsAttribute(array & $attributes)
+    public function setPublicFundAccountsAttribute(array &$attributes)
     {
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
@@ -206,6 +226,38 @@ class Entity extends Base\PublicEntity
                                                     ->where(FundAccount\Entity::ACTIVE, 1)
                                                     ->getResults()
                                                     ->toArrayPublicEmbedded();
+        }
+    }
+
+    public function setPublicPaymentTermsAttribute(array &$attributes)
+    {
+        if ($attributes[self::TYPE] != Type::VENDOR)
+        {
+            return;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyAuth() === true)
+        {
+            $attributes[self::PAYMENT_TERMS] = $this->paymentTerms;
+        }
+    }
+
+    public function setPublicTdsCategoryAttribute(array &$attributes)
+    {
+        if ($attributes[self::TYPE] != Type::VENDOR)
+        {
+            return;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyAuth() === true)
+        {
+            $attributes[self::TDS_CATEGORY] = $this->tdsCategory;
         }
     }
 

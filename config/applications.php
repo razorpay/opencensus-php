@@ -373,8 +373,8 @@ return [
 
     'settlements_service' => [
         'url'               => [
-          'live'    =>   env('SETTLEMENTS_LIVE_URL'),
-          'test'    =>   env('SETTLEMENTS_TEST_URL'),
+          'live'    => env('SETTLEMENTS_LIVE_URL'),
+          'test'    => env('SETTLEMENTS_TEST_URL'),
         ],
         'dashboard' => [
             'live' => [
@@ -592,8 +592,10 @@ return [
 
     'vendor_payments' => [
         'url'    => env('VENDOR_PAYMENT_URL'),
-        'secret' => env('VENDOR_PAYMENT_INTERNAL_APP_SECRET'), // the secret used by the VP to call apis under internal auth
-        // this same secret is used as the passowrd to call APIs on the micro-service
+        // the secret used by the VP to call apis under internal auth
+        // this same secret is used as the password to call APIs on the micro-service
+        'secret' => env('VENDOR_PAYMENT_INTERNAL_APP_SECRET'),
+        'timeout'       => env('VENDOR_PAYMENT_TIMEOUT_SECS', 60),
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),

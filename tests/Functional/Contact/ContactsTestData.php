@@ -19,6 +19,50 @@ return [
         ],
     ],
 
+    'testGetContactWithTypeVendorAndPrivateAuth' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000000contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'cont_1000000contact',
+                'entity' => 'contact',
+                'type'   => 'vendor',
+            ],
+        ],
+    ],
+
+    'testGetContactWithTypeVendorAndProxyAuth' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000000contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'cont_1000000contact',
+                'entity'        => 'contact',
+                'type'          => 'vendor',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+            ],
+        ],
+    ],
+
+    'testGetContactWithTypeVendorAndExternalServiceFailure' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000000contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'cont_1000000contact',
+                'entity'        => 'contact',
+                'type'          => 'vendor',
+            ],
+        ],
+    ],
+
     'testFetchContacts' => [
         'request'  => [
             'url'    => '/contacts',
@@ -38,6 +82,89 @@ return [
                         'id'     => 'cont_1000001contact',
                         'entity' => 'contact',
                         'name'   => 'Contact X',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsWithTypeVendorAndPrivateAuth' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000002contact',
+                        'entity' => 'contact',
+                        'name'   => 'Contact Y',
+                        'type'   => 'customer',
+                    ],
+                    [
+                        'id'     => 'cont_1000001contact',
+                        'entity' => 'contact',
+                        'name'   => 'Contact X',
+                        'type'   => 'vendor',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsWithTypeVendorAndProxyAuth' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000002contact',
+                        'entity' => 'contact',
+                        'name'   => 'Contact Y',
+                        'type'   => 'customer',
+                    ],
+                    [
+                        'id'            => 'cont_1000001contact',
+                        'entity'        => 'contact',
+                        'name'          => 'Contact X',
+                        'type'          => 'vendor',
+                        'payment_terms' => 10,
+                        'tds_category'  => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsWithTypeVendorAndExternalServiceFailure' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000002contact',
+                        'entity' => 'contact',
+                        'name'   => 'Contact Y',
+                        'type'   => 'customer',
+                    ],
+                    [
+                        'id'            => 'cont_1000001contact',
+                        'entity'        => 'contact',
+                        'name'          => 'Contact X',
+                        'type'          => 'vendor',
                     ],
                 ],
             ],
@@ -190,6 +317,206 @@ return [
                 'entity'       => 'contact',
                 'name'         => 'Test / Contact',
                 'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorAndPrivateAuth' => [
+        'request'  => [
+            'content' => [
+                'name'          => 'Test / Contact',
+                'type'          => 'vendor',
+                'reference_id'  => '#123abc',
+                'email'         => 'asd@abc.com',
+                'contact'       => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'notes'         => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorAndProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorExternalServiceFailure' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorWithoutPaymentTerms' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'tds_category'  => 1,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 0,
+                'tds_category'  => 1,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorWithoutTdsCategory' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 0,
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorWithoutVendorDetails' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
@@ -781,7 +1108,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',

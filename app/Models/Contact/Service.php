@@ -86,6 +86,14 @@ class Service extends Base\Service
         return $contact->toArrayPublic();
     }
 
+    public function fetchMultiple(array $input): array
+    {
+        $entities = $this->core
+            ->fetchMultiple($this->merchant, $input);
+
+        return $entities->toArrayPublic();
+    }
+
     public function getTypes(): array
     {
         return (new Type)->getAll($this->merchant);

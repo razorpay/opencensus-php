@@ -699,7 +699,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1088,7 +1088,7 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1133,7 +1133,7 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1204,7 +1204,7 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1249,7 +1249,7 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1321,7 +1321,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1603,7 +1603,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1626,7 +1626,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -1927,7 +1927,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -2042,7 +2042,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -2157,7 +2157,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'customer',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',

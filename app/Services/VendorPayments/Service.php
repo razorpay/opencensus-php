@@ -48,6 +48,10 @@ class Service
     const UFH_BULK_DOWNLOAD           = 'InitiateBulkInvoiceDownload';
     const UPDATE_INVOICE_FILE_ID      = 'UpdateInvoiceFileId';
     const GET_INVOICES_FROM_UFH       = 'GetUfhFile';
+    const GET_VENDOR_BY_CONTACT_ID    = 'GetVendorByContactId';
+    const CREATE_VENDOR               = 'CreateVendor';
+    const UPDATE_VENDOR               = 'UpdateVendor';
+    const GET_VENDOR_BULK             = 'GetVendorBulk';
 
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
@@ -487,6 +491,34 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
+    public function getVendorByContactId(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_BY_CONTACT_ID);
+
+        return $this->makeRequest($merchant, $url, $data);
+    }
+
+    public function createVendor(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_VENDOR);
+
+        return $this->makeRequest($merchant, $url, $data);
+    }
+
+    public function updateVendor(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_VENDOR);
+
+        return $this->makeRequest($merchant, $url, $data);
+    }
+
+    public function getVendorBulk(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_BULK);
+
+        return $this->makeRequest($merchant, $url, $data);
+    }
+
     protected function makeRequest(MerchantEntity $merchant = null,
                                    string $url = '',
                                    array $data = [],
@@ -512,7 +544,10 @@ class Service
             $headers[self::X_APP_MODE] = $mode;
         }
 
-        $options = ['auth' => ['api', $this->config['secret']]];
+        $options = [
+            'auth' => ['api', $this->config['secret']],
+            'timeout' => $this->config['timeout']
+        ];
 
         $dataLogged = $data;
 
