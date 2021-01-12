@@ -214,6 +214,10 @@ const PartnerPage = lazy(() =>
   import(/* webpackChunkName: "PartnerPage" */ 'merchant/views/PartnerAppStore/PartnerPage'),
 );
 
+const WhatsNewDetailsPage = lazy(() =>
+  import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -338,6 +342,9 @@ const entityDetailsMap = {
   },
   '/credits/:id(credits_.+)': { component: CreditSubDetails },
   '/webhooks/:id': { component: WebhookEntity },
+  '/announcements/:id': {
+    component: WhatsNewDetailsPage,
+  },
 };
 
 /*
