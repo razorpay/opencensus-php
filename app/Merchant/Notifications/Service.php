@@ -34,12 +34,22 @@ class Service extends Base\Service
         $filteredNotifications = [];
 
         array_walk($notifications, function(&$value, $key) use ($user, &$filteredNotifications) {
+            $isUserEligible = false;
 
             if ((isset($value['filters']) === false) or
                 (empty($value['filters']) === true) or
-                ($this->userEligibleForNotification($value['filters'], $user) === true))
+                ($this->userEligibleForNotification($value['filters'], $user, false) === true))
             {
                 unset($value['filters']);
+                $isUserEligible = true;
+            }
+
+            if ($isUserEligible and
+                ((isset($value['inverseFilters']) === false) or
+                (empty($value['inverseFilters']) === true) or
+                ($this->userEligibleForNotification($value['inverseFilters'], $user, true) === true)))
+            {
+                unset($value['inverseFilters']);
 
                 $filteredNotifications[] = $value;
             }
@@ -56,7 +66,7 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    private function userEligibleForNotification(array $notificationFilters, array $user): bool
+    private function userEligibleForNotification(array $notificationFilters, array $user, bool $inverse): bool
     {
         $isUserEligible = true;
 
@@ -134,7 +144,7 @@ class Service extends Base\Service
 
                     if (isset($user[$key]) === false)
                     {
-                        return false;
+                        return $inverse;
                     }
 
                     $userFilterValue = $user[$key];
@@ -161,7 +171,7 @@ class Service extends Base\Service
                         }
                     }
 
-                    $isUserEligible = in_array("on", $value);
+                    $isUserEligible = $inverse ? !in_array("on", $value) : in_array("on", $value);
 
                     break;
 
