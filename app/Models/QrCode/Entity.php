@@ -282,8 +282,13 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END SETTERS ---------------------
-    public static function getQrStringWithTokenizedMpans(string $qrString)
+    public static function getQrStringWithTokenizedMpans($qrString)
     {
+        if (empty($qrString) === true)
+        {
+            return $qrString;
+        }
+
         $app = App::getFacadeRoot();
 
         $mpanVaultApp = $app['mpan.cardVault'];

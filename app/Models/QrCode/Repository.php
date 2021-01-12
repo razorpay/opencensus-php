@@ -49,6 +49,8 @@ class Repository extends Base\Repository
     {
         $mpanTokenized = $this->dbColumn(Entity::MPANS_TOKENIZED);
 
+        $qrString = $this->dbColumn(Entity::QR_STRING);
+
         $provider = $this->dbColumn(Entity::PROVIDER);
 
         $createdAt = $this->dbColumn(Entity::CREATED_AT);
@@ -56,6 +58,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                      ->take($count)
                      ->where($provider, '=', 'bharat_qr')
+                     ->whereNotNull($qrString)
                      ->whereNull($mpanTokenized)
                      ->where($createdAt, '>', 1552500000) // picking only after 13 mar 2019, as before this date 16 digit mc mpan was stored. https://github.com/razorpay/api/commit/34e9256fc94dc9c61e75f60b993f30a48ef48186 
                      ->get();
