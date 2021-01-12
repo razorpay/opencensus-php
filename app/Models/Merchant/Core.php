@@ -1173,7 +1173,7 @@ class Core extends Base\Core
      * @param $action
      * @param $mode
      */
-    protected function toggleMerchantHoldInNewSettlementService(Merchant\Entity $merchant, $action, $mode)
+    public function toggleMerchantHoldInNewSettlementService(Merchant\Entity $merchant, $action, $mode)
     {
         try
         {

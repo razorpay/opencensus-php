@@ -52,6 +52,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
@@ -400,6 +401,20 @@ class Service extends Base\Service
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        // when the funds are released via bulk action then in that scenario
+        // need to call to the new settlement service for updating the disable feature status
+        // this is being done to have the data consistent within api and settlements service
+        $newSettlementService = (new Bucket\Core)->shouldProcessViaNewService($id);
+
+        if(isset($input['hold_funds']) === true and $newSettlementService === true)
+        {
+            $action = $input['hold_funds'] == 1 ? Merchant\Action::HOLD_FUNDS : Merchant\Action::RELEASE_FUNDS;
+
+            $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
+
+            $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
+        }
 
         if (empty($input[Entity::GROUPS]) === false)
         {
