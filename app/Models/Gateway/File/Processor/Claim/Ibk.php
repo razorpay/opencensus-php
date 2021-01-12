@@ -21,36 +21,58 @@ class Ibk extends NetbankingBase
     {
         $formattedData = [];
 
-        $paymentAmount = $refundAmount = $refundCount = 0;
+        $amount = [
+            'claims'  => 0,
+            'refunds' => 0,
+            'total'   => 0,
+        ];
 
-        $date = Carbon::createFromTimestamp($data[0]['payment']['created_at'], Timezone::IST)->format('m/d/Y');
+        $count = [
+            'claims'  => 0,
+            'refunds' => 0,
+        ];
 
-        foreach ($data as $row)
+        if (isset($data['refunds']) === true)
         {
-            $paymentAmount += $row['payment']->getAmount();
-            $refundAmount  += $row['payment']->getAmountRefunded();
-
-            if ($refundAmount > 0)
+            $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $refundCount++;
-            }
+                $sum += $item['refund']['amount'];
+
+                return $sum;
+            });
+
+            $count['refunds'] = count($data['refunds']);
         }
 
-        $totalAmount = $paymentAmount - $refundAmount;
+        if (isset($data['claims']) === true)
+        {
+            $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
+            {
+                $sum += $item['payment']->getAmount();
+
+                return $sum;
+            });
+
+            $count['claims'] = count($data['claims']);
+        }
+
+        $amount['total'] = $amount['claims'] - $amount['refunds'];
+
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('m/d/Y');
 
         $formattedData[] = [
             ClaimFields::SR_NO             => '1',
             ClaimFields::SUMMARY_ID        => "-",
-            ClaimFields::BANK_MERCHANT_ID  => $data[0]['terminal']['gateway_merchant_id'],
+            ClaimFields::BANK_MERCHANT_ID  => $data['claims'][0]['terminal']['gateway_merchant_id'],
             ClaimFields::MERCHANT_NAME     => '',
             ClaimFields::ACCOUNT_DETAILS   => $this->fetchBankAccountDetails(),
             ClaimFields::CITY              => self::CITY,
             ClaimFields::DATE              => $date,
-            ClaimFields::NUMBER_OF_TXNS    => (string)count($data),
-            ClaimFields::TOTAL_AMOUNT      => $this->getFormattedAmount($paymentAmount),
-            ClaimFields::NUMBER_OF_REFUNDS => (string)$refundCount,
-            ClaimFields::REFUND_AMOUNT     => $this->getFormattedAmount($refundAmount),
-            ClaimFields::NET_AMOUNT        => $this->getFormattedAmount($totalAmount),
+            ClaimFields::NUMBER_OF_TXNS    => $count['claims'],
+            ClaimFields::TOTAL_AMOUNT      => $this->getFormattedAmount($amount['claims']),
+            ClaimFields::NUMBER_OF_REFUNDS => $count['refunds'],
+            ClaimFields::REFUND_AMOUNT     => $this->getFormattedAmount($amount['refunds']),
+            ClaimFields::NET_AMOUNT        => $this->getFormattedAmount($amount['total']),
         ];
 
         return $formattedData;
