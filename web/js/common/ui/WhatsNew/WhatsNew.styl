@@ -1,0 +1,201 @@
+$bubble-red = #F54A2A;
+
+.whats-new
+  &.whats-new--active
+    .whats-new-slide-toggle
+      i
+        color: #2B83EA
+        &:after
+          background: rgba(11, 112, 231, 0.05)
+
+  .whats-new-slide-toggle
+    display: inline-block
+    color: inherit
+    cursor: pointer
+    padding: 15px 15px 12px
+
+    &.slider-active
+      i
+        color: #2B83EA
+
+        &:after
+          background: rgba(11, 112, 231, 0.05)
+
+    i.i.i-horn
+      font-size: 24px
+      position relative
+      top: 1px
+
+      &:after
+        border-radius: 50%
+        height: 36px
+        width: 36px
+        position: absolute
+        content: ''
+        left: -6px
+        top: -6px
+        z-index -1
+
+      &:hover:after
+        background: #F3F5F9;
+    
+    .new-bubble
+      position: absolute
+      top: 7px;
+      right: 7px
+      width: 16px
+      height: 16px
+      border-radius: 50%
+      background: $bubble-red
+      font-size: 12px;
+      text-align: center
+      color: white
+      line-height: normal
+  
+  .whats-new__tooltip
+    position: absolute
+    top: 50px
+    z-index: 1000000 // Above all
+    left: -690px
+    width: 280px
+    height: 120px
+    transition: all 0.25s ease-in-out
+    visibility: hidden
+    opacity: 0
+
+    .whats-new__content
+      font-size: 12px
+      padding: 20px 18px
+      color: rgba(255, 255, 255, 0.87)
+      position: relative
+      background: #2F3344
+      border-radius: 2px
+
+      &:after
+        content: ''
+        position: absolute
+        top: 27%
+        left: 100%
+        width: 0; 
+        height: 0; 
+        border-top: 7px solid transparent
+        border-bottom: 7px solid transparent
+        border-left: 7px solid #2F3344
+
+      .whats-new__heading
+        margin-bottom: 12px
+        display: flex
+        justify-content: space-between
+
+        i.i.i-close
+          line-height: 1.2
+          cursor: pointer
+    
+    &.whats-new__tooltip--show
+      visibility: visible
+      opacity: 1
+      transform: translate(0,20%)
+
+.content-wrapper.whats-new
+  .panel.SliderPanel
+    display: flex
+    flex-direction: column
+    height: 100%
+    border: none
+    margin-bottom: 0
+
+    .panel-heading
+      border-bottom: none
+      line-height: 64px
+      background-color: #fff;
+      vertical-align: middle;
+      padding-top: 0;
+      padding-bottom: 0;
+
+      .heading-content
+        border-bottom: 1px solid #E6EBF3
+
+        .title
+          font-size: 16px
+
+    .SliderPanel__Body
+      flex: auto
+      overflow-y: scroll
+
+      .panel-body
+        padding: 0
+        margin-bottom: 20px
+
+        .whats-new-content
+          position: relative
+          overflow: scroll
+
+          .NotificationCard
+            background: white
+            padding-bottom: 0
+
+            .NotificationCard-body
+              padding-top: 4px
+              padding-bottom: 20px
+              padding-right: 20px
+              border-bottom: 1px solid #F3F5F9
+
+              .heading
+                display: flex
+                justify-content: flex-start
+
+                .title
+                  font-size: 16px
+                  font-family: Lato
+                  font-weight: 500
+                  width: fit-content
+                  color: #404F6B
+                  white-space: normal
+                
+                .NotificationCard-icon--secondary
+                  margin-left: 10px
+                
+              .whats-new__video-small
+                width: 100%
+                height: 214px
+                margin-top: 14px
+
+                &.hide
+                  display: none
+
+                iframe
+                  width: 100%
+                  height: 100%
+
+                .whats-new__video-loader
+                  position: relative
+                  top: 40%
+                  left: 45%
+                
+              .description
+                margin-top: 14px
+                color: #647596
+              
+              &:hover
+                border-bottom-color: transparent
+            
+            &.active
+              .red-bubble
+                position: absolute
+                top: -1px
+                right: -3px
+                width: 10px
+                height: 10px
+                border-radius: 50%
+                border: 1px solid #fff
+                background: $bubble-red
+            
+            &:hover
+              background: #F9FBFF
+          
+          .media
+            margin-top: 0
+
+button.close.announcement-title
+  i.i-close
+    vertical-align: unset

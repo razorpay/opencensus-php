@@ -4,30 +4,30 @@ import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
 import * as SliderActions from 'merchant_common/reducers/slider';
 import { isNone } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
 
 @withRouter
-@connect(state => state.slider, SliderActions)
+@connect((state) => state.slider, SliderActions)
 export default class ModalSlider extends Component {
   // Closes the slider
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
-  handleDocumentClick = event => {
+  handleDocumentClick = (event) => {
     let target = event.target;
 
-    const powerselectMenu = document.querySelector(
-      'body > .tether-element > .PowerSelect__Menu'
-    );
-    const notification = document.querySelector(
-      'body .layout > .Notifications'
-    );
+    const powerselectMenu = document.querySelector('body > .tether-element > .PowerSelect__Menu');
+    const notification = document.querySelector('body .layout > .Notifications');
 
     const calendarPicker = document.querySelector('body .rc-calendar-picker');
+
+    const whatsNewTooltip = document.querySelector('.whats-new__tooltip');
 
     // Fix for power-select dropdown and notification click in slider component
     if (
       (powerselectMenu && powerselectMenu.contains(target)) ||
       (notification && notification.contains(target)) ||
-      (calendarPicker && calendarPicker.contains(target))
+      (calendarPicker && calendarPicker.contains(target)) ||
+      (whatsNewTooltip && whatsNewTooltip.contains(target))
     ) {
       return;
     }
@@ -67,7 +67,11 @@ export default class ModalSlider extends Component {
         contentLabel="SliderModal"
         ariaHideApp={false}
       >
-        <button type="button" class="close close-primary" onClick={this.close}>
+        <button
+          type="button"
+          className={classList('close close-primary', this.props.closeButtonClass)}
+          onClick={this.close}
+        >
           <i class="i i-close" />
         </button>
 

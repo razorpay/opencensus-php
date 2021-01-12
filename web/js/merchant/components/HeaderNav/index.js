@@ -4,6 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
+import WhatsNew from 'common/ui/WhatsNew';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -125,7 +126,9 @@ export default class HeaderNav extends Component {
                 </li>
               )}
               <ShowWhen
-                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
+                additionalCondition={(user) =>
+                  user.isOrgAllowedFunctionality('external_links') && !user.isWhatsNewSectionEnabled
+                }
               >
                 <li id="notifications-dropdown">
                   <NotificationsDropdown
@@ -138,6 +141,15 @@ export default class HeaderNav extends Component {
               <ShowWhen additionalCondition={(user) => user.isAppSwitcherEnabled}>
                 <li id="app-switcher">
                   <AppSwitcher analytics={analytics} {...commonProps} />
+                </li>
+              </ShowWhen>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  user.isOrgAllowedFunctionality('external_links') && user.isWhatsNewSectionEnabled
+                }
+              >
+                <li id="whats-new-section">
+                  <WhatsNew analytics={analytics} showMobileNav={showMobileNav} {...commonProps} />
                 </li>
               </ShowWhen>
               <li id="profile-dropdown">

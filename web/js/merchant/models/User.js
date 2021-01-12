@@ -448,6 +448,10 @@ export default class User {
     return this.getExpStatus('AnnouncementIconJan2021');
   }
 
+  get isWhatsNewSectionEnabled() {
+    return this.getExpStatus('whats-new-dec-2020');
+  }
+
   get isUxRevampPhase2Enabled() {
     return this.getExpStatus('settlement_ux_revamp_p2');
   }
