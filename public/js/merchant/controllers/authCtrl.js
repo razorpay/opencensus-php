@@ -903,6 +903,13 @@ app
                 'Signup - Email Password',
                 'Click - Create Account (Success)',
               );
+              window.ga('set', {
+                dimension1: 'live',
+                dimension2: data.data.name,
+                dimension3: data.data.user_id,
+                dimension4: data.data.email,
+                dimension5: data.data.role,
+              });
             }
 
             window.trackHubs({
