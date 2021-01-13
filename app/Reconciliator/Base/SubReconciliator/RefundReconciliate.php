@@ -36,6 +36,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::UPI_AXIS
     ];
 
+    // List of gateways for which despite MIS status
+    // contains failure, should be sent to scrooge.
+    const RECON_STATUS_FAILURE_GATEWAYS = [
+        RequestProcessor\Base::UPI_SBI,
+    ];
+
     /**
      * @var Payment\Entity
      */
@@ -64,6 +70,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     /**
      * @param $row
+     * @return void|null
      * @throws ReconciliationException
      * @throws \RZP\Exception\LogicException
      */
@@ -119,8 +126,14 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     {
                         $this->handlePersistReconciliationDataFailure($refundId);
                     }
-                } else
+                }
+                else
                 {
+                    if ($this->shouldSendRefundToScroogeDespiteReconFailure($row) === false)
+                    {
+                        $this->removeFromScroogeRequest();
+                    }
+
                     $this->handleFailedValidation($refundId);
                 }
             }
@@ -164,6 +177,20 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return null;
+    }
+
+    /**
+     * In some cases, even when recon row's
+     * validation fails, we still want to
+     * send it's data to scrooge.
+     *
+     * @param $row
+     * @return bool
+     */
+    protected function shouldSendRefundToScroogeDespiteReconFailure($row)
+    {
+        return ((in_array($this->gateway, self::RECON_STATUS_FAILURE_GATEWAYS)) and
+                ($this->validateRefundReconStatus($row) === false));
     }
 
     /**
@@ -221,13 +248,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         $this->removeFromScroogeRequest();
 
         parent::handleUnprocessedRow($row);
-    }
-
-    protected function handleFailedValidation(string $refundId)
-    {
-        $this->removeFromScroogeRequest();
-
-        parent::handleFailedValidation($refundId);
     }
 
     protected function handlePersistReconciliationDataFailure(string $refundId)

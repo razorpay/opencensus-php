@@ -12,6 +12,6 @@ return [
         'REFUNDSTATUS'    => '1',
         'BANKREFUNDTXNID' => '8105313366',
         'REFUNDDATE'      => '20200216',
-        'BANKREMARk'      => 'Refund Success',
+        'BANKREMARK'      => 'Refund Success',
     ],
 ];

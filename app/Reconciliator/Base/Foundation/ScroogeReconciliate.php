@@ -184,7 +184,7 @@ class ScroogeReconciliate extends Base\Core
      * @param $data
      * @param $forceUpdateArn
      * @param Batch\Entity|null $batch
-     * @param string $source Recon request source i.e mailgun, manual or lamba
+     * @param string $source Recon request source i.e mailgun, manual or lambda
      * @param string $gateway
      * @param string $batchId
      */

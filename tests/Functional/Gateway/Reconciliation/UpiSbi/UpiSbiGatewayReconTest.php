@@ -2,11 +2,13 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbi;
 
+use Queue;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Services\Scrooge;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
@@ -16,6 +18,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class UpiSbiGatewayReconTest extends TestCase
 {
@@ -244,6 +247,57 @@ class UpiSbiGatewayReconTest extends TestCase
         }
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testUpiSbiStatusFailedRefundRecon()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiRefundsSince($createdAt);
+
+        $this->ba->appAuth();
+
+        $entry1 = $this->mockRefundData();
+
+        $entry1['BANKREMARK'] = 'Invalid OrderNo';
+
+        $this->makeUpiSbiRefundsSince($createdAt);
+
+        $entry2 = $this->mockRefundData();
+
+        $entry2['BANKREMARK'] = 'Duplicate request';
+
+        $entries[] = $entry1;
+
+        $entries[] = $entry2;
+
+        $file = $this->writeToExcelFile($entries, 'refundreport');
+
+        $uploadedFile = $this->createRefundUploadedFile($file);
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['initiateRefundRecon'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('initiateRefundRecon')
+            ->will($this->returnCallback(
+                function ($data)
+                {
+                    $this->assertEquals($data[ScroogeReconciliate::REFUNDS][0][ScroogeReconciliate::GATEWAY_KEYS]['reconStatus'], Payment\Refund\Status::PENDING);
+                    $this->assertEquals($data[ScroogeReconciliate::REFUNDS][1][ScroogeReconciliate::GATEWAY_KEYS]['reconStatus'], Payment\Refund\Status::FAILED);
+                }));
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->assertEquals('processed', $refund['status']);
+        }
     }
 
     private function assertUpiEntityChanged()
