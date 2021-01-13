@@ -42,16 +42,18 @@ return [
         'dogstatsd_default' => [
             'impl' => \Razorpay\Metrics\Drivers\Dogstatsd::class,
             'client' => [
-                'host' => env('METRICS_DOGSTATSD_HOST'),
-                'port' => env('METRICS_DOGSTATSD_PORT'),
+                'host'              => env('METRICS_DOGSTATSD_HOST'),
+                'port'              => env('METRICS_DOGSTATSD_PORT'),
+                'disable_telemetry' => env('METRICS_DOGSTATSD_DISABLE_TELEMETRY'),
             ],
         ],
 
         'dogstatsd_gateway' => [
             'impl' => \Razorpay\Metrics\Drivers\Dogstatsd::class,
             'client' => [
-                'host' => env('GATEWAY_METRICS_DOGSTATSD_HOST'),
-                'port' => env('GATEWAY_METRICS_DOGSTATSD_PORT'),
+                'host'              => env('GATEWAY_METRICS_DOGSTATSD_HOST'),
+                'port'              => env('GATEWAY_METRICS_DOGSTATSD_PORT'),
+                'disable_telemetry' => env('METRICS_DOGSTATSD_DISABLE_TELEMETRY'),
             ],
         ],
     ],
