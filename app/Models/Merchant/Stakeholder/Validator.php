@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::DIRECTOR                  => 'sometimes|boolean',
         Entity::EXECUTIVE                 => 'sometimes|boolean',
         Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
-        Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|personalPan',
+        Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::PAN_DOC_STATUS            => 'sometimes|string|nullable', // required when create from merchant details
         Entity::POI_STATUS                => 'sometimes|string|nullable',
         Entity::POA_STATUS                => 'sometimes|string|nullable',
@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::DIRECTOR                  => 'sometimes|boolean',
         Entity::EXECUTIVE                 => 'sometimes|boolean',
         Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
-        Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|personalPan',
+        Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::NOTES                     => 'sometimes|notes',
     ];
 
