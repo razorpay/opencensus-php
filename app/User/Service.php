@@ -1090,6 +1090,8 @@ class Service extends Base\Service
             self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
         ];
 
+        $this->checkOauthProviderInPayload($input);
+
         return $this->loginOnApiOnRoute($input,'users/login', 'POST', [ 'headers' => $headers ]);
     }
 
