@@ -40,6 +40,8 @@ class CreateStakeholders extends Migration
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
+            $table->index(Entity::MERCHANT_ID);
+
             $table->index(Entity::CREATED_AT);
 
             $table->index(Entity::UPDATED_AT);

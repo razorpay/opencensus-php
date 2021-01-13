@@ -6107,6 +6107,9 @@ ALTER TABLE upi_transfer_requests
 ALTER TABLE merchant_details
     ADD COLUMN client_applications JSON DEFAULT NULL;
 
+ALTER TABLE stakeholders
+    ADD INDEX stakeholders_merchant_id_index (merchant_id);
+
 ALTER TABLE settlement_ondemand_payouts
     MODIFY COLUMN mode VARCHAR(255);
 
