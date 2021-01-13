@@ -166,6 +166,10 @@ class Constants
 
     const P2P_UPI                         = 'p2p_upi';
 
+    /**
+      Prevents user to switch to test mode from live mode
+    */
+    const PREVENT_TEST_MODE               = 'prevent_test_mode';
 
     /**
      * Disables retry option in checkout
@@ -818,6 +822,7 @@ class Constants
         self::WALLET                          => true,
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
+        self::PREVENT_TEST_MODE               => true,
     ];
 
     // Entity type constants
@@ -1180,6 +1185,11 @@ class Constants
         self::AUTOMATED_LOC_ELIGIBLE => [
             'feature'       => self::AUTOMATED_LOC_ELIGIBLE,
             'display_name'  => 'Mark the merchant eligible for Automated Withdrawals',
+            'documentation' => '',
+        ],
+       self::PREVENT_TEST_MODE  => [
+            'feature'       => self::PREVENT_TEST_MODE,
+            'display_name'  => 'Prevent user to switch to test mode from live mode',
             'documentation' => '',
         ],
     ];
