@@ -90,6 +90,8 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_INITIATE_URI = '/attempts/process';
 
+    const FTS_ONE_OFF_DB_MIGRATE_URL = '/one_off_db_migrate';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

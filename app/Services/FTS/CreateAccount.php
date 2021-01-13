@@ -589,4 +589,12 @@ class CreateAccount extends Base
             Requests::POST,
             $input);
     }
+
+    public function oneOffDbMigrateCron(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FTS_ONE_OFF_DB_MIGRATE_URL,
+            Requests::PATCH,
+            $input);
+    }
 }
