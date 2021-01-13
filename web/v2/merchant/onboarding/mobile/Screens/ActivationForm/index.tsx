@@ -9,7 +9,7 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Link from '@commander/shield/src/shared/Link';
 import { FullPageLoader } from 'v2/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { getMerchantFlow, isL1Submitted } from '../../services/utils';
+import { getMerchantFlow, isL1Submitted, getPoiVerificationStatus } from '../../services/utils';
 import { Tabs, Tab } from '../../../../../components/Tabs';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
@@ -25,7 +25,7 @@ import {
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
 
-type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Save';
+type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Next';
 
 const StyledFooter = styled(View)`
   box-sizing: border-box;
@@ -34,6 +34,7 @@ const StyledFooter = styled(View)`
   bottom: 0;
   padding: 16px;
   background-color: ${({ theme }) => theme.colors.background['200']};
+  border-top: 1px solid rgba(22, 47, 86, 0.1);
 `;
 
 const StyledActivationForm = styled(View)`
@@ -62,6 +63,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const isDocumentsUploadCompleted = useActivationFormState(
     (state) => state.isDocumentsUploadCompleted,
   );
+  const isL1Complete = [
+    isContactDetailsCompleted,
+    isBusinessOverviewCompleted,
+    isBusinessDetailsCompleted,
+  ].every((isComplete) => isComplete);
+
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setActiveTabId = useActivationFormState((state) => state.setActiveTabId);
@@ -69,6 +76,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
 
+  const isUnregPoiStatus = getPoiVerificationStatus(data);
   if (status === 'loading') {
     return <FullPageLoader />;
   }
@@ -78,7 +86,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   }
 
   const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
-  const { onboarding_milestone } = data;
+  const { onboarding_milestone, can_submit } = data;
   const submitL1 = () => {
     postData({ onboarding_milestone: 'L1' }).then((res) => {
       if (res && res.onboarding_milestone === 'L1') {
@@ -97,10 +105,16 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     if (activeTabId === 'documents') {
       return 'Submit And Verify';
     }
-    if (activeTabId === 'business_details' && !isL1Submitted(onboarding_milestone)) {
+    if (
+      activeTabId === 'business_details' &&
+      (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus)
+    ) {
+      if (merchantFlow === 'greylist') {
+        return 'Next';
+      }
       return 'Save And Verify';
     }
-    return 'Save';
+    return 'Next';
   };
   const handleNextClick = () => {
     switch (activeTabId) {
@@ -111,7 +125,14 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         setActiveTabId('business_details');
         break;
       case 'business_details':
-        if (!isL1Submitted(onboarding_milestone)) {
+        if (
+          (isL1Submitted(onboarding_milestone) && !isUnregPoiStatus) ||
+          merchantFlow === 'greylist'
+        ) {
+          setActiveTabId('bank_details');
+          return;
+        }
+        if (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus) {
           submitL1();
         }
         break;
@@ -156,7 +177,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         <BusinessDetails />
       </Tab>,
     ];
-    if (merchantFlow === 'greylist' || isL1Submitted(onboarding_milestone)) {
+    if (merchantFlow === 'greylist' || (isL1Submitted(onboarding_milestone) && !isUnregPoiStatus)) {
       tabs.push(
         <Tab
           key="bank_details"
@@ -181,7 +202,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   return (
     <View>
       {/* Header */}
-      <Space padding={[1.75, 1.5, 1.75, 0.75]}>
+      <Space padding={[1.75, 1.5, 1.25, 0.75]}>
         <Flex justifyContent="space-between" alignItems="center">
           <StyledHeader>
             <Flex flexDirection="row" justifyContent="left">
@@ -192,7 +213,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                   </View>
                 </Space>
                 <View>
-                  <Heading size="large">Enable Payments</Heading>
+                  <Heading size="large">
+                    {merchantFlow === 'greylist'
+                      ? 'Account Activation'
+                      : !isL1Submitted(onboarding_milestone) || isUnregPoiStatus
+                      ? 'Enable Payments'
+                      : 'Enable Settlements'}
+                  </Heading>
                 </View>
               </View>
             </Flex>
@@ -219,7 +246,19 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           <Button onClick={() => setIsOpen(true)} variant="tertiary">
             FAQs
           </Button>
-          <Button onClick={() => handleNextClick()}>{getNextText()}</Button>
+          <Button
+            onClick={() => handleNextClick()}
+            disabled={
+              activeTabId === 'documents'
+                ? !can_submit
+                : (activeTabId === 'business_details' &&
+                    !isL1Complete &&
+                    !isL1Submitted(onboarding_milestone)) ||
+                  isUnregPoiStatus
+            }
+          >
+            {getNextText()}
+          </Button>
         </StyledFooter>
       </Flex>
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />

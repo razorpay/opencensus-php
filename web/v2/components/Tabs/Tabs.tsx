@@ -16,7 +16,11 @@ const TabBar = styled(View)`
 const TabContentContainer = styled(View)`
   background-color: ${({ theme }) => theme.colors.background[400]};
 `;
-
+const StyledSeparator = styled(View)`
+  height: 1px;
+  width: 100%;
+  background-color: ${({ theme }) => theme.colors.shade[930]};
+`;
 interface TabsChildProps {
   isActive: boolean;
   tabId: string;
@@ -71,6 +75,7 @@ const Tabs = ({
           <TabBar>{tabs}</TabBar>
         </Size>
       </Flex>
+      <StyledSeparator />
       <Space padding={[2]}>
         <TabContentContainer>{tabsContent}</TabContentContainer>
       </Space>

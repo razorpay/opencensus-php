@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
-import Text from '@razorpay/blade/src/atoms/Text';
+import TextArea from '@razorpay/blade/src/atoms/TextArea';
 import Space from '@razorpay/blade/src/atoms/Space';
+import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
@@ -28,6 +28,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
   const isBlackListed = data.activation_flow === 'blacklist';
 
   const handleSubmit = (updatedDetails) => {
+    if (updatedDetails.business_model) return;
     const reqData = getRequestData(onboardingCardDetails, updatedDetails);
     if (Object.keys(reqData).length) {
       postData(reqData);
@@ -37,10 +38,14 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     formikProps.handleBlur(e);
     setIsBlurCalled(true);
   };
-  const handleStartActivation = () => {
-    postData({
+  const handleStartActivation = (formDetails) => {
+    const body = {
+      business_subcategory: formDetails.business_subcategory,
+      business_model: formDetails.business_model,
       onboarding_milestone: 'activation_flow',
-    })
+    };
+
+    postData({ ...body })
       .then((res) => {
         if (res.onboarding_milestone === 'activation_flow') {
           props.history.push('/onboarding/steps');
@@ -115,18 +120,28 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                     setHasBusinessModel(value === 'others');
                   }}
                 />
+                <Space margin={[0.3, 0, 0, 0]}>
+                  <Text color="shade.950" size="xsmall">
+                    Business category cannot be changed once submitted
+                  </Text>
+                </Space>
               </Field>
               <Field visible={hasBusinessModel} last>
-                <TextInput
-                  name="business_model"
-                  label="Business Model"
-                  width="auto"
-                  value={formikProps.values.business_model}
-                  errorText={
-                    formikProps.touched.business_model && formikProps.errors.business_model
-                  }
-                  helpText="Tell us a bit about your business model"
-                />
+                <Space margin={[3.7, 0, 0, 0]}>
+                  <View>
+                    <TextArea
+                      name="business_model"
+                      label="Business Model"
+                      placeholder="Enter text here"
+                      width="auto"
+                      value={formikProps.values.business_model}
+                      errorText={
+                        formikProps.touched.business_model && formikProps.errors.business_model
+                      }
+                      helpText="Tell us a bit about your business model"
+                    />
+                  </View>
+                </Space>
               </Field>
               {isBlackListed ? (
                 <Space margin={[2, 0, 0, 0]}>
@@ -137,7 +152,12 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
               ) : null}
               <Space margin={[2.5, 0, 0, 0]}>
                 <View>
-                  <Button block onClick={handleStartActivation} disabled={!isFormValid}>
+                  <Button
+                    block
+                    size="large"
+                    onClick={() => handleStartActivation(formikProps.values)}
+                    disabled={!isFormValid}
+                  >
                     Start Activation
                   </Button>
                 </View>

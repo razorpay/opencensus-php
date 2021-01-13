@@ -15,7 +15,11 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
-            P1
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Sizeweb__Size-sc-10bl685-0 buLdBT"
+            >
+              P1
+            </div>
             <svg
               fill="none"
               height="20"
@@ -45,7 +49,11 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
-            P2
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Sizeweb__Size-sc-10bl685-0 buLdBT"
+            >
+              P2
+            </div>
             <svg
               fill="none"
               height="20"
@@ -73,7 +81,11 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
             class="Styled__Header-sc-5l0601-2 kpSZPU"
             role="button"
           >
-            P3
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Sizeweb__Size-sc-10bl685-0 buLdBT"
+            >
+              P3
+            </div>
             <svg
               fill="none"
               height="20"

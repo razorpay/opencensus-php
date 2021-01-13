@@ -117,14 +117,16 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       );
     }
 
-    if (data.activation_status === 'activated') {
+    if (
+      data.activation_status === 'activated' ||
+      data.activation_status === 'activated_mcc_pending'
+    ) {
       return (
         <>
           <Info
             title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
             description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
           />
-          <Buttons.Secondary onClick={onCTAClick} title="View Settlement Schedule" />
         </>
       );
     }

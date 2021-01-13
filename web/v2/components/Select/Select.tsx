@@ -173,10 +173,12 @@ const Select: React.FC<SelectPropsT> = ({
           errorText={errorText}
         />
       </View>
-      <Modal isOpen={isModalOpen} onClose={onModalClose} bottomsheet={true}>
+      <Modal isOpen={isModalOpen} onClose={onModalClose} bottomsheet={true} bottomSheetHeight="90%">
         <ModalBody>
           <Space margin={[0, 0, 2, 0]}>
-            <Text color="shade.960">{placeholder}</Text>
+            <Text weight="bold" size="xsmall" color="shade.960">
+              {placeholder}
+            </Text>
           </Space>
           {searchable ? (
             <Space margin={[0, 0, 2, 0]}>

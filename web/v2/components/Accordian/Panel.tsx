@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react';
 import Icon from '@razorpay/blade/src/atoms/Icon';
+import View from '@razorpay/blade/src/atoms/View';
+import Size from '@razorpay/blade/src/atoms/Size';
 import { PanelContainer, Header, Content } from './Styled';
 /* 
  Future additions 
@@ -47,7 +49,9 @@ const Panel: React.FC<PanelPropsT> = ({
         onClick={_onClick}
         $disabled={disabled}
       >
-        {title}
+        <Size width="95%">
+          <View>{title}</View>
+        </Size>
         {expanded ? (
           <Icon name="chevronUp" size="medium" />
         ) : (

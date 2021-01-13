@@ -58,7 +58,6 @@ export default function useActivation() {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
-      snackbar.success('Successfully saved');
     },
     onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
@@ -67,7 +66,6 @@ export default function useActivation() {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
-      snackbar.success('Successfully file uploaded');
     },
     onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
@@ -76,7 +74,6 @@ export default function useActivation() {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
-      snackbar.success('Successfully file deleted');
     },
     onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
@@ -99,7 +96,6 @@ export default function useActivation() {
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
-  const hasGSTIN = useActivationFormState((state) => state.has_gstin);
 
   useEffect(() => {
     if (status === 'success') {
@@ -112,10 +108,7 @@ export default function useActivation() {
       const isContactDetailsTabComplete = isTabComplete(data, 'contact_details');
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
       const isBusinessDetailsTabComplete = isTabComplete(data, 'business_details');
-      const isBankAndCompanyDetailsTabComplete = isTabComplete(
-        { ...data, hasGSTIN },
-        'bank_and_company_details',
-      );
+      const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
       const isDocumentsUploadTabComplete = isDocmentTabComplete({
         ...data,
         addressDoc,
@@ -139,7 +132,7 @@ export default function useActivation() {
       ) {
         setSameAddress(true);
       }
-      if (isUnregisteredBusiness(data.business_overview.business_type.value)) {
+      if (isUnregisteredBusiness(data.business_overview.business_type.value) || data.gstin === '') {
         setHasGSTIN(true); // setting as true to hide the GSTIN Input in bank and company details screen
       }
     }

@@ -5,12 +5,82 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dKEVRn Flexweb__Flex-ni2cjg-0 dlHJnO"
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+        role="shimmer"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
-          role="loader"
-        />
+          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 bEFAuj"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
+          >
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG"
+            >
+              <div
+                class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG Spaceweb__Space-njatzl-0 eDHZqM"
+              >
+                <div
+                  class="Textweb__Text-sc-6jf9e4-0 bzRITc"
+                  color="shade.980"
+                  data-testid="ds-text"
+                >
+                  Activate Your Account
+                </div>
+              </div>
+              <div
+                class="Textweb__Text-sc-6jf9e4-0 krUdvH Spaceweb__Space-njatzl-0 fCzbWq"
+                color="shade.950"
+                data-testid="ds-text"
+              >
+                Provide following details to start your activation process.
+              </div>
+            </div>
+            <img
+              alt="fill_activation_form_icon"
+              src="FormIcon.svg"
+            />
+          </div>
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__Separator-l2wo0a-0 hfyoWN"
+          />
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+          >
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-10bl685-0 hdCGpG Spaceweb__Space-njatzl-0 iqhtas"
+            />
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-10bl685-0 yoKtN"
+            />
+            <br />
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-10bl685-0 hdCGpG Spaceweb__Space-njatzl-0 dDFSOr"
+            />
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-10bl685-0 yoKtN"
+            />
+            <br />
+            <div
+              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 bWliCW"
+            >
+              <button
+                class="Buttonweb__StyledButton-gxhxmy-0 uDCOr Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 eFHgXX Flexweb__Flex-ni2cjg-0 hBDZyG"
+                data-testid="ds-button"
+                disabled=""
+                type="button"
+              >
+                <div
+                  class="Textweb__Text-sc-6jf9e4-0 fTtHfx"
+                  color="light.950"
+                  data-testid="ds-text"
+                >
+                  Start Activation
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div

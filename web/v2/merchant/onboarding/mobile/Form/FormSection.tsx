@@ -19,9 +19,11 @@ const FormSection: React.FC<FormSectionProps> = ({
   last = false,
 }) => (
   <Card padding={[2]} margin={last ? 0 : [0, 0, 2, 0]}>
-    <Space margin={[0, 0, 2.5, 0]}>
+    <Space margin={[0, 0, 3, 0]}>
       <View>
-        <Text weight="bold">{title}</Text>
+        <Text size="medium" weight="bold">
+          {title}
+        </Text>
         {subtitle ? (
           <Text size="xxsmall" color={hasError ? 'negative.900' : 'shade.950'}>
             {subtitle}

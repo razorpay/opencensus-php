@@ -23,7 +23,7 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
   const { user } = useApp();
   const onEnableSettlementsClick = () => {
     switchMode(user.current, 'live');
-    window.location.href = '/app/onboarding/form';
+    window.location.href = '/app/onboarding/steps';
   };
   const onExploreToAcceptPaymentsLinkClick = () => {
     window.location.href = '/';
@@ -55,7 +55,7 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
           </View>
           <Space margin={[2, 0, 0, 0]}>
             <View>
-              <Button onClick={() => onEnableSettlementsClick()} block>
+              <Button size="large" onClick={() => onEnableSettlementsClick()} block>
                 Enable settlements
               </Button>
             </View>
@@ -63,7 +63,7 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
 
           <Space margin={[2, 0, 2, 0]}>
             <View>
-              <Link onClick={() => onExploreToAcceptPaymentsLinkClick()}>
+              <Link weight="bold" onClick={() => onExploreToAcceptPaymentsLinkClick()}>
                 Explore products to accept payments
               </Link>
             </View>

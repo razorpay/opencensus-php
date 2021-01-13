@@ -20,7 +20,7 @@ const Container = styled(View)`
 
 const ExitPopup: React.FC<ExitPopupProps> = ({ isOpen, onClose, exitToDashBoardLink }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} closeable={false}>
       <ModalBody>
         <Container>
           <Space margin={[1, 0, 1, 0]}>
@@ -38,7 +38,7 @@ const ExitPopup: React.FC<ExitPopupProps> = ({ isOpen, onClose, exitToDashBoardL
               </Text>
             </View>
           </Space>
-          <Button onClick={onClose} block>
+          <Button size="large" onClick={onClose} block>
             Continue filling Details
           </Button>
           <Space margin={[2, 0, 0, 0]}>

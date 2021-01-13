@@ -11,10 +11,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
           class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 dSdWzn"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 bzRITc"
+              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -148,10 +148,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
           class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 bzRITc"
+              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -387,10 +387,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
           class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 bzRITc"
+              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -588,10 +588,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
           class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 jJZalK"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 bzRITc"
+              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
               color="shade.980"
               data-testid="ds-text"
             >

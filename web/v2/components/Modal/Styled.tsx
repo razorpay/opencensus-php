@@ -58,6 +58,7 @@ export const BottomSheet = styled.div.attrs((props) => ({
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
   max-width: 100%;
   max-height: 90%;
+  height: ${({ $bottomSheetHeight }) => $bottomSheetHeight};
   overflow: auto;
   width: 100%;
   border-top-left-radius: ${({ theme }) => theme.spacings.small};
@@ -108,3 +109,10 @@ export const FooterText = styled(Text)`
 export const ModalFooter: React.FC = (props) => (
   <FooterText size="medium" align="right" {...props} />
 );
+
+export const BottomSheetTextHeader = styled(Text)`
+  position: sticky;
+  top: 0px;
+  z-index: 1;
+  background: ${({ theme }) => getColor(theme, 'white.900')};
+`;

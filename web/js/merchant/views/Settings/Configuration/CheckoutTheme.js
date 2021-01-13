@@ -3,12 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import FileUploadButton from 'common/ui/FileUpload/Button';
-import {
-  uploadLogo,
-  fetchLocale,
-  updateLocale,
-  saveLocale,
-} from 'merchant/reducers/config';
+import { uploadLogo, fetchLocale, updateLocale, saveLocale } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './components/paymentMethodIcons';
@@ -18,7 +13,7 @@ const languageOptions = [
   { name: 'Hindi', code: 'hi' },
 ];
 
-@connect(state => ({ ...state.config, user: state.session.user }), {
+@connect((state) => ({ ...state.config, user: state.session.user }), {
   uploadLogo,
   showNotification,
   fetchLocale,
@@ -50,9 +45,7 @@ export default class CheckoutTheme extends Component {
         ? '#fff'
         : 'rgba(0, 0, 0, 0.85)';
 
-    const colorVariations = window.colorLib.getColorVariations(
-      this.state.brandColor
-    );
+    const colorVariations = window.colorLib.getColorVariations(this.state.brandColor);
 
     this.setState({
       textClr,
@@ -60,7 +53,7 @@ export default class CheckoutTheme extends Component {
     });
   }
 
-  uploadLogo = event => {
+  uploadLogo = (event) => {
     let file = event.target.files[0];
     return this.props
       .uploadLogo(file, 'logo')
@@ -78,7 +71,7 @@ export default class CheckoutTheme extends Component {
       });
   };
 
-  onSave = e => {
+  onSave = (e) => {
     this.analytics();
     this.props.handleSubmit(this.props.onSave)(e);
   };
@@ -90,17 +83,17 @@ export default class CheckoutTheme extends Component {
     });
   };
 
-  onChangeBrandColor = e => {
+  onChangeBrandColor = (e) => {
     this.setState({ brandColor: e.target.value });
 
     this.updatePreviewTextClr();
   };
 
-  onChangeLocale = e => {
+  onChangeLocale = (e) => {
     this.props.updateLocale(e.target.value);
   };
 
-  saveLocale = e => {
+  saveLocale = (e) => {
     e.preventDefault();
     const data = {
       type: 'locale',
@@ -214,7 +207,7 @@ export default class CheckoutTheme extends Component {
                       defaultValue={this.props.locale.config.language_code}
                       onChange={this.onChangeLocale}
                     >
-                      {languageOptions.map(l => (
+                      {languageOptions.map((l) => (
                         <option key={l.code} value={l.code}>
                           {l.name}
                         </option>
@@ -231,8 +224,8 @@ export default class CheckoutTheme extends Component {
                   </div>
                   <div class="col-md-12">
                     <br />
-                    Default language will be used on the Checkout page if
-                    customer doesn’t specify a language.
+                    Default language will be used on the Checkout page if customer doesn’t specify a
+                    language.
                   </div>
                 </div>
               )}
@@ -240,23 +233,24 @@ export default class CheckoutTheme extends Component {
             <div class="footer-note">
               Changes will reflect on{' '}
               <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
+                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <a target="_blank" href="https://razorpay.com/payment-gateway/">
                   Checkout page
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/payment-links/">
                   Payment Links
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/invoices/">
                   Invoices
                 </a>{' '}
                 &{' '}
                 <a target="_blank" href="https://razorpay.com/payment-pages">
                   Payment pages
-                </a>.
+                </a>
+                .
               </ShowWhen>
             </div>
           </div>
@@ -264,10 +258,7 @@ export default class CheckoutTheme extends Component {
         <div class="panel-section--checkout">
           <div id="preview-label">Preview</div>
           <div id="preview-checkout">
-            <div
-              id="checkout-header"
-              style={{ backgroundColor: this.state.brandColor }}
-            >
+            <div id="checkout-header" style={{ backgroundColor: this.state.brandColor }}>
               {this.props.config.logo_url && (
                 <div id="header-logo">
                   <img src={this.props.config.logo_url} width="100%" />
@@ -287,14 +278,12 @@ export default class CheckoutTheme extends Component {
             <div id="preview-checkout-form">
               <img src="/img/preview-checkout-form.png" width="100%" />
               <div id="payment-method-icons">
-                {['card', 'netbanking', 'wallet', 'upi', 'emi', 'qr'].map(
-                  (type, ix) => (
-                    <span key={ix}>
-                      {getIcon(type, colorVariations)}
-                      <span class="payment-method-label">{type}</span>
-                    </span>
-                  )
-                )}
+                {['card', 'netbanking', 'wallet', 'upi', 'emi', 'qr'].map((type, ix) => (
+                  <span key={ix}>
+                    {getIcon(type, colorVariations)}
+                    <span class="payment-method-label">{type}</span>
+                  </span>
+                ))}
               </div>
             </div>
           </div>

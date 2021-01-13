@@ -11,12 +11,12 @@ const Home: React.FC = () => {
 
   return (
     <View>
-      <Space margin={[2, 1, 1, 2]}>
+      <Space padding={[2.5, 1, 0, 2]}>
         <Text size="large" weight="bold" color="shade.950">
           Welcome to your dashboard, {user.contact_name}!
         </Text>
       </Space>
-      <Space margin={[0, 2, 2, 2]}>
+      <Space margin={[1, 2, 2, 2]}>
         <View>
           <AcceptPaymentsCard />
         </View>

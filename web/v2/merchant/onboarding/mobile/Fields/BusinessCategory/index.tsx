@@ -24,9 +24,10 @@ const BusninessCategory: React.FC<BusinessCategoryPropsT> = ({
   const [businessCategoriesStatus, businessCategoriesData] = useBusinessCategory(inputValue);
   return (
     <Select
-      label="Business Category"
+      label="Your Business Category"
       searchable={true}
-      filterOptions={false}
+      placeholder=""
+      inputPlaceholder="Search Business Category"
       errorText={errorText}
       loading={businessCategoriesStatus === 'loading'}
       value={value}

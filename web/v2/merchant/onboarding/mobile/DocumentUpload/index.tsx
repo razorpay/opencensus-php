@@ -7,6 +7,7 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import Icon from '@razorpay/blade/src/atoms/Icon';
 import { Formik } from 'formik';
 import Link from '@commander/shield/src/shared/Link';
+import { getColor } from '@razorpay/blade/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FileUpload } from 'v2/components/FileUpload';
 import Card from '../../../../components/Card';
@@ -31,7 +32,7 @@ import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 const StyledSeparator = styled(View)`
   height: 1px;
   width: 100%;
-  background-color: rgba(22, 47, 86, 0.05);
+  background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
 const DocumentUpload: React.FC = () => {
@@ -192,6 +193,7 @@ const DocumentUpload: React.FC = () => {
                 <Field>
                   <Select
                     label="Choose Proof Type"
+                    placeholder="SELECT PROOF TYPE"
                     searchable={false}
                     onChange={(value) => setAddressDoc(value)}
                     value={addressDoc}
@@ -255,7 +257,9 @@ const DocumentUpload: React.FC = () => {
                   </Text>
                   <Space margin={[2, 0, 0, 0]}>
                     <View>
-                      <Link href={''}>Go to PDF Merger.com</Link>
+                      <Link href="https://www.ilovepdf.com/merge_pdf" target="_blank">
+                        Go to PDF Merger.com
+                      </Link>
                     </View>
                   </Space>
                 </Field>
@@ -266,6 +270,7 @@ const DocumentUpload: React.FC = () => {
                 <Field>
                   <Select
                     label="Choose Proof Type"
+                    placeholder="SELECT PROOF TYPE"
                     searchable={false}
                     onChange={(value) => setBusinessDoc(value)}
                     value={businessDoc}
@@ -309,6 +314,9 @@ const DocumentUpload: React.FC = () => {
                     value={formikProps.values.business_pan_url}
                     error={getFieldError(formikProps.errors, 'business_pan_url')}
                   />
+                  <Text color="shade.950" size="xsmall">
+                    PAN details should be of the mentioned business only
+                  </Text>
                 </Field>
               </FormSection>
             )}
@@ -324,6 +332,9 @@ const DocumentUpload: React.FC = () => {
                     value={formikProps.values.personal_pan}
                     error={getFieldError(formikProps.errors, 'personal_pan')}
                   />
+                  <Text color="shade.950" size="xsmall">
+                    Upload scanned copy of personal PAN Card
+                  </Text>
                 </Field>
               </FormSection>
             )}
@@ -362,6 +373,7 @@ const DocumentUpload: React.FC = () => {
                 <Field>
                   <Select
                     label="Choose Proof Type"
+                    placeholder="SELECT PROOF TYPE"
                     searchable={false}
                     onChange={(value) => setBankDoc(value)}
                     value={bankDoc}
@@ -408,6 +420,7 @@ const DocumentUpload: React.FC = () => {
                   <Field>
                     <Select
                       label="Choose Proof Type"
+                      placeholder="SELECT PROOF TYPE"
                       searchable={false}
                       onChange={(value) => {
                         setAdditionalDoc(value);
@@ -460,7 +473,9 @@ const DocumentUpload: React.FC = () => {
 
             <Text size="xsmall" align="center">
               By submitting these details you agree to our{' '}
-              <Link size="xsmall">terms and conditions</Link>
+              <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
+                terms and conditions
+              </Link>
             </Text>
           </form>
         )}

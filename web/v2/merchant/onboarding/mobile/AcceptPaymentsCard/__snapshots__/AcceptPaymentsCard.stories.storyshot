@@ -5,12 +5,16 @@ exports[`Storyshots Onboarding/AcceptpaymentsCard Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dKEVRn Flexweb__Flex-ni2cjg-0 dlHJnO"
+        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+        role="payment_card"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
-          role="loader"
-        />
+          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 bQhmFI"
+        >
+          <div
+            class="Viewweb__View-sc-1cphyjf-0 AcceptPaymentCardShimmer__Container-gdndmg-0 wlhIY Sizeweb__Size-sc-10bl685-0 yoKtN"
+          />
+        </div>
       </div>
     </div>
     <div

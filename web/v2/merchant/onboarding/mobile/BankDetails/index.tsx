@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import View from '@razorpay/blade/src/atoms/View';
@@ -9,7 +9,7 @@ import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
-import { getLabel, isUnregisteredBusiness } from '../services/utils';
+import { getLabel, isUnregisteredBusiness, getDetailsForIFSC } from '../services/utils';
 
 const BankDetails: React.FC = () => {
   const { data, postData } = useActivation();
@@ -21,6 +21,7 @@ const BankDetails: React.FC = () => {
     (state) => state.setBankAndCompanyDetailsCompleted,
   );
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const [branchIfscInfo, setBranchIfscInfo] = useState<string>('');
 
   const handleSubmit = (updatedDetails) => {
     const isComplete = isTabComplete(
@@ -42,6 +43,26 @@ const BankDetails: React.FC = () => {
     formikProps.handleBlur(e);
     setIsBlurCalled(true);
   };
+
+  const fetchDefaultIfscInfo = () => {
+    if (bankAndCompanyDetails.bank_branch_ifsc.value) {
+      getDetailsForIFSC(bankAndCompanyDetails.bank_branch_ifsc.value)?.then((info) => {
+        const defaultBranchIfscInfo = info ? `${info.bank}, ${info.branch}` : '';
+        setBranchIfscInfo(defaultBranchIfscInfo);
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchDefaultIfscInfo();
+  }, []);
+
+  useEffect(() => {
+    // when checkbox is unchecked then bankAndCompanyDetailsCompleted set to false
+    if (!hasGSTIN && data.gstin === '' && !data.gstin.length) {
+      setBankAndCompanyDetailsCompleted(false);
+    }
+  }, [hasGSTIN]);
 
   return (
     <Formik
@@ -134,6 +155,15 @@ const BankDetails: React.FC = () => {
                 width="auto"
                 name="bank_branch_ifsc"
                 label="IFSC Code"
+                onChange={async (value) => {
+                  if (value) {
+                    const info: any = await getDetailsForIFSC(value);
+                    if (info) {
+                      setBranchIfscInfo(`${info.bank}, ${info.branch}`);
+                    }
+                  }
+                }}
+                helpText={branchIfscInfo}
                 value={formikProps.values.bank_branch_ifsc}
                 errorText={
                   formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc

@@ -1,11 +1,21 @@
 import React, { useRef, useEffect } from 'react';
+import styled from 'styled-components';
 import Link from '@razorpay/blade/src/atoms/Link';
 import Text from '@razorpay/blade/src/atoms/Text';
+import View from '@razorpay/blade/src/atoms/View';
+import Space from '@razorpay/blade/src/atoms/Space';
 import Heading from '@razorpay/blade/src/atoms/Heading';
+import { getColor } from '@razorpay/blade/src/_helpers/theme';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import Panel from '../../../../components/Accordian/Panel';
 import StatelessAccordian from '../../../../components/Accordian/StatelessAccordian';
 import { useActivationFormState } from '../context/store';
+
+const StyledSeparator = styled(View)`
+  height: 1px;
+  width: 100%;
+  background-color: ${({ theme }) => getColor(theme, 'shade.920')};
+`;
 
 const FAQs: React.FC = () => {
   const isOpen = useActivationFormState((state) => state.isFAQOpen);
@@ -14,6 +24,7 @@ const FAQs: React.FC = () => {
   const websiteDetailsRef = useRef<HTMLDivElement>(null);
   const billingLabelRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
+  const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
   useEffect(() => {
     setTimeout(() => {
@@ -28,21 +39,40 @@ const FAQs: React.FC = () => {
   }, [sectionToDisplay]);
 
   return (
-    <Modal bottomsheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <Modal
+      bottomsheet
+      isOpen={isOpen}
+      onClose={() => {
+        setIsOpen(false);
+        setFAQSection('');
+      }}
+      closeable={true}
+      bottomSheetHeaderText="FAQS"
+    >
       <ModalBody>
+        <Space margin={[0.75, 0, 1.5, 0]}>
+          <StyledSeparator />
+        </Space>
         <StatelessAccordian accordian expanded={expanded} onChange={(_, exp) => setExpanded(exp)}>
-          <Heading size="medium" color="shade.970">
-            Billing label
-          </Heading>
+          <Space padding={[0, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                Billing label
+              </Heading>
+            </View>
+          </Space>
           <Panel _ref={billingLabelRef} key="Q1" title="What is Billing label?">
             Billing label is your brand&apos;s identity, it will be displayed on your invoices and
             bills. Please ensure billing label is as close to your business name/website as
             possible.
           </Panel>
-
-          <Heading size="medium" color="shade.970">
-            Website Details
-          </Heading>
+          <Space padding={[1.5, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                Website Details
+              </Heading>
+            </View>
+          </Space>
           <Panel _ref={websiteDetailsRef} key="Q2" title="How can I add api keys to my website?">
             Following are the mandatory requirements to access and api keys to your website:
             <br />
@@ -56,11 +86,13 @@ const FAQs: React.FC = () => {
             sub-category entered on Razorpay Once the above requirements are met, we will grant you
             live api keys.
           </Panel>
-
-          <Heading size="medium" color="shade.970">
-            KYC Queries
-          </Heading>
-
+          <Space padding={[1.5, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                KYC Queries
+              </Heading>
+            </View>
+          </Space>
           <Panel key="Q3" title="What are the documents needed to sign-up?">
             Here are the Documents to be uploaded:
             <br />
@@ -69,7 +101,7 @@ const FAQs: React.FC = () => {
             <ul>
               <li>
                 One Business Proof (Certificate of Incorporation, Partnership deed, Service tax, GST
-                registration document);{' '}
+                registration document);
               </li>
               <li>
                 Firm/Company PAN (Not for Proprietorship), Promoter’s PAN (Proprietor/director),
@@ -96,14 +128,14 @@ const FAQs: React.FC = () => {
             bank.
           </Panel>
           <Panel key="Q5" title="What is KYC review process">
-            <Text weight="bold" style={{ display: 'inline' }} color="shade.970">
+            <Text size="medium" weight="bold" style={{ display: 'inline' }} color="shade.970">
               Instant Activation: &nbsp;
             </Text>
             We understand the urgency to start accepting payments and hence instantly activate
             accounts based on certain criteria.
             <br />
             <br />
-            <Text weight="bold" style={{ display: 'inline' }} color="shade.970">
+            <Text size="medium" weight="bold" style={{ display: 'inline' }} color="shade.970">
               KYC form submission: &nbsp;
             </Text>
             While you can start accepting payments form your customers as your account was instantly
@@ -111,23 +143,27 @@ const FAQs: React.FC = () => {
             approved to enable settlements for your account.
             <br />
             <br />
-            <Text weight="bold" style={{ display: 'inline' }} color="shade.970">
+            <Text size="medium" weight="bold" style={{ display: 'inline' }} color="shade.970">
               KYC form review: &nbsp;
             </Text>
             The TAT for KYC review is 2 working days [as per the settlement schedule T+2] from the
             date of the first transaction\date of KYC form submission in the same order or priority
             <br />
             <br />
-            <Text weight="bold" style={{ display: 'inline' }} color="shade.970">
+            <Text size="medium" weight="bold" style={{ display: 'inline' }} color="shade.970">
               KYC form not approved: &nbsp;
             </Text>
             Settlements enablement is subject to KYC form approval, in the event of KYC form
             rejections funds will remain on hold for 120 days [chargeback period] and released after
             120 days if there are no chargebacks or fraud reported.
           </Panel>
-          <Heading size="medium" color="shade.970">
-            Website
-          </Heading>
+          <Space padding={[1.5, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                Website
+              </Heading>
+            </View>
+          </Space>
           <Panel key="Q6" title="Where do I find the templates for website policies?">
             Please find the sample templates for website policies here:
             <br />
@@ -150,9 +186,13 @@ const FAQs: React.FC = () => {
               </li>
             </ul>
           </Panel>
-          <Heading size="medium" color="shade.970">
-            Offers
-          </Heading>
+          <Space padding={[1.5, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                Offers
+              </Heading>
+            </View>
+          </Space>
           <Panel key="Q7" title="Special anniversary pricing offer">
             <Text weight="bold" color="shade.970" size="medium">
               1) What’s the eligibility criteria for the promotional pricing offer?
@@ -175,7 +215,7 @@ const FAQs: React.FC = () => {
             The payment modes covered in the promotional pricing are -
             <img
               src="https://s3.amazonaws.com/cdn.freshdesk.com/data/helpdesk/attachments/production/11056260169/original/g6lleUQWYfwihRyJhTuOO_4yvbiJF6rV4A.png?1583259882"
-              style={{ display: 'block' }}
+              style={{ display: 'block', width: '100%' }}
             />
             <small>
               *Some payment methods might take time to get enabled and are subjected to the approval
@@ -273,9 +313,13 @@ const FAQs: React.FC = () => {
             You can read the detailed terms and conditions{' '}
             <Link href="https://razorpay.com/links/unlock-growth-terms-and-conditions">here</Link>.
           </Panel>
-          <Heading size="medium" color="shade.970">
-            KYC Review Duration
-          </Heading>
+          <Space padding={[1.5, 0, 0.5]}>
+            <View>
+              <Heading size="medium" color="shade.970">
+                KYC Review Duration
+              </Heading>
+            </View>
+          </Space>
           <Panel
             key="Q9"
             title="I have signed up with Razorpay. How do I complete my activation form?"

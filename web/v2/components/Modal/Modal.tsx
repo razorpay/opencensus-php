@@ -1,5 +1,6 @@
 import React, { useRef, ReactNode } from 'react';
 import Button from '@razorpay/blade/src/atoms/Button';
+import Space from '@razorpay/blade/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import Layer from '../Layer/Layer';
 import {
@@ -8,6 +9,7 @@ import {
   BottomSheet,
   BottomSheetHandle,
   CloseIconContainer,
+  BottomSheetTextHeader,
 } from './Styled';
 
 export interface ModalPropsT {
@@ -16,6 +18,8 @@ export interface ModalPropsT {
   closeable?: boolean;
   children: ReactNode;
   bottomsheet?: boolean;
+  bottomSheetHeight?: string;
+  bottomSheetHeaderText?: string;
 }
 
 const Modal: React.FC<ModalPropsT> = ({
@@ -24,6 +28,8 @@ const Modal: React.FC<ModalPropsT> = ({
   onClose,
   children,
   bottomsheet = false,
+  bottomSheetHeight = 'inherit',
+  bottomSheetHeaderText = '',
 }) => {
   const dailogRef = useRef(null);
   const dailogContainerRef = useRef(null);
@@ -66,8 +72,25 @@ const Modal: React.FC<ModalPropsT> = ({
             ref={dailogContainerRef}
           >
             {bottomsheet ? (
-              <BottomSheet $y={styles.sheetY}>
+              <BottomSheet $y={styles.sheetY} $bottomSheetHeight={bottomSheetHeight}>
                 <BottomSheetHandle />
+                {bottomSheetHeaderText ? (
+                  <Space padding={[1.5, 0, 1, 0]} margin={[0, 3, 0, 3]}>
+                    <BottomSheetTextHeader size="xsmall" color="shade.960" weight="bold">
+                      {bottomSheetHeaderText}
+                      {closeable ? (
+                        <CloseIconContainer data-testid="modalCloseButton" onClick={onClose}>
+                          <Button
+                            variant="tertiary"
+                            size="small"
+                            variantColor="shade"
+                            icon="close"
+                          />
+                        </CloseIconContainer>
+                      ) : null}
+                    </BottomSheetTextHeader>
+                  </Space>
+                ) : null}
                 {children}
               </BottomSheet>
             ) : (

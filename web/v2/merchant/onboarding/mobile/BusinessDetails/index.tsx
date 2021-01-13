@@ -9,17 +9,18 @@ import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import TextArea from '@razorpay/blade/src/atoms/TextArea';
 import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
 import Link from '@commander/shield/src/shared/Link';
+import { getColor } from '@razorpay/blade/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getLabel, getHelpText } from '../services/utils';
+import { getLabel, getHelpText, getPoiVerificationStatus } from '../services/utils';
 import { states } from '../Constants/OnboardingConstants';
 
 const StyledSeparator = styled(View)`
   height: 1px;
   width: 100%;
-  background-color: rgba(22, 47, 86, 0.05);
+  background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
 const businessDetailsSchema = Yup.object().shape({
@@ -88,6 +89,8 @@ const BusinessDetails: React.FC = () => {
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const hasSameAdress = useActivationFormState((state) => state.same_address);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+
+  const isUnregPoiStatus = getPoiVerificationStatus(data);
 
   const copySameAddress = (reqData, updatedDetails) => {
     let _reqData = { ...reqData };
@@ -175,7 +178,12 @@ const BusinessDetails: React.FC = () => {
         >
           <FormSection
             title="PAN Details"
-            subtitle="These details will be verified with the government database"
+            subtitle={
+              isUnregPoiStatus
+                ? 'PAN Verification failed. Please review your details and submit again'
+                : 'These details will be verified with the government database'
+            }
+            hasError={isUnregPoiStatus}
           >
             <Field visible={isVisible('company_pan', data)}>
               <TextInput
@@ -264,6 +272,8 @@ const BusinessDetails: React.FC = () => {
             <Field>
               <Select
                 label="Select State"
+                placeholder="SELECT STATE"
+                inputPlaceholder="Search State"
                 searchable={true}
                 errorText={
                   formikProps.touched.business_registered_state &&
@@ -335,6 +345,8 @@ const BusinessDetails: React.FC = () => {
               <Field last>
                 <Select
                   label="Select State"
+                  placeholder="SELECT STATE"
+                  inputPlaceholder="Search State"
                   searchable={true}
                   errorText={
                     formikProps.touched.business_operation_state &&
@@ -360,11 +372,14 @@ const BusinessDetails: React.FC = () => {
           <Space margin={[2, 0, 1.5, 0]}>
             <StyledSeparator />
           </Space>
-
-          <Text size="xsmall" align="center">
-            By submitting these details you agree to our{' '}
-            <Link size="xsmall">terms and conditions</Link>
-          </Text>
+          {data.activation_flow !== 'greylist' ? (
+            <Text size="xsmall" align="center">
+              By submitting these details you agree to our{' '}
+              <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
+                terms and conditions
+              </Link>
+            </Text>
+          ) : null}
 
           <GetTouchedFields
             handleSubmit={handleSubmit}

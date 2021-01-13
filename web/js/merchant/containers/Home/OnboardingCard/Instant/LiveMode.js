@@ -56,17 +56,21 @@ export default class LiveMode extends Component {
       if (!isL1Submitted) {
         content = (
           <span>
-            <Link to="/activation" className="btn-link" onClick={() => {
-              track.fillActivationForm(); 
-              analyticsService.track({
-                objectName: 'SignUp',
-                actionName: 'Fill KYC CTA clicked',
-                screen: 'home page',
-                properties: {
-                  ...getCommonSegmentProperties(),
-                },
-              })}
-            }>
+            <Link
+              to="/activation"
+              className="btn-link"
+              onClick={() => {
+                track.fillActivationForm();
+                analyticsService.track({
+                  objectName: 'SignUp',
+                  actionName: 'Fill KYC CTA clicked',
+                  screen: 'home page',
+                  properties: {
+                    ...getCommonSegmentProperties(),
+                  },
+                });
+              }}
+            >
               Fill the Activation Form
             </Link>{' '}
             in order to unlock Live Payments

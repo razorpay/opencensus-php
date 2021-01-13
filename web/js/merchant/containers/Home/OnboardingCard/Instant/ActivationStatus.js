@@ -8,7 +8,6 @@ import { trackGoToActivationFromError } from '../../ga';
 import RTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
-
 const initialState = {
   status: null,
   content: null,

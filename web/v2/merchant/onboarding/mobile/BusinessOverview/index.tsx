@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import Text from '@razorpay/blade/src/atoms/Text';
 import Radio from '@razorpay/blade/src/atoms/Radio';
+import HelpIcon from '@razorpay/blade/src/atoms/Icon';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import BusinessType from '../Fields/BusinessType';
 import BusinessCategory from '../Fields/BusinessCategory';
+import { autoPrefixUrls } from '../services/utils';
 
 const BusinessOverview: React.FC = () => {
   const { data, postData } = useActivation();
@@ -20,13 +24,36 @@ const BusinessOverview: React.FC = () => {
   const hasWebsite = useActivationFormState((state) => state.has_website);
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const [websiteOption, setWebiteOption] = useState('1');
+  const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
+  const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
   const handleBlur = (e, formikProps) => {
     formikProps.handleBlur(e);
     setIsBlurCalled(true);
   };
 
+  const Container = styled(View)`
+    position: relative;
+  `;
+  const IconContainer = styled.span`
+    position: absolute;
+    right: 12px;
+    top: 4px;
+  `;
+
   const handleSubmit = (updatedDetails) => {
+    if (updatedDetails.business_website?.value) {
+      const prefixUrl = autoPrefixUrls(updatedDetails.business_website.value);
+      updatedDetails = {
+        ...updatedDetails,
+        business_website: {
+          value: prefixUrl,
+          error: updatedDetails.business_website.error,
+        },
+      };
+    }
+
     const isComplete = isTabComplete(
       { ...data, business_overview: { ...businessOverview, ...updatedDetails }, hasWebsite },
       'business_overview',
@@ -79,6 +106,7 @@ const BusinessOverview: React.FC = () => {
       onSubmit={() => {
         console.log('onSubmit');
       }}
+      enableReinitialize
     >
       {(formikProps) => (
         <form
@@ -110,14 +138,24 @@ const BusinessOverview: React.FC = () => {
               />
             </Field>
             <Field last>
-              <TextInput
-                width="auto"
-                name="business_dba"
-                label="Billing Label"
-                helpText="Something that your customers are familiar with"
-                value={formikProps.values.business_dba}
-                errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
-              />
+              <Container>
+                <TextInput
+                  width="auto"
+                  name="business_dba"
+                  label="Billing Label"
+                  helpText="Something that your customers are familiar with"
+                  value={formikProps.values.business_dba}
+                  errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
+                />
+                <IconContainer
+                  onClick={() => {
+                    setFAQSection('Q1');
+                    setIsOpen(true);
+                  }}
+                >
+                  <HelpIcon name="helpCircle" size="small" fill="primary.800" />
+                </IconContainer>
+              </Container>
             </Field>
           </FormSection>
 
@@ -128,6 +166,7 @@ const BusinessOverview: React.FC = () => {
                 size="medium"
                 onChange={(val) => {
                   const _hasWebsite = val === '0';
+                  setWebiteOption(val);
                   setHasWebsite(_hasWebsite);
                   if (!_hasWebsite) {
                     formikProps.setFieldValue('business_website', '');
@@ -138,7 +177,7 @@ const BusinessOverview: React.FC = () => {
                 <Radio.Option value="0" title="I have a live website/app" />
                 {hasWebsite ? (
                   <Space margin={[3.75, 0, 0, 3.5]}>
-                    <View>
+                    <Container>
                       <TextInput
                         width="auto"
                         name="business_website"
@@ -150,12 +189,28 @@ const BusinessOverview: React.FC = () => {
                           formikProps.errors.business_website
                         }
                       />
-                    </View>
+                      <IconContainer
+                        onClick={() => {
+                          setFAQSection('Q2');
+                          setIsOpen(true);
+                        }}
+                      >
+                        <HelpIcon name="helpCircle" size="small" fill="primary.800" />
+                      </IconContainer>
+                    </Container>
                   </Space>
                 ) : null}
                 <Space margin={[1, 0]}>
                   <View>
                     <Radio.Option value="1" title="I don't have a website/app" />
+                    {websiteOption === '1' && (
+                      <Space margin={[0, 0, 0, 3.5]}>
+                        <Text color="shade.950" size="xsmall">
+                          Use payment links, invoices and many otherproducts from our suite to
+                          accept payments
+                        </Text>
+                      </Space>
+                    )}
                   </View>
                 </Space>
               </Radio>

@@ -5,9 +5,7 @@ import { FOOTER_BUTTONS } from '../Constants';
 import analyticsService from '@commander/services/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
-const Save = ({ saveCurrentTab }) => (
-  <Button onClick={saveCurrentTab}>Save</Button>
-);
+const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
 
 const SaveAndNext = ({ next }) => (
   <Button.Primary iconAfter="chevron-right" onClick={next}>
@@ -40,17 +38,14 @@ const SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer }) => (
         properties: {
           ...getCommonSegmentProperties(),
         },
-      })
+      });
     }}
   >
     Submit Form
   </Button.Primary>
 );
 
-const SubmitClarifications = ({
-  canSubmitNeedsClarification,
-  submitClarifications,
-}) => (
+const SubmitClarifications = ({ canSubmitNeedsClarification, submitClarifications }) => (
   <AsyncBtn.Primary
     disabled={!canSubmitNeedsClarification}
     onClick={submitClarifications}
@@ -83,7 +78,7 @@ const Footer = ({
       <SubmitClarifications
         canSubmitNeedsClarification={canSubmitNeedsClarification}
         submitClarifications={submitClarifications}
-      />
+      />,
     );
   }
 
@@ -101,7 +96,7 @@ const Footer = ({
         canSubmitL1Form={canSubmitL1Form}
         submitL1={submitL1}
         isUnregBiz={isUnregBiz}
-      />
+      />,
     );
   }
 
@@ -111,7 +106,7 @@ const Footer = ({
         isAllTabsValid={isAllTabsValid}
         toggleSubmitLayer={toggleSubmitLayer}
         tracking={tracking}
-      />
+      />,
     );
   }
 

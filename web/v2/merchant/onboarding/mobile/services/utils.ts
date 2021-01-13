@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { isVisible } from 'v2/merchant/onboarding/mobile/context/store';
 import {
   CIN_BusinessTypes,
@@ -116,7 +117,7 @@ export function showForOrgs(businessType): boolean {
 }
 
 export function isBusinessProofTypeDocFieldVisible(data) {
-  if (data.business_overview.business_type.value === PROPRIETORSHIP) {
+  if (+data.business_overview.business_type.value === PROPRIETORSHIP) {
     if (
       !(hasUploadedBusinessProofUrl(data.documents) && data.submitted) ||
       hasUploadedBusinessProofTypeDoc(data.documents)
@@ -239,4 +240,78 @@ export function getDefaultSelectedDocs(context, type) {
       break;
   }
   return defaultSelectedDoc[0];
+}
+
+export const autoPrefixUrls = (url: string) => {
+  const regex = /^https?:\/\//i;
+  if (!url || url.length === 0) {
+    return url;
+  }
+  const tempUrl = url.toLowerCase();
+  if (!regex.test(tempUrl)) {
+    url = `http://${url}`;
+  }
+  return url;
+};
+
+/*
+ * Helper fn. to fetch IFSC bank details for IFSC code entered in field
+ * */
+export function getDetailsForIFSC(ifscCode) {
+  if (ifscCode.length !== 11) {
+    return null;
+  }
+
+  return axios(`https://ifsc.razorpay.com/${ifscCode}`).then((info: any) => {
+    info = info.data;
+    if (info) {
+      info = {
+        bank: info.BANK,
+        branch: info.BRANCH,
+      };
+      return info;
+    }
+    return null; // Invalid IFSC code
+  });
+}
+
+export function getPoiVerificationStatus(context) {
+  return (
+    context &&
+    isUnregisteredBusiness(context.business_overview.business_type.value) &&
+    (context.poi_verification_status === 'incorrect_details' ||
+      context.poi_verification_status === 'not_matched')
+  );
+}
+
+export function isBusinessProofUrlVisible(context) {
+  if (!isUnregisteredBusiness(context.business_overview.business_type.value)) {
+    if (
+      +context.business_overview.business_type.value === PROPRIETORSHIP &&
+      hasUploadedBusinessProofTypeDoc(context.documents)
+    ) {
+      return false;
+    }
+    if (
+      +context.business_overview.business_type.value !== PROPRIETORSHIP ||
+      (hasUploadedBusinessProofUrl(context.documents) && context.submitted)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isBusinessPanVisible(context) {
+  return (
+    !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+    +context.business_overview.business_type.value !== PROPRIETORSHIP
+  );
+}
+
+export function isPersonalPanVisible(context) {
+  return (
+    !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+    +context.business_overview.business_type.value === PROPRIETORSHIP
+  );
 }

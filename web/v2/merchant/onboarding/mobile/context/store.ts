@@ -1,18 +1,15 @@
 import create from 'zustand';
 import {
   isUnregisteredBusiness,
-  hasUploadedBusinessProofTypeDoc,
-  hasUploadedBusinessProofUrl,
   showForOrgs,
   isBusinessProofTypeDocFieldVisible,
   doesHaveAdditionalDocs,
   isRegAutoKYCEnabled,
+  isBusinessProofUrlVisible,
+  isBusinessPanVisible,
+  isPersonalPanVisible,
 } from 'v2/merchant/onboarding/mobile/services/utils';
-import {
-  CIN_BusinessTypes,
-  LLPIN_BusinessTypes,
-  PROPRIETORSHIP,
-} from '../../mobile/Constants/OnboardingConstants';
+import { CIN_BusinessTypes, LLPIN_BusinessTypes } from '../../mobile/Constants/OnboardingConstants';
 
 const isVisible = (fieldName, context) => {
   switch (fieldName) {
@@ -51,31 +48,11 @@ const isVisible = (fieldName, context) => {
         isRegAutoKYCEnabled()
       );
     case 'business_proof_url':
-      if (!isUnregisteredBusiness(context.business_overview.business_type.value)) {
-        if (
-          context.business_overview.business_type.value === PROPRIETORSHIP &&
-          hasUploadedBusinessProofTypeDoc(context.documents)
-        ) {
-          return false;
-        }
-        if (
-          context.business_overview.business_type.value !== PROPRIETORSHIP ||
-          (hasUploadedBusinessProofUrl(context.documents) && context.submitted)
-        ) {
-          return true;
-        }
-      }
-      return false;
+      return isBusinessProofUrlVisible(context);
     case 'business_pan_url':
-      return (
-        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
-        Number(context.business_overview.business_type.value) !== PROPRIETORSHIP
-      );
+      return isBusinessPanVisible(context);
     case 'personal_pan':
-      return (
-        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
-        Number(context.business_overview.business_type.value) === PROPRIETORSHIP
-      );
+      return isPersonalPanVisible(context);
     case 'form_80g_url':
     case 'form_12a_url':
       return showForOrgs(context.business_overview.business_type.value);
@@ -114,6 +91,7 @@ const isTabComplete = (data, tab) => {
   const tabData = data[tab];
   return Object.keys(tabData).every((key) => {
     if (!isVisible(key, data)) return true;
+    if (key === 'gstin' && data.gstin === '') return true;
     return !!tabData[key].value && !tabData[key].error;
   });
 };

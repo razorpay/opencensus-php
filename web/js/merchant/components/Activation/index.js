@@ -1027,7 +1027,6 @@ export default class ActivationWizard extends React.Component {
           ...getCommonSegmentProperties(),
         },
       });
-  
 
       this.setState({ callingAPI: false }, () => {
         if (

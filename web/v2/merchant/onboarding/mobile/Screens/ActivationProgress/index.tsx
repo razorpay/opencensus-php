@@ -12,6 +12,12 @@ import ActivationProgressHeader from './ActivationProgressHeader';
 
 const Screen = styled(View)`
   background-color: #f9fbfe;
+  min-height: 100vh;
+`;
+const StyledSeparator = styled(View)`
+  height: 1px;
+  width: 100%;
+  background-color: rgba(22, 47, 86, 0.1);
 `;
 
 const ScreenContainer = styled.div.attrs((props) => ({
@@ -51,6 +57,7 @@ const ActivationProgress: React.FC = () => {
       {(styles) => (
         <ScreenContainer $y={styles.y} $opacity={styles.opacity}>
           <ActivationProgressHeader progress={data.activation_progress} />
+          <StyledSeparator />
           <Space padding={[2]}>
             <Screen>
               <Steps />

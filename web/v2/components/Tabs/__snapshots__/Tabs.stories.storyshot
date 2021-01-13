@@ -11,7 +11,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
           class="Viewweb__View-sc-1cphyjf-0 Tabs__TabBar-sc-1sq2qa7-0 kXmtNm Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dzXWge"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 fefCWi Flexweb__Flex-ni2cjg-0 jhuIde"
           >
             <div
               class="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
@@ -58,7 +58,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 fefCWi Flexweb__Flex-ni2cjg-0 jhuIde"
           >
             <div
               class="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
@@ -73,7 +73,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 fefCWi Flexweb__Flex-ni2cjg-0 jhuIde"
           >
             <div
               class="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
@@ -120,7 +120,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 fefCWi Flexweb__Flex-ni2cjg-0 jhuIde"
           >
             <div
               class="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
@@ -135,7 +135,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 dYijla Flexweb__Flex-ni2cjg-0 jhuIde"
+            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 fefCWi Flexweb__Flex-ni2cjg-0 jhuIde"
           >
             <div
               class="Viewweb__View-sc-1cphyjf-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-ni2cjg-0 hKatcF"
@@ -153,6 +153,9 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             />
           </div>
         </div>
+        <div
+          class="Viewweb__View-sc-1cphyjf-0 Tabs__StyledSeparator-sc-1sq2qa7-2 kxNZTq"
+        />
         <div
           class="Viewweb__View-sc-1cphyjf-0 Tabs__TabContentContainer-sc-1sq2qa7-1 hVlczp Spaceweb__Space-njatzl-0 eWuFOc"
         >

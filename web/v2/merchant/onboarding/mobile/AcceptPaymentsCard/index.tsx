@@ -8,12 +8,12 @@ import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
-import { CenterLoader } from 'v2/components/Loader';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import useActivation from '../hooks/useActivation';
 import { isUnregisteredBusiness } from '../services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import * as Messages from './Constants';
+import AcceptPaymentCardShimmer from './AcceptPaymentCardShimmer';
 
 const ViewWithBackground = styled(View)`
   background: url("${AcceptPaymentsIcon}") right no-repeat;
@@ -289,7 +289,7 @@ const AcceptPaymentsCard: React.FC = () => {
   const isError = activationQueryStatus === 'error' || websiteWorkflowQueryStatus === 'error';
 
   if (isLoading) {
-    return <CenterLoader />;
+    return <AcceptPaymentCardShimmer />;
   }
 
   if (isError) {
@@ -297,7 +297,7 @@ const AcceptPaymentsCard: React.FC = () => {
   }
   const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
 
-  if (activationData.onboarding_milestone === 'L1' || activationData.submitted) {
+  if ((activationData.onboarding_milestone === 'L1' || activationData.submitted) && content) {
     return (
       <Space padding={[2, 6, 2, 2]}>
         <ViewWithBackground>{content}</ViewWithBackground>

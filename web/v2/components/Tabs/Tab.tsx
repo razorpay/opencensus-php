@@ -45,7 +45,7 @@ const Tab = ({
 
   return (
     <Flex flexDirection="column">
-      <Space padding={[0, 1.25]}>
+      <Space padding={[0, 1.75]}>
         <View>
           <Flex flex={1} alignItems="center">
             <StyledTabTitle ref={isActive ? activeTabRef : null} onClick={onClick}>
