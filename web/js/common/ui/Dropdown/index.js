@@ -18,8 +18,11 @@ export default class DropdownWrapper extends Component {
   };
 
   render() {
-    const { closeOnMenuClick, children, onShow, onHide, ...otherProps } = this.props;
+    const { closeOnMenuClick, children, onShow, onHide, disabled, ...otherProps } = this.props;
 
+    if (disabled) {
+      return <Dropdown disabled>{children}</Dropdown>;
+    }
     return (
       <Dropdown
         ref={(dropdown) => (this.dropdown = dropdown)}

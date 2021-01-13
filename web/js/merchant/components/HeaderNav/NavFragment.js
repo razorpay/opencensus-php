@@ -59,7 +59,12 @@ class NavFragment extends Component {
           </li>
         </ShowWhen>
         <li>
-          <ModesDropdown mode={mode} modeFormatted={modeFormatted} onSwitchMode={onSwitchMode} />
+          <ModesDropdown
+            mode={mode}
+            modeFormatted={modeFormatted}
+            onSwitchMode={onSwitchMode}
+            isTestModeBlocked={user.isTestModeBlocked}
+          />
           {showSwitchModeTooltip && (
             <Popover persistent={true} theme="dark">
               <PopoverBody>

@@ -122,6 +122,7 @@ export default class HeaderNav extends Component {
                     mode={mode}
                     modeFormatted={modeFormatted}
                     onSwitchMode={onSwitchMode}
+                    isTestModeBlocked={user.isTestModeBlocked}
                   />
                 </li>
               )}

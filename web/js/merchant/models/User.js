@@ -340,6 +340,10 @@ export default class User {
     return this.findTag('Enable_auth_link_role');
   }
 
+  get isTestModeBlocked() {
+    return this.isFeatureEnabled('prevent_test_mode');
+  }
+
   get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
       this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&

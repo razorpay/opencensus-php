@@ -5,9 +5,10 @@ import { classList } from 'common/utils/rzp-utils';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
+const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) => {
+  const dropdownDisabled = mode === 'live' && !!isTestModeBlocked;
   return (
-    <Dropdown>
+    <Dropdown disabled={dropdownDisabled}>
       <DropdownTrigger class="dropdown-toggle switch-modes-toggle">
         <div
           onClick={() => {
@@ -43,7 +44,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
               <i class="i i-done ModeIndicator--live-icon" /> {modeFormatted} Mode
             </>
           )}{' '}
-          <span class="caret" />
+          {!dropdownDisabled && <span class="caret" />}
         </div>
       </DropdownTrigger>
       <DropdownContent>
