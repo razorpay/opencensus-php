@@ -110,7 +110,8 @@ export default class WhatsNew extends Component {
       const notifID = notifications[i].id;
 
       this.whatsNew =
-        (notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') || this.whatsNew;
+        (notifID && notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') ||
+        this.whatsNew;
 
       if (notifID) ID.push(notifID);
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {

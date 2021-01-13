@@ -135,6 +135,7 @@ class Constants
             ]
         ],
         [
+            'id'          => 'SHOW_CREDIT_SCORE',
             'title'       => 'Free Credit Score!',
             'description' => 'Click Here to get your credit score along with the credit report for FREE!',
             'start_ts'    => 1604320769,
