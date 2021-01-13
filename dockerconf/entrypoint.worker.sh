@@ -78,6 +78,11 @@ change_db_user_for_workers() {
   fi
 }
 
+create_kafka_credentials_dir() {
+  mkdir -p /opt/razorpay/certs/kafka
+  chown 0775 /opt/razorpay/certs/kafka
+}
+
 ### Check that atleast either webapp or supervisor is specified
 if [ "$#" -eq 0 ]; then
     echo "Specify app type: < web | web-dark | batch-job | sqs | sqs_multi_default >"
@@ -115,8 +120,7 @@ main() {
     command=$2
     mode=$3
     topics=$4
-    mkdir -p /opt/razorpay/certs/kafka
-    chown 0775 /opt/razorpay/certs/kafka
+    create_kafka_credentials_dir
     php artisan "${command}" "${mode}" "${APP_MODE}-${topics}"
   elif [[ "${app_type}" == "sqs" ]]; then
     change_db_user_for_workers
@@ -128,6 +132,7 @@ main() {
         exit -1
     else
       echo "starting sqs listener"
+      create_kafka_credentials_dir
       php artisan queue:work "${app_type}" --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs_multi_default" ]]; then
@@ -141,6 +146,7 @@ main() {
         exit -1
     else
       echo "starting sqs listener"
+      create_kafka_credentials_dir
       php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs-raw" ]]; then
@@ -154,6 +160,7 @@ main() {
         exit -1
     else
       echo "starting sqs-raw listener"
+      create_kafka_credentials_dir
       php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   else
