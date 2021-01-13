@@ -62,6 +62,7 @@ class ProviderCode
     const EQUITAS            = 'equitas';
     const EZEEPAY            = 'ezeepay';
     const FBL                = 'fbl';
+    const FBPE               = 'fbpe';
     const FEDERAL            = 'federal';
     const FINOBANK           = 'finobank';
     const FREECHARGE         = 'freecharge';
@@ -201,6 +202,7 @@ class ProviderCode
         self::EQUITAS            => IFSC::ESFB,
         self::EZEEPAY            => 'NPCI',
         self::FBL                => IFSC::FDRL,
+        self::FBPE               => IFSC::FDRL,
         self::FEDERAL            => IFSC::FDRL,
         self::FINOBANK           => IFSC::FINO,
         self::FREECHARGE         => IFSC::UTIB,
