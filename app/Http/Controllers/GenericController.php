@@ -9,6 +9,7 @@ use Request;
 
 use App\Generic;
 use App\Http\AppResponse;
+use App\Session\Entity as AppSession;
 
 class GenericController extends Controller
 {
@@ -25,6 +26,8 @@ class GenericController extends Controller
         'invoices\/inv_[[:alnum:]]{14}\/notify_by\/(?:email|sms)$',
         '^invoices\/inv_[[:alnum:]]{14}\/cancel$'
     ];
+
+    const USERS_RESET_PASSWORD_PATH = 'users/reset-password-token';
 
     public function handleAny($mode, $path)
     {
@@ -49,6 +52,13 @@ class GenericController extends Controller
         $method = Request::method();
 
         list($error, $data, $httpCode) = $request->send($path, $method);
+
+        if (($path === self::USERS_RESET_PASSWORD_PATH) &&
+            ($httpCode === 200) &&
+            (isset($data['user_id']) === true))
+        {
+            (new AppSession)->deleteSessionsForUser($data['user_id']);
+        }
 
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
