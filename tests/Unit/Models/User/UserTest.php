@@ -857,6 +857,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getPasswordResetToken')->andReturn($input['token']);
 
+        $this->userEntityMock->shouldReceive('getId')->andReturn('20000000000002');
+
         $this->repoMock->shouldReceive('saveOrFail')->andReturn([]);
 
         $this->userValidator->shouldReceive('validatePasswordIsNotSameAsLastThree')->andReturn([]);
@@ -892,7 +894,7 @@ class UserTest extends TestCase
 
         $response = $this->userService->changePasswordByToken($input);
 
-        $expected = ['success' => true];
+        $expected = ['success' => true, 'user_id' => '20000000000002'];
 
         $this->assertEquals($expected, $response);
 

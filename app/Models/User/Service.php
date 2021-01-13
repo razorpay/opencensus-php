@@ -812,7 +812,7 @@ class Service extends Base\Service
             }
         }
 
-        return ['success' => true];
+        return ['success' => true, 'user_id' => $user->getId()];
     }
 
     /**
