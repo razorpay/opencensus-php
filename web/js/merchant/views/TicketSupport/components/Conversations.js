@@ -1,7 +1,8 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
-import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION } from './data.js';
+import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION, MIN_TIME_TO_REFRESH } from './data.js';
+import { getExpiryTime } from '../utils';
 import Ticket from './Ticket';
 import * as axios from 'axios';
 import { withRouter } from 'react-router-dom';
@@ -43,28 +44,28 @@ export default class Conversations extends React.Component {
   };
 
   goNext = (page) => {
-    if (!(this.state.conversations.data[page] && this.state.conversations.data[page].length)) {
-      const TICKET_ID = this.props.match.params.id;
-      const c = this.state.conversations;
-      c.loading = true;
-      this.setState({ conversations: c });
+    // Disable local caching because file might expire
+    const TICKET_ID = this.props.match.params.id;
+    const c = this.state.conversations;
+    c.loading = true;
+    this.setState({ conversations: c });
 
-      merchantFetch({
-        url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations`,
-        mode: 'live',
+    merchantFetch({
+      url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations`,
+      mode: 'live',
+    })
+      .then((e) => {
+        const conversations = this.state.conversations;
+        conversations.loading = false;
+        conversations.data[page] = e.data;
+        this.setState({ conversations: conversations });
+        this.setTimerToReload(conversations.data[page]);
       })
-        .then((e) => {
-          const conversations = this.state.conversations;
-          conversations.loading = false;
-          conversations.data[page] = e.data;
-          this.setState({ conversations: conversations });
-        })
-        .catch(() => {
-          const conversations = this.state.conversations;
-          c.loading = false;
-          this.setState({ conversations: c });
-        });
-    }
+      .catch(() => {
+        const conversations = this.state.conversations;
+        c.loading = false;
+        this.setState({ conversations: c });
+      });
   };
 
   track(action, label) {
@@ -75,9 +76,8 @@ export default class Conversations extends React.Component {
     });
   }
 
-  componentDidMount() {
-    this.goNext(1);
-    merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
+  loadTicketDetails() {
+    return merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
       .then((e) => {
         this.setState({ ticket: e.data });
       })
@@ -90,6 +90,46 @@ export default class Conversations extends React.Component {
           }`,
         });
       });
+  }
+
+  componentDidMount() {
+    this.goNext(1);
+    this.loadTicketDetails();
+  }
+
+  componentWillUnmount() {
+    this.clearTimer();
+  }
+
+  clearTimer() {
+    if (this.refreshIntervalID) clearTimeout(this.refreshIntervalID);
+  }
+
+  setTimerToReload(currentConversations) {
+    // Clear previous timers
+    this.clearTimer();
+
+    // Get all attachments in one array
+    let attachments = [];
+    currentConversations.forEach((conversation) => {
+      if (conversation.attachments && conversation.attachments.length) {
+        attachments.push(...conversation.attachments);
+      }
+    });
+
+    // If there are no attachments skip adding timer
+    if (attachments.length === 0) return;
+
+    // Get the min relative time for page to refresh from attachement expiry time
+    const expiryAtachhmentTimings = attachments.map((attachment) => {
+      return getExpiryTime(attachment.attachment_url);
+    });
+
+    const timeToRefresh = Math.min(...expiryAtachhmentTimings, MIN_TIME_TO_REFRESH);
+
+    this.refreshIntervalID = setTimeout(() => {
+      this.goNext(this.state.current_page);
+    }, timeToRefresh);
   }
 
   render() {

@@ -1130,3 +1130,27 @@ export function getFileTypeIcon(fileName) {
 
   return avlblFileTypeIcons.indexOf(fileType) > -1 ? fileType : 'misc';
 }
+
+/**
+ *
+ * @param {String} awsURL - aws signed url
+ * @param {String} defaultUnit - default minimum time in unit if there is any error in URL parsing
+ * @param {String} UNIT_TYPE - unit type
+ * @return {Number} time difference between now and the expiry
+ */
+export function getAttachmentExpiryTime(awsURL, defaultUnit, UNIT_TYPE) {
+  try {
+    const params = getURLQueryParams(awsURL);
+    const dateTimeStr = params['X-Amz-Date'];
+    const offsetTime = parseInt(params['X-Amz-Expires'], 10);
+
+    if (!dateTimeStr || !offsetTime) {
+      throw new Error('Invalid AWS URL');
+    }
+
+    return moment.utc(dateTimeStr).add(offsetTime, 's');
+  } catch (ex) {
+    // return default 2 hours
+    return moment().add(defaultUnit, UNIT_TYPE);
+  }
+}
