@@ -67,7 +67,8 @@ class UfhService extends BaseUfhClient
             'name'       => $storageFileName,
             'created_at' => time(),
             'mime'       => 'image/png',
-            'location'   => $storageFileName
+            'location'   => $storageFileName,
+            'size'       => 12345
         ];
     }
 

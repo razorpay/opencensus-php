@@ -33,7 +33,6 @@ class Constants
     const GSTIN_STATUS                     = 'gstin_status';
     const CIN_STATUS                       = 'cin_status';
     const DOCUMENT_TYPE                    = 'document_type';
-    const PURPOSE                          = 'purpose';
     const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
     const COMPANY_PAN_VERIFICATION_STATUS  = 'company_pan_verification_status';

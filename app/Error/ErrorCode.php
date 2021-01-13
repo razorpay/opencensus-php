@@ -2017,5 +2017,6 @@ class ErrorCode
 
     // Accounts/ stakeholder V2 document upload errorcodes
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS';
+    const BAD_REQUEST_INVALID_FILE_DOWNLOAD                                         = 'BAD_REQUEST_INVALID_FILE_DOWNLOAD';
 
 }

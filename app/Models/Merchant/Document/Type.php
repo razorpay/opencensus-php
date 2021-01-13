@@ -70,14 +70,6 @@ class Type
         self::BUSINESS_PROOF_OF_IDENTIFICATION
     ];
 
-    const KYC_PROOF = 'kyc_proof';
-    const TRADE_MARK_LOGO = 'trademark_logo';
-
-    const PURPOSE = [
-        self::KYC_PROOF,
-        self::TRADE_MARK_LOGO
-    ];
-
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
         self::IRDAI_REGISTRATION_CERTIFICATE,
@@ -153,10 +145,5 @@ class Type
     public static function isValidProofType($value)
     {
         return (in_array($value,self::PROOF_TYPE) === true);
-    }
-
-    public static function isValidPurpose(string $value)
-    {
-        return (in_array($value, self::PURPOSE) === true);
     }
 }

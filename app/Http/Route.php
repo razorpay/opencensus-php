@@ -1969,7 +1969,9 @@ class Route
         'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
         //account and stakeholder document related routes
-        'document_upload_v2'                         => ['post',      'documents/upload',                                         'DocumentControllerV2@uploadDocuments'                      ],
+        'document_upload_v2'                         => ['post',      'documents',                                             'GenericDocumentController@uploadDocument'                  ],
+        'document_get_v2'                            => ['get',       'documents/{fileStoreId}         ',                      'GenericDocumentController@getDocument'                     ],
+        'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content ',                      'GenericDocumentController@getDocumentContent'              ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -2586,7 +2588,9 @@ class Route
         'payment_page_activate',
 
         // routes for account and stakeholder documents
-        'document_upload_v2'
+        'document_upload_v2',
+        'document_get_v2',
+        'document_download_v2',
     ];
 
     // Only routes defined in internalApps go here
@@ -6556,6 +6560,9 @@ class Route
         'account_create_v2',
         'account_fetch_v2',
         'account_edit_v2',
+        'document_upload_v2',
+        'document_get_v2',
+        'document_download_v2',
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

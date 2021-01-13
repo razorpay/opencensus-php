@@ -1292,6 +1292,8 @@ class PublicErrorDescription
 
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
+    const BAD_REQUEST_INVALID_FILE_DOWNLOAD                                         = 'Invalid file id provided or merchant is unauthorized to download the fileId provided';
+
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';

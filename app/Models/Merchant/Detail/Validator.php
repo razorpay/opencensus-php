@@ -239,11 +239,6 @@ class Validator extends Base\Validator
         Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
-    protected static $uploadDraftDocumentRules = [
-        Constants::PURPOSE    => 'required|string|max:255|custom',
-        Entity::FILE => 'required|file|mimes:pdf,jpeg,jpg,png',
-    ];
-
     protected static $cinVerificationRules = [
         Constants::COMPANY_CIN => ['required', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
     ];
@@ -411,15 +406,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validatePurpose(string $attribute, $value)
-    {
-        if (Type::isValidPurpose($value) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_DOCUMENT_UPLOAD_PURPOSE_INVALID . ':' . $value
-            );
-        }
-    }
 
     public function isValidAutomationEnv(): bool
     {

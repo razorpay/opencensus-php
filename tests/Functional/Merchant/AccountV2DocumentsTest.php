@@ -31,13 +31,25 @@ class AccountV2DocumentsTest extends TestCase
 
     }
 
-    public function testDocumentUploadSuccess()
+    public function testDocumentUploadDownload()
     {
-        $submerchantId = $this->setUpPartnerAuthAndGetSubMerchantId(false);
+        $this->setUpPartnerAuthAndGetSubMerchantId(false);
 
         $this->updateUploadDocumentData(__FUNCTION__);
 
-        $this->startTest();
+        $uploadResponse = $this->startTest();
+
+        $this->assertFalse(empty($uploadResponse), false);
+
+        $file_id = $uploadResponse['id'];
+
+        $testData = $this->testData['testDocumentDownloadSuccess'];
+
+        $testData['request']['url'] = '/v2/documents/'. $file_id;
+
+        $downloadResponse = $this->runRequestResponseFlow($testData);
+
+        $this->assertFalse(empty($downloadResponse));
 
     }
 

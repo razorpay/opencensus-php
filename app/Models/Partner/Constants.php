@@ -17,9 +17,6 @@ class Constants
     const ADD_ACCOUNT           = 'add_account';
     const ADD_MULTIPLE_ACCOUNT  = 'add_multiple_accounts';
 
-    const PARTNER_DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT  = '30';
-    const PARTNER_MUTEX_RETRY_COUNT                   = '2';
-
     /**
      * List of partner types that can get a settlement on behalf of a submerchant
      *
