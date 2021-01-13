@@ -5,6 +5,7 @@ namespace RZP\Models\UpiTransfer;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\VirtualAccount;
 
 /**
@@ -127,10 +128,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT   => 'int',
         self::EXPECTED => 'bool',
-    ];
-
-    protected $razorxAttributes = [
-        self::TR,
     ];
 
     protected $pii = [
@@ -279,40 +276,11 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        $app = \App::getFacadeRoot();
-
-        $merchantId = $this->virtualAccount->merchant->getId();
-
-        foreach ($this->razorxAttributes as $razorxAttribute)
+        if ($this->virtualAccount->merchant->isFeatureEnabled(Feature\Constants::UPI_TRANSFER_TR) === false)
         {
-            //
-            // To display an attribute via RazorX, include the attribute
-            // in razorxAttributes array in UpiTransfer/Entity and add
-            // constant upi_transfer_<attribute> in Merchant/RazorxTreatment.
-            //
-            $featureFlag = strtolower('upi_transfer_' . $razorxAttribute);
+            $index = array_search(self::TR, $this->public);
 
-            $variant = null;
-
-            try
-            {
-                $variant = $app['razorx']->getTreatment(
-                    $merchantId,
-                    $featureFlag,
-                    $app['basicauth']->getMode()
-                );
-            }
-            catch(\Exception $e)
-            {
-                $variant = 'off';
-            }
-
-            if (strtolower($variant) !== 'on')
-            {
-                $index = array_search($razorxAttribute, $this->public);
-
-                unset($this->public[$index]);
-            }
+            unset($this->public[$index]);
         }
 
         return parent::toArrayPublic();

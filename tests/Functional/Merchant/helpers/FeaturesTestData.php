@@ -630,6 +630,11 @@ return [
                         'display_name' => 'Smart Collect'
                     ],
                     [
+                        'feature'      => 'upi_transfer_tr',
+                        'value'        => false,
+                        'display_name' => 'UPI transfer tr webhook'
+                    ],
+                    [
                         'feature'      => 'payout',
                         'value'        => false,
                         'display_name' => 'Payouts'
@@ -717,6 +722,11 @@ return [
                         'feature'      => 'virtual_accounts',
                         'value'        => false,
                         'display_name' => 'Smart Collect'
+                    ],
+                    [
+                        'feature'      => 'upi_transfer_tr',
+                        'value'        => false,
+                        'display_name' => 'UPI transfer tr webhook'
                     ],
                     [
                         'feature'      => 'payout',
@@ -950,6 +960,7 @@ return [
                     'expose_downtimes',
                     'payment_failure_email',
                     'virtual_accounts',
+                    'upi_transfer_tr',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
                     'checkout_va_with_customer',
