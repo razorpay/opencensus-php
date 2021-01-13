@@ -190,9 +190,9 @@ class Validator extends Base\Validator
             return;
         }
 
-        $extension = $attachment->getClientOriginalExtension();
+        $extension = strtolower($attachment->getClientOriginalExtension());
 
-        $mimeType = $attachment->getMimeType();
+        $mimeType = strtolower($attachment->getMimeType());
 
         $data = [
             'extension' => $extension,
