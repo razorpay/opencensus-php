@@ -263,7 +263,7 @@ export default class WhatsNew extends Component {
 
   trackEvents = (value, url, type, id) => {
     const tracking = this.props.tracking;
-    const whatsNew = id.length >= 9 && id.substring(0, 9) === 'whats-new';
+    const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
 
     const eventName =
       type === 'button'
@@ -468,7 +468,7 @@ const NotificationCard = ({
 
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
-      const whatsNew = id.length >= 9 && id.substring(0, 9) === 'whats-new';
+      const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
 
       if (event.data == YT.PlayerState.PLAYING) {
         tracking.trackEvent(
