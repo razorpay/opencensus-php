@@ -121,7 +121,7 @@ function getBillingLabelInfo() {
 
 function getBusinessTypeInfo() {
   if (isUnregisteredBusiness(this)) {
-    return "Your business type can't be changed later, please ensure you have added the right business type";
+    return "You have selected 'Unregistered' as your Business Type. This confirms that you are not a registered business entity/proprietorship/private limited/trust or public limited company. Please note that you will not be able to change it to 'Registered' later.";
   }
 }
 

@@ -24,6 +24,7 @@ const BusinessOverview: React.FC = () => {
   const hasWebsite = useActivationFormState((state) => state.has_website);
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const [isUnregistered, setIsUnregistered] = useState(false);
   const [websiteOption, setWebiteOption] = useState('1');
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
@@ -63,6 +64,16 @@ const BusinessOverview: React.FC = () => {
     if (Object.keys(reqData).length) {
       postData(reqData);
     }
+  };
+
+  const showUnregisteredText = () => {
+    return isUnregistered ? (
+      <Text size="xxsmall" color="shade.960" align="justify">
+        You have selected 'Unregistered' as your Business Type. This confirms that you are not a
+        registered business entity/proprietorship/private limited/trust or public limited company.
+        Please note that you will not be able to change it to 'Registered' later.
+      </Text>
+    ) : null;
   };
 
   return (
@@ -121,11 +132,14 @@ const BusinessOverview: React.FC = () => {
                 value={formikProps.values.business_type}
                 errorText={formikProps.touched.business_type && formikProps.errors.business_type}
                 onChange={(value) => {
+                  if (Number(value) === 11 || Number(value) === 2) setIsUnregistered(true);
+                  else setIsUnregistered(false);
                   formikProps.setFieldTouched('business_type');
                   formikProps.setFieldValue('business_type', value);
                   setIsBlurCalled(true);
                 }}
               />
+              {showUnregisteredText()}
             </Field>
             <Field>
               <BusinessCategory
