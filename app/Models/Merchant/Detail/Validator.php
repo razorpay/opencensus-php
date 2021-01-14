@@ -219,6 +219,8 @@ class Validator extends Base\Validator
         Entity::AUTHORIZED_SIGNATORY_DOB                 => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::PLATFORM                                 => 'sometimes|max:40',
         Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|string|max:100|nullable',
+        Entity::BUSINESS_SUGGESTED_PIN                   => 'sometimes|size:6',
+        Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
     ];
 
     protected static $preSignupRules = [

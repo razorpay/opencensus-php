@@ -13,6 +13,7 @@ use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
@@ -1243,5 +1244,82 @@ class Service extends Base\Service
                                         $merchant);
 
         return $merchantPromotion;
+    }
+
+    public function updateBusinessSuggestedAddressAndPin(array $input)
+    {
+        $merchantIds = array_keys($input);
+
+        $merchantIdsChunk = array_chunk($merchantIds, 50, true);
+
+        $updatedIds = [];
+
+        $notUpdatedIds = [];
+
+        foreach ($merchantIdsChunk as $mids)
+        {
+            $merchants = $this->repo->merchant->findManyWithRelations($mids, ['merchantDetail']);
+
+            foreach ($merchants as $merchant)
+            {
+                $merchantId = $merchant->getId();
+
+                $params = $input[$merchantId];
+
+                (new Validator)->validateInput('edit', $params);
+
+                try
+                {
+                    $suggestedPin = $params[Entity::BUSINESS_SUGGESTED_PIN];
+                    $suggestedAddress = $params[Entity::BUSINESS_SUGGESTED_ADDRESS];
+
+                    $merchantDetail = $merchant->merchantDetail;
+
+                    $merchantDetail->setBusinessSuggestedPin($suggestedPin);
+                    $merchantDetail->setBusinessSuggestedAddress($suggestedAddress);
+
+                    $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+                    $input = [
+                        'name'        => [Feature\Constants::SUGGESTED_ADDRESS_OPT_IN],
+                        'entity_ids'  => [$merchantId],
+                        'entity_type' => 'merchant',
+                        'should_sync' => true,
+                    ];
+
+                    (new Feature\Service)->multiAssignFeature($input);
+
+                    $this->trace->info(TraceCode::MERCHANT_DETAIL_SUGGESTED_FIELDS_UPDATE_REQUEST,
+                        [
+                            'merchant_id'   => $merchantId,
+                            Entity::BUSINESS_SUGGESTED_PIN      => $suggestedPin,
+                            Entity::BUSINESS_SUGGESTED_ADDRESS  => $suggestedAddress,
+                        ]);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->error(TraceCode::MERCHANT_DETAIL_SUGGESTED_FIELDS_UPDATE_SKIPPED,
+                        [
+                            'merchant_id'        => $merchantId,
+                            'reason'             => $ex->getMessage(),
+                        ]);
+
+                    $notUpdatedIds[] = $merchantId;
+
+                    continue;
+                }
+
+                $updatedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'updated_ids'       => $updatedIds,
+            'not_updated_ids'   => $notUpdatedIds
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_DETAIL_SUGGESTED_FIELDS_UPDATED, $response);
+
+        return $response;
     }
 }

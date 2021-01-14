@@ -6113,5 +6113,11 @@ ALTER TABLE stakeholders
 ALTER TABLE settlement_ondemand_payouts
     MODIFY COLUMN mode VARCHAR(255);
 
+ALTER TABLE merchant_details
+    ADD COLUMN business_suggested_pin VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN business_suggested_address VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE action_state
     ADD INDEX action_state_merchant_id_index (merchant_id);

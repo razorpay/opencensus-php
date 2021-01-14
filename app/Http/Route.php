@@ -320,6 +320,7 @@ class Route
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
+        'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
@@ -3612,6 +3613,7 @@ class Route
         'pricing_update_plan_rule',
         'merchant_invoice_update_gstin',
         'merchant_details_fetch',
+        'merchant_details_suggested_update',
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
@@ -5045,6 +5047,7 @@ class Route
         'enable_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
 
         'merchant_invoice_control'                            => Permission::MERCHANT_INVOICE_CONTROL,
+        'merchant_details_suggested_update'                   => Permission::MERCHANT_INVOICE_CONTROL,
 
         'app_create'                                          => '*',
         'app_update'                                          => '*',

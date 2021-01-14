@@ -541,6 +541,8 @@ class Constants
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
 
+    const SUGGESTED_ADDRESS_OPT_IN         = 'suggested_address_opt_in';
+
     /**
      * Enables Offers on Subscription
      */
@@ -820,6 +822,7 @@ class Constants
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
         self::WALLET                          => true,
+        self::SUGGESTED_ADDRESS_OPT_IN        => true,
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
@@ -1192,6 +1195,11 @@ class Constants
             'display_name'  => 'Prevent user to switch to test mode from live mode',
             'documentation' => '',
         ],
+        self::SUGGESTED_ADDRESS_OPT_IN  => [
+            'feature'       => self::SUGGESTED_ADDRESS_OPT_IN,
+            'display_name'  => 'Update correct pin and address for the merchant business',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -1226,6 +1234,7 @@ class Constants
         self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
         self::SETTLEMENTS_SMS_STOP,
+        self::SUGGESTED_ADDRESS_OPT_IN,
     ];
 
     /*

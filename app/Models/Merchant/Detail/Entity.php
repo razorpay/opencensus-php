@@ -154,6 +154,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const SHOP_ESTABLISHMENT_NUMBER                = "shop_establishment_number";
     const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = "shop_establishment_verification_status";
 
+    const BUSINESS_SUGGESTED_PIN                   = 'business_suggested_pin';
+    const BUSINESS_SUGGESTED_ADDRESS               = 'business_suggested_address';
+
     // relation name
     const STAKEHOLDER    = 'stakeholder';
 
@@ -283,6 +286,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::DATE_OF_ESTABLISHMENT,
         self::SHOP_ESTABLISHMENT_NUMBER,
         self::CLIENT_APPLICATIONS,
+        self::BUSINESS_SUGGESTED_PIN,
+        self::BUSINESS_SUGGESTED_ADDRESS,
     ];
 
     protected $public = [
@@ -389,6 +394,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::SHOP_ESTABLISHMENT_NUMBER,
         self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
         self::CLIENT_APPLICATIONS,
+        self::BUSINESS_SUGGESTED_PIN,
+        self::BUSINESS_SUGGESTED_ADDRESS,
     ];
 
     protected $defaults = [
@@ -1241,5 +1248,25 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setShopEstbVerificationStatus(string $shopEstabVerificationStatus = null)
     {
         return $this->setAttribute(self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, $shopEstabVerificationStatus);
+    }
+
+    public function setBusinessSuggestedPin(string $businessSuggestedPin)
+    {
+        return $this->setAttribute(self::BUSINESS_SUGGESTED_PIN, $businessSuggestedPin);
+    }
+
+    public function getBusinessSuggestedPin()
+    {
+        return $this->getAttribute(self::BUSINESS_SUGGESTED_PIN);
+    }
+
+    public function setBusinessSuggestedAddress(string $businessSuggestedAddress)
+    {
+        return $this->setAttribute(self::BUSINESS_SUGGESTED_ADDRESS, $businessSuggestedAddress);
+    }
+
+    public function getBusinessSuggestedAddress()
+    {
+        return $this->getAttribute(self::BUSINESS_SUGGESTED_ADDRESS);
     }
 }

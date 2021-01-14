@@ -1930,4 +1930,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateSuggestedMerchantDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateBusinessSuggestedAddressAndPin($input);
+
+        return ApiResponse::json($response);
+    }
 }
