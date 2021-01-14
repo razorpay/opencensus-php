@@ -161,3 +161,4 @@ BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES,International cards
 BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES,International cards are not allowed for this merchant on invoices,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
 BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED,Payment created long back and cannot be cancelled now,payment_cancelled,,customer,,payment_authentication,
 GATEWAY_ERROR_ISSUER_DOWN,Payment processing failed due to error at bank or wallet gateway,bank_technical_error,,issuer_bank,,payment_authorization,
+BAD_REQUEST_CARD_INVALID_DATA,Payment failed as card details (CVV or expiry date) are incorrect. Please check and try again,incorrect_card_details,,customer,Retry with correct details/another card,payment_authorization,D
