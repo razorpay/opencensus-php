@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $merchantId = $this->getMerchantId();
 
@@ -72,6 +72,13 @@ class Gateway extends Base\Gateway
         $masterKey = $this->getEncryptionSecret();
 
         $encryptedString = $this->getRsaCrypter($masterKey)->encryptString($contentString);
+
+        $traceContent = $content;
+
+        if ($this->isPaymentTpvEnabled($gatewayPayment, $input['merchant']) === true)
+        {
+            unset($traceContent['TransactionDescription']);
+        }
 
         $content = [
             'msg'        => $encryptedString,
@@ -85,12 +92,7 @@ class Gateway extends Base\Gateway
             $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
         }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_AUTHORIZE,
-            [
-                'request' => $request,
-                'gateway' => 'netbanking_kotak',
-            ]);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_REQUEST, $traceContent);
 
         return $request;
     }
