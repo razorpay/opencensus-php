@@ -157,6 +157,23 @@ return [
         ],
     ],
 
+    'testPaymentInvalidHash' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Failed checksum verification",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'gateway_error_code'  => null
+        ],
+    ],
+
     'testPaytmWhenNotEnabled' => [
         'request' => [
             'url' => '/payments',

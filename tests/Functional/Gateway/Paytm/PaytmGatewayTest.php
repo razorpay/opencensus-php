@@ -177,6 +177,27 @@ class PaytmGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testPaymentInvalidHash()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['CHECKSUMHASH'] = 'failed';
+
+            return $content;
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthWalletPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testAuthorizeFailedPayment()
     {
         $this->timeoutAuthorizePayment();

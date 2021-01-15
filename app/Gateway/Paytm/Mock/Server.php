@@ -57,7 +57,9 @@ class Server extends Base\Mock\Server
 
         $content = $this->content($content);
 
-        $content['CHECKSUMHASH'] = $this->generateHash($content);
+        $secret = \Config::get('gateway.paytm')['test_hash_secret'];
+
+        $content['CHECKSUMHASH'] = paytm\Checksum::getChecksumFromArray($content, $secret);
 
         $url = $input['CALLBACK_URL'];
         $url .= '?' . http_build_query($content);

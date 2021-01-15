@@ -96,18 +96,24 @@ class Checksum
         ksort($arrayList);
         $str = self::getArray2StrForVerify($arrayList);
         $paytm_hash = self::decrypt_e($checksumvalue, $key);
+
+        // decryption fails
+        if ($paytm_hash === false)
+        {
+            return false;
+        }
+
         $salt = substr($paytm_hash, -4);
         $finalString = $str . "|" . $salt;
         $website_hash = hash("sha256", $finalString);
         $website_hash .= $salt;
-        $validFlag = "FALSE";
-        if ($website_hash == $paytm_hash)
+        if (hash_equals($website_hash, $paytm_hash))
         {
-            $validFlag = "TRUE";
+            $validFlag = true;
         }
         else
         {
-            $validFlag = "FALSE";
+            $validFlag = false;
         }
         return $validFlag;
     }
