@@ -336,7 +336,7 @@ const App = () => {
                               </Text>
                             </Space>
                             <Text size="small" color="shade.960">
-                              8,00,000+ businesses trust their payments with Razorpay
+                              20,00,000+ businesses trust their payments with Razorpay
                             </Text>
                           </View>
                         </Flex>
