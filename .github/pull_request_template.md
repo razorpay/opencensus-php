@@ -3,10 +3,7 @@
 | Desc          | PR Description
 | Issue         | Link to Github issue
 | Spec          | Link to spec
-| Module        | Impacted components
 | SQL Queries   | [ ]
-| Review Notes  | Notes for reviewer
-| Test Notes    | How to test?
-| Deploy Notes  | Any specific steps?
 | Checklist     | - [ ] Post on Slack <br> - [ ] Label PR
-| SkipUT        | false -(change boolean to skip workflow) 
+| SkipUTworkflow| false -(change boolean to skip workflow)
+| SkipRoast     | false -(change boolean to skip regression suite execution)  
