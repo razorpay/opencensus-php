@@ -431,28 +431,6 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           ) : (
             <Fragment>
-              {/* nps banner */}
-              {user.isAccepted && <NPSAnnouncement user={user} />}
-
-              {/* onboarding banner */}
-              {showInstantActivation && (
-                <Announcement mode={mode} user={user} payments={payments} />
-              )}
-
-              {/* international onboarding banner */}
-              {mode === 'live' &&
-                user.instantActivation.isGraylistFlow &&
-                user.internationalActivationFlow.isGraylistFlow && (
-                  <InternationalRequestStatusAnnouncement
-                    internationalProductsStatus={this.props.internationalProductsStatus}
-                  />
-                )}
-
-              {/* needs clarification modal */}
-              {this.state.showNcPopup && user.needsClarification && (
-                <NCModal onClose={this.onNcModalClose} />
-              )}
-
               {/* capital banner*/}
               {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
