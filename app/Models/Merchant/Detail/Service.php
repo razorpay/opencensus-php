@@ -1280,14 +1280,14 @@ class Service extends Base\Service
 
                     $this->repo->merchant_detail->saveOrFail($merchantDetail);
 
-                    $input = [
+                    $featureInput = [
                         'name'        => [Feature\Constants::SUGGESTED_ADDRESS_OPT_IN],
                         'entity_ids'  => [$merchantId],
                         'entity_type' => 'merchant',
                         'should_sync' => true,
                     ];
 
-                    (new Feature\Service)->multiAssignFeature($input);
+                    (new Feature\Service)->multiAssignFeature($featureInput);
 
                     $this->trace->info(TraceCode::MERCHANT_DETAIL_SUGGESTED_FIELDS_UPDATE_REQUEST,
                         [
