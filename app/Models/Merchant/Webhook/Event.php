@@ -105,6 +105,8 @@ class Event
     const P2P_VPA_DELETED                   = 'customer.vpa.deleted';
     const P2P_VERIFICATION_COMPLETED        = 'customer.verification.completed';
     const P2P_DEREGISTRATION_COMPLETED      = 'customer.deregistration.completed';
+    const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
+    const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -197,6 +199,8 @@ class Event
         self::P2P_VPA_DELETED,
         self::P2P_VERIFICATION_COMPLETED,
         self::P2P_DEREGISTRATION_COMPLETED,
+        self::PAYOUT_DOWNTIME_STARTED,
+        self::PAYOUT_DOWNTIME_RESOLVED,
     ];
 
     /**
@@ -296,6 +300,8 @@ class Event
         self::P2P_VPA_DELETED,
         self::P2P_VERIFICATION_COMPLETED,
         self::P2P_DEREGISTRATION_COMPLETED,
+        self::PAYOUT_DOWNTIME_STARTED,
+        self::PAYOUT_DOWNTIME_RESOLVED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -388,6 +394,8 @@ class Event
         self::REFUND_ARN_UPDATED                => 19,
         self::BANKING_ACCOUNTS_ISSUED           => 20,
         self::TRANSFER_FAILED                   => 21,
+        self::PAYOUT_DOWNTIME_STARTED           => 22,
+        self::PAYOUT_DOWNTIME_RESOLVED          => 23,
     ];
 
     /**
@@ -482,6 +490,8 @@ class Event
         self::P2P_VPA_DELETED                   => [Product::PRIMARY],
         self::P2P_VERIFICATION_COMPLETED        => [Product::PRIMARY],
         self::P2P_DEREGISTRATION_COMPLETED      => [Product::PRIMARY],
+        self::PAYOUT_DOWNTIME_STARTED           => [Product::BANKING],
+        self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
     ];
 
     /**

@@ -6,13 +6,20 @@ use Mail;
 use Razorpay\IFSC\IFSC;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Models\Event\Entity;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
+use RZP\Models\Event\Entity;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Mail\Payout\DowntimeNotification;
 
 class ChannelNotification
 {
-    const DEFAULT_LIMIT = 100;
+    const RX_TEST                          = 'rx-test';
+    const RX_LIVE                          = 'rx-live';
+    const DEFAULT_LIMIT                    = 100;
+    const PROCESS_EVENT_REQUEST_TIMEOUT_MS = 350;
 
     protected $app;
 
@@ -71,11 +78,7 @@ class ChannelNotification
      */
     public function channelNotify(array $input)
     {
-        $result = $this->preProcessNotification($input);
-
-        $this->getConfigAndSendNotification($result);
-
-        $this->processWebhook($input);
+        $this->getConfigAndSendNotification($input);
     }
 
     protected function sendEmail($result, $toEmailIds)
@@ -256,17 +259,21 @@ class ChannelNotification
                                     ->merchant_notification_config
                                     ->getEnabledConfigs(self::DEFAULT_LIMIT);
 
-        $this->sendEmail($result, $this->internalEmails);
+        $processedResult = $this->preProcessNotification($result);
 
-        $this->processSms($result, $this->internalContact);
+        $this->sendEmail($processedResult, $this->internalEmails);
+
+        $this->processSms($processedResult, $this->internalContact);
 
         foreach ($notificationConfigs as $config)
         {
-            $this->sendEmail($result, $config->getNotificationEmails());
+            $this->sendEmail($processedResult, $config->getNotificationEmails());
 
             $contactList = explode(',', $config->getNotificationMobileNumbers());
 
-            $this->processSms($result, $contactList);
+            $this->processSms($processedResult, $contactList);
+
+            $this->processWebhook($result, $config->getMerchantId());
         }
     }
 
@@ -288,14 +295,17 @@ class ChannelNotification
 
         $input['payload'][$entity]['entity']['entity'] = Constants::PAYOUT_DOWNTIME;
 
-        $input['payload'][$entity]['entity']['id'] = Constants::PAYOUT_DOWNTIME_PREFIX . $input['payload'][$entity]['entity']['id'];
+        $input['payload'][$entity]['entity']['id'] =
+            Constants::PAYOUT_DOWNTIME_PREFIX . $input['payload'][$entity]['entity']['id'];
 
         $input['payload'] = [
             Constants::PAYOUT_DOWNTIME => $input['payload'][$entity],
         ];
+
+        return $input;
     }
 
-    protected function processWebhook($input)
+    protected function processWebhook($input, string $merchant_id)
     {
         try
         {
@@ -306,7 +316,34 @@ class ChannelNotification
                 [
                     'request' => $webhookData,
                 ]);
-            // Add webhook implementation here
+
+            $service = $this->app['stork_service'];
+
+            $service->init($this->app['rzp.mode'], Product::BANKING);
+
+            $processEventReq = [
+                'event' => [
+                    'id'         => UniqueIdEntity::generateUniqueId(),
+                    'service'    => $service->service,
+                    'owner_id'   => $merchant_id,
+                    'owner_type' => E::MERCHANT,
+                    'name'       => $webhookData['event'],
+                    'payload'    => json_encode($webhookData),
+                ],
+            ];
+
+            $response = $service->request(
+                '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
+                $processEventReq,
+                self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+            );
+
+            $this->trace->info(
+                TraceCode::FTS_DOWNTIME_NOTIFY_WEBHOOK_COMPLETE,
+                [
+                    'request' => $webhookData,
+                    'response' => $response
+                ]);
         }
         catch (\Throwable $ex)
         {

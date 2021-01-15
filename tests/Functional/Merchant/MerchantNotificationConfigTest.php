@@ -6,8 +6,10 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -18,6 +20,7 @@ class MerchantNotificationConfigTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use TestsBusinessBanking;
+    use TestsWebhookEvents;
 
     public function setUp()
     {
@@ -368,5 +371,47 @@ class MerchantNotificationConfigTest extends TestCase
         ]);
 
         $this->startTest();
+    }
+
+    public function testProcessDowntimeEventForWebhook()
+    {
+        Mail::fake();
+
+        $this->testCreateMerchantNotificationConfig();
+
+        $this->expectWebhookEvent('payout.downtime.started');
+
+        $this->ba->ftsAuth(Mode::LIVE);
+
+        $request = [
+            'url'     => '/fts/channel/notify',
+            'method'  => 'post',
+            'content' => [
+                'contains' => ['bene_health'],
+                'entity'   => 'event',
+                'event'    => 'bene_health.started',
+                'payload'  => [
+                    'bene_health' => [
+                        'entity' => [
+                            'begin'      => 1610430729,
+                            'created_at' => 1610430729,
+                            'end'        => 0,
+                            'entity'     => 'bene_health',
+                            'id'         => 'GOHp6DSA5odXTu',
+                            'instrument' => [
+                                'bank' => 'UTIB'
+                            ],
+                            'method'     => ['IMPS'],
+                            'scheduled'  => false,
+                            'source'     => 'BENEFICIARY',
+                            'status'     => 'started',
+                            'updated_at' => 1610430729
+                        ]
+                    ]
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }
