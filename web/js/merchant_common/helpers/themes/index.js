@@ -45,7 +45,7 @@ const THEMES = {
 export const applyTheme = (org) => {
   var style = document.createElement('style');
   style.type = 'text/css';
-  var rules = makeTheme(Object.assign(base, THEMES[org]), org);
+  var rules = makeTheme(Object.assign(base, org.merchant_styles ? { ...THEMES[org.custom_code], ...org.merchant_styles } : THEMES[org.custom_code]), org.custom_code);
   if (style.styleSheet) {
     style.styleSheet.cssText = rules;
   } else {
@@ -80,11 +80,10 @@ const makeTheme = (it, org) => `
 }
 
 ${it.actStatus ? `.${org} .activation-status{color:${it.actStatus}};` : ''}
-${
-  it.actStatusBg
+${it.actStatusBg
     ? `.${org} .sidebar nav div.activation-status{background-color:${it.actStatusBg}};`
     : ''
-}
+  }
 ${it.actText ? `.${org} .activation-bar-text{color:${it.actText}};` : ''}
 ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
 
@@ -111,25 +110,23 @@ ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
   border-color: ${it.sidebarLinkActive || it.transparent};
 }
 
-${
-  it.sideBarIcon
+${it.sideBarIcon
     ? `
     .${org} .sidebar .nav > a:focus,
     .${org} .sidebar .nav > a >i{
 color:${it.sideBarIcon};
 }`
     : ``
-}
+  }
 
-${
-  it.sideBarIconActive
+${it.sideBarIconActive
     ? `
     .${org} .sidebar .nav > a:focus,
     .${org}.sidebar .nav > a.active>i{
 color:${it.sideBarIconActive};
 }`
     : ``
-}
+  }
 
 .${org} .table-striped > tbody > tr:nth-child(odd) > td,
 .${org} .table-striped > tbody > tr:nth-child(odd) > th {

@@ -228,7 +228,7 @@ export default class App extends Component {
       this.fetchOrg().then(({ data }) => {
         const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
-          applyTheme(orgCode);
+          applyTheme(data);
         }
       }),
       this.fetchSupportedCurrencies().then(({ data }) => {
