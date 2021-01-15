@@ -137,3 +137,57 @@ $light-blue-color = #2B83EA;
     padding-left: 5px;
   }
 }
+
+.gst-invoice-note
+  border-left 3px solid #CD8214
+  padding-left 10px
+  color rgba(22, 47, 86, 0.54)
+
+.gst-opt-out-cta
+  display flex
+  flex-direction column
+
+  span 
+    display flex
+  
+  div
+    display flex
+    flex-direction row
+  
+  .address-section span:nth-child(1), .pincode-section span:nth-child(1)
+    padding 10px 0px 0px 15px
+    flex .3
+  
+  .address-section span:nth-child(2), .pincode-section span:nth-child(2)
+    padding 10px 15px 0px 15px
+    flex .7
+    align-items end
+    display flex
+    flex-direction row
+    justify-content flex-end
+
+  .action span
+    display flex
+    flex 1
+    padding 10px 15px 0px 15px
+    justify-content flex-end
+
+    p
+      padding-top 10px
+      font-weight bold
+      cursor pointer
+      color #528ff0
+
+.btn-highlight, .btn-highlight:hover
+  border 1px solid rgba(11, 112, 231, 0.74)
+  background rgba(11, 112, 231, 0.05)
+  margin-top 15px !important
+  color #2B83EA
+
+.gst-help-block
+  padding 1px
+  margin-bottom 15px
+  color rgba(22, 47, 86, 0.74)
+
+.gst-confirmation-modal-header
+  line-height 25px

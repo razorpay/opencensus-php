@@ -13,7 +13,7 @@ const ADD_WEBSITE_WORKFLOW_STATUS = 'ADD_WEBSITE_WORKFLOW_STATUS';
 const FETCH_RESERVE_BALANCE = 'FETCH_RESERVE_BALANCE';
 const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
 const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
-const FETCH_TLS_VERSION = 'FETCH_TLS_VERSION'
+const FETCH_TLS_VERSION = 'FETCH_TLS_VERSION';
 
 export const fetchBankAccount = () => {
   return {
@@ -29,8 +29,8 @@ export const fetchTlsVersion = () => {
   return {
     type: FETCH_TLS_VERSION,
     payload: axios({
-      url: 'https://tls.rzp.io/protocol'
-    }).then(d => {
+      url: 'https://tls.rzp.io/protocol',
+    }).then((d) => {
       const result = d.data.replace('TLSv', '');
       if (result === '1.0' || result === '1.1') {
         analyticsService.track({
@@ -48,9 +48,9 @@ export const fetchTlsVersion = () => {
       return {
         data: result,
         success: true,
-        status_code: 200
-      }
-    })
+        status_code: 200,
+      };
+    }),
   };
 };
 
@@ -127,7 +127,7 @@ export const fetchGST = () => {
     payload: merchantFetch({
       url: 'merchant/gst',
       mode: 'live',
-    })
+    }),
   };
 };
 

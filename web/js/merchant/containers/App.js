@@ -361,7 +361,7 @@ export default class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => { });
+          .catch((err) => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
