@@ -150,7 +150,7 @@ class Service extends Base\Service
         // THe Laravel attempt function defined as
         // attempt($credentials , $remember , $login )
         //
-        if ((empty($error) === true) and (Auth::attempt($input, false, true) === false))
+        if ((empty($error) === true))
         {
             $credentials = [
                 Constants::EMAIL          => $input[Constants::EMAIL],
