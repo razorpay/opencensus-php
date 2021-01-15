@@ -69,9 +69,9 @@ const BusinessOverview: React.FC = () => {
   const showUnregisteredText = () => {
     return isUnregistered ? (
       <Text size="xxsmall" color="shade.960" align="justify">
-        You have selected 'Unregistered' as your Business Type. This confirms that you are not a
-        registered business entity/proprietorship/private limited/trust or public limited company.
-        Please note that you will not be able to change it to 'Registered' later.
+        Unregistered business type is for freelancers or small businesses who have not yet
+        registered as a company. Don't choose this option if your business is already registered.
+        Business type cannot be changed once submitted.
       </Text>
     ) : null;
   };
