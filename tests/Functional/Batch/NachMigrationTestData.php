@@ -74,7 +74,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded file has invalid headers',
+                    'description' => 'Headers Not matching: umrn, frequency',
                 ],
             ],
             'status_code' => 400,
@@ -182,7 +182,7 @@ return [
                 'account_number'            => 'HDFC00000000001',
                 'ifsc'                      => 'HDFC0000007',
                 'bank'                      => 'HDFC',
-                'gateway_token'             => 'HDFC00038433903433',
+                'gateway_token'             => 'HDFC0000038433903433',
                 'account_type'              => 'savings',
                 'expired_at'                => '1620989017',
                 'max_amount'                => 1000000,
@@ -247,7 +247,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The gateway token field is required when auth type is migrated.',
+                    'description' => 'Invalid UMRN for token migration',
                 ],
             ],
             'status_code' => 400,

@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
+use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\TokenRegistrationAutoCharge;
 use RZP\Models\PaperMandate\FileUploader;
 use RZP\Models\Customer\Entity as CustomerEntity;
@@ -184,6 +185,31 @@ class Service extends Base\Service
     {
         $emandateTerminalEnabled      = $input['emandate_terminal_enabled'];
         $nachTerminalEnabled          = $input['nach_terminal_enabled'];
+
+        // Removing case sensitivity
+        $input[Token\Entity::ACCOUNT_TYPE]  = strtolower($input[Token\Entity::ACCOUNT_TYPE]);
+        $input[Token\Entity::METHOD]        = strtolower($input[Token\Entity::METHOD]);
+        $input[Token\Entity::BANK]          = strtoupper($input[Token\Entity::BANK]);
+        $input[Token\Entity::IFSC]          = strtoupper($input[Token\Entity::IFSC]);
+        $input[Token\Entity::GATEWAY_TOKEN] = strtoupper($input[Token\Entity::GATEWAY_TOKEN]);
+
+        $input[Token\Entity::DEBIT_TYPE] = isset($input[Token\Entity::DEBIT_TYPE]) ?
+                                                strtolower($input[Token\Entity::DEBIT_TYPE]) :
+                                                'max_amount';
+
+        $input[Token\Entity::FREQUENCY] = isset($input[Token\Entity::FREQUENCY]) ?
+                                                strtolower($input[Token\Entity::FREQUENCY]) :
+                                                'adhoc';
+
+        // validate gateway_token
+        if ((ctype_alnum($input[Token\Entity::GATEWAY_TOKEN]) === false) or
+            (strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20) or
+            (substr($input[Token\Entity::IFSC], 0, 4) !== substr($input[Token\Entity::GATEWAY_TOKEN], 0, 4)))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_INVALID_UMRN
+            );
+        }
 
         if (($input[Token\Entity::METHOD] === Payment\Method::NACH and $nachTerminalEnabled === false) or
             ($input[Token\Entity::METHOD] === Payment\Method::EMANDATE and $emandateTerminalEnabled === false))

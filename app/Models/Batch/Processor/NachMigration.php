@@ -44,8 +44,27 @@ class NachMigration extends Base
 
         $this->validatePricingPlan($merchantEntity, $emandatePaymentMethodEnabled, $nachPaymentEnabled);
 
-        // step 3: validate entries in file
-        $response = parent::storeAndValidateInputFile($input);
+        try
+        {
+            // step 3: validate entries in file
+            $response = parent::storeAndValidateInputFile($input);
+        }
+        catch (BadRequestException $be)
+        {
+            if ($be->getCode() === ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS)
+            {
+                $data  = $be->getData();
+                $expectedHeaders = $data['expected_headers'];
+                $inputHeaders = $data['input_headers'];
+                $difference = join(", " ,array_diff($expectedHeaders, $inputHeaders));
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                    "headers",
+                    null,
+                    "Headers Not matching: " . $difference);
+            }
+            throw $be;
+        }
 
         $response['emandate_terminal_enabled'] = $emandateTerminalEnabled;
 

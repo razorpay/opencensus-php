@@ -527,6 +527,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_REGISTRATION_ACTION_NEEDED                       = 'Customer should refer to the branch to enable the mandate';
     const BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED                                = 'Unable to settle funds for this payment';
     const BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED                              = 'Debit request initiated outside business hours';
+    const BAD_REQUEST_INVALID_UMRN                                              = 'Invalid UMRN for token migration';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                            = 'Void is not supported by the gateway';
