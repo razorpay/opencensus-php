@@ -72,10 +72,15 @@
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
+
     if (window.analytics) {
-        let trackers = ['perf', 'ga', 'fb', 'twitter', 'twitterAgency', 'linkedin', 'bing', 'lj', 'quora', 'reddit']
+        let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit']
          if(window.loadHubspot){
             trackers.push('hubspot');
+         }
+
+         if (window.location.href.indexOf('resetpassword') === -1) {
+           trackers.push('twitterAgency');
          }
 
         analytics.init(
