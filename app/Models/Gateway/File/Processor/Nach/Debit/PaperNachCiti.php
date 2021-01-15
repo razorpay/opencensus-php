@@ -182,36 +182,48 @@ class PaperNachCiti extends Debit\Base
 
             $utilityCode = $token->terminal->getGatewayMerchantId2();
 
-            $data = $this->getNachDebitData($token, $paymentId);
+            list($data, $isValid) = $this->getNachDebitData($token, $paymentId);
 
-             $row=[
-                Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
-                Headings::CONTROL_9S                       => Fields::CONTROL_9,
-                Headings::DESTINATION_ACCOUNT_TYPE         => $data[Fields::ACCOUNT_TYPE_VALUE],
-                Headings::LEDGER_FOLIO_NUMBER              => Fields::LEDGER_FOLIO_NUMBER,
-                Headings::CONTROL_15S                      => Fields::CONTROL_15,
-                Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  => $data[Fields::ACCOUNT_NAME],
-                Headings::CONTROL_9SS                      => Fields::CONTROL_9,
-                Headings::CONTROL_7S                       => Fields::CONTROL_7,
-                Headings::USER_NAME                        => $data[Fields::USERNAME],
-                Headings::CONTROL_13S                      => Fields::CONTROL_13,
-                Headings::AMOUNT                           => $data[Fields::AMOUNT],
-                Headings::ACH_ITEM_SEQ_NO                  => Fields::ACH_ITEM_SEQ_NUMBER,
-                Headings::CHECKSUM                         => Fields::CHECK_SUM,
-                Headings::FLAG                             => Fields::FLAG,
-                Headings::REASON_CODE                      => Fields::REASON_CODE,
-                Headings::DESTINATION_BANK_IFSC            => $data[Fields::IFSC],
-                Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  => $data[Fields::ACCOUNT_NUMBER],
-                Headings::SPONSOR_BANK_IFSC                => $data[Fields::SPONSER_BANK],
-                Headings::USER_NUMBER                      => $data[Fields::UTILITY_CODE],
-                Headings::TRANSACTION_REFERENCE            => $data[Fields::TRANSACTION_REFERENCE],
-                Headings::PRODUCT_TYPE                     => Fields::PRODUCT_TYPE,
-                Headings::BENEFICIARY_AADHAR_NUMBER        => Fields::BENEFICIARY_AADHAR_NUMBER,
-                Headings::UMRN                             => $data[Fields::UMRN],
-                Headings::FILLER                           => Fields::FILLER,
-            ];
+            if ($isValid === true)
+            {
+                $row = [
+                    Headings::ACH_TRANSACTION_CODE             => Fields::ACH_TRANSACTION_CODE,
+                    Headings::CONTROL_9S                       => Fields::CONTROL_9,
+                    Headings::DESTINATION_ACCOUNT_TYPE         => $data[Fields::ACCOUNT_TYPE_VALUE],
+                    Headings::LEDGER_FOLIO_NUMBER              => Fields::LEDGER_FOLIO_NUMBER,
+                    Headings::CONTROL_15S                      => Fields::CONTROL_15,
+                    Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  => $data[Fields::ACCOUNT_NAME],
+                    Headings::CONTROL_9SS                      => Fields::CONTROL_9,
+                    Headings::CONTROL_7S                       => Fields::CONTROL_7,
+                    Headings::USER_NAME                        => $data[Fields::USERNAME],
+                    Headings::CONTROL_13S                      => Fields::CONTROL_13,
+                    Headings::AMOUNT                           => $data[Fields::AMOUNT],
+                    Headings::ACH_ITEM_SEQ_NO                  => Fields::ACH_ITEM_SEQ_NUMBER,
+                    Headings::CHECKSUM                         => Fields::CHECK_SUM,
+                    Headings::FLAG                             => Fields::FLAG,
+                    Headings::REASON_CODE                      => Fields::REASON_CODE,
+                    Headings::DESTINATION_BANK_IFSC            => $data[Fields::IFSC],
+                    Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  => $data[Fields::ACCOUNT_NUMBER],
+                    Headings::SPONSOR_BANK_IFSC                => $data[Fields::SPONSER_BANK],
+                    Headings::USER_NUMBER                      => $data[Fields::UTILITY_CODE],
+                    Headings::TRANSACTION_REFERENCE            => $data[Fields::TRANSACTION_REFERENCE],
+                    Headings::PRODUCT_TYPE                     => Fields::PRODUCT_TYPE,
+                    Headings::BENEFICIARY_AADHAR_NUMBER        => Fields::BENEFICIARY_AADHAR_NUMBER,
+                    Headings::UMRN                             => $data[Fields::UMRN],
+                    Headings::FILLER                           => Fields::FILLER,
+                ];
 
-            $rows[$utilityCode][] = $row;
+                $rows[$utilityCode][] = $row;
+            }
+            else
+            {
+                $this->trace->warning(
+                    TraceCode::NACH_DEBIT_REQUEST_ERROR,
+                    [
+                        'payment_id' => $paymentId,
+                    ]
+                );
+            }
         }
 
         return $rows;
@@ -341,8 +353,15 @@ class PaperNachCiti extends Debit\Base
     public function getNachDebitData(
         Token\Entity $token,
         string $paymentId
-    ): array
+    )
     {
+        $isValid = $this->validateData($token);
+
+        if ($isValid === false)
+        {
+            return ["", false];
+        }
+
         $accountTypeValue = $this->getAccountTypeValue($token);
 
         $accountName = $token->getBeneficiaryName();
@@ -389,7 +408,7 @@ class PaperNachCiti extends Debit\Base
         $sponserBank = $this->getPaddedValue($sponserBank, $size, ' ', STR_PAD_RIGHT);
 
 
-        return [
+        return [[
             Fields::ACCOUNT_TYPE_VALUE       => $accountTypeValue,
             Fields::ACCOUNT_NAME             => $accountName,
             Fields::USERNAME                 => $userName,
@@ -400,7 +419,7 @@ class PaperNachCiti extends Debit\Base
             Fields::UTILITY_CODE             => $utilityCode,
             Fields::TRANSACTION_REFERENCE    => $transactionReference,
             Fields::SPONSER_BANK             => $sponserBank,
-        ];
+        ], true];
     }
 
     public function getPaddedValue($value, $fieldLength, $padString, $padType)
@@ -592,5 +611,15 @@ class PaperNachCiti extends Debit\Base
         RuntimeManager::setTimeLimit(7200);
 
         RuntimeManager::setMaxExecTime(7200);
+    }
+
+    protected function validateData(Token\Entity $token): bool
+    {
+        if (strlen($token->getGatewayToken()) !== 20)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

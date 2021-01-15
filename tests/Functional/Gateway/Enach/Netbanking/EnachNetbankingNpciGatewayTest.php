@@ -485,6 +485,107 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
+    public function testDebitFileGenerationInvalidUMRN()
+    {
+        // TODO::remove test skip once the test is fixed for nach_icici.
+        $this->markTestSkipped();
+
+        $this->makeDebitPayment();
+
+        $paymentEntity = $this->getLastPayment();
+
+        $this->fixtures->edit(
+            'token',
+            $paymentEntity['token_id'],
+            [
+                Token\Entity::GATEWAY_TOKEN    => 'UMRNlessthan20char',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+
+        $response = $this->makeDebitPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $this->assertCount(2, $files['items']);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'citi/nach/RAZORP_SUMMARY_shared_utility_code_07032020_test'
+        ];
+
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+            'name'        => 'citi/nach/RAZORP_COLLECT_shared_utility_code_07032020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id' => $response['razorpay_payment_id'],
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'status'     => null,
+            ],
+            $enach
+        );
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0000050000000000000030000007032020                       shared_utility_cod000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'Test account',
+            'User Name' => 'CTRAZORPAY',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
+            'User Number' => 'shared_utility_cod',
+            'Transaction Reference' => 'TESTMERCHA' . $response['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+    }
+
     public function testDebitFileGenerationMultipleUtilityCode()
     {
         $this->makeDebitPayment();

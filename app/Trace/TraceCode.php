@@ -753,6 +753,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NACH_MANUAL_SUBMIT_FAILED                             = 'NACH_MANUAL_SUBMIT_FAILED';
     const NACH_DEBIT_REQUEST                                    = 'NACH_DEBIT_REQUEST';
+    const NACH_DEBIT_REQUEST_ERROR                              = 'NACH_DEBIT_REQUEST_ERROR';
     const NACH_DEBIT_RESPONSE                                   = 'NACH_DEBIT_RESPONSE';
     const NACH_DEBIT_RESPONSE_ERROR                             = 'NACH_DEBIT_RESPONSE_ERROR';
     const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
