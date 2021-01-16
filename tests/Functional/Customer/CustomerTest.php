@@ -222,21 +222,6 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
-    public function testDeleteCustomer()
-    {
-        $this->testCreateCustomer();
-
-        $customer = $this->getLastEntity('customer', true);
-
-        $request = &$this->testData['testDeleteCustomer']['request'];
-
-        $request['url'] = '/customers/'.$customer['id'];
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testGetMultipleCustomersViaEs()
     {
         $this->ba->proxyAuth();
