@@ -565,8 +565,14 @@ class Core extends Base\Core
         }
 
         $user = $this->getInternalUsernameOrEmail();
+        $messageUser = Constants::DASHBOARD_INTERNAL;
 
-        $message .= $feature->getEntityId() . ' by ' . $user;
+        if($user !== Constants::DASHBOARD_INTERNAL)
+        {
+            $messageUser = 'Merchant User';
+        }
+
+        $message .= $feature->getEntityId() . ' by ' . $messageUser;
 
         $this->app['slack']->queue(
             $message,

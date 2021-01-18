@@ -71,6 +71,8 @@ class PayoutLinks
     const INVALID_REQUEST_RESPONSE_MSG             = 'Invalid request payload';
     const TEST_MODE_ERROR_MESSAGE                  = 'Test Mode is currently not supported for Payout Links';
 
+    const DASHBOARD_INTERNAL                       = 'DASHBOARD_INTERNAL';
+
     protected $baseUrl;
 
     protected $secret;
@@ -832,7 +834,14 @@ class PayoutLinks
 
         $user = $this->getInternalUsernameOrEmail();
 
-        $message .= $merchantId . ' by ' . $user;
+        $messageUser = self::DASHBOARD_INTERNAL;
+
+        if($user !== self::DASHBOARD_INTERNAL)
+        {
+            $messageUser = 'Merchant User';
+        }
+
+        $message .= $merchantId . ' by ' . $messageUser;
 
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE_SLACK_NOTIFICATION,
@@ -857,7 +866,7 @@ class PayoutLinks
     {
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? self::DASHBOARD_INTERNAL;
     }
 
     private function rzpModeCheck(string $merchantId = "")

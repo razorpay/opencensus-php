@@ -543,6 +543,8 @@ class Constants
 
     const SUGGESTED_ADDRESS_OPT_IN         = 'suggested_address_opt_in';
 
+    const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
+
     /**
      * Enables Offers on Subscription
      */
