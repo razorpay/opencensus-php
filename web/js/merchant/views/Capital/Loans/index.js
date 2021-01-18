@@ -13,7 +13,7 @@ import {
   CAPITAL_PRODUCT_NAME_CODE_MAP,
   HOTJAR_TRIGGERS,
   TOOLTIP_DESCRIPTIONS,
-  GA_CATEGORY_BY_PRODUCT
+  GA_CATEGORY_BY_PRODUCT,
 } from './constants';
 import EditPanModal from './EditPanModal';
 import CircularProgress from 'common/new-ui/CircularProgress';

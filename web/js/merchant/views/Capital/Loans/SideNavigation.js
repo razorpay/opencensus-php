@@ -214,7 +214,8 @@ class SideNavigation extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
+    eventObject['eventCategory'] =
+      GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
     window.rzpAnalytics(eventObject);
   };
 

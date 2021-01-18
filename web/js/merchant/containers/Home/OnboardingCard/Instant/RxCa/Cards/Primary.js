@@ -7,8 +7,9 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
 import CaApplyForm from '../CaApplyForm';
 import CaApplyAcknowledge from '../CaApplyAcknowledge';
-import { currentAccountStatuses } from './data';
+import { currentAccountStatuses, getTimeLine } from './data';
 import RTracking from 'react-tracking';
+import { getTimeDiff } from '../helpers';
 
 const Primary = ({
   tracking,
@@ -19,7 +20,15 @@ const Primary = ({
   caAccount,
   headState,
   hasAppliedCa,
+  caStatus,
+  activatedAt,
 }) => {
+  // activation time diff applyforCA is difference between kyc approved and current date.
+  const activationTimeDiff = {
+    applyForCA: getTimeDiff(activatedAt, 16),
+    documentSubmission: getTimeDiff(activatedAt, 61),
+  };
+
   const goToXdashboard = () => {
     window.open('https://x.razorpay.com', '_blank');
     tracking.trackEvent(
@@ -53,7 +62,13 @@ const Primary = ({
   const openCaApplyModal = () => {
     sendClickEvents();
     openModal({
-      component: <CaApplyForm onClose={closeModal} onSuccess={handleSuccess} />,
+      component: (
+        <CaApplyForm
+          onClose={closeModal}
+          onSuccess={handleSuccess}
+          showDeadlineExtentionMessage={activationTimeDiff.applyForCA <= 0}
+        />
+      ),
       size: 'small',
       className: 'CA-apply--modal',
     });
@@ -66,11 +81,34 @@ const Primary = ({
       }),
     );
   };
+  const getTimelineStatus = (type) => {
+    if (
+      (caStatus && caStatus === currentAccountStatuses.processing) ||
+      caStatus === currentAccountStatuses.initiated ||
+      caStatus === currentAccountStatuses.activated ||
+      caStatus === currentAccountStatuses.processed ||
+      caStatus === currentAccountStatuses.unserviceable
+    ) {
+      return false;
+    }
+
+    if (activationTimeDiff[type] > 1) {
+      return (
+        <div className={activationTimeDiff[type] <= 10 ? 'danger timeline-info' : 'timeline-info'}>
+          {activationTimeDiff[type]} days left
+        </div>
+      );
+    } else if (activationTimeDiff[type] == 1) {
+      return <div className="timeline-info danger">1 day left</div>;
+    } else {
+      return <div className="timeline-info cancelled">Application deadline exceeded</div>;
+    }
+  };
   return (
     <div className="ca-primary-card">
       <div className="left">
         <div className="head">Open Your RazorpayX Current Account</div>
-        <div className="subhead">Finish your account opening process to stay on NEO pricing </div>
+        {getTimeLine(hasAppliedCa, caStatus, activatedAt)}
       </div>
       <div className="right">
         {caAccount && caAccount.status === currentAccountStatuses.activated && (
@@ -79,26 +117,14 @@ const Primary = ({
           </Button.Primary>
         )}
         {hasAppliedCa && headState && <div className="headstate">{headState}</div>}
-        {!hasAppliedCa && <Button.Primary onClick={openCaApplyModal}>Apply Now</Button.Primary>}
+        {!hasAppliedCa && getTimelineStatus('applyForCA')}
+        {hasAppliedCa && getTimelineStatus('documentSubmission')}
+        {!hasAppliedCa && (
+          <Button.Primary onClick={openCaApplyModal}>
+            {activationTimeDiff.applyForCA <= 0 ? 'Request Extension' : 'Apply Now'}
+          </Button.Primary>
+        )}
       </div>
-    </div>
-  );
-};
-
-//TODO
-// will be using this in V2
-const getTimeline = () => {
-  // getClass = () => {
-  //     return 'highlight';
-  // }
-  return (
-    <div className="ca-apply-timeline">
-      <img src="/img/inactive-circle.svg" alt="Clients" />
-      <div className="active">Apply by 12 Dec</div>
-      <div className="dash-separator">- - - - - - </div>
-      <img src="/img/active-circle.svg" alt="Clients" />
-      <div className="inactive">Submit documents by 21 Dec</div>
-      <img src="/img/done-circle.svg" alt="Clients" />
     </div>
   );
 };

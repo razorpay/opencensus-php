@@ -11,7 +11,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import RTracking from 'react-tracking';
 
 const CaApplyForm = (props) => {
-  const { onClose, user, showNotification, onSuccess } = props;
+  const { onClose, user, showNotification, onSuccess, showDeadlineExtentionMessage } = props;
   const [formDisabled, setFormDisabled] = React.useState(false);
   const sendDataToHubspot = (data) => {
     const payload = JSON.stringify(data);
@@ -144,7 +144,11 @@ const CaApplyForm = (props) => {
           <i class="i i-close" />
         </div>
       </div>
-      <div className="info">Please submit the following details</div>
+      <div className="info">
+        {showDeadlineExtentionMessage
+          ? 'Application deadline has been extended!'
+          : 'Please submit the following details'}
+      </div>
       <Form onSubmit={onSubmit}>
         <Input name="name" label="Name" defaultValue={name} required />
         <Input name="email" type="email" label="E-mail" defaultValue={email} required />

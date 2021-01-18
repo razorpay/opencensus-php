@@ -168,14 +168,7 @@ export default class OnboardingCardInstant extends Component {
     return (
       <div className="onboarding-card-instant">
         {showCaFlow ? (
-          <div className="rx-ca-home-container">
-            <div className="ca-container">
-              <CaInfoContainer updateCAstatus={this.updateCAstatus} />
-            </div>
-            <div className="faq-container">
-              <FAQ caStatus={this.state.caStatus} />
-            </div>
-          </div>
+          <CaInfoContainer updateCAstatus={this.updateCAstatus} />
         ) : (
           <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
             <div className={`onboarding-steps active-step-${activeStep}`}>

@@ -101,6 +101,11 @@
       color: #DD5C5C;
       background: transparent
 
+    .ca-pill.grey
+      background: #F3F5F9;
+      color: #647596;
+      border: 1px solid #B7C2DA;
+      
     img 
       margin-right: 12px;
       position: absolute;
@@ -163,6 +168,7 @@
   .ca-apply-timeline
     display: flex
     margin-top: 8px
+    align-items: center;
 
     .dash-separator
       color: #B7C2DA
@@ -179,6 +185,12 @@
       font-size: 12px;
       line-height: 18px;
       color: #8C9CBB;
+
+    img, .date-extention-icon
+      margin-right: 5px;
+    
+    .date-extention-icon
+      color: #C01F07;
 
   .counter-text
     padding: 8px 12px
@@ -222,3 +234,27 @@
       font-size: 16px;
       line-height: 24px;
       color: #647596;
+
+    .timeline-info
+      display: inline-block;
+      padding: 7px 12px;
+      width: 107px;
+      text-align: center;
+      background: rgba(203, 113, 0, 0.09);
+      border-radius: 2px;
+      color: #DF8700;
+      font-size: 16px;
+      margin-right: 8px;
+      font-weight: bold;
+      vertical-align: middle;
+      &.danger
+        background: rgba(245, 74, 42, 0.09);
+        color: #C01F07;
+      &.cancelled
+        background: transparent;
+        text-align: right;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 18px;
+        padding: 7px 0;
+

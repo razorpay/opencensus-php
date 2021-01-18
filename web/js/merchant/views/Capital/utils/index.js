@@ -1,4 +1,8 @@
-import { APPLICATION_STATE_SEQUENCE, CAPITAL_PRODUCT_CODES, ERROR_STATES } from '../Loans/constants';
+import {
+  APPLICATION_STATE_SEQUENCE,
+  CAPITAL_PRODUCT_CODES,
+  ERROR_STATES,
+} from '../Loans/constants';
 
 export const getDisbursalAmount = (creditOffered, processingFeePercentage, taxPercentage) => {
   const processingFee = calculatePercentageAmount(processingFeePercentage, creditOffered);
@@ -40,7 +44,6 @@ export const isLoanProduct = (productName) => productName === CAPITAL_PRODUCT_CO
 
 export const isCashAdvanceProduct = (productName) =>
   productName === CAPITAL_PRODUCT_CODES.CASH_ADVANCE;
-
 
 export const getApplicationSteps = (applicationStateGroups) => {
   return Object.entries(applicationStateGroups).reduce(

@@ -22,7 +22,9 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa }) => 
           {getStatusView({ pillType, pillText, content })}
         </>
       )}
-      {caAccount && caAccount.status === currentAccountStatuses.activated ? (
+      {caAccount &&
+      (caAccount.status === currentAccountStatuses.activated ||
+        caAccount.status === currentAccountStatuses.unserviceable) ? (
         <div className="highlight-info success">
           <img src="/img/green-tick.svg" className="img-info" alt="info" />
           <div className="info">

@@ -1,18 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import Spinner from 'common/ui/Spinner';
 import Primary from './Cards/Primary';
 import Secondary from './Cards/Secondary';
-import Button from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { currentAccountStatuses, analyticsStatusMap } from './Cards/data';
 import RTracking from 'react-tracking';
+import FAQ from './Faq';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { getCaState } from './data';
+import { getTimeDiff } from './helpers.js';
+import { updateUser } from 'merchant_common/reducers/user';
+import { bindActionCreators } from 'redux';
 
 const CaInfo = (props) => {
   const [caAccount, setCaAcccount] = React.useState(null);
   const [isloading, setLoading] = React.useState(true);
   const hasAppliedCa = props.user.user.settings['clicked_ca_apply_request_done'];
+  const hideTimeline = !!props.user.user.settings['clicked_close_ca_timeline_banner'];
+  if (hideTimeline) {
+    return null;
+  }
 
   const getSFbankAccount = () => {
     const lossReason = data[0].opportunityLossReason || '';
@@ -59,6 +67,19 @@ const CaInfo = (props) => {
             : analyticsStatusMap['created'],
       }),
     );
+  };
+
+  const handleAnnouncementClose = () => {
+    const _settings = { ...props.user.user.settings };
+    _settings['clicked_close_ca_timeline_banner'] = '1';
+    merchantFetch({
+      url: 'users',
+      mode: 'live',
+      method: 'patch',
+      data: { settings: _settings },
+    }).then(() => {
+      updateUser({ settings: _settings });
+    });
   };
 
   const getDataFromSF = () => {
@@ -119,107 +140,85 @@ const CaInfo = (props) => {
   }
 
   const caStatus = caAccount && caAccount.status ? caAccount.status : null;
-  const getStatusView = getCaState(caStatus, GoToCaDocs);
-  const { pillType, pillText, content, headState } = getStatusView;
+  const activatedAt =
+    props.user.user.merchants && props.user.user.merchants.length
+      ? props.user.merchant.activated_at
+      : null;
 
-  return (
-    <>
-      <Primary
-        settings={props.user.user.settings}
-        hasAppliedCa={hasAppliedCa}
-        caAccount={caAccount}
-        headState={headState}
-      />
-      <hr className="separator" />
-      <Secondary
-        hasAppliedCa={hasAppliedCa}
-        caAccount={caAccount}
-        pillType={pillType}
-        pillText={pillText}
-        content={content}
-      />
-    </>
-  );
-};
-
-const getCaState = (caAccountStatus, GoToCaDocs) => {
-  let pillType,
-    pillText,
-    content,
-    headState = '';
-  if (!caAccountStatus || caAccountStatus === currentAccountStatuses.created) {
-    pillType = 'default';
-    pillText = 'Request Received';
-    content = (
-      <>
-        <span>
-          Our executive will contact you soon. You can get the application documents ready as per
-          your business category.
-        </span>{' '}
-        <Button.Transparent className="view-doc" onClick={GoToCaDocs}>
-          View Documents
-        </Button.Transparent>
-      </>
-    );
-  } else if (caAccountStatus === currentAccountStatuses.picked) {
-    pillType = 'default';
-    pillText = 'Process Started';
-    content = (
-      <>
-        <span>
-          RazorpayX has started the application process. You can get the application documents ready
-          as per your business category.
-        </span>{' '}
-        <Button.Transparent className="view-doc" onClick={GoToCaDocs}>
-          View Documents
-        </Button.Transparent>
-      </>
-    );
-  } else if (caAccountStatus === currentAccountStatuses.processed) {
-    pillType = 'yellow';
-    pillText = 'Activation In Progress';
-    headState = 'Account opened';
-    content = <>RazorpayX is working with bank to get your Current Account activated.</>;
-  } else if (
-    caAccountStatus === currentAccountStatuses.processing ||
-    caAccountStatus === currentAccountStatuses.initiated
+  if (
+    caStatus &&
+    caStatus === currentAccountStatuses.activated &&
+    getTimeDiff(caAccount.status_last_updated_at, 7) < 0
   ) {
-    pillType = 'yellow';
-    pillText = 'Bank KYC In Progress';
-    headState = 'Documents Recieved';
-    content = <>RBL bank has received your form & is working to complete your process.</>;
-  } else if (caAccountStatus === currentAccountStatuses.cancelled) {
-    pillType = 'danger';
-    pillText = 'Request Cancelled';
-    content = <>Your current account application has been cancelled.</>;
-  } else if (caAccountStatus === currentAccountStatuses.unserviceable) {
-    pillType = 'danger';
-    pillText = 'Unserviceable';
-    content = <>Unfortunately, our banking partner can't service at your location currently. </>;
-  } else if (caAccountStatus === currentAccountStatuses.rejected) {
-    pillType = 'danger';
-    pillText = 'Request Rejected';
-    content = (
-      <>
-        Your current account application has been rejected by our banking partner. We will not be
-        able to provide a Current Account at the moment.
-      </>
-    );
-  } else if (caAccountStatus === currentAccountStatuses.activated) {
-    pillType = 'success';
-    pillText = 'Account Activated';
-    content = (
-      <>
-        Your current account is now active, and you’re ready to take off! You can start exploring
-        your account or learn more by reading the guide.{' '}
-      </>
+    return null;
+  } else if (
+    (!hasAppliedCa && getTimeDiff(activatedAt, 91) < 0) ||
+    (caStatus !== currentAccountStatuses.activated && getTimeDiff(activatedAt, 91) < 0)
+  ) {
+    return (
+      <AnnouncementBanner
+        title="Pricing has been reverted"
+        theme="danger"
+        canBeClosed={true}
+        handleClose={handleAnnouncementClose}
+      >
+        Your have failed to open a RazorpayX current account due to which you have been reverted to
+        classic pricing with 2% transaction rate
+      </AnnouncementBanner>
     );
   }
 
-  return { pillType, pillText, content, headState };
+  const getStatusView = getCaState(caStatus, GoToCaDocs);
+  const { pillType, pillText, content, headState, title, viewType } = getStatusView;
+
+  return (
+    <>
+      {viewType === 'announcement' ? (
+        <AnnouncementBanner
+          title={title}
+          theme="danger"
+          canBeClosed={true}
+          handleClose={handleAnnouncementClose}
+        >
+          {content}
+        </AnnouncementBanner>
+      ) : (
+        <div className="rx-ca-home-container">
+          <div className="ca-container">
+            <Primary
+              settings={props.user.user.settings}
+              hasAppliedCa={hasAppliedCa}
+              caAccount={caAccount}
+              headState={headState}
+              caStatus={caStatus}
+              activatedAt={activatedAt}
+            />
+            <hr className="separator" />
+            <Secondary
+              hasAppliedCa={hasAppliedCa}
+              caAccount={caAccount}
+              pillType={pillType}
+              pillText={pillText}
+              content={content}
+            />
+          </div>
+          <div className="faq-container">
+            <FAQ caStatus={caStatus} />
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
 });
-export default RTracking({ page: 'RXNeoCaHome' })(connect(mapStateToProps, null)(CaInfo));
+
+const mapDispatchToProps = (dispatch) => ({
+  updateUser: bindActionCreators(updateUser, dispatch),
+});
+
+export default RTracking({ page: 'RXNeoCaHome' })(
+  connect(mapStateToProps, mapDispatchToProps)(CaInfo),
+);
