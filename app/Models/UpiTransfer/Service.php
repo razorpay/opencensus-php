@@ -51,9 +51,12 @@ class Service extends Base\Service
 
             $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
 
-            (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'], $requestPayload);
+            $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
+                                                                             $requestPayload);
 
-            $valid = $this->core->processPayment($gatewayResponse, $terminal);
+            $upiTransferRequestId = $upiTransferRequest ? $upiTransferRequest->getPublicId() : null;
+
+            $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequestId);
         }
         catch (\Exception $e)
         {

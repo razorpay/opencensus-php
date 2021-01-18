@@ -519,6 +519,56 @@ class UpiTransferTest extends TestCase
         $this->assertNull($upi);
     }
 
+    public function testProcessDuplicateIciciUpiTransferPayment()
+    {
+        $this->processUpiTransfer();
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
+
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+        $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+
+        $this->runUpiTransferRequestAssertions(
+            Gateway::UPI_ICICI,
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+
+        $this->processUpiTransfer();
+
+        $this->runUpiTransferRequestAssertions(
+            Gateway::UPI_ICICI,
+            false,
+            'UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION',
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+            ]
+        );
+    }
+
     protected function runUpiTransferRequestAssertions(string $gateway, bool $isCreated, $errorMessage = null, $expectedValues = [])
     {
         $upiTransferRequest = $this->getDbLastEntity('upi_transfer_request');

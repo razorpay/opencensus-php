@@ -4,6 +4,8 @@
 namespace RZP\Models\UpiTransferRequest;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -26,8 +28,17 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::UPI_TRANSFER_SAVE_REQUEST_FAILED,
+                [
+                    Entity::GATEWAY           => $input[Entity::GATEWAY],
+                    Entity::NPCI_REFERENCE_ID => $input[Entity::NPCI_REFERENCE_ID],
+                ]
+            );
         }
+        return null;
     }
 
     protected function convertPayeeVpaToLower(array & $input)

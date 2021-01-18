@@ -87,12 +87,18 @@ abstract class Processor extends Base\Core
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do nothing.
             //
-            if ($entity->getEntityName() === Constants\Entity::BANK_TRANSFER)
-            {
-                throw new LogicException(TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR);
-            }
 
-            return null;
+            switch ($entity->getEntityName())
+            {
+                case Constants\Entity::BANK_TRANSFER:
+                    throw new LogicException(TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR);
+
+                case Constants\Entity::UPI_TRANSFER:
+                    throw new LogicException(TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION);
+
+                default:
+                    return null;
+            }
         }
 
         $paymentExpected = $this->checkPaymentExpectedAndSetVirtualAccount($entity);

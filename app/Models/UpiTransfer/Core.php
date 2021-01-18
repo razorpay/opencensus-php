@@ -24,7 +24,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse, $terminal)
+    public function processPayment(array $gatewayResponse, $terminal, $upiTransferRequestId = null)
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
@@ -70,7 +70,14 @@ class Core extends Base\Core
 
             $this->alertException($e, $upiTransferInput);
 
-            return false;
+            switch ($errorMessage)
+            {
+                case TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION:
+                    return true;
+
+                default:
+                    return false;
+            }
         }
         finally
         {
@@ -83,7 +90,8 @@ class Core extends Base\Core
                 $errorMessage = $errorMessage ?? $upiTransfer->getUnexpectedReason();
             }
 
-            $this->updateUpiTransferRequest($upiTransferInput, $paymentSuccess, $errorMessage);
+            (new UpiTransferRequest\Core())->updateUpiTransferRequest($upiTransferInput, $paymentSuccess, $errorMessage,
+                                                                      $upiTransferRequestId);
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected, $paymentSuccess, $terminal->getGateway());
 
@@ -137,6 +145,7 @@ class Core extends Base\Core
 
                 break;
 
+            case 'reconciliate':
             case 'reconciliate_via_batch_service':
                 $properties = [
                     'source'       => 'recon',
@@ -208,37 +217,5 @@ class Core extends Base\Core
         }
 
         return $array;
-    }
-
-    protected function updateUpiTransferRequest(array $upiTransferInput, bool $isCreated, string $errorMessage = null)
-    {
-        $data = [
-            UpiTransferRequest\Entity::IS_CREATED       => $isCreated,
-            UpiTransferRequest\Entity::ERROR_MESSAGE    => substr($errorMessage, 0, 255),
-        ];
-
-        $gateway = $upiTransferInput[Entity::GATEWAY];
-        $npciReferenceId = $upiTransferInput[Entity::NPCI_REFERENCE_ID];
-
-        try
-        {
-            $this->repo
-                 ->upi_transfer_request
-                 ->updateByGatewayAndNpciRefId($gateway, $npciReferenceId, $data);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::UPI_TRANSFER_REQUEST_ADD_ERROR_MSG_FAILED,
-                [
-                    'gateway'           => $gateway,
-                    'npci_reference_id' => $npciReferenceId,
-                    'is_created'        => $isCreated,
-                    'error_message'     => $errorMessage,
-                ]
-            );
-        }
     }
 }

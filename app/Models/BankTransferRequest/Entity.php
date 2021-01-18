@@ -291,7 +291,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             default:
-                $this->trace->info(
+                $app['trace']->info(
                     TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,
                     [
                         'route_name'    => $routeName,

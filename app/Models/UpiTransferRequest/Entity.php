@@ -3,8 +3,10 @@
 
 namespace RZP\Models\UpiTransferRequest;
 
+use App;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -134,5 +136,62 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
     }
 
+    public function setErrorMessage($errorMessage)
+    {
+        $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
+    public function setIsCreated($isCreated)
+    {
+        $this->setAttribute(self::IS_CREATED, $isCreated);
+    }
+
     // -------------------- End Setters --------------------
+    public function findAndSetRequestSource()
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        $requestSource = [];
+
+        switch ($routeName)
+        {
+            case 'upi_transfer_process':
+                $requestSource = [
+                    'source'       => 'callback',
+                    'request_from' => 'bank',
+                ];
+
+                break;
+
+            case 'reconciliate':
+            case 'reconciliate_via_batch_service':
+                $requestSource = [
+                    'source'       => 'recon',
+                    'request_from' => 'admin',
+                ];
+
+                break;
+
+            case 'upi_transfer_process_test':
+                $requestSource = [
+                    'source'       => 'test',
+                    'request_from' => 'test',
+                ];
+
+                break;
+
+            default:
+                $app['trace']->info(
+                    TraceCode::UNTRACKED_ENDPOINT_UPI_TRANSFER,
+                    [
+                        'route_name'  => $routeName,
+                        'npci_ref_id' => $this->getNpciReferenceId(),
+                    ]);
+
+                break;
+        }
+        $this->setRequestSource(json_encode($requestSource));
+    }
 }
