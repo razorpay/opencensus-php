@@ -143,6 +143,14 @@ class FTSController extends Controller
     {
         $response = $this->app['fts_create_account']->oneOffDbMigrateCron($this->input);
 
+
+        return ApiResponse::json($response);
+    }
+
+    public function lowBalanceAlert()
+    {
+        $response = $this->app['fts_fund_transfer']->sendAlertIfLowBalance($this->input);
+
         return ApiResponse::json($response);
     }
 

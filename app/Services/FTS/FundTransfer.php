@@ -1050,6 +1050,17 @@ class FundTransfer extends Base
         );
     }
 
+    public function sendAlertIfLowBalance(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::SEND_LOW_BALANCE_ALERT,
+            Requests::POST,
+            $input
+        );
+    }
+
     public function getBulkStatus(array $input)
     {
         (new Validator)->validateInput('fetch_transfer_status', $input);

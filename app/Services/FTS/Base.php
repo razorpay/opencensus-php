@@ -80,6 +80,8 @@ class Base
 
     const SOURCE_ACCOUNT = '/source_account';
 
+    const SEND_LOW_BALANCE_ALERT = '/source_account/balance';
+
     const CHANNEL_HEALTH_EVENT = '/channel_health_events';
 
     const FTS_TEST_TRANSACTIONS_TRIGGER = '/channel_health_events/trigger_test_transactions';
