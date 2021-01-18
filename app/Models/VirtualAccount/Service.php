@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
@@ -15,11 +16,14 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Base\ConnectionType;
+use RZP\Models\Settings\Module;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Settings\Accessor;
 use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Offline\Device as OfflineDevice;
 
@@ -115,10 +119,7 @@ class Service extends Base\Service
                     ],
                 ];
 
-                if (isset($input[Entity::CLOSE_BY]) === true)
-                {
-                    $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
-                }
+                $this->addCloseBy($createArray, $input);
 
                 if (isset($input[Entity::CUSTOMER_ID]) === true)
                 {
@@ -135,6 +136,24 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
         return $response;
+    }
+
+    private function addCloseBy(&$createArray, $input)
+    {
+        if ($this->merchant->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID)
+        {
+            $expirySetting = $this->getMerchantDefaultVirtualAccountExpiry();
+
+            $expirySetting = $expirySetting === -1 ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY : $expirySetting;
+
+            $createArray[Entity::CLOSE_BY] = Carbon::today(Timezone::IST)
+                                                   ->addDays($expirySetting)
+                                                   ->getTimestamp();
+        }
+        else if (isset($input[Entity::CLOSE_BY]) === true)
+        {
+            $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
+        }
     }
 
     /*
@@ -944,5 +963,71 @@ class Service extends Base\Service
         });
 
         return $virtualAccount;
+    }
+
+
+    public function addDefaultVirtualAccountExpiry($input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_REQUEST, $input);
+
+        (new Validator())->validateInput('defaultVAExpiry', $input);
+
+        try
+        {
+            (new Settings\Service())->upsert(Module::VIRTUAL_ACCOUNT, $input);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getPublicId(),
+                    'input'       => $input,
+                ]
+            );
+
+            return ['success' => false];
+        }
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_SUCCESS,
+                           [
+                               'merchant_id' => $this->merchant->getPublicId(),
+                               'success'     => true,
+                               'input'       => $input
+                           ]);
+
+        return ['success' => true];
+    }
+
+    public function getMerchantDefaultVirtualAccountExpiry()
+    {
+        try
+        {
+            $response = (new Settings\Service())->get(Module::VIRTUAL_ACCOUNT,
+                                                      Constant::ECMS_VA_EXPIRY_OFFSET_SETTING_KEY);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_FETCH_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getPublicId(),
+                ]
+            );
+
+            return -1;
+        }
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_GET_RESPONSE,
+                           [
+                               'merchant_id' => $this->merchant->getPublicId(),
+                               'response'    => $response
+                           ]);
+
+        return is_string($response['settings']) ? (int) $response['settings'] : -1;
     }
 }

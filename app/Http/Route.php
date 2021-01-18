@@ -459,6 +459,8 @@ class Route
         'virtual_account_validate_vpa'             => ['post',     'live/ecollect/validate/{gateway}/{vpa_root}',    'VirtualAccountController@validateVpa'                              ],
         'virtual_account_validate_vpa_test'        => ['post',     'test/ecollect/validate/{gateway}/{vpa_root}',    'VirtualAccountController@validateVpa'                              ],
         'virtual_account_debug'                    => ['post',     'virtual_account_debug',                          'VirtualAccountController@debugVA'                                  ],
+        'virtual_account_expiry_setting_upsert'    => ['post',     'virtual_accounts/setting/expiry',                'VirtualAccountController@addDefaultVirtualAccountExpiryForMerchant'],
+        'virtual_account_expiry_setting_get'       => ['get',      'virtual_accounts/setting/expiry',                'VirtualAccountController@getMerchantDefaultVirtualAccountExpiry'   ],
         'virtual_accounts_close_bulk'              => ['post',     'virtual_accounts/close/bulk',                    'VirtualAccountController@bulkCloseVirtualAccount'                  ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
@@ -3016,6 +3018,8 @@ class Route
     ];
 
     public static $proxy = [
+        'virtual_account_expiry_setting_upsert',
+        'virtual_account_expiry_setting_get',
         'fetch_product_details_for_order',
         'fetch_order_line_items',
         'salesforce_event',
@@ -4730,6 +4734,8 @@ class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_create_for_internal'      => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'virtual_account_expiry_setting_upsert'    => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'virtual_account_expiry_setting_get'       => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_add_receivers'            => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_accounts_close_bulk'              => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_bulk_create_for_banking'  => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,

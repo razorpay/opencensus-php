@@ -86,6 +86,10 @@ class Validator extends Base\Validator
         Entity::QR_CODE                                 => 'sometimes',
     ];
 
+    public static $defaultVAExpiryRules = [
+        Constant::ECMS_VA_EXPIRY_OFFSET_SETTING_KEY     => 'required|integer',
+    ];
+
     public static $bulkCloseVirtualAccountRules = [
         'merchant_ids'          => 'filled|array|max:10|min:1',
         'virtual_account_ids'   => 'filled|array|max:100|min:1'

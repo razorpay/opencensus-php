@@ -6,18 +6,21 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Feature;
+use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
+use RZP\Models\Terminal\Type;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Entity;
-use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
+use RZP\Models\VirtualAccount\Constant;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\QrCode\Repository as QrCodeRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -39,6 +42,16 @@ class VirtualAccountTest extends TestCase
         $this->testDataFilePath = __DIR__.'/VirtualAccountTestData.php';
 
         parent::setUp();
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->createMerchantWithDetails(Org::HDFC_ORG, '10000000000035');
+
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_dedicated_terminal');
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id'    => '10000000000035']);
+
+        $this->fixtures->merchant->enableMethod('10000000000035', 'bank_transfer');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
@@ -73,6 +86,78 @@ class VirtualAccountTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->enableRazorXTreatmentForTokenizeQrStringMpans();
+    }
+
+    public function testCreateHdfcEcmsVirtualAccount()
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => '10000000000035']);
+
+        $order = $this->fixtures->create('order', ['merchant_id' => '10000000000035']);
+
+        $this->ba->publicAuth($key->getPublicId());
+
+        $response = $this->createVirtualAccountForOrder($order);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+        $this->assertEquals('order', $virtualAccount['entity_type']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
+
+        $closeBy = Carbon::today(Timezone::IST)->addDays(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY)->getTimestamp();
+        $this->assertEquals($closeBy, $virtualAccount['close_by']);
+
+        // Test create ecms VA with merchant level VA expiry setting
+        $this->ba->proxyAuth('rzp_test_10000000000035');
+
+        $this->runRequestResponseFlow($this->testData['testVirtualAccountExpirySetting']);
+
+        $order = $this->fixtures->create('order', ['merchant_id' => '10000000000035']);
+
+        $this->ba->publicAuth($key->getPublicId());
+
+        $this->createVirtualAccountForOrder($order);
+
+        $expiryOffset = $this->testData['testVirtualAccountExpirySetting']['request']['content']['va_expiry_offset'];
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $closeBy = Carbon::today(Timezone::IST)->addDays($expiryOffset)->getTimestamp();
+        $this->assertEquals($closeBy, $virtualAccount['close_by']);
+    }
+
+    public function testVirtualAccountExpirySetting()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000035');
+
+        $this->startTest();
+    }
+
+    public function testVirtualAccountExpirySettingFetch()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000035');
+
+        $request = $this->testData['testVirtualAccountExpirySetting']['request'];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = $this->testData['testVirtualAccountExpirySettingFetch']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(5, $response);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(-1, $response);
     }
 
     /**
@@ -354,7 +439,7 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $response = $this->createVirtualAccountForOrder($order);
+        $response = $this->createVirtualAccountForOrder($order, ['close_by' => 1677644500]);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -365,6 +450,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
         $this->assertEquals('order', $virtualAccount['entity_type']);
+        $this->assertEquals(1677644500, $virtualAccount['close_by']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);

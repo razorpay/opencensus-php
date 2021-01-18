@@ -31,6 +31,7 @@ class Module
     const BALANCE               = 'balance';
     const FREE_PAYOUT           = 'free_payout';
     const PAYOUT_AMOUNT_TYPE    = 'payout_amount_type';
+    const VIRTUAL_ACCOUNT       = 'virtual_account';
 
     /**
      * @param string $module

@@ -111,6 +111,46 @@ return [
         ],
     ],
 
+    'testCreateHdfcEcmsVirtualAccount' => [
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'amount_expected' => 1000000,
+        'amount_paid'     => 0,
+        'customer_id'     => null,
+        'receivers'       => [
+            [
+                'entity'         => 'bank_account',
+                'ifsc'           => 'HDFC0000113',
+                'bank_name'      => 'HDFC Bank',
+            ],
+        ],
+    ],
+
+    'testVirtualAccountExpirySetting' => [
+        'request'  => [
+            'url'     => '/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset'  => 5
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testVirtualAccountExpirySettingFetch' => [
+        'request'  => [
+            'url'     => '/virtual_accounts/setting/expiry',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => 5,
+        ],
+    ],
+
     'testFetchOrderWithVirtualAccountExpand' => [
         'request' => [
             'method'  => 'GET',

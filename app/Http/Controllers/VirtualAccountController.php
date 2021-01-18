@@ -231,4 +231,20 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($entity);
     }
+
+    public function addDefaultVirtualAccountExpiryForMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->addDefaultVirtualAccountExpiry($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantDefaultVirtualAccountExpiry()
+    {
+        $response = $this->service()->getMerchantDefaultVirtualAccountExpiry();
+
+        return ApiResponse::json($response);
+    }
 }
