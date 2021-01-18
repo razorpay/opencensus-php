@@ -49,7 +49,7 @@ export default class SuccessModal extends React.Component {
   get codeToCopy() {
     const { paymentButton } = this.props;
 
-    const paymentBtnCode = `<form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="${paymentButton.id}"> </script> </form>`;
+    const paymentBtnCode = `<form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="${paymentButton.id}" async> </script> </form>`;
 
     return paymentBtnCode;
   }
