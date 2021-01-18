@@ -11,6 +11,9 @@ class Constants
   const LABEL_DEFAULT_VALUE = 'other';
 
   // Counters
+  const METRIC_COUNTER_HTTP_REQUESTS_DOWNSTREAM    = 'http_requests_downstream';
+  const METRIC_COUNTER_HTTP_REQUESTS               = 'http_requests';
+  const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION    = 'http_requests_duration';
   const USER_LOGIN_COUNT            = 'user_login_count';
   const USER_LOGOUT_COUNT           = 'user_logout_count';
   const USER_UNLOCK_COUNT           = 'user_unlock_count';
@@ -20,6 +23,18 @@ class Constants
   const LOGIN_METHOD                = 'login_method';
   const LOGIN_ACTION                = 'login_action';
   const TWO_FA_DURING_SIGNUP        = 'two_fa_during_signup';
+
+  // Metric labels - HTTP_REQUESTS_DOWNSTREAM
+  const LABEL_HTTP_REQUESTS_DOWNSTREAM_STATUS       = 'status';
+  const LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS   = 'is_success';
+  const LABEL_HTTP_REQUESTS_DOWNSTREAM_CONTROLLER   = 'controller';
+  const LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE        = 'route';
+
+  // Metric labels - HTTP_REQUESTS
+  const LABEL_HTTP_REQUESTS_METHOD                  = 'method';
+  const LABEL_HTTP_REQUESTS_ROUTE                   = 'route';
+  const LABEL_HTTP_REQUESTS_STATUS                  = 'status';
+  const LABEL_HTTP_REQUESTS_CONTROLLER              = 'controller';
 
   /* Possible Login actions */
   //when user sigin after enterin OTP
@@ -31,4 +46,8 @@ class Constants
   const PASSWORD                    = 'password';
    //currently only one oauth provider - google
   const OAUTH                       = 'oauth';
+
+
+  // Event trigger count
+  const EVENT_COUNT_ONE             = 1;
 }

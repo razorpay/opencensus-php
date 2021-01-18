@@ -2,8 +2,10 @@
 
 namespace App\Http;
 
-use Debugbar;
+use Request;
 use Response;
+use Debugbar;
+use App\Metrics\Constants;
 use League\Csv\Writer;
 use SplTempFileObject;
 use App\Trace\TraceCode;
@@ -56,8 +58,39 @@ class AppResponse
         {
             $response += array('success' => false, 'errors' => $errors);
         }
+        self::pushDownstreamMetrics($response);
 
         return Response::json($response);
+    }
+
+    protected static function pushDownstreamMetrics($response)
+    {
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $dimensions = self::getDownstreamMetricsDimensions($response);
+
+            $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+        }
+        catch (\Throwable $t)
+        {
+            $app['trace']->warn(TraceCode::PUSH_METRICS_FAILED, [
+                'message' => $t->getMessage() ?? 'unknown_message',
+            ]);
+        }
+    }
+
+    protected static function getDownstreamMetricsDimensions($response)
+    {
+        $request = app('request');
+
+        return [
+            Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_STATUS      => $response['status_code']                                 ?? 'unknown_status',
+            Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS  => $response['success']                                     ?? 'unknown_success',
+            Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE       => $request->route() !== null ? $request->route()->getName() :  'unknown_route',
+            Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_CONTROLLER  => $request->route() !== null ? $request->route()->getAction()['controller']  :  'unknown_controller',
+        ];
     }
 
     public static function notFoundResponse($error)
@@ -96,6 +129,13 @@ class AppResponse
             'success'   => false,
             'data'      => $error
         ];
+
+        $metricsData = $response;
+
+        $metricsData['status_code'] = 400;
+
+        self::pushDownstreamMetrics($metricsData);
+
         return Response::json($response, 400);
     }
 

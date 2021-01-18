@@ -57,6 +57,8 @@ class TraceCode
 
     const SPLITZ_EVALUATE_FAILED                    = 'SPLITZ_EVALUATE_FAILED';
 
+    const PUSH_METRICS_FAILED                       = 'PUSH_METRICS_FAILED';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
