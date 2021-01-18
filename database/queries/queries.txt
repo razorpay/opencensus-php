@@ -6121,3 +6121,7 @@ ALTER TABLE merchant_details
 
 ALTER TABLE action_state
     ADD INDEX action_state_merchant_id_index (merchant_id);
+
+ALTER TABLE payment_meta
+    ADD COLUMN mismatch_amount BIGINT(20) UNSIGNED DEFAULT NULL,
+    ADD COLUMN mismatch_amount_reason VARCHAR(255) COLLATE utf8_bin DEFAULT NULL;

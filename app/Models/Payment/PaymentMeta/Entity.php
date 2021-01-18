@@ -15,6 +15,8 @@ class Entity extends Base\PublicEntity
     const DCC_MARK_UP_PERCENT    = 'dcc_mark_up_percent';
     const ACTION                 = 'action_type';
     const REFERENCE_ID           = 'reference_id';
+    const MISMATCH_AMOUNT        = 'mismatch_amount';
+    const MISMATCH_AMOUNT_REASON = 'mismatch_amount_reason';
 
     protected $generateIdOnCreate = true;
 

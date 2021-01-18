@@ -48,6 +48,13 @@ class CreatePaymentMetaTable extends Migration
             $table->string(PaymentMeta::REFERENCE_ID)
                 ->nullable();
 
+            $table->bigInteger(PaymentMeta::MISMATCH_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->string(PaymentMeta::MISMATCH_AMOUNT_REASON)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
