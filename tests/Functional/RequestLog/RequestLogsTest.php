@@ -854,6 +854,51 @@ class RequestLogsTest extends TestCase
                             'RequestLogsTest: Route names do not match when reversing a payout');
     }
 
+    public function testCreatePayoutWithOTP()
+    {
+        $this->fixtures->create('contact', $this->createContactEntityArray());
+        $this->fixtures->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'fund_account_id' => 'fa_fa100000000000',
+                'amount'          => 100,
+                'mode'            => 'UPI',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $responseContent = $this->makeRequestAndGetContent($request);
+
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        if(! $this->checkIfRouteNameIsIncluded($route))
+        {
+            return;
+        }
+
+        $dbContent = $this->getDbLastEntity('request_log');
+
+        $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
+                            'RequestLogsTest: Entity Types do not match when reversing a payout');
+        $this->assertEquals($responseContent['id'], $dbContent->entity_id,
+                            'RequestLogsTest: Entity IDs do not match when reversing a payout');
+        $this->assertEquals($route, $dbContent->route_name,
+                            'RequestLogsTest: Route names do not match when reversing a payout');
+    }
+
     // -------------- Payouts Tests End -----------------------
 
     public function testCreateLowBalanceConfig()

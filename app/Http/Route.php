@@ -6420,7 +6420,8 @@ class Route
     //
     const REQUEST_LOG_ROUTES = [
         'payout_cancel',
-        'create_low_balance_config'
+        'create_low_balance_config',
+        'payout_create_with_otp',
     ];
 
     //

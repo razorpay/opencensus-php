@@ -131,7 +131,11 @@ class RequestLogHandler
             $this->trace->traceException(
                 $t,
                 null,
-                TraceCode::REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION
+                TraceCode::REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION,
+                [
+                    'request_url' => $request->getRequestUri(),
+                    'route_name'  => $this->route->getCurrentRouteName(),
+                ]
             );
 
             return $response;
