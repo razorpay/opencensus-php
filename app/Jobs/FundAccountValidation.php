@@ -107,7 +107,7 @@ class FundAccountValidation extends Job
         $topic = env('BVS_BANK_ACCOUNT_RESPONSE_TOPIC', 'fav-bvs-result-events');
 
         $data = [
-            ValidationEntity::ID      => $validationEntity->getId(),
+            ValidationEntity::ID      => $validationEntity->getPublicId(),
             ValidationEntity::STATUS  => $validationEntity->getStatus(),
             ValidationEntity::RESULTS => [
                 ValidationEntity::ACCOUNT_STATUS  => $validationEntity->getAccountStatus(),
