@@ -635,6 +635,27 @@ class CardPaymentService
        unset($traceResponse['data']['content']['expmonth']);
        unset($traceResponse['data']['content']['expyear']);
 
+       // Redacting fields for Cashfree card payments
+        unset($traceResponse['data']['content']['appId']);
+        unset($traceResponse['data']['content']['card_number']);
+        unset($traceResponse['data']['content']['card_holder']);
+        unset($traceResponse['data']['content']['card_cvv']);
+        unset($traceResponse['data']['content']['card_expiryMonth']);
+        unset($traceResponse['data']['content']['card_expiryYear']);
+        unset($traceResponse['data']['content']['customerEmail']);
+        unset($traceResponse['data']['content']['customerName']);
+        unset($traceResponse['data']['content']['customerPhone']);
+
+        // Redacting fields for Payu card payments
+        unset($traceResponse['data']['content']['ccnum']);
+        unset($traceResponse['data']['content']['ccname']);
+        unset($traceResponse['data']['content']['ccvv']);
+        unset($traceResponse['data']['content']['ccexpmon']);
+        unset($traceResponse['data']['content']['ccexpyr']);
+        unset($traceResponse['data']['content']['email']);
+        unset($traceResponse['data']['content']['firstname']);
+        unset($traceResponse['data']['content']['phone']);
+
        if (isset($traceResponse[Migration::EMI_PLANS]) === true)
        {
            $emiTrace = [];
