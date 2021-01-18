@@ -400,6 +400,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerHyperVerge();
 
+        $this->registerFreshchatClient();
+
         $this->registerFreshdeskTicketService();
 
         $this->registerTokenService();
@@ -1029,6 +1031,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerFreshchatClient()
+    {
+        $this->app->singleton('freshchat_client', function($app)
+        {
+            return new FreshchatClient($app);
         });
     }
 

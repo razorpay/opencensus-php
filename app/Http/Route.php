@@ -2089,6 +2089,9 @@ class Route
         'freshdesk_fetch_tickets'                 => ['post',      'freshdesk/tickets/customer',                                 'FreshdeskTicketController@fetchCustomerTickets'              ],
         'freshdesk_raise_grievance'               => ['post',      'freshdesk/grievance',                                        'FreshdeskTicketController@raiseGrievance'                    ],
 
+        'freshchat_extract_report_cron'           => ['post',      'freshchat/extract_report',                                    'FreshchatController@postExtractReport'                      ],
+        'freshchat_retrieve_report_cron'          => ['post',      'freshchat/retrieve_report',                                   'FreshchatController@postRetrieveReport'                     ],
+
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
@@ -2936,6 +2939,10 @@ class Route
 
         //GupShup Callbacks
         'gupshup_incoming_messages_callback',
+
+        // freshchat cron
+        'freshchat_extract_report_cron',
+        'freshchat_retrieve_report_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5708,6 +5715,8 @@ class Route
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
             'reward_expire_cron',
+            'freshchat_extract_report_cron',
+            'freshchat_retrieve_report_cron',
         ],
 
         'subscriptions' => [

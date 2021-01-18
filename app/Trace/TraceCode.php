@@ -2095,6 +2095,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_FILE_CREATE                                   = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                                  = 'DISPUTE_FILES_UPLOAD';
 
+    const FRESHCHAT_REQUEST                                     = 'FRESHCHAT_REQUEST';
+    const FRESHCHAT_RESPONSE                                    = 'FRESHCHAT_RESPONSE';
+
     const FRESHDESK_DISPUTE_REQUEST                             = 'FRESHDESK_DISPUTE_REQUEST';
     const FRESHDESK_DISPUTE_REQUEST_ERROR                       = 'FRESHDESK_DISPUTE_REQUEST_ERROR';
     const FRESHDESK_DISPUTE_TICKET_ACTION                       = 'FRESHDESK_DISPUTE_TICKET_ACTION';

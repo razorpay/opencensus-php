@@ -328,6 +328,11 @@ return [
         'appId'     => env('EXCHANGE_APP_ID')
     ],
 
+    'freshchat' => [
+        'base_url'  => env('FRESHCHAT_URL'),
+        'token'     => env('FRESHCHAT_TOKEN'),
+    ],
+
     'freshdesk' => [
         'url'                               => env('FRESHDESK_URL'),
         'url2'                              => env('FRESHDESK_URL2'),
