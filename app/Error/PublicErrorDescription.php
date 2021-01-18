@@ -1299,5 +1299,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';
+    const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST                       = 'Must not be able to make live request when not activated';
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
 }

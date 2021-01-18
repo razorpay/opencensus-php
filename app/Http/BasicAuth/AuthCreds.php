@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
+use RZP\Error\PublicErrorDescription;
 
 
 abstract class AuthCreds
@@ -220,8 +221,9 @@ abstract class AuthCreds
 
         if ($this->merchant->isActivated() === false)
         {
-            throw new Exception\LogicException(
-                'Must not be able to make live request when not activated');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
         }
     }
 

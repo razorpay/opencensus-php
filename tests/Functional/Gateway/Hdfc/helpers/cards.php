@@ -356,15 +356,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 

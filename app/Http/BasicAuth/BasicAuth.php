@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 
 use Razorpay\OAuth\OAuthServer;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -1931,8 +1932,9 @@ class BasicAuth
 
         if ($this->merchant->isActivated() === false)
         {
-            throw new Exception\LogicException(
-                'Must not be able to make live request when not activated');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
         }
     }
 
