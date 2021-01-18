@@ -322,5 +322,7 @@ return array(
         env('PAYMENT_LINK_HOSTED_BASE_URL'),
         env('PL_DEMO_RAZORPAY_WEBSITE_URL'),
         env('PAYMENT_PAGE_AXIS_HOSTED_BASE_URL'),
-    ]
+    ],
+
+    'apps_default_sender_email_address' => env('APPS_DEFAULT_SENDER_EMAIL_ADDRESS'),
 );

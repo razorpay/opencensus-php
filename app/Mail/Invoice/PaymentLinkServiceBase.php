@@ -20,7 +20,7 @@ class PaymentLinkServiceBase extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $fromEmail = app()['config']->get('app.apps_default_sender_email_address') ?? Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
         $fromHeader = $this->data[E::MERCHANT][Merchant\Entity::NAME];
 
