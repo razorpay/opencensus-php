@@ -28,6 +28,8 @@ class Tracing
                 'user_fetch',
                 'capital_cards_service',
                 'capital_cards_admin',
+                'update_fts_fund_transfer',
+                'fts_channel_notification',
             ]);
     }
 
