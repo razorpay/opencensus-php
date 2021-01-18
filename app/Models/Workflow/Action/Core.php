@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
 
@@ -48,7 +49,6 @@ class Core extends Base\Core
                              ->permission
                              ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
                              ->toArray()[0];
-
         //
         // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
         // only workflows defined for the merchant
@@ -852,6 +852,13 @@ class Core extends Base\Core
 
         $payload = $this->performMultipleWorkflowChanges($payload, $permissionName);
 
+        /*
+          * Decrypt the keys like password replaying the request
+          *
+          * Encryption place : app/Services/Workflow/Service.php encryptFields
+         */
+        $payload = (new Helper())->decryptSensitiveFieldsBeforeReplayingRequest($payload);
+
         // Replace the current request's payload with the
         // actual maker request payload.
         Request::replace($payload);
@@ -936,6 +943,5 @@ class Core extends Base\Core
                 $this->close($action, $maker, true);
             }
         }
-
     }
 }

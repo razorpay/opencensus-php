@@ -10,4 +10,6 @@ class Constants
         Permission\Name::EDIT_ACTIVATE_MERCHANT,
         Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH
     ];
+
+    const KEYS_TO_ENCRYPT_BEFORE_SAVING_IN_ES = ['password','password_confirmation'];
 }

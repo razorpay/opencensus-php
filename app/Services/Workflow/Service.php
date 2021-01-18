@@ -7,6 +7,7 @@ use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Workflow\Helper;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -520,6 +521,8 @@ class Service
             $dirtyDataArray,
             $mainEntity,
             $relations);
+
+        $diff = (new Helper())->redactFields($diff);
 
         $this->setDiff($diff);
 

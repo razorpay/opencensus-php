@@ -112,4 +112,19 @@ trait WorkflowTrait
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function performWorkflowAction($workflowActionId, bool $shouldApprove = true)
+    {
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/w-actions/' . $workflowActionId . '/checkers',
+            'content' => [
+                'approved' => $shouldApprove,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

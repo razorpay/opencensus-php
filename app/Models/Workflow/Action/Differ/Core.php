@@ -14,6 +14,7 @@ use RZP\Events\DifferEvent;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Helper;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -209,6 +210,14 @@ class Core extends Base\Core
                     $differ[Differ\Entity::DIFF][Differ\Entity::NEW][Payout\Entity::NOTES] = $notesDict;
                 }
 
+                /*
+                  * Encrypt the keys like password before pushing to ES
+                  * If the request is approved the request is replayed.
+                  * Before replay these keys are decrypted in
+                  * app/Models/Workflow/Action/Core.php decryptFields
+                 */
+                $differ[Differ\Entity::PAYLOAD] = (new Helper())->encryptSensitiveFields($differ[Differ\Entity::PAYLOAD]);
+
                 $this->esDao->storeAdminEvent(
                     strtolower($this->baseIndex), self::ES_TYPE, $differ);
             }
@@ -329,6 +338,8 @@ class Core extends Base\Core
             $differ->getPayload(),
             $entity,
             $relations);
+
+        $diff = (new Helper())->redactFields($diff);
 
         $differ->setDiff($diff);
 

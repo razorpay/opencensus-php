@@ -41,6 +41,127 @@ return [
         ]
     ],
 
+    'testCreateAdminESAfterDenialOfApproval' => [
+        'request' => [
+            'url' => '/admins',
+            'method' => 'post',
+            'content' => [
+                'name'                  => 'test admin',
+                'email'                 => 'xyz@razorpay.com',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
+            ],
+        ],
+        'response' => [
+            'content' =>
+                [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateAdminESPasswordEncrypted' => [
+        'request' => [
+            'url' => '/admins',
+            'method' => 'post',
+            'content' => [
+                'name'                  => 'test admin',
+                'email'                 => 'xyz@razorpay.com',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
+            ],
+        ],
+        'response' => [
+            'content' =>
+                [
+                    'entity_name' => "admin",
+                    'maker' => "test admin",
+                    'maker_id' => "RzrpySprAdmnId",
+                    'maker_type' => "admin",
+                    'type' => "maker",
+                    'url' => "https://api.razorpay.com/v1/admins",
+
+                    'method' => "POST",
+                    'payload' => [
+
+                        'name' => "test admin",
+                        'email' => "xyz@razorpay.com",
+                        'username' => "harshil",
+                        'remember_token' => "yes",
+                        'employee_code' => "rzp_1",
+                        'branch_code' => "krmgla",
+                        'supervisor_code' => "shk",
+                        'location_code' => "560030",
+                        'department_code' => "tech",
+                    ],
+                    'state' => "open",
+                    'controller' => "RZP\Http\Controllers\OrganizationController@createAdmin",
+                    'route' => "admin_create",
+                    'permission' => "create_admin",
+                    'diff' =>
+                        [
+                            'new' => [
+                                'name' => "test admin",
+                                'email' => "xyz@razorpay.com",
+                                'username' => "harshil",
+                                'password' => "**********",
+                                'password_confirmation' => "**********",
+                                'remember_token' => "yes",
+                                'employee_code' => "rzp_1",
+                                'branch_code' => "krmgla",
+                                'supervisor_code' => "shk",
+                                'location_code' => "560030",
+                                'department_code' => "tech",
+                                'org_id' => "100000razorpay",
+                            ]
+                        ],
+                ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testCreateAdminESAfterAcceptanceOfApproval' => [
+        'request' => [
+            'url' => '/admins',
+            'method' => 'post',
+            'content' => [
+                'name'                  => 'test admin',
+                'email'                 => 'xyz@razorpay.com',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
+            ],
+        ],
+        'response' => [
+            'content' =>
+                [
+                ],
+        ],
+        'status_code' => 200,
+],
+
     'testCreateAdminWithWrongEmailDomain' => [
         'request' => [
             'url' => '/admins',

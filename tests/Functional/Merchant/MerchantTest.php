@@ -9611,24 +9611,6 @@ class MerchantTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBankAccount, $actualBankAccount);
     }
 
-
-    private function performWorkflowAction($workflowActionId, bool $shouldApprove = true)
-    {
-
-        $this->ba->adminAuth('test');
-
-        $request = [
-            'method' => 'POST',
-            'url' => '/w-actions/' . $workflowActionId . '/checkers',
-            'content' => [
-                'approved' => $shouldApprove,
-            ],
-        ];
-
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
     private function setupWorkflowForBankAccountUpdate(): void
     {
         $this->fixtures->on('live')->create('org:admin_for_razorpay_org');

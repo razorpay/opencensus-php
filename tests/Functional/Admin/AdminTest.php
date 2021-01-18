@@ -2,19 +2,25 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use DB;
 use Hash;
 use Mail;
 use Cache;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Admin\Role;
+use RZP\Models\Base\EsDao;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Crypt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 
@@ -22,7 +28,15 @@ class AdminTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use CustomBrandingTrait;
+    use WorkflowTrait;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
+
+    protected $esDao;
+
+    protected $config;
+
+    protected $esClient;
 
     public function setUp()
     {
@@ -50,6 +64,10 @@ class AdminTest extends TestCase
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->repo = (new Admin\Repository);
+
+        $this->esDao = new EsDao();
+
+        $this->esClient =  $this->esDao->getEsClient()->getClient();
     }
 
     public function testCreateAdmin()
@@ -87,6 +105,85 @@ class AdminTest extends TestCase
 
             return $mail->hasTo($email);
         });
+    }
+
+    public function testCreateAdminESPasswordEncrypted()
+    {
+        $testData = $this->testData['testCreateAdminESPasswordEncrypted'];
+
+        $action = $this->getCreateAdminESData($testData);
+
+        $this->assertEquals($testData['request']['content']['password'], Crypt::decrypt($action['payload']['password']));
+
+        $this->assertEquals($testData['request']['content']['password'], Crypt::decrypt($action['payload']['password_confirmation']));
+
+        $this->assertEquals('admin', $action['entity_name']);
+
+        $this->assertEquals('https://api.razorpay.com/v1/admins', $action['url']);
+
+        $this->assertArraySelectiveEquals($testData['response']['content'],$action);
+    }
+
+    public function testCreateAdminESAfterAcceptanceOfApproval()
+    {
+        $testData = $this->testData['testCreateAdminESAfterAcceptanceOfApproval'];
+
+        $action = $this->getCreateAdminESData($testData);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $adminCreated1 = $this->getLastEntity('admin', true);
+
+        $this->assertArraySelectiveEquals([
+            'name'                  => 'test admin',
+            'email'                 => 'xyz@razorpay.com',
+            'username'              => 'harshil',
+            'employee_code'         => "rzp_1",
+            'branch_code'           => "krmgla",
+            'supervisor_code'       => "shk",
+            'location_code'         => "560030",
+            'department_code'       => "tech"
+        ],$adminCreated1);
+
+        // to check the password
+        $adminCreated = $this->repo->findByEmail('xyz@razorpay.com');
+
+        $isSame = Hash::check("random!12#", $adminCreated->getPassword());
+
+        $this->assertEquals(true,$isSame);
+    }
+
+    public function testCreateAdminESAfterDenialOfApproval()
+    {
+        $testData = $this->testData['testCreateAdminESAfterDenialOfApproval'];
+
+        $adminToCreateToVerify = [
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
+            'oauth_access_token' => 'test oauth token',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ];
+
+        $this->fixtures->create('admin', $adminToCreateToVerify);
+
+        $action = $this->getCreateAdminESData($testData);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $response = $this->performWorkflowAction($workflowAction['id'], false);
+
+        $adminCreated = $this->getLastEntity('admin', true);
+
+        // verifies that new Admin was not created
+        $this->assertEquals('test@email.com',$adminCreated['email'] );
+
+        $this->assertEquals('rejected', $response['state'] );
     }
 
     public function testCreateAdminMailForCustomBrandingOrg()
@@ -1183,7 +1280,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
-  
+
     public function testAdminP2pEntitiesApi()
     {
         $result = $this->startTest();
@@ -1197,5 +1294,59 @@ class AdminTest extends TestCase
         $this->assertArrayKeysExist($result['entities']['p2p_transaction'], ['device_id', 'customer_id', 'status']);
         $this->assertArrayKeysExist($result['entities']['p2p_upi_transaction'], ['device_id', 'rrn']);
         $this->assertArrayKeysExist($result['entities']['p2p_concern'], ['device_id', 'transaction_id', 'status']);
+    }
+
+    protected function setupWorkflowForCreateAdmin(): void
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => 'create_admin'], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id' => Org::RZP_ORG,
+                'entity_type' => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $this->createWorkflow([
+            'org_id' => '100000razorpay',
+            'name' => 'create Admin',
+            'permissions' => ['create_admin'],
+            'levels' => [
+                [
+                    'level' => 1,
+                    'op_type' => 'or',
+                    'steps' => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id' => Org::ADMIN_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function getCreateAdminESData($testData){
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflowForCreateAdmin();
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        return $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
     }
 }
