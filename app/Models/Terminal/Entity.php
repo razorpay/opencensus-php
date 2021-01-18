@@ -723,6 +723,22 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENABLED, $status);
     }
 
+    public function setCreatedAt($timestamp)
+    {
+        $this->setAttribute(self::CREATED_AT, $timestamp);
+
+    }
+
+    public function setUpdatedAt($timestamp)
+    {
+        $this->setAttribute(self::UPDATED_AT, $timestamp);
+    }
+
+    public function setDeletedAt($timestamp)
+    {
+        $this->setAttribute(self::DELETED_AT, $timestamp);
+    }
+
     public function setMerchantId($merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);

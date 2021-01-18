@@ -360,7 +360,16 @@ class Repository extends Base\Repository
 
                 $tsTerminal = $terminals->first();
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
+                if (((empty($terminal) == true) or (empty($tsTerminal) == true))
+                    and ($tsTerminal != $terminal))
+                {
+                    // return from here only when in sync
+                    $data["isTerminalNull"] = empty($terminal);
+                    $data["isTsTerminalNull"] = empty($tsTerminal);
+
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+                elseif (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
@@ -411,7 +420,16 @@ class Repository extends Base\Repository
                 {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    if (((empty($terminal) == true) or (empty($terminal2) == true))
+                        and ($terminal2 != $terminal))
+                    {
+                        // return from here only when in sync
+                        $data["isTerminalNull"] = empty($terminal2);
+                        $data["isTsTerminalNull"] = empty($tsTerminal);
+
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+                    elseif (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }

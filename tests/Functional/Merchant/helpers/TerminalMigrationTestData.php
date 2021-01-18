@@ -502,7 +502,10 @@ return [
             'url'     => '/merchants/10000000000000/terminals'
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                "count"  => 2,
+                "entity" => "collection"
+            ],
         ],
     ],
     'testFetchTerminalBanksAdminAuthProxy' => [

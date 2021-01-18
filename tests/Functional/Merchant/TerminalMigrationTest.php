@@ -253,6 +253,9 @@ class TerminalMigrationTest extends TestCase
 
         $terminalArray = $terminal->toArray();
 
+        $terminalArray['enabled'] = "true";
+        $terminalArray['status'] = "activated";
+
         $newTerminaEntity = Terminal\Service::getEntityFromTerminalServiceResponse($terminalArray);
 
         $isEqual = Terminal\Service::compareTerminalEntity($terminal->reload(), $newTerminaEntity);

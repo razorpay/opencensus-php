@@ -101,7 +101,12 @@ class Service extends Base\Service
 
             }
 
-            return $response;
+            $resData = [];
+            $resData["entity"] = "collection";
+            $resData["count"] = count($response);
+            $resData["items"] = $response;
+
+            return $resData;
         }
 
         return $data;

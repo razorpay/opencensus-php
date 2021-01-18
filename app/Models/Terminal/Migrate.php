@@ -457,6 +457,16 @@ trait Migrate
 
         $terminal->setMerchantId($t["merchant_id"]);
 
+        $terminal->setEnabled($t["enabled"]);
+        $terminal->setStatus($t["status"]);
+
+        $terminal->setCreatedAt($t["created_at"]);
+        $terminal->setUpdatedAt($t["updated_at"]);
+
+        if (empty($t["deleted_at"]) === false) {
+            $terminal->setDeletedAt($t["deleted_at"]);
+        }
+
         return $terminal;
     }
 
