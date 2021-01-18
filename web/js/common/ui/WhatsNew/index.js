@@ -13,10 +13,9 @@ import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnoun
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { openSlider, closeSlider } from 'merchant_common/reducers/slider';
+import { openSlider } from 'merchant_common/reducers/slider';
 import Slider from 'common/ui/Slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import Spinner from 'common/ui/Spinner';
 import './WhatsNew.styl';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
@@ -36,7 +35,6 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     closeModal,
     showAcceptPaymentsModal,
     openSlider,
-    closeSlider,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
@@ -295,9 +293,7 @@ export default class WhatsNew extends Component {
     ) {
       return;
     }
-    this.closeTooltip();
-    this.setState({ isOpenSlider1: false });
-    this.setLastReadTS();
+    this.hideSlider();
   };
 
   closeTooltip = () => {
@@ -326,7 +322,6 @@ export default class WhatsNew extends Component {
   };
 
   hideSlider = () => {
-    this.props.closeSlider();
     this.closeTooltip();
     this.setState({ isOpenSlider1: false });
     this.setLastReadTS();
@@ -404,40 +399,42 @@ export default class WhatsNew extends Component {
             </div>
           </div>
         </div>
-        <Slider closeButtonClass="announcement-title">
-          <ErrorBoundary resetOnProps>
-            <div class="content-wrapper content-sm txn-details whats-new">
-              <div class="panel panel-default SliderPanel">
-                <div class="panel-heading">
-                  <div class="heading-content">
-                    <div class="title">
-                      <b>Announcements</b>
+        {isOpenSlider1 ? (
+          <Slider closeButtonClass="announcement-title">
+            <ErrorBoundary resetOnProps>
+              <div class="content-wrapper content-sm txn-details whats-new">
+                <div class="panel panel-default SliderPanel">
+                  <div class="panel-heading">
+                    <div class="heading-content">
+                      <div class="title">
+                        <b>Announcements</b>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="SliderPanel__Body">
-                  <div class="panel-body">
-                    <div class="whats-new-content">
-                      {cardsList.length ? (
-                        cardsList
-                      ) : (
-                        <div class="Notifications-content-empty">
-                          <img src="/img/notifications/no-notification.png" width="72px" />
-                          <div class="title">No announcements right now</div>
-                        </div>
-                      )}
+                  <div class="SliderPanel__Body">
+                    <div class="panel-body">
+                      <div class="whats-new-content">
+                        {cardsList.length ? (
+                          cardsList
+                        ) : (
+                          <div class="Notifications-content-empty">
+                            <img src="/img/notifications/no-notification.png" width="72px" />
+                            <div class="title">No announcements right now</div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <HubspotCAForm
-              shouldShowModal={showHubSpotCAForm}
-              hideModal={this.toggleHubSpotCAForm}
-              fromWhere="announcement"
-            />
-          </ErrorBoundary>
-        </Slider>
+              <HubspotCAForm
+                shouldShowModal={showHubSpotCAForm}
+                hideModal={this.toggleHubSpotCAForm}
+                fromWhere="announcement"
+              />
+            </ErrorBoundary>
+          </Slider>
+        ) : null}
       </main>
     );
   }
