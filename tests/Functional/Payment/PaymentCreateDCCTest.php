@@ -22,7 +22,7 @@ class PaymentCreateDCCTest extends TestCase
 
         parent::setUp();
 
-        $this->payment = $this->getDefaultPaymentArray();
+        $this->payment = $this->getPaymentArrayInternational();
 
         $this->ba->privateAuth();
 
@@ -73,6 +73,55 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
         $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
         $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+    }
+
+    public function testPaymentCreateWithDCCInternationalDisabledMerchant()
+    {
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->fixtures->merchant->disableInternational();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow( $testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("failed", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $payment['id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertTrue($responseContent['dcc']);
+
+        $this->assertEquals($paymentMeta['gateway_currency'], $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['gateway_amount'], $responseContent['gateway_amount']);
     }
 
     public function testPaymentCreateWithDCCINR()
@@ -150,6 +199,16 @@ class PaymentCreateDCCTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Constants::DISABLE_NATIVE_CURRENCY]);
 
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentFlowsInternationalDisabledMerchant()
+    {
+        $this->fixtures->merchant->disableInternational();
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
         $responseContent = json_decode($response->getContent(), true);
 
@@ -281,4 +340,11 @@ class PaymentCreateDCCTest extends TestCase
         return $flowsData;
     }
 
+    private function getPaymentArrayInternational()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '4012010000000007';
+
+        return $paymentArray;
+    }
 }

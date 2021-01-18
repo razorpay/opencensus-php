@@ -867,6 +867,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);
     }
 
+    public function isDCCEnabledInternationalMerchant(): bool
+    {
+        return($this->isDCCEnabled() === true && $this->isInternational() === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *

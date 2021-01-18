@@ -4464,6 +4464,22 @@ class MerchantTest extends TestCase
         $this->assertTrue($response['features']['dcc'] === true);
     }
 
+    public function testGetCheckoutRouteWithCheckoutFeaturesInternationalDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['google_pay']);
+
+        $this->fixtures->merchant->disableInternational();
+
+        $response = $this->makePreferencesRouteRequest();
+
+        $this->assertNotNull($response['features']['google_pay']);
+
+        $this->assertArrayNotHasKey('dcc', $response['features']);
+    }
 
     public function testGetCheckoutPreferencesForCredSubtext()
     {

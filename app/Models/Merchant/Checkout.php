@@ -1042,7 +1042,7 @@ class Checkout
         {
             // checkout feature changed to dcc in case DISABLE_NATIVE_CURRENCY is false
             if($feature === Feature\Constants::DISABLE_NATIVE_CURRENCY){
-                if($merchant->isFeatureEnabled($feature) === false) {
+                if($merchant->isDCCEnabledInternationalMerchant() === true) {
                     $data['features']['dcc'] = true;
                 }
             }
