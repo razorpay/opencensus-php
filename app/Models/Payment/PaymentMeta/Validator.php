@@ -16,7 +16,9 @@ class Validator extends Base\Validator
         Entity::DCC_MARK_UP_PERCENT        => 'sometimes|integer',
         Entity::PAYMENT_ID                 => 'required|string',
         Entity::ACTION                     => 'sometimes|string',
-        Entity::REFERENCE_ID               => 'sometimes|string'
+        Entity::REFERENCE_ID               => 'sometimes|string',
+        Entity::MISMATCH_AMOUNT            => 'sometimes|integer',
+        Entity::MISMATCH_AMOUNT_REASON     => 'required_with:' . Entity::MISMATCH_AMOUNT . '|string|in:credit_surplus,credit_deficit',
     ];
 
     protected static $referenceIdRules = [

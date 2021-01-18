@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
         self::DCC_MARK_UP_PERCENT,
         self::ACTION,
         self::REFERENCE_ID,
+        self::MISMATCH_AMOUNT,
+        self::MISMATCH_AMOUNT_REASON,
     ];
 
     protected $public = [
@@ -41,6 +43,8 @@ class Entity extends Base\PublicEntity
         self::DCC_MARK_UP_PERCENT,
         self::ACTION,
         self::REFERENCE_ID,
+        self::MISMATCH_AMOUNT,
+        self::MISMATCH_AMOUNT_REASON,
     ];
 
     protected $visible = [
@@ -53,6 +57,8 @@ class Entity extends Base\PublicEntity
         self::DCC_MARK_UP_PERCENT,
         self::ACTION,
         self::REFERENCE_ID,
+        self::MISMATCH_AMOUNT,
+        self::MISMATCH_AMOUNT_REASON,
     ];
 
     protected $casts = [
@@ -119,6 +125,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE_ID);
     }
 
+    public function getMismatchAmount()
+    {
+        return $this->getAttribute(self::MISMATCH_AMOUNT);
+    }
+
+    public function getMismatchAmountReason()
+    {
+        return $this->getAttribute(self::MISMATCH_AMOUNT_REASON);
+    }
+
     // ----------------------- Setters ---------------------------------------
 
     public function setPaymentId($paymentId)
@@ -159,5 +175,15 @@ class Entity extends Base\PublicEntity
     public function setReferenceId($referenceId)
     {
         $this->setAttribute(self::REFERENCE_ID, $referenceId);
+    }
+
+    public function setMismatchAmount($amount)
+    {
+        $this->setAttribute(self::MISMATCH_AMOUNT, $amount);
+    }
+
+    public function setMismatchAmountReason($reason)
+    {
+        $this->setAttribute(self::MISMATCH_AMOUNT_REASON, $reason);
     }
 }

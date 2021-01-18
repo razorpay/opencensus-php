@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\PaymentMeta;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Payment\PaymentMeta;
 
 use Razorpay\Trace\Logger as Trace;
@@ -43,6 +44,44 @@ class Core extends Base\Core
                 $e,
                 Trace::CRITICAL,
                 TraceCode::PAYMENT_META_REFERENCE_CREATION_ERROR
+            );
+        }
+    }
+
+    public function addGatewayAmountInformation(Payment\Entity $payment, int $gatewayAmount)
+    {
+        try
+        {
+            $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+            if ($paymentMeta === null)
+            {
+                $paymentMeta = new PaymentMeta\Entity();
+
+                $paymentMeta->setPaymentId($payment->getId());
+            }
+
+            $baseAmount = $payment->getBaseAmount();
+
+            $paymentMeta->setGatewayAmount($gatewayAmount);
+
+            $paymentMeta->setMismatchAmount(abs($baseAmount - $gatewayAmount));
+
+            $mismatchReason = $gatewayAmount > $baseAmount ?
+                MismatchAmountReason::CREDIT_SURPLUS : MismatchAmountReason::CREDIT_DEFICIT;
+
+            $paymentMeta->setMismatchAmountReason($mismatchReason);
+
+            $this->repo->saveOrFail($paymentMeta);
+
+            return $paymentMeta->getId();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_META_AMOUNT_MISMATCH_ERROR
             );
         }
     }
