@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -338,6 +339,8 @@ class Core extends Base\Core
             $document->setValidationId($bvsValidation->getValidationId());
 
             $merchantDetails->setPoaVerificationStatus(null);
+
+            (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
             $merchantDetails->stakeholder->setPoaStatus(null);
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);

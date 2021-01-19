@@ -2,6 +2,7 @@
 
 namespace Functional\Merchant;
 
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -38,7 +39,15 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEmpty($stakeholders);
     }
 
     public function testEditAccountV2ProfileAddress()

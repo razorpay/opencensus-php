@@ -862,6 +862,8 @@ class Core extends Base\Core
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             $merchantDetails->setPoiVerificationStatus(null);
+
+            (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
             $merchantDetails->stakeholder->setPoiStatus(null);
 
             return;
@@ -905,6 +907,8 @@ class Core extends Base\Core
         }
 
         $merchantDetails->setPoiVerificationStatus($verificationStatus);
+
+        (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
         $merchantDetails->stakeholder->setPoiStatus($verificationStatus);
 
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
@@ -1013,9 +1017,6 @@ class Core extends Base\Core
             // if merchant details are created, load relation in $merchant
             $merchant->load('merchantDetail');
         }
-
-        // to create if not exists or fetch and set in $details->stakeholder relation
-        (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
 
         return $merchantDetails;
     }

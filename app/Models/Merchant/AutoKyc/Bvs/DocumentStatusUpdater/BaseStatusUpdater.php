@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -247,14 +248,17 @@ abstract class BaseStatusUpdater implements StatusUpdater
         switch ($this->documentTypeStatusKey)
         {
             case DetailEntity::PERSONAL_PAN_DOC_VERIFICATION_STATUS:
+                (new Stakeholder\Core)->createOrFetchStakeholder($this->merchantDetails);
                 $this->merchantDetails->stakeholder->setPanDocStatus($status);
                 break;
 
             case DetailEntity::POI_VERIFICATION_STATUS:
+                (new Stakeholder\Core)->createOrFetchStakeholder($this->merchantDetails);
                 $this->merchantDetails->stakeholder->setPoiStatus($status);
                 break;
 
             case DetailEntity::POA_VERIFICATION_STATUS:
+                (new Stakeholder\Core)->createOrFetchStakeholder($this->merchantDetails);
                 $this->merchantDetails->stakeholder->setPoaStatus($status);
                 break;
         }

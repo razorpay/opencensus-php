@@ -114,4 +114,14 @@ class IndianStates
 
         return false;
     }
+
+    public static function checkIfValidStateCodeOrName(string $value)
+    {
+        if ((self::getStateCode($value) === null) and (self::stateValueExist($value) === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

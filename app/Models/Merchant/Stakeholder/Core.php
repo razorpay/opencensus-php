@@ -16,8 +16,6 @@ class Core extends Base\Core
 
     public function syncMerchantDetailFieldsToStakeholder(Detail\Entity $merchantDetails, array $input)
     {
-        $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
-
         $fields = Constants::MERCHANT_DETAILS_COMMON_EDITABLE_FIELDS;
 
         $stakeholderInput = [];
@@ -34,6 +32,8 @@ class Core extends Base\Core
         {
             return;
         }
+
+        $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
 
         $this->trace->info(TraceCode::MERCHANT_SAVE_STAKEHOLDER_DETAILS, $stakeholderInput);
 

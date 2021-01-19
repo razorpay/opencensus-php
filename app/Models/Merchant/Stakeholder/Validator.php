@@ -3,6 +3,11 @@
 namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Base;
+use RZP\Constants\Country;
+use RZP\Constants\IndianStates;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -34,7 +39,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createStakeholderRules = [
-        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer',
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer|min:1|max:100',
         Entity::NAME                  => 'required|max:255',
         Entity::EMAIL                 => 'required|email|max:255',
         Constants::RELATIONSHIP       => 'sometimes|array',
@@ -45,7 +50,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editStakeholderRules = [
-        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer',
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer|min:1|max:100',
         Entity::NAME                  => 'sometimes|max:255',
         Entity::EMAIL                 => 'sometimes|email|max:255',
         Constants::RELATIONSHIP       => 'sometimes|array',
@@ -75,18 +80,18 @@ class Validator extends Base\Validator
 
     protected static $createResidentialAddressRules = [
         Constants::STREET      => 'required|string|between:10,255',
-        Constants::CITY        => 'required|string|between:2,32',
-        Constants::STATE       => 'required|string|between:2,32',
+        Constants::CITY        => 'required|alpha_space|between:2,32',
+        Constants::STATE       => 'required|alpha_space|between:2,32|custom',
         Constants::POSTAL_CODE => 'required|string|between:2,10',
-        Constants::COUNTRY     => 'required|string|between:2,64',
+        Constants::COUNTRY     => 'required|alpha_space|between:2,64|custom',
     ];
 
     protected static $editResidentialAddressRules = [
         Constants::STREET      => 'sometimes|string|between:10,255',
-        Constants::CITY        => 'sometimes|string|between:2,32',
-        Constants::STATE       => 'sometimes|string|between:2,32',
+        Constants::CITY        => 'sometimes|alpha_space|between:2,32',
+        Constants::STATE       => 'sometimes|alpha_space|between:2,32|custom',
         Constants::POSTAL_CODE => 'sometimes|string|between:2,10',
-        Constants::COUNTRY     => 'sometimes|string|between:2,64',
+        Constants::COUNTRY     => 'sometimes|alpha_space|between:2,64|custom',
     ];
 
     protected static $createStakeholderValidators = [
@@ -156,5 +161,26 @@ class Validator extends Base\Validator
         }
 
         $this->validateInput('kyc_input', $input[Constants::KYC]);
+    }
+
+    public function validateState($attribute, $value)
+    {
+        $isValid = IndianStates::checkIfValidStateCodeOrName($value);
+
+        if ($isValid === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid state: '. $value);
+        }
+    }
+
+    protected function validateCountry($attribute, $value)
+    {
+        $isValid = Country::checkIfValidCountry($value);
+
+        if ($isValid === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUNTRY, null, [$value]);
+        }
     }
 }
