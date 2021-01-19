@@ -170,6 +170,12 @@ class GatewayController extends Controller
 
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
+        if ((isset($input['upi_mandate']) === true) and
+            (isset($input['upi_mandate']['status']) === true))
+        {
+            return $this->processMandateServerCallback($input, $gatewayDriver);
+        }
+
         if (Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true)
         {
             $redirect = $gateway->redirectCallbackIfRequired($input);
@@ -408,7 +414,7 @@ class GatewayController extends Controller
                     $input = json_encode($input);
                 }
 
-                $data = $this->processServerCallback($input, $gateway);
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
 
                 break;
             case Gateway::UPI_AIRTEL:

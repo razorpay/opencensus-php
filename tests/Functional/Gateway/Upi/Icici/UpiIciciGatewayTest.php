@@ -683,8 +683,6 @@ EOT;
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $data = $this->testData[__FUNCTION__];
-
         $server = $this->mockServerContentFunction(function (& $content)
         {
             $content['TxnStatus'] = 'REJECT';
@@ -692,10 +690,10 @@ EOT;
 
         $content = $server->getAsyncCallbackContent($upiEntity, $payment);
 
-        $this->runRequestResponseFlow($data, function () use ($content)
-        {
-            $this->makeS2SCallbackAndGetContent($content);
-        });
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+        $this->assertEquals($response, ['success' => false]);
+
 
         $data = $this->testData['testStatusRejectPayment'];
 
@@ -1444,14 +1442,9 @@ EOT;
 
         config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
 
-        // Now the callback will throw assertion error as the callback payment id is not same as actual payment id
-        $this->makeRequestAndCatchException(
-            function() use ($content)
-            {
-                $this->makeS2sCallbackAndGetContent($content);
-            },
-            AssertionException::class,
-            'Assert error occurred');
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertEquals($response, ['success' => false]);
     }
 
     function testNpciErrorCodeForCallback()
@@ -1476,17 +1469,8 @@ EOT;
         $content = $server->getAsyncCallbackContent($upiEntity, $payment->toArray());
 
         // Now the callback will throw assertion error as the callback payment id is not same as actual payment id
-        $this->makeRequestAndCatchException(
-            function() use ($content)
-            {
-                $this->makeS2sCallbackAndGetContent($content);
-            },
-            GatewayErrorException::class,
-            'Payment failed because Transaction amount limit has exceeded'.PHP_EOL.
-            'Gateway Error Code: U03'.PHP_EOL.
-            'Gateway Error Desc: Net debit CAP is exceeded'
-        );
-
+        $response = $this->makeS2sCallbackAndGetContent($content);
+        $this->assertEquals($response, ['success' => false]);
         // Fetch the last payment
         $payment = $this->getDbLastPayment();
 

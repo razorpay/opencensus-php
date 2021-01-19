@@ -1147,6 +1147,19 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+
+    public function postProcessServerCallback($input, $exception = null)
+    {
+        if ($exception === null)
+        {
+            return ['success' => true];
+        }
+
+        return [
+            'success' => false,
+        ];
+    }
+
     public function getParsedDataFromUnexpectedCallback(array $input)
     {
         $payment = [
