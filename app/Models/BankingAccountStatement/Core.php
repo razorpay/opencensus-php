@@ -394,6 +394,15 @@ class Core extends Base\Core
 
             $basEntity = (new Entity)->build($bankTransaction);
 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_BUILT,
+                [
+                    'bank_txn_id'           => $bankTransaction[Entity::BANK_TRANSACTION_ID],
+                    'bank_txn_posted_date'  => $bankTransaction[Entity::POSTED_DATE],
+                    'bank_txn_channel'      => $bankTransaction[Entity::CHANNEL],
+                    'bas_id'                => $basEntity->getId(),
+                    'account_no'            => $basEntity->getAccountNumber()
+                ]);
+
             //
             // This should be done after build since `setUtr` fetches things from the entity.
             // Can be refactored if required, as long as properly tested.
@@ -407,7 +416,12 @@ class Core extends Base\Core
 
             list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION, $sourceEntity->toArray());
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION,
+                [
+                    'source_entity'     => $sourceEntity->toArray(),
+                    'bas_id'            => $basEntity->getId(),
+                    'account_no'        => $basEntity->getAccountNumber()
+                ]);
 
             $basEntity->source()->associate($sourceEntity);
 
@@ -508,6 +522,7 @@ class Core extends Base\Core
                        'source_id'   => $sourceEntity->getId(),
                        'source_type' => $sourceEntity->getEntityName(),
                        'bas_id'      => $basEntity->getId(),
+                       'account_no'  => $basEntity->getAccountNumber(),
                        'remarks'     => $remarks
                    ]);
 
@@ -560,6 +575,13 @@ class Core extends Base\Core
 
         $reversal = $this->fetchExistingReversalIfPresent($basEntity, $createExternalSource, $remarks);
 
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_EXISTING_REVERSAL,
+                        [
+                            'bas_id'        => $basEntity->getId(),
+                            'account_no'    => $basEntity->getAccountNumber(),
+                            'reversal'      => $reversal,
+                        ]);
+
         if ($createExternalSource === true)
         {
             return [null, true];
@@ -601,7 +623,9 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATE_REQUEST,
                             [
-                                'payout_id' => $existingPayout->getId()
+                                'payout_id'     => $existingPayout->getId(),
+                                'bas_id'        => $basEntity->getId(),
+                                'account_no'    => $basEntity->getAccountNumber(),
                             ]);
 
             (new Payout\Core)->reversePayout($existingPayout,
@@ -613,6 +637,8 @@ class Core extends Base\Core
                 [
                     'payout_id'     => $existingPayout->getId(),
                     'reversal_id'   => $reversal->getId(),
+                    'bas_id'        => $basEntity->getId(),
+                    'account_no'    => $basEntity->getAccountNumber(),
                 ]);
 
             $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
@@ -621,6 +647,8 @@ class Core extends Base\Core
                                [
                                    'reversal_id'       => $reversal->getId(),
                                    'transaction_id'    => $reversal->transaction->getId(),
+                                   'bas_id'            => $basEntity->getId(),
+                                   'account_no'        => $basEntity->getAccountNumber(),
                                ]);
         }
 
@@ -634,6 +662,8 @@ class Core extends Base\Core
                 [
                     'reversal_id'       => $reversal->getId(),
                     'transaction_id'    => $reversal->transaction->getId(),
+                    'bas_id'            => $basEntity->getId(),
+                    'account_no'        => $basEntity->getAccountNumber(),
                 ]);
         }
 
@@ -674,6 +704,16 @@ class Core extends Base\Core
 
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
 
+        $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION,
+            [
+                'bas_id'            => $basEntity->getId(),
+                'account_no'        => $basEntity->getAccountNumber(),
+                'payout'            => $payout,
+                'transaction_id'    => $transactionId
+            ]);
+
         $this->repo->saveOrFail($payout);
 
         return $payout;
@@ -687,7 +727,11 @@ class Core extends Base\Core
         {
             $external->setRemarks($remarks);
 
-            $this->trace->info(TraceCode::EXTERNAL_SAVE_WITH_REMARKS_NOT_NULL, $external->toArray());
+            $this->trace->info(TraceCode::EXTERNAL_SAVE_WITH_REMARKS_NOT_NULL,
+                            [
+                                'external'      => $external->toArray(),
+                                'bas_id'        => $basEntity->getId()
+                            ]);
 
             $this->repo->saveOrFail($external);
         }
@@ -735,7 +779,8 @@ class Core extends Base\Core
                            [
                                'utr'          => $utr,
                                'reversal_ids' => $reversals->getQueueableIds(),
-                               'bas_id'       => $basEntity->getId()
+                               'bas_id'       => $basEntity->getId(),
+                               'account_no'   => $basEntity->getAccountNumber(),
                            ]);
 
         foreach ($reversals as $key => $reversal)
@@ -839,7 +884,9 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_RETURN_UTR,
                                    [
                                        'return_utr' => $utr,
-                                       'payout_ids' => $payouts->getQueueableIds()
+                                       'payout_ids' => $payouts->getQueueableIds(),
+                                       'bas_id'     => $basEntity->getId(),
+                                       'account_no' => $basEntity->getAccountNumber(),
                                    ]);
 
                 if ($payouts->count() === 1)
@@ -884,7 +931,9 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_CREDIT_MAPPING,
                                [
                                    'utr'        => $utr,
-                                   'payout_ids' => $payouts->getQueueableIds()
+                                   'payout_ids' => $payouts->getQueueableIds(),
+                                   'bas_id'     => $basEntity->getId(),
+                                   'account_no' => $basEntity->getAccountNumber(),
                                ]);
 
             if ($basEntity->getType() === Type::CREDIT)
@@ -948,7 +997,9 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
                            [
                                'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds()
+                               'payout_ids' => $payouts->getQueueableIds(),
+                               'bas_id'     => $basEntity->getId(),
+                               'account_no' => $basEntity->getAccountNumber(),
                            ]);
 
         if ($payouts->count() === 1)
@@ -994,7 +1045,9 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING,
                            [
                                'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds()
+                               'payout_ids' => $payouts->getQueueableIds(),
+                               'bas_id'     => $basEntity->getId(),
+                               'account_no' => $basEntity->getAccountNumber(),
                            ]);
 
         if ($payouts->count() > 1)
@@ -1071,7 +1124,9 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_DEBIT_MAPPING,
                                [
                                    'utr'        => $utr,
-                                   'payout_ids' => $payouts->getQueueableIds()
+                                   'payout_ids' => $payouts->getQueueableIds(),
+                                   'bas_id'     => $basEntity->getId(),
+                                   'account_no' => $basEntity->getAccountNumber(),
                                ]);
 
             foreach ($payouts as $key => $payout)
@@ -1163,7 +1218,9 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
                                [
                                    'cms_ref_no' => $bankTxnId,
-                                   'payout_ids' => $payouts->getQueueableIds()
+                                   'payout_ids' => $payouts->getQueueableIds(),
+                                   'bas_id'     => $basEntity->getId(),
+                                   'account_no' => $basEntity->getAccountNumber(),
                                ]);
         }
 
@@ -1210,7 +1267,9 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING,
                            [
                                'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds()
+                               'payout_ids' => $payouts->getQueueableIds(),
+                               'bas_id'     => $basEntity->getId(),
+                               'account_no' => $basEntity->getAccountNumber(),
                            ]);
 
         if ($payouts->count() > 1)
