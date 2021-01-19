@@ -27,6 +27,8 @@ class CreateMerchantDocumentTable extends Migration
 
             $table->char(Document::MERCHANT_ID, Document::ID_LENGTH);
 
+            $table->char(Document::ENTITY_ID, Document::ID_LENGTH)->nullable();
+
             $table->string(Document::DOCUMENT_TYPE, 255);
 
             $table->string(Document::ENTITY_TYPE, 255);
@@ -50,6 +52,9 @@ class CreateMerchantDocumentTable extends Migration
             $table->index(Document::MERCHANT_ID);
 
             $table->index(Document::FILE_STORE_ID);
+
+            $table->index(Document::ENTITY_ID);
+
         });
     }
 

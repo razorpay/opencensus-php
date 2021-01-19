@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const SIGNED_URL    = 'signed_url';
     const OCR_VERIFY    = 'ocr_verify';
     const VALIDATION_ID = 'validation_id';
+    const ENTITY_ID     = 'entity_id';
 
     protected static $sign = 'doc';
 
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
         self::FILE_STORE_ID,
         self::MERCHANT_ID,
         self::DOCUMENT_TYPE,
+        self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::SOURCE,
     ];
@@ -37,6 +39,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::FILE_STORE_ID,
         self::MERCHANT_ID,
+        self::ENTITY_ID,
         self::DOCUMENT_TYPE,
         self::OCR_VERIFY,
         self::SOURCE,
@@ -111,6 +114,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function entity()
+    {
+        return $this->morphTo(self::ENTITY);
     }
 
     public function fileStore()
