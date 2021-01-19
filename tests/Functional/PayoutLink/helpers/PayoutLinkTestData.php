@@ -1097,7 +1097,7 @@ return [
             ],
         ]
     ],
-    
+
     'testGetFundAccountWithInvalidTokenRaisesException' => [
         'request'  => [
             'method'  => 'POST',
@@ -1961,6 +1961,120 @@ return [
                         ]
                     ],
                 ],
+            ],
+        ]
+    ],
+
+    'testBccEmailForSendLinkInternal' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payoutlinkresponse' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'link'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
+            ],
+        ]
+    ],
+
+    'testNoBccEmailForSendLinkInternal' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '100000Razorpay',
+                'payoutlinkresponse' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'link'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
+            ],
+        ]
+    ],
+
+    'testBccEmailForSuccessInternal' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payoutlinkresponse' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                ],
+                'settings' => [
+                    'support_contact' => '1234567890',
+                    'support_email' => 'support@rzp.com',
+                    'support_url' => 'some-test-url'
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'success'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
+            ],
+        ]
+    ],
+
+    'testNoBccEmailForSuccessInternal' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/send-email',
+            'content' => [
+                'merchant_id' => '100000Razorpay',
+                'payoutlinkresponse' => [
+                    'purpose' => 'refund',
+                    'short_url' => 'https://552a05fe.ngrok.io/i/aYlKRm5',
+                    'amount' => '1000',
+                    'description' => 'testing',
+                    'contact_name' => 'test',
+                    'contact_email' => 'mail.testing@razorpay.com',
+                    'contact_phone_number' => '9876543210',
+                ],
+                'settings' => [
+                    'support_contact' => '1234567890',
+                    'support_email' => 'support@rzp.com',
+                    'support_url' => 'some-test-url'
+                ],
+                'to_email' => 'test@razorpay.com',
+                'email_type' => 'success'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 'OK'
             ],
         ]
     ],

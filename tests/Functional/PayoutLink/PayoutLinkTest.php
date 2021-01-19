@@ -23,6 +23,8 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutLink\TokenService;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Mail\PayoutLink\SuccessInternal;
+use RZP\Mail\PayoutLink\SendLinkInternal;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
@@ -2188,5 +2190,69 @@ class PayoutLinkTest extends TestCase
         $response = $method->invokeArgs($core, [$payoutLink]);
 
         $this->assertNull($response['payout_mode']);
+    }
+
+    public function testBccEmailForSendLinkInternal()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SendLinkInternal::class, function ($mail)
+        {
+            $this->assertEquals('test@rzp.com', $mail->bcc[0]['address']);
+
+            return true;
+        });
+    }
+
+    public function testNoBccEmailForSendLinkInternal()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SendLinkInternal::class, function ($mail)
+        {
+            $this->assertEmpty($mail->bcc);
+
+            return true;
+        });
+    }
+
+    public function testBccEmailForSuccessInternal()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SuccessInternal::class, function ($mail)
+        {
+            $this->assertEquals('test@rzp.com', $mail->bcc[0]['address']);
+
+            return true;
+        });
+    }
+
+    public function testNoBccEmailForSuccessInternal()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(SuccessInternal::class, function ($mail)
+        {
+            $this->assertEmpty($mail->bcc);
+
+            return true;
+        });
     }
 }

@@ -32,6 +32,16 @@ class SuccessInternal extends Mailable
 
     protected $merchant = null;
 
+    // hardcoding this here for now. will send from MicroService in phase 2.
+    protected $merchantVsBccEmails = [
+        // ixigo merchant
+        '8RerE9oY0d7rbC' => 'communication@travenues.com',
+        // test merchant
+        '10000000000000' => 'test@rzp.com',
+        // prod test merchant
+        'DESdesq9lfHWil' => 'aravinthan.subramaniam@razorpay.com'
+    ];
+
     public function __construct(array $payoutLinkInfo, array $settings, string $merchantId, string $toEmail)
     {
         parent::__construct();
@@ -48,6 +58,20 @@ class SuccessInternal extends Mailable
     protected function addRecipients()
     {
         $this->to($this->toEmail);
+
+        return $this;
+    }
+
+    protected function addBcc()
+    {
+        $merchant = $this->getMerchant();
+
+        $merchantId = $merchant->getId();
+
+        if (array_key_exists($merchantId, $this->merchantVsBccEmails) === true)
+        {
+            $this->bcc($this->merchantVsBccEmails[$merchantId]);
+        }
 
         return $this;
     }
