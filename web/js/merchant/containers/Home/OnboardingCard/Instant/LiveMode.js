@@ -46,14 +46,20 @@ export default class LiveMode extends Component {
         onActive,
         track,
         internationalActivationFlow,
+        locked,
       } = nextProps,
       { isLoading, keysGenerated, paymentsMade, isKLA } = integration,
-      { isL1Submitted, isGraylistFlow, isBlacklistFlow } = instantActivation;
+      {
+        isL1Submitted,
+        isGraylistFlow,
+        isBlacklistFlow,
+        isUnregisteredBusiness,
+      } = instantActivation;
 
     let { title, status, content } = initialState;
 
     if (!isActivated) {
-      if (!isL1Submitted) {
+      if (!isL1Submitted && !locked) {
         content = (
           <span>
             <Link
@@ -76,6 +82,8 @@ export default class LiveMode extends Component {
             in order to unlock Live Payments
           </span>
         );
+      } else if (!!locked && !isActivated && isUnregisteredBusiness) {
+        content = <span>Complete activation in order to unlock live payments</span>;
       } else if (isGraylistFlow) {
         if (!isSubmitted) {
           if (internationalActivationFlow.isGraylistFlow) {

@@ -56,6 +56,7 @@ import {
   showKYCDetailsModal,
   showPANStatusModal,
   showKYCStatusModal,
+  showFraudDetectionModal,
 } from 'merchant/reducers/home';
 import {
   submitL1Form,
@@ -133,6 +134,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     showInstantActivationSuccessModal,
     showKYCDetailsModal,
     showPANStatusModal,
+    showFraudDetectionModal,
     submitL1Form,
     submitL1FormSuccess,
     showKYCStatusModal,
@@ -939,6 +941,7 @@ export default class ActivationWizard extends React.Component {
       promoter_pan_name,
       promoter_pan,
       business_type,
+      locked,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -955,6 +958,7 @@ export default class ActivationWizard extends React.Component {
       promoter_pan_name,
       business_type,
       submitted: +submitted,
+      locked,
     }));
 
     this.props.updateSession({
@@ -1004,6 +1008,7 @@ export default class ActivationWizard extends React.Component {
 
       const {
         showPANStatusModal,
+        showFraudDetectionModal,
         showKYCDetailsModal,
         showInstantActivationSuccessModal,
         tracking,
@@ -1013,6 +1018,7 @@ export default class ActivationWizard extends React.Component {
         user,
         showKYCDetailsModal,
         showPANStatusModal,
+        showFraudDetectionModal,
         showInstantActivationSuccessModal,
         tracking,
       };
@@ -1783,7 +1789,11 @@ export default class ActivationWizard extends React.Component {
 
             let secondaryMsg = 'For any clarifications, you can';
             const ticketLink = <Link to="#ticket">write to support</Link>;
-
+            const supportLink = (
+              <a href="https://razorpay.com/support/#request" target="_blank">
+                contact support
+              </a>
+            );
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
                 // **1. Alert: Account Activated
@@ -1820,6 +1830,22 @@ export default class ActivationWizard extends React.Component {
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
+              } else if (
+                !!this.props.user.locked &&
+                !this.props.user.instantActivation.isL1Submitted &&
+                !this.props.user.isActivated &&
+                this.props.user.instantActivation.isUnregisteredBusiness &&
+                FORM_TABS[activeTab] === 'Business Details'
+              ) {
+                icon = 'i-warning';
+                Component = Alert.Warning;
+                msg = (
+                  <React.Fragment>
+                    `We need some more information regarding your submitted details please{' '}
+                    {supportLink} to assist you further in activating your account.`
+                  </React.Fragment>
+                );
+                secondaryMsg = '';
               } else if (isFormSubmitted) {
                 // **5. Alert: Form is Submitted
 
@@ -2183,9 +2209,17 @@ function isFieldValid(field, activation) {
 
 function handleInstantActivationSuccess(props) {
   if (props.user.business_type == 11) {
-    const { poi_verification_status } = props.user;
-    if (poi_verification_status == 'verified') {
+    const { poi_verification_status, locked, instantActivation, isActivated } = props.user;
+    if (poi_verification_status == 'verified' && !locked) {
       props.showPANStatusModal();
+      fireL1FormSuccessEvents(props.user);
+    } else if (
+      !!locked &&
+      !instantActivation.isL1Submitted &&
+      !isActivated &&
+      instantActivation.isUnregisteredBusiness
+    ) {
+      props.showFraudDetectionModal();
       fireL1FormSuccessEvents(props.user);
     }
   } else {

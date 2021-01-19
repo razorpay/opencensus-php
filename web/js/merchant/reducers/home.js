@@ -25,6 +25,8 @@ const SHOW_PAN_STATUS_MODAL = 'SHOW_PAN_STATUS_MODAL';
 const HIDE_PAN_STATUS_MODAL = 'HIDE_PAN_STATUS_MODAL';
 const SHOW_KYC_STATUS_MODAL = 'SHOW_KYC_STATUS_MODAL';
 const HIDE_KYC_STATUS_MODAL = 'HIDE_KYC_STATUS_MODAL';
+const SHOW_FRAUD_DETECTION_MODAL = 'SHOW_FRAUD_DETECTION_MODAL';
+const HIDE_FRAUD_DETECTION_MODAL = 'HIDE_FRAUD_DETECTION_MODAL';
 
 let initialState = {
   analytics: {
@@ -65,6 +67,7 @@ let initialState = {
     showProductsModal: false,
     showPANStatus: false,
     showKYCStatus: false,
+    showInstantActivationFraudModal: false,
   },
   kycStatusModalType: '',
   kycStatusActivationDuration: '1-2 working days',
@@ -211,6 +214,14 @@ export const fetchBalanceConfig = () => {
     payload: merchantFetch(`balance_configs`),
   };
 };
+
+export const showFraudDetectionModal = () => ({
+  type: SHOW_FRAUD_DETECTION_MODAL,
+});
+
+export const hideFraudDetectionModal = () => ({
+  type: HIDE_FRAUD_DETECTION_MODAL,
+});
 
 export default function (state = initialState, action) {
   switch (action.type) {
@@ -391,6 +402,14 @@ export default function (state = initialState, action) {
     case HIDE_PAN_STATUS_MODAL:
       return set(state, 'instantActivations', {
         showPANStatus: false,
+      });
+    case SHOW_FRAUD_DETECTION_MODAL:
+      return set(state, 'instantActivations', {
+        showInstantActivationFraudModal: true,
+      });
+    case HIDE_FRAUD_DETECTION_MODAL:
+      return set(state, 'instantActivations', {
+        showInstantActivationFraudModal: false,
       });
 
     default:

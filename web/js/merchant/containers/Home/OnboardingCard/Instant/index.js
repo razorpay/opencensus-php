@@ -132,6 +132,7 @@ export default class OnboardingCardInstant extends Component {
         internationalActivationFlow,
         activation_status: activationStatus,
         campaigns,
+        locked,
       } = user,
       { showTransactionsHelper, isKLA, isWebsiteInWorkflow, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -143,6 +144,7 @@ export default class OnboardingCardInstant extends Component {
         setActiveStep: this.setActiveStep,
         merchantId: user.current,
         internationalActivationFlow,
+        locked,
       },
       activationCardProps = {
         mode,
@@ -163,6 +165,7 @@ export default class OnboardingCardInstant extends Component {
         activationStatus,
         isAccepted,
         isWebsiteInWorkflow,
+        locked,
       };
     const showCaFlow = isActivated && hasNeoCouponCode(campaigns);
     return (

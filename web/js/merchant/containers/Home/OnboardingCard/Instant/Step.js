@@ -9,9 +9,10 @@ const loading = 'loading',
   locked = 'locked',
   done = 'done',
   active = 'active',
-  blocked = 'blocked';
+  blocked = 'blocked',
+  warning = 'warning';
 
-const possibleStatuses = { loading, progress, locked, done, active, blocked };
+const possibleStatuses = { loading, progress, locked, done, active, blocked, warning };
 
 class StepTitle extends Component {
   constructor(props) {
@@ -42,7 +43,7 @@ class Step extends Component {
     let stepTitle = null,
       stepContent = null;
 
-    React.Children.forEach(this.props.children, child => {
+    React.Children.forEach(this.props.children, (child) => {
       if (!stepTitle && isChildSameType(child, StepTitle)) {
         stepTitle = child;
       }
@@ -64,15 +65,18 @@ class Step extends Component {
           {isLoading ? (
             <PlaceholderLoader />
           ) : (
-            <img src={`/dist/css/assets/onboarding/${status}.png`} />
+            <img
+              src={`/dist/css/assets/onboarding/${
+                status === 'warning' ? 'warning.svg' : `${status}.png`
+              }`}
+            />
           )}
         </div>
         <div className="step-content">
           <div className="step-content-title">
             {stepTitle && (
               <stepTitle.type>
-                {(isLoading && <PlaceholderLoader />) ||
-                  stepTitle.props.children}
+                {(isLoading && <PlaceholderLoader />) || stepTitle.props.children}
               </stepTitle.type>
             )}
           </div>
@@ -101,8 +105,7 @@ Step.defaultProps = {
 };
 
 Step.propTypes = {
-  children: ({ children }) =>
-    checkChildrenType(children, [StepTitle, StepContent]),
+  children: ({ children }) => checkChildrenType(children, [StepTitle, StepContent]),
   status: PropTypes.oneOf(Object.keys(possibleStatuses)),
 };
 

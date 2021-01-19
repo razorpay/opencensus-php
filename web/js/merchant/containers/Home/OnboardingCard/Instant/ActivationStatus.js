@@ -53,6 +53,7 @@ export default class ActivationCard extends Component {
         business_type,
         poi_verification_status,
         isUnregisteredBusiness,
+        locked,
       } = nextProps,
       { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 
@@ -109,6 +110,19 @@ export default class ActivationCard extends Component {
                   Review Details
                 </Link>
               </div>
+            </div>
+          );
+        } else if (!!locked && !isActivated) {
+          status = possibleStatuses.warning;
+          content = (
+            <div>
+              Please{' '}
+              <span>
+                <a href="https://razorpay.com/support/#request" rel="noopener" target="_blank">
+                  contact support
+                </a>
+              </span>{' '}
+              to get your account activated
             </div>
           );
         }

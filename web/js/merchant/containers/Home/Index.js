@@ -30,6 +30,7 @@ import InstantActivationSuccess from 'merchant/components/Home/InstantActivation
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
+import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import { fetchLateAuthConfig } from 'merchant/reducers/config';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
@@ -91,6 +92,8 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCDetails: state.home.instantActivations.showKYCDetails,
       showPANStatus: state.home.instantActivations.showPANStatus,
       showKYCStatus: state.home.instantActivations.showKYCStatus,
+      showInstantActivationFraudModal:
+        state.home.instantActivations.showInstantActivationFraudModal,
       kycStatusModalType: state.home.kycStatusModalType,
       kycStatusActivationDuration: state.home.kycStatusActivationDuration,
       settlement_amount: state.home.settlement_amount,
@@ -711,6 +714,7 @@ export default class HomeContainer extends Component {
       onFilterChange,
       showInstantActivationSuccess,
       showKYCDetails,
+      showInstantActivationFraudModal,
       hideKYCDetailsModal,
       tracking,
       showPANStatus,
@@ -1008,6 +1012,9 @@ export default class HomeContainer extends Component {
               hideKYCDetailsModal();
             }}
           />
+        )}
+        {showInstantActivationFraudModal && (
+          <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
         )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
