@@ -31,6 +31,7 @@ import QuickGuide, {
   getSubscriptionQuickGuideIsClosed,
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
+import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
 
 @connect(
   (state) => ({
@@ -140,6 +141,8 @@ export default class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
+        {this.props.user.isSubscriptionOffersEnabled && <SubscriptionOffersLaunchBanner />}
+
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 
