@@ -21,7 +21,7 @@ class DowntimeNotification  extends Mailable
 
     protected function addSender()
     {
-        return $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+        $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
             Constants::HEADERS[Constants::X_SUPPORT]);
 
         return $this;
