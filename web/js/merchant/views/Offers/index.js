@@ -37,7 +37,9 @@ import {
 @RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
   componentDidMount() {
-    // this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
+    if (window.rzpQ.merchantActions) {
+      this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
+    }
   }
 
   componentWillReceiveProps(nextProps) {

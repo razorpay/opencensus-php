@@ -122,17 +122,17 @@ export default class WhatsNew extends Component {
     trackLoad(totalUnread);
     this.setState({ totalUnread, ID, unreadID, readID });
 
-    // if (totalUnread) {
-    //   const tracking = this.props.tracking;
-    //   tracking.trackEvent(
-    //     window.rzpQ.merchantActions().success('display.notification.bubble', {
-    //       ID,
-    //       readID,
-    //       unreadID,
-    //       ...(this.whatsNew && { whats_new: true }),
-    //     }),
-    //   );
-    // }
+    if (totalUnread && window.rzpQ.merchantActions) {
+      const tracking = this.props.tracking;
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('display.notification.bubble', {
+          ID,
+          readID,
+          unreadID,
+          ...(this.whatsNew && { whats_new: true }),
+        }),
+      );
+    }
   }
 
   toggleHubSpotCAForm = () => {

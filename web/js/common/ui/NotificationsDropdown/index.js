@@ -103,17 +103,17 @@ export default class NotificationsDropdown extends Component {
     trackLoad(totalUnread);
     this.setState({ totalUnread });
 
-    // if (totalUnread) {
-    //   const tracking = this.props.tracking;
-    //   tracking.trackEvent(
-    //     window.rzpQ.merchantActions().success('display.notification.bubble', {
-    //       ID,
-    //       readID,
-    //       unreadID,
-    //       ...(this.props.user.isAnnouncementIconEnabled && { experimentVersion: 2 }),
-    //     }),
-    //   );
-    // }
+    if (totalUnread && window.rzpQ.merchantActions) {
+      const tracking = this.props.tracking;
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('display.notification.bubble', {
+          ID,
+          readID,
+          unreadID,
+          ...(this.props.user.isAnnouncementIconEnabled && { experimentVersion: 2 }),
+        }),
+      );
+    }
   }
 
   trackEvents = (value, url, type, id) => {
