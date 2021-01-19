@@ -46,6 +46,7 @@ final class Metric
     const PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS                    = 'payout_scheduled_to_failed_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_REJECTED_DURATION_SECONDS                  = 'payout_scheduled_to_rejected_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_BATCH_SUBMITTED_DURATION_SECONDS           = 'payout_scheduled_to_batch_submitted_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_SCHEDULED_DURATION_SECONDS                   = 'payout_pending_to_scheduled_duration_seconds.histogram';
     const PAYOUT_PENDING_TO_BATCH_SUBMITTED_DURATION_SECONDS             = 'payout_pending_to_batch_submitted_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_CREATED_DURATION_SECONDS    = 'payout_create_request_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_FAILED_DURATION_SECONDS     = 'payout_create_request_submitted_to_failed_duration_seconds.histogram';
@@ -359,6 +360,17 @@ final class Metric
 
         app('trace')->histogram(
             self::PAYOUT_SCHEDULED_TO_BATCH_SUBMITTED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushPendingToScheduledMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getScheduledAt() - $payout->getPendingAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_PENDING_TO_SCHEDULED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
     }
