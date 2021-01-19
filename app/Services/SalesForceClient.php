@@ -343,11 +343,9 @@ class SalesForceClient
 
         $timeStamp = $timeStamp - 7200;
 
-        $dateTime = Carbon::createFromTimestamp($timeStamp)->format('yy-m-d\Th:i:s.u');
+        $dateTime = Carbon::createFromTimestamp($timeStamp)->format('Y-m-d\Th:i:s\Z');
 
-        $timeFormatString = $dateTime . '%2B05:30';
-
-        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email,Owner_Role__c, Managers_in_role_hierarchy__c, MRH_Date__c from Account where Owner_Role__c != null AND Merchant_ID__c != null AND ((NOT Website like \'%25mswipe%25\') OR (Transacting__c = true)) and MRH_Date__c >' . $timeFormatString;
+        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email,Owner_Role__c, Managers_in_role_hierarchy__c, MRH_Date__c from Account where Owner_Role__c != null AND Merchant_ID__c != null AND ((NOT Website like \'%25mswipe%25\') OR (Transacting__c = true)) and MRH_Date__c >' . $dateTime;
     }
 
     protected function generateUrl()
