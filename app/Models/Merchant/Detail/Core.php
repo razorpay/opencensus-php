@@ -11,9 +11,12 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\State;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Services\MerchantRiskClient;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
@@ -53,7 +56,6 @@ use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
@@ -332,8 +334,16 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
+        $isImpersonated = $this->isMerchantImpersonated($merchant);
+
         $this->autoUpdateMerchantActivationFlows(
-            $merchant, null, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
+            $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false, $isImpersonated);
+
+        if($isImpersonated === true)
+        {
+            $merchant->deactivate();
+            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
+        }
 
         // If a merchant does not have website or app, we would need to activate them
         // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
@@ -435,18 +445,18 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Merchant\Entity      $merchant
-     * @param Entity|null          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param Entity|null $merchantDetails
      * @param Merchant\Entity|null $partner
-     * @param array|string[]       $activationFlowTypes
-     * @param bool                 $batchFlow
+     * @param array|string[] $activationFlowTypes
+     * @param bool $batchFlow
+     * @param bool $isImpersonated
      */
     public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
                                                       Merchant\Detail\Entity $merchantDetails = null,
                                                       Merchant\Entity $partner = null,
                                                       array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
-                                                      bool $batchFlow = false
-
+                                                      bool $batchFlow = false, bool $isImpersonated = false
     )
     {
         $this->repo->assertTransactionActive();
@@ -463,6 +473,11 @@ class Core extends Base\Core
         }
 
         $this->updateActivationFlows($merchant, $merchantDetails, $partner, $activationFlowTypes, $batchFlow);
+
+        if($isImpersonated === true)
+        {
+            $merchantDetails->setActivationFlow(ActivationFlow::GREYLIST);
+        }
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -725,11 +740,24 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
+        $isImpersonated = $this->isMerchantImpersonated($merchant);
+
+        if($isImpersonated)
+        {
+            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
+
+            // This is only for un-reg merchants; for reg we already show FE greylist popup;
+            if($merchantDetails->isUnregisteredBusiness())
+            {
+                $merchantDetails->setLocked(true);
+            }
+        }
+
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
         if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
         {
-            if ($this->canProcessInstantActivation($merchantDetails) === true)
+            if ($isImpersonated === false and $this->canProcessInstantActivation($merchantDetails) === true)
             {
                 // in case of unregistered business if pan is verified then instantly activate merchant
                 (new Detail\ActivationFlow\Whitelist())->process($merchant);
@@ -743,6 +771,44 @@ class Core extends Base\Core
         }
     }
 
+    protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $actions = (new ActionCore)->fetchOpenActionOnEntityOperationWithPermissionList(
+            $merchant->getId(), 'merchant_detail', [Permission\Name::IMPERSONATING_MERCHANT_DEDUPE]);
+        $actions = $actions->toArray();
+
+        if(empty($actions) === false)
+        {
+            // If a workflow is already created, then do not create the same workflow;
+            return;
+        }
+
+        $oldMerchantDetails = clone $merchantDetails;
+        $newMerchantDetails = clone $merchantDetails;
+        $newMerchantDetails->setActivationFlow(ActivationFlow::WHITELIST);
+
+        $this->app['workflow']
+            ->setPermission(Permission\Name::IMPERSONATING_MERCHANT_DEDUPE)
+            ->setRouteName(DEConstants::ACTIVATION_ROUTE_NAME)
+            ->setController(DEConstants::ACTIVATION_CONTROLLER)
+            ->setWorkflowMaker($merchant)
+            ->setWorkflowMakerType(MakerType::MERCHANT)
+            ->setRouteParams([DetailEntity::ID => $merchant->getId()])
+            ->setInput([])
+            ->setEntity($merchant->merchantDetail->getEntity())
+            ->setOriginal($oldMerchantDetails)
+            ->setDirty($newMerchantDetails);
+
+        try {
+            $this->app['workflow']->handle();
+        }
+        catch(Exception\EarlyWorkflowResponse $e)
+        {
+            // Catching exception because we do not want to abort the code flow
+            $workflowActionData = json_decode($e->getMessage(), true);
+            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+        }
+    }
     /**
      * Bypassing all the validation black list or greylist Merchants
      *
@@ -765,6 +831,7 @@ class Core extends Base\Core
 
         (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $batchFlow);
     }
+
     /**
      * Contains preconditions for Processing Instant activation
      *
@@ -778,7 +845,6 @@ class Core extends Base\Core
         {
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::INDIVIDUAL:
-
                 return $merchantDetails->isPoiVerified();
 
             default :
@@ -3339,22 +3405,31 @@ class Core extends Base\Core
             return ActivationFlow::GREYLIST;
         }
 
+        if ($this->isMerchantImpersonated($merchant))
+        {
+            return ActivationFlow::GREYLIST;
+        }
+
+        return $activationFlow;
+    }
+
+    private function isMerchantImpersonated(Merchant\Entity $merchant) : bool
+    {
         $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::DEDUPE_FUNCTIONALITY);
 
-        if ($isDedupeEnabled === true)
+        if($isDedupeEnabled === true)
         {
-            // here the activation flow is modified based on if the MRS marks the merchant as risky/impersonating
             $riskFactor = $this->mrclient->getMerchantRiskFactor($merchant);
 
             if (isset($riskFactor['impersonated']) === true and
                 $riskFactor['impersonated'] === true)
             {
-                return ActivationFlow::GREYLIST;
+                return true;
             }
         }
 
-        return $activationFlow;
+        return false;
     }
 
     /**

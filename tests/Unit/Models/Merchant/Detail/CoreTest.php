@@ -5,6 +5,7 @@ namespace Unit\Models\Merchant\Detail;
 
 
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Models\Merchant\Detail\Constants as DeConstants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use \RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\MerchantRiskClient;

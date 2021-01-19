@@ -83,7 +83,9 @@ class NeedsClarificationRespondedTest extends OAuthTestCase
         ]);
         $attribute = [
             'activation_status' => 'needs_clarification',
-            'merchant_id'       => $merchant->getId()
+            'merchant_id'       => $merchant->getId(),
+            'business_category'           => 'ecommerce',
+            'business_subcategory'        => 'fashion_and_lifestyle',
         ];
 
         $this->fixtures->create('merchant_detail:valid_fields', $attribute);
@@ -146,7 +148,7 @@ class NeedsClarificationRespondedTest extends OAuthTestCase
     public function testActivationBeforeNeedsClarification()
     {
         $merchantId = $this->createFixtures();
-        
+
         $permission = $this->getPermission();
 
         $this->ba->proxyAuth('rzp_test_' .$merchantId);

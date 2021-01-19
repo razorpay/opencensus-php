@@ -43,7 +43,7 @@ class Greylist extends Base implements ActivationFlowInterface
 
         $this->handleFlowForRazorpayx($merchant);
 
-        $this->handleFlowForImpersonatedMerchant($merchant);
+        //$this->handleFlowForImpersonatedMerchant($merchant);
     }
 
     public function sendKycRequestEmail(Entity $merchant)
