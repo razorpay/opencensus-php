@@ -98,6 +98,33 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
+    public function testCreateCardPaymentJsonRouteIvrFallbackTo3ds()
+    {
+        $this->enableCpsConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 100;
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin'     => '457392',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'ivr', 'otp_auth_default']);
+
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
     public function testAuthenticationGatewayHeadlessOtp()
     {
 

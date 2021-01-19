@@ -6046,7 +6046,6 @@ trait Authorize
 
             if ($payment->card->iinRelation !== null)
             {
-
                 if (empty($gatewayInput['auth_type']) === false)
                 {
                     if (($gatewayInput['auth_type'] === Payment\AuthType::OTP) or
@@ -7616,6 +7615,12 @@ trait Authorize
         $merchant = $payment->merchant;
 
         if ($merchant->isFeatureEnabled(Feature\Constants::JSON_V2)  === true)
+        {
+            return true;
+        }
+
+        if ((empty($gatewayInput['auth_type']) === false) and
+            ($gatewayInput['auth_type'] === Payment\AuthType::_3DS))
         {
             return true;
         }
