@@ -56,6 +56,9 @@ return [
         'test'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_LIVE_QUEUE'),
     ],
+    'cohort_dispatch' => [
+        'live'       =>  env('AWS_COHORT_DISPATCH_LIVE_QUEUE'),
+    ],
     'payout_post_create_process' => [
         'test'       =>  env('AWS_PAYOUT_POST_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYOUT_POST_PROCESS_LIVE_QUEUE'),
@@ -333,7 +336,7 @@ return [
         'test'       => env('AWS_BANK_TRANSFER_CREATE_TEST_QUEUE'),
         'live'       => env('AWS_BANK_TRANSFER_CREATE_LIVE_QUEUE'),
     ],
-    
+
     'sync_order_pg_router' => [
         'test'      => env('AWS_SYNC_ORDER_PG_ROUTER_TEST_QUEUE'),
         'live'      => env('AWS_SYNC_ORDER_PG_ROUTER_LIVE_QUEUE'),

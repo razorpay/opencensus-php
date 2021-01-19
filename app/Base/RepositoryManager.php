@@ -120,6 +120,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Reward\Repository                              $reward;
  * @property Models\Reward\MerchantReward\Repository               $merchant_reward;
  * @property Models\AppStore\Repository                            $app_store;
+ * @property Models\Survey\Tracker\Repository                      $survey_tracker;
+ * @property Models\Survey\Repository                              $survey;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

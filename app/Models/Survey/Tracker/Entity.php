@@ -1,0 +1,128 @@
+<?php
+
+namespace RZP\Models\Survey\Tracker;
+
+use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Constants\Entity as EntityConstants;
+
+class Entity extends Base\PublicEntity
+{
+    protected $entity = EntityConstants::SURVEY_TRACKER;
+    protected $table  = Table::SURVEY_TRACKER;
+
+    protected $generateIdOnCreate = true;
+
+    const SURVEY_ID              = 'survey_id';
+    const SURVEY_EMAIL           = 'survey_email';
+    const SURVEY_SENT_AT         = 'survey_sent_at';
+    const SURVEY_FILLED_AT       = 'survey_filled_at';
+    const ATTEMPTS               = 'attempts';
+    const NPS_SURVEY             = 'nps_survey';
+    const SURVEY_TYPE            = 'survey_type';
+
+    // Constants
+    const NPS_RAZORPAYX          = 'nps_razorpay_x';
+    const MID                    = 'mid';
+    const X_UID                  = 'x_uid';
+    const START_TIME             = 'start_time';
+    const END_TIME               = 'end_time';
+    const COHORT                 = 'cohort';
+    const COHORT_LIST            = 'cohort_list';
+    const BASE_MODEL_DIR         = 'RZP\Models';
+
+    protected $fillable = [
+        self::ID,
+        self::SURVEY_ID,
+        self::SURVEY_EMAIL,
+        self::SURVEY_SENT_AT,
+        self::SURVEY_FILLED_AT,
+        self::ATTEMPTS,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::SURVEY_ID,
+        self::SURVEY_EMAIL,
+        self::SURVEY_SENT_AT,
+        self::SURVEY_FILLED_AT,
+        self::ATTEMPTS,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::SURVEY_ID,
+        self::SURVEY_EMAIL,
+        self::SURVEY_SENT_AT,
+        self::SURVEY_FILLED_AT,
+        self::ATTEMPTS,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    // ============================= GETTERS =============================
+
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+
+    public function getSurveyId()
+    {
+        return $this->getAttribute(self::SURVEY_ID);
+    }
+
+    public function getSurveyEmail()
+    {
+        return $this->getAttribute(self::SURVEY_EMAIL);
+    }
+
+    public function getSurveySentAt()
+    {
+        return $this->getAttribute(self::SURVEY_SENT_AT);
+    }
+
+    public function getSurveyFilledAt()
+    {
+        return $this->getAttribute(self::SURVEY_FILLED_AT);
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    // ============================= END GETTERS =============================
+
+    // ============================= SETTERS =============================
+
+    public function setSurveyId($surveyId)
+    {
+        $this->setAttribute(self::SURVEY_ID, $surveyId);
+    }
+
+    public function setSurveyEmail($email)
+    {
+        $this->setAttribute(self::SURVEY_EMAIL, $email);
+    }
+
+    public function setSurveySentAt($surveySentAt)
+    {
+        $this->setAttribute(self::SURVEY_SENT_AT, $surveySentAt);
+    }
+
+    public function setSurveyFilledAt($surveyFilledAt)
+    {
+        $this->setAttribute(self::SURVEY_FILLED_AT, $surveyFilledAt);
+    }
+
+    public function setAttempts($attempts)
+    {
+        $this->setAttribute(self::ATTEMPTS, $attempts);
+    }
+
+    // ============================= END SETTERS =============================
+}

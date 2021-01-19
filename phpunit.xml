@@ -65,6 +65,7 @@
           <exclude>./tests/Functional/PayoutSource/</exclude>
           <exclude>./tests/Functional/Pagination/</exclude>
           <exclude>./tests/Functional/RequestLog/</exclude>
+          <exclude>./tests/Functional/Survey/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -110,6 +111,7 @@
           <directory>./tests/Functional/PayoutSource/</directory>
           <directory>./tests/Functional/Pagination/</directory>
           <directory>./tests/Functional/RequestLog/</directory>
+          <directory>./tests/Functional/Survey/</directory>
       </testsuite>
       <testsuite name = "Features-4 Test Suite">
           <directory>./tests/Functional/Tax/</directory>

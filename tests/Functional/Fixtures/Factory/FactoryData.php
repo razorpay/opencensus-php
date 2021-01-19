@@ -1588,6 +1588,21 @@ final class FactoryData
             'status'         => 'available'
         ]);
 
+        $factory(\RZP\Models\Survey\Entity::class, [
+            'id'                  => 'GAX5zcOdI0Y664',
+            'name'                => 'test survey',
+            'description'         => 'test survey',
+            'survey_ttl'          => 30
+        ]);
+
+        $factory(\RZP\Models\Survey\Tracker\Entity::class, [
+            'id'                  => 'GAX5zcOdI0Y663',
+            'survey_id'           => 'GAX5zcOdI0Y664',
+            'survey_email'        => 'test@razorpay.com',
+            'survey_sent_at'      => Carbon::now()->getTimestamp(),
+            'attempts'            => 1
+        ]);
+
         $factory(\RZP\Models\Application\Entity::class, [
             'id'                  => 'GAX5zcOdI0Y664',
             'name'                => 'Factory App',

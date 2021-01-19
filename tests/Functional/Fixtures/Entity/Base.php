@@ -86,6 +86,10 @@ class Base
         'x_app'                            => \RZP\Models\AppFramework\App\Entity::class,
         'reward'                           => \RZP\Models\Reward\Entity::class,
         'merchant_reward'                  => \RZP\Models\Reward\MerchantReward\Entity::class,
+
+        'survey'                           => \RZP\Models\Survey\Entity::class,
+        'survey_tracker'                   => \RZP\Models\Survey\Tracker\Entity::class,
+
         'application'                      => \RZP\Models\Application\Entity::class,
         'application_mapping'              => \RZP\Models\Application\ApplicationTags\Entity::class,
     ];

@@ -1469,4 +1469,25 @@ class Repository extends Base\Repository
 
         return $query->count();
     }
+
+    public function getPayoutCohortList(int $startTime, int $endTime)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        $payoutCreatedColumn        = $this->dbColumn(Entity::CREATED_AT);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID),
+            $this->dbColumn(Entity::USER_ID)
+        ];
+        
+        return $this->newQuery()
+                    ->select($selectAttr)
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
+                    ->get();
+    }
 }

@@ -2207,6 +2207,8 @@ class Route
         'fix_merchant_data_cron'                  => ['post',    'pagination/trim_space/start',                             'PaginationController@trimSpacesForMerchant'                   ],
         // GupShup Incoming Messages Webhook
         'gupshup_incoming_messages_callback'      => ['post',    'gupshup/incoming_messages/callback',                      'GupShupController@handleIncomingMessagesCallback'             ],
+        'nps_survey_process_scheduled'            => ['post',    'survey/scheduled/process',                                'NPSSurveyController@initiateSurvey'                           ],
+        'survey_create'                           => ['post',    'survey',                                                  'NPSSurveyController@createSurvey'                             ],
     ];
 
     public static $public = [
@@ -2939,6 +2941,8 @@ class Route
 
         //GupShup Callbacks
         'gupshup_incoming_messages_callback',
+        
+        'nps_survey_process_scheduled',
 
         // freshchat cron
         'freshchat_extract_report_cron',
@@ -4218,6 +4222,8 @@ class Route
         'disable_merchant_notification_config_admin',
         'enable_merchant_notification_config_admin',
 
+        'survey_create',
+
         //Application Framework
         'app_create',
         'app_update',
@@ -5062,6 +5068,8 @@ class Route
         'merchant_invoice_control'                            => Permission::MERCHANT_INVOICE_CONTROL,
         'merchant_details_suggested_update'                   => Permission::MERCHANT_INVOICE_CONTROL,
 
+        'survey_create'                                       => Permission::NPS_SURVEY,
+
         'app_create'                                          => '*',
         'app_update'                                          => '*',
         'app_get'                                             => '*',
@@ -5715,6 +5723,7 @@ class Route
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
             'reward_expire_cron',
+            'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
         ],

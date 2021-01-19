@@ -436,6 +436,10 @@ class Entity
     //GupShup
     const GUP_SHUP = 'gup_shup';
 
+    // NPS Survey
+    const SURVEY = 'survey';
+    const SURVEY_TRACKER = 'survey_tracker';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -813,6 +817,9 @@ class Entity
 
         self::APP_STORE         => \RZP\Models\AppStore::class,
         self::GUP_SHUP          => \RZP\Models\GupShup::class,
+
+        self::SURVEY_TRACKER    => \RZP\Models\Survey\Tracker::class,
+        self::SURVEY            => \RZP\Models\Survey::class,
     ];
 
     protected static $repository = [

@@ -333,6 +333,10 @@ class Table
     // AppStore
     const APP_STORE = 'app_store';
 
+    // NPS Survey
+    const SURVEY            = 'survey';
+    const SURVEY_TRACKER    = 'survey_tracker';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                        => self::MIGS,
         Entity::AXIS_GENIUS                      => self::MIGS,
