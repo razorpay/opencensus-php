@@ -118,9 +118,6 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutWithNewCreditsFlowMerchantWithNoCredits()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $response = $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -128,68 +125,6 @@ class CompositePayoutTest extends TestCase
         $fundAccount = $this->getDbLastEntity('fund_account');
 
         $contact = $this->getDbLastEntity('contact');
-
-        // Assert that the last entities in db are created by the composite payout request
-        $this->assertEquals('pout_' . $payout['id'], $response['id']);
-        $this->assertEquals('fa_' . $fundAccount['id'], $response['fund_account_id']);
-        $this->assertEquals('cont_' . $contact['id'], $response['fund_account']['contact_id']);
-
-        // Assert that contact, fund_account and payout in db are related to each other
-        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
-        $this->assertEquals($fundAccount['source_id'], $contact['id']);
-
-        // Assert that the response payout, fund_account and contact are also related to each other
-        $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
-        $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
-    }
-
-    /** The below flow tests that a merchant is on old credits flow and
-     *  is making composite payout.
-     */
-    public function testCreateCompositePayoutWithOldCreditsFlow()
-    {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000000 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
-        $balance = $this->getLastEntity('balance', true);
-
-        $balanceBefore = $balance['balance'];
-
-        $this->ba->privateAuth();
-
-        $response = $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals(0, $payout['tax']);
-        $this->assertEquals(900, $payout['fees']);
-        $this->assertEquals('reward_fee', $payout['fee_type']);
-
-        $fundAccount = $this->getDbLastEntity('fund_account');
-
-        $contact = $this->getDbLastEntity('contact');
-
-        $balance = $this->getLastEntity('balance', true);
-
-        $this->assertEquals('shared', $balance['account_type']);
-        $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(1999100, $creditBalanceEntity['balance']);
-
-        $creditEntity = $this->getLastEntity('credits', true);
-        $this->assertEquals(900, $creditEntity['used']);
-
-        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
-        $this->assertEquals('payout', $creditTxnEntity['entity_type']);
-        $this->assertEquals($payout['id'], $creditTxnEntity['entity_id']);
-        $this->assertEquals(900, $creditTxnEntity['credits_used']);
 
         // Assert that the last entities in db are created by the composite payout request
         $this->assertEquals('pout_' . $payout['id'], $response['id']);
@@ -207,9 +142,6 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutWithNewCreditsFlowMerchantWithCredits()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000000 ]);

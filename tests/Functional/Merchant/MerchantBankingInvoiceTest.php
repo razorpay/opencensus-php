@@ -12,6 +12,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 
+
 class MerchantBankingInvoiceTest extends TestCase
 {
     use RequestResponseFlowTrait;
@@ -54,18 +55,20 @@ class MerchantBankingInvoiceTest extends TestCase
         $y = $this->fixtures->create(
             'payout',
             [
-                'channel'    => 'icici',
-                'amount'     => 1000,
-                'balance_id' => $x['id'],
+                'channel'           =>      'icici',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
 
         $y = $this->fixtures->create(
             'payout',
             [
-                'channel'    => 'icici',
-                'amount'     => 1000,
-                'balance_id' => $x['id'],
-                'fee_type'   => 'free_credits'
+                'channel'           =>      'icici',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'fee_type'          =>      'free_credits',
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
 
         return $x['id'];
@@ -96,12 +99,24 @@ class MerchantBankingInvoiceTest extends TestCase
     {
         $bankingBalanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
 
+        $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
         $y = $this->fixtures->create(
             'payout',
             [
                 'channel'    => 'citi',
                 'amount'     => 1000,
                 'balance_id' => $bankingBalanceId,
+                'pricing_rule_id'   =>      '1zE31zbybacac1',
             ]);
 
         $w = $this->fixtures->create(
@@ -110,6 +125,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'citi',
                 'amount'     => 1000,
                 'balance_id' => $bankingBalanceId,
+                'pricing_rule_id'   =>      '1zE31zbybacac1',
             ]);
 
         $z = $this->fixtures->create(
@@ -120,6 +136,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'status'       => 'failed',
                 'balance_id'   => $bankingBalanceId,
                 'initiated_at' => Carbon::now(Timezone::IST)->timestamp,
+                'pricing_rule_id'   =>      '1zE31zbybacac1',
             ]);
 
         // this payout should not be included in invoice amount
@@ -132,6 +149,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'balance_id'   => $bankingBalanceId,
                 'fee_type'     => 'free_credits',
                 'initiated_at' => Carbon::now(Timezone::IST)->timestamp,
+                'pricing_rule_id'   =>      '1zE31zbybacac1',
             ]);
 
         $this->fixtures->create(
@@ -139,17 +157,6 @@ class MerchantBankingInvoiceTest extends TestCase
             'name'        => 'fund_account_validation',
             'entity_id'   => 10000000000000,
             'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('pricing', [
-            'product'        => 'banking',
-            'id'             => '1zE31zbybacac1',
-            'plan_id'        => '1hDYlICobzOCYt',
-            'plan_name'      => 'testDefaultPlan',
-            'feature'        => 'fund_account_validation',
-            'payment_method' => 'bank_account',
-            'percent_rate'   => 900,
-            'org_id'         => '100000razorpay',
         ]);
 
         $faAttributes = [
@@ -279,6 +286,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -287,6 +295,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -295,6 +304,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -303,7 +313,8 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $y['id'],
-                'fee_type'   => 'free_credits'
+                'fee_type'   => 'free_credits',
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         return [ $x['id'] , $y['id'] , $z['id'] ];
@@ -426,6 +437,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -434,6 +446,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -442,6 +455,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -451,6 +465,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'amount'      => 1000,
                 'balance_id'  => $a['id'],
                 'merchant_id' => '100000Razorpay',
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -460,6 +475,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'amount'     => 100000,
                 'balance_id' => $b['id'],
                 'merchant_id' => '100000Razorpay',
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         return [ $x['id'], $y['id'], $z['id'], $a['id'], $b['id']];
@@ -565,6 +581,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         return [ $x['id'], $y['id'], $z['id'] ];
@@ -663,6 +680,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $q = $this->fixtures->create(
@@ -671,6 +689,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $q1 = $this->fixtures->create(
@@ -680,6 +699,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'amount'     => 1000,
                 'balance_id' => $y['id'],
                 'fee_type'   => 'free_credits',
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $w = $this->fixtures->reversal->createPayoutReversal(
@@ -712,6 +732,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         return [ $x['id'] , $y['id'] , $z['id'] , $w['id'] , $w1['id']];
@@ -814,6 +835,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $q = $this->fixtures->create(
@@ -822,6 +844,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -830,6 +853,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $oldDateTime = Carbon::create(2019, 8, 1, 12, 23, 41, Timezone::IST);
@@ -961,6 +985,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $q = $this->fixtures->create(
@@ -969,6 +994,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -977,6 +1003,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $z['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $oldDateTime = Carbon::create(2019, 8, 1, 12, 23, 41, Timezone::IST);
@@ -1000,6 +1027,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $w = $w->toArray();
@@ -1086,6 +1114,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000,
                 'balance_id' => $bankingBalance1['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -1094,6 +1123,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 1000000,
                 'balance_id' => $bankingBalance2['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->create(
@@ -1102,6 +1132,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'channel'    => 'icici',
                 'amount'     => 100000,
                 'balance_id' => $primaryBalance['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
     }
 

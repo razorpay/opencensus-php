@@ -105,19 +105,11 @@ class FeeRecoveryTest extends TestCase
     {
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->ba->privateAuth();
 
@@ -2664,13 +2656,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         // Create Reward fee payout
         $this->createPayoutForFundAccount($fundAccount, $this->balance);
@@ -2681,9 +2667,6 @@ class FeeRecoveryTest extends TestCase
 
         // Process the payout
         $this->updateFtaAndSource($payout1, Payout\Status::PROCESSED, '933815383818');
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(0, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(500, $creditEntity['used']);

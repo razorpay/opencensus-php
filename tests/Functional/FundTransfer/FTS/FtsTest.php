@@ -59,7 +59,7 @@ class FtsTest extends TestCase
             'source_id'    => '1000001contact',
             'source_type'  => 'contact',
             'account_type' => 'bank_account',
-            'account_id'   => 'rzpBankAccount'
+            'account_id'   => 'rzpBankAccount',
           ]);
 
         $this->createPayout([
@@ -116,6 +116,7 @@ class FtsTest extends TestCase
         $this->assertEquals(Status::INITIATED, $attempt['status']);
 
         $this->assertNotEquals(0, $attempt['fts_transfer_id']);
+
     }
 
     public function testChannelNoftify()

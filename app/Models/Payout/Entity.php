@@ -225,8 +225,6 @@ class Entity extends Base\PublicEntity
     const NEXT_MONTH    = 'next_month';
     const ALL_TIME      = 'all_time';
 
-    const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
-
     const SCHEDULED_PAYOUTS_SUMMARY = [
         self::TODAY,
         self::NEXT_TWO_DAYS,

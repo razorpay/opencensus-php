@@ -104,23 +104,25 @@ class BankingScorecardTest extends TestCase
 
             $this->fixtures->create('payout',
                 [
-                    'created_at'  => $time->addDay($i)->addHours(1)->timestamp,
-                    'updated_at'  => $time->timestamp,
-                    'status'      => Payout\Status::PROCESSED,
-                    'merchant_id' => $this->merchantId,
-                    'balance_id'  => '10000000100001',
-                    'amount'      => 100000000
+                    'created_at'        => $time->addDay($i)->addHours(1)->timestamp,
+                    'updated_at'        => $time->timestamp,
+                    'status'            => Payout\Status::PROCESSED,
+                    'merchant_id'       => $this->merchantId,
+                    'balance_id'        => '10000000100001',
+                    'amount'            => 100000000,
+                    'pricing_rule_id'   => '1nvp2XPMmaRLxb',
                 ]
             );
 
             $this->fixtures->create('payout',
                 [
-                    'created_at'  => $time->addHours(10)->timestamp,
-                    'updated_at'  => $time->timestamp,
-                    'status'      => Payout\Status::PROCESSED,
-                    'merchant_id' => $this->merchantId,
-                    'balance_id'  => '10000000100001',
-                    'amount'      => 100000000
+                    'created_at'        => $time->addHours(10)->timestamp,
+                    'updated_at'        => $time->timestamp,
+                    'status'            => Payout\Status::PROCESSED,
+                    'merchant_id'       => $this->merchantId,
+                    'balance_id'        => '10000000100001',
+                    'amount'            => 100000000,
+                    'pricing_rule_id'   => '1nvp2XPMmaRLxb',
                 ]
             );
         }

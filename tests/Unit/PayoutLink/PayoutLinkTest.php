@@ -34,7 +34,8 @@ class PayoutLinkTest extends TestCase
             ]);
 
         $payout = $this->fixtures->create('payout' , [
-            'payout_link_id' => $payoutLink->getId()
+            'payout_link_id'    =>      $payoutLink->getId(),
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->assertEquals($payoutLink->payout()->getId(), $payout->getId());

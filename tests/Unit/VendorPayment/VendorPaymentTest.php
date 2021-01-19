@@ -29,7 +29,9 @@ class VendorPaymentTest extends TestCase
         $this->app->instance('vendor-payment', $vpMock);
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'processed'
+            'status'            =>      'processed',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+
         ]);
 
         $this->fixtures->create('payout_source', [
@@ -54,7 +56,8 @@ class VendorPaymentTest extends TestCase
         $this->app->instance('vendor-payment', $vpMock);
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'processed'
+            'status'            =>      'processed',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->fixtures->create('payout_source', [
@@ -79,7 +82,8 @@ class VendorPaymentTest extends TestCase
         $this->app->instance('vendor-payment', $vpMock);
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'processed'
+            'status' => 'processed',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->fixtures->create('payout_source', [

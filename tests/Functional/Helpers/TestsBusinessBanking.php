@@ -217,6 +217,7 @@ trait TestsBusinessBanking
             'amount'            => 1000,
             'currency'          => 'INR',
             'balance_id'        => $this->bankingBalance->getId(),
+            'pricing_rule_id'   => '1nvp2XPMmaRLxb',
         ];
 
         $payoutParams = array_merge($payoutParams, $extraPayoutParams);

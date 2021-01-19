@@ -1935,20 +1935,10 @@ class Core extends Base\Core
 
                         if ($this->shouldHandleRewardForFailedPayout($payout) === true)
                         {
-                            if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
-                            {
-                                (new Credits\Transaction\Core)->reverseCreditsForSource(
-                                    $payout->getId(),
-                                    Constants\Entity::PAYOUT,
-                                    $payout);
-                            }
-                            else
-                            {
-                                (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
-                                    $payout->getId(),
-                                    Constants\Entity::PAYOUT,
-                                    $payout);
-                            }
+                            (new Credits\Transaction\Core)->reverseCreditsForSource(
+                                $payout->getId(),
+                                Constants\Entity::PAYOUT,
+                                $payout);
                         }
 
                         $balance = $payout->balance;

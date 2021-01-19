@@ -761,8 +761,9 @@ class MerchantInvoiceTest extends TestCase
         $this->fixtures->create(
             'payout',
             [
-                'channel' => 'icici',
-                'amount' => 1000,
+                'channel'           => 'icici',
+                'amount'            => 1000,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         $this->ba->privateAuth();

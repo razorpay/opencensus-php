@@ -321,7 +321,8 @@ class WorkflowTest extends TestCase
         $testData['request']['url'] = '/wf-service/configs/';
 
         $payout = $this->fixtures->create('payout' , [
-            'status' => 'pending'
+            'status'            =>      'pending',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS);
@@ -395,7 +396,8 @@ class WorkflowTest extends TestCase
             ]);
 
         $payout = $this->fixtures->create('payout' , [
-            'status' => 'pending'
+            'status'            =>      'pending',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUTS);

@@ -268,7 +268,6 @@ class Base
                     'message'      => $e->getMessage(),
                     'request_body' => $request['content'],
                 ]);
-
             throw $e;
         }
 

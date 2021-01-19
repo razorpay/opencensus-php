@@ -68,7 +68,7 @@ class VendorPaymentTest extends TestCase
                                     'merchant_id' => '10000000000000'
                                 ]);
 
-        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
+        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT','pricing_rule_id' => '1nvp2XPMmaRLxb']);
 
         $this->startTest();
     }
@@ -90,7 +90,10 @@ class VendorPaymentTest extends TestCase
                 'merchant_id' => '10000000000000'
             ]);
 
-        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
+
+        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x',
+                                         'fund_account_id' => 'D6Z9Jfir2egAUT',
+                                         'pricing_rule_id' => '1nvp2XPMmaRLxb']);
 
         $this->startTest();
     }

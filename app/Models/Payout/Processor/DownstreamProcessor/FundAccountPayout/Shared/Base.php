@@ -48,10 +48,7 @@ class Base extends FundAccountPayout\Base
             // reward_fee credits if available. The fees and tax of
             // transaction are updated accordingly. We
 
-            if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
-            {
-                $this->setFeeAndTaxForPayout($payout);
-            }
+            $this->setFeeAndTaxForPayout($payout);
 
             $this->createTransaction($payout);
 
@@ -93,29 +90,27 @@ class Base extends FundAccountPayout\Base
                 // since the banking balance of merchant was not sufficient, the payout went to queued state
                 // we don't want to have a payout in the system which is in queued state and has fees and tax
                 // set, so rolling back the changes.
-                if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
+
+                $payout->setFees(0);
+
+                $payout->setTax(0);
+
+                unset($payout[Entity::PRICING_RULE_ID]);
+
+                // we need to reverse the credits consumed by the payouts
+                if ($payout->getFeeType() === CreditType::REWARD_FEE)
                 {
-                    $payout->setFees(0);
+                    $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_QUEUED_PAYOUT,
+                        [
+                            'payout_id' => $payout->getId()
+                        ]);
 
-                    $payout->setTax(0);
+                    (new Credits\Transaction\Core)->reverseCreditsForSource(
+                        $payout->getId(),
+                        Constants\Entity::PAYOUT,
+                        $payout);
 
-                    unset($payout[Entity::PRICING_RULE_ID]);
-
-                    // we need to reverse the credits consumed by the payouts
-                    if ($payout->getFeeType() === CreditType::REWARD_FEE)
-                    {
-                        $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_QUEUED_PAYOUT,
-                            [
-                                'payout_id' => $payout->getId()
-                            ]);
-
-                        (new Credits\Transaction\Core)->reverseCreditsForSource(
-                            $payout->getId(),
-                            Constants\Entity::PAYOUT,
-                            $payout);
-
-                        unset($payout[Entity::FEE_TYPE]);
-                    }
+                    unset($payout[Entity::FEE_TYPE]);
                 }
 
                 if ($payout->toBeQueued() === false)

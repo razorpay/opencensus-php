@@ -664,7 +664,7 @@ class RequestLogsTest extends TestCase
 
         for($x = 0; $x <= 4; $x++)
         {
-            $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1)]);
+            $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1), 'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]);
             $this->fixtures->create('payout', $payout);
         }
 
@@ -709,7 +709,7 @@ class RequestLogsTest extends TestCase
 
         for($x = 0; $x <= 4; $x++)
         {
-            $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1)]);
+            $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1),'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]);
             $this->fixtures->create('payout', $payout);
         }
 
@@ -826,7 +826,7 @@ class RequestLogsTest extends TestCase
         $this->fixtures->create('contact', $this->createContactEntityArray());
         $this->fixtures->create('vpa', $this->createVpaEntityArray());
         $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
-        $this->fixtures->create('payout', $this->createPayoutEntityArray(['status' => 'queued']));
+        $this->fixtures->create('payout', $this->createPayoutEntityArray(['status' => 'queued','pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]));
 
         $request = [
             'url' => '/payouts/pout_' . '10000000000001' . '/cancel',

@@ -16,6 +16,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
+
 trait AttemptTrait
 {
     use PaymentTrait;
@@ -306,9 +307,10 @@ trait AttemptTrait
         $payouts = $this->fixtures->times($sourceCount)->create(
             'payout',
             [
-               'channel'     => $channel,
-               'amount'      => 1000,
-                'balance_id' => '10000000000000',
+                'channel'           =>      $channel,
+                'amount'            =>      1000,
+                'balance_id'        =>      '10000000000000',
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
 
         if ($sourceCount === 1)
@@ -344,6 +346,7 @@ trait AttemptTrait
                 'destination_id'    => '1000000lcustba',
                 'destination_type'  => 'vpa',
                 'balance_id'        => '10000000000000',
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
             ]);
 
         if ($sourceCount === 1)
@@ -387,6 +390,7 @@ trait AttemptTrait
             Attempt\Entity::SOURCE_TYPE      => $sourceType,
             Attempt\Entity::FUND_TRANSFER_ID => $ftsId
         ];
+
 
         $request = [
             'url'       => '/update_fts_fund_transfer',

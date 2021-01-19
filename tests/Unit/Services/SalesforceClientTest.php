@@ -40,7 +40,7 @@ class SalesforceClientTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $input = [
-            'business_name'      => 'Dummy Business Nmae',
+            'business_name'      => 'Dummy Business Name',
             'business_type'      => 'Dummy Business Type',
             'contact_mobile'     => '9876556789',
             'transaction_volume' => '100000',

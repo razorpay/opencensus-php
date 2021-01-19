@@ -1373,53 +1373,6 @@ return [
         ]
     ],
 
-    'testAddCreditsNewFlowFeature' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['payout_credits_new_flow'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'payout_credits_new_flow',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
-                ]
-            ]
-        ]
-    ],
-
-
-    'testRemoveCreditsNewFlowFeature' => [
-        'request'  => [
-            'content' => [
-                'name'       => 'payout_credits_new_flow',
-                'entity_ids' => ['10000000000000']
-            ],
-            'url'     => '/features/remove',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'successful' => [
-                    'payout_credits_new_flow' => [
-                        '10000000000000'
-                    ],
-                ],
-                'failed'     => [],
-            ]
-        ]
-    ],
-
     'testP2pUpiFeature' => [
         'request'   => [
             'content' => [

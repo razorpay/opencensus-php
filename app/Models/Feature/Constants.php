@@ -509,8 +509,6 @@ class Constants
      */
     const CHECKOUT_DISABLE_CARDSCAN          = 'checkout_disable_cardscan';
 
-    const PAYOUT_CREDITS_NEW_FLOW = 'payout_credits_new_flow';
-
    // for sending x banking accounts to pure partner
     const BANKING_ACCOUNTS_ISSUED = 'banking_accounts_issued';
 
@@ -811,7 +809,6 @@ class Constants
         self::RECURRING_AUTO                  => true,
         self::CHECKOUT_DISABLE_CARDSCAN       => true,
         self::RX_SHOW_PAYOUT_SOURCE           => true,
-        self::PAYOUT_CREDITS_NEW_FLOW         => true,
         self::REFUND_AGED_PAYMENTS            => true,
         self::BANKING_ACCOUNTS_ISSUED         => true,
         self::REFUND_ARN_WEBHOOK              => true,

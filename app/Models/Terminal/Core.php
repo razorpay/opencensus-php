@@ -29,7 +29,7 @@ class Core extends Base\Core
                 'input'         => $this->removeSecretFieldsForTrace($input),
                 'merchant_id'   => $merchant->getId(),
             ]);
-        
+
         $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $input['merchant_id'] = $merchant->getKey();
@@ -232,9 +232,9 @@ class Core extends Base\Core
             $terminal->edit($input);
 
             // we want to skip the validation for tokenizing mpans, this code can be removed after all the terminal mpans are tokenized by cron
-            if ((count($input) !== 3) 
-                or (isset($input[Entity::MC_MPAN]) === false) 
-                or (isset($input[Entity::VISA_MPAN]) === false) 
+            if ((count($input) !== 3)
+                or (isset($input[Entity::MC_MPAN]) === false)
+                or (isset($input[Entity::VISA_MPAN]) === false)
                 or (isset($input[Entity::RUPAY_MPAN]) === false))
                 {
                     $this->validateExistingTerminal($terminal);
@@ -718,7 +718,7 @@ class Core extends Base\Core
             {
                 $tokenizedMpan = $this->app['mpan.cardVault']->tokenize(['secret' => $input[$network]]);
 
-                $input[$network] = $tokenizedMpan;    
+                $input[$network] = $tokenizedMpan;
             }
         }
     }

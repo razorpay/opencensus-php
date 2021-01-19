@@ -129,14 +129,7 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
-        if ($payout->merchant->isFeatureEnabled(Entity::PAYOUT_CREDITS_NEW_FLOW) === true)
-        {
-            $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
-        }
-        else
-        {
-            $this->adjustMerchantFeesThroughCreditsForPayout($payout, $fees, $tax);
-        }
+        $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
 
         $payout->setFees($fees);
 

@@ -186,9 +186,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreatePayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $bankingBalance = $this->getDbLastEntity('balance');
 
         $balance = $bankingBalance['balance'];
@@ -438,13 +435,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 1500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -473,8 +464,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('shared', $balance['account_type']);
 
         $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(600, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(900, $creditEntity['used']);
@@ -507,9 +496,6 @@ class PayoutTest extends OAuthTestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNotNull($txn['posted_at']);
 
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(1500, $creditBalanceEntity['balance']);
-
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(0, $creditEntity['used']);
 
@@ -527,21 +513,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 1500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1400 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -581,9 +557,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('shared', $balance['account_type']);
         $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
 
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(600, $creditBalanceEntity['balance']);
-
         $payout = $this->getDbLastEntity('payout');
 
         $payoutId = $payout->getId();
@@ -606,9 +579,6 @@ class PayoutTest extends OAuthTestCase
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNotNull($txn['posted_at']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(1500, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1097,9 +1067,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreateAndProcessQueuedPayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000 ]);
@@ -3118,13 +3085,6 @@ class PayoutTest extends OAuthTestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-//        $this->fixtures->edit(
-//            'payout',
-//            $payout['id'],
-//            [
-//                'status' => 'processed'
-//            ]);
-
         $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
         $this->ba->privateAuth();
@@ -3772,11 +3732,12 @@ class PayoutTest extends OAuthTestCase
         $balance = $this->getDbLastEntity('balance', 'live');
 
         $this->fixtures->on('live')->create('payout', [
-            'id'                =>  '12345678901234',
-            'balance_id'        =>  $balance->getId(),
-            'merchant_id'       =>  '10000000000000',
-            'amount'            =>  1,
-            'status'            =>  'created',
+            'id'                =>      '12345678901234',
+            'balance_id'        =>      $balance->getId(),
+            'merchant_id'       =>      '10000000000000',
+            'amount'            =>      1,
+            'status'            =>      'created',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $payout = $this->getDbLastEntity('payout', 'live');
@@ -3951,128 +3912,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
-
-//    public function testCreatePayoutForRblDirectAccount(): array
-//    {
-//        $newBalance = $this->getDbLastEntity('balance');
-//
-//        $this->fixtures->balance->edit($newBalance['id'],
-//            [
-//                'balance'           => 10000000,
-//                'account_type'      => 'direct',
-//                'channel'           => 'rbl',
-//            ]);
-//
-//        $this->ba->privateAuth();
-//
-//        $this->startTest();
-//
-//        $payout = $this->getLastEntity('payout', true);
-//
-//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-//
-//        // On private auth, payout.user_id should be null
-//        $this->assertNull($payout['user_id']);
-//
-//        // Verify attempt entity
-//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-//        $this->assertEquals('Batman', $payoutAttempt['narration']);
-//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-//        $this->assertEquals($payout['channel'], 'yesbank');
-//
-//        // Verify transaction entity
-//        $txn = $this->getLastEntity('transaction', true);
-//        $txnId = str_after($txn['id'], 'txn_');
-//
-//        $this->assertEquals($payout['transaction_id'], $txn['id']);
-//        $this->assertNotNull($txn['balance_id']);
-//
-//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-//
-//        $expectedBreakup = [
-//            'name'            => "payout",
-//            'transaction_id'  => $txnId,
-//            'pricing_rule_id' => "Bbg7fgaDwax04u",
-//            'percentage'      => null,
-//            'amount'          => 0,
-//        ];
-//
-//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-//
-//        return $payout;
-//    }
-//
-//    public function testCreatePayoutForRblDirectWithSharedRules(): array
-//    {
-//        $pricingPlan = [
-//            'plan_name'           => 'Banking merchant plan',
-//            'product'             => 'primary',
-//            'feature'             => 'payout',
-//            'payment_method'      => 'fund_transfer',
-//            'percent_rate'        => 0,
-//            'fixed_rate'          => 500,
-//            'amount_range_active' => 1,
-//            'amount_range_min'    => 0,
-//            'amount_range_max'    => 200000,
-//            'org_id'              => '100000Razorpay',
-//            'expired_at'          => null,
-//            'created_at'          => time(),
-//            'updated_at'          => time(),
-//        ];
-//
-//        $pricingPlan = $this->fixtures->create('pricing', $pricingPlan);
-//
-//        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlan['plan_id']]);
-//
-//        $newBalance = $this->getDbLastEntity('balance');
-//
-//        $this->fixtures->balance->edit($newBalance['id'],
-//            [
-//                'balance'           => 10000000,
-//                'account_type'      => 'direct',
-//                'channel'           => 'rbl',
-//            ]);
-//
-//        $this->ba->privateAuth();
-//
-//        $this->startTest();
-//
-//        $payout = $this->getLastEntity('payout', true);
-//
-//        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-//
-//        // On private auth, payout.user_id should be null
-//        $this->assertNull($payout['user_id']);
-//
-//        // Verify attempt entity
-//        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-//        $this->assertEquals('Batman', $payoutAttempt['narration']);
-//        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-//        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-//        $this->assertEquals($payout['channel'], 'yesbank');
-//
-//        // Verify transaction entity
-//        $txn = $this->getLastEntity('transaction', true);
-//        $txnId = str_after($txn['id'], 'txn_');
-//
-//        $this->assertEquals($payout['transaction_id'], $txn['id']);
-//        $this->assertNotNull($txn['balance_id']);
-//
-//        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-//
-//        $expectedBreakup = [
-//            'name'            => "payout",
-//            'transaction_id'  => $txnId,
-//            'pricing_rule_id' => "Bbg7fgaDwax04u",
-//            'percentage'      => null,
-//            'amount'          => 0,
-//        ];
-//
-//        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-//
-//        return $payout;
-//    }
 
     public function testCreatePayoutWithWrongFundAccountId()
     {
@@ -6280,9 +6119,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessBulkPayoutDelayedInitiationWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->testBulkPayoutWithThrottling();
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
@@ -6718,9 +6554,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
@@ -8415,9 +8248,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlowButNotEqualToFees()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
@@ -8474,9 +8304,6 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900 ]);
@@ -8511,68 +8338,6 @@ class PayoutTest extends OAuthTestCase
 
         $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
         $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
-
-        $creditEntities = $this->getDbEntities('credits');
-        $this->assertEquals(300, $creditEntities[0]['used']);
-        $this->assertEquals(600, $creditEntities[1]['used']);
-
-        $creditTxnEntities = $this->getDbEntities('credit_transaction');
-        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
-        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
-        $this->assertEquals(300, $creditTxnEntities[0]['credits_used']);
-
-        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
-        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
-        $this->assertEquals(600, $creditTxnEntities[1]['credits_used']);
-
-        $publicResponse = $payout->toArrayPublic();
-
-        $this->assertEquals('created', $payout['internal_status']);
-        $this->assertEquals('processing', $publicResponse['status']);
-        $this->assertNotNull($payout['initiated_at']);
-    }
-
-    /**
-     *  We are asserting that payout fees and tax will be adjusted by the
-     *  reward_fee credits for create_request_submitted payout in the old
-     *  credits flow
-     */
-    public function testProcessingOfCreateRequestSubmittedPayoutWithOldCreditsFlow()
-    {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditBalanceBefore = $creditBalanceEntity['balance'];
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
-        $this->testCreatePayoutForRequestSubmitted();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        // Manually pushing into the queue because this is the only way to do this.
-        // Keeping the queueFlag as false for this test.
-        // Payout should get processed since merchant has enough balance
-        PayoutPostCreateProcess::dispatch('test', $payout->getId(), 'false');
-
-        $payout->reload();
-
-        $this->assertEquals(900, $payout['fees']);
-        $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(0, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(300, $creditEntities[0]['used']);
@@ -9052,7 +8817,8 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'created'
+            'status'            =>      'created',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::PROCESSING);
@@ -9088,8 +8854,9 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'created',
-            'payout_link_id' => $payoutLink->getId()
+            'status'            =>      'created',
+            'payout_link_id'    =>      $payoutLink->getId(),
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::PROCESSING);
@@ -9113,8 +8880,9 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'created',
-            'payout_link_id' => $payoutLink->getId()
+            'status'            =>      'created',
+            'payout_link_id'    =>      $payoutLink->getId(),
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $this->fixtures->create('payout_source',
@@ -9137,7 +8905,8 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $payout = $this->fixtures->create('payout', [
-            'status' => 'initiated',
+            'status'            =>      'initiated',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::CREATED);

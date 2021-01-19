@@ -264,7 +264,7 @@ class TaxPaymentsTest extends TestCase
     {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
-        $payout = $this->fixtures->create('payout', ['status' => 'queued']);
+        $payout = $this->fixtures->create('payout', ['status' => 'queued', 'pricing_rule_id' => '1nvp2XPMmaRLxb']);
 
         $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts_internal/%s/cancel', $payout->getPublicId());
 
@@ -502,8 +502,9 @@ class TaxPaymentsTest extends TestCase
         // create a payout with this purpose and call payout delete and there should not be any exception
         $payout = $this->fixtures->create('payout',
                                           [
-                                              'purpose' => Purpose::RZP_TAX_PAYMENT,
-                                              'status' => Status::QUEUED
+                                              'purpose'             => Purpose::RZP_TAX_PAYMENT,
+                                              'status'              => Status::QUEUED,
+                                              'pricing_rule_id'     => '1nvp2XPMmaRLxb'
                                           ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/cancel', $payout->getPublicId());

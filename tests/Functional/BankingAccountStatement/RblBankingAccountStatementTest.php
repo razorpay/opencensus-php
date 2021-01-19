@@ -44,6 +44,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 
+
 class RblBankingAccountStatementTest extends TestCase
 {
     use PayoutTrait;
@@ -491,13 +492,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->setupForRblPayout($channel);
 
@@ -506,9 +501,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
         $this->assertEquals('reward_fee', $payout['fee_type']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(0, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(500, $creditEntity['used']);
@@ -629,24 +621,11 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementTxnMappingForRewardPayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $channel = Channel::RBL;
 
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditBalanceBefore = $creditBalanceEntity['balance'];
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->setupForRblPayout($channel);
 
@@ -655,9 +634,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
         $this->assertEquals('reward_fee', $payout['fee_type']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(500, $creditEntity['used']);
@@ -775,19 +751,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $channel = Channel::RBL;
 
@@ -800,9 +764,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
         $this->assertEquals('reward_fee', $payout['fee_type']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(200, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -898,9 +859,6 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
@@ -951,7 +909,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456','fts_transfer_id'    =>  '69']);
 
         $ftsCreateTransfer = new FtsFundTransfer(
             EnvMode::TEST,
@@ -1029,19 +987,9 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $channel = Channel::RBL;
 
@@ -1051,9 +999,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(200, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -1100,9 +1045,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
         $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(700, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1133,26 +1075,9 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutFailedWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditBalanceBefore = $creditBalanceEntity['balance'];
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $channel = Channel::RBL;
 
@@ -1162,9 +1087,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -1211,9 +1133,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
         $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1255,10 +1174,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
-
         $channel = Channel::RBL;
 
         $this->setupForRblPayout($channel);
@@ -1267,9 +1182,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(200, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -1317,9 +1229,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
         $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(700, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1351,26 +1260,11 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementTxnMappingForMultipleRewardsPayoutReversalsWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditBalanceBefore = $creditBalanceEntity['balance'];
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $channel = Channel::RBL;
 
@@ -1380,9 +1274,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -1430,9 +1321,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
         $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -1465,13 +1353,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 100 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->setupForRblPayout($channel);
 
@@ -1481,9 +1363,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(90, $payout['tax']);
         $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
         $this->assertNull( $payout['fee_type']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(100, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(0, $creditEntity['used']);
@@ -1566,9 +1445,6 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblAccountStatementTxnMappingForLessRewardsAndBankingBalancePayoutWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $channel = Channel::RBL;
 
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
@@ -2285,19 +2161,9 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
-
-        $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $channel = Channel::RBL;
 
@@ -2307,9 +2173,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(500, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(200, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -2345,9 +2208,6 @@ class RblBankingAccountStatementTest extends TestCase
             $attempt['source'],
             Attempt\Type::PAYOUT,
             Attempt\Status::FAILED);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(700, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(0, $creditEntities[0]['used']);
@@ -2424,9 +2284,6 @@ class RblBankingAccountStatementTest extends TestCase
         // asserting the balance of merchant is credited back
         $this->assertEquals(21450, $balance['balance']);
 
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(700, $creditBalanceEntity['balance']);
-
         $creditTxnEntities = $this->getDbEntities('credit_transaction');
         $this->assertEquals(4, $creditTxnEntities->count());
 
@@ -2439,9 +2296,6 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblReversalFailureMappingForRewardsWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
@@ -4953,17 +4807,18 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->create(
             'payout',
             [
-                'id'            =>      $id ,
-                'merchant_id'   =>      $merchantId,
-                'balance_id'    =>      $balanceId,
-                'amount'        =>      0,
-                'currency'      =>      'inr',
-                'fees'          =>      0,
-                'tax'           =>      0,
-                'status'        =>      'processed',
-                'type'          =>      'default',
-                'created_at'    =>      $payoutTime,
-                'updated_at'    =>      $payoutTime
+                'id'                =>      $id ,
+                'merchant_id'       =>      $merchantId,
+                'balance_id'        =>      $balanceId,
+                'amount'            =>      0,
+                'currency'          =>      'inr',
+                'fees'              =>      0,
+                'tax'               =>      0,
+                'status'            =>      'processed',
+                'type'              =>      'default',
+                'created_at'        =>      $payoutTime,
+                'updated_at'        =>      $payoutTime,
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
 
         $this->fixtures->edit('balance', $balanceId, [

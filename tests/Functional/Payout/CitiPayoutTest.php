@@ -62,19 +62,11 @@ class CitiPayoutTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -107,9 +99,6 @@ class CitiPayoutTest extends TestCase
         $this->assertNull($balance['channel']);
         $this->assertEquals('shared', $balance['account_type']);
         $this->assertEquals($balanceBefore - 1000, $balance['balance']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(200, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -148,9 +137,6 @@ class CitiPayoutTest extends TestCase
 
     public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCreditsWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create(
             'fund_account',
             [
@@ -166,21 +152,11 @@ class CitiPayoutTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
-        $creditBalanceBefore = $creditBalanceEntity['balance'];
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -213,9 +189,6 @@ class CitiPayoutTest extends TestCase
         $this->assertNull($balance['channel']);
         $this->assertEquals('shared', $balance['account_type']);
         $this->assertEquals($balanceBefore - 1000, $balance['balance']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals($creditBalanceBefore, $creditBalanceEntity['balance']);
 
         $creditEntities = $this->getDbEntities('credits');
         $this->assertEquals(100, $creditEntities[0]['used']);
@@ -271,13 +244,7 @@ class CitiPayoutTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -310,9 +277,6 @@ class CitiPayoutTest extends TestCase
         $this->assertNull($balance['channel']);
         $this->assertEquals('shared', $balance['account_type']);
         $this->assertEquals($balanceBefore - 1000, $balance['balance']);
-
-        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(0, $creditBalanceEntity['balance']);
 
         $creditEntity = $this->getLastEntity('credits', true);
         $this->assertEquals(500, $creditEntity['used']);
@@ -434,9 +398,6 @@ class CitiPayoutTest extends TestCase
     // and the 2nd one will will debitted from banking balance completely
     public function testCreatePayoutForCitiToCardViaNEFTRewardFeeCreditsWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->create(
             'fund_account',
             [
@@ -740,13 +701,7 @@ class CitiPayoutTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 500 ]);
-
-        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
-
         $creditEntity = $this->getDbLastEntity('credits');
-
-        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
         $balance = $this->getLastEntity('balance', true);
 
@@ -787,8 +742,6 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals(2, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(20000002, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
-        $balance = $this->getLastEntity('credit_balance', true);
-        $this->assertEquals(500, $balance['balance']);
         $payouts = $this->getDbEntities('payout');
         $this->assertNull($payouts[0]['fee_type']);
         $this->assertNull($payouts[1]['fee_type']);
@@ -819,9 +772,6 @@ class CitiPayoutTest extends TestCase
 
     public function testCreateQueuedPayoutWithModeSetWithCreditsWithNewCreditsFlow()
     {
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'payout_credits_new_flow']);
-
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);

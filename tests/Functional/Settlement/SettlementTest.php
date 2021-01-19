@@ -202,10 +202,11 @@ class SettlementTest extends TestCase
         $this->fixtures->create(
             'payout',
             [
-                'amount'     => '1000',
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'amount'            =>      '1000',
+                'currency'          =>      'INR',
+                'created_at'        =>      $createdAt,
+                'updated_at'        =>      $createdAt + 10,
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
 
         $channel = Channel::AXIS;
