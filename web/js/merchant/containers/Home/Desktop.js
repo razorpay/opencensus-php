@@ -335,6 +335,7 @@ class AnalyticsDesktop extends Component {
                 class="Button--secondary Button scheduled-btn-act btn-border"
                 onClick={() => {}}
                 to="/profile#gst"
+                style={{ display: 'inline-block', marginTop: '4px' }}
               >
                 Review address
               </Link>

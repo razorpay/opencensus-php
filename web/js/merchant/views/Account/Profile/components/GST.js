@@ -23,6 +23,8 @@ export default class GSTDetails extends Component {
     business_suggested_pin: null,
     newAddressFetchFailed: false,
     optOutSuccess: null,
+    activationResponse: null,
+    selfServeStatus: null,
   };
 
   GSTSection = React.createRef(null);
@@ -33,6 +35,7 @@ export default class GSTDetails extends Component {
 
   componentDidMount() {
     this.fetchNewAddress();
+    this.getSelfServeStatus();
 
     // scroll directly to GST section
     if (location.hash.startsWith('#gst') && this.GSTSection.current)
@@ -47,7 +50,18 @@ export default class GSTDetails extends Component {
   openAddGSTModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AddGST />,
+      component: (
+        <AddGST
+          suggestedAddress={this.state.business_suggested_address}
+          suggestedPin={this.state.business_suggested_pin}
+          showGSTINSelfServe={this.showGSTINSelfServe}
+          user={this.props.user}
+          showNotification={this.props.showNotification}
+          activationData={this.state.activationResponse}
+          selfServeStatus={this.state.selfServeStatus}
+          fetchStatus={this.getSelfServeStatus}
+        />
+      ),
     });
   };
 
@@ -57,6 +71,7 @@ export default class GSTDetails extends Component {
       // Truly successful
       if (data && success) {
         this.setState({
+          activationResponse: data,
           business_suggested_address: data.business_suggested_address
             ? data.business_suggested_address
             : '',
@@ -80,6 +95,15 @@ export default class GSTDetails extends Component {
       url: `merchants/me/features?features[suggested_address_opt_in]=0&should_sync=1`,
       method: 'POST',
     });
+
+  getSelfServeStatus = async () => {
+    try {
+      const response = await merchantFetch(`merchant/gstin_self_serve`);
+      if (response) this.setState({ selfServeStatus: response.data.status });
+    } catch (error) {
+      // empty block
+    }
+  };
 
   updateOptOutSuccess = (value) => this.setState({ optOutSuccess: value });
 
@@ -128,17 +152,27 @@ export default class GSTDetails extends Component {
   render() {
     let { merchant_gst, rzp_gst, user } = this.props;
     let { business_suggested_address, business_suggested_pin } = this.state;
+    const title = merchant_gst.gstin ? `Update GST details` : `Add GST details`;
 
     return (
       <div class="panel panel-default" ref={this.GSTSection}>
         <div class="panel-heading">
           GST Details
           <ShowWhen
-            additionalCondition={(user) => user.isAllowedEdit('profile') && !merchant_gst.gstin}
+            additionalCondition={(user) =>
+              user.isAllowedEdit('profile') && user.isFeatureEnabled(`gstin_self_serve`)
+            }
           >
-            <span class="pull-right">
-              <a onClick={this.openAddGSTModal}>Add your GST details</a>
-            </span>
+            {this.state.selfServeStatus === 'not_started' && (
+              <span class="pull-right">
+                <a onClick={this.openAddGSTModal}>{title}</a>
+              </span>
+            )}
+            {this.state.selfServeStatus === 'in_progress' && (
+              <span class="pull-right">
+                <a>Request under review</a>
+              </span>
+            )}
           </ShowWhen>
         </div>
         <div class="list-group details-row-container">
