@@ -112,6 +112,14 @@ class Constants
     const REGISTERED_ADDRESS  = 'registered_address';
     const ADDRESS             = 'address';
 
+    // GSTIN update self serve flow related constants
+    const GSTIN_SELF_SERVE_V1_FLOW                          = 'v1';
+    const GSTIN_SELF_SERVE_V2_FLOW                          = 'v2';
+    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  = 90 * 24 * 60 * 60; // 90 days
+    const GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT           = 'gstin_self_serve_input_%s';
+    const GSTIN_SELF_SERVE_STATUS_NOT_STARTED               = 'not_started';
+    const GSTIN_SELF_SERVE_STATUS_IN_PROGRESS               = 'in_progress';
+
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
 

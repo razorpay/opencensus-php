@@ -378,6 +378,18 @@ class Validator extends Base\Validator
         Entity::SEND_ACTIVATION_EMAIL       => 'sometimes|in:0,1',
     ];
 
+    protected static $gstinSelfServeRules = [
+        Entity::GSTIN                       => 'filled|string|size:15',
+        Entity::BUSINESS_REGISTERED_ADDRESS => 'required|max:255',
+        Entity::BUSINESS_REGISTERED_STATE   => 'required|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_CITY    => 'required|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_PIN     => 'required|size:6',
+    ];
+
+    protected static $gstinSelfServeValidators = [
+        'gstin_self_serve_not_in_progress',
+    ];
+
     public function validateDocumentUpload(array $input)
     {
         if (empty($input) === true)
@@ -1114,5 +1126,17 @@ class Validator extends Base\Validator
         $currentActivationStatus = $merchantDetails->getActivationStatus();
 
         return (($batchFlow === true) and ($currentActivationStatus !== null) === false);
+    }
+
+    protected function validateGstinSelfServeNotInProgress()
+    {
+        $status = (new Merchant\Detail\Service)->getGstinSelfServeStatus();
+
+        if ($status === Merchant\Detail\Constants::GSTIN_SELF_SERVE_STATUS_NOT_STARTED)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_GSTIN_SELF_SERVE_IN_PROGRESS);
     }
 }

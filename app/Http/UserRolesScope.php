@@ -93,6 +93,8 @@ class UserRolesScope
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
             'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_users'                => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'merchant_gstin_self_serve_status'    => [Role::OWNER, Role::ADMIN],
+            'merchant_gstin_self_serve_update'    => [Role::OWNER, Role::ADMIN],
 
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],

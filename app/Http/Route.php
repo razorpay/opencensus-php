@@ -485,6 +485,8 @@ class Route
         'admin_key_migrate_to_credcase'            => ['post',     'admin/keys/migrate_to_credcase',                 'KeyController@migratetoCredcase'                                   ],
         'merchant_gst_fetch'                       => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
         'merchant_gst_edit'                        => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
+        'merchant_gstin_self_serve_status'         => ['get',      'merchant/gstin_self_serve',                      'MerchantController@getGstinSelfServeStatus'                        ],
+        'merchant_gstin_self_serve_update'         => ['post',     'merchant/gstin_self_serve',                      'MerchantController@postGstinSelfServe'                             ],
         'merchant_international_toggle'            => ['patch',    'merchant/international',                         'MerchantController@toggleInternational'                            ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
@@ -3135,6 +3137,8 @@ class Route
         'merchant_replace_key',
         'merchant_gst_fetch',
         'merchant_gst_edit',
+        'merchant_gstin_self_serve_status',
+        'merchant_gstin_self_serve_update',
         'merchant_international_toggle',
         'merchant_activation_details',
         'merchant_get_disabled_banks',
@@ -6199,6 +6203,8 @@ class Route
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
+        'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
+        'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
     ];
 
     /*

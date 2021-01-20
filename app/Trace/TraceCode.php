@@ -3781,6 +3781,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const VAULT_PING_REQUEST_FAILED = 'VAULT_PING_REQUEST_FAILED';
 
+    // GSTIN Self serve related trace codes
+    const GSTIN_UPDATE_SELF_SERVE_INITIATED                   = 'GSTIN_UPDATE_SELF_SERVE_INITIATED';
+
     //
     // BVS related trace codes
     //

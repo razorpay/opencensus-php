@@ -2035,6 +2035,60 @@ return [
         ],
     ],
 
+    'getSelfServeGetStatus'   => [
+        'request' => [
+                'url'       => '/merchant/gstin_self_serve',
+                'method'    => 'GET',
+        ],
+        'response' => [
+            'content'   => [
+                'status'    => 'not_started',
+            ],
+        ],
+    ],
+
+    'testUpdateGstinSelfServe'      => [
+        'request'   => [
+            'url'       => '/merchant/gstin_self_serve',
+            'method'    => 'POST',
+            'content'   => [
+                'gstin'                       => '18AABCU9603R1ZM',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+
+            ],
+        ],
+    ],
+
+    'testUpdateGstinSelfServeInvalidUserRole'      => [
+        'request'   => [
+            'url'       => '/merchant/gstin_self_serve',
+            'method'    => 'POST',
+            'content'   => [
+                'gstin'                       => '18AABCU9603R1ZM',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'              => 'BAD_REQUEST_ERROR',
+                    'description'       => 'Authentication failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     //
     // content is being set dynamically in test cases itself
     //

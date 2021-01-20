@@ -1008,6 +1008,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getGstinSelfServeStatus()
+    {
+        $status = $this->service(E::MERCHANT_DETAIL)->getGstinSelfServeStatus();
+
+        return ApiResponse::json(['status' => $status]);
+    }
+
+    public function postGstinSelfServe()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateGstinSelfServe($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateActivationArchive(string $id)
     {
         $input = Request::all();

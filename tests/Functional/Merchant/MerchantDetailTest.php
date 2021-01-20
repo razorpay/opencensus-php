@@ -14,6 +14,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\Merchant\Rejection;
 use Illuminate\Http\UploadedFile;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -2594,6 +2595,109 @@ class MerchantDetailTest extends OAuthTestCase
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
     }
 
+    public function testUpdateGstinSelfServe()
+    {
+        $this->fixtures->merchant->addFeatures('gstin_self_serve');
+
+        $this->assertGstinSelfServeStatus('not_started');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $data = $this->app['cache']->get('gstin_self_serve_input_10000000000000');
+
+        $this->assertEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => 'Registered Address',
+            'business_registered_state'   => 'DL',
+            'business_registered_city'    => 'Delhi',
+            'business_registered_pin'     => '560050',
+        ], $data);
+
+        $this->assertGstinSelfServeStatus('in_progress');
+    }
+
+    public function testUpdateGstinSelfServeWhenInProgressShouldFail()
+    {
+        $this->fixtures->merchant->addFeatures('gstin_self_serve');
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
+        $this->startTest();
+
+        $this->assertGstinSelfServeStatus('in_progress');
+
+        // changing the content and asserting that the data in cache didnt get over-written(changes to address, state and pin)
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'gstin'                       => '18AABCU9603R1ZN',
+            'business_registered_address' => 'random Address',
+            'business_registered_state'   => 'KA',
+            'business_registered_city'    => 'Karnataka',
+            'business_registered_pin'     => '560030',
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('already in progress');
+
+        $this->startTest();
+
+        $data = $this->app['cache']->get('gstin_self_serve_input_10000000000000');
+
+        // asserting only data created in first call is stored
+        $this->assertEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => 'Registered Address',
+            'business_registered_state'   => 'DL',
+            'business_registered_city'    => 'Delhi',
+            'business_registered_pin'     => '560050',
+        ], $data);
+    }
+
+    public function testUpdateGstinSelfServeInvalidUserRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $invalidRoles = [
+            'manager',
+            'operations',
+            'finance',
+            'support',
+            'sellerapp',
+            'linked_account_owner',
+            'linked_account_admin',
+            'rbl_supervisor',
+            'rbl_agent',
+            'view_only',
+            'auth_link_supervisor',
+            'auth_link_agent',
+        ];
+
+        $this->fixtures->merchant->addFeatures('gstin_self_serve', $merchant['id']);
+
+
+        foreach ($invalidRoles as $invalidRole)
+        {
+            $user = $this->fixtures->create('user');
+
+            $mappingData = [
+                'user_id'     => $user['id'],
+                'merchant_id' => $merchant['id'],
+                'role'        => $invalidRole,
+            ];
+
+            $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+            $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+            $this->startTest();
+        }
+    }
+
     protected function createBalanceForSharedMerchant()
     {
         $balanceData = [
@@ -2852,5 +2956,16 @@ class MerchantDetailTest extends OAuthTestCase
         {
             $this->assertEquals($fieldValue, $content[$fieldKey] ?? '');
         }
+    }
+
+    protected function assertGstinSelfServeStatus(string $expectedStatus)
+    {
+        $this->ba->proxyAuth();
+
+        $data = $this->testData['getSelfServeGetStatus'];
+
+        $data['response']['content']['status'] = $expectedStatus;
+
+        $this->startTest($data);
     }
 }

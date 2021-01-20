@@ -1322,4 +1322,78 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function getGstinSelfServeStatus()
+    {
+        $status = DEConstants::GSTIN_SELF_SERVE_STATUS_NOT_STARTED;
+
+        $data = $this->getGstinSelfServeInputFromCache();
+
+        if ($data !== null)
+        {
+            $status = DEConstants::GSTIN_SELF_SERVE_STATUS_IN_PROGRESS;
+        }
+
+        return $status;
+    }
+
+    public function updateGstinSelfServe($input)
+    {
+        $this->validator->validateInput('gstin_self_serve', $input);
+
+        $flow = $this->getGstinSelfServeFlow();
+
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, [
+            'input' => $input,
+            'flow'  => $flow,
+        ]);
+
+        $this->storeGstinSelfServeInput($input);
+
+        switch ($flow)
+        {
+            case DEConstants::GSTIN_SELF_SERVE_V2_FLOW:
+                $response = $this->updateGstinSelfServeV2($input);
+                break;
+            case DEConstants::GSTIN_SELF_SERVE_V1_FLOW:
+            default:
+                $response = $this->updateGstinSelfServeV1($input);
+        }
+
+        return $response;
+    }
+
+    protected function getGstinSelfServeFlow()
+    {
+        return DEConstants::GSTIN_SELF_SERVE_V1_FLOW;
+    }
+
+    protected function updateGstinSelfServeV1($input)
+    {
+        return $input;
+    }
+
+    protected function updateGstinSelfServeV2($input)
+    {
+        throw new Exception\ServerErrorException('not implemented', ErrorCode::SERVER_ERROR);
+    }
+
+    protected function storeGstinSelfServeInput($input)
+    {
+        $cacheKey = $this->getGstinSelfServeInputCacheKey();
+
+        $this->app['cache']->put($cacheKey, $input, DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_TTL);
+    }
+
+    protected function getGstinSelfServeInputCacheKey()
+    {
+        return sprintf(DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT, $this->merchant->getId());
+    }
+
+    protected function getGstinSelfServeInputFromCache()
+    {
+        $cacheKey = $this->getGstinSelfServeInputCacheKey();
+
+        return $this->app['cache']->get($cacheKey);
+    }
 }

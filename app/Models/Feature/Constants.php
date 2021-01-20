@@ -166,6 +166,7 @@ class Constants
 
     const P2P_UPI                         = 'p2p_upi';
 
+    const GSTIN_SELF_SERVE                = 'gstin_self_serve';
     /**
       Prevents user to switch to test mode from live mode
     */
@@ -827,6 +828,7 @@ class Constants
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
+        self::GSTIN_SELF_SERVE                => true,
         self::DIRECT_TRANSFER                 => true,
     ];
 
