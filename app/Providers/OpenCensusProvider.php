@@ -9,6 +9,7 @@ use RZP\Constants\Tracing;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Tracer;
@@ -71,6 +72,8 @@ class OpenCensusProvider extends ServiceProvider
 
         $attrs = Tracing::getBasicSpanAttributes($this->app);
         $attrs['span.kind'] = 'server';
+        $attrs['http.url'] = URL::current();
+
 
         $spanOptions = ['name' => $parametrizedRoute, 'attributes' => $attrs];
 
