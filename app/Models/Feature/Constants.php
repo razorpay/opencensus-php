@@ -1209,6 +1209,11 @@ class Constants
             'display_name'  => 'Required to make direct transfers',
             'documentation' => '',
         ],
+        self::GSTIN_SELF_SERVE => [
+            'feature'       => self::GSTIN_SELF_SERVE,
+            'display_name'  => 'gstin self serve flow',
+            'documentation' => '',
+        ],
     ];
 
     /**
