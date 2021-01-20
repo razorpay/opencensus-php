@@ -13,7 +13,7 @@ class Reconciliator extends Mock\PaymentReconciliator
 {
     public function __construct()
     {
-        $this->gateway = Gateway::KOTAK;
+        $this->gateway = Gateway::NETBANKING_KOTAK;
 
         $this->fileExtension = 'txt';
 

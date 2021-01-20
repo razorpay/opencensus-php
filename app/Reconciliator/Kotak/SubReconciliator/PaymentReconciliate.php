@@ -14,6 +14,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
     const COLUMN_PAYMENT_AMOUNT = 'amount';
+    const BANK_REFERENCE_NO     = 'bank_reference_no';
 
     const BLACKLISTED_COLUMNS = [
         'contact_no',
@@ -55,5 +56,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $paymentId;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::BANK_REFERENCE_NO] ?? null;
+    }
+
+    protected function getArn($row)
+    {
+        return $row[self::BANK_REFERENCE_NO] ?? null;
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer' => [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
     }
 }
