@@ -8,7 +8,7 @@ const SettlementGuideText = ({ user }) => {
       <div className="col-md-6 col-md-offset-3 col-sm-12 text-center">
         <div>The amount that gets settled to your bank account will show up here.</div>
         <div>
-          {user.isOrgAllowedFunctionality('external_links') ? (
+          {(user && user.isOrgAllowedFunctionality('external_links')) ? (
             <a
               className="btn-link"
               target="_blank"
@@ -18,8 +18,8 @@ const SettlementGuideText = ({ user }) => {
               See our Settlements Guide
             </a>
           ) : (
-            'See the Settlements Guide'
-          )}{' '}
+              'See the Settlements Guide'
+            )}{' '}
           to understand how it works.
         </div>
       </div>
