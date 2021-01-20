@@ -20,7 +20,7 @@ class Bank
         IFSC::CIUB         => 1020,     // City Union Bank
         IFSC::CNRB         => 1030,     // Canara Bank
         IFSC::CNRB         => 1030,     // Canara Bank NB
-        IFSC::CORP         => 1004,     // Corporation Bank
+        IFSC::CORP         => 1016,     // Corporation Bank
         IFSC::CSBK         => 1031,     // Catholic Syrian Bank
         IFSC::DBSS         => 1047,     // DBS Bank Ltd
         IFSC::DCBL         => 1027,     // DCB Bank, Development Credit Bank

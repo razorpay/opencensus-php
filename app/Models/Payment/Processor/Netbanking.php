@@ -319,6 +319,7 @@ class Netbanking
                 IFSC::CBIN,
                 IFSC::CIUB,
                 IFSC::CNRB,
+                IFSC::CORP,
                 IFSC::DBSS,
                 IFSC::DCBL,
                 IFSC::DEUT,
