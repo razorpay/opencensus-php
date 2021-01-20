@@ -15,7 +15,7 @@ run_bvt_suite_when_approved() {
   for r in $reviews; do
     review="$(echo "$r" | base64 -d)"
     rState=$(echo "$review" | jq --raw-output '.state')
-    if ([ "$rState" = "APPROVED" ] && [ "$skipRoast" = "false" ]); then
+    if [ "$rState" = "APPROVED" ]; then
       echo "Triggering webhook for bvt execution for :" $commitId
       curl -X POST \
       -u github-actions:$SPINNAKER_PASSWORD \

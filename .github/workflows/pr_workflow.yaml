@@ -53,5 +53,5 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && steps.service-changed.outputs.result == 'false' }}
       run: |
         echo "Step failed as no test file added or change"
-        echo "change skipUT variable to true in pr description to skip this step"
+        echo "change skipUTworkflow variable to true in pr description to skip this step"
         exit 1    
