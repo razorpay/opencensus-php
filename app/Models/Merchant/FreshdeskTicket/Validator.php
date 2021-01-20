@@ -53,6 +53,7 @@ class Validator extends Base\Validator
     protected static $createSupportDashboardTicketRules = [
         'name'                                                   => 'required|string',
         'email'                                                  => 'required|email',
+        'group_id'                                               => 'sometimes',
         'subject'                                                => 'required|string',
         'description'                                            => 'required|string',
         'phone'                                                  => 'sometimes',

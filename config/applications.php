@@ -343,6 +343,13 @@ return [
         'sandbox_token'                     => env('FRESHDESK_SANDBOX_TOKEN'),
         'mock'                              => env('FRESHDESK_MOCK', false),
 
+        'instance_subcategory_group_ids' => [
+            'rzpsol' => [
+                'Technical support' => env('FRESHDESK_RZPSOL_TECHNICAL_SUPPORT_GROUP_ID', ''),
+                'Integrations'      => env('FRESHDESK_RZPSOL_INTEGRATIONS_GROUP_ID', ''),
+            ],
+        ],
+
         'customer' => [
             'dispute' => [
                 'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),

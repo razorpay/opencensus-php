@@ -39,7 +39,7 @@ class Service extends Base\Service
         Constants::RZPSOL => Constants::URL2
     ];
 
-    const TECH_SUBCATEGORIES = ['Technical support'];
+    const TECH_SUBCATEGORIES = ['Technical support', 'Integrations'];
 
     public function getTicketStatus(array $response)
     {
@@ -662,15 +662,15 @@ class Service extends Base\Service
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
         if ((isset($input[Constants::CUSTOM_FIELDS]) === true) and
-            (isset($input[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY]) === true))
+            (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === true))
         {
-            $subCategory = $input[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY];
+            $subCategory = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
 
             if (in_array($subCategory, self::TECH_SUBCATEGORIES) === true)
             {
                 $fdInstance = Constants::RZPSOL;
 
-                unset($input[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY]);
+                unset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]);
             }
         }
 
@@ -918,6 +918,11 @@ class Service extends Base\Service
 
         $input['priority'] = 1;
 
+        if ($this->isRzpSolutionsTicketInput($input) === true)
+        {
+            $input[Constants::GROUP_ID] = $this->getGroupIdFromRzpSolutionsTicketInput($input);
+        }
+
         return $input;
     }
 
@@ -939,14 +944,14 @@ class Service extends Base\Service
 
     protected function getFirstResponseTimeAverageCacheKey($dimensions)
     {
-        return sprintf(Constants::CACHE_KEY_FIRST_RESPONSE_TIME_AVERAGE, $dimensions[Constants::SUB_CATEGORY], $dimensions[Constants::PRIORITY]);
+        return sprintf(Constants::CACHE_KEY_FIRST_RESPONSE_TIME_AVERAGE, $dimensions[Constants::CF_REQUESTOR_SUBCATEGORY], $dimensions[Constants::PRIORITY]);
     }
 
     protected function getFirstResponseTimeDimensions($freshdeskTicket)
     {
         $dimensions = [
-            Constants::SUB_CATEGORY => $freshdeskTicket[Constants::CUSTOM_FIELDS][Constants::SUB_CATEGORY],
-            Constants::PRIORITY     => $freshdeskTicket[Constants::PRIORITY],
+            Constants::CF_REQUESTOR_SUBCATEGORY => $freshdeskTicket[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] ?? $freshdeskTicket[Constants::CUSTOM_FIELDS][Constants::CF_SUBCATEGORY] ?? 'default',
+            Constants::PRIORITY                 => $freshdeskTicket[Constants::PRIORITY],
         ];
 
         if (is_int($dimensions[Constants::PRIORITY]) === true)
@@ -960,6 +965,36 @@ class Service extends Base\Service
     protected function getTimeInFreshdeskFormat($time)
     {
         return strftime(Constants::FRESHDESK_TIME_FORMAT, $time);
+    }
+
+    protected function isRzpSolutionsTicketInput($input)
+    {
+        if (isset($input[Constants::CUSTOM_FIELDS]) === false)
+        {
+            return false;
+        }
+
+        $customFields = $input[Constants::CUSTOM_FIELDS];
+
+        if (isset($customFields[Constants::CF_REQUESTOR_SUBCATEGORY]) === false)
+        {
+            return false;
+        }
+
+        $category = $customFields[Constants::CF_REQUESTOR_SUBCATEGORY];
+
+        return (in_array($category, self::TECH_SUBCATEGORIES, true) === true);
+    }
+
+    protected function getGroupIdFromRzpSolutionsTicketInput($input)
+    {
+        $groupIds = $this->app['config']->get('applications.freshdesk.instance_subcategory_group_ids');
+
+        $rzpSolGroupIds = $groupIds[Constants::RZPSOL];
+
+        $input['group_id'] = (int)$rzpSolGroupIds[$input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]];
+
+        return $input['group_id'];
     }
 
 }

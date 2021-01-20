@@ -373,6 +373,7 @@ class SupportTicketDashboardTest extends TestCase
                 'email' =>  'test@razorpay.com',
                 'phone' => '9876543210',
                 'priority' =>  1,
+                'group_id' => 42000097450,
             ],
             [
                 'id'            => '99',
@@ -380,7 +381,7 @@ class SupportTicketDashboardTest extends TestCase
                 'fr_due_by'     => $frDueByFreshdeskFormat,
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
-                    'cf_requestor_subcategory' => 'Activation',
+                    'cf_requestor_subcategory' => 'Technical support',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                 ],
                 'priority' =>  1,

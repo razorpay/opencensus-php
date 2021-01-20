@@ -13,7 +13,8 @@ class Constants
     const CUSTOM_FIELDS             = 'custom_fields';
     // custom fields
     const CATEGORY                  = 'cf_requester_category';
-    const SUB_CATEGORY              = 'cf_requestor_subcategory';
+    const CF_REQUESTOR_SUBCATEGORY  = 'cf_requestor_subcategory';
+    const CF_SUBCATEGORY            = 'cf_subcategory';
     const TRANSACTION_ID            = 'cf_transaction_id';
     const PAYMENT_ID                = 'cf_razorpay_payment_id';
     const REFUND_ID                 = 'cf_refund_id';
@@ -49,6 +50,7 @@ class Constants
     const CREATED_AT    = 'created_at';
     const FROM_EMAIL    = 'from_email';
     const FR_DUE_BY     = 'fr_due_by';
+    const GROUP_ID      = 'group_id';
 
     const FD_INSTANCE      = 'fd_instance';
     const FRESHDESK_CLIENT = 'freshdesk_client';

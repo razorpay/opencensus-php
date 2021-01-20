@@ -137,7 +137,7 @@ class SupportTicketFirstAgentReply extends Base
     protected function updateFirstResponseTimeData(int $firstResponseTime, array $dimensions)
     {
         $cacheKey = sprintf(self::CACHE_KEY_FIRST_RESPONSE_TIME_DATA,
-            $dimensions[FreshdeskTicket\Constants::SUB_CATEGORY],
+            $dimensions[FreshdeskTicket\Constants::CF_REQUESTOR_SUBCATEGORY],
             $dimensions[FreshdeskTicket\Constants::PRIORITY]);
 
         $firstResponseTimeData = $this->app['cache']->get($cacheKey) ?? [];
@@ -193,7 +193,7 @@ class SupportTicketFirstAgentReply extends Base
     protected function getFirstResponseTimeDataMutexResource($dimensions)
     {
         return sprintf(self::MUTEX_RESOURCE_FIRST_RESPONSE_TIME_UPDATE,
-            $dimensions[FreshdeskTicket\Constants::SUB_CATEGORY],
+            $dimensions[FreshdeskTicket\Constants::CF_REQUESTOR_SUBCATEGORY],
             $dimensions[FreshdeskTicket\Constants::PRIORITY]);
     }
 
