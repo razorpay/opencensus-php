@@ -141,7 +141,7 @@ export default class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        {this.props.user.isSubscriptionOffersEnabled && <SubscriptionOffersLaunchBanner />}
+        {!this.props.user.isChargeAtWillEnabled && <SubscriptionOffersLaunchBanner />}
 
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
