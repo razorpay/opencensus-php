@@ -5,23 +5,23 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 dSdWzn"
+          class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 AleMW"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
+              class="Textweb__Text-dvo2dp-0 yfwTW"
               color="shade.980"
               data-testid="ds-text"
             >
               PAN Details
             </div>
             <div
-              class="Textweb__Text-sc-6jf9e4-0 efltvN"
+              class="Textweb__Text-dvo2dp-0 dIxukN"
               color="shade.950"
               data-testid="ds-text"
             >
@@ -29,28 +29,28 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -60,10 +60,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="promoter_pan"
                           placeholder="Enter text here"
@@ -73,7 +73,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -81,25 +81,25 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                  class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                      class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                     >
                       <label
-                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                         color="shade.980"
                         data-testid="ds-text"
                         value=""
@@ -109,10 +109,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </label>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                     >
                       <input
-                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                         data-testid="ds-text-input"
                         name="promoter_pan_name"
                         placeholder="Enter text here"
@@ -122,17 +122,17 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                     </div>
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                    class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                   />
                 </div>
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 kNGuEF"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 libPPx Spaceweb__Space-njatzl-0 cUyWDv"
+                    class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 cndXnK Spaceweb__Space-sc-1gh69p2-0 cwrKW"
                   >
                     <div
-                      class="Textweb__Text-sc-6jf9e4-0 krUdvH"
+                      class="Textweb__Text-dvo2dp-0 cqcyer"
                       color="shade.950"
                       data-testid="ds-text"
                     >
@@ -145,13 +145,13 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
           </div>
         </div>
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
+          class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 gmQKaB"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
+              class="Textweb__Text-dvo2dp-0 yfwTW"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -159,28 +159,28 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -190,10 +190,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <textarea
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-area"
                           name="business_registered_address"
                           placeholder=""
@@ -204,7 +204,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -212,28 +212,28 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -243,10 +243,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="business_registered_pin"
                           placeholder="Enter text here"
@@ -256,7 +256,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -264,28 +264,28 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -295,10 +295,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="business_registered_city"
                           placeholder="Enter text here"
@@ -308,7 +308,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -316,25 +316,25 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                  class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                      class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                     >
                       <label
-                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                         color="shade.980"
                         data-testid="ds-text"
                         value=""
@@ -344,10 +344,10 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                       </label>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                     >
                       <input
-                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                         data-testid="ds-text-input"
                         name="business_registered_state"
                         placeholder="Enter text here"
@@ -357,7 +357,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
                     </div>
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                    class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                   />
                 </div>
               </div>
@@ -381,16 +381,16 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
+          class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 gmQKaB"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
+              class="Textweb__Text-dvo2dp-0 yfwTW"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -398,28 +398,28 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -429,10 +429,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="contact_name"
                           placeholder="Enter text here"
@@ -442,7 +442,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -450,28 +450,28 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -481,10 +481,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="contact_email"
                           placeholder="Enter text here"
@@ -494,17 +494,17 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
+                    class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 kNGuEF"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 libPPx Spaceweb__Space-njatzl-0 cUyWDv"
+                      class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 cndXnK Spaceweb__Space-sc-1gh69p2-0 cwrKW"
                     >
                       <div
-                        class="Textweb__Text-sc-6jf9e4-0 krUdvH"
+                        class="Textweb__Text-dvo2dp-0 cqcyer"
                         color="shade.950"
                         data-testid="ds-text"
                       >
@@ -517,25 +517,25 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                  class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                      class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                     >
                       <label
-                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                         color="shade.980"
                         data-testid="ds-text"
                         value=""
@@ -545,10 +545,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                       </label>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                     >
                       <input
-                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                         data-testid="ds-text-input"
                         name="contact_number"
                         placeholder="Enter text here"
@@ -558,7 +558,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
                     </div>
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                    class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                   />
                 </div>
               </div>
@@ -582,23 +582,23 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 lhSUkp"
+        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-njatzl-0 eWuFOc"
+          class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 gmQKaB"
         >
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 eUUzSK"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-sc-6jf9e4-0 jAapKa"
+              class="Textweb__Text-dvo2dp-0 yfwTW"
               color="shade.980"
               data-testid="ds-text"
             >
               Contact Details
             </div>
             <div
-              class="Textweb__Text-sc-6jf9e4-0 lcSscp"
+              class="Textweb__Text-dvo2dp-0 iDwqd"
               color="negative.900"
               data-testid="ds-text"
             >
@@ -606,28 +606,28 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -637,10 +637,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="contact_name"
                           placeholder="Enter text here"
@@ -650,7 +650,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                 </div>
@@ -658,28 +658,28 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Spaceweb__Space-njatzl-0 iaExCi"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cmpOZL"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                     >
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                        class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                       >
                         <label
-                          class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                          class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                           color="shade.980"
                           data-testid="ds-text"
                           value=""
@@ -689,10 +689,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                         </label>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                       >
                         <input
-                          class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                          class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                           data-testid="ds-text-input"
                           name="contact_email"
                           placeholder="Enter text here"
@@ -702,17 +702,17 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                      class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                     />
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 jxcXPq"
+                    class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 kNGuEF"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 libPPx Spaceweb__Space-njatzl-0 cUyWDv"
+                      class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 cndXnK Spaceweb__Space-sc-1gh69p2-0 cwrKW"
                     >
                       <div
-                        class="Textweb__Text-sc-6jf9e4-0 krUdvH"
+                        class="Textweb__Text-dvo2dp-0 cqcyer"
                         color="shade.950"
                         data-testid="ds-text"
                       >
@@ -725,25 +725,25 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 btLJAM"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
           >
             <div
-              class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 hjAxCH"
+              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
             >
               <div
-                class="Viewweb__View-sc-1cphyjf-0 lhSUkp Flexweb__Flex-ni2cjg-0 fsjcxB"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
               >
                 <div
-                  class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InteractionContainer-sc-199z6oj-3 biXCuL"
+                  class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
                 >
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 TextInputweb__FillContainer-sc-199z6oj-2 emyWjc Spaceweb__Space-njatzl-0 gfWbbX Sizeweb__Size-sc-10bl685-0 ecrXiG"
+                    class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
                   >
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 Labelweb__FloatView-jw60wd-0 kOyWtk Spaceweb__Space-njatzl-0 ebahRE"
+                      class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
                     >
                       <label
-                        class="Textweb__Text-sc-6jf9e4-0 Labelweb__StyledText-jw60wd-1 gkCBhw"
+                        class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
                         color="shade.980"
                         data-testid="ds-text"
                         value=""
@@ -753,10 +753,10 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                       </label>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1cphyjf-0 TextInputweb__InputContainer-sc-199z6oj-0 btXkAA Sizeweb__Size-sc-10bl685-0 juRaGm Flexweb__Flex-ni2cjg-0 jOkEVe"
+                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
                     >
                       <input
-                        class="TextInputweb__StyledInput-sc-199z6oj-1 BTdep Sizeweb__Size-sc-10bl685-0 ccPMIj Spaceweb__Space-njatzl-0 ka-DExz Flexweb__Flex-ni2cjg-0 libPPx"
+                        class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
                         data-testid="ds-text-input"
                         name="contact_number"
                         placeholder="Enter text here"
@@ -766,7 +766,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
                     </div>
                   </div>
                   <div
-                    class="Viewweb__View-sc-1cphyjf-0 Lineweb__Line-jxwo4z-0 cYqKhO"
+                    class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
                   />
                 </div>
               </div>

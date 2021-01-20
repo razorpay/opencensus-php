@@ -5,10 +5,10 @@ exports[`Storyshots Onboarding/ActivationProgress Greylisted Merchant 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 Loader__FullPageView-js6czr-1 hfDGgf Flexweb__Flex-ni2cjg-0 gOmkjy"
+        class="Viewweb__View-sc-1i53gcl-0 Loader__FullPageView-js6czr-1 hfDGgf Flexweb__Flex-h5ddrw-0 iNMNUh"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
+          class="Viewweb__View-sc-1i53gcl-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-t4oux4-0 jLrskc"
           role="loader"
         />
       </div>
@@ -28,10 +28,10 @@ exports[`Storyshots Onboarding/ActivationProgress Whitelisted Merchant 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1cphyjf-0 Loader__FullPageView-js6czr-1 hfDGgf Flexweb__Flex-ni2cjg-0 gOmkjy"
+        class="Viewweb__View-sc-1i53gcl-0 Loader__FullPageView-js6czr-1 hfDGgf Flexweb__Flex-h5ddrw-0 iNMNUh"
       >
         <div
-          class="Viewweb__View-sc-1cphyjf-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-sc-10bl685-0 bPIJuv"
+          class="Viewweb__View-sc-1i53gcl-0 Loader__StyledLoader-js6czr-0 bUSzcZ Sizeweb__Size-t4oux4-0 jLrskc"
           role="loader"
         />
       </div>

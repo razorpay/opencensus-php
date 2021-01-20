@@ -5,12 +5,12 @@ exports[`Storyshots Onboarding/ActivationModals/Enable Settlements Modal 1`] = `
   <div>
     <div>
       <button
-        class="Buttonweb__StyledButton-gxhxmy-0 ddCfrZ Spaceweb__Space-njatzl-0 jGLucJ Sizeweb__Size-sc-10bl685-0 bPNzzG Flexweb__Flex-ni2cjg-0 dfbkqx"
+        class="Buttonweb__StyledButton-sc-1bczm74-0 euGXoT Spaceweb__Space-sc-1gh69p2-0 cBHCOI Sizeweb__Size-t4oux4-0 fGgZzx Flexweb__Flex-h5ddrw-0 iZAQVi"
         data-testid="ds-button"
         type="button"
       >
         <div
-          class="Textweb__Text-sc-6jf9e4-0 dxOYOr"
+          class="Textweb__Text-dvo2dp-0 hFSNKL"
           color="light.900"
           data-testid="ds-text"
         >
