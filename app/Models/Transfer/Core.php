@@ -48,6 +48,12 @@ class Core extends Base\Core
             TraceCode::TRANSFER_CREATE_REQUEST,
             ['input' => $input]);
 
+//      Commenting this for now. Will get the feature flag enabled for the required merchants and then uncomment this.
+//        if (isset($input[ToType::ACCOUNT]) === true)
+//        {
+//            $this->checkForDirectTransferFeature($merchant);
+//        }
+
         $this->validateMerchantForTransfer($merchant);
 
         $validator = new Validator;
@@ -730,5 +736,19 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.transfer.failed', $eventPayload);
+    }
+
+    protected function checkForDirectTransferFeature(Merchant\Entity $merchant)
+    {
+        if ($merchant->hasDirectTransferFeature() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DIRECT_TRANSFER_FEATURE_NOT_ENABLED,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
     }
 }

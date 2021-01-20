@@ -1893,6 +1893,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::SKIP_WEBSITE_INTERNAT) === true);
     }
 
+    public function hasDirectTransferFeature()
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::DIRECT_TRANSFER));
+    }
+
     public function isOptionalEmailAllowedAggregator(): bool
     {
         return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));

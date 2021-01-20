@@ -541,6 +541,8 @@ class Constants
 
     const SUGGESTED_ADDRESS_OPT_IN         = 'suggested_address_opt_in';
 
+    const DIRECT_TRANSFER                   = 'direct_transfer';
+
     const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
 
     /**
@@ -825,6 +827,7 @@ class Constants
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
+        self::DIRECT_TRANSFER                 => true,
     ];
 
     // Entity type constants
@@ -1197,6 +1200,11 @@ class Constants
         self::SUGGESTED_ADDRESS_OPT_IN  => [
             'feature'       => self::SUGGESTED_ADDRESS_OPT_IN,
             'display_name'  => 'Update correct pin and address for the merchant business',
+            'documentation' => '',
+        ],
+        self::DIRECT_TRANSFER => [
+            'feature'       => self::DIRECT_TRANSFER,
+            'display_name'  => 'Required to make direct transfers',
             'documentation' => '',
         ],
     ];
