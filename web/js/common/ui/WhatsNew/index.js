@@ -358,6 +358,11 @@ export default class WhatsNew extends Component {
       'NOV20-PG-BANKUPDATE',
       'Nov20-Opfin-NitroV2',
       'DEC20-PayPal-GTM',
+      'whats-new-upi-pl-jan2021',
+      'whats-new-subs-btn-jan2021',
+      'whats-new-pp-80gReciepts-jan2021',
+      'whats-new-subs-pause-jan2021',
+      'whats-new-paypal-nocode-jan2021',
     ];
     const hasUnread = !!this.state.totalUnread;
 
