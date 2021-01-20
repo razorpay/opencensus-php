@@ -163,7 +163,7 @@ class FreshchatTest extends TestCase
         {
             $this->assertEquals('Freshchat chat dump from 2020-09-12T12:12:40Z to 2020-09-13T12:12:40Z (UTC)', $mail->subject);
 
-            $this->assertCount(4, $mail->to);
+            $this->assertCount(1, $mail->to);
 
             $this->assertCount(2, $mail->attachments);
 

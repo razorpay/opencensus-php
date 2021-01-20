@@ -71,6 +71,8 @@ class FreshchatClient
 
     protected function sendFreshchatEmailDump($response, $metadata)
     {
+        $this->validateReportResponse($response);
+
         $linkObjects = $response['links'];
 
         $mailData = [
@@ -217,6 +219,14 @@ class FreshchatClient
             // rethrowing a new exception because the stack trace for `$throwable` contains s3 link
             throw new IntegrationException('failed to get freshchat report link content',
             ErrorCode::SERVER_ERROR_FRESHCHAT_INTEGRATION_ERROR);
+        }
+    }
+
+    protected function validateReportResponse($response)
+    {
+        if ($response['status'] === 'PENDING')
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHCHAT_ERROR, 'status');
         }
     }
 }

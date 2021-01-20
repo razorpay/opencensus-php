@@ -9,13 +9,8 @@ use RZP\Mail\Base\Mailable;
 class FreshchatReport extends Mailable
 {
 
-    // todo: temporarily adding individual emails. will be updated to googlegroup email id shortly
-    // https://razorpay.slack.com/archives/C01CS8YBEQZ/p1610976070042000?thread_ts=1610964451.039000&cid=C01CS8YBEQZ
     const RECIPIENTS = [
-        'saimadhav.heblikar@razorpay.com',
-        'madhan.g@razorpay.com',
-        'tejas.v@razorpay.com',
-        'karishma.bhowmik@razorpay.com',
+        'chat-reports@razorpay.com ',
     ];
     /**
      * Create a new message instance.
