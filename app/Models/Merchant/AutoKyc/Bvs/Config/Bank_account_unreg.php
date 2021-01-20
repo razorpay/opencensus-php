@@ -32,7 +32,7 @@ class Bank_account_unreg extends BaseConfig
                                 [
                                     'var' => 'artefact.details.account_holder_names.0.value'
                                 ],
-                                51,
+                                81,
                             ],
                         ]
                     ]

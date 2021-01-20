@@ -60,7 +60,7 @@ class Cancelled_cheque_ocr_reg extends BaseConfig
                                         [
                                             'var' => 'artefact.details.account_holder_names.0.value'
                                         ],
-                                        51,
+                                        81,
                                     ],
                                 ]
                             ]
@@ -78,7 +78,7 @@ class Cancelled_cheque_ocr_reg extends BaseConfig
                                         [
                                             'var' => 'artefact.details.account_holder_names.1.value'
                                         ],
-                                        51,
+                                        81,
                                         [
                                             "private limited",
                                             "limited liability partnership",
