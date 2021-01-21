@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiIcici;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -15,6 +16,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Models\Payment\PaymentMeta\MismatchAmountReason;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Reconciliator\UpiIcici\SubReconciliator\PaymentReconciliate;
@@ -610,6 +612,94 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertSame('000000000002', $upi->getNpciReferenceId());
     }
 
+    public function testAllowedAmountMismatch()
+    {
+        config()->set('app.recon.allow_mismatch', true);
+
+        $createdAt  = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+        $diff       = 100;
+        $amount     = $this->payment['amount'];
+
+        $override = [
+            'status'                => 'failed',
+            'authorized_at'         => null,
+            'created_at'            => $createdAt,
+            'internal_error_code'   => 'SERVER_ERROR_AMOUNT_TAMPERED',
+            'error_code'            => 'SERVER_ERROR',
+            'error_description'     => 'The server encountered an error. The incident has been reported to admins.'
+        ];
+        // We will create four payment IDs where first two will be allowed and next two will not be
+        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount - $diff),      1];
+        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount + $diff),      1];
+        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount - $diff - 1),  0];
+        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount + $diff + 1),  0];
+
+        $dsTerminal = $this->fixtures->create('terminal:direct_settlement_upi_icici_terminal');
+        $dsOverride = array_merge([
+            'terminal_id'   => $dsTerminal->getId(),
+        ], $override);
+
+        // For DS merchants not even single paisa is allowed for amount mismatch
+        $payments[$this->doUpiIciciPayment($dsOverride)] = [amount_format_IN($amount - 1),       0];
+
+        // No we will change the amount in recon
+        $this->reconcileWithMock(
+            function(& $content) use ($payments)
+            {
+                $content['amount'] = $payments[$content['merchantTranID']][0];
+            });
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertArraySubset([
+            Batch\Entity::TOTAL_COUNT       => 5,
+            Batch\Entity::PROCESSED_COUNT   => 5,
+            Batch\Entity::SUCCESS_COUNT     => 2,
+            Batch\Entity::FAILURE_COUNT     => 3,
+            Batch\Entity::FAILURE_REASON    => '{"AMOUNT_MISMATCH":3}',
+        ], $batch->toArray(), true);
+
+        foreach ($payments as $paymentId => $values)
+        {
+            $payment = $this->getDbEntityById('payment', $paymentId);
+
+            if ($values[1] === 1)
+            {
+                $this->assertArraySubset([
+                    'status'                => 'authorized',
+                    'amount_authorized'     => 50000,
+                ], $payment->toArray(), true);
+
+                $transaction = $this->getDbEntity('transaction', ['entity_id' => $paymentId]);
+                $this->assertNotEmpty($transaction->getReconciledAt());
+
+                $paymentMeta = $payment->paymentMeta;
+
+                $this->assertSame($paymentId, $paymentMeta->getPaymentId());
+
+                $baseAmount = $payment->getBaseAmount();
+                $gatewayAmount = $paymentMeta->getGatewayAmount();
+                $expectedAmount = abs($baseAmount - $gatewayAmount);
+                $mismatchAmountReason = $paymentMeta->getMismatchAmountReason();
+
+                $this->assertEquals($expectedAmount, $paymentMeta->getMismatchAmount());
+
+                if ($baseAmount > $gatewayAmount)
+                {
+                    $this->assertSame($mismatchAmountReason, MismatchAmountReason::CREDIT_DEFICIT);
+                }
+                else
+                {
+                    $this->assertSame($mismatchAmountReason, MismatchAmountReason::CREDIT_SURPLUS);
+                }
+            }
+            else
+            {
+                $this->assertArraySubset($override, $payment->toArray(), true);
+            }
+        }
+    }
+
     private function assertFailedPaymentRecon()
     {
         $fileContents = $this->generateReconFile(['type' => 'payment']);
@@ -730,26 +820,40 @@ class UpiIciciGatewayReconTest extends TestCase
         return [$refunds, $payments];
     }
 
-    private function doUpiIciciPayment()
+    private function doUpiIciciPayment(array $override = [])
     {
+        $status = $override['status'] ?? 'captured';
+
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
             'method'            => 'upi',
             'amount'            => $this->payment['amount'],
             'base_amount'       => $this->payment['amount'],
             'amount_authorized' => $this->payment['amount'],
-            'status'            => 'captured',
+            'status'            => $status,
             'gateway'           => $this->gateway,
             'authorized_at'     => time(),
         ];
 
+        $attributes = array_merge($attributes, $override);
+
         $payment = $this->fixtures->create('payment', $attributes);
 
-        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+        if ($status !== 'failed')
+        {
+            $transaction = $this->fixtures->create('transaction', [
+                'entity_id' => $payment->getId(),
+                'merchant_id' => '10000000000000'
+            ]);
 
-        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+            $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+        }
 
-        $this->fixtures->create('upi', ['payment_id' => $payment->getId()]);
+        $this->fixtures->create('upi', [
+            'payment_id'    => $payment->getId(),
+            'gateway'       => $this->gateway,
+            'amount'        => $payment->getAmount(),
+        ]);
 
         return $payment->getId();
     }

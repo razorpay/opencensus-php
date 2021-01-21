@@ -300,25 +300,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Status::FAILED;
     }
 
-    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    protected function getAmountMarginAllowed($row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
-                    'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'currency'        => $this->payment->getCurrency(),
-                    'gateway'         => $this->gateway
-                ]);
+        $terminal = $this->payment->terminal;
 
-            return false;
+        // We will not allow any margin for direct settlement terminals.
+        if ($terminal->isDirectSettlement() === true)
+        {
+            return 0;
         }
 
-        return true;
+        return 100;
     }
 
     protected function getReferenceNumber($row)

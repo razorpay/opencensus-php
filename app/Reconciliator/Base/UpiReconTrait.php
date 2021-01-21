@@ -11,6 +11,8 @@ use RZP\Gateway\Upi\Base\Repository;
 /**
  * Trait UpiReconciliateTrait
  * @package RZP\Reconciliator\Base
+ *
+ * @property Payment\Entity $payment
  */
 trait UpiReconTrait
 {
@@ -146,5 +148,61 @@ trait UpiReconTrait
     {
         return ((strlen($rrn) === 12) and
                 (is_numeric($rrn) === true));
+    }
+
+    /**
+     * Method will validate the recon amount with payment base amount. It will also allow amount
+     * within a margin, This margin value needs to provided by corresponding gateway.
+     * NOTE: Gateways need to define a method for margin called `getAmountMarginAllowed`.
+     *
+     * @param array $row
+     * @return bool
+     */
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        $baseAmount     = $this->payment->getBaseAmount();
+        $reconAmount    = $this->getReconPaymentAmount($row);
+
+        // If the amount is same, return true
+        if ($baseAmount === $reconAmount)
+        {
+            return true;
+        }
+
+        $margin     = $this->getAmountMarginAllowed($row);
+
+        $minAllowed = $this->payment->getBaseAmount() - $margin;
+        $maxAllowed = $this->payment->getBaseAmount() + $margin;
+
+        $allowed    = (($reconAmount >= $minAllowed) and
+                       ($reconAmount <= $maxAllowed));
+
+        $metaId = null;
+
+        if ($allowed === true)
+        {
+            $metaId = (new Payment\PaymentMeta\Core)->addGatewayAmountInformation($this->payment, $reconAmount);
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'info_code'       => InfoCode::AMOUNT_MISMATCH,
+                'payment_id'      => $this->payment->getId(),
+                'expected_amount' => $baseAmount,
+                'recon_amount'    => $reconAmount,
+                'currency'        => $this->payment->getCurrency(),
+                'gateway'         => $this->gateway,
+                'margin'          => $margin,
+                'allowed'         => $allowed,
+                'payment_meta_id' => $metaId,
+            ]);
+
+        if (config('app.recon.allow_mismatch') === true)
+        {
+            return $allowed;
+        }
+
+        return false;
     }
 }

@@ -3321,6 +3321,23 @@ class Terminal extends Base
         return $this->createSharedUpiAxisTerminal($attributes);
     }
 
+    public function createDirectSettlementUpiIciciTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpIcTmnl',
+            'merchant_id'               => '10000000000000',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
     public function createDirectSettlementUpiMindgateTerminal(array $attributes = [])
     {
         $defaultValues = [
