@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\User\Constants;
 use Illuminate\Support\Facades\Crypt;
 
 use Auth;
@@ -138,6 +139,34 @@ class UserController extends Controller
         return AppResponse::jsonResponse([]);
     }
 
+    protected function checkCaptchaDisableInPayload($input)
+    {
+        $env = \App::environment();
+
+        if ($env === 'production' and isset($input['captcha_disable']) === true)
+        {
+            $this->trace->info(TraceCode::CAPTCHA_DISABLE_INVALID_PAYLOAD_ERROR, ['email' => $input['email'] ?? null]);
+
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'invalid payload',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+    }
+
+    protected function checkCaptchaDisableInPayloadForLogin($input)
+    {
+        $email = $input['email'] ?? null;
+
+        if (in_array($email, Constants::WHITELIST_CAPTCHA_EMAILS, true) === true)
+        {
+            return;
+        }
+
+        $this->checkCaptchaDisableInPayload($input);
+    }
+
     public function postRegister()
     {
         $input = Input::all();
@@ -148,6 +177,9 @@ class UserController extends Controller
 
         try
         {
+
+            $this->checkCaptchaDisableInPayload($input);
+
             list($error, $data) = (new User\Service)->register($input);
 
             if (empty($error))
@@ -228,6 +260,8 @@ class UserController extends Controller
         }
 
         $this->trace->info(TraceCode::USER_LOGIN_KEYS, ['captcha' => $input['captcha'] ?? null]);
+
+        $this->checkCaptchaDisableInPayloadForLogin($input);
 
         list($error, $data) = (new User\Service)->login($input);
 

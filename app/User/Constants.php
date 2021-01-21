@@ -106,5 +106,12 @@ class Constants
     const TIMESTAMP_THRESHOLD = 'timestamp_threshold';
     const DEFAULT_RESULT = 'default_result';
 
+    const WHITELIST_CAPTCHA_EMAILS = [
+        "qa+dashboard@razorpay.com",
+        "qa+uiautomation@razorpay.com",
+        "qa+rzp@razorpay.com",
+        "annapurna.pal+008@razorpay.com"
+    ];
+
 
 }
