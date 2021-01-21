@@ -35,9 +35,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
     const GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED                              = 'Terminal onboarding failed on gateway';
 
-    const GATEWAY_ERROR_INVALID_TRANSACTION                                     = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
-    const GATEWAY_ERROR_NO_RECORDS_FOUND                                        = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
-
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
@@ -1062,7 +1059,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
     const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
-    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Payment declined by card issuing bank as card may be inactive or not allowed for online payments. Please use another card or contact bank.';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
     const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by bank';
