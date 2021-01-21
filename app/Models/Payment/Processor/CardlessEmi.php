@@ -41,6 +41,8 @@ class CardlessEmi
         self::FLEXMONEY => [
             IFSC::FDRL,
             IFSC::IDFB,
+            IFSC::HDFC,
+            IFSC::KKBK,
         ]
     ];
 

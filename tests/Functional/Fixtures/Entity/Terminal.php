@@ -889,7 +889,7 @@ class Terminal extends Base
             'gateway_merchant_id2' => 'cardless_emi_merchant2',
             'gateway_acquirer'     => 'flexmoney',
             'mode'                 => 1,
-            'enabled_banks'        => array_diff(CardlessEmi::getSupportedBanksForMultilenderProvider('flexmoney'), CardlessEmi::getDefaultDisabledBanksForMultilenderProvider('flexmoney')),
+            'enabled_banks'        => CardlessEmi::getSupportedBanksForMultilenderProvider('flexmoney'),
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

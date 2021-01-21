@@ -3720,7 +3720,7 @@ class MerchantTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(3, count($response['methods']['cardless_emi']));
+        $this->assertEquals(5, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);

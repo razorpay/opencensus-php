@@ -1306,10 +1306,7 @@ return [
                 'gateway_merchant_id'  => 'abcd',
                 'gateway_merchant_id2' => 'test merchant',
                 'enabled'              => true,
-                'enabled_banks'        => [
-                    "HDFC",
-                    "KKBK",
-                ]
+                'enabled_banks'        => []
             ]
         ]
     ],
@@ -2294,11 +2291,10 @@ return [
                 'enabled'  => [
                     'HDFC'  => 'HDFC Bank',
                     'KKBK'  => 'Kotak Mahindra Bank',
-                ],
-                'disabled' => [
                     'FDRL'  => 'Federal Bank',
-                    'IDFB'  => 'IDFC FIRST Bank',
+                    'IDFB'  => 'IDFC FIRST Bank'
                 ],
+                'disabled' => [],
             ],
         ],
     ],
