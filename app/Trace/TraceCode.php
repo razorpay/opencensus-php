@@ -20,6 +20,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_TRANSACTION_CREATE_REQUEST                    = 'CAPITAL_TRANSACTION_CREATE_REQUEST';
     const CAPITAL_TRANSACTION_ALREADY_CREATED                   = 'CAPITAL_TRANSACTION_ALREADY_CREATED';
     const CAPITAL_TRANSACTION_CREATED                           = 'CAPITAL_TRANSACTION_CREATED';
+    const FETCH_BALANCE_REQUEST                                 = 'FETCH_BALANCE_REQUEST';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';

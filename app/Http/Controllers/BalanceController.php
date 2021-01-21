@@ -25,11 +25,11 @@ class BalanceController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function fetchAccountBalance($id)
+    public function fetchBalanceById($id)
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchAccountBalance($id, $input);
+        $data = $this->service()->fetchBalanceById($id, $input);
 
         return ApiResponse::json($data);
     }

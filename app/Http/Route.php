@@ -334,7 +334,8 @@ class Route
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
-        'internal_balance_fetch'                   => ['get',      'balances/{id}',                                  'BalanceController@fetchAccountBalance'                             ],
+        'internal_balance_fetch'                   => ['get',      'balances/{id}',                                  'MerchantController@getBalance'                                     ],
+        'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceById'                                ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -1813,8 +1814,8 @@ class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
-        'credit_repayment_transaction_create'      => ['put',      'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
-        'capital_transaction_create'               => ['put',      'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
+        'credit_repayment_transaction_create'      => ['post',     'credit_repayments/transaction',                 'TransactionController@createCreditRepaymentTransaction'            ],
+        'capital_transaction_create'               => ['post',     'capital_balances/transaction',                  'TransactionController@createCapitalTransaction'                    ],
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
@@ -2616,6 +2617,7 @@ class Route
         'settlement_ondemand_process',
         'internal_balance_fetch',
         'merchant_balance_create',
+        'internal_balance_fetch_by_id',
         'credit_repayment_transaction_create',
         'capital_transaction_create',
         'merchant_sub_create_batch',
@@ -4246,6 +4248,12 @@ class Route
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
+        'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
+        'internal_balance_fetch'                   => Permission::CAPITAL_DEVELOPER,
+        'credit_repayment_transaction_create'      => Permission::CAPITAL_DEVELOPER,
+        'capital_transaction_create'               => Permission::CAPITAL_DEVELOPER,
+        'internal_balance_fetch_by_id'             => Permission::CAPITAL_DEVELOPER,
+        'capital_collections_service'              => Permission::CAPITAL_DEVELOPER,
         'correct_merchant_owners_products'         => Permission::CORRECT_MERCHANT_OWNER_MISMATCH,
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
@@ -4256,6 +4264,7 @@ class Route
         'pincode_get'                              => '*',
         'cities_get'                               => '*',
         'loc_service_admin'                        => Permission::LOC,
+        'loc_service'                              => Permission::CAPITAL_DEVELOPER,
         'capital_cards_admin'                      => Permission::CAPITAL_CARDS,
         'wallet_service_admin'                     => Permission::WALLETS,
         'ufh_admin_upload_file'                    => '*',
@@ -5095,6 +5104,8 @@ class Route
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
         'capital_cards_admin'                          => '*',
+        'capital_collections_service'                  => '*',
+        'capital_collections_admin'                    => '*',
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch_admin'                 => Permission::VIEW_MERCHANT_BALANCE,
@@ -5841,6 +5852,7 @@ class Route
             'internal_balance_fetch',
             'credit_repayment_transaction_create',
             'capital_transaction_create',
+            'internal_balance_fetch_by_id',
         ],
 
         'loc'  => [

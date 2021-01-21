@@ -255,23 +255,19 @@ class LOSController extends Controller
 
     protected function parseResponse($response)
     {
-        $code = $response->status_code;
+        $statusCode = $response->status_code;
         $body = json_decode($response->body, true);
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_RESPONSE, [
-            'status_code' => $code,
+            'status_code' => $statusCode,
         ]);
 
-        if (isset($body['code']) === true)
+        if ($statusCode >= 400)
         {
             throw new Exception\TwirpException($body);
         }
-        elseif ($response->status_code === 404)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
 
-        return ApiResponse::json($body, $code);
+        return ApiResponse::json($body, $statusCode);
     }
 
     protected function sendMail()

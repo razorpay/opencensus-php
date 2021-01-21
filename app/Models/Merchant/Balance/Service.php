@@ -26,12 +26,16 @@ class Service extends Base\Service
         return $this->core()->createWithInitialBalance($merchant, $input, $this->mode, $initialBalance);
     }
 
-    public function fetchAccountBalance(string $id, array $input)
+    public function fetchBalanceById(string $id, array $input)
     {
+        $this->trace->info(TraceCode::FETCH_BALANCE_REQUEST, [
+                'id'        => $id,
+                'input'     => $input,
+            ]);
+
         (new JitValidator)->rules([
                               Entity::MERCHANT_ID => 'required|string|size:14'
               ])->validate($input);
-
 
         $balance = $this->repo->balance->findByIdAndMerchantId($id, $input[Entity::MERCHANT_ID]);
 

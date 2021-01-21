@@ -26,14 +26,6 @@ class CapitalCollectionsController extends Controller
     const DELETE   = 'DELETE';
     const MERCHANT = 'MERCHANT';
 
-    const ROUTES_URL_MAP = [
-        // TODO: add list
-    ];
-
-    const MERCHANT_ROUTES = [
-        // TODO: add list
-    ];
-
     protected function handleProxyRequests($path = null)
     {
         $request = Request::instance();
@@ -43,21 +35,6 @@ class CapitalCollectionsController extends Controller
         $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'request' => $url,
         ]);
-
-        $isMerchantAccessible = false;
-        foreach (self::MERCHANT_ROUTES as $route)
-        {
-            if (preg_match(self::ROUTES_URL_MAP[$route], $path, $matches) === 1)
-            {
-                $isMerchantAccessible = true;
-                break;
-            }
-        }
-
-        if ($isMerchantAccessible === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
 
         $headers = [
             'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? '',
@@ -169,14 +146,22 @@ class CapitalCollectionsController extends Controller
 
         $resp = $httpClient->sendRequest($req);
 
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
-            'status_code'   => $resp->getStatusCode(),
-        ]);
-
         $span->addAttribute('http.status_code', $resp->getStatusCode());
+
         if ($resp->getStatusCode() >= 400)
         {
             $span->addAttribute('error', 'true');
+
+            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+                'status_code'   => $resp->getStatusCode(),
+                'body'          => $resp->getBody(),
+            ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+                'status_code'   => $resp->getStatusCode(),
+            ]);
         }
 
         $scope->close();
@@ -187,11 +172,6 @@ class CapitalCollectionsController extends Controller
     protected function parseResponse($code, $body)
     {
         $body = json_decode($body, true);
-
-        if ($code === 404)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
 
         return ApiResponse::json($body, $code);
     }

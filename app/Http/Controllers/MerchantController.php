@@ -501,6 +501,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getBalance(string $merchantId)
+    {
+        $data = $this->service()->fetchBalance($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateLockedBalance(string $balanceId)
     {
         $input = Request::all();

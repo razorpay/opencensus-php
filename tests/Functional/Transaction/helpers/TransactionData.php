@@ -306,7 +306,7 @@ return [
                 'merchant_id'   => '10000000000000',
             ],
             'url'    => '/credit_repayments/transaction',
-            'method' => 'PUT'
+            'method' => 'POST'
         ],
         'response' => [
             'content' => [
@@ -339,7 +339,7 @@ return [
                 'balance_id'    => '',
             ],
             'url'    => '/capital_balances/transaction',
-            'method' => 'PUT'
+            'method' => 'POST'
         ],
         'response' => [
             'content' => [
@@ -372,7 +372,7 @@ return [
                 'balance_id'    => '',
             ],
             'url'    => '/capital_balances/transaction',
-            'method' => 'PUT'
+            'method' => 'POST'
         ],
         'response' => [
             'content' => [

@@ -81,7 +81,7 @@ return [
 
     'testGetBalance' => [
         'request'  => [
-            'url'     => '/balances/',
+            'url'     => '/internal_balances/',
             'method'  => 'get',
             'content' => [
                 'merchant_id'   => '10000000000000',

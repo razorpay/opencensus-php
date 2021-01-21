@@ -20,6 +20,13 @@ use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function settlementFixer()
     {
         return $this->repo->transaction(function()
@@ -76,18 +83,28 @@ class Service extends Base\Service
             // Do nothing. continue with creation of new transaction
         }
 
-        return $this->repo->transaction(function () use ($creditRepayment, $input, $scope)
-        {
-            [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction();
+        return $this->mutex->acquireAndRelease('credit_repayment_transaction_' . $input[\RZP\Models\CreditRepayment\Entity::ID],
+            function() use ($creditRepayment, $input, $scope)
+            {
+                return $this->repo->transaction(function () use ($creditRepayment, $input, $scope)
+                {
+                    [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction();
 
-            $this->repo->saveOrFail($txn);
+                    $this->repo->saveOrFail($txn);
 
-            $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATED);
-            $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
-            $scope->close();
+                    $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATED);
+                    $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
+                    $scope->close();
 
-            return $txn->toArrayPublic();
-        });
+                    return $txn->toArrayPublic();
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            0,
+            100,
+            200,
+            true);
     }
 
     public function createCapitalTransaction($input)
@@ -124,17 +141,27 @@ class Service extends Base\Service
             // Do nothing. continue with creation of new transaction
         }
 
-        return $this->repo->transaction(function () use ($capitalTxn, $input)
-        {
-            [$txn, $feesplit] = (new Transaction\Processor\CapitalTransaction($capitalTxn))->createTransaction();
+        return $this->mutex->acquireAndRelease('capital_transaction_' . $input[\RZP\Models\CapitalTransaction\Entity::ID],
+            function () use ($capitalTxn, $input)
+            {
+                return $this->repo->transaction(function () use ($capitalTxn, $input)
+                {
+                    [$txn, $feesplit] = (new Transaction\Processor\CapitalTransaction($capitalTxn))->createTransaction();
 
-            $this->repo->saveOrFail($txn);
+                    $this->repo->saveOrFail($txn);
 
-            $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
-            $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $input);
+                    $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
+                    $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $input);
 
-            return $txn->toArrayPublic();
-        });
+                    return $txn->toArrayPublic();
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            0,
+            100,
+            200,
+            true);
     }
 
     public function updateMultipleTransactions(array $input)

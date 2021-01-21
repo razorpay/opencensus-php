@@ -8,10 +8,8 @@ use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Mail\Loc\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Permission\Entity;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Base\PublicCollection;
-use RZP\Tests\Functional\Fixtures\Entity\Permission;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
@@ -46,6 +44,7 @@ class LOCController extends Controller
     const POSIDEX_ACCESS_TOKEN                   = 'POSIDEX_ACCESS_TOKEN';
     const POSIDEX_CRN                            = 'POSIDEX_CRN';
     const BULK_UPDATE_WITHDRAWAL                 = 'BULK_UPDATE_WITHDRAWAL';
+    const REPAYMENTS_SCHEDULE                    = 'REPAYMENTS_SCHEDULE';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -67,6 +66,7 @@ class LOCController extends Controller
         self::UPDATE_DESTINATION_ACCOUNT_REGEX       => 'twirp/rzp.capital.loc.defrayment.v1.DestinationAccountsAPI/UpdateDestinationAccount',
         self::POSIDEX_ACCESS_TOKEN                   => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/GenerateIDFCAccessToken',
         self::POSIDEX_CRN                            => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/CreateIDFCCRN',
+        self::REPAYMENTS_SCHEDULE                    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/GetRepaymentsSchedule',
     ];
 
     const MERCHANT_ROUTES = [
@@ -77,6 +77,7 @@ class LOCController extends Controller
         self::GET_WITHDRAWAL_CONFIG_REGEX,
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX,
         self::GET_DESTINATION_ACCOUNT_REGEX,
+        self::REPAYMENTS_SCHEDULE,
     ];
 
     const ROUTE_PERMISSION_MAP = [
@@ -98,6 +99,7 @@ class LOCController extends Controller
         self::ADD_REPAYMENT_REGEX                    => Name::LOC_WITHDRAWAL_EDIT,
         self::GET_WITHDRAWAL_REGEX                   => Name::LOC_WITHDRAWAL_VIEW,
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX        => Name::LOC_WITHDRAWAL_VIEW,
+        self::REPAYMENTS_SCHEDULE                    => Name::LOC_WITHDRAWAL_VIEW,
     ];
 
     const MAIL_ERROR_REGEX = '/View \[emails.loc.(?:\w+)?\] not found./';
@@ -177,7 +179,7 @@ class LOCController extends Controller
 
         if ($isMerchantAccessible === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
         $headers = [
@@ -216,7 +218,7 @@ class LOCController extends Controller
 
         if ($isLocRoute === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
         else if ((isset(self::ROUTE_PERMISSION_MAP[$route]) === false) or
                  ($this->ba->getAdmin()->hasPermission(self::ROUTE_PERMISSION_MAP[$route]) === false))
@@ -313,23 +315,19 @@ class LOCController extends Controller
 
     protected function parseResponse($response)
     {
-        $code = $response->status_code;
+        $statusCode = $response->status_code;
         $body = json_decode($response->body, true);
 
         $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_RESPONSE, [
-            'status_code' => $code,
+            'status_code' => $statusCode,
         ]);
 
-        if (isset($body['code']) === true)
+        if ($statusCode >= 400)
         {
             throw new Exception\TwirpException($body);
         }
-        elseif ($response->status_code === 404)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
 
-        return ApiResponse::json($body, $code);
+        return ApiResponse::json($body, $statusCode);
     }
 
     protected function sendMail()
@@ -348,6 +346,7 @@ class LOCController extends Controller
         {
             try
             {
+                /** @var \RZP\Models\Merchant\Entity $merchant */
                 $merchant = $this->repo->merchant->findOrFail($data['merchant_id']);
             }
             catch (\Exception $ex)
@@ -363,8 +362,9 @@ class LOCController extends Controller
             }
 
             $data['merchant_email'] = $merchant->getEmail();
-            $data['merchant_id']    = $merchant->getId();
-            $data['merchant_name']  = $merchant->getName();
+            $data['merchant_id'] = $merchant->getId();
+            $data['merchant_name'] = $merchant->getName();
+            $data['brand_color'] = $merchant->getBrandColorElseDefault();
         }
 
         try
