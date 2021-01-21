@@ -420,19 +420,10 @@ class Validator extends Base\Validator
         }
     }
 
-
-    public function isValidAutomationEnv(): bool
-    {
-        return ($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt');
-    }
-
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
-        // adding this check for qa automation
-        if (self::isValidAutomationEnv() === false)
-        {
-            $this->validateActivationFormSubmitted();
-        }
+        
+        $this->validateActivationFormSubmitted();
 
         $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
 
