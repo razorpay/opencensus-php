@@ -1070,6 +1070,20 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function postProcessServerCallback($input, $exception = null)
+    {
+        if ($exception === null)
+        {
+            return [
+                'success' => true,
+            ];
+        }
+
+        return [
+            'success' => false,
+        ];
+    }
+
     public function preProcessMandateCallback($input, $gateway)
     {
         switch ($gateway)

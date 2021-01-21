@@ -166,10 +166,9 @@ class UpiAirtelGatewayTest extends TestCase
         //Getting failed payment
         $content = $this->getMockServer()->getFailedAsyncCallbackContent($payment);
 
-        $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
-        });
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $this->assertEquals($response, ['success' => false]);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -193,10 +192,9 @@ class UpiAirtelGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            $this->makeS2SCallbackAndGetContent($content);
-        });
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals($response, ['success' => false]);
 
         // The payment should now be authorized
         $payment = $this->getEntityById('payment', $paymentId, true);

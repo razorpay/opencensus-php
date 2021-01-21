@@ -125,7 +125,7 @@ class GatewayController extends Controller
     {
         try
         {
-            return $gateway->preProcessServerCallback($input);
+            return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
         catch (Exception\GatewayErrorException $exception)
         {
@@ -186,7 +186,7 @@ class GatewayController extends Controller
             }
         }
 
-        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
 
         $paymentRepo = $this->app['repo']->payment;
 
@@ -395,6 +395,7 @@ class GatewayController extends Controller
 
             // Special case because we need the raw request body
             case Gateway::UPI_RBL:
+            case Gateway::UPI_AIRTEL:
                 $input = Request::getContent();
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
@@ -415,12 +416,6 @@ class GatewayController extends Controller
                 }
 
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
-
-                break;
-            case Gateway::UPI_AIRTEL:
-                $input = Request::getContent();
-
-                $data = $this->processServerCallback($input, $gateway);
 
                 break;
 

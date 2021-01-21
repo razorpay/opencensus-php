@@ -690,10 +690,9 @@ EOT;
 
         $content = $server->getAsyncCallbackContent($upiEntity, $payment);
 
-
         $response = $this->makeS2SCallbackAndGetContent($content);
-        $this->assertEquals($response, ['success' => false]);
 
+        $this->assertEquals($response, ['success' => false]);
 
         $data = $this->testData['testStatusRejectPayment'];
 
