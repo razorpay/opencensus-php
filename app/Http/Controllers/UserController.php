@@ -164,6 +164,13 @@ class UserController extends Controller
             return;
         }
 
+        $mobileApp = \Request::header('X-Razorpay-App');
+
+        if (empty($mobileApp) === false)
+        {
+            return;
+        }
+
         $this->checkCaptchaDisableInPayload($input);
     }
 
