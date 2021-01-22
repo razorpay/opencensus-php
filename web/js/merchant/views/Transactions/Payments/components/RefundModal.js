@@ -884,11 +884,7 @@ export default class RefundModal extends Component {
             >
               <button
                 class="btn btn-primary btn-block"
-                disabled={
-                  !this.hasEnoughFunds() ||
-                  this.isRefundButtonDisabled() ||
-                  this.shouldDisableRefundIfUnchecked()
-                }
+                disabled={this.isRefundButtonDisabled() || this.shouldDisableRefundIfUnchecked()}
               >
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund
               </button>
