@@ -86,49 +86,44 @@ export default (props) => {
           </div>
 
           <div class="SliderPanel__Body">
-            {payment.status === 'authorized' &&
-            Object.keys(merchantManualAction.details).length > 0 ? (
+            {payment.status === 'authorized' && isRoleAllowedEdit && (
               <div class="payments-manual-actions">
-                {merchantManualAction.details.capture && isRoleAllowedEdit && (
-                  <button
-                    onClick={() => {
-                      analyticsService.track({
-                        objectName: 'capture payment',
-                        actionName: 'clicked',
-                        screen: 'home page',
-                        properties: {
-                          ...payment.analyticsPayload(),
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      });
-                      analyticsService.track({
-                        objectName: 'action items on sidebar',
-                        actionName: 'clicked',
-                        screen: 'home page',
-                        properties: {
-                          ...payment.analyticsPayload(),
-                          location: 'payment sidebar',
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      });
-                      props.confirmCapture(payment);
-                    }}
-                    class="btn btn-primary"
-                  >
-                    Capture Payment
-                  </button>
-                )}
-                {merchantManualAction.details.refund && (
-                  <button
-                    onClick={openRefundModal}
-                    class="btn btn-primary"
-                    style={{ marginLeft: '5px' }}
-                  >
-                    Refund Payment
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    analyticsService.track({
+                      objectName: 'capture payment',
+                      actionName: 'clicked',
+                      screen: 'home page',
+                      properties: {
+                        ...payment.analyticsPayload(),
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    analyticsService.track({
+                      objectName: 'action items on sidebar',
+                      actionName: 'clicked',
+                      screen: 'home page',
+                      properties: {
+                        ...payment.analyticsPayload(),
+                        location: 'payment sidebar',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    props.confirmCapture(payment);
+                  }}
+                  class="btn btn-primary"
+                >
+                  Capture Payment
+                </button>
+                <button
+                  onClick={openRefundModal}
+                  class="btn btn-primary"
+                  style={{ marginLeft: '5px' }}
+                >
+                  Refund Payment
+                </button>
               </div>
-            ) : null}
+            )}
 
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
