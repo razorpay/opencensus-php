@@ -163,6 +163,10 @@ class Route
         'payment_verify_bulk'                      => ['post',     'payments/verify/bulk',                           'PaymentController@postVerifyPaymentsBulk'                          ],
         'payment_verify_captured'                  => ['post',     'payments/captured/verify',                       'PaymentController@postVerifyCapturedPayments'                              ],
         'payment_verify_multiple'                  => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
+
+        //temp route for paytm verify
+        'payment_verify_paytm'                     => ['post',     'payments/verify/captured/paytm',                 'PaymentController@postVerifyPaymentsPaytm'                         ],
+
         'payment_capture_reminder'                 => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'                => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_refund_at_bulk_update'            => ['post',     'payments/update_refund_at/bulk',                 'PaymentController@postUpdateRefundAtForPayments'                   ],
@@ -2715,6 +2719,7 @@ class Route
         'payment_new_verify_bulk',
         'payment_verify_multiple',
         'payment_verify_captured',
+        'payment_verify_paytm',
         'payment_capture_verify',
         'payment_authorize_google_pay_cards',
         'payment_verify_google_pay_cards',
@@ -5620,6 +5625,7 @@ class Route
             'payment_new_verify_bulk',
             'payment_verify_multiple',
             'payment_verify_captured',
+            'payment_verify_paytm',
             'payment_capture_verify',
             'refund_generate_excel',
             'payment_refund_authorized',

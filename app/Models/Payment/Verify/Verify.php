@@ -1893,4 +1893,28 @@ class Verify extends Base\Core
 
         return false;
     }
+
+    public function verifyCapturedPaytmPayments($gateway, $count)
+    {
+        $verifyFetchStartTime = Carbon::now()->getTimestamp();
+
+        $payments = $this->repo->payment->getPaymentsToVerifyForPaytmGateway($gateway, Payment\Status::CAPTURED, $count);
+
+        $verifyFetchEndTime = Carbon::now()->getTimestamp();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        list($summary, $resultSet) = $this->doVerifyCapturedPayments($payments);
+
+        $summary['start_time'] = $verifyFetchStartTime;
+        $summary['end_time']   = $verifyFetchEndTime;
+        $summary['fetch_time'] = $verifyFetchTime;
+        $summary['gateway']    = 'paytm';
+
+        $summary = array_merge($summary, $resultSet);
+
+        $this->trace->info(TraceCode::CAPTURED_VERIFY_PROCESSED_SUMMARY, $summary);
+
+        return $summary;
+    }
 }

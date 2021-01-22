@@ -3213,4 +3213,11 @@ class Service extends Base\Service
     {
         return $this->repo->payment_meta->findByPaymentIdAction($paymentId, $actionType);
     }
+
+    public function postVerifyPaytmPayments(array $input)
+    {
+        (new Payment\Validator)->validateInput('paytm_verify', $input);
+
+        return (new Verify)->verifyCapturedPaytmPayments($input['gateway'], $input['count']);
+    }
 }

@@ -258,6 +258,21 @@ class PaytmGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
     }
 
+    public function testVerifyForCapturedPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('MAHB');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     protected function failAuthorizePayment()
     {
         $this->mockServerContentFunction(function (& $content)
