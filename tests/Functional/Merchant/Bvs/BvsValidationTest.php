@@ -238,7 +238,7 @@ class BvsValidationTest extends TestCase
                     'documentVerificationStatus' => 'verified',
                     'validation_status'          => 'success',
                     'error_code'                 => '',
-                    'activation_status'          => 'activated',
+                    'activation_status'          => 'under_review',
                 ],
                 'merchantDetailsData' => [
                     'merchant_id'                      => $mid,
@@ -335,7 +335,7 @@ class BvsValidationTest extends TestCase
                     'documentVerificationStatus' => 'verified',
                     'validation_status'          => 'success',
                     'error_code'                 => '',
-                    'activation_status'          => 'activated',
+                    'activation_status'          => 'under_review',
                 ],
                 'merchantDetailsData' => [
                     'merchant_id'             => $mid,

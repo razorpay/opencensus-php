@@ -1969,7 +1969,7 @@ class Core extends Base\Core
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
         $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
-
+        $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
@@ -2281,7 +2281,7 @@ class Core extends Base\Core
             {
                 case BusinessType::NOT_YET_REGISTERED:
                 case BusinessType::INDIVIDUAL:
-                    return Status::ACTIVATED;
+                    return Status::UNDER_REVIEW;
 
                 case BusinessType::PROPRIETORSHIP:
                 case BusinessType::PRIVATE_LIMITED:

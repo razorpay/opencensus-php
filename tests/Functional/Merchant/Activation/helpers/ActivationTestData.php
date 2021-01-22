@@ -2339,7 +2339,7 @@ return [
         'response' => [
             'content' => [
                 'submitted'         => true,
-                'activation_status' => 'activated',
+                'activation_status' => 'under_review',
                 'can_submit'        => true,
             ],
         ],

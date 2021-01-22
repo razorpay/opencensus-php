@@ -2169,7 +2169,7 @@ class ActivationTest extends OAuthTestCase
             ValidationEntity::REGISTERED_NAME => "p kumar",
         ];
 
-        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated');
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
     public function testSuccessBankDetailsVerificationForPartnerShip()
@@ -2230,7 +2230,7 @@ class ActivationTest extends OAuthTestCase
             ValidationEntity::REGISTERED_NAME => "vijay laxmi subramaniam",
         ];
 
-        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated');
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
     public function testProcessFavFromQueueActivatedMerchant()
@@ -2399,7 +2399,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
 
-        $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'activated', 'verified');
+        $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'under_review', 'verified');
 
         $this->assertPennyTestingAttemptCount($merchantDetail->getId(), 2);
     }
@@ -2429,7 +2429,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
 
-        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'activated', 'verified');
+        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'under_review', 'verified');
     }
 
     public function testPennyTestingCronActivatedMerchants()
