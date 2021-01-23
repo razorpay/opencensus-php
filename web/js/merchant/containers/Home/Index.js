@@ -238,7 +238,7 @@ export default class HomeContainer extends Component {
           ...this.state,
           showOnboardingBanner: true,
           showOnboardingBannerFirstStep: user.showInstantActivation
-            ? !user.instantActivation.isL1Submitted
+            ? !user.submitted
             : true,
           expandOnboardingBanner: true,
         };
@@ -870,7 +870,7 @@ export default class HomeContainer extends Component {
         )}
 
         {user.showInstantActivation &&
-          !user.instantActivation.isL1Submitted &&
+          !user.submitted &&
           showOnboardingBannerFirstStep &&
           !user.isPartnerIntent() && (
             <ModalMask>

@@ -185,6 +185,10 @@ export default class User {
         if (isRXV2Onboarding) {
           return true;
         }
+        //Returning true for PG
+        if (!isSourceRX) {
+          return true;
+        }
 
         if (!!this.activated) {
           return true;
@@ -379,7 +383,7 @@ export default class User {
   }
 
   get showInstantActivation() {
-    return this.isOrgRZP && (!!this.activation_flow || this.instant_activations);
+    return !!this.isOrgRZP;
   }
 
   get isMinimumFirstPaymentEnabled() {

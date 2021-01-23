@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
+import { showProductsModal } from 'merchant/reducers/home';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
-import { activationDuration } from 'merchant/helpers/data';
 import { trackGoToActivationFromError } from '../../../containers/Home/ga';
 
+@connect(null, { showProductsModal })
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
   trackEvent = (eventOrigin) => {
@@ -23,9 +25,9 @@ export default class InstantActivationAnnouncements extends Component {
     const { user, mode, payments } = this.props;
     const commonSettlementBanner = {
       theme: 'success',
-      title: 'Settlements Enabled',
-      content: `Your KYC verification was successful. Payments will be settled to your bank account as per settlement cycle. 
-        ${user.instantActivation.isGraylistFlow ? 'Go ahead and accept your first payment.' : ''}`,
+      title: 'Account Activated',
+      content:
+        'You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule',
     };
     let theme = 'warning',
       title,
@@ -196,16 +198,20 @@ export default class InstantActivationAnnouncements extends Component {
               </React.Fragment>
             );
           }
-        } else if (user.isUnregisteredBusiness) {
-          content = (
-            <>
-              We are reviewing your KYC Details. This process usually takes 1-2 working days{' '}
-              <strong>post your first transaction</strong>. If we need any more information, we will
-              reach out to you on your registered email address.
-            </>
-          );
         } else {
-          content = `We are reviewing your KYC Details. This process usually takes 1-2 working days post your KYC Submission. If we need any more information, we will reach out to you on your registered email address.`;
+          content = (
+            <React.Fragment>
+              We are reviewing your KYC details. It usually takes 
+              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. Meanwhile &nbsp;
+              <button
+                className="btn-link cursor-pointer"
+                style={{ padding: '0' }}
+                onClick={() => this.props.showProductsModal()}
+              >
+                you can try our products in test mode.
+              </button>
+            </React.Fragment>
+          );
         }
       }
     }

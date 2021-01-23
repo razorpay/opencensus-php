@@ -175,9 +175,8 @@ const businessModel = [
         if (isRXV2Onboarding(activation)) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
-        } else {
-          return isL1Completed(activation) && !!activation.props.user.showInstantActivation;
         }
+        return false;
       },
       description: (activation) => {
         if (!showSubcategory(activation) && hasSelectedBlacklistedCategory(activation)) {
@@ -206,9 +205,6 @@ const businessModel = [
             : props.data.business_category;
 
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
-      },
-      _disabledWhen: function (form) {
-        return isL1Completed(form) && !!form.props.user.showInstantActivation;
       },
     },
     {
@@ -250,9 +246,8 @@ const businessModel = [
         if (isRXV2Onboarding(activation)) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
-        } else {
-          return isL1Completed(activation) && !!activation.props.user.showInstantActivation;
         }
+        return false;
       },
     },
   ],
@@ -277,8 +272,8 @@ const businessModel = [
           ),
         },
       ],
-      _disabledWhen: (activation) =>
-        isL1Completed(activation) && isPresent(activation.props.data.business_website),
+      // _disabledWhen: (activation) =>
+      //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
     {
       label: '',
@@ -331,8 +326,8 @@ const businessModel = [
       ),
       info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) => activation.state.has_url === '0',
-      _disabledWhen: (activation) =>
-        isL1Completed(activation) && isPresent(activation.props.data.business_website),
+      // _disabledWhen: (activation) =>
+      //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
   ],
 ];
@@ -372,10 +367,10 @@ const businessDetails = [
           : validateCompanyAB(value, contactName, showCompanyName);
       },
       _when: excludeFor_Indiv,
-      _disabledWhen: (activation) =>
-        !isSourceRX() &&
-        isL1Completed(activation) &&
-        isPresent(activation.props.data.business_name),
+      // _disabledWhen: (activation) =>
+      //   !isSourceRX() &&
+      //   isL1Completed(activation) &&
+      //   isPresent(activation.props.data.business_name),
       optionLabelPath: 'company_name',
       searchIndices: ['company_name'],
       className: 'ps-in-modal',
@@ -971,11 +966,7 @@ const tabsData = [contactFields, businessModel, businessDetails, bankAccountFiel
 
 /* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
 export const getBusinessTypeOptions = (activation) => {
-  if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
-
-  return isUnregisteredBusiness(activation)
-    ? UnregisteredBusinessTypeOptions
-    : RegisteredBusinessTypeOptions;
+  return DefaultBusinessTypeOptions;
 };
 
 /*

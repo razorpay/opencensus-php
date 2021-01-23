@@ -59,7 +59,55 @@ export default class ActivationCard extends Component {
 
     let { status, content, title } = initialState;
 
-    if (!isL1Submitted) {
+    if (isActivated) {
+      title = 'Account Activated';
+      status = possibleStatuses.done;
+      content = this.activatedAccountContent;
+    } else if (isSubmitted) {
+      // if (!isSubmitted) {
+      //   status = possibleStatuses.active;
+      //   content = (
+      //     <div>
+      //       <div>For your business model, we need a few more details for activation</div>
+      //       <Link
+      //         to="/activation"
+      //         className="btn btn-primary"
+      //         onClick={() => {
+      //           track.fillKyc();
+      //           tracking.trackEvent(
+      //             window.rzpQ.onbr().initiated('kyc.form_fill', {
+      //               clickSource: 'Dashboard_CTA',
+      //             }),
+      //           );
+      //         }}
+      //       >
+      //         Fill KYC Form
+      //       </Link>
+      //     </div>
+      //   );
+      // } else {
+      if (needsClarification) {
+        status = possibleStatuses.blocked;
+        content = 'Check your email ID to complete clarification of KYC';
+      } else if (isRejected) {
+        status = possibleStatuses.blocked;
+        content = 'Your KYC form has been rejected.';
+      } else {
+        status = possibleStatuses.progress;
+        content = this.accountUnderReviewContent;
+      }
+      // }
+    } else if (isBlacklistFlow) {
+      status = possibleStatuses.blocked;
+      content = (
+        <span>
+          We do not support your selected business model. In case you entered it wrong, change it{' '}
+          <Link to="/activation" className="btn-link" onClick={this.handleBlackListFlowClick}>
+            here
+          </Link>
+        </span>
+      );
+    } else {
       status = possibleStatuses.active;
       if (poi_verification_status && isUnregisteredBusiness) {
         status = possibleStatuses.blocked;
@@ -69,7 +117,7 @@ export default class ActivationCard extends Component {
               Unable to verify PAN with the central database at the moment.
               <div>
                 <Link
-                  to="/activation?auto-submit=l1-form"
+                  to="/activation"
                   className="btn btn-primary"
                   onClick={(e) => {
                     track.activateAccount();
@@ -129,7 +177,7 @@ export default class ActivationCard extends Component {
       } else {
         content = (
           <div>
-            Give a few details to start transacting immediately
+            Give us a few KYC details to start transacting
             <div>
               <Link
                 to="/activation"
@@ -157,54 +205,6 @@ export default class ActivationCard extends Component {
           </div>
         );
       }
-    } else if (isActivated) {
-      title = 'Account Activated';
-      status = possibleStatuses.done;
-      content = this.activatedAccountContent;
-    } else if (isGraylistFlow) {
-      if (!isSubmitted) {
-        status = possibleStatuses.active;
-        content = (
-          <div>
-            <div>For your business model, we need a few more details for activation</div>
-            <Link
-              to="/activation"
-              className="btn btn-primary"
-              onClick={() => {
-                track.fillKyc();
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('kyc.form_fill', {
-                    clickSource: 'Dashboard_CTA',
-                  }),
-                );
-              }}
-            >
-              Fill KYC Form
-            </Link>
-          </div>
-        );
-      } else {
-        if (needsClarification) {
-          status = possibleStatuses.blocked;
-          content = 'Check your email ID to complete clarification of KYC';
-        } else if (isRejected) {
-          status = possibleStatuses.blocked;
-          content = 'Your KYC form has been rejected.';
-        } else {
-          status = possibleStatuses.progress;
-          content = this.accountUnderReviewContent;
-        }
-      }
-    } else if (isBlacklistFlow) {
-      status = possibleStatuses.blocked;
-      content = (
-        <span>
-          We do not support your selected business model. In case you entered it wrong, change it{' '}
-          <Link to="/activation" className="btn-link" onClick={this.handleBlackListFlowClick}>
-            here
-          </Link>
-        </span>
-      );
     }
 
     if (
@@ -270,7 +270,8 @@ export default class ActivationCard extends Component {
         return (
           <>
             You can now start accepting domestic payments. Please raise a support ticket post
-            website review to start accepting international payments.
+            website review to start accepting international payments.{' '}
+            <Link to="/config#request-international">request here</Link>.
           </>
         );
       }
@@ -341,7 +342,13 @@ export default class ActivationCard extends Component {
     const { isAccepted, businessWebsite, isWebsiteInWorkflow } = this.props;
 
     if (this.isAnyInternationalProductsApproved) {
-      return <>You can now start accepting domestic and international payments.</>;
+      return (
+        <>
+          You can now start accepting domestic payments. Please raise a support ticket post website
+          review to start accepting international payments.{' '}
+          <Link to="/config#request-international">request here</Link>.
+        </>
+      );
     }
 
     if (
@@ -380,7 +387,13 @@ export default class ActivationCard extends Component {
       );
     }
 
-    return <>You can now start accepting domestic payments.</>;
+    return (
+      <>
+        You can now start accepting domestic payments. Please raise a support ticket post website
+        review to start accepting international payments.{' '}
+        <Link to="/config#request-international">request here</Link>.
+      </>
+    );
   }
 
   get intlUnregisteredBusinessContent() {
@@ -388,16 +401,9 @@ export default class ActivationCard extends Component {
     if (isAccepted) {
       return (
         <>
-          You can now start accepting domestic payments. You can integrate Paypal to enable
-          international payments.{' '}
-          <a
-            href="https://razorpay.com/docs/payment-gateway/payment-methods/paypal/"
-            target="_blank"
-            rel="noopener"
-          >
-            Know more
-          </a>
-          .
+          You can now start accepting domestic payments. Please raise a support ticket post website
+          review to start accepting international payments.{' '}
+          <Link to="/config#request-international">request here</Link>.
         </>
       );
     }
@@ -420,14 +426,25 @@ export default class ActivationCard extends Component {
     }
 
     if (internationalActivationFlow.isGraylistFlow) {
-      return this.intlGreylistedContent;
+      return (
+        <>
+          Start accepting domestic payments . To accept international payments.{' '}
+          <Link to="/config#request-international">request here</Link>.
+        </>
+      );
     }
 
     if (isUnregisteredBusiness) {
       return this.intlUnregisteredBusinessContent;
     }
 
-    return <>You can now start accepting domestic payments.</>;
+    return (
+      <>
+        You can now start accepting domestic payments. Please raise a support ticket post website
+        review to start accepting international payments.{' '}
+        <Link to="/config#request-international">request here</Link>.
+      </>
+    );
   }
 
   get accountUnderReviewContent() {
@@ -436,7 +453,7 @@ export default class ActivationCard extends Component {
       return `We are reviewing your form. Expect confirmation in ${activationDuration}. You can request for international payments acceptance post KYC Verification.`;
     }
 
-    return `We are reviewing your form. Expect confirmation in ${activationDuration}.`;
+    return 'We are reviewing your KYC details for activation';
   }
 
   render() {

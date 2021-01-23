@@ -3,20 +3,13 @@ import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 
 function getKycActivationSubmitBody(args) {
-  if (args.isWhitelistFlow || args.isUnregisteredBusiness) {
-    return (
-      <div>
-        We will reach out on your contact email for further clarifications if needed. The review
-        process usually takes 1-2 working days <strong>after your first transaction</strong>. Your
-        settlements will be enabled post KYC is reviewed and approved.
-      </div>
-    );
-  }
-
   return (
     <div>
-      We will reach out on your contact email for further clarifications if needed. The review
-      process usually takes 1-2 working days.
+      <div>KYC review process usually takes 8-10 working days. </div>
+
+      <div>We will notify you if we require any clarifications on your KYC. </div>
+
+      <div>Until then you can try out our products in the test mode </div>
     </div>
   );
 }
@@ -24,11 +17,7 @@ function getKycActivationSubmitBody(args) {
 const MODAL_CONTENT = {
   KYC_ACTIVATION_SUBMIT_MODAL: {
     title: () => 'KYC Submitted',
-    subtitle: () => (
-      <>
-        KYC will be processed <strong>post your first transaction</strong>
-      </>
-    ),
+    subtitle: () => <>We are reviewing your KYC details</>,
     body: (args) => <div>{getKycActivationSubmitBody(args)}</div>,
     background: 'pending',
   },
@@ -86,7 +75,7 @@ const ModalButtons = ({ args, modalType }) => {
 
   return (
     <button className="btn btn-primary" onClick={args.onGoToDashboard}>
-      Go to Dashboard
+      Try our products
     </button>
   );
 };
