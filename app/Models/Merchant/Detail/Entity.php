@@ -1089,6 +1089,19 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $merchantDetailAttributes;
     }
 
+    public function canDetermineActivationFlow()
+    {
+        if($this->getBusinessCategory() === BusinessCategory::OTHERS)
+        {
+            return true;
+        }
+
+        $hasBusinessCategory = empty($this->getBusinessCategory()) === false;
+        $hasBusinessSubCategory = empty($this->getBusinessSubcategory()) === false;
+
+        return $hasBusinessCategory and $hasBusinessSubCategory;
+    }
+
     /**
      * Returns an array with the statuses of the feature onboarding submissions
      *

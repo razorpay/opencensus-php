@@ -2815,8 +2815,15 @@ class Core extends Base\Core
             $merchantDetails,
             FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
 
+        $activationFlow = null;
+        if($merchantDetails->canDetermineActivationFlow())
+        {
+            $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
+        }
+
         if ((count($requiredFields) > 0) or
-            ($isAutoKycDocumentsVerificationStatusAllowed === false))
+            ($isAutoKycDocumentsVerificationStatusAllowed === false) or
+            ($activationFlow === ActivationFlow::BLACKLIST))
         {
             $remainingFields = count($requiredFields);
 
