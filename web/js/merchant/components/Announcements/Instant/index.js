@@ -201,7 +201,7 @@ export default class InstantActivationAnnouncements extends Component {
         } else {
           content = (
             <React.Fragment>
-              We are reviewing your KYC details. It usually takes 
+              We are reviewing your KYC details. It usually takes{' '}
               {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. Meanwhile &nbsp;
               <button
                 className="btn-link cursor-pointer"
