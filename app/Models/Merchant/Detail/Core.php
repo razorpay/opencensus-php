@@ -2818,7 +2818,13 @@ class Core extends Base\Core
         $activationFlow = null;
         if($merchantDetails->canDetermineActivationFlow())
         {
-            $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
+            if($merchantDetails->isUnregisteredBusiness())
+            {
+                $activationFlow = $this->getActivationFlowForUnregistered($merchant, $merchantDetails);
+            }
+            else{
+                $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
+            }
         }
 
         if ((count($requiredFields) > 0) or
@@ -3368,6 +3374,18 @@ class Core extends Base\Core
     }
 
 
+    public function getActivationFlowForUnregistered(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW];
+
+        return $activationFlow;
+    }
     /**
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
