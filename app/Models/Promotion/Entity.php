@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const ACTIVATED                  = 'activated';
     const DEACTIVATED                = 'deactivated';
     const BANKING                    = 'banking';
+    const PRIMARY                    = 'primary';
     const CREDITS                    = 'credits';
 
     protected $entity      = 'promotion';
@@ -92,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::DEACTIVATED_BY,
         self::DEACTIVATED_AT,
         self::STATUS,
+        self::PRODUCT,
     ];
 
     protected $defaults = [

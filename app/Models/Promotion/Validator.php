@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::CREATOR_NAME            => 'required|string|max:50',
         Entity::START_AT                => 'sometimes|epoch',
         Entity::END_AT                  => 'sometimes|epoch',
-        Entity::PRODUCT                 => 'sometimes|string|in:banking'
+        Entity::PRODUCT                 => 'sometimes|string|in:banking,primary'
     ];
 
     protected static $eventPromotionRules = [
