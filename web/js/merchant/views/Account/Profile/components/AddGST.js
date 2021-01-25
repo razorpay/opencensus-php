@@ -74,9 +74,20 @@ export default class AddGST extends Component {
       gst_type: 'gstin',
     };
 
+    const {
+      business_registered_address,
+      business_registered_pin,
+      business_registered_city,
+      business_registered_state,
+    } = this.props.activationData;
+
     this.props.initialize({
       ...initialValues,
       ...this.props.merchant_gst,
+      address: `${business_registered_address}`,
+      pincode: `${business_registered_pin}`,
+      city: `${business_registered_city}`,
+      state: `${business_registered_state}`,
     });
   }
 
@@ -304,7 +315,6 @@ export default class AddGST extends Component {
                       component={InputField}
                       class="form-control"
                       autoFocus={true}
-                      value={`${this.props.suggestedAddress}, ${this.state.suggestedPin}`}
                     />
                   </div>
                   <label class="label-required">Pincode</label>
