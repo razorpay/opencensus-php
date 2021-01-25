@@ -352,7 +352,7 @@ class Checkout
             ]);
     }
 
-    protected function fetchCustomerData(array $input, Entity $merchant, $isGlobal)
+    protected function fetchCustomerData(array $input, Entity $merchant, $data)
     {
         $custData = null;
 
@@ -363,7 +363,7 @@ class Checkout
             // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
             // we don't need to have the global_customer_id in the input.
             //
-            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $isGlobal);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $data['global']);
 
             if ($customer === null)
             {
@@ -388,6 +388,8 @@ class Checkout
             // to subscribe to another product.
             //
             $savedTokens = $tokenCore->removeEmandateRecurringTokens($savedTokens);
+
+            $savedTokens = $tokenCore->removeDisabledNetworkTokens($savedTokens, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
             $custData =  [
                 'email'     => $customer->getEmail(),
@@ -478,7 +480,7 @@ class Checkout
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
-                $custData = $this->fetchCustomerData($input, $merchant, $data['global']);
+                $custData = $this->fetchCustomerData($input, $merchant, $data);
 
                 if ($custData !== null)
                 {
@@ -518,7 +520,9 @@ class Checkout
                         // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
                         $tokensWithoutEmandate = (new Customer\Token\Core)->removeEmandateRecurringTokens($tokens);
 
-                        $data['customer']['tokens'] = $tokensWithoutEmandate;
+                        $tokensWithoutDisabledCardNetwork = (new Customer\Token\Core)->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
+
+                        $data['customer']['tokens'] = $tokensWithoutDisabledCardNetwork;
                     }
                 }
             }

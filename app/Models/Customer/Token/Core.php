@@ -386,6 +386,66 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    /**
+     * This method takes in the current tokens collection, removes the
+     * tokens for disabled card networks and returns the remaining tokens as an array
+     *
+     * @param $tokens
+     *
+     * @return mixed
+     */
+    public function removeDisabledNetworkTokens($tokens, $networks)
+    {
+        $disabledNetwork = array_keys(array_filter($networks, function($network) {
+            if ($network === 0) return true;
+            else return false;
+        }));
+
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
+        {
+            $tokens = $tokens->reject(
+                function($token) use ($disabledNetwork)
+                {
+                    //
+                    // If token has card and it's not in disabled card network then reject this token (true)
+                    //
+                    if ($token->hasCard() === true)
+                    {
+                        // get the latest card details from IIN details
+                        $token->card->overrideIINDetails();
+
+                        if (in_array($token->card->getNetworkCode(), $disabledNetwork, true) === true)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })->values();
+        }
+        else
+        {
+            $tokenItems = & $tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, function ($item) use ($disabledNetwork)
+            {
+                //
+                // If item contains field `card` then filter out token with card network in disabled network array
+                //
+                if ((isset($item[Entity::CARD]) === true) and
+                    (isset($item[Entity::CARD][Card\Entity::NETWORK_CODE]) === true)
+                    (in_array(Card\Network::getCode($item[Entity::CARD][Card\Entity::NETWORK_CODE]), $disabledNetwork, true) === true))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        return $tokens;
+    }
+
     public function updateTokenFromEmandateGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)

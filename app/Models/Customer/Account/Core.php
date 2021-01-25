@@ -264,6 +264,8 @@ class Core extends Base\Core
             // TODO: Uncomment this when we use charge_at_will for global flow
             // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
+            $tokens = (new Token\Core)->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
+
             $response['tokens'] = $tokens->toArrayPublic();
         }
 
