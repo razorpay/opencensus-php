@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
+use RZP\Services\EsClient;
+use Illuminate\Support\Facades\DB;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use Elasticsearch\Common\Exceptions\NoNodesAvailableException;
 
 class WorkflowRequestListingTest extends TestCase
 {
@@ -93,6 +96,39 @@ class WorkflowRequestListingTest extends TestCase
         $this->approveWorkflowAction($workflow['id']);
 
         $this->startTest();
+    }
+
+
+    /**
+     * Asserts that if there is an ElasticSearch integration error, then failure should be propagated and no
+     * new workflow_actions is created
+     *
+     * ref: https://razorpay.slack.com/archives/C2CP46QBW/p1610627632010000?thread_ts=1610603837.001900&cid=C2CP46QBW
+     *
+     */
+    public function testWorkflowCreateElasticSearchErrorShouldFail()
+    {
+        $beforeCount = Db::table('workflow_actions')->count();
+
+        $esMock = $this->getMockBuilder(EsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['indexHeimdall'])
+            ->getMock();
+
+        $esMock->method('indexHeimdall')
+            ->will($this->returnCallback(function (){
+                throw new NoNodesAvailableException();
+            }));
+
+        $this->app['es'] = $esMock;
+
+        $this->expectException(NoNodesAvailableException::class);
+
+        $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED);
+
+        $afterCount = Db::table('workflow_actions')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testWorkflowSuperAdminAllRequests()

@@ -229,6 +229,8 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::HEIMDALL_ACTION_LOG_FAIL,
                 $differ);
+
+            throw $e;
         }
     }
 
