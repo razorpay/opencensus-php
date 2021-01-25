@@ -1,5 +1,6 @@
 import { set, merge } from 'common/utils/immutable';
 import Offer from 'merchant/models/Offer';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const OFFER_FETCH = 'OFFER_FETCH';
 const OFFER_CREATE = 'OFFER_CREATE';
@@ -13,6 +14,10 @@ export const fetchOffer = (id) => {
     type: OFFER_FETCH,
     payload: offer.fetch(id),
   };
+};
+
+export const fetchSubscriptionOffersUsage = (id) => {
+  return merchantFetch(`offers/${id}/subscription/usage`);
 };
 
 export const saveOffer = (formData) => {

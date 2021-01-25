@@ -16,6 +16,7 @@ import { OfferStatusLabel } from 'merchant/components/StatusLabel';
 
 import { deepClone } from 'razorx/helpers/utils';
 import { PAYMENT_NETWORK_MAP, OFFER_TYPE_LABELS, ISSUERS } from '../constants';
+import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 
 @connect((state) => ({ ...state.offer, user: state.session.user }), {
   ...OffersActions,
@@ -47,7 +48,6 @@ export default class OffersDetails extends React.Component {
 
   toggleActivation = () => {
     const { offer, tracking } = this.props;
-
     const actionName = offer.active ? 'Disable' : 'Enable';
 
     // analytics
@@ -161,7 +161,7 @@ export default class OffersDetails extends React.Component {
                   <AsyncBtn.Primary>Download Report</AsyncBtn.Primary>
                 </Banner>
 
-                <SubscriptionDetails discount={123.45} offerUsage={230} activeOn={12} />
+                <SubscriptionUsageDetails id={this.props.id} />
               </>
             )}
 
@@ -278,25 +278,4 @@ export function emiDurationString(emiDurations) {
   }
 
   return durations.join(', ') + lastDurationString;
-}
-
-function SubscriptionDetails({ offerUsage, activeOn, discount }) {
-  return (
-    <div class="subscription-details">
-      <div>
-        <div class="heading">Offer Usage</div>
-        <div class="count">{offerUsage}</div>
-      </div>
-      <div>
-        <div class="heading">Active On</div>
-        <div class="count">{activeOn}</div>
-      </div>
-      <div>
-        <div class="heading">Total Discounts Applied</div>
-        <div class="count">
-          <Amount value={discount} />
-        </div>
-      </div>
-    </div>
-  );
 }

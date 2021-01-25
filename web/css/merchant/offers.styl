@@ -114,11 +114,12 @@
         align-items: center
         text-align: center
         margin: 0 20px
-        > div
-            width 50%
-            &:not(:last-child)
-                border-right 1px solid #EAEFF0
-                margin-right 20px
+        justify-content: space-between
+
+        .divider
+            width: 2px
+            background #EAEFF0
+            height: 37px
 
         .hading
             font-size: 13px
@@ -130,6 +131,10 @@
             font-weight: bold
             span
                 font-weight: bold
+
+        .error
+            color: #C5752B
+            width: 100%
 
 .Modal-mask.Modal-mask.Modal-mask--Offers--TypeSelection
     background: rgba(22, 47, 86, 0.74)
