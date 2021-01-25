@@ -54,6 +54,10 @@ class Service extends Base\Service
     // This is the Admin\Logger trait
     use Logger;
 
+    const BLACKLIST_ROUTES_ADMIN = [
+        'admin/oauth_login'
+    ];
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -907,6 +911,13 @@ class Service extends Base\Service
             return [$error, []];
         }
 
+        $disableAPI = $this->disallowAPIFromMakeRawAPICall($path);
+
+        if ($disableAPI === true)
+        {
+            return ['not allowed', []];
+        }
+
         $allRequestHeaders = Request::header();
         $headersToBeAppended = [];
 
@@ -921,6 +932,24 @@ class Service extends Base\Service
         $request = new RawApiRequest($input, $path, $headersToBeAppended);
         return $request->send();
     }
+
+    /**
+     *  Disallow Admin routes from make raw api call.
+     *
+     * @param $path
+     *
+     * @return bool
+     */
+    protected function disallowAPIFromMakeRawAPICall($path)
+    {
+        if (in_array($path, self::BLACKLIST_ROUTES_ADMIN, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 
     public function addEntityFeatures($entityType, $entityId, $input)
     {
