@@ -1,20 +1,26 @@
 import React, { Component } from 'react';
-import Spinner from 'common/ui/Spinner';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import Button from 'common/new-ui/Button';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   fetchWithdrawalDetails,
   fetchWithdrawalConfigurationByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
-import { withRouter } from 'react-router-dom';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Amount from 'common/ui/Amount';
-import { STATUS_DESCRIPTIONS, STATUSES } from './constants';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import WithdrawalStatus from './WithdrawalStatus';
-import WithdrawalsRoot from './index';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
+import Repayments from 'merchant/models/Capital/Repayments';
+import WithdrawalStatus from './WithdrawalStatus';
+import {
+  STATUSES,
+  STATUS_DESCRIPTIONS,
+  COLLECTIONS_BALANCE_TYPE,
+  COLLECTIONS_PRODUCT_TYPES,
+  COLLECTIONS_PRODUCT_ENTITY_TYPE,
+} from './constants';
 
 @withRouter
 @connect(
@@ -36,6 +42,11 @@ class WithdrawalDetails extends Component {
   state = {
     showBreakdown: false,
     showPartialRepaymentBreakdown: false,
+    breakdownDetails: {
+      totalRepaidSoFar: 0,
+      principalRepaidSoFar: 0,
+      interestRepaidSoFar: 0,
+    },
   };
 
   gaEventDispatcher = (eventObject) => {
@@ -65,47 +76,66 @@ class WithdrawalDetails extends Component {
       reference_type: 'ID',
       reference_id: this.props.id,
     });
+    this.fetchBreakdownDetails();
   };
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchWithdrawalDetails({
-        reference_type: 'ID',
-        reference_id: nextProps.id,
+  fetchBreakdownDetails = () => {
+    const {
+      user: { current },
+      id,
+    } = this.props;
+    const repaymentInstance = new Repayments();
+
+    return repaymentInstance
+      .fetchRepayments({
+        product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+        credit_id: current,
+        product_entity_type: COLLECTIONS_PRODUCT_ENTITY_TYPE.WITHDRAWALS,
+        product_entity_reference_id: id,
+        order_by_type: 'ORDER_BY_TYPE_DESC',
+        order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+      })
+      .then(({ data: { repayments = [] } = {} } = {}) => {
+        const response = {
+          totalRepaidSoFar: 0,
+          principalRepaidSoFar: 0,
+          interestRepaidSoFar: 0,
+        };
+
+        repayments.forEach(({ breakups }) => {
+          breakups.forEach(({ breakup_amount, balance_type, product_entity_reference_id }) => {
+            if (product_entity_reference_id === id) {
+              if (balance_type === COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_PRINCIPAL) {
+                response.principalRepaidSoFar += Number(breakup_amount);
+              } else if (balance_type === COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_INTEREST) {
+                response.interestRepaidSoFar += Number(breakup_amount);
+              }
+            }
+          });
+        });
+
+        response.totalRepaidSoFar = response.principalRepaidSoFar + response.interestRepaidSoFar;
+
+        this.setState({
+          breakdownDetails: response,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          breakdownDetails: {
+            totalRepaidSoFar: 0,
+            principalRepaidSoFar: 0,
+            interestRepaidSoFar: 0,
+          },
+        });
       });
+  };
+
+  componentDidUpdate(prevProps) {
+    if (this.props.id !== prevProps.id) {
+      this.fetchWithdrawalDetails();
     }
   }
-
-  showRepayTicketCreated = (ticketNumber, withdrawalDetails, withdrawalConfigurationDetails) => {
-    const dueAmount = this.getDueAmount(withdrawalDetails, withdrawalConfigurationDetails);
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <RepaymentTicketSuccessModal
-          amount={dueAmount.principal + dueAmount.interest}
-          ticketNumber={ticketNumber}
-          email={this.props.user.email}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
-  };
-
-  createRepayTicket = () => {
-    let content = `I am requesting here to repay my due amounts against this withdrawal[${this.props.withdrawalDetails.data.id}]`;
-
-    return WithdrawalsRoot.createCapitalFDTicket(content, this.props.user);
-  };
-
-  repay = (withdrawalDetails, withdrawalConfigurationDetails) => {
-    return this.createRepayTicket().then((res) => {
-      this.showRepayTicketCreated(
-        res.data.ticketNo,
-        withdrawalDetails,
-        withdrawalConfigurationDetails,
-      );
-    });
-  };
 
   toggleBreakdownVisibility = () => {
     this.gaEventDispatcher({
@@ -119,39 +149,12 @@ class WithdrawalDetails extends Component {
     }));
   };
 
-  getRepaidAmount = (withdrawalDetails) => {
-    if (!withdrawalDetails.repayments) {
-      return {
-        total: 0,
-        principal: 0,
-        interest: 0,
-      };
-    }
-    const totalAmount = withdrawalDetails.repayments.reduce((acc, curr) => acc + curr.amount, 0);
-
-    const totalPrincipal = withdrawalDetails.repayments
-      .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter((repayment) => repayment.category === 'PRINCIPAL')
-      .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
-
-    const totalInterest = withdrawalDetails.repayments
-      .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
-      .filter((repayment) => repayment.category === 'INTEREST')
-      .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
-
-    return {
-      total: totalAmount,
-      principal: totalPrincipal,
-      interest: totalInterest,
-    };
-  };
-
   getDueAmount = (withdrawalDetails, withdrawalConfigurationDetails) => {
     const { configuration } = withdrawalConfigurationDetails;
     const principal = parseInt(withdrawalDetails.amount);
-    const { principal: principalRepaidSoFar, interest: interestRepaidSoFar } = this.getRepaidAmount(
-      withdrawalDetails,
-    );
+    const {
+      breakdownDetails: { principalRepaidSoFar, interestRepaidSoFar },
+    } = this.state;
 
     const lastRepaid =
       withdrawalDetails.repayments && withdrawalDetails.repayments.length > 0
@@ -173,28 +176,6 @@ class WithdrawalDetails extends Component {
     };
   };
 
-  getRepayableAmount = (withdrawalDetails, withdrawalConfigurationDetails) => {
-    const { configuration } = withdrawalConfigurationDetails;
-    const principal = parseInt(withdrawalDetails.amount);
-    const repaidSoFar = this.getRepaidAmount(withdrawalDetails).total;
-
-    const lastRepaid =
-      withdrawalDetails.repayments && withdrawalDetails.repayments.length > 0
-        ? moment(withdrawalDetails.repayments[withdrawalDetails.repayments.length - 1].created_at)
-        : withdrawalDetails.due_date;
-
-    const diffDays = moment(lastRepaid).diff(withdrawalDetails.drawn_at, 'days');
-
-    const roi = parseInt(configuration.interest) / 100;
-
-    const interest = (diffDays * roi * principal) / 100;
-
-    return {
-      principal: principal - repaidSoFar,
-      interest,
-    };
-  };
-
   toggleRepaidBreakdownVisibility = () => {
     this.setState((prevState) => ({
       showPartialRepaymentBreakdown: !prevState.showPartialRepaymentBreakdown,
@@ -203,7 +184,7 @@ class WithdrawalDetails extends Component {
 
   shouldShowRepaymentDetails = () => {
     const {
-      withdrawalDetails: { data, loading: withdrawalDetailsLoading },
+      withdrawalDetails: { data },
       id,
     } = this.props;
     return data.status !== STATUSES.FAILED && data.status !== STATUSES.REJECTED;
@@ -211,7 +192,7 @@ class WithdrawalDetails extends Component {
 
   getLastRepaidDate = () => {
     const {
-      withdrawalDetails: { data, loading: withdrawalDetailsLoading },
+      withdrawalDetails: { data },
       id,
     } = this.props;
 
@@ -229,7 +210,11 @@ class WithdrawalDetails extends Component {
       id,
     } = this.props;
 
-    const { showBreakdown, showPartialRepaymentBreakdown } = this.state;
+    const {
+      showBreakdown,
+      showPartialRepaymentBreakdown,
+      breakdownDetails: { totalRepaidSoFar, principalRepaidSoFar, interestRepaidSoFar },
+    } = this.state;
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const loading =
       !withdrawalConfigurationDetails ||
@@ -241,13 +226,8 @@ class WithdrawalDetails extends Component {
       withdrawalConfigurationDetails,
     );
 
-    const {
-      principal: principalRepaidSoFar,
-      interest: interestRepaidSoFar,
-      total: totalRepaidSoFar,
-    } = this.getRepaidAmount(data);
     return (
-      <div className="content-wrapper content-sm txn-details Withdrawal--Details">
+      <div className="content-wrapper content-sm txn-details CA--entity-details">
         {loading ? (
           <div className="page-spinner-container">
             <Spinner />
@@ -259,15 +239,6 @@ class WithdrawalDetails extends Component {
                 <span class="full-width no-margin">
                   <strong>{id}</strong>
                 </span>
-                {(data.status === STATUSES.PROCESSED ||
-                  data.status === STATUSES.PARTIALLY_REPAID) && (
-                  <AsyncBtn.Primary
-                    class="pull-right"
-                    onClick={() => this.repay(data, withdrawalConfigurationDetails)}
-                  >
-                    Repay
-                  </AsyncBtn.Primary>
-                )}
               </div>
             </div>
             <div className="SliderPanel__Body">

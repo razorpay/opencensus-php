@@ -89,6 +89,7 @@ import LoanApplicationReducer from 'merchant/reducers/capital';
 
 import wysiwygReducer from 'merchant/reducers/wysiwyg';
 import WithdrawalsReducer from 'merchant/reducers/capital/withdrawals';
+import RepaymentsReducer from 'merchant/reducers/capital/repayments';
 import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
 import navigatorReducer from 'merchant/reducers/navigator/details';
 import supportDetailReducer from 'merchant/reducers/support_detail';
@@ -181,5 +182,6 @@ export default combineReducers({
   withdrawals: WithdrawalsReducer,
   instrumentRequests: instrumentRequestsReducer,
   supportdetails: supportDetailReducer,
+  repayments: RepaymentsReducer,
   rewards: rewardsReducer,
 });

@@ -1,0 +1,106 @@
+.cash-advance-container, .cash-advance-repayments-schedule
+  .custom-loader
+    width: 100%;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    span
+      font-size: 50px;
+
+  tabbed-container
+    .cash-advance-title
+      font-weight: 900;
+      font-size: 32px;
+      line-height: 38px;
+      color: rgba(22, 47, 86, 0.87);
+      padding: 0px 24px;
+
+    tabbed-container
+      padding: 0px;
+
+    header,
+    content
+      background: transparent;
+      border: none;
+
+    header
+      border-bottom: 2px solid #e2e8ea;
+
+    content
+      margin-top: 20px
+
+    .cash-advance-body
+      .ml-0
+        margin-left: 0;
+
+      .bg-warning
+        color: #162F56;
+        background-color: #FFE074;
+
+      #select-period
+        .InputGroup.Input
+          margin-top: 0;
+
+        .Input-el
+          height: 30px;
+
+        input[type="checkbox"].Input-el
+          height 0px;
+
+        input[name="selectedStartAt"],
+        input[name="selectedEndAt"],
+        input[name="selectedDate"]
+          min-width: 150px;
+
+        span.Input-addons--after
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 2px;
+
+      .cash-advance-repayments
+        margin-top: 16px;
+        background: #FFFFFF;
+        tbody
+          tr
+            .empty-table
+              .no-results-container
+                justify-content: center;
+                align-items: center;
+        .filters-wrapper .list-filter-container
+          flex: 1;
+        .right-cta
+          padding-top: 20px;
+          .btn .i
+            margin-right: 4px;
+
+  .woggle
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+
+  @keyframes shake {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+
+    30%, 50%, 70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+
+    40%, 60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+
+.repayment-details-modal
+  .bg-warning
+    color: #162F56;
+    background-color: #FFE074;

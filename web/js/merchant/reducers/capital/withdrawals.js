@@ -6,6 +6,7 @@ const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_WITHDRAWALS = 'FETCH_WITHDRAWALS';
 const FETCH_WITHDRAWAL_DETAILS = 'FETCH_WITHDRAWAL_DETAILS';
 const FETCH_DESTINATION_DETAILS = 'FETCH_DESTINATION_DETAILS';
+const FETCH_INSTALLMENTS = 'FETCH_INSTALLMENTS';
 
 export const fetchSeedData = () => {
   const withdrawal = new Withdrawal();
@@ -56,6 +57,14 @@ export const fetchWithdrawalDetails = (data) => {
   };
 };
 
+export const fetchInstallments = (data) => {
+  const withdrawal = new Withdrawal();
+  return {
+    type: FETCH_INSTALLMENTS,
+    payload: withdrawal.fetchInstallments(data),
+  };
+};
+
 export const createWithdrawal = (payload) => {
   const withdrawal = new Withdrawal();
   return withdrawal.createWithdrawal(payload);
@@ -86,6 +95,11 @@ const getInitialState = () => {
     destinationAccountDetails: {
       loading: false,
       data: null,
+      error: null,
+    },
+    installments: {
+      loading: false,
+      data: [],
       error: null,
     },
   };
@@ -151,10 +165,12 @@ export default function (state = initialState, action) {
       });
 
     case `${FETCH_WITHDRAWALS}::SUCCESS`:
+      const { data: { withdrawal = [] } = {} } = action.payload;
+
       return merge(state, {
         list: {
           loading: false,
-          data: action.payload.data.withdrawal,
+          data: withdrawal,
         },
       });
 
@@ -213,6 +229,26 @@ export default function (state = initialState, action) {
         destinationAccountDetails: {
           loading: false,
           data: {},
+          error: action.payload.errors,
+        },
+      });
+    case `${FETCH_INSTALLMENTS}::PENDING`:
+      return merge(state, {
+        installments: {
+          loading: true,
+        },
+      });
+    case `${FETCH_INSTALLMENTS}::SUCCESS`:
+      return merge(state, {
+        installments: {
+          loading: false,
+          data: action.payload.data.repayment_schedule,
+        },
+      });
+    case `${FETCH_INSTALLMENTS}::ERROR`:
+      return merge(state, {
+        installments: {
+          loading: false,
           error: action.payload.errors,
         },
       });

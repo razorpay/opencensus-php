@@ -1,11 +1,10 @@
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
-import { STATUS_LABELS, STATUSES, StatusPillClasses } from './constants';
+import { STATUS_LABELS, StatusPillClasses } from './constants';
 import { Link, withRouter } from 'react-router-dom';
-import { AsyncBtn } from 'common/new-ui/Button';
 
-const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
+const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
   return (
     <EntityItemRow id={withdrawal.id} onClick={onEdit}>
       <td>
@@ -30,27 +29,17 @@ const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
       <td>{withdrawal.due_date ? moment(withdrawal.due_date).format('LL') : '--'}</td>
       <td class="row-action">
         <div className="btn-group">
-          {withdrawal.status === STATUSES.PROCESSED ||
-          withdrawal.status === STATUSES.PARTIALLY_REPAID ? (
-            <AsyncBtn.Primary
-              class="btn btn-primary btn-xs btn-outline Button--small"
-              onClick={() => repay(withdrawal)}
-            >
-              Repay
-            </AsyncBtn.Primary>
-          ) : (
-            <button
-              className="btn btn-xs btn-default"
-              onClick={() => {
-                trackGA({
-                  eventAction: 'List View | Specific Withdrawal',
-                });
-                history.push(`/capital/cash-advance/withdrawals/${withdrawal.id}`);
-              }}
-            >
-              <span>view</span>
-            </button>
-          )}
+          <button
+            className="btn btn-xs btn-default"
+            onClick={() => {
+              trackGA({
+                eventAction: 'List View | Specific Withdrawal',
+              });
+              history.push(`/capital/cash-advance/withdrawals/${withdrawal.id}`);
+            }}
+          >
+            <span>view</span>
+          </button>
         </div>
       </td>
     </EntityItemRow>
@@ -59,7 +48,7 @@ const ListItem = ({ withdrawal, onEdit, repay, history, trackGA }) => {
 
 const ListItemWrapper = withRouter(ListItem);
 
-export default ({ withdrawals, loading, viewWithdrawal, repay, trackGA }) => {
+export default ({ withdrawals, loading, viewWithdrawal, trackGA }) => {
   return (
     <div className="table-responsive">
       <table className="table table-hover">
@@ -98,7 +87,6 @@ export default ({ withdrawals, loading, viewWithdrawal, repay, trackGA }) => {
               key={withdrawal.id}
               withdrawal={withdrawal}
               viewWithdrawal={viewWithdrawal}
-              repay={repay}
               trackGA={trackGA}
             />
           ))}

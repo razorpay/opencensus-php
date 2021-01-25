@@ -76,3 +76,15 @@ export const getApplicationProgressPercentage = (currentState, applicationStateG
   const percentage = (currentStateIndex / (totalStates - 1)) * 100;
   return !percentage ? 0 : percentage > 0 ? (percentage > 100 ? 100 : Math.ceil(percentage)) : 0;
 };
+
+export const loadCheckoutScript = () => {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve();
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};

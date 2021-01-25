@@ -1,0 +1,154 @@
+.cash-advance-repayments-schedule
+  background: transparent;
+  position: relative;
+  max-width: unset;
+  margin: 20px;
+  margin-top: 80px;
+
+  .top-nav
+    display: flex;
+    margin-bottom: 20px;
+    .left-section
+      flex: 1;
+    .right-section
+      display: flex;
+      .links-wrapper
+        margin-left: 6px;
+        a
+          &:not(:last-child)
+            &::after
+              content: " "
+              margin: 0 8px;
+              width: 1px;
+              height: 12px;
+              background: #162F56;
+              opacity: 0.2;
+              border-radius: 2px;
+
+  .repayments-schedule-repay-card
+    margin-top: 0;
+  tabbed-container
+    padding: 0;
+
+  table thead tr th,
+  tbody tr td
+    text-align: center;
+    &.text-strong
+      font-weight: 700;
+      .help-content .rzp-amount
+        .rzp-currency, .rzp-whole, .rzp-paise
+          font-weight: 700;
+
+  tbody tr td
+    &.highlight
+      background: #fbfbfc;
+    &.border-left
+      border: 1px solid #f0f1f4;
+  thead tr th.highlight
+    background: #f0f1f4;
+
+  .repayments-schedule-filters-wrapper
+    align-items: center;
+    .list-filter-container
+      flex: 1;
+    .float-right-note
+      margin-right: -25px;
+      .block-note.right-border
+        color: rgba(22, 47, 86, 0.76);
+        padding-right: 24px;
+  .repayment-summary {
+    height: auto;
+    min-width: 65%;
+    flex: 0.7;
+    background-color: white;
+    border-radius: 4px;
+    margin-right: 12px;
+    position: relative;
+    padding-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    .top-section{
+      padding: 24px 24px 2px 24px;
+      .left {
+        flex: 1;
+        .title {
+          font-weight: bold;
+          font-size: 14px;
+          color: rgba(22, 47, 86, 0.76);
+        }
+        .large-amount {
+          margin-top: 2px;
+          font-size: 18px;
+          .PlaceholderLoader {
+            height: 24px;
+            width: 64px;
+            margin-top: 10px;
+          }
+          .rzp-amount {
+            color: rgba(22,47,86,0.87);
+            .rzp-currency, .rzp-whole, .rzp-paise {
+              font-weight: 900;
+            }
+            .rzp-currency, .rzp-paise {
+              font-size: 18px;
+            }
+            .rzp-whole {
+              font-size: 24px;
+            }
+          }
+        }
+      }
+      .right{
+        display: flex;
+        align-items: flex-start;
+      }
+    }
+    .footer{
+      margin-top: auto;
+      .loader-wrapper{
+        padding-left: 24px;
+        display: flex;
+        flex-direction: column;
+        .PlaceholderLoader{
+          height: 14px;
+          width: 240px;
+          &:not(:last-child){
+            width: 380px;
+            margin-bottom: 6px;
+          }
+        }
+      }
+      .block-note {
+        padding-left: 24px;
+      }
+    }
+  }
+  .total-owed-amount-breakup{
+    flex: 1;
+    height: 100%;
+    border-radius: 4px;
+    background: white;
+    padding: 24px 24px 18px 24px;
+    .breakup-wrapper{
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .bordered-top{
+      margin-top: 5px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(22, 47, 86, 0.1);
+    }
+    .rzp-amount {
+      color: rgba(22,47,86,0.87);
+      .rzp-currency, .rzp-whole, .rzp-paise {
+        font-weight: 900;
+      }
+      .rzp-currency, .rzp-paise {
+        font-size: 14px;
+      }
+      .rzp-whole {
+        font-size: 16px;
+      }
+    }
+  }

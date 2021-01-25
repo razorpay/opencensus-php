@@ -1,0 +1,77 @@
+import { COLLECTIONS_BALANCE_TYPE } from '../../constants';
+
+export const getPrincipalAmount = ({
+  isNextRepayableRepayType,
+  nextRepayPrincipalAmount,
+  isTotalOwedRepayType,
+  totalPrincipalAmount,
+}) => {
+  if (isNextRepayableRepayType) return nextRepayPrincipalAmount;
+  else if (isTotalOwedRepayType) return totalPrincipalAmount;
+  else return 0;
+};
+
+export const getInterestAmount = ({
+  isNextRepayableRepayType,
+  nextRepayInterestAmount,
+  isTotalOwedRepayType,
+  totalInterestAmount,
+}) => {
+  if (isNextRepayableRepayType) return nextRepayInterestAmount;
+  else if (isTotalOwedRepayType) return totalInterestAmount;
+  else return 0;
+};
+
+export const getTotalAmountBreakup = (balances) => {
+  const totalAmountBreakup = {
+    totalInterestAmount: 0,
+    totalPrincipalAmount: 0,
+  };
+  if (!balances || !balances.data || !balances.data.length) return totalAmountBreakup;
+  return balances.data.reduce((amountBreakup, { balance_type, balance_amount }) => {
+    switch (balance_type) {
+      case COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_INTEREST:
+        amountBreakup.totalInterestAmount += Number(balance_amount) / 100;
+        return amountBreakup;
+      case COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_PRINCIPAL:
+        amountBreakup.totalPrincipalAmount += Number(balance_amount) / 100;
+        return amountBreakup;
+      default:
+        return amountBreakup;
+    }
+  }, totalAmountBreakup);
+};
+
+export const getNextRepayBreakup = (installments) => {
+  const nextRepayBreakup = {
+    nextRepayInterestAmount: 0,
+    nextRepayPrincipalAmount: 0,
+    nextRepaymentDate: null,
+  };
+  if (!installments || !installments.data || !installments.data.length) return nextRepayBreakup;
+  for (const installment of installments.data) {
+    if (
+      !installment.hasOwnProperty('principal_collected') &&
+      !installment.hasOwnProperty('interest_collected')
+    ) {
+      nextRepayBreakup.nextRepayInterestAmount = Number(installment.interest) / 100;
+      nextRepayBreakup.nextRepayPrincipalAmount = Number(installment.principal) / 100;
+      nextRepayBreakup.nextRepaymentDate = installment.repayment_date;
+      return nextRepayBreakup;
+    } else {
+      const principalCollected = Number(installment.principal_collected) / 100 || 0;
+      const interestCollected = Number(installment.interest_collected) / 100 || 0;
+      const amountCollected = principalCollected + interestCollected;
+      const installmentTotalPayment = Number(installment.payment) / 100 || 0;
+      const installmentPrincipal = Number(installment.principal) / 100 || 0;
+      const installmentInterest = Number(installment.interest) / 100 || 0;
+      if (installmentTotalPayment > amountCollected) {
+        nextRepayBreakup.nextRepayInterestAmount = installmentInterest - interestCollected;
+        nextRepayBreakup.nextRepayPrincipalAmount = installmentPrincipal - principalCollected;
+        nextRepayBreakup.nextRepaymentDate = installment.repayment_date;
+        return nextRepayBreakup;
+      }
+    }
+  }
+  return nextRepayBreakup;
+};

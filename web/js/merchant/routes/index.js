@@ -189,6 +189,11 @@ const WithdrawalDetails = lazy(() =>
     /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/WithdrawalDetails'
   ),
 );
+const RepaymentDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/Repayments/RepaymentDetails'
+  ),
+);
 const RuleDetail = lazy(() =>
   import(
     /* webpackChunkName: "componentsRuleDetail" */ 'merchant/views/Navigator/components/RuleDetail'
@@ -290,6 +295,10 @@ const entityDetailsMap = {
 
   '/capital/cash-advance/withdrawals/:id': {
     component: WithdrawalDetails,
+    additionalCondition: (user) => user.isLOCEnabled,
+  },
+  '/capital/cash-advance/repayments/:id': {
+    component: RepaymentDetails,
     additionalCondition: (user) => user.isLOCEnabled,
   },
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {

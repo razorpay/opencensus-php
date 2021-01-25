@@ -1,0 +1,261 @@
+import React, { useState } from 'react';
+import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from '../constants';
+import { getPrincipalAmount, getInterestAmount } from './utils';
+
+const RepayAmount = ({
+  setView,
+  customAmount,
+  balance,
+  nextRepayableAmount,
+  totalOwedAmount,
+  nextRepayInterestAmount,
+  nextRepayPrincipalAmount,
+  setRepayType,
+  repayType,
+  setCustomAmount,
+  setRepayAmount,
+  totalPrincipalAmount,
+  totalInterestAmount,
+}) => {
+  const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
+  const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
+  const isCustomRepayType = repayType === REPAY_AMOUNT_TYPES.CUSTOM;
+
+  const [customAmountError, setCustomAmountError] = useState('');
+  const [tempCustomAmount, setTempCustomAmount] = useState(customAmount);
+  const [isCustomAmountActive, setIsCustomAmountActive] = useState(false);
+
+  const handleCancelClick = () => {
+    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+  };
+
+  const handleConfirmClick = () => {
+    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+  };
+
+  const handleEnterAmountClick = () => {
+    if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
+    setIsCustomAmountActive(true);
+  };
+
+  const handleRadioSelect = (type, amount) => {
+    setRepayType(type);
+    if (type === REPAY_AMOUNT_TYPES.CUSTOM) {
+      setIsCustomAmountActive(true);
+    } else {
+      setIsCustomAmountActive(false);
+    }
+    setRepayAmount(amount);
+  };
+
+  const handleEditClick = () => {
+    if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
+    setIsCustomAmountActive(true);
+  };
+
+  const handleCustomAmountChange = (e) => {
+    const value = parseInt(e.currentTarget.value, 10);
+    if (value > totalOwedAmount)
+      setCustomAmountError(
+        <p>
+          Max. amount can be repaid <Amount currency="INR" value={totalOwedAmount * 100} />
+        </p>,
+      );
+    else if (value < 10)
+      setCustomAmountError(
+        <p>
+          Min. amount can be repaid <Amount currency="INR" value={1000} />
+        </p>,
+      );
+    else {
+      setCustomAmountError('');
+    }
+    setTempCustomAmount(e.currentTarget.value);
+  };
+
+  const handleCustomAmountBlur = () => {};
+
+  const handleCustomAmountCloseClick = () => {
+    setIsCustomAmountActive(false);
+    setTempCustomAmount(customAmount);
+    setCustomAmountError('');
+  };
+
+  const handleCustomAmountDoneClick = () => {
+    setIsCustomAmountActive(false);
+    setCustomAmount(tempCustomAmount);
+    setRepayAmount(tempCustomAmount);
+    if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
+  };
+
+  const principalAmount = getPrincipalAmount({
+    isNextRepayableRepayType,
+    nextRepayPrincipalAmount,
+    isTotalOwedRepayType,
+    totalPrincipalAmount,
+  });
+  const interestAmount = getInterestAmount({
+    isNextRepayableRepayType,
+    nextRepayInterestAmount,
+    isTotalOwedRepayType,
+    totalInterestAmount,
+  });
+
+  return (
+    <div className="repay-container repay-amount repay">
+      <div className="repay-text">I want to repay</div>
+      <div className="flex repay-actions">
+        <div
+          className={`action ${
+            repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE ? 'active' : ''
+          } cursor-pointer`}
+          onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.NEXT_REPAYABLE, nextRepayableAmount)}
+        >
+          <div className="mr-7">
+            <input
+              type="radio"
+              key={REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
+              value={REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
+              checked={repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
+            />
+          </div>
+          <div>
+            <div className="repay--type-title mb-4">Next Repayable</div>
+            <div className="mt-4">
+              <Amount className="repay--amount" currency="INR" value={nextRepayableAmount * 100} />
+            </div>
+          </div>
+        </div>
+        <div
+          className={`action ml--1 ${
+            repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED ? 'active' : ''
+          } cursor-pointer`}
+          onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.TOTAL_OWED, totalOwedAmount)}
+        >
+          <div className="mr-7">
+            <input
+              type="radio"
+              key={REPAY_AMOUNT_TYPES.TOTAL_OWED}
+              value={REPAY_AMOUNT_TYPES.TOTAL_OWED}
+              checked={repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED}
+            />
+          </div>
+          <div>
+            <div className="repay--type-title">Total Owed</div>
+            <div className="mt-4">
+              <Amount className="repay--amount" currency="INR" value={totalOwedAmount * 100} />
+            </div>
+          </div>
+        </div>
+        <div
+          className={`action ml--1 mr-24 ${
+            repayType === REPAY_AMOUNT_TYPES.CUSTOM && !customAmountError ? 'active' : ''
+          } ${repayType === REPAY_AMOUNT_TYPES.CUSTOM && customAmountError ? 'error' : ''}`}
+        >
+          <div className="mr-7">
+            <input
+              type="radio"
+              key={REPAY_AMOUNT_TYPES.CUSTOM}
+              value={REPAY_AMOUNT_TYPES.CUSTOM}
+              onChange={() => handleRadioSelect(REPAY_AMOUNT_TYPES.CUSTOM, customAmount)}
+              checked={repayType === REPAY_AMOUNT_TYPES.CUSTOM}
+            />
+          </div>
+          <div>
+            <div
+              className="repay--type-title cursor-pointer"
+              onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.CUSTOM, customAmount)}
+            >
+              Custom
+            </div>
+            {isCustomAmountActive ? (
+              <div className="custom-input mt-8">
+                <Input
+                  addonBefore="₹"
+                  type="number"
+                  className="settlement-balance--input"
+                  addonAfter={
+                    <div className="settlement-balance--input-actions">
+                      {!customAmountError && tempCustomAmount && (
+                        <Button.Transparent className="mr-12" onClick={handleCustomAmountDoneClick}>
+                          Done
+                        </Button.Transparent>
+                      )}
+                      <span
+                        className="settlement-balance--close"
+                        onClick={handleCustomAmountCloseClick}
+                      >
+                        <i className="i i-close" />
+                      </span>
+                    </div>
+                  }
+                  name="amount"
+                  onBlur={handleCustomAmountBlur}
+                  value={tempCustomAmount}
+                  onChange={handleCustomAmountChange}
+                />
+
+                <div className="text-danger error-message mt-5">
+                  {customAmountError && customAmountError}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4">
+                {customAmount !== 0 && !customAmount ? (
+                  <Button.Transparent onClick={handleEnterAmountClick}>
+                    Enter Amount
+                  </Button.Transparent>
+                ) : (
+                  <div>
+                    <Amount className="repay--amount" currency="INR" value={customAmount * 100} />
+                    <Button.Transparent className="edit-btn" onClick={handleEditClick}>
+                      Edit
+                    </Button.Transparent>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <div>
+          <Button.Primary
+            disabled={
+              repayType === REPAY_AMOUNT_TYPES.CUSTOM &&
+              (customAmountError || !tempCustomAmount || isCustomAmountActive)
+            }
+            className="mr-24"
+            onClick={handleConfirmClick}
+          >
+            Confirm
+          </Button.Primary>
+          <Button.Transparent onClick={handleCancelClick}>Cancel</Button.Transparent>
+        </div>
+      </div>
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
+        {!isCustomRepayType && (
+          <div className="flex">
+            <div className="principal">
+              <div className="amount--title">Principal</div>
+              <Amount className="amount" currency="INR" value={principalAmount * 100} />
+            </div>
+            <div>
+              <div className="amount--title">Interest</div>
+              <Amount className="amount" currency="INR" value={interestAmount * 100} />
+            </div>
+          </div>
+        )}
+        {balance === 0 && (
+          <div className="hint flex">
+            <i className="i i-info-outline mr-4 mt-2" />
+            <p>Amount can be repaid using Netbanking/UPI</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default RepayAmount;

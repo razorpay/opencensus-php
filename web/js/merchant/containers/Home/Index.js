@@ -237,9 +237,7 @@ export default class HomeContainer extends Component {
         this.state = {
           ...this.state,
           showOnboardingBanner: true,
-          showOnboardingBannerFirstStep: user.showInstantActivation
-            ? !user.submitted
-            : true,
+          showOnboardingBannerFirstStep: user.showInstantActivation ? !user.submitted : true,
           expandOnboardingBanner: true,
         };
 

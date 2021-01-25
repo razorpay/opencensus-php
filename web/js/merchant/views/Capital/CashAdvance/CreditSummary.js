@@ -1,6 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 
 const Loader = () => (
   <div class="flex">
@@ -11,81 +14,52 @@ const Loader = () => (
 
 export default function CreditSummary({
   internalCreditBalance,
-  minWithdrawableAmount,
-  maxWithdrawableAmount,
   withdrawalConfiguration,
   loading,
   user,
   history,
+  haveWithdrawals,
 }) {
+  if (loading) return <Loader />;
+
+  const { configuration: { internal_credit_limit = 0 } = {} } = withdrawalConfiguration;
+
   return (
     <div className="withdrawals__credit-meta">
       <div className="title__wrapper">
-        <img src={`/dist/css/assets/capital/credit_details.svg`} alt="Loading icon" />
-        <p className="title">Your Credit Details</p>
+        <p className="title">Withdrawal Balance</p>
+      </div>
+      <div className="amount__wrapper">
+        <Amount value={internalCreditBalance} parentQuerySelector=".withdrawals__top-summary" />
+      </div>
+      <div className="withdrawals__credit-meta__list">
+        <div className="withdrawals__credit-meta__list-item">
+          <div className="description__wrapper">
+            <div className="description">
+              <p>Total credit limit</p>
+            </div>
+            <Amount
+              value={Number(internal_credit_limit)}
+              parentQuerySelector=".withdrawals__top-summary"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="withdrawals__footer">
         {user && user.isLOSEnabled && user.isLOCEnabled && (
           <Button.Transparent
-            onClick={() => history.push('/capital/cash-advance/apply?action=open')}
+            onClick={() => history.push(`${CASH_ADVANCE_BASE_URL}apply?action=open`)}
           >
             More Details
           </Button.Transparent>
         )}
-      </div>
-      <div className="withdrawals__credit-meta__list">
-        <div className="withdrawals__credit-meta__list-item">
-          <img src={`/dist/css/assets/capital/available_balance.svg`} alt="Loading icon" />
-          <div className="description__wrapper bordered-bottom">
-            <div className="description">
-              <strong>Available Withdrawable Balance</strong>
-              <p className="text-fade text-small">as a credit limit</p>
-            </div>
-            {loading ? (
-              <Loader />
-            ) : (
-              <div class="flex">
-                {internalCreditBalance < minWithdrawableAmount && (
-                  <i className="i i-info-circle text-danger credit-balance-indicator" />
-                )}
-                <Amount value={internalCreditBalance} className="pull-right" />
-                {internalCreditBalance > maxWithdrawableAmount && (
-                  <i class="i i-arrow-up text-success credit-balance-indicator pull-right" />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="withdrawals__credit-meta__list-item">
-          <img src={`/dist/css/assets/capital/withdrawable_amount.svg`} alt="Loading icon" />
-          <div className="description__wrapper bordered-bottom">
-            <div className="description">
-              <strong>Maximum Withdrawable Amount</strong>
-              <p className="text-small text-fade">at a single time</p>
-            </div>
-            {loading ? <Loader /> : <Amount value={maxWithdrawableAmount} className="pull-right" />}
-          </div>
-        </div>
-        <div className="withdrawals__credit-meta__list-item">
-          <img src={`/dist/css/assets/capital/due_amount.svg`} alt="Loading icon" />
-          <div className="description__wrapper">
-            <div className="description">
-              <strong>Due Repayments</strong>
-              <p className="text-small text-fade">Amount that need to be repayed</p>
-            </div>
-            {loading ? (
-              <Loader />
-            ) : (
-              <div className="flex">
-                <Amount
-                  value={withdrawalConfiguration.principal_outstanding_balance || 0}
-                  className="pull-right"
-                />
-                {internalCreditBalance === 0 && (
-                  <i className="i i-arrow-down text-success credit-balance-indicator pull-right" />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        {haveWithdrawals ? (
+          <Button.Transparent>
+            <Link to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.WITHDRAWALS}`}>
+              View Withdrawals
+            </Link>
+          </Button.Transparent>
+        ) : null}
       </div>
     </div>
   );

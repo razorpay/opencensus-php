@@ -82,4 +82,18 @@ export default class LoanOriginationEntity extends GenericEntity {
       data,
     );
   }
+
+  fetchRepayments(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepayments')}`,
+      data,
+    );
+  }
+
+  fetchInstallments(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepaymentsSchedule')}`,
+      data,
+    );
+  }
 }

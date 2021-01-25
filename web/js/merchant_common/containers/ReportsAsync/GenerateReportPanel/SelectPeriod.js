@@ -14,16 +14,20 @@ const DEFAULT_PERIOD = 'yesterday';
 const DATE_DISPLAY_FORMAT = 'll';
 
 export default class SelectPeriod extends React.Component {
-  state = {
-    values: {
-      selectedPeriod: DEFAULT_PERIOD,
-      selectedMonth: DEFAULT_SELECTED_MONTH,
-      selectedDate: DEFAULT_SELECTED_DATE,
-      selectedStartAt: DEFAULT_SELECTED_START_AT,
-      selectedEndAt: DEFAULT_SELECTED_END_AT,
-      selectedCustomConfigMonth: DEFAULT_SELECTED_MONTH,
-    },
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      values: {
+        selectedPeriod: props.defaultPeriod || DEFAULT_PERIOD,
+        selectedMonth: DEFAULT_SELECTED_MONTH,
+        selectedDate: DEFAULT_SELECTED_DATE,
+        selectedStartAt: DEFAULT_SELECTED_START_AT,
+        selectedEndAt: DEFAULT_SELECTED_END_AT,
+        selectedCustomConfigMonth: DEFAULT_SELECTED_MONTH,
+      },
+    };
+  }
 
   onChange = ({ target }) => {
     const { name, value, checked } = target;
@@ -133,6 +137,7 @@ export default class SelectPeriod extends React.Component {
       isCustomConfig,
       isFormDisabled,
       dateRangeError,
+      defaultPeriod = DEFAULT_PERIOD,
       selectedConfig,
     } = this.props;
 
@@ -148,7 +153,7 @@ export default class SelectPeriod extends React.Component {
               name="selectedPeriod"
               onChange={this.onChange}
               disabled={isFormDisabled}
-              defaultValue="yesterday"
+              defaultValue={defaultPeriod}
             />
             {!isFormDisabled && <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />}
 

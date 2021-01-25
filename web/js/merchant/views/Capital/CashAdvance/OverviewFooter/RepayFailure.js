@@ -1,0 +1,60 @@
+import React from 'react';
+import Amount from 'common/ui/Amount';
+import { REPAYMENT_VIEWS } from '../constants';
+import Button from 'common/new-ui/Button';
+
+const RepayFailure = ({ setView, resultAmounts }) => {
+  const handleCloseClick = () => {
+    setView(REPAYMENT_VIEWS.SUMMARY);
+  };
+  const handleRetryRepaymentClick = () => {
+    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+  };
+  return (
+    <div className="failure">
+      <div style={{ alignItems: 'center' }} className="flex">
+        <i className="i i-info-circle text-danger mt-2 mr-10" />
+        <h1 className="title">Repayment Failure!</h1>
+      </div>
+      <div className="description">
+        <p>
+          Oops, Your repayment has been failed due to some internal error.
+          <br />
+          Incase if any money has been debited from your account or settlement balance, it will be
+          added back within 1-2 days.
+        </p>
+      </div>
+      <div className="details flex">
+        <div className="repayment-amount">
+          <div className="details--heading">Repayment Amount</div>
+          <div className="details--amount">
+            <Amount currency="INR" value={resultAmounts.repayAmount * 100} />
+          </div>
+        </div>
+        <div className="repayment-via">
+          <div className="details--heading">Attachment Via</div>
+          <div className="flex repayment-via--details">
+            {resultAmounts.settlementAmount !== 0 && (
+              <div
+                className={`settlement-balance${
+                  resultAmounts.bankAmount !== 0 ? ' border-right' : ''
+                }`}
+              >
+                Settlement Balance
+              </div>
+            )}
+            {resultAmounts.bankAmount !== 0 && <div>Netbanking / UPI</div>}
+          </div>
+        </div>
+        <div>
+          <button className="btn btn-primary mr-24" onClick={handleRetryRepaymentClick}>
+            Retry Repayment
+          </button>
+          <Button.Transparent onClick={handleCloseClick}>Close</Button.Transparent>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RepayFailure;

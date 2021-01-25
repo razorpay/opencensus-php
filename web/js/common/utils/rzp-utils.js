@@ -503,6 +503,43 @@ export const arrayToCsvDataUrl = (array) => {
   return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
 };
 
+export const arrayObjToCsv = (arr) => {
+  /*
+   * converts array of objects to csv. note that this only works for
+   *  one-level nested JSON objects.
+   *
+   * input -> [
+      {
+        "id": "FBXzLRJYkqA237",
+        "amount": 1200,
+        "status": "PENDING",
+        "created_at": "2020-07-07 14:25:37.11105 +0530 IST m=+37.486976552",
+        "interest_repaid": 0,
+        "principal_repaid": 500
+      },
+      {
+        "id": "ABCzLRJYkqA237",
+        "amount": 1100,
+        "status": "PENDING",
+        "created_at": "2020-07-07 14:25:37.11105 +0530 IST m=+37.486976552",
+        "interest_repaid": 0,
+        "principal_repaid": 1000
+      }
+    ]
+    * output ->
+    id,amount,status,created_at,interest_repaid,principal_repaid
+    FBXzLRJYkqA237,1200,PENDING,2020-07-07 14:25:37.11105 +0530 IST m=+37.486976552,0,500
+    ABCzLRJYkqA237,1100,PENDING,2020-07-07 14:25:37.11105 +0530 IST m=+37.486976552,0,1000
+   */
+  const array = [Object.keys(arr[0])].concat(arr);
+
+  return array
+    .map((it) => {
+      return Object.values(it).toString();
+    })
+    .join('\n');
+};
+
 /**
  * @param {*} url
  * Check if valid secure production URL (i.e, HTTPS)

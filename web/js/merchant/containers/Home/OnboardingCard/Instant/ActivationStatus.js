@@ -448,11 +448,12 @@ export default class ActivationCard extends Component {
   }
 
   get accountUnderReviewContent() {
-    const { internationalActivationFlow , isAutoKycDone} = this.props;
+    const { internationalActivationFlow, isAutoKycDone } = this.props;
     if (internationalActivationFlow.isGraylistFlow) {
-      return `We are reviewing your form. Expect confirmation in ${isAutoKycDone ? ' 3 - 5 ' : ' 8 - 10 '} business days. You can request for international payments acceptance post KYC Verification.`;
+      return `We are reviewing your form. Expect confirmation in ${
+        isAutoKycDone ? ' 3 - 5 ' : ' 8 - 10 '
+      } business days. You can request for international payments acceptance post KYC Verification.`;
     }
-
 
     return 'We are reviewing your KYC details for activation';
   }

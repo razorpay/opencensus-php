@@ -9,6 +9,7 @@ import {
   fetchWithdrawals,
   fetchWithdrawalConfigurationByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 
 @connect(
   (state) => ({
@@ -110,7 +111,7 @@ class WithdrawalsRoot extends Component {
   render() {
     const {
       user,
-      withdrawalConfigurationDetails: { loading: configLoading },
+      withdrawalConfigurationDetails: { loading: configLoading, error: wcError },
       list,
     } = this.props;
 
@@ -146,12 +147,15 @@ class WithdrawalsRoot extends Component {
     if (hasWithdrawFeature) {
       if (!hasWC) {
         return OnboardingSection;
+      } else if (wcError) {
+        //TODO: render broken image here.
+        return 'Error while loading WC.';
       }
-      return <Redirect to="/capital/cash-advance/withdrawals" />;
+      return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />;
     } else if (hasLOCStage2Feature) {
       return OnboardingSection;
     } else if (isLOSEnabled && isLOCEnabled) {
-      return <Redirect to="/capital/cash-advance/apply" />;
+      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />;
     } else {
       return <Redirect to="/" />;
     }

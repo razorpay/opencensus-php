@@ -94,10 +94,8 @@ const LoanDetails = lazy(() =>
 const FlashCreditLandingPage = lazy(() =>
   import(/* webpackChunkName: "CapitalCashAdvance" */ 'merchant/views/Capital/CashAdvance/index'),
 );
-const FlashCreditWithdrawals = lazy(() =>
-  import(
-    /* webpackChunkName: "CapitalWithdrawals" */ 'merchant/views/Capital/CashAdvance/withdrawals'
-  ),
+const CashAdvance = lazy(() =>
+  import(/* webpackChunkName: "CashAdvance" */ 'merchant/views/Capital/CashAdvance/CashAdvance'),
 );
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -113,6 +111,7 @@ import Support from 'merchant/components/Support';
 import store from 'merchant/store';
 
 import HandleIndex from './HandleIndex';
+import RepaymentsSchedule from '../views/Capital/CashAdvance/RepaymentsSchedule';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -498,9 +497,10 @@ export default class Content extends Component {
           <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
           <Redirect from="/capital/loans" to="/capital/loans/apply" />
           <ShowWhenRoute
-            path="/capital/cash-advance/withdrawals"
-            component={FlashCreditWithdrawals}
+            path="/capital/cash-advance/repayments-schedule"
+            component={RepaymentsSchedule}
           />
+          <ShowWhenRoute path="/capital/cash-advance/:section" component={CashAdvance} />
           <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
           <Route exact path="/" component={HandleIndex} />
         </Switch>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import AmountWithdraw from './AmountWithdraw';
-import WithdrawalListFilter from './WithdrawalListFilter';
+import WithdrawalListFilter from './CommonListFilter';
 import WithdrawalsTable from './WithdrawalsTable';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -91,11 +91,17 @@ class Withdrawals extends Component {
   };
 
   componentDidMount() {
-    if (!this.props.list.data) {
-      this.props.fetchWithdrawals({
+    const {
+      list: { loading, data },
+      fetchWithdrawals,
+      user: { current },
+    } = this.props;
+
+    if (!loading && !data) {
+      fetchWithdrawals({
         reference: [
           {
-            reference_id: this.props.user.current,
+            reference_id: current,
             reference_type: 'OWNER_ID',
           },
         ],
@@ -106,6 +112,7 @@ class Withdrawals extends Component {
       });
     }
   }
+
   setActiveWithdrawal = (withdrawal) => {
     this.setState({
       isDrawerOpen: true,
@@ -254,12 +261,6 @@ class Withdrawals extends Component {
                     <Amount
                       value={withdrawalConfigurationDetails.principal_outstanding_balance || 0}
                     />
-                    {parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0) >
-                      0 && (
-                      <AsyncBtn.Primary class="m-l" onClick={() => this.repay(null)}>
-                        Repay Dues
-                      </AsyncBtn.Primary>
-                    )}
                   </div>
                 )}
               </div>

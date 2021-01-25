@@ -1,7 +1,12 @@
 .repayment-modal{
+  small {
+    font-size: 13px;
+  }
+
   .description{
     margin-left: 24px;
   }
+
   .overflow-box {
     margin: 10px -45px 20px -45px;
     border: 1px solid rgba(173, 188, 201, 0.17);
@@ -13,18 +18,36 @@
 
     .repayment-amount-details{
       border-left: 3px solid #F08A0A;
-      color: rgba(22, 47, 86, 0.74);
-      margin: 22px 0 12px;
+      color: rgba(22, 47, 86, 0.87);
+      margin: 22px 0 18px 0;
       padding: 0 30px;
       margin-left: -2px;
     }
+
     hr{
       margin: 12px 30px 8px;
     }
+
+    .panel-body {
+      .rzp-amount {
+        .rzp-currency,
+        .rzp-paise {
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .rzp-whole {
+          font-size: 16px;
+          font-weight: 600;
+        }
+      }
+    }
+
     .other-details-wrapper{
       padding: 0 30px;
+
       .item{
         padding: 4px 0;
+
         p{
           &:first-child{
             flex: 1;
@@ -32,18 +55,30 @@
         }
       }
     }
+
+    .repayment-modal__ctas {
+      margin-top: 20px;
+      justify-content: space-around;
+
+      button {
+        width: 48%;
+      }
+    }
   }
+
   &.withdrawals {
     .overflow-box {
-      margin: 10px -25px 20px -25px;
+      margin: 10px -25px 0px -25px;
+
       .repayment-amount-details, hr, .other-details-wrapper {
         padding: 0 24px;
       }
     }
   }
+
   .summary {
     font-size: 13px;
-    margin: 12px 30px;
+    padding: 16px 22px 16px 19px;
     color: rgba(22, 47, 86, 0.74);
   }
 }
