@@ -16,7 +16,11 @@ class Constants
     const CREATED_AT = 'created_at';
     const TYPE       = 'type';
     const ID         = 'id';
+    const IDS        = 'ids';
     const SIZE       = 'size';
+    const ENTITY_TYPE = 'entity_type';
+    const ENTITY_ID   = 'entity_id';
+
 
 
     const DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT = '30';

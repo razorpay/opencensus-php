@@ -72,19 +72,20 @@ class UfhService extends BaseUfhClient
         ];
     }
 
-    public function fetchFiles(array $queryParams): array
+    public function fetchFiles(array $queryParams, $merchantId = null): array
     {
+        $entityId = $queryParams['entity_id'] ?? 'id1';
         return [
             'entity'  => 'collection',
             'count'   => 2,
             'items'   => [
                 [
-                    'id'            => 'file_1234',
+                    'id'            => 'file_1cXSLlUU8V9sXl',
                     'type'          => 'explanation_letter',
-                    'entity_type'   => $queryParams['entity_type'],
-                    'entity_id'     => $queryParams['entity_id'],
+                    'entity_type'   => $queryParams['entity_type'] ?? 'merchant',
+                    'entity_id'     => $entityId,
                     'name'          => 'myfile1.png',
-                    'location'      => 'dispute/10000000000000/'. $queryParams['entity_id'] .'/myfile1.png',
+                    'location'      => 'dispute/10000000000000/'. $entityId .'/myfile1.png',
                     'bucket'        => 'test_bucket',
                     'mime'          => 'text/csv',
                     'extension'     => 'csv',
@@ -92,12 +93,12 @@ class UfhService extends BaseUfhClient
                     'store'         => 's3',
                 ],
                 [
-                    'id'            => 'file_12345',
+                    'id'            => 'file_1cXSLlUU8V9sXm',
                     'type'          => 'delivery_proof',
-                    'entity_type'   => $queryParams['entity_type'],
-                    'entity_id'     => $queryParams['entity_id'],
+                    'entity_type'   => $queryParams['entity_type'] ?? 'merchant',
+                    'entity_id'     => $entityId,
                     'name'          => 'myfile2.pdf',
-                    'location'      => 'dispute/10000000000000/'. $queryParams['entity_id'] .'/myfile2.pdf',
+                    'location'      => 'dispute/10000000000000/'. $entityId .'/myfile2.pdf',
                     'bucket'        => 'test_bucket',
                     'mime'          => 'text/csv',
                     'extension'     => 'csv',

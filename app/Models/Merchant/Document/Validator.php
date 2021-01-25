@@ -27,6 +27,11 @@ class Validator extends Base\Validator
         Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
+    protected static $documentLinkRules = [
+        Constants::FILE_ID   => 'required|string|min:14|max:19',
+        Constants::TYPE      => 'required|string|max:255|custom:document_type'
+    ];
+
     /**
      * @param string $attribute
      * @param        $value
@@ -52,5 +57,22 @@ class Validator extends Base\Validator
     public function validateSource(string $attribute, $value)
     {
         Source::validateSource($value);
+    }
+
+    public function validateProofType($value, string $entityType)
+    {
+        if(Type::isValidProofType($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PROOF_TYPE_INVALID . ': ' . $value
+            );
+        }
+
+        if (Type::PROOF_TYPE_ENTITY_MAPPING[$value] !== $entityType)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PROOF_TYPE_NOT_SUPPORTED . ': ' . $value
+            );
+        }
     }
 }

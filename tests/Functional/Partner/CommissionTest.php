@@ -104,7 +104,7 @@ class CommissionTest extends OAuthTestCase
         $testData['request']['content']['model'] = CommissionModel::COMMISSION;
 
         $this->startTest($testData);
-        
+
         $this->assertCommissionData($partner, $subMerchant, $payment, $result['items']);
     }
 
@@ -199,9 +199,9 @@ class CommissionTest extends OAuthTestCase
         $this->createSubMerchant($partner, $application, ['id' => 'submerchant001']);
         $this->createSubMerchant($partner, $application, ['id' => 'submerchant002']);
 
-        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => $subMerchant->getId(), 'activation_status' => 'activated']);
-        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => 'submerchant001', 'activation_status' => 'activated']);
-        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => 'submerchant002', 'activation_status' => 'activated']);
+        $this->fixtures->merchant_detail->edit($subMerchant->getId(), ['activation_status' => 'activated']);
+        $this->fixtures->merchant_detail->edit('submerchant001', ['activation_status' => 'activated']);
+        $this->fixtures->merchant_detail->edit('submerchant002', ['activation_status' => 'activated']);
 
         $this->ba->proxyAuth('rzp_test_'. $partner->getId());
 

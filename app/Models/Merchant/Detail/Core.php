@@ -1266,7 +1266,7 @@ class Core extends Base\Core
             ];
         }
 
-        (new Document\Core)->storeInMerchantDocument($merchant, $merchantDocumentParams);
+        (new Document\Core)->storeInMerchantDocument($merchant, $merchant, $merchantDocumentParams);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])

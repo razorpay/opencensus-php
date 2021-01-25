@@ -1352,7 +1352,7 @@ return [
                 'count'  => 2,
                 'items'  => [
                     [
-                        'id'            => 'file_1234',
+                        'id'            => 'file_1cXSLlUU8V9sXl',
                         'type'          => 'explanation_letter',
                         'entity_type'   => 'dispute',
                         'entity_id'     => '1000000dispute',
@@ -1365,7 +1365,7 @@ return [
                         'store'         => 's3',
                     ],
                     [
-                        'id'            => 'file_12345',
+                        'id'            => 'file_1cXSLlUU8V9sXm',
                         'type'          => 'delivery_proof',
                         'entity_type'   => 'dispute',
                         'entity_id'     => '1000000dispute',

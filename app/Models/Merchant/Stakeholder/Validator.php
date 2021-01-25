@@ -3,9 +3,11 @@
 namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZp\Models\Merchant;
 use RZP\Constants\Country;
 use RZP\Constants\IndianStates;
-use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -181,6 +183,15 @@ class Validator extends Base\Validator
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_COUNTRY, null, [$value]);
+        }
+    }
+
+    public function validateAccountStakeholder(Merchant\Entity $account, Entity $stakeholder)
+    {
+        if ($account->getId() !== $stakeholder->getMerchantId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT);
         }
     }
 }

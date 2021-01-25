@@ -350,7 +350,7 @@ class Service extends Base\Service
         //
         // for backward compatibility we are storing file in both merchant detail and merchant_document table
         //
-        (new DocumentCore)->storeInMerchantDocument($merchant, $fileAttributes);
+        (new DocumentCore)->storeInMerchantDocument($merchant, $merchant, $fileAttributes);
 
         $this->storeInMerchantDetails($merchantDetails, $fileAttributes);
     }

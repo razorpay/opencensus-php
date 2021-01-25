@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $uploadDocumentRules = [
         Constants::PURPOSE => 'required|string|max:255|custom',
-        Constants::FILE    => 'required|file',
+        Constants::FILE    => 'required|file|max:5120',
     ];
 
     protected static $kycMimeRules = [

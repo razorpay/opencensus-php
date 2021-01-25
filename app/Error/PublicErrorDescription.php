@@ -426,6 +426,8 @@ class PublicErrorDescription
     const BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT                      = 'Minimum amount that can be settled is ₹ 1.';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
+    const BAD_REQUEST_PROOF_TYPE_INVALID                                        = 'invalid proof type';
+    const BAD_REQUEST_PROOF_TYPE_NOT_SUPPORTED                                  = 'proof type not supported';
     const BAD_REQUEST_DOCUMENT_UPLOAD_PURPOSE_INVALID                           = 'invalid document upload purpose';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 
@@ -1292,11 +1294,15 @@ class PublicErrorDescription
 
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
-    const BAD_REQUEST_INVALID_FILE_DOWNLOAD                                         = 'Invalid file id provided or merchant is unauthorized to download the fileId provided';
+    const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'Invalid file id provided or merchant is unauthorized to access the fileId(s) provided';
 
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';
+
+    const BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT                   = 'Stakeholder does not belong to merchant';
+    const BAD_REQUEST_INVALID_FILE_IDS_PROVIDED                                 = 'Invalid file ids provided';
+
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST                       = 'Must not be able to make live request when not activated';
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
 }

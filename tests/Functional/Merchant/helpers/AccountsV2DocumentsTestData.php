@@ -3,7 +3,7 @@
 use RZP\Error\ErrorCode;
 
 return [
-    'testDocumentUploadDownload'      => [
+    'testDocumentUploadDownload' => [
         'request'  => [
             'url'     => '/v2/documents',
             'method'  => 'POST',
@@ -32,7 +32,7 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code' => 'BAD_REQUEST_ERROR',
+                    'code'        => 'BAD_REQUEST_ERROR',
                     'description' => 'invalid document upload purpose:wrong_purpose',
                 ]
             ],
@@ -45,15 +45,260 @@ return [
     ],
 
     'testDocumentDownloadSuccess' => [
-        'request'   => [
-            'url'     => '/v2/documents/{id}',
-            'method'  => 'GET',
+        'request'  => [
+            'url'    => '/v2/documents/{id}',
+            'method' => 'GET',
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
-                'url'  => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
+                'url' => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
             ],
             'status_code' => 200,
         ]
     ],
+
+    'testInvalidProofTypeDocumentLink'    => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'wrong_proof_type' => [
+                    [
+                        'type'    => 'shop_establishment_certificate',
+                        'file_id' => 'file_abc'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'invalid proof type: wrong_proof_type',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testInvalidDocumentTypeDocumentLink' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'business_proof_of_identification' => [
+                    [
+                        'type'    => 'abcd',
+                        'file_id' => 'file_abc'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'invalid document type:abcd',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendIncorrectDocumentForProofType' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'business_proof_of_identification' => [
+                    [
+                        'type'    => 'nbfc_registration_certificate',
+                        'file_id' => 'file_asdf1234567890'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Incorrect Document nbfc_registration_certificate sent for proof type business_proof_of_identification',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendStakeholderDocsForAccountLink' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'individual_proof_of_address' => [
+                    [
+                        'type'    => 'aadhar_front',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'proof type not supported: individual_proof_of_address',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testStakeholderDoesnotBelongToMerchantDocumentLink' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'individual_proof_of_address' => [
+                    [
+                        'type'    => 'aadhar_front',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Stakeholder does not belong to merchant',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT,
+        ],
+    ],
+    'testStakeholderDocumentLink'                        => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'individual_proof_of_address' => [
+                    [
+                        'type'    => 'aadhar_front',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'aadhar_back',
+                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'individual_proof_of_address' => [
+                    [
+                        'type'    => 'aadhar_front',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'aadhar_back',
+                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                    ]
+                ]
+            ],
+        ]
+    ],
+    'testStakeholderDocumentFetch'                        => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'individual_proof_of_address' => [
+                    [
+                        'type'    => 'aadhar_front',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'aadhar_back',
+                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                    ]
+                ]
+            ],
+        ]
+    ],
+    'testAccountDocumentLink'                            => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'business_proof_of_identification' => [
+                    [
+                        'type'    => 'shop_establishment_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'gst_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'business_proof_of_identification' => [
+                    [
+                        'type'    => 'shop_establishment_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'gst_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                    ],
+                ]
+            ],
+        ]
+    ],
+    'testAccountDocumentFetch'                            => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'business_proof_of_identification' => [
+                    [
+                        'type'    => 'shop_establishment_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                    ],
+                    [
+                        'type'    => 'gst_certificate',
+                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                    ],
+                ]
+            ],
+        ]
+    ]
 ];

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Constants\Entity as E;
+
 class Type
 {
     const SEBI_REGISTRATION_CERTIFICATE  = 'sebi_registration_certificate';
@@ -60,14 +62,24 @@ class Type
     //proof types
     const INDIVIDUAL_PROOF_OF_ADDRESS           = 'individual_proof_of_address';
     const INDIVIDUAL_PROOF_OF_IDENTIFICATION    = 'individual_proof_of_identification';
-    const BUSINESS_PROOF_OF_IDENTIFICATION      = 'business_proof_identification';
+    const BUSINESS_PROOF_OF_IDENTIFICATION      = 'business_proof_of_identification';
+    const ADDITIONAL_DOCUMENTS                  = 'additional_documents';
     const POI_IDENTIFICATION_NUMBER             = 'poi_identification_number';
     const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
+    const IDENTIFICATION_NUMBER                 = 'identification_number';
 
-    const PROOF_TYPE = [
+    const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
-        self::BUSINESS_PROOF_OF_IDENTIFICATION
+        self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::ADDITIONAL_DOCUMENTS,
+    ];
+
+    const PROOF_TYPE_ENTITY_MAPPING = [
+        self::INDIVIDUAL_PROOF_OF_ADDRESS          => E::STAKEHOLDER,
+        self::INDIVIDUAL_PROOF_OF_IDENTIFICATION   => E::STAKEHOLDER,
+        self::BUSINESS_PROOF_OF_IDENTIFICATION     => E::MERCHANT,
+        self::ADDITIONAL_DOCUMENTS                 => E::MERCHANT,
     ];
 
     const VALID_DOCUMENTS = [
@@ -117,6 +129,53 @@ class Type
         self::BANK_STATEMENT,
     ];
 
+    const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
+        self::SEBI_REGISTRATION_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
+        self::IRDAI_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
+        self::FFMC_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::NBFC_REGISTRATION_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
+        self::AMFI_CERTIFICATE                 => self::ADDITIONAL_DOCUMENTS,
+
+        self::SLA_SEBI_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_IRDAI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_FFMC_LICENSE                    => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_NBFC_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_AMFI_CERTIFICATE                => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_IATA_CERTIFICATE                => self::ADDITIONAL_DOCUMENTS,
+
+        self::AFFILIATION_CERTIFICATE             => self::ADDITIONAL_DOCUMENTS,
+        self::IATA_CERTIFICATE                    => self::ADDITIONAL_DOCUMENTS,
+
+        self::PPI_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::DRIVER_LICENSE_BACK             => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::DRIVER_LICENSE_FRONT            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_FRONT                    => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_BACK                     => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::PASSPORT_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::PASSPORT_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::VOTER_ID_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::VOTER_ID_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::CANCELLED_CHEQUE                => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_PROOF_URL              => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::BUSINESS_OPERATION_PROOF_URL    => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_PAN_URL                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::ADDRESS_PROOF_URL               => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_PROOF_URL              => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_PAN_URL                => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_ADDRESS_URL            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::FORM_12A_URL                    => self::ADDITIONAL_DOCUMENTS,
+        self::FORM_80G_URL                    => self::ADDITIONAL_DOCUMENTS,
+        self::MEMORANDUM_OF_ASSOCIATION       => self::ADDITIONAL_DOCUMENTS,
+        self::ARTICLE_OF_ASSOCIATION          => self::ADDITIONAL_DOCUMENTS,
+        self::BOARD_RESOLUTION                => self::ADDITIONAL_DOCUMENTS,
+        self::PERSONAL_PAN                    => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
+
+        self::SHOP_ESTABLISHMENT_CERTIFICATE  => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::GST_CERTIFICATE                 => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::MSME_CERTIFICATE                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::BANK_STATEMENT                  => self::ADDITIONAL_DOCUMENTS,
+    ];
+
     /**
      * Following documents needs to perform for OCR
      * @var array
@@ -144,6 +203,6 @@ class Type
 
     public static function isValidProofType($value)
     {
-        return (in_array($value,self::PROOF_TYPE) === true);
+        return (in_array($value, self::PROOF_TYPES) === true);
     }
 }

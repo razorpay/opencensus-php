@@ -110,6 +110,18 @@ trait PartnerTrait
 
         $subMerchant = $this->fixtures->merchant->edit($subMerchantId, $subMerchantAttributes);
 
+        $subMerchantDetails = [
+            'merchant_id' => $subMerchant->getId(),
+            'business_type' => 1,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $subMerchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+
+        $this->fixtures->on('live')->merchant_detail->createSane($subMerchantDetails);
+        $this->fixtures->on('test')->merchant_detail->createSane($subMerchantDetails);
+
         $accessMapData = [
             'entity_type'     => 'application',
             'entity_id'       => $app->getId(),

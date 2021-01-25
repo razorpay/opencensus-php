@@ -291,7 +291,7 @@ class Core extends Base\Core
             Document\Constants::SOURCE  => (new FileHandler\Factory())->getDocumentSource($input[Detail\Entity::ADDRESS_PROOF_URL], $merchant->getId())
         ];
 
-        (new DocumentCore)->storeInMerchantDocument($merchant, $documentParams);
+        (new DocumentCore)->storeInMerchantDocument($merchant, $merchant, $documentParams);
     }
 
 

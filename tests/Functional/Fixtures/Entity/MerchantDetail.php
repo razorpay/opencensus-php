@@ -81,7 +81,7 @@ class MerchantDetail extends Base
         return $this->create($merchantDetailArray);
     }
 
-    protected function createMerchantDetail(array $attributes = [])
+    public function createMerchantDetail(array $attributes = [])
     {
         $return = [
             "contact_name"                  => "test",

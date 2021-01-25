@@ -220,7 +220,17 @@ class UfhService
         return $response;
     }
 
-    public function fetchFiles(array $queryParams): array
+    /**
+     * This functin would fetches multiple files from UFH for supported queryparams by UFH.
+     * If merchantId is passed, we need to fetch files on behalf of that merchant. So creating UFHClient for the merchantId.
+     * If merchantId is not passed, the merchant would be the same as merchant in request context
+     * @param array $queryParams
+     * @param null  $merchantId
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    public function fetchFiles(array $queryParams, $merchantId = null): array
     {
         $this->trace->info(
             TraceCode::AWS_FILES_FETCH,
@@ -230,6 +240,12 @@ class UfhService
 
         try
         {
+            if(empty($merchantId) === false)
+            {
+                $this->merchantId = $merchantId;
+                $this->ufhClient = $this->createUfhClient();
+            }
+
             return $this->ufhClient->all($queryParams);
         }
         catch(\Throwable $e)

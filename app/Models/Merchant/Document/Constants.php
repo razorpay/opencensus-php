@@ -22,11 +22,6 @@ class Constants
     const SOURCE    = 'source';
     const ENTITY    = 'entity';
     const MERCHANT  = 'merchant';
-    const SIGNED_URL = 'signed_url';
-    const URL        = 'url';
-    const MIME_TYPE  = 'mime_type';
-    const MIME       = 'mime';
-    const SIZE       = 'size';
 
 
     const OCR_MATCH_TYPE = 'ocr_match_type';

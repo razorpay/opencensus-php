@@ -812,6 +812,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'commission'                => Commission\Entity::class,
             'commission_invoice'        => Commission\Invoice\Entity::class,
+            'stakeholder'               => Merchant\Stakeholder\Entity::class,
 
             'options'                   => Options\Entity::class,
 

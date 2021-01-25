@@ -6,7 +6,7 @@ namespace RZP\Models\GenericDocument;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\Detail\Core;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Entity;
 use Illuminate\Support\Facades\Request;
 use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
@@ -107,7 +107,7 @@ class Service extends Base\Service
 
     public function getDocument(array $input, string $fileStoreId)
     {
-        $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId);
+        $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId, $this->merchant->getId());
 
         return  ResponseHelper::getDownloadFileResponse($signedUrlResponse);
     }
@@ -121,12 +121,15 @@ class Service extends Base\Service
 
     /**
      * The function returns the downloadable url in case the document belong to the merchant or its stakeholder from UFH
+     *
      * @param array  $input
      * @param string $fileStoreId
+     * @param string $merchantId
      *
      * @return array|null
+     * @throws Exception\BadRequestException
      */
-    public function getDocumentDownloadLinkFromUFH(array $input, string $fileStoreId): array
+    public function getDocumentDownloadLinkFromUFH(array $input, string $fileStoreId, string $merchantId): array
     {
         try
         {
@@ -136,12 +139,31 @@ class Service extends Base\Service
 
             unset($input[Constants::EXPIRY]);
 
-            return $ufhService->getSignedUrl($fileStoreId, $input, $this->merchant->getId());
+            return $ufhService->getSignedUrl($fileStoreId, $input, $merchantId);
         }
         catch (\Exception $e)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_FILE_DOWNLOAD);
+                ErrorCode::BAD_REQUEST_INVALID_FILE_ACCESS, null, null, PublicErrorDescription::BAD_REQUEST_INVALID_FILE_DOWNLOAD.':'.$fileStoreId);
+        }
+    }
+
+    public function fetchFiles(array $fileStoreIds, string $merchantId): array
+    {
+        try
+        {
+            $ufhService = $this->app['ufh.service'];
+
+            $input[Constants::IDS] = $fileStoreIds;
+
+            return $ufhService->fetchFiles($input, $merchantId);
+
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\ServerErrorException(
+                'Error occurred while fetching files'.':'.implode(', ',$fileStoreIds),
+                ErrorCode::BAD_REQUEST_SERVER_ERROR_FILE_FETCH_FAILURE);
         }
     }
 }

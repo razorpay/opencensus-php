@@ -12,6 +12,7 @@ use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Core extends Base\Core
@@ -36,13 +37,14 @@ class Core extends Base\Core
      * this function creates or edit a new document with params documentType and fileStoreId
      *
      * @param Merchant\Entity $merchant
-     * @param array           $params
-     * @param Entity|null     $inputDocument
+     * @param Base\PublicEntity $entity
+     * @param array $params
+     * @param Entity|null $inputDocument
      *
      * @return array
      * @throws BadRequestException
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null) : array
+    public function storeInMerchantDocument(Merchant\Entity $merchant, Base\PublicEntity $entity, array $params, Entity $inputDocument = null) : array
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
 
@@ -65,13 +67,15 @@ class Core extends Base\Core
                 Entity::DOCUMENT_TYPE => $documentType,
             ];
 
+            FileStoreEntity::verifyIdAndSilentlyStripSign($input[Entity::FILE_STORE_ID]);
+
             $document = $inputDocument ?? (new Entity)->generateId();
 
             $document->edit($input);
 
-            $document->merchant()->associate($merchant);
+            $document->entity()->associate($entity);
 
-            $document->setEntityType();
+            $document->merchant()->associate($merchant);
 
             $this->repo->saveOrFail($document);
 
@@ -120,9 +124,37 @@ class Core extends Base\Core
 
         $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-        $this->repo->transaction(function() use ($documentType, $merchant, $merchantDetails, $fileAttributes, $document) {
+        $this->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $merchant, $validateLock, $document);
 
-            $uploadedDocuments = $this->storeInMerchantDocument($merchant, $fileAttributes, $document);
+        return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    /**
+     * @param Merchant\Entity   $merchant
+     * @param string            $documentType
+     * @param array             $fileAttributes
+     * @param Base\PublicEntity $entity
+     * @param bool              $validateLock
+     * @param null              $document
+     *
+     */
+    public function saveMerchantDocument(Merchant\Entity $merchant, string $documentType, array $fileAttributes,
+                                         Base\PublicEntity $entity, bool $validateLock = true, $document = null)
+    {
+        $params = [$documentType => $fileAttributes];
+
+        $merchantDetailCore = new Detail\Core();
+
+        $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+
+        if ($validateLock === true)
+        {
+            $merchantDetails->getValidator()->validateIsNotLocked();
+        }
+
+        $this->repo->transaction(function() use ($documentType, $merchant, $merchantDetails, $params, $document, $entity) {
+
+            $uploadedDocuments = $this->storeInMerchantDocument($merchant, $entity, $params, $document);
 
             $document = $uploadedDocuments[$documentType];
 
@@ -138,9 +170,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($document);
         });
 
-        $this->pushEventsAndMetrics($merchant, $input);
-
-        return $merchantDetailCore->createResponse($merchantDetails);
+        $this->pushEventsAndMetrics($merchant, $params);
     }
 
     /**
@@ -292,19 +322,17 @@ class Core extends Base\Core
 
     protected function pushEventsAndMetrics(Merchant\Entity $merchant, array $input)
     {
-        $eventAttributes = [];
-
-        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
+        foreach ($input as $documentType => $file)
         {
-            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
+            $eventAttributes = [Constants::DOCUMENT_TYPE => $documentType];
+
+            $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
+                [
+                    Entity::DOCUMENT_TYPE => $documentType
+                ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
         }
-
-        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
-                            [
-                                Entity::DOCUMENT_TYPE => $input[Entity::DOCUMENT_TYPE]
-                            ]);
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
 
     /**

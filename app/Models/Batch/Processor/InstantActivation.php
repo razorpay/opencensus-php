@@ -63,7 +63,7 @@ class InstantActivation extends Base
             ]
         ];
 
-        $this->merchantDocumentCore->storeInMerchantDocument($merchant, $documentParams, null);
+        $this->merchantDocumentCore->storeInMerchantDocument($merchant, $merchant, $documentParams, null);
     }
 
     /**

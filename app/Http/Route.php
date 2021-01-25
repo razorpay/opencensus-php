@@ -1980,9 +1980,13 @@ class Route
         'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
         //account and stakeholder document related routes
-        'document_upload_v2'                         => ['post',      'documents',                                             'GenericDocumentController@uploadDocument'                  ],
-        'document_get_v2'                            => ['get',       'documents/{fileStoreId}         ',                      'GenericDocumentController@getDocument'                     ],
-        'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content ',                      'GenericDocumentController@getDocumentContent'              ],
+        'document_upload_v2'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
+        'document_get_v2'                            => ['get',       'documents/{fileStoreId}         ',                                   'GenericDocumentController@getDocument'                     ],
+        'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content ',                                   'GenericDocumentController@getDocumentContent'              ],
+        'link_account_documents_v2'                  => ['post',      'accounts/{accountId}/documents',                                     'DocumentControllerV2@linkAccountDocuments'                 ],
+        'get_account_documents_v2'                   => ['get',       'accounts/{accountId}/documents',                                     'DocumentControllerV2@getAccountDocuments'                  ],
+        'link_stakeholder_documents_v2'              => ['post',      'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@linkStakeHolderDocuments'             ],
+        'get_stakeholder_documents_v2'               => ['get',       'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@getStakeHolderDocuments'              ],
 
         // Excel Store Proxy APIs
         'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
@@ -2607,6 +2611,10 @@ class Route
         'document_upload_v2',
         'document_get_v2',
         'document_download_v2',
+        'link_account_documents_v2',
+        'link_stakeholder_documents_v2',
+        'get_account_documents_v2',
+        'get_stakeholder_documents_v2'
     ];
 
     // Only routes defined in internalApps go here
@@ -6619,6 +6627,10 @@ class Route
         'document_upload_v2',
         'document_get_v2',
         'document_download_v2',
+        'link_account_documents_v2',
+        'link_stakeholder_documents_v2',
+        'get_account_documents_v2',
+        'get_stakeholder_documents_v2'
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true
