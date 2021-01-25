@@ -119,7 +119,7 @@ class Core extends Base\Core
         $merchantIdList = $this->repo->transaction->fetchMerchantIdListWithGmvAboveThreshold(
             $merchantIdList, env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
 
-        if(empty($merchantIdList) === true)
+        if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
                 'type'      => Constants::HARD_LIMIT,
@@ -129,16 +129,6 @@ class Core extends Base\Core
         }
 
         $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
-
-        // disable settlements for merchants
-        foreach ($merchants as $merchant)
-        {
-            $merchant->setAttribute(MerchantEntity::ACTIVATED, false);
-            $merchant->liveDisable();
-            $merchant->setHoldFunds(true);
-            $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
-            $this->repo->merchant->saveOrFail($merchant);
-        }
 
         // finally raise escalations
         (new Handler)->handleEscalations($merchants, Constants::HARD_LIMIT, 1);
@@ -184,7 +174,7 @@ class Core extends Base\Core
             DetailStatus::ACTIVATED_MCC_PENDING
         ]);
 
-        if(empty($merchantIdList) === true)
+        if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
                 'type'      => 'escalation '.$type,
@@ -202,6 +192,19 @@ class Core extends Base\Core
         foreach ($escalationLevelMap as $level => $merchants)
         {
             (new Handler)->handleEscalations($merchants, $type, $level);
+
+            if ($type === Constants::HARD_LIMIT and $level === 3)
+            {
+                // disable settlements for merchants
+                foreach ($merchants as $merchant)
+                {
+                    $merchant->setAttribute(MerchantEntity::ACTIVATED, false);
+                    $merchant->liveDisable();
+                    $merchant->setHoldFunds(true);
+                    $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
+                    $this->repo->merchant->saveOrFail($merchant);
+                }
+            }
         }
     }
 
