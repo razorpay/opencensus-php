@@ -101,13 +101,14 @@ export default class Rewards extends Component {
     this.props.fetchRewards();
   }
 
-  analytics = (action) => {
+  analytics = (action, id) => {
     analyticsService.track({
       objectName: `Reward ${action}`,
       actionName: 'clicked',
       screen: 'Checkout Rewards',
       properties: {
         location: 'rewards',
+        rewardId: id,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -176,9 +177,9 @@ export default class Rewards extends Component {
       };
 
       if (activate) {
-        this.analytics('Activate');
+        this.analytics('Activate', id);
       } else {
-        this.analytics('Deactivate');
+        this.analytics('Deactivate', id);
       }
 
       merchantFetch({
