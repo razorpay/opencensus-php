@@ -1909,7 +1909,7 @@ class Core extends Base\Core
         if ($details !== NULL)
         {
             $merchantDetails = [
-                'gstin'             => $details->getBusinessStateCode(),
+                'gstin'             => $details->getGstin(),
                 'pan'               => $details->getPan(),
                 'billing_address'   => $details->getBusinessAddress(),
                 'description'       => $details->getBusinessDescription(),

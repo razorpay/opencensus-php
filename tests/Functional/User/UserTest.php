@@ -2649,6 +2649,7 @@ class UserTest extends TestCase
 
         $merchant = $user->primaryMerchants()->first();
 
+        // check the data for default test merchant
         $this->testData[__FUNCTION__] = [
             'request' => [
                 'method'    => 'GET',
