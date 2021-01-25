@@ -619,6 +619,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
+    
+    public function setBusinessRegisteredPin(string $businessPin)
+    {
+        return $this->setAttribute(self::BUSINESS_REGISTERED_PIN, $businessPin);
+    }
+
+    public function setBusinessRegisteredAddress(string $businessAddress)
+    {
+        return $this->setAttribute(self::BUSINESS_REGISTERED_ADDRESS, $businessAddress);
+    }
 
     public function getBusinessRegisteredAddressLine2()
     {

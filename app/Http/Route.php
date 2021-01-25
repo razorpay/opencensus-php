@@ -1647,6 +1647,7 @@ class Route
         'beta_account_fetch_setl_destinations'     => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
         'account_features_add'                     => ['post',     'accounts/me/features',                           'FeatureController@addAccountFeatures'                              ],
         'account_features_get'                     => ['get',      'accounts/me/features',                           'FeatureController@getAccountFeatures'                              ],
+        'gstin_e_invoice_cron'                     => ['post',     'accounts/gstin-cron',                            'FeatureController@suggestedOptInCron'                              ],
 
         'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
         'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
@@ -2624,6 +2625,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
         // crons for autoKYC'd merchants who have not been verified manually yet
         'merchant_autokyc_soft_limit',
@@ -5602,7 +5604,7 @@ class Route
         'cron' => [
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
-
+            'gstin_e_invoice_cron',
 
             // crons for autoKYC'd merchants who have not been verified manually yet
             'merchant_autokyc_soft_limit',

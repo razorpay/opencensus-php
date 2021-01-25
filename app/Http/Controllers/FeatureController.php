@@ -236,4 +236,9 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function suggestedOptInCron()
+    {
+        $this->service()->handleSuggestedOptIn();
+    }
 }
