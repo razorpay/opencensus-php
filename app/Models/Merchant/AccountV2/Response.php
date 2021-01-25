@@ -12,14 +12,16 @@ use RZP\Trace\TraceCode;
 
 class Response extends Core
 {
-    public function createResponse(Merchant\Entity $account): array
+    public function getAccountResponse(Merchant\Entity $account): array
     {
         $accountDetails = $account->merchantDetail;
+
+        $status = $account->isSuspended() === true ? Constants::INACTIVE : Constants::ACTIVE;
 
         $data = [
             Constants::ID           => Entity::getSignedId($account->getId()),
             Constants::TYPE         => Constants::STANDARD,
-            Constants::STATUS       => Constants::ACTIVE,
+            Constants::STATUS       => $status,
             Constants::EMAIL        => $account->getEmail(),
             Constants::PROFILE      => $this->getProfileData($account),
             Constants::NOTES        => $account->getNotes(),
@@ -68,7 +70,7 @@ class Response extends Core
 
         $data = $this->getTosAcceptanceData($accountDetails, $data);
 
-        $this->trace->info(TraceCode::ACCOUNT_CREATION_RESPONSE, $data);
+        $this->trace->info(TraceCode::ACCOUNT_CREATION_V2_RESPONSE, $data);
 
         return $data;
     }

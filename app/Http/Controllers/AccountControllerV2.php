@@ -35,4 +35,11 @@ class AccountControllerV2 extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function deleteAccount(string $accountId)
+    {
+        $response = $this->service()->deleteAccountV2($accountId);
+
+        return ApiResponse::json($response);
+    }
 }

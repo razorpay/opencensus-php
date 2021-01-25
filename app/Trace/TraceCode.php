@@ -1376,6 +1376,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BULK_EDIT_INPUT                              = 'MERCHANT_BULK_EDIT_INPUT';
     const MERCHANT_EDIT_ACTION                                  = 'MERCHANT_EDIT_ACTION';
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
+    const ACCOUNT_DELETE_ACTION                                 = 'ACCOUNT_DELETE_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_VERIFY_ATTRIBUTES                            = 'MERCHANT_VERIFY_ATTRIBUTES';
@@ -2316,6 +2317,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
 
     const ACCOUNT_CREATION_V2_REQUEST                           = 'ACCOUNT_CREATION_V2_REQUEST';
+    const ACCOUNT_CREATION_V2_RESPONSE                          = 'ACCOUNT_CREATION_V2_RESPONSE';
 
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';

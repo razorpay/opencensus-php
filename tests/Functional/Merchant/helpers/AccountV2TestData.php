@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 return [
 
     // completely filled request
@@ -456,6 +459,77 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testDeleteAccountV2' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'inactive',
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '9999999999',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'doing_business_as'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditAccountV2PostDelete' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFAAA',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant has been suspended. The action is invalid'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_SUSPENDED,
         ],
     ],
 ];

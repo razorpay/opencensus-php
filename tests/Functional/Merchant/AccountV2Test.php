@@ -94,4 +94,43 @@ class AccountV2Test extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testDeleteAccountV2()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
+    public function testEditAccountV2PostDelete()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+        $accountId = $result['id'];
+
+        $testData = $this->testData['testDeleteAccountV2'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId;
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        // edit after account delete is not allowed.
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' .$accountId;
+
+        $this->startTest($testData);
+    }
 }

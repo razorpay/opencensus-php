@@ -3,6 +3,10 @@
 namespace RZP\Models\Merchant\AccountV2;
 
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Account\Action;
+use RZP\Models\Merchant\Account\Entity;
+use RZP\Trace\TraceCode;
 
 class Service extends Merchant\Service
 {
@@ -12,21 +16,46 @@ class Service extends Merchant\Service
     {
         $account = $this->core()->createAccountV2($this->merchant, $input);
 
-        return $this->getResponseObject()->createResponse($account);
+        return $this->getResponseObject()->getAccountResponse($account);
     }
 
     public function fetchAccountV2(string $accountId): array
     {
         $account = $this->core()->fetchAccountV2($accountId);
 
-        return $this->getResponseObject()->createResponse($account);
+        return $this->getResponseObject()->getAccountResponse($account);
     }
 
     public function editAccountV2(string $accountId, array $input): array
     {
         $account = $this->core()->editAccountV2($this->merchant, $accountId, $input);
 
-        return $this->getResponseObject()->createResponse($account);
+        return $this->getResponseObject()->getAccountResponse($account);
+    }
+
+    public function deleteAccountV2(string $accountId)
+    {
+        $accountCoreV1 = new Merchant\Account\Core();
+
+        $accountCoreV1->validatePartnerAccess($this->merchant, $accountId);
+
+        $input = [
+            Merchant\Entity::ACTION => Action::validateInputAndGetAccountAction(Account\Action::DISABLE),
+        ];
+
+        $this->trace->info(TraceCode::ACCOUNT_DELETE_ACTION,
+            [
+                'account_id' => $accountId,
+                'input'      => $input,
+            ]);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->repo->merchant->findOrFail($accountId);
+
+        $account = $accountCoreV1->action($account, $input, false);
+
+        return $this->getResponseObject()->getAccountResponse($account);
     }
 
     protected function getResponseObject()

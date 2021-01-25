@@ -1662,6 +1662,7 @@ class Route
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
         'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
+        'account_delete_v2'                        => ['delete',   'accounts/{id}',                                  'AccountControllerV2@deleteAccount'                                 ],
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
@@ -2573,6 +2574,7 @@ class Route
         'account_create_v2',
         'account_fetch_v2',
         'account_edit_v2',
+        'account_delete_v2',
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
@@ -6626,6 +6628,7 @@ class Route
         'account_create_v2',
         'account_fetch_v2',
         'account_edit_v2',
+        'account_delete_v2',
         'document_upload_v2',
         'document_get_v2',
         'document_download_v2',

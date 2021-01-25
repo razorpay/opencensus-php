@@ -126,6 +126,7 @@ class Constants
     // bank account statuses
     const PENDING_VERIFICATION = 'pending_verification';
     const ACTIVE               = 'active';
+    const INACTIVE             = 'inactive';
 
     public static $validBusinessModels = [
         self::B2B,

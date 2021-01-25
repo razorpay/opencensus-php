@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account\Entity;
@@ -54,6 +56,8 @@ class Core extends Merchant\Core
         $accountCoreV1->validatePartnerAccess($partner, $accountId);
 
         Entity::verifyIdAndStripSign($accountId);
+
+        $this->validateAccountSuspension($accountId);
 
         (new Validator)->validateInput('edit_account', $input);
 
@@ -165,5 +169,15 @@ class Core extends Merchant\Core
 
         $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
 
+    }
+
+    public function validateAccountSuspension(string $accountId)
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($accountId);
+
+        if ($subMerchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_SUSPENDED,  null);
+        }
     }
 }
