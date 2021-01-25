@@ -96,6 +96,7 @@ return [
         'response' => [
             'content' => [
                 'type'                => 'standard',
+                'relationship'        => 'aggregator',
                 'status'              => 'active',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
@@ -208,6 +209,7 @@ return [
         'response' => [
             'content' => [
                 'type'                => 'standard',
+                'relationship'        => 'aggregator',
                 'status'              => 'active',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
@@ -253,6 +255,7 @@ return [
         'response' => [
             'content' => [
                 'type'                => 'standard',
+                'relationship'        => 'aggregator',
                 'status'              => 'active',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
@@ -336,6 +339,7 @@ return [
         'response' => [
             'content' => [
                 'type'                => 'standard',
+                'relationship'        => 'aggregator',
                 'status'              => 'active',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
@@ -428,6 +432,7 @@ return [
         'response' => [
             'content' => [
                 'type'                => 'standard',
+                'relationship'        => 'aggregator',
                 'status'              => 'active',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',

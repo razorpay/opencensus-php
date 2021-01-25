@@ -27,6 +27,7 @@ class Constants
     const PROFILE            = 'profile';
     const ADDRESSES          = 'addresses';
     const TYPE               = 'type';
+    const RELATIONSHIP       = 'relationship';
     const LINE1              = 'line1';
     const LINE2              = 'line2';
     const CITY               = 'city';

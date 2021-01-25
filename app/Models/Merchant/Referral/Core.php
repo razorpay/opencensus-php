@@ -116,7 +116,7 @@ class Core extends Base\Core
 
         $dashboardUrl = $this->config['applications.dashboard.url'];
 
-        $longUrl = $dashboardUrl . "#/access/signup?referral_code=";
+        $longUrl = $dashboardUrl . "/signup?referral_code=";
 
         $longUrl = $longUrl . $refCode;
 

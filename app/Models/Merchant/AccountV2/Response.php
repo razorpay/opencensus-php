@@ -22,6 +22,7 @@ class Response extends Core
             Constants::ID           => Entity::getSignedId($account->getId()),
             Constants::TYPE         => Constants::STANDARD,
             Constants::STATUS       => $status,
+            Constants::RELATIONSHIP => Merchant\Constants::AGGREGATOR,
             Constants::EMAIL        => $account->getEmail(),
             Constants::PROFILE      => $this->getProfileData($account),
             Constants::NOTES        => $account->getNotes(),

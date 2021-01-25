@@ -243,7 +243,7 @@ class Validator extends Merchant\Validator
 
     protected function validateContactInfo(array $input, string $action = '')
     {
-        if (isset($appsInput[Constants::CONTACT_INFO]) === false)
+        if (isset($input[Constants::CONTACT_INFO]) === false)
         {
             return;
         }
