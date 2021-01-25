@@ -4468,4 +4468,74 @@ class Core extends Base\Core
 
         return $org->isFeatureEnabled($featureName);
     }
+
+    /**
+     * fetches the product used by a merchant for given merchant ids and product
+     *
+     * @param array $merchantIds
+     * @param string|null $product
+     * @param null $limit
+     *
+     * @return array
+     */
+    public function fetchProductUsedByMerchants(array $merchantIds, $product = null, $limit = null)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_APPLICATION,
+            [
+                'merchant_ids' => $merchantIds,
+                'product' => $product,
+                'limit' => $limit,
+            ]
+        );
+
+        $merchantsAndProducts = $this->repo->merchant_user->fetchProductUsedForMerchantIds($merchantIds, $product, $limit);
+
+        $productUsedByMerchants = array();
+
+        $merchantProducts = array();
+
+        // if the product is passed in the input param then response format is {merchant_id1, merchant_id2, ..}
+        // and if product is not passed then the response format is {merchant_id, [product1, product2, ..]}
+        foreach ($merchantsAndProducts as $merchantAndProduct)
+        {
+            $merchantId = $merchantAndProduct[Entity::MERCHANT_ID];
+            $productUsed = $merchantAndProduct[Entity::PRODUCT];
+
+            // if the product is not passed than create a mapping of merchant id and products used by it in the merchantProducts array
+            // if the product is passed than simply store the merchant ids using that product
+            if (empty($product) === true)
+            {
+                if (array_key_exists($merchantId, $merchantProducts) === false)
+                {
+                    $merchantProducts[$merchantId] = array();
+                }
+
+                array_push($merchantProducts[$merchantId], $productUsed);
+            }
+            else
+            {
+                $arrayInput = [
+                    'merchant_id' => $merchantId
+                ];
+
+                array_push($productUsedByMerchants, $arrayInput);
+            }
+        }
+
+        if (empty($product) === true)
+        {
+            foreach ($merchantProducts as $merchantId => $products)
+            {
+                $arrayInput = [
+                    'merchant_id' => $merchantId,
+                    "products"    => $products
+                ];
+
+                array_push($productUsedByMerchants, $arrayInput);
+            }
+        }
+
+        return $productUsedByMerchants;
+    }
 }

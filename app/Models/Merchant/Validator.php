@@ -15,6 +15,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
@@ -1849,4 +1850,22 @@ class Validator extends Base\Validator
     {
         $this->validateInput('code', [$key => $value]);
     }
+
+    /**
+     * Validates if the product name is either banking or primary
+     *
+     * @param $product
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateMerchantProduct($product)
+    {
+        $validProducts = [Product::PRIMARY, Product::BANKING];
+
+        if ((empty($product) === false) and (in_array($product, $validProducts, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
+        }
+    }
+
 }

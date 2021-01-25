@@ -647,6 +647,26 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchMerchantProducts()
+    {
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMerchantProductsForBankingProduct()
+    {
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testAddAccessMapToPurePlatform()
     {
         $this->allowAdminToAccessPartnerMerchant();

@@ -63,4 +63,32 @@ class Repository extends Base\Repository
 
     }
 
+    /**
+     * returns the products used for given merchant ids and product as an array in the form of {merchant_id1, product1}
+     *
+     * @param array $merchantIds
+     * @param $product
+     * @param null $limit
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchProductUsedForMerchantIds(array $merchantIds, $product, $limit = null): Base\PublicCollection
+    {
+        $query =  $this->newQuery()
+                       ->select(Entity::MERCHANT_ID, Entity::PRODUCT)
+                       ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                       ->groupBy(Entity::MERCHANT_ID, Entity::PRODUCT);
+
+        if (empty($product) === false)
+        {
+            $query->where(Entity::PRODUCT, $product);
+        }
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        return $query->get();
+    }
 }

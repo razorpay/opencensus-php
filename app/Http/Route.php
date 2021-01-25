@@ -1704,8 +1704,9 @@ class Route
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
         'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
+        'fetch_merchant_products'                  => ['get',      'merchant/merchant_products',                     'MerchantController@fetchProductUsedByMerchants'                    ],
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
-        'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                    ],
+        'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
@@ -2958,7 +2959,6 @@ class Route
 
         //GupShup Callbacks
         'gupshup_incoming_messages_callback',
-        
         'nps_survey_process_scheduled',
 
         // freshchat cron
@@ -3264,6 +3264,7 @@ class Route
         'on_demand_settlement_fees',
         'merchant_get_preferences',
         'merchant_post_preferences',
+        'fetch_merchant_products',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -4762,6 +4763,7 @@ class Route
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
         'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
+        'fetch_merchant_products'                  => Permission::VIEW_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
         'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,

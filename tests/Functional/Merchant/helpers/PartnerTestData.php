@@ -586,6 +586,54 @@ return [
         ],
     ],
 
+    'testFetchMerchantProducts' => [
+        'request'  => [
+            'url'     => '/merchant/merchant_products',
+            'method'  => 'GET',
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000009',
+                ],
+                'product' => '',
+                'limit'   => 2
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id' => 10000000000009,
+                    'products' => [
+                        'banking',
+                        'primary',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMerchantProductsForBankingProduct' => [
+        'request'  => [
+            'url'     => '/merchant/merchant_products',
+            'method'  => 'GET',
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000009',
+                    '10000000000010',
+                    '10000000000011',
+                ],
+                'product' => 'banking',
+                'limit'   => 2
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id' => '10000000000009',
+                ],
+            ],
+        ],
+    ],
+
     'testAddAccessMapToPurePlatform' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',

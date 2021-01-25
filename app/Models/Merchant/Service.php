@@ -5429,4 +5429,29 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * validate the product name received from input and
+     * fetches the product used by a merchant for given merchant ids and product
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchProductUsedByMerchants(array $input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        $product = $input['product'] ?? null;
+
+        $limit = $input['limit'] ?? null;
+
+        // validate the product name
+        (new Validator())->validateMerchantProduct($product);
+
+        $merchantProducts = $this->core()->fetchProductUsedByMerchants($merchantIds, $product, $limit);
+
+        return $merchantProducts;
+    }
 }

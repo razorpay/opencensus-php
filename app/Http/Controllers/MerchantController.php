@@ -1962,4 +1962,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchProductUsedByMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchProductUsedByMerchants($input);
+
+        return ApiResponse::json($response);
+    }
 }
