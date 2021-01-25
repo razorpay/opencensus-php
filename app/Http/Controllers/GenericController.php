@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App;
+use App\Trace\TraceCode;
 use Auth;
 use Input;
 use Config;
@@ -25,6 +26,15 @@ class GenericController extends Controller
         '^currency\/all\/proxy$',
         'invoices\/inv_[[:alnum:]]{14}\/notify_by\/(?:email|sms)$',
         '^invoices\/inv_[[:alnum:]]{14}\/cancel$'
+    ];
+
+    const USERS_LOGIN_SIGNUP_ROUTES = [
+        'users/login',
+        'users/register',
+        'users/login/no2fa',
+        'users/oauth-login/no2fa',
+        'users/oauth-login',
+        'users/oauth-register',
     ];
 
     const USERS_RESET_PASSWORD_PATH = 'users/reset-password-token';
@@ -51,6 +61,17 @@ class GenericController extends Controller
 
         $method = Request::method();
 
+        $app = App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::GENERIC_ROUTE_PATH, ['path' => $path, 'method' => $method]);
+
+        $checkUsersRoute = $this->checkAndBlockUserRoutes($path, $method);
+
+        if ($checkUsersRoute === true)
+        {
+            return AppResponse::unauthorizedResponse('Unauthorized user', Request::route()->getName(), $path);
+        }
+
         list($error, $data, $httpCode) = $request->send($path, $method);
 
         if (($path === self::USERS_RESET_PASSWORD_PATH) &&
@@ -61,6 +82,28 @@ class GenericController extends Controller
         }
 
         return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    /**
+     * Disable User login and User register routes from generic controller for security reasons.
+     *
+     * @param $path
+     * @param $method
+     *
+     * @return bool
+     */
+    protected function checkAndBlockUserRoutes($path, $method)
+    {
+        if (in_array($path, self::USERS_LOGIN_SIGNUP_ROUTES, true) === true)
+        {
+            $app = App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::USER_UNAUTHORIZED_GENERIC_EXCEPTION, ['path' => $path, 'method' => $method]);
+
+            return true;
+        }
+
+        return false;
     }
 
     public function handleAnyExtension($mode, $path)

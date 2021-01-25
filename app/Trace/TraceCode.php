@@ -46,6 +46,10 @@ class TraceCode
     const USER_UNAUTHORIZED                         = 'USER_UNAUTHORIZED';
     const USER_UNAUTHORIZED_EXCEPTION               = 'USER_UNAUTHORIZED_EXCEPTION';
 
+    const USER_UNAUTHORIZED_GENERIC_EXCEPTION       = 'USER_UNAUTHORIZED_GENERIC_EXCEPTION';
+
+    const GENERIC_ROUTE_PATH                        = 'GENERIC_ROUTE_PATH';
+
     const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';
 
     const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
