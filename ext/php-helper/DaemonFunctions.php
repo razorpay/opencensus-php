@@ -102,6 +102,10 @@ function opencensus_trace_set_context($traceId, $parentSpanId = null): void {
 function opencensus_trace_add_attribute($key, $value, $options = []): void {
 
 }
+
+function opencensus_trace_remove_span($key, $value, $options = []): void {
+
+}
 /**
  * Add an annotation to a span
  * @param string $description
