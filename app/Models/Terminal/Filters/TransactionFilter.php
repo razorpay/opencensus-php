@@ -359,6 +359,15 @@ class TransactionFilter extends Terminal\Filter
 
             if ($payment->isNach() === true)
             {
+                if ($gatewayTokens->isEmpty() === false)
+                {
+                    return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
+                }
+
+                if ($terminal->getId() !== $payment['localToken']->getTerminalId())
+                {
+                    return false;
+                }
                 return true;
             }
 

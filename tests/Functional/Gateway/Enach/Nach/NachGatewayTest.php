@@ -247,6 +247,27 @@ class NachGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
     }
 
+    public function testDebitCreationWithMultipleTerminalsForMerchant()
+    {
+        $terminal = $this->fixtures->create('terminal:nach_shared_terminal');
+
+        $this->createRecurringNachPayment();
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+
+        $this->assertNotEquals($paymentEntity->getTerminalId(), $terminal->getId());
+
+        $this->assertEquals('1citinachDTmnl', $paymentEntity->getTerminalId());
+
+        $this->ba->adminAuth();
+
+        $tokenEntity = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals('1citinachDTmnl', $tokenEntity['terminal_id']);
+    }
+
     public function testGatewayFileDebitOnNonWorkingDay()
     {
         $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);

@@ -3775,6 +3775,33 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createNachSharedTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => 'citinachShrdtl',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => Gateway::NACH_CITI,
+            'nach'                      => 1,
+            'gateway_merchant_id'       => 'NACH00000000013150',
+            'gateway_merchant_id2'      => 'NACH00000000013150',
+            'gateway_access_code'       => 'CITI000PIGW',
+            'gateway_acquirer'          => 'citi',
+            'recurring'                 => 1,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+            'type'                      => [
+                Type::RECURRING_3DS     => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedNetbankingKvbTerminal(array $attributes = []){
 
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
