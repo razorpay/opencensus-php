@@ -95,7 +95,7 @@ const MerchantDetails = ({
 
   return (
     <div class="list-group details-row-container">
-      <DetailRow label="Contact Name" value={titleCase(user.name)} />
+      <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
 
       {changeDisplayName && (
         <DetailRow
