@@ -20,8 +20,6 @@
 #include "Zend/zend_exceptions.h"
 #include "standard/php_math.h"
 #include "standard/php_rand.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 
 /**
@@ -348,8 +346,6 @@ static int opencensus_trace_call_user_function_callback(zval *args, int num_args
 static zend_string *generate_span_id()
 {
     zval zv;
-
-
 #if PHP_VERSION_ID < 70100
     if (!BG(mt_rand_is_seeded)) {
         php_mt_srand(GENERATE_SEED());
@@ -366,7 +362,6 @@ static zend_string *generate_span_id()
  */
 static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_execute_data *execute_data, zend_string *span_id TSRMLS_DC)
 {
-
     opencensus_trace_span_t *span = opencensus_trace_span_alloc();
     zend_fetch_debug_backtrace(&span->stackTrace, 1, DEBUG_BACKTRACE_IGNORE_ARGS, 0);
 
@@ -627,7 +622,6 @@ void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
             opencensus_trace_span_apply_span_options(span, trace_handler);
         }
     }
-
     zend_string_release(callback_name);
     opencensus_trace_finish();
 }
@@ -677,7 +671,6 @@ void opencensus_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
     span = opencensus_trace_begin(function_name, execute_data, NULL TSRMLS_CC);
     zend_string_release(function_name);
 
-
     if (zend_is_callable(trace_handler, 0, &callback_name)) {
         /* Registered handler is callable - execute the callback */
         zval callback_result, *args;
@@ -697,7 +690,6 @@ void opencensus_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
         }
     }
     zend_string_release(callback_name);
-
     opencensus_trace_finish();
 }
 

@@ -76,6 +76,9 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
 
     public function startSpan(array $spanOptions): Span
     {
+        // checks if spanlimit has reached and if yes flushes the closed spans
+        $this->checkSpanLimit();
+
         if (!array_key_exists('name', $spanOptions)) {
             $spanOptions['name'] = $this->generateSpanName();
         }
@@ -121,6 +124,8 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         }, opencensus_trace_list());
     }
 
+    /* This checks the numbet of spans in memory and if the count is more than the set limit, it exports all
+    the closed span present in memory, to free up the memory */
     public function checkSpanLimit()
     {
         $count = count($this->spans());
@@ -131,29 +136,27 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         if ($count > $limit) {
 
             $closedSpans = [];
-            $ids = [];
-            $spns = $this->spans();
+            $spans = $this->spans();
 
-            foreach ($spns as $k) {
+            foreach ($spans as $k) {
                 $endTime = $k->endTime();
 
-                if ($endTime->getTimestamp() != 0)
-                {
+                if ($endTime->getTimestamp() != 0) {
                     $closedSpans[] = $k;
-                    $ids[] = $k->spanId();
                 }
             }
 
-            $this->export($closedSpans, $ids);
+            $this->export($closedSpans);
         }
     }
 
-    public function export($closedSpans, $ids)
+    // Exports all the span provided as argument and also remove from memory
+    public function export($closedSpans)
     {
         if ($this->exporter != null) {
             $this->exporter->export($closedSpans);
-            foreach ($ids as $id) {
-                opencensus_trace_remove_span($id);
+            foreach ($closedSpans as $span) {
+                opencensus_trace_remove_span($span->spanId());
             }
         }
     }

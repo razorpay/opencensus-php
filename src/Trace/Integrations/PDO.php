@@ -79,6 +79,7 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        // checks if spanlimit has reached and if yes flushes the closed spans
         if (PDO::$tracer != null) {
             PDO::$tracer->checkSpanLimit();
         }
@@ -99,6 +100,7 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
+        // checks if spanlimit has reached and if yes flushes the closed spans
         if (PDO::$tracer != null) {
             PDO::$tracer->checkSpanLimit();
         }
@@ -124,6 +126,7 @@ class PDO implements IntegrationInterface
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
 
+        // checks if spanlimit has reached and if yes flushes the closed spans
         if (PDO::$tracer != null) {
             PDO::$tracer->checkSpanLimit();
         }

@@ -67,6 +67,7 @@ class Curl implements IntegrationInterface
         $info = curl_getinfo($resource);
         $attrs = self::getSpanAttrsFromCurlInfo($info);
 
+        // checks if spanlimit has reached and if yes flushes the closed spans
         if (Curl::$tracer != null) {
             Curl::$tracer->checkSpanLimit();
         }

@@ -54,6 +54,7 @@ class Redis implements IntegrationInterface
         }
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
+              // checks if spanlimit has reached and if yes flushes the closed spans
               if (Redis::$tracer != null) {
                   Redis::$tracer->checkSpanLimit();
               }
@@ -75,6 +76,7 @@ class Redis implements IntegrationInterface
             array_unshift($arguments, $command->getId());
             $query = Redis::formatArguments($arguments);
 
+            // checks if spanlimit has reached and if yes flushes the closed spans
             if (Redis::$tracer != null) {
                 Redis::$tracer->checkSpanLimit();
             }
