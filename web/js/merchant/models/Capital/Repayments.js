@@ -24,7 +24,15 @@ export default class RepaymentEntity extends GenericEntity {
     `capital_collections/service/${version}/${endpoint}`;
 
   fetchRepayments(data) {
-    return this.request(`${this.resourceUrlPrefix('repayments')}`, data, null, { method: 'get' });
+    return this.request(`${this.resourceUrlPrefix('repayments')}`, data, null, {
+      method: 'get',
+    }).catch((e) => {
+      return {
+        data: {
+          repayments: [],
+        },
+      };
+    });
   }
 
   fetchBalances(data) {
