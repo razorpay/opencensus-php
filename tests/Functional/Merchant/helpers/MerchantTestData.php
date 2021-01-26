@@ -3306,7 +3306,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 28,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3404,13 +3404,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SURY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SYNB',
                         ],
                     ],
                     [
@@ -3524,7 +3517,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3629,13 +3622,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SURY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SYNB',
                         ],
                     ],
                     [
@@ -3966,7 +3952,6 @@ return [
                                 'NKGS',
                                 'ORBC',
                                 'SURY',
-                                'SYNB',
                                 'TBSB',
                                 'TJSB',
                                 'TNSC',

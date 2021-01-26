@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Netbanking\Canara\Mock\Server;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;

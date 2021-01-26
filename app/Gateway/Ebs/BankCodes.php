@@ -10,7 +10,7 @@ class BankCodes
 {
     // Commenting Banks which need approval for activating
     public static $bankCodeMap = [
-        IFSC::ANDB => '1378',
+        IFSC::ANDB => '1216',  // migrated to UBIN
         IFSC::MAHB => '1229',
         IFSC::CNRB => '1224',
         IFSC::CSBK => '1272',

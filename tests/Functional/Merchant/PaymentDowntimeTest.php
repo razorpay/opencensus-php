@@ -1377,7 +1377,7 @@ class PaymentDowntimeTest extends TestCase
                 'content' => [
                     'gateway'     => $gateway,
                     'method'      => 'netbanking',
-                    'issuer'      => 'ANDB',
+                    'issuer'      => 'DLXB',
                     'source'      => 'dummy',
                     'reason_code' => 'OTHER',
                     'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)

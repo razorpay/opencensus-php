@@ -10,7 +10,7 @@ class BankCodes
     public static $bankCodeMap = [
         IFSC::ABPB => 'ABP',
         IFSC::ALLA => 'ALB',                    // Allahabad Bank
-        IFSC::ANDB => 'ADB',                    // Andhra Bank
+        IFSC::ANDB => 'UBI',                    // Andhra Bank - migrated to UBIN
         IFSC::AUBL => 'AUB',                    // AU Small Finance Bank
         IFSC::BACB => 'BCB',                    // Bassien Catholic Bank
         IFSC::BBKM => 'BBK',                    // Bank of Bahrain and Kuwait
@@ -63,7 +63,7 @@ class BankCodes
         IFSC::STBP => 'SBI',                    // State Bank of Patiala - Silent redirect to SBI
         IFSC::SURY => 'SRB',                    // Suryoday Small Finance Bank
         IFSC::SVCB => 'SVC',                    // Shamrao Vithal Co-Op Bank Ltd
-        IFSC::SYNB => 'SYD',                    // Syndicate Bank
+        IFSC::SYNB => 'CNB',                    // Syndicate Bank - migrated to Canara bank
         IFSC::TBSB => 'TBB',                    // Thane Bharat Sahakari Bank Ltd
         IFSC::TJSB => 'TJB',                    // TJSB Bank
         IFSC::TMBL => 'TMB',                    // Tamil Nadu Mercantile Bank
@@ -76,7 +76,7 @@ class BankCodes
         IFSC::VIJB => 'VJB',                    // Vijaya Bank
         IFSC::YESB => 'YBK',                    // Yes Bank
         IFSC::ZCBL => 'ZOB',                    // Zoroastrian Bank
-        Netbanking::ANDB_C => 'ADC',            // Andhra Bank Corporate
+        Netbanking::ANDB_C => 'UBI',            // Andhra Bank Corporate - migrated to UBI
         Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
         Netbanking::BARB_R => 'BBR',            // Bank of Baroda - Retail
         Netbanking::DLXB_C => 'DL2',            // Dhanlakshmi Bank Corporate

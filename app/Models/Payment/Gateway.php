@@ -2060,6 +2060,7 @@ class Gateway
         Netbanking::BARB_C => Gateway::NETBANKING_BOB,
         Netbanking::PUNB_C => Gateway::NETBANKING_PNB,
         Netbanking::KKBK_C => Gateway::NETBANKING_KOTAK,
+        Netbanking::ANDB_C => Gateway::NETBANKING_UBI,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
@@ -2101,6 +2102,8 @@ class Gateway
         IFSC::IOBA         => Gateway::NETBANKING_IOB,
         IFSC::FSFB         => Gateway::NETBANKING_FSB,
         IFSC::DCBL         => Gateway::NETBANKING_DCB,
+        IFSC::ANDB         => Gateway::NETBANKING_UBI,
+        IFSC::SYNB         => Gateway::NETBANKING_CANARA,
     ];
 
     /**

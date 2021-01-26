@@ -22,6 +22,8 @@ class NetbankingCanaraGatewayTest extends TestCase
     use PaymentTrait;
     use PartnerTrait;
 
+    protected $bank;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/NetbankingCanaraGatewayTestData.php';
@@ -39,15 +41,19 @@ class NetbankingCanaraGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
+        $this->doNetbankingCanaraAuthAndCapturePayment();
 
         $paymententity = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($paymententity);
 
+        $this->assertEquals($this->bank, $paymententity['bank']);
+
         $netbankingentity = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals($this->testData['testPaymentNetbankingEntity'], $netbankingentity);
+
+        $this->assertEquals($this->bank, $netbankingentity['bank']);
     }
 
     public function testPartnerPayment()
@@ -94,6 +100,8 @@ class NetbankingCanaraGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+
+        $this->assertEquals($this->bank, $gatewayPayment['bank']);
     }
 
     public function testPaymentVerify()
@@ -107,6 +115,8 @@ class NetbankingCanaraGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+
+        $this->assertEquals($this->bank, $gatewayPayment['bank']);
     }
 
     public function testAuthFailedVerifySuccess()

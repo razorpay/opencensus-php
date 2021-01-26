@@ -23,7 +23,7 @@ class Gateway extends Billdesk\Gateway
          */
         $fieldData = explode('|', $responseBody);
 
-        if ($fieldData[7] === 'ADB')
+        if ($fieldData[7] === 'UBI')
         {
             $responseBody = $this->getInvalidVerifyData();
         }
