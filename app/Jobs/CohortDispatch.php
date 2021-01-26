@@ -37,13 +37,13 @@ class CohortDispatch extends Job
 
         $this->trace->info(
             TraceCode::COHORT_LIST_PROCESS_REQUEST,
-            $traceData);
+            $this->input);
 
         try
         {
             if (empty($userId) === false)
             {
-                $user = (new Tracker\Core)->dispatchForSurveyWithUserId($type, $userId, $merchantId, $surveyId);
+                $user = (new Tracker\Core)->dispatchForSurveyWithUserId($userId, $merchantId, $surveyId);
 
                 $this->trace->info(
                     TraceCode::COHORT_USER_PROCESS_SUCCESS,
@@ -68,7 +68,7 @@ class CohortDispatch extends Job
                 $ex,
                 null,
                 TraceCode:: COHORT_SCHEDULE_PROCESS_JOB_FAILURE_EXCEPTION,
-                $traceData);
+                $this->input);
         }
         finally
         {

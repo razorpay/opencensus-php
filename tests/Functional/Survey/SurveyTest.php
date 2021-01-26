@@ -234,4 +234,29 @@ class SurveyTest extends TestCase
 
         $this->assertGreaterThan($previousSurveySentAt, $surveyTrackerEntity['survey_sent_at']);
     }
+
+    public function testSurveywithExternalUserId()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'RazorpayX survey',
+            'description' => 'RazorpayX survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]['request']['content']['survey_id'] = $survey['id'];
+
+        $cohort = [
+            'merchant_id'   => '10000000000000',
+            'user_id'       => $this->user1['id']
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content']['cohort_list'] = [$cohort];
+
+        $this->startTest();
+    }
 }

@@ -104,4 +104,19 @@ return [
             ],
         ],
     ],
+
+    'testSurveywithExternalUserId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_razorpay_x',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 1,
+            ],
+        ],
+    ],
 ];
