@@ -203,8 +203,7 @@ class Service extends Base\Service
 
         // validate gateway_token
         if ((ctype_alnum($input[Token\Entity::GATEWAY_TOKEN]) === false) or
-            (strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20) or
-            (substr($input[Token\Entity::IFSC], 0, 4) !== substr($input[Token\Entity::GATEWAY_TOKEN], 0, 4)))
+            (strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20))
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_UMRN
