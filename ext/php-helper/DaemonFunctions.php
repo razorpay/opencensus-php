@@ -103,7 +103,7 @@ function opencensus_trace_add_attribute($key, $value, $options = []): void {
 
 }
 
-function opencensus_trace_remove_span($key, $value, $options = []): void {
+function opencensus_trace_remove_span($key): void {
 
 }
 /**

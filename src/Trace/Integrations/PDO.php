@@ -31,6 +31,8 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
+    static $tracer;
+
     /**
      * Static method to add instrumentation to the PDO requests
      */
@@ -61,6 +63,13 @@ class PDO implements IntegrationInterface
     }
 
     /**
+     * Static method to add tracer
+     */
+    public static function setTracer($tracer){
+        PDO::$tracer = $tracer;
+    }
+
+    /**
      * Handle extracting the SQL query from the first argument
      *
      * @internal
@@ -70,6 +79,10 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        if (PDO::$tracer != null) {
+            PDO::$tracer->checkSpanLimit();
+        }
+
         return [
             'attributes' => ['db.statement' => $query, 'span.kind' => Span::KIND_CLIENT],
             'kind' => Span::KIND_CLIENT
@@ -86,6 +99,10 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
+        if (PDO::$tracer != null) {
+            PDO::$tracer->checkSpanLimit();
+        }
+
         $attributes = ['dsn' => $dsn, 'db.type' => 'sql', 'span.kind' => Span::KIND_CLIENT];
 
         return [ 'attributes' => $attributes,
@@ -106,6 +123,10 @@ class PDO implements IntegrationInterface
             refer following for SQL return codes
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
+
+        if (PDO::$tracer != null) {
+            PDO::$tracer->checkSpanLimit();
+        }
 
         $rowCount = $statement->rowCount();
         $errorCode = $statement->errorCode();

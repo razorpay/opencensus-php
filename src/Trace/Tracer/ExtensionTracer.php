@@ -42,16 +42,23 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
      */
     private $hasSpans = false;
 
+    private $exporter;
+
+    const DEFAULT_SPAN_LIMIT = 100;
+
     /**
      * Create a new ExtensionTracer
      *
      * @param SpanContext|null $initialContext The starting span context.
+     * @param null $exporter
      */
-    public function __construct(SpanContext $initialContext = null)
+    public function __construct(SpanContext $initialContext = null, $exporter = null)
     {
         if ($initialContext) {
             opencensus_trace_set_context($initialContext->traceId(), $initialContext->spanId());
         }
+
+        $this->exporter = $exporter;
     }
 
     public function inSpan(array $spanOptions, callable $callable, array $arguments = [])
@@ -112,6 +119,43 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         return array_map(function ($span) use ($traceId) {
             return $this->mapSpan($span, $traceId);
         }, opencensus_trace_list());
+    }
+
+    public function checkSpanLimit()
+    {
+        $count = count($this->spans());
+
+        // TODO:: to read from config
+        $limit = self::DEFAULT_SPAN_LIMIT;
+
+        if ($count > $limit) {
+
+            $closedSpans = [];
+            $ids = [];
+            $spns = $this->spans();
+
+            foreach ($spns as $k) {
+                $endTime = $k->endTime();
+
+                if ($endTime->getTimestamp() != 0)
+                {
+                    $closedSpans[] = $k;
+                    $ids[] = $k->spanId();
+                }
+            }
+
+            $this->export($closedSpans, $ids);
+        }
+    }
+
+    public function export($closedSpans, $ids)
+    {
+        if ($this->exporter != null) {
+            $this->exporter->export($closedSpans);
+            foreach ($ids as $id) {
+                opencensus_trace_remove_span($id);
+            }
+        }
     }
 
     public function addAttribute($attribute, $value, $options = [])

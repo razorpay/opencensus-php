@@ -31,6 +31,8 @@ use OpenCensus\Trace\Span;
  */
 class Curl implements IntegrationInterface
 {
+    static $tracer;
+
     /**
      * Static method to add instrumentation to curl requests
      */
@@ -47,6 +49,13 @@ class Curl implements IntegrationInterface
     }
 
     /**
+     * Static method to add tracer
+     */
+    public static function setTracer($tracer){
+        PDO::$tracer = $tracer;
+    }
+
+    /**
      * Handle extracting the uri from a given curl resource handler
      *
      * @internal
@@ -57,6 +66,10 @@ class Curl implements IntegrationInterface
     {
         $info = curl_getinfo($resource);
         $attrs = self::getSpanAttrsFromCurlInfo($info);
+
+        if (Curl::$tracer != null) {
+            Curl::$tracer->checkSpanLimit();
+        }
 
         return [
             'attributes' => $attrs,

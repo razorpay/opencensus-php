@@ -84,15 +84,6 @@ void opencensus_trace_rshutdown()
  */
 static zend_string *span_id_from_options(HashTable *options)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "span_from_options\n");
-
-        fclose(fptr5);
-    }
-
     zval *val;
     zend_string *str = NULL;
     if (options == NULL) {
@@ -141,25 +132,6 @@ static opencensus_trace_span_t *span_from_options(zval *options)
 }
 
 /**
- *   Find number of spans in current trace
- *
- *   Adapted from implementation of `opencensus_trace_list` function,
- *   which returns all the spans in current trace
-*/
-
-//int num_spans_in_trace(){
-//    opencensus_trace_span_t *trace_span;
-//
-//    int num_spans = 0;
-//
-//    ZEND_HASH_FOREACH_PTR(OPENCENSUS_G(spans), trace_span) {
-//        num_spans++;
-//    } ZEND_HASH_FOREACH_END();
-//
-//    return num_spans;
-//}
-
-/**
  * Add a attribute to the current trace span
  *
  * @param string $key
@@ -168,14 +140,6 @@ static opencensus_trace_span_t *span_from_options(zval *options)
  */
 PHP_FUNCTION(opencensus_trace_add_attribute)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "php_function_opencensus_trace_add_attribute\n");
-
-        fclose(fptr5);
-    }
     zend_string *k, *v;
     opencensus_trace_span_t *span;
     zval *options = NULL;
@@ -200,77 +164,25 @@ PHP_FUNCTION(opencensus_trace_add_attribute)
     RETURN_FALSE;
 }
 
+/**
+ * Removes a span corresponding to key/span_id from hashtable
+ * @param string $key
+ * @return bool
+ */
 PHP_FUNCTION(opencensus_trace_remove_span)
 {
-    zend_string *k, *v;
-    opencensus_trace_span_t *span;
-    zval *options = NULL;
+    zend_string *k;
 
-    FILE *fptr = fopen("sampletestt.txt", "a");
-
-    if (fptr != NULL)
-    {
-
-        fprintf(fptr, "\nopencensus_trace_remove_span 1");
-
-        fclose(fptr);
-    }
-
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "SS|a", &k, &v, &options) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &k) == FAILURE) {
         RETURN_FALSE;
     }
 
-    FILE *fptr2 = fopen("sampletestt.txt", "a");
-
-    if (fptr2 != NULL)
-    {
-        fprintf(fptr2, "opencensus_trace_remove_span 2");
-
-        fclose(fptr2);
+    if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
+        RETURN_FALSE
     }
 
-    span = span_from_options(options);
-
-    if (span == NULL) {
-        RETURN_FALSE;
-    }
-
-    FILE *fptr3 = fopen("sampletestt.txt", "a");
-
-    if (fptr3 != NULL)
-    {
-        fprintf(fptr3, "opencensus_trace_remove_span 3");
-
-        fclose(fptr3);
-    }
-
-//    opencensus_trace_span_free(span);
-//
-//    FILE *fptr4 = fopen("sampletestt.txt", "a");
-//
-//    if (fptr4 != NULL)
-//    {
-//        fprintf(fptr4, "opencensus_trace_remove_span 4");
-//
-//        fclose(fptr4);
-//    }
-
-
-    if (zend_hash_del(OPENCENSUS_G(spans), k) == SUCCESS) {
-//        php_printf("Removed value at key");
-        FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-        if (fptr5 != NULL)
-        {
-            fprintf(fptr5, "%s", ZSTR_VAL(k));
-            fprintf(fptr5, "opencensus_trace_remove_span 5");
-
-            fclose(fptr5);
-        }
-
-    }
-
-
+    // release zend string
+    zend_string_release(k);
 
     RETURN_TRUE;
 }
@@ -284,14 +196,6 @@ PHP_FUNCTION(opencensus_trace_remove_span)
  */
 PHP_FUNCTION(opencensus_trace_add_annotation)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "php_function_opencensus_trace_add_annotation\n");
-
-        fclose(fptr5);
-    }
     zend_string *description;
     opencensus_trace_span_t *span;
     zval *options = NULL;
@@ -326,14 +230,6 @@ PHP_FUNCTION(opencensus_trace_add_annotation)
  */
 PHP_FUNCTION(opencensus_trace_add_link)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "php_function_opencensus_trace_add_link\n");
-
-        fclose(fptr5);
-    }
     zend_string *trace_id, *span_id;
     opencensus_trace_span_t *span;
     zval *options = NULL;
@@ -424,14 +320,6 @@ static void opencensus_free_args(zval *args, int num_args)
  */
 static int opencensus_trace_call_user_function_callback(zval *args, int num_args, zend_execute_data *execute_data, opencensus_trace_span_t *span, zval *callback, zval *callback_result TSRMLS_DC)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "opencensus_trace_call_user_function_callback\n");
-
-        fclose(fptr5);
-    }
     if (call_user_function_ex(EG(function_table), NULL, callback, callback_result, num_args, args, 0, NULL) != SUCCESS) {
         return FAILURE;
     }
@@ -480,16 +368,6 @@ static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_e
 {
 
     opencensus_trace_span_t *span = opencensus_trace_span_alloc();
-//    opencensus_trace_span_t parentSpan;
-
-    FILE *fptr = fopen("sampletestt.txt", "a");
-    if (fptr != NULL)
-    {
-        fprintf(fptr, "in trace begin\n");
-        fclose(fptr);
-    }
-
-
     zend_fetch_debug_backtrace(&span->stackTrace, 1, DEBUG_BACKTRACE_IGNORE_ARGS, 0);
 
     span->start = opencensus_now();
@@ -500,35 +378,11 @@ static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_e
         span->span_id = generate_span_id();
     }
 
-      FILE *fptr1 = fopen("sampletestt.txt", "a");
-    if (fptr1 != NULL)
-    {
-        fprintf(fptr1, "in trace begin %s\n", ZSTR_VAL(span->span_id));
-        fclose(fptr1);
-    }
-
-//    if (!OPENCENSUS_G(current_span)) {
-//
-//        if (OPENCENSUS_G(current_span_value).parent) {
-//            OPENCENSUS_G(current_span) = &OPENCENSUS_G(current_span_value);
-//        }
-//    }
-
     if (OPENCENSUS_G(current_span)) {
         span->parent = OPENCENSUS_G(current_span);
-        }
-//        parentSpan = *OPENCENSUS_G(current_span);
-//    } else if (parentSpan.parent){
-//            span->parent = &parentSpan;
-//    }
-
-//    else if (OPENCENSUS_G(current_span_value).parent){
-//        span->parent = &OPENCENSUS_G(current_span_value);
-//    }
+    }
 
     OPENCENSUS_G(current_span) = span;
-//    OPENCENSUS_G(current_span_value) = *span;
-
 
     /* add the span to the list of spans */
     zend_hash_add_ptr(OPENCENSUS_G(spans), span->span_id, span);
@@ -544,26 +398,8 @@ static int opencensus_trace_finish()
 {
     opencensus_trace_span_t *span = OPENCENSUS_G(current_span);
 
-    FILE *fptr4 = fopen("sampletestt.txt", "a");
-
-    if (fptr4 != NULL)
-    {
-        fprintf(fptr4, "\nopencensus_trace_finish");
-
-        fclose(fptr4);
-    }
-
     if (!span) {
         return FAILURE;
-    }
-
-    FILE *fptr1 = fopen("sampletestt.txt", "a");
-
-    if (fptr1 != NULL)
-    {
-        fprintf(fptr1, "opencensus_trace_finish1");
-
-        fclose(fptr1);
     }
 
     /* set current time for now */
@@ -571,14 +407,6 @@ static int opencensus_trace_finish()
 
     OPENCENSUS_G(current_span) = span->parent;
 
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "opencensus_trace_finish2\n");
-
-        fclose(fptr5);
-    }
     return SUCCESS;
 }
 
@@ -623,14 +451,6 @@ static zend_string *opencensus_trace_add_scope_name(zend_string *function_name, 
  */
 PHP_FUNCTION(opencensus_trace_begin)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "php_function_opencensus_trace_begin\n");
-
-        fclose(fptr5);
-    }
     zend_string *function_name, *span_id;
     zval *span_options = NULL, default_span_options;
     opencensus_trace_span_t *span;
@@ -663,15 +483,6 @@ PHP_FUNCTION(opencensus_trace_begin)
  */
 PHP_FUNCTION(opencensus_trace_finish)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "php_function_opencensus_trace_finish\n");
-
-        fclose(fptr5);
-    }
-
     if (opencensus_trace_finish() == SUCCESS) {
         RETURN_TRUE;
     }
@@ -680,15 +491,6 @@ PHP_FUNCTION(opencensus_trace_finish)
 
 void span_dtor(zval *zv)
 {
-
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "span_dtor\n");
-
-        fclose(fptr5);
-    }
     opencensus_trace_span_t *span = Z_PTR_P(zv);
     opencensus_trace_span_free(span);
     ZVAL_PTR_DTOR(zv);
@@ -700,14 +502,6 @@ void span_dtor(zval *zv)
  */
 void opencensus_trace_clear(int reset TSRMLS_DC)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "opencensus_trace_clear\n");
-
-        fclose(fptr5);
-    }
     /* free the hashtable */
     zend_hash_destroy(OPENCENSUS_G(spans));
     FREE_HASHTABLE(OPENCENSUS_G(spans));
@@ -731,41 +525,6 @@ void opencensus_trace_clear(int reset TSRMLS_DC)
 }
 
 /**
- * Reset the list of spans and free any allocated memory used.
- * If reset is set, reallocate request globals so we can start capturing spans.
- */
-//void opencensus_trace_span_clr()
-//{
-//   zval *span_ids = NULL;
-
-//    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "SS|a", &span_id) == FAILURE) {
-//        RETURN_FALSE;
-//    }
-
-//    FILE *fptr = fopen("sampletestt.txt", "a");
-//    if (fptr != NULL)
-//    {
-//        fprintf(fptr, "test shivam");
-//        fclose(fptr);
-//    }
-
-//    opencensus_trace_span_free(span);
-
-//    opencensus_trace_finish();
-
-//    zend_hash_destroy(OPENCENSUS_G(spans));
-//    FREE_HASHTABLE(OPENCENSUS_G(spans));
-
-    /* reallocate and setup the hashtable for captured spans */
-
-//    ALLOC_HASHTABLE(OPENCENSUS_G(spans));
-//    zend_hash_init(OPENCENSUS_G(spans), 16, NULL, span_dtor, 0);
-
-
-//    OPENCENSUS_G(current_span) = NULL;
-//}
-
-/**
  * Reset the list of spans
  *
  * @return bool
@@ -775,13 +534,6 @@ PHP_FUNCTION(opencensus_trace_clear)
     opencensus_trace_clear(1 TSRMLS_CC);
     RETURN_TRUE;
 }
-
-//PHP_FUNCTION(opencensus_trace_clr)
-//{
-//    opencensus_trace_clr(1 TSRMLS_CC);
-//    RETURN_TRUE
-//}
-
 
 /**
  * Set the initial trace context
@@ -811,14 +563,6 @@ PHP_FUNCTION(opencensus_trace_set_context)
  */
 PHP_FUNCTION(opencensus_trace_context)
 {
-    FILE *fptr5 = fopen("sampletestt.txt", "a");
-
-    if (fptr5 != NULL)
-    {
-        fprintf(fptr5, "opencensus_trace_context\n");
-
-        fclose(fptr5);
-    }
     opencensus_trace_span_t *span = OPENCENSUS_G(current_span);
     object_init_ex(return_value, opencensus_trace_context_ce);
 
@@ -839,14 +583,6 @@ PHP_FUNCTION(opencensus_trace_context)
  */
 void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
 
-//    FILE *fptr5 = fopen("sampletestt.txt", "a");
-//
-//    if (fptr5 != NULL)
-//    {
-//        fprintf(fptr5, "opencensus_trace_execute_ex\n");
-//
-//        fclose(fptr5);
-//    }
     zend_string *function_name = opencensus_trace_add_scope_name(
         EG(current_execute_data)->func->common.function_name,
         EG(current_execute_data)->func->common.scope
@@ -891,14 +627,7 @@ void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
             opencensus_trace_span_apply_span_options(span, trace_handler);
         }
     }
-//   FILE *fptr4 = fopen("sampletestt.txt", "a");
-//
-//    if (fptr4 != NULL)
-//    {
-//        fprintf(fptr4, "opencensus_trace_execute_ex_end\n");
-//
-//        fclose(fptr4);
-//    }
+
     zend_string_release(callback_name);
     opencensus_trace_finish();
 }
@@ -936,23 +665,8 @@ void opencensus_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
         return;
     }
 
-//   FILE *fptr9 = fopen("sampletestt.txt", "a");
-//
-//    if (fptr9 != NULL)
-//    {
-//        fprintf(fptr9, "\nopencensus_trace_execute_internal 9");
-//
-//        fclose(fptr9);
-//    }
     trace_handler = zend_hash_find(OPENCENSUS_G(user_traced_functions), function_name);
-//    FILE *fptr = fopen("sampletestt.txt", "a");
-//
-//    if (fptr != NULL)
-//    {
-//        fprintf(fptr, "\nopencensus_trace_execute_internal 99");
-//
-//        fclose(fptr);
-//    }
+
     /* Function is not registered for execution - continue normal execution */
     if (trace_handler == NULL) {
         resume_execute_internal(INTERNAL_FUNCTION_PARAM_PASSTHRU);
@@ -984,14 +698,6 @@ void opencensus_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
     }
     zend_string_release(callback_name);
 
-    FILE *fptr4 = fopen("sampletestt.txt", "a");
-
-    if (fptr4 != NULL)
-    {
-        fprintf(fptr4, "\nopencensus_trace_relese_callback");
-
-        fclose(fptr4);
-    }
     opencensus_trace_finish();
 }
 
@@ -1073,8 +779,3 @@ PHP_FUNCTION(opencensus_trace_list)
         add_next_index_zval(return_value, &span TSRMLS_CC);
     } ZEND_HASH_FOREACH_END();
 }
-
-//PHP_FUNCTION(opencensus_trace_count)
-//{
-//    RETURN_LONG(SPAN_COUNT)
-//}

@@ -42,6 +42,8 @@ const CMD_MAX_LEN = 256;
 class Redis implements IntegrationInterface
 {
 
+    static $tracer;
+
     /**
      * Static method to add instrumentation to redis requests
      */
@@ -52,6 +54,10 @@ class Redis implements IntegrationInterface
         }
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
+              if (Redis::$tracer != null) {
+                  Redis::$tracer->checkSpanLimit();
+              }
+
               return [
                     'attributes' => [
                         'peer.hostname' => $params['host'],
@@ -68,6 +74,11 @@ class Redis implements IntegrationInterface
             $arguments = $command->getArguments();
             array_unshift($arguments, $command->getId());
             $query = Redis::formatArguments($arguments);
+
+            if (Redis::$tracer != null) {
+                Redis::$tracer->checkSpanLimit();
+            }
+
             return ['attributes' => [
                         'command' => $command->getId(),
                         'service.name' => 'redis',
@@ -80,6 +91,12 @@ class Redis implements IntegrationInterface
         });
     }
 
+    /**
+     * Static method to add tracer
+     */
+    public static function setTracer($tracer){
+        PDO::$tracer = $tracer;
+    }
 
     public static function formatArguments($arguments)
     {
