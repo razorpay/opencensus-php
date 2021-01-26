@@ -2142,6 +2142,7 @@ class Route
         'delete_merchant_notification_config'     => ['delete', 'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@delete'],
         'disable_merchant_notification_config'    => ['post',   'merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfig'],
         'enable_merchant_notification_config'     => ['post',   'merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfig'],
+        'merchant_notification_config_alert_cron' => ['post',   'merchant_notification_configs/alert',        'MerchantNotificationConfigController@alert'],
 
         // Admin merchant notification config APIs
         'create_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@createAsAdmin'],
@@ -2862,6 +2863,7 @@ class Route
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
+        'merchant_notification_config_alert_cron',
 
         // Razorpay Capital
         // Financial Data Service
@@ -5736,6 +5738,7 @@ class Route
             'fts_account_balance_alert',
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
+            'merchant_notification_config_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'terminals_proxy_update_recurring',

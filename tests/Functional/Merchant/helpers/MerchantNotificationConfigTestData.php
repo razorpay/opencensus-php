@@ -83,7 +83,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant notification config already exists for given mode',
+                    'description' => 'A merchant notification config already exists for the given mode.',
                 ],
             ],
             'status_code' => 400,
@@ -114,7 +114,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant notification config already exists for given mode',
+                    'description' => 'A merchant notification config already exists for the given mode.',
                 ],
             ],
             'status_code' => 400,
@@ -241,7 +241,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The lower threshold is greater than the upper threshold',
+                    'description' => 'The lower threshold is greater than the upper threshold.',
                 ],
             ],
             'status_code' => 400,
@@ -272,7 +272,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The lower threshold is greater than the upper threshold',
+                    'description' => 'The lower threshold is greater than the upper threshold.',
                 ],
             ],
             'status_code' => 400,
@@ -376,6 +376,32 @@ return [
                 'mode'                        => 'IMPS',
                 'notify_after'                => 900,
             ],
+        ],
+    ],
+
+    'testUpdateNotificationMobileNumbersForMerchantNotificationConfigAsAdminWithIncorrectMobileNumber' => [
+        'request'  => [
+            'url'     => '/merchant_notification_configs',
+            'method'  => 'PATCH',
+            'content' => [
+                'notification_mobile_numbers' => ['94266', '+911000000000'],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MOBILE_NUMBER',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

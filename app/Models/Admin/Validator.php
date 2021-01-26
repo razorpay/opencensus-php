@@ -127,6 +127,7 @@ class Validator extends Base\Validator
         ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
         ConfigKey::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE   => 'array',
         ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP   => 'filled|integer',
+        ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT     => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

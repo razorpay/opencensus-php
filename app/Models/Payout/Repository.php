@@ -1482,12 +1482,122 @@ class Repository extends Base\Repository
             $this->dbColumn(Entity::MERCHANT_ID),
             $this->dbColumn(Entity::USER_ID)
         ];
-        
+
         return $this->newQuery()
                     ->select($selectAttr)
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
                     ->get();
+    }
+
+    /**
+     * SELECT COUNT(*)
+     * FROM 'payouts'
+     * WHERE 'payouts'.'merchant_id' = ?
+     * AND 'payouts'.'status' = 'initiated'
+     * AND 'payouts'.'created_at' = ?
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function fetchCountOfPayoutsStuckInInitiatedToday(string $merchantId)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
+
+        $query = $this->newQuery()
+                      ->where($statusColumn, Status::INITIATED)
+                      ->where($merchantIdColumn, $merchantId)
+                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
+
+        return $query->count();
+    }
+
+    /**
+     * SELECT COUNT(*)
+     * FROM 'payouts'
+     * WHERE 'payouts'.'merchant_id' = ?
+     * AND 'payouts'.'mode' = ?
+     * AND 'payouts'.'status' = 'initiated'
+     * AND 'payouts'.'created_at' = ?
+     *
+     * @param string $merchantId
+     *
+     * @param string $mode
+     *
+     * @return mixed
+     */
+    public function fetchCountOfPayoutsStuckInInitiatedTodayByMode(string $merchantId, string $mode)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
+        $modeColumn       = $this->dbColumn(Entity::MODE);
+
+        $query = $this->newQuery()
+                      ->where($statusColumn, Status::INITIATED)
+                      ->where($merchantIdColumn, $merchantId)
+                      ->where($modeColumn, $mode)
+                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
+
+        return $query->count();
+    }
+
+    /**
+     * SELECT 'payouts'.'id'
+     * FROM 'payouts'
+     * WHERE 'payouts'.'merchant_id' = ?
+     * AND 'payouts'.'status' = 'initiated'
+     * AND 'payouts'.'created_at' = ?
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function fetchIdOfPayoutsStuckInInitiatedTodayAsArray(string $merchantId)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
+
+        $query = $this->newQuery()
+                      ->where($statusColumn, Status::INITIATED)
+                      ->where($merchantIdColumn, $merchantId)
+                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
+
+        return $query->pluck('id')->all();
+    }
+
+    /**
+     * SELECT 'payouts'.'id'
+     * FROM 'payouts'
+     * WHERE 'payouts'.'merchant_id' = ?
+     * AND 'payouts'.'mode' = ?
+     * AND 'payouts'.'status' = 'initiated'
+     * AND 'payouts'.'created_at' = ?
+     *
+     * @param string $merchantId
+     *
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function fetchIdOfPayoutsStuckInInitiatedTodayByModeAsArray(string $merchantId, string $mode)
+    {
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
+        $modeColumn       = $this->dbColumn(Entity::MODE);
+
+        $query = $this->newQuery()
+                      ->where($statusColumn, Status::INITIATED)
+                      ->where($merchantIdColumn, $merchantId)
+                      ->where($modeColumn, $mode)
+                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
+
+        return $query->pluck('id')->all();
     }
 }

@@ -8,12 +8,17 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Mailable;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Mail\Payout\DowntimeNotification;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Fixtures\Entity\Payout;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class MerchantNotificationConfigTest extends TestCase
 {
@@ -28,6 +33,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         parent::setUp();
 
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
         $this->setUpMerchantForBusinessBankingLive(true, 10000000);
 
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
@@ -42,6 +48,14 @@ class MerchantNotificationConfigTest extends TestCase
 
         $this->fixtures->user->createBankingUserForMerchant(
             '10000000000000', ['id' => 'MerchantUser02'], 'Finance L3', 'live');
+    }
+
+    protected function setLimitViaRedisKeyForFetchingConfigs($limit)
+    {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT => $limit,
+            ]);
     }
 
     public function testCreateMerchantNotificationConfig()
@@ -154,6 +168,16 @@ class MerchantNotificationConfigTest extends TestCase
 
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+    }
+
+    public function testUpdateNotificationMobileNumbersForMerchantNotificationConfigAsAdminWithIncorrectMobileNumber()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+
         $this->startTest();
     }
 
@@ -413,5 +437,98 @@ class MerchantNotificationConfigTest extends TestCase
         ];
 
         $this->makeRequestAndGetContent($request);
+    }
+
+    // This test is used to check the stuck payouts alert functionality
+    public function testStuckPayoutsAlert()
+    {
+        Mail::fake();
+
+        $testDate = Carbon::create(2021, 01, 01, 12);
+
+        Carbon::setTestNow($testDate);
+
+        // Create a test config
+        $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        // Fetch the created config for using later in this code
+        $config = $this->getDbLastEntity('merchant_notification_config');
+
+        $this->ba->cronAuth();
+
+        // Create a number of payouts, so as to trigger stuck payouts alert
+        $this->createLotsOfPayoutsStuckInInitiatedState($config->getUpperThreshold());
+
+        // Hit the alert route
+        $request = [
+            'url'    => '/merchant_notification_configs/alert',
+            'method' => 'POST',
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // This flow creates mails in sync mode
+        // We chose sync mode because we don't expect a lot of mails to be generated right now.
+        // This was decided as a part of a focus group task to quickly build an alerting solution for stuck payouts.
+        Mail::assertSent(DowntimeNotification::class);
+
+        // Fetch the updated config to check if notifyAt has become negative
+        $newConfig = $this->getDbLastEntity('merchant_notification_config');
+
+        // Assert that the new notify_at value is negative
+        // i.e. an email has been sent
+        $this->assertTrue(($newConfig->getNotifyAt()) < 0);
+
+        // Assert that the value of notify_at is correct.
+        $this->assertEquals(
+            -1 * (Carbon::now()->timestamp + $config->getNotifyAfter()), $newConfig->getNotifyAt());
+
+        // Change the value of notifyAt to be below currentTime so as to re-trigger alerting
+        $this->fixtures->edit('merchant_notification_config', $newConfig->getId(), ['notify_at' => -1]);
+
+        $this->makeRequestAndGetContent($request);
+
+        Mail::assertSent(DowntimeNotification::class);
+
+        $newConfig = $this->getDbLastEntity('merchant_notification_config');
+
+        // Assert that notifyAt is still negative, since resolution hasn't happened yet
+        $this->assertTrue(($newConfig->getNotifyAt()) < 0);
+
+        // Assert that value of notifyAt is correct
+        $this->assertEquals(
+            -1 * (1 + $config->getNotifyAfter()), $newConfig->getNotifyAt());
+
+        // clear the payouts table, so as to trigger resolution mail
+        $this->app['db']->statement('DELETE FROM payouts');
+
+        $this->makeRequestAndGetContent($request);
+
+        Mail::assertSent(DowntimeNotification::class);
+
+        // Fetch updated config, as we expect notifyAt to get updated
+        $newConfig = $this->getDbLastEntity('merchant_notification_config');
+
+        // Check if notifyAt has flipped back to positive, asserting that resolution mail has been sent.
+        $this->assertTrue(($newConfig->getNotifyAt()) > 0);
+    }
+
+    protected function createLotsOfPayoutsStuckInInitiatedState(int $upperThreshold)
+    {
+        // The number of stuck payouts should be (at least one) more than the upper threshold, hence loop starts from 0
+        // with less than or equal to comparator
+        for($x = 0; $x <= $upperThreshold; $x++)
+        {
+            (new Payout())
+                ->createPayoutWithoutTransaction(
+                    [
+                        'merchant_id' => '10000000000000',
+                        'mode'        => 'IMPS',
+                        'status'      => 'initiated',
+                        'amount'      => 100,
+                        'currency'    => 'INR',
+                    ]
+                );
+        }
     }
 }

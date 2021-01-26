@@ -1241,11 +1241,12 @@ class PublicErrorDescription
     const BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER           = 'Low balance config already exists for account number';
     const BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE               = 'Low balance config is not supported in test mode';
 
-    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MODE                                              = 'Incorrect mode provided';
-    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE                                   = 'Merchant notification config already exists for given mode';
-    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD              = 'The lower threshold is greater than the upper threshold';
-    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD   = 'The new upper threshold is lower than the existing lower threshold';
-    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_LOWER_THRESHOLD_GREATER_THAN_EXISTING_UPPER_THRESHOLD = 'The new lower threshold is greater than the existing upper thresold';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MODE                                              = 'Incorrect mode provided.';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MOBILE_NUMBER                                     = 'Incorrect mobile numbers provided.';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE                                   = 'A merchant notification config already exists for the given mode.';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD              = 'The lower threshold is greater than the upper threshold.';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_UPPER_THRESHOLD_LOWER_THAN_EXISTING_LOWER_THRESHOLD   = 'The new upper threshold is lower than the existing lower threshold.';
+    const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_NEW_LOWER_THRESHOLD_GREATER_THAN_EXISTING_UPPER_THRESHOLD = 'The new lower threshold is greater than the existing upper threshold.';
 
     const BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE                          = 'Bad request, X credits supported in only live mode';
 

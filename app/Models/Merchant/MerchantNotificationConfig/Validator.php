@@ -2,9 +2,13 @@
 
 namespace RZP\Models\Merchant\MerchantNotificationConfig;
 
+use App;
+use libphonenumber\PhoneNumberType;
+
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -14,50 +18,66 @@ class Validator extends Base\Validator
     protected static $createRules                 = [
         Entity::UPPER_THRESHOLD             => 'required|integer|between:5,100000',
         Entity::LOWER_THRESHOLD             => 'required|integer|min:5',
-        Entity::MODE                        => 'sometimes|string',
+        Entity::MODE                        => 'required|string|alpha_num|custom',
         Entity::NOTIFY_AFTER                => 'sometimes|integer|between:120,43200',
-        Entity::NOTIFICATION_EMAILS         => 'required|string',
-        Entity::NOTIFICATION_MOBILE_NUMBERS => 'required|string',
+        Entity::NOTIFICATION_EMAILS         => 'required|string|custom',
+        Entity::NOTIFICATION_MOBILE_NUMBERS => 'required|string|custom',
     ];
 
     protected static $notificationEmailsRules     = [
-        Entity::NOTIFICATION_EMAILS        => 'required|array',
         Entity::NOTIFICATION_EMAILS . '.*' => 'filled|email',
-    ];
-
-    protected static $notificationMobileNumbersRules = [
-        Entity::NOTIFICATION_MOBILE_NUMBERS        => 'required|array',
-        // TODO: Use a good validator for mobile numbers in phase 2
-        Entity::NOTIFICATION_MOBILE_NUMBERS . '.*' => 'filled|numeric|digits:10',
     ];
 
     protected static $editRules = [
         Entity::UPPER_THRESHOLD             => 'sometimes|integer|between:5,100000',
         Entity::LOWER_THRESHOLD             => 'sometimes|integer|min:5',
         Entity::NOTIFY_AFTER                => 'sometimes|integer|between:120,43200',
-        Entity::NOTIFICATION_EMAILS         => 'sometimes|string',
-        Entity::NOTIFICATION_MOBILE_NUMBERS => 'sometimes|string',
+        Entity::NOTIFICATION_EMAILS         => 'sometimes|string|custom',
+        Entity::NOTIFICATION_MOBILE_NUMBERS => 'sometimes|string|custom',
+        Entity::MODE                        => 'sometimes|string|alpha_num|custom'
     ];
 
-    public static function validateNotificationEmailRules(array &$input)
+    public static function validateNotificationEmails($attribute, $value)
     {
-        (new Validator())->setStrictFalse()->validateInput(self::NOTIFICATION_EMAILS_RULE, $input);
-
-        //converting to string for validation that is in build/edit (create/edit Rules)
-        $input[Entity::NOTIFICATION_EMAILS] = implode(',', $input[Entity::NOTIFICATION_EMAILS]);
+        $value = [Entity::NOTIFICATION_EMAILS => explode(',', $value)];
+        (new Validator())->setStrictFalse()->validateInput(self::NOTIFICATION_EMAILS_RULE, $value);
     }
 
-    public static function validateNotificationMobileNumbersRules(array &$input)
+    // This logic only supports Indian numbers
+    public static function validateNotificationMobileNumbers($attribute, $value)
     {
-        (new Validator())->setStrictFalse()->validateInput(self::NOTIFICATION_MOBILE_NUMBERS_RULE, $input);
+        $value = explode(',', $value);
 
-        //converting to string for validation that is in build/edit (create/edit Rules)
-        $input[Entity::NOTIFICATION_MOBILE_NUMBERS] = implode(',', $input[Entity::NOTIFICATION_MOBILE_NUMBERS]);
+        $lib = App::getFacadeRoot()['libphonenumber'];
+
+        $invalidMobileNumbers = [];
+
+        foreach($value as $number)
+        {
+            $num = $lib->parse($number, 'IN');
+
+            // Check if number is valid in India, and if the number is a mobile number
+            if(($lib->isValidNumberForRegion($num, 'IN') === false) or
+               ($lib->getNumberType($num) !== PhoneNumberType::MOBILE))
+            {
+                $invalidMobileNumbers[] = $number;
+            }
+        }
+
+        if(empty($invalidMobileNumbers) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MOBILE_NUMBER,
+                null,
+                [
+                    'invalid_mobile_numbers' => $invalidMobileNumbers,
+                ]);
+        }
     }
 
-    public static function validateMode(array &$input)
+    public static function validateMode($attribute, $value)
     {
-        Mode::validateMode($input['mode']);
+        Mode::validateMode($value);
     }
 
     public static function checkThreshold(array $input, Entity $entity = null)

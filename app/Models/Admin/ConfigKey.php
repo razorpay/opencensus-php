@@ -129,6 +129,8 @@ class ConfigKey
     // to reduce the load
     const LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH = self::PREFIX . 'low_balance_configs_fetch_limit_in_one_batch';
 
+    const MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT = self::PREFIX . 'merchant_notification_config_fetch_limit';
+
     // TODO : Remove after June 15 2020 once we can support 25k bulk payouts
     const RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS  = self::PREFIX . 'rx_payouts_custom_batch_file_limit_merchants';
     const RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT       = self::PREFIX . 'rx_payouts_default_max_batch_file_count';
@@ -203,6 +205,7 @@ class ConfigKey
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
         self::LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH,
+        self::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT,
         self::BATCH_PAYOUTS_FETCH_LIMIT,
         self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
         self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,

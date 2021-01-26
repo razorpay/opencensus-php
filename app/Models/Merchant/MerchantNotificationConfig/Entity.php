@@ -162,7 +162,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function setNotifyAt(int $notifyAt)
+    public function setNotifyAt(int $notifyAt)
     {
         $this->setAttribute(self::NOTIFY_AT, $notifyAt);
     }
