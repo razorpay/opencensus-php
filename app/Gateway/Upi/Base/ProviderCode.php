@@ -146,6 +146,9 @@ class ProviderCode
     const VIJAYABANK         = 'vijayabank';
     const VIJB               = 'vijb';
     const VJB                = 'vjb';
+    const WAAXIS             = 'waaxis';
+    const WAHDFCABANK        = 'wahdfcabank';
+    const WASBI              = 'wasbi';
     const YBL                = 'ybl';
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
@@ -286,6 +289,9 @@ class ProviderCode
         self::VIJAYABANK         => IFSC::VIJB,
         self::VIJB               => IFSC::VIJB,
         self::VJB                => IFSC::VIJB,
+        self::WAAXIS             => IFSC::UTIB,
+        self::WAHDFCABANK        => IFSC::HDFC,
+        self::WASBI              => IFSC::SBIN,
         self::YBL                => IFSC::YESB,
         self::YESBANK            => IFSC::YESB,
         self::YESBANKLTD         => IFSC::YESB,
