@@ -274,7 +274,8 @@ class Validator extends Base\Validator
 
     //only paypal method is allowed for now, change validation to allow more methods
     protected static $editMerchantMethodsRules = [
-        Methods\Entity::PAYPAL  => 'required|bool',
+        Methods\Entity::PAYPAL  => 'sometimes|bool',
+        Methods\Entity::PAYTM  => 'sometimes|bool',
     ];
 
     protected static $resetSettlementScheduleRules = [
