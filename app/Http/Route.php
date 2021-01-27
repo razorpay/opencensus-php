@@ -147,6 +147,10 @@ class Route
         'payment_fetch_by_id_internal'             => ['get',      'payments_internal/{id}',                         'PaymentController@getPaymentById'                              ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
+
+        // TODO:remove after migration,
+        // Temporary route to copy email and contact in subscriptions table from payments table.
+        'subscription_fetch_by_id_data_fix'        => ['get',      'payments/data_fix/subscriptions/{subId}',        'PaymentController@getPaymentwithSubscriptionEmailAndContactNotNull'],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_status_count'                     => ['get',      'payments/transaction/count',                     'PaymentController@getPaymentsStatusCount'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
@@ -2647,6 +2651,7 @@ class Route
         'los_mail',
         'api_entity_fetch',
         'subscription_registration_nach_migration',
+        'subscription_fetch_by_id_data_fix',
         'leegality_webhook',
         'gateway_first_data_pares_store',
         'vendor_payment_send_failure_email',
@@ -5787,6 +5792,7 @@ class Route
             'token_fetch_vpa',
             'subscription_payment_fetch_by_id',
             'subscription_fetch_by_id',
+            'subscription_fetch_by_id_data_fix',
             'subscription_cancel_token',
             'merchant_fetch_keys',
             'entity_origin_create',

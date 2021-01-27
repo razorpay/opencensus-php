@@ -113,6 +113,21 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertTrue($token->isRecurring());
     }
 
+    public function testFetchPaymentWithSubscriptionEmailAndContactNotNull()
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/data_fix/subscriptions/GTSXI0raxv1G2U',
+            'content' => [],
+        ];
+
+        $this->ba->subscriptionsAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response, []);
+    }
+
     public function testAutoPaymentCard()
     {
         $request = [

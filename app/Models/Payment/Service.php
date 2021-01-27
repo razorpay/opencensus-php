@@ -2795,6 +2795,26 @@ class Service extends Base\Service
         return $payload;
     }
 
+    public function fetchpaymentwithSubscriptionEmailAndContactNotNull(string $subscriptionId): array
+    {
+        $payment = $this->repo->payment->fetchBySubscriptionIdEmailAndContactNotNull($subscriptionId);
+
+        $payload = [];
+
+        if($payment != null) {
+
+
+            $payload = $payment->toArrayAdmin();
+
+            $payload['customer'] = [
+                'email' => $payment->email,
+                'phone' => $payment->contact,
+            ];
+        }
+
+        return $payload;
+    }
+
     private function addInvoiceOfferDetailsForSubscription(Payment\Entity $payment, &$payload)
     {
         if ($payment->hasInvoice() === true)

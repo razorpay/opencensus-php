@@ -2052,6 +2052,22 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($paymentId);
     }
 
+    public function fetchBySubscriptionIdEmailAndContactNotNull(string $subscriptionId)
+    {
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->whereNotNull(Entity::EMAIL)
+                    ->whereNotNull(Entity::CONTACT)
+                    ->where(function ($query) {
+                        $query->where(Entity::RECURRING_TYPE, '=', 'initial')
+                              ->orWhere(Entity::RECURRING_TYPE, '=', 'card_change');
+                        })
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
     public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
