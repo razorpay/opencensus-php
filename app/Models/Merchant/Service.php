@@ -68,6 +68,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\AutoKyc\Escalations;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
@@ -75,13 +76,16 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 
 class Service extends Base\Service
@@ -5453,5 +5457,84 @@ class Service extends Base\Service
         $merchantProducts = $this->core()->fetchProductUsedByMerchants($merchantIds, $product, $limit);
 
         return $merchantProducts;
+    }
+
+    public function getMerchantSupportOptionFlags() : array
+    {
+        $isActivated = $this->merchant->isActivated();
+
+        $showPopup = $this->shouldShowSupportPopupOnDashboard($isActivated);
+
+        $response = [
+            'show_chat'                                 =>      $this->canChatOnDashboard($isActivated),
+            'show_create_ticket_popup'                  =>      $showPopup
+        ];
+
+        if ($showPopup === true )
+        {
+            $merchantDetailsCore = new MerchantDetailCore;
+
+            $merchantDetail = $merchantDetailsCore->getMerchantDetails($this->merchant);
+
+            $isAutoKycDone = ($merchantDetailsCore)->isAutoKycDone($merchantDetail);
+
+            $response['no_of_days_for_activation']  =   $this->daysTakenForActivation($isAutoKycDone);
+        }
+
+        return $response;
+    }
+
+    /**
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
+    protected function canChatOnDashboard($isActivated) : bool
+    {
+        $merchantDetailsCore = new MerchantDetailCore;
+
+        $merchantDetail = $merchantDetailsCore->getMerchantDetails($this->merchant);
+
+        $isUnregistered = MerchantDetBusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType());
+
+        // get partners if any
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
+
+        $partner = $partners->filter(function(Merchant\Entity $partner) {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        $isWhitelisted = ($merchantDetailsCore->getActivationFlow($this->merchant, $merchantDetail,
+                $partner, false) === ActivationFlow::WHITELIST);
+
+        if ($isActivated === true)
+        {
+            return true;
+        }
+        else if ($isUnregistered === false && $isWhitelisted === true)
+        {
+            return true;
+        }
+
+        return  false;
+    }
+
+    protected function shouldShowSupportPopupOnDashboard($isActivated) : bool
+    {
+        if ($isActivated === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function daysTakenForActivation( $isAutoKycDone)
+    {
+        if ($isAutoKycDone === true)
+        {
+            return MerchantConstants::MANUAL_KYC_DAYS_WHEN_AUTO_KYC_PASSED;
+        }
+
+        return MerchantConstants::MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED;
     }
 }

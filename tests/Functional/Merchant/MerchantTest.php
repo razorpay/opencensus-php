@@ -110,6 +110,14 @@ class MerchantTest extends TestCase
                                                                     'agent',
                                                                     'operations'];
 
+    const REQUEST                                               = 'request';
+    const RESPONSE                                              = 'response';
+    const EDIT_MERCHANT_DETAILS                                 = 'edit_merchant_detail';
+    const CREATE_MERCHANT_DETAILS                               = 'create_merchant_detail';
+    const CREATE_MERCHANT_DETAILS_VALID_FIELDS                  = 'create_merchant_detail_valid_fields';
+    const EDIT_MERCHANT_DETAILS_VALID_FIELDS                    = 'edit_merchant_detail_valid_fields';
+    const ACTIVATE_MERCHANT                                     = 'activate_merchant';
+
     protected $esDao;
 
     protected $esClient;
@@ -9730,4 +9738,257 @@ class MerchantTest extends TestCase
 
         return $response['response'];
     }
+
+    public function testMerchantSupportOptions()
+    {
+        $this->ba->proxyAuth();
+
+        $testCases = $this->getTestCasesForTestMerchantSupportOptions();
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['response'] = $testCase[self::RESPONSE];
+
+            $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+            $this->createTestDataForTestMerchantSupportOptions($testCase);
+
+            $this->startTest();
+        }
+    }
+
+    private function getTestCasesForTestMerchantSupportOptions()
+    {
+        return [
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  false,
+                        "show_create_ticket_popup"  =>  true,
+                        "no_of_days_for_activation" =>  "7",
+                    ],
+                ],
+                self::CREATE_MERCHANT_DETAILS   =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'international_activation_flow' => 'greylist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'alcohol',
+                    'business_type'                 => 1]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  false,
+                        "show_create_ticket_popup"  =>  true,
+                        "no_of_days_for_activation" =>  "7",
+                    ],
+                ],
+                self::EDIT_MERCHANT_DETAILS     =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'activation_flow'               => 'greylist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'alcohol',
+                    'business_type'                 => 2]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  false,
+                        "show_create_ticket_popup"  =>  true,
+                        "no_of_days_for_activation" =>  "3 to 5",
+                    ],
+                ],
+                self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
+                    'poi_verification_status'           => 'verified',
+                    'poa_verification_status'           => 'verified',
+                    'bank_details_verification_status'  => 'verified',
+                    'company_pan_verification_status'   => 'verified',
+                    'cin_verification_status'           => 'verified',
+
+                ],
+                self::EDIT_MERCHANT_DETAILS   =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'alcohol',
+                    'business_type'                 => 2]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  false,
+                        "show_create_ticket_popup"  =>  true,
+                        "no_of_days_for_activation" =>  "3 to 5",
+                    ],
+                ],
+                self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
+                    'poi_verification_status'           => 'verified',
+                    'poa_verification_status'           => 'verified',
+                    'bank_details_verification_status'  => 'verified'
+                ],
+                self::EDIT_MERCHANT_DETAILS     =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'activation_flow'               => 'whitelist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'alcohol',
+                    'business_type'                 => 2]
+            ],
+            [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 => true,
+                    "show_create_ticket_popup"  => true,
+                    "no_of_days_for_activation" => "7",
+                ],
+            ],
+            self::EDIT_MERCHANT_DETAILS   =>  [
+                'merchant_id'                   => '10000000000000',
+                'activation_flow'               => 'whitelist',
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'business_type'                 => 3]
+        ],
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 => true,
+                    "show_create_ticket_popup"  => true,
+                    "no_of_days_for_activation" => "7",
+                ]
+            ],
+            self::EDIT_MERCHANT_DETAILS   =>  [
+                'merchant_id'                   => '10000000000000',
+                'activation_flow'               => 'whitelist',
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'business_type'                 => 3]
+        ],
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 =>  true,
+                    "show_create_ticket_popup"  =>  true,
+                    "no_of_days_for_activation" =>  "3 to 5",
+                ],
+            ],
+            self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
+                'poi_verification_status'           => 'verified',
+                'poa_verification_status'           => 'verified',
+                'bank_details_verification_status'  => 'verified',
+                'company_pan_verification_status'   => 'verified',
+                'cin_verification_status'           => 'verified',
+            ],
+            self::EDIT_MERCHANT_DETAILS     =>  [
+                'merchant_id'                   => '10000000000000',
+                'activation_flow'               => 'whitelist',
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'business_type'                 => 4]
+        ],
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 =>  false,
+                    "show_create_ticket_popup"  =>  true,
+                    "no_of_days_for_activation" =>  "3 to 5",
+                ],
+            ],
+            self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
+                'poi_verification_status'           => 'verified',
+                'poa_verification_status'           => 'verified',
+                'bank_details_verification_status'  => 'verified',
+                'company_pan_verification_status'   => 'verified',
+                'cin_verification_status'           => 'verified',
+            ],
+            self::EDIT_MERCHANT_DETAILS     =>  [
+                'merchant_id'                   => '10000000000000',
+                'activation_flow'               => 'whitelist',
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'business_type'                 => 2]
+        ],
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 =>  true,
+                    "show_create_ticket_popup"  =>  false
+                ],
+            ],
+            self::ACTIVATE_MERCHANT =>  [1]
+        ]
+        ];
+    }
+
+    private function createTestDataForTestMerchantSupportOptions($testCase)
+    {
+        if (empty($testCase[self::CREATE_MERCHANT_DETAILS_VALID_FIELDS]) === false)
+        {
+            $merchantId = $this->fixtures->create('merchant_detail:valid_fields'
+                ,$testCase[self::CREATE_MERCHANT_DETAILS_VALID_FIELDS])['merchant_id'];
+
+            $this->fixtures->edit('merchant_detail',$merchantId,
+                $testCase[self::EDIT_MERCHANT_DETAILS]);
+        }
+
+        else if (empty($testCase[self::EDIT_MERCHANT_DETAILS_VALID_FIELDS]) === false)
+        {
+            $merchantId = $this->fixtures->edit('merchant_detail',
+                '10000000000000',$testCase[self::EDIT_MERCHANT_DETAILS_VALID_FIELDS])['merchant_id'];
+
+            $this->fixtures->edit('merchant_detail',$merchantId,
+                $testCase[self::EDIT_MERCHANT_DETAILS]);
+        }
+
+        else if (empty($testCase[self::EDIT_MERCHANT_DETAILS]) === false)
+        {
+            $this->fixtures->edit('merchant_detail','10000000000000',
+                $testCase[self::EDIT_MERCHANT_DETAILS]);
+        }
+
+        else if (empty($testCase[self::CREATE_MERCHANT_DETAILS]) === false)
+        {
+            $this->fixtures->create('merchant_detail',
+                $testCase[self::CREATE_MERCHANT_DETAILS]);
+        }
+        else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
+            s($this->fixtures->merchant);
+            $this->fixtures->merchant->activate();
+        }
+    }
+
 }

@@ -1781,10 +1781,10 @@ class Route
         'get_paper_mandate_uploaded_url'                => ['get',      'token.registration/paper_mandate/uploaded_form',      'SubscriptionRegistrationController@getUploadedPaperMandateForm'    ],
         'nach_register_test_payment_authorize_or_fail'  => ['post',     'token.registration/auth_links/{id}/paper_mandate/test_payment','SubscriptionRegistrationController@nachRegisterTestPaymentAuthorizeOrFail'],
 
-        'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
-        'can_merchant_submit_support_call_request' => ['get',      'merchants/support_call/can_submit',              'MerchantController@canSubmitSupportCallRequest'                    ],
-
-        'merchant_es_sync_cron'                    => ['post',     'merchant/sync_es/bulk',                          'MerchantController@syncMerchantsToEs'                              ],
+        'merchant_submit_support_call_request'      => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
+        'can_merchant_submit_support_call_request'  => ['get',      'merchants/support_call/can_submit',              'MerchantController@canSubmitSupportCallRequest'                    ],
+        'get_merchant_support_option_flags'                 => ['get',      'merchants/support/option/flags',                 'MerchantController@getMerchantSupportOptionFlags'                    ],
+        'merchant_es_sync_cron'                     => ['post',     'merchant/sync_es/bulk',                          'MerchantController@syncMerchantsToEs'                              ],
 
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
@@ -3302,6 +3302,7 @@ class Route
         'nach_register_test_payment_authorize_or_fail',
         'merchant_submit_support_call_request',
         'can_merchant_submit_support_call_request',
+        'get_merchant_support_option_flags',
         'token_fetch_card',
         'token_fetch_vpa',
         'user_edit_self',

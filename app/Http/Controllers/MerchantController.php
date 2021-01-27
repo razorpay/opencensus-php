@@ -1598,6 +1598,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getMerchantSupportOptionFlags()
+    {
+        $response = $this->service()->getMerchantSupportOptionFlags();
+
+        return ApiResponse::json($response);
+    }
     /**
      * Syncs merchant entity between mysql and elastic search
      *
