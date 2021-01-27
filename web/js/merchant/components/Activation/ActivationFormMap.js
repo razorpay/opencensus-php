@@ -36,7 +36,6 @@ import {
   doesHaveAdditionalDocs,
   getAdditionalDocCount,
   isAdditonalDocRequired,
-  isRXV2Onboarding,
   showSubcategory,
   isSourceRX,
   removeArrayDuplicatesByProp,
@@ -172,7 +171,7 @@ const businessModel = [
       _autoRenderImpure: true,
       options: [],
       _disabledWhen: function (activation) {
-        if (isRXV2Onboarding(activation)) {
+        if (isSourceRX()) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
         }
@@ -243,7 +242,7 @@ const businessModel = [
       },
       _when: showSubcategory,
       _disabledWhen: (activation) => {
-        if (isRXV2Onboarding(activation)) {
+        if (isSourceRX()) {
           const { activated, activation_flow } = activation.props.user;
           return activated || !!activation_flow;
         }

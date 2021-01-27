@@ -162,7 +162,6 @@ export default class User {
       business_type: this.business_type,
       activated: this.activated,
       isUnregisteredBusiness: this.isUnregisteredBusiness,
-      isRXV2OnboardingEnabled: this.isRXV2OnboardingEnabled,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -179,10 +178,9 @@ export default class User {
       get isL1Submitted() {
         const query = QueryString.parse(window.location.search);
         const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
-        const isRXV2Onboarding = this.isRXV2OnboardingEnabled && isSourceRX;
 
         // Assume L1 is submitted if activation form is inside RX and V2 onboarding experiment is enabled
-        if (isRXV2Onboarding) {
+        if (isSourceRX) {
           return true;
         }
         //Returning true for PG
@@ -536,10 +534,6 @@ export default class User {
 
   get isFirstAmountHidden() {
     return this.getExpStatus('hide_registration_link_first_amount');
-  }
-
-  get isRXV2OnboardingEnabled() {
-    return this.getExpStatus('rx_onboarding_v2');
   }
 
   get paymentLinkCreationFormExtraFields() {

@@ -270,11 +270,6 @@ function isSourceRX() {
   return isRXActivation;
 }
 
-function isRXV2Onboarding(activation) {
-  const isRXV2OnboardingExp = activation.props.user.isRXV2OnboardingEnabled;
-  return isRXV2OnboardingExp && isSourceRX();
-}
-
 function showSubcategory(activation) {
   let { state, props } = activation;
   let showSubcategory = false;
@@ -382,7 +377,6 @@ export {
   getAdditionalDocCount,
   isAdditonalDocRequired,
   hasAPIL1Error,
-  isRXV2Onboarding,
   showSubcategory,
   isSourceRX,
   removeArrayDuplicatesByProp,
