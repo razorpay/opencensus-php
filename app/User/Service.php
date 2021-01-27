@@ -1404,6 +1404,7 @@ class Service extends Base\Service
             'ir_pricing_v2_rollout_3',
             'ir_pricing_v2_rollout_4',
             'view_fd_tickets',
+            'support_dashboard_rzpsolutions',
             'settlement_ux_revamp_p2',
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',
