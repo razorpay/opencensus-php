@@ -6590,16 +6590,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.5.9",
+            "version": "1.5.10",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ifsc.git",
-                "reference": "667ae41a57854574587671f251fffbfbf8777660"
+                "reference": "fc9cecb372c4ccd7e9dd0efd4fdc5c45c9033eda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/667ae41a57854574587671f251fffbfbf8777660",
-                "reference": "667ae41a57854574587671f251fffbfbf8777660",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/fc9cecb372c4ccd7e9dd0efd4fdc5c45c9033eda",
+                "reference": "fc9cecb372c4ccd7e9dd0efd4fdc5c45c9033eda",
                 "shasum": ""
             },
             "require": {
@@ -6633,7 +6633,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2020-12-25T09:10:21+00:00"
+            "time": "2021-01-25T12:44:56+00:00"
         },
         {
             "name": "razorpay/laravel-excel",
