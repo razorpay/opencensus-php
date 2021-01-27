@@ -489,19 +489,25 @@ class UpiTransferTest extends TestCase
 
         $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
 
-        $response = $this->processUpiTransfer('testProcessIciciUpiTransferPayment', false, Gateway::UPI_ICICI);
+        $response = $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertNotNull($payment['fee']);
+
         $this->assertNull($response['message']);
 
         $this->runUpiTransferRequestAssertions(
-            'upi_icici',
-            false,
-            'Payment failed because fees or tax was tampered',
+            Gateway::UPI_ICICI,
+            true,
+            null,
             [
                 'intended_virtual_account_id'   => $this->virtualAccountId,
-                'actual_virtual_account_id'     => null,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
                 'merchant_id'                   => '10000000000000',
-                'upi_transfer_id'               => null,
-                'payment_id'                    => null,
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
             ]
         );
     }

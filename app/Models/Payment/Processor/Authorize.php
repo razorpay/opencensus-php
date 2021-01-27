@@ -2554,6 +2554,8 @@ trait Authorize
 
                 $this->preProcessForUpiIfApplicable($input);
 
+                $this->validateAndSetReceiverIfApplicable($payment, $input);
+
                 $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
                 $this->processCurrencyConversions($payment);

@@ -8,6 +8,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
 {
@@ -138,7 +139,13 @@ class Processor extends VirtualAccount\Processor
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
-        //TODO::Check for VPA pricing
+        $merchant = $this->virtualAccount->merchant;
+
+        if ($merchant->isFeeBearerCustomerOrDynamic() === true)
+        {
+            $paymentArray[Payment\Entity::FEE] = $this->getFees($upiTransfer);
+        }
+
         return $paymentArray;
     }
 
@@ -185,5 +192,25 @@ class Processor extends VirtualAccount\Processor
         $this->paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
         return $this->createPayment($input, $gatewayData);
+    }
+
+    protected function getFees(Base\PublicEntity $upiTransfer)
+    {
+        $parentPaymentArray = $this->getReceiverPaymentArray();
+
+        $paymentArray = [
+            Payment\Entity::CURRENCY => Currency::INR,
+            Payment\Entity::METHOD   => $upiTransfer->getMethod(),
+            Payment\Entity::AMOUNT   => $upiTransfer->getAmount(),
+            Payment\Entity::VPA      => $upiTransfer->getPayerVpa(),
+        ];
+
+        $paymentArray = array_merge($paymentArray, $parentPaymentArray);
+
+        $paymentProcessor = new PaymentProcessor($this->virtualAccount->merchant);
+
+        $data = $paymentProcessor->processAndReturnFees($paymentArray);
+
+        return $data['fees'];
     }
 }
