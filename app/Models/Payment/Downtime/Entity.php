@@ -13,18 +13,19 @@ class Entity extends Base\PublicEntity
 {
     const ID         = 'id';
 
-    const STATUS     = 'status';
-    const SCHEDULED  = 'scheduled';
-    const METHOD     = 'method';
-    const BEGIN      = 'begin';
-    const END        = 'end';
-    const SEVERITY   = 'severity';
-    const ISSUER     = 'issuer';
-    const TYPE       = 'type';
-    const NETWORK    = 'network';
-    const AUTH_TYPE  = 'auth_type';
-    const VPA_HANDLE = 'vpa_handle';
-    const PSP        = 'psp';
+    const STATUS      = 'status';
+    const SCHEDULED   = 'scheduled';
+    const METHOD      = 'method';
+    const BEGIN       = 'begin';
+    const END         = 'end';
+    const SEVERITY    = 'severity';
+    const ISSUER      = 'issuer';
+    const TYPE        = 'type';
+    const NETWORK     = 'network';
+    const AUTH_TYPE   = 'auth_type';
+    const VPA_HANDLE  = 'vpa_handle';
+    const PSP         = 'psp';
+    const MERCHANT_ID = 'merchant_id';
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_TYPE,
         self::VPA_HANDLE,
         self::PSP,
+        self::MERCHANT_ID,
     ];
 
     protected $visible = [
@@ -70,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::VPA_HANDLE,
         self::PSP,
+        self::MERCHANT_ID,
         self::AUTH_TYPE,
         self::INSTRUMENT,
         self::CREATED_AT,
@@ -224,6 +227,11 @@ class Entity extends Base\PublicEntity
     public function getPSP()
     {
         return $this->getAttribute(self::PSP);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function isScheduled()

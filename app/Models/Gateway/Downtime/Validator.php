@@ -32,6 +32,7 @@ class Validator extends Base\Validator
         Entity::PARTIAL         => 'sometimes|bool',
         Entity::PSP             => 'sometimes|max:255',
         Entity::VPA_HANDLE      => 'sometimes|max:255',
+        Entity::MERCHANT_ID     => 'sometimes|max:255',
     ];
 
     protected static $editRules = [
@@ -47,6 +48,7 @@ class Validator extends Base\Validator
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
         Entity::VPA_HANDLE      => 'sometimes|max:255',
+        Entity::MERCHANT_ID     => 'sometimes|max:255',
     ];
 
     protected static $editDuplicateRules = [
@@ -66,6 +68,7 @@ class Validator extends Base\Validator
         Entity::PARTIAL         => 'sometimes|bool',
         Entity::PSP             => 'sometimes|max:255',
         Entity::VPA_HANDLE      => 'sometimes|max:255',
+        Entity::MERCHANT_ID     => 'sometimes|max:255',
     ];
 
     protected static $createValidators = [

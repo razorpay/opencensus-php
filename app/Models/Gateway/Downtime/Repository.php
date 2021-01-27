@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
         Entity::VPA_HANDLE  => 'sometimes|string|max:255',
+        Entity::MERCHANT_ID => 'sometimes|string|max:255',
     );
 
     // These are admin allowed params to search on.
@@ -36,6 +37,7 @@ class Repository extends Base\Repository
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
         Entity::VPA_HANDLE  => 'sometimes|string|max:255',
+        Entity::MERCHANT_ID => 'sometimes|string|max:255',
     );
 
     const KEY_OPERATOR_MAP = [
@@ -48,6 +50,7 @@ class Repository extends Base\Repository
         Entity::NETWORK     => '=',
         Entity::VPA_HANDLE  => '=',
         Entity::COMMENT     => '=',
+        Entity::MERCHANT_ID => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -57,6 +60,7 @@ class Repository extends Base\Repository
         Entity::SOURCE,
         Entity::NETWORK,
         Entity::VPA_HANDLE,
+        Entity::MERCHANT_ID,
     ];
 
     public function saveOrFail($entity, array $options = [])
@@ -124,6 +128,11 @@ class Repository extends Base\Repository
             $query->whereNull(Entity::TERMINAL_ID);
         }
 
+        if(isset($params[Entity::MERCHANT_ID]) === false)
+        {
+            $query->whereNull(Entity::MERCHANT_ID);
+        }
+
         $this->addOverlapQuery($query, $input);
 
         return $query->orderBy(Entity::CREATED_AT)
@@ -181,6 +190,11 @@ class Repository extends Base\Repository
         if (isset($params[Entity::TERMINAL_ID]) === false)
         {
             $query->whereNull(Entity::TERMINAL_ID);
+        }
+
+        if(isset($params[Entity::MERCHANT_ID]) === false)
+        {
+            $query->whereNull(Entity::MERCHANT_ID);
         }
 
         return $query->whereNull(Entity::END)

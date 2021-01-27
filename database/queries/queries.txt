@@ -6107,6 +6107,15 @@ ALTER TABLE upi_transfer_requests
 ALTER TABLE merchant_details
     ADD COLUMN client_applications JSON DEFAULT NULL;
 
+ALTER TABLE payment_downtimes
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL;
+
+ALTER TABLE gateway_downtimes
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL;
+
+ALTER TABLE gateway_downtimes_archive
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL;
+
 ALTER TABLE stakeholders
     ADD INDEX stakeholders_merchant_id_index (merchant_id);
 

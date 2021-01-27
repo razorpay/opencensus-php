@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const COMMENT       = 'comment';
     const PARTIAL       = 'partial';
     const SCHEDULED     = 'scheduled';
+    const MERCHANT_ID   = 'merchant_id';
     const CREATED_AT    = 'created_at';
     const UPDATED_AT    = 'updated_at';
 
@@ -59,7 +60,8 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::PSP,
         self::VPA_HANDLE,
-        self::SOURCE
+        self::SOURCE,
+        self::MERCHANT_ID,
     ];
 
     protected $visible = [
@@ -80,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::PARTIAL,
         self::SCHEDULED,
+        self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -101,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::PARTIAL,
         self::SCHEDULED,
+        self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -125,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT       => null,
         self::SCHEDULED     => false,
         self::PARTIAL       => false,
+        self::MERCHANT_ID   => null,
     ];
 
     protected static $modifiers = [
@@ -408,6 +413,11 @@ class Entity extends Base\PublicEntity
     public function getVpaHandle()
     {
         return $this->getAttribute(self::VPA_HANDLE);
+    }
+
+    public function getMerchant()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function setEnd()

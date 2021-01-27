@@ -665,6 +665,10 @@ return [
         'secret'    => env('DOPPLER_API_SECRET')
     ],
 
+    'downtime_service' => [
+        'secret'    => env('DOWNTIME_SERVICE_SECRET'),
+    ],
+
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
     ],

@@ -6,16 +6,17 @@ use RZP\Constants\Mode;
 
 class Source
 {
-    const STATUSCAKE  = 'STATUSCAKE';
-    const BILLDESK    = 'BILLDESK';
-    const BANK        = 'BANK';
-    const VAJRA       = 'VAJRA';
-    const DOPPLER     = 'DOPPLER';
-    const INTERNAL    = 'INTERNAL';
-    const DOWNTIME_V2 = 'DOWNTIME_V2';
-    const OTHER       = 'OTHER';
+    const STATUSCAKE        = 'STATUSCAKE';
+    const BILLDESK          = 'BILLDESK';
+    const BANK              = 'BANK';
+    const VAJRA             = 'VAJRA';
+    const DOPPLER           = 'DOPPLER';
+    const INTERNAL          = 'INTERNAL';
+    const DOWNTIME_V2       = 'DOWNTIME_V2';
+    const DOWNTIME_SERVICE  = 'DOWNTIME_SERVICE';
+    const OTHER             = 'OTHER';
 
-    const DUMMY       = 'dummy';
+    const DUMMY             = 'dummy';
 
     protected static $sources = [
         Source::STATUSCAKE,
@@ -25,6 +26,7 @@ class Source
         Source::DOPPLER,
         Source::INTERNAL,
         Source::DOWNTIME_V2,
+        Source::DOWNTIME_SERVICE,
         Source::OTHER,
     ];
 

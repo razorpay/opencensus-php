@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Downtime\Entity as PaymentDowntime;
 
 class CreatePaymentDowntimes extends Migration
@@ -53,6 +54,9 @@ class CreatePaymentDowntimes extends Migration
                   ->nullable();
 
             $table->string(PaymentDowntime::PSP, 255)
+                ->nullable();
+
+            $table->char(PaymentDowntime::MERCHANT_ID, Merchant::ID_LENGTH)
                 ->nullable();
 
             $table->integer(PaymentDowntime::CREATED_AT);

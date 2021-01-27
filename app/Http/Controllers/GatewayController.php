@@ -1103,6 +1103,15 @@ class GatewayController extends Controller
         return ApiResponse::json($result);
     }
 
+    public function postGatewayDowntimeServiceWebhook(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->processDowntimeServiceWebhook($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function setCpsRoutingFlag(Admin\Service $service, array $input)
     {
         $alertStatus = $input[VajraConstants::STATUS_KEY];

@@ -65,6 +65,11 @@ class ConfigKey
     const ENABLE_PAYMENT_DOWNTIME_UPI           = self::PREFIX . 'enable_payment_downtimes_upi';
     const ENABLE_PAYMENT_DOWNTIME_WALLET        = self::PREFIX . 'enable_payment_downtimes_wallet';
 
+    const ENABLE_DOWNTIME_SERVICE               = self::PREFIX . 'enable_downtime_service';
+    const ENABLE_DOWNTIME_SERVICE_CARD          = self::PREFIX . 'enable_downtime_service_card';
+    const ENABLE_DOWNTIME_SERVICE_UPI           = self::PREFIX . 'enable_downtime_service_upi';
+    const ENABLE_DOWNTIME_SERVICE_NETBANKING    = self::PREFIX . 'enable_downtime_service_netbanking';
+
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
     const CARD_PAYMENT_SERVICE_EMI_FETCH        = self::PREFIX . 'card_payment_service_emi_fetch';
 
@@ -217,6 +222,10 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_NETBANKING,
         self::ENABLE_PAYMENT_DOWNTIME_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_WALLET,
+        self::ENABLE_DOWNTIME_SERVICE,
+        self::ENABLE_DOWNTIME_SERVICE_CARD,
+        self::ENABLE_DOWNTIME_SERVICE_NETBANKING,
+        self::ENABLE_DOWNTIME_SERVICE_UPI,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,

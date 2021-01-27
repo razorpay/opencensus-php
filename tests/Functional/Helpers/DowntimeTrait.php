@@ -66,4 +66,19 @@ trait DowntimeTrait
 
         $this->fixtures->merchant->addFeatures('expose_downtimes');
     }
+
+    protected function enableGatewayDowntimeService()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_downtime_service' => '1',
+                'config:enable_downtime_service_card' => '1',
+                'config:enable_downtime_service_upi' => '1',
+            ],
+        ]);
+    }
 }

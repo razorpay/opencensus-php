@@ -3,6 +3,7 @@
 use RZP\Constants\Table;
 use Illuminate\Database\Schema\Blueprint;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Merchant\Entity as Merchant;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Models\Gateway\Downtime\Entity as Downtime;
 
@@ -65,6 +66,9 @@ class CreateGatewayDowntimeArchive extends Migration
 
             $table->tinyInteger(Downtime::PARTIAL)
                   ->default(0);
+
+            $table->char(Downtime::MERCHANT_ID, Merchant::ID_LENGTH)
+                ->nullable();
 
             $table->integer(Downtime::CREATED_AT);
 

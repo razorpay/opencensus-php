@@ -122,6 +122,21 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function processDowntimeServiceWebhook(array $input)
+    {
+        $this->setMode();
+
+        $processor = new Webhook\Processor(Source::DOWNTIME_SERVICE);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
+
+        $processor->validate($input);
+
+        $data = $processor->process($input);
+
+        return $data;
+    }
+
     public function setMode()
     {
         $mode = $this->core()::getMode();

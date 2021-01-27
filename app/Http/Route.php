@@ -917,6 +917,7 @@ class Route
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
+        'gateway_downtime_service_webhook'         => ['post',     'gateway/downtimes/webhook/downtime_service',     'GatewayController@postGatewayDowntimeServiceWebhook'               ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
         'downtime_detection_cron'                  => ['post',     'gateway/downtimes/detection/cron',               'GatewayController@gatewayDowntimeCron'                             ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
@@ -2970,6 +2971,8 @@ class Route
         // freshchat cron
         'freshchat_extract_report_cron',
         'freshchat_retrieve_report_cron',
+
+        'gateway_downtime_service_webhook',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6113,6 +6116,10 @@ class Route
 
         'bvs' => [
             'fund_account_validate',
+        ],
+
+        'downtime_service' => [
+            'gateway_downtime_service_webhook',
         ],
     ];
 
