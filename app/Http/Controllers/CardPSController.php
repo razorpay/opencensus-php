@@ -2,10 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use ApiResponse;
 use Request;
 
+use RZP\Models\Card;
 use RZP\Constants\Entity;
+use RZP\Models\Customer\Token;
 
 class CardPSController extends Controller
 {
@@ -30,6 +33,36 @@ class CardPSController extends Controller
         }
 
         $response = $this->app['card.payments']->sendRequest('GET', $path);
+
+        return ApiResponse::json($response);
+    }
+
+    public function CreateCardEntity()
+    {
+        $input = Request::all();
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $merchant = $repo->merchant->findorFail($input['card']['merchant_id']);
+
+        unset($input['card']['merchant_id']);
+
+        $card = (new Card\Core)->createViaCps($input['card'],$merchant);
+
+        $response['card'] = $card->toArrayAdmin();
+
+        if ((isset($input['save_token']) === true) and
+            ($input['save_token']))
+        {
+            try
+            {
+                $response['token'] = (new Token\Core)->createViaCps($input,$merchant, $card)->toArrayAdmin();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
 
         return ApiResponse::json($response);
     }

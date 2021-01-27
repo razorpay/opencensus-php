@@ -170,6 +170,53 @@ class Core extends Base\Core
         }
     }
 
+    public function createViaCps($input,$merchant, Card\Entity $card)
+    {
+        $customer =  $this->repo->customer->findOrFailPublic($input[Token\Entity::CUSTOMER_ID]);
+
+        $token = new Token\Entity;
+
+        $input['token'] = [
+            Entity::METHOD      => Method::CARD,
+            Entity::CARD_ID     => $card->getId(),
+        ];
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CREATE,
+            [
+                'customer_id' => $customer->getId(),
+                'input'       => $input['token']
+            ]
+        );
+
+        $token->build($input['token']);
+
+        $token->setExpiredAt($card->getExpiryTimestamp());
+
+        $token->card()->associate($card);
+
+        $token->merchant()->associate($merchant);
+
+        $token->customer()->associate($customer);
+
+        $existingToken = $this->validateExistingToken($token);
+
+        //
+        // For cards, we check if there's already an existing
+        // token with the same customer, and simply return that
+        // instead of creating a new token altogether.
+        //
+        if ($existingToken !== null)
+        {
+            return $existingToken;
+        }
+        else
+        {
+            $this->repo->saveOrFail($token);
+
+            return $token;
+        }
+    }
     /**
      * Below function is used to create token in payment flow where we
      * already have a card_id

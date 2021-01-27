@@ -82,4 +82,27 @@ class PaymentRelatedEntitiesTest extends TestCase
         $data = $this->startTest();
     }
 
+    public function testCreateCardEntityWithToken()
+    {
+        $merchant = $this->fixtures->create('merchant');
+        $customer = $this->fixtures->create('customer');
+
+        $this->testData[__FUNCTION__]['request']['content']['card']['merchant_id'] = $merchant['id'];
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = $customer['id'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['card']['id'], 'card_'.$response['token']['card_id']);
+    }
+
+    public function testCreateCardEntityWithoutToken()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['content']['card']['merchant_id'] = $merchant['id'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($merchant['id'],$response['card']['merchant_id']);
+    }
 }

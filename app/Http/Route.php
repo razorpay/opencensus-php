@@ -2191,6 +2191,7 @@ class Route
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
+        'cps_card_entity_create'                  => ['post',    'cardps/entity/create/card',                              'CardPSController@CreateCardEntity'                             ],
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
@@ -2646,6 +2647,7 @@ class Route
         'merchant_sub_create_batch',
         'currency_fetch_rates_internal',
         'loc_mail',
+        'cps_card_entity_create',
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
         'los_mail',
@@ -6094,7 +6096,8 @@ class Route
         ],
 
         'card_payment_service' => [
-            'api_entity_fetch'
+            'api_entity_fetch',
+            'cps_card_entity_create'
         ],
 
         'workflows' => [

@@ -86,4 +86,54 @@ return [
         ],
     ],
 
+    'testCreateCardEntityWithToken' => [
+        'request' => [
+            'url' => '/cardps/entity/create/card',
+            'method' => 'POST',
+            'content' => [
+                'card' => [
+                    'name' => 'shk',
+                    'expiry_month' => 04,
+                    'expiry_year'  => 2025,
+                    'number'       => '4111466126747568'
+                ],
+                'save_token' => true,
+                'customer' => [
+                    'id' => 'customer123'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                   'entity'   => 'card',
+                ],
+                'token' => [
+                    'entity' => 'token'
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateCardEntityWithoutToken' => [
+        'request' => [
+            'url' => '/cardps/entity/create/card',
+            'method' => 'POST',
+            'content' => [
+                'card' => [
+                    'name' => 'shk',
+                    'expiry_month' => 04,
+                    'expiry_year'  => 2025,
+                    'number'       => '4111466126747568'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                    'entity'   => 'card',
+                ]
+            ],
+        ],
+    ]
 ];

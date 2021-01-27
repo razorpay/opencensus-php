@@ -43,6 +43,19 @@ class Core extends Base\Core
         return $card;
     }
 
+    public function createViaCps($input, $merchant)
+    {
+        $card = (new Card\Entity)->build($input);
+
+        $card->merchant()->associate($merchant);
+
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        $card->saveOrFail();
+
+        return $card;
+    }
+
     public function createForFundAccount($input, $merchant)
     {
         $card = $this->repo->transaction(
