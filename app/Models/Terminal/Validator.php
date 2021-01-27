@@ -136,6 +136,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
         Payment\Gateway::CASHFREE,
+        Payment\Gateway::NETBANKING_UBI,
     ];
 
     protected static $createValidators = [
@@ -1071,6 +1072,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $netbankingUbiEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $netbankingScbTerminalRules = [

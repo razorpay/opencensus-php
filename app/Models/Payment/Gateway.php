@@ -2066,7 +2066,7 @@ class Gateway
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
-        IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
+        IFSC::CORP         => Gateway::NETBANKING_UBI,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::UBIN         => Gateway::NETBANKING_UBI,
         IFSC::SCBL         => Gateway::NETBANKING_SCB,

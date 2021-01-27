@@ -128,6 +128,7 @@ class Netbanking
         IFSC::DCBL,
         IFSC::ANDB,   // due to bank merger, will be routed through UBIN direct integration
         IFSC::SYNB,   // due to bank merger, will be routed through CNRB direct integration
+        IFSC::CORP    // due to bank merger, will be routed through UBIN direct integration
     ];
 
     protected static $selfCorp = [
@@ -164,6 +165,8 @@ class Netbanking
         IFSC::ESFB,
         IFSC::UBIN,
         IFSC::SCBL,
+        IFSC::ANDB,     // due to bank merger, will be routed through UBIN direct integration
+        IFSC::CORP,     // due to bank merger, will be routed through UBIN direct integration
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -540,10 +543,12 @@ class Netbanking
             'retail' => [
                 IFSC::UBIN,
                 IFSC::ANDB,
+                IFSC::CORP,
             ],
             'tpv'   => [
                 IFSC::UBIN,
                 IFSC::ANDB,
+                IFSC::CORP,
             ],
             'corp' => [
                 self::ANDB_C,
