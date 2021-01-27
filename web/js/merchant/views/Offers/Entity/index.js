@@ -32,7 +32,7 @@ export default class OffersDetails extends React.Component {
   get isSubscriptionOffer() {
     return (
       this.props.offer.product_type === 'subscription' &&
-      this.props.user.isSubscriptionOffersReportsEnabled
+      this.props.user.isSubscriptionOffersEnabled
     );
   }
 
