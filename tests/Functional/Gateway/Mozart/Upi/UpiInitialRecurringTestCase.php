@@ -207,7 +207,7 @@ class UpiInitialRecurringTestCase extends TestCase
             {
                 $content['success'] = false;
                 $content['data']['status'] = 'callback_failed';
-                $content['error']['internal_error_code'] = ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED;
+                $content['error']['internal_error_code'] = ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REJECTED;
             }
         });
 
@@ -223,7 +223,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $payment = $this->assertUpiDbLastEntity('payment', [
             'status'                => 'failed',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REJECTED,
         ]);
         $this->assertNotEmpty($payment->getVerifyAt());
 
