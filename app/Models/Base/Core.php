@@ -115,7 +115,7 @@ class Core
     {
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? Merchant\Constants::DASHBOARD_INTERNAL;
     }
 
     /**

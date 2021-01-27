@@ -85,6 +85,10 @@ final class Constants
     const SUCCESS                                 = 'Success';
     const FAILURE                                 = 'Failure';
 
+    // This are added to remove the email_id being tagged in the slack
+    const DASHBOARD_INTERNAL                      = 'DASHBOARD_INTERNAL';
+    const MERCHANT_USER                           = 'MERCHANT_USER';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

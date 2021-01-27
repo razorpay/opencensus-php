@@ -24,7 +24,14 @@ trait Notify
 
     protected function logActionToSlack($merchant, $action, $data = [], $link = '')
     {
+        $messageUser = Constants::DASHBOARD_INTERNAL;
+
         $admin = (new Merchant\Core)->getInternalUsernameOrEmail();
+
+        if($admin === Constants::DASHBOARD_INTERNAL)
+        {
+            $messageUser = Constants::MERCHANT_USER;
+        }
 
         if (empty($link) === true)
         {
@@ -37,7 +44,7 @@ trait Notify
 
         $textAction = SlackActions::$actionMsgMap[$action];
 
-        $text .= " $textAction by $admin";
+        $text .= " $textAction by $messageUser";
 
         $channel = $this->getChannel($action);
 
