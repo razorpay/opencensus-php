@@ -31,6 +31,14 @@ class Core extends Base\Core
      * @param array $input
      * @return array
      */
+    public $gatewayTerminalValidation = array(
+        Methods\Entity::PAYTM,
+    );
+
+    const GATEWAY = 'gateway';
+    const STATUS  = 'status';
+    const ENABLED = 'enabled';
+
     public function setPaymentMethods(Merchant\Entity $merchant, array $input)
     {
         $methods = $this->getPaymentMethods($merchant);
@@ -808,6 +816,31 @@ class Core extends Base\Core
         $result = $terminals === null ? false : true;
 
         return $result;
+    }
+
+    public function enableOrDisableMethodsBasedOnTerminals($merchant, array & $data, $mode)
+    {
+        if($mode == Mode::TEST)
+        {
+            foreach($this->gatewayTerminalValidation as $gateway)
+            {
+                $params = [
+                    Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+                    self::GATEWAY => $gateway,
+                    self::STATUS  => 'activated',
+                    self::ENABLED => 1,
+                ];
+
+                $terminals = $this->repo->terminal->getByParams($params);
+
+                if($terminals->count() !== 0)
+                {
+                    $data['wallet'][$gateway] = true;
+                }
+            }
+        }
+
+        return $data;
     }
 
     /**

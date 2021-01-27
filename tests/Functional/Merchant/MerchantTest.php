@@ -3705,6 +3705,76 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('hdfc', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesForPaytmWithTerminal()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'netbanking'                => 1,
+            'gateway_merchant_id'       => 'razorpaypaytm',
+            'gateway_secure_secret'     => 'randomsecret',
+            'gateway_terminal_id'       => 'nodalaccountpaytm',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'www.merchant.com',
+            'enabled'                   =>  1
+        );
+
+       $this->fixtures->on('test')->create('terminal', $attributes);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('paytm', $response['methods']['wallet']);
+
+        $this->assertEquals(true, $response['methods']['wallet']['paytm']);
+    }
+
+    public function testGetCheckoutPreferencesForPaytmWithoutTerminal()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('paytm', $response['methods']['wallet']);
+    }
+
+    public function testGetCheckoutPreferencesForPaytmInLiveMode() // in live mode, paytm should not check for a terminal to be enabled
+    {
+        $this->ba->proxyAuthLive();
+
+        (new Merchant\Methods\Core)->setModeAndDefaultConnection('live');
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+            ],
+        ];
+
+        $this->ba->publicLiveAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('paytm', $response['methods']['wallet']);
+
+        $this->assertEquals(true, $response['methods']['wallet']['paytm']);
+    }
+
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()
     {
         $this->fixtures->merchant->enablePayLater();

@@ -4565,6 +4565,32 @@ trait Authorize
         }
     }
 
+    protected function verifyMethodInTestModeByMerchantAndTerminal($gateway, string $mid ):bool
+    {
+        if($this->mode == Mode::TEST)
+        {
+            $gateways = (new Methods\Core)->gatewayTerminalValidation;
+
+            if(in_array($gateway, $gateways) === true)
+            {
+                $params = [
+                    Merchant\Entity::MERCHANT_ID => $mid,
+                    'gateway' => $gateway,
+                    'status'  => 'activated',
+                    'enabled' => 1,
+                ];
+
+                $terminals = $this->repo->terminal->getByParams($params);
+
+                if($terminals->count() !== 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected function setBankAndEmiPlanDetails(Payment\Entity $payment, $cardNumberArray, int $emiDuration)
     {
         $cardNumber = $cardNumberArray['number'];
@@ -6571,6 +6597,11 @@ trait Authorize
         $merchantMethods = $this->methods;
 
         $paymentWallet = $payment->getWallet();
+
+        if ($this->verifyMethodInTestModeByMerchantAndTerminal($paymentWallet, $payment->merchant->getId()) === true)
+        {
+            return ;
+        }
 
         if (($merchantMethods === null) or
             ($merchantMethods->isWalletEnabled($paymentWallet) === false))

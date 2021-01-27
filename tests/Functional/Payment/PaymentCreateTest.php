@@ -526,6 +526,63 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaytmTestPaymentWithDisabledMethod()
+    {
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'netbanking'                => 1,
+            'gateway_merchant_id'       => 'razorpaypaytm',
+            'gateway_secure_secret'     => 'randomsecret',
+            'gateway_terminal_id'       => 'nodalaccountpaytm',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'www.merchant.com',
+            'enabled'                   =>  1
+        );
+
+        $this->fixtures->on('test')->create('terminal', $attributes);
+
+        $this->fixtures->merchant->disablePaytm();
+
+        $payment = $this->getDefaultWalletPaymentArray('paytm');
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+    }
+
+    public function testCreatePaytmTestPaymentWithDisabledMethodWithDisabledTerminal()
+    {
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'netbanking'                => 1,
+            'gateway_merchant_id'       => 'razorpaypaytm',
+            'gateway_secure_secret'     => 'randomsecret',
+            'gateway_terminal_id'       => 'nodalaccountpaytm',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'www.merchant.com',
+            'enabled'                   =>  0
+        );
+
+        $this->fixtures->on('test')->create('terminal', $attributes);
+
+        $this->fixtures->merchant->disablePaytm();
+
+        $payment = $this->getDefaultWalletPaymentArray('paytm');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+
     // Test to check if payment is success on enabled methods
     public function testCreatePaymentWithEnabledMethod()
     {

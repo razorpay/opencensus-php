@@ -106,6 +106,8 @@ class Checkout
 
         $this->fillEnabledFeatures($merchant, $data);
 
+        $data[Entity::METHODS] = (new Methods\Core)->enableOrDisableMethodsBasedOnTerminals($merchant, $data[Entity::METHODS], $mode);
+
         $this->checkAndFillPartnerUrl($merchant, $data);
 
         $this->updateCurrencyMethodsIfApplicable($input, $merchant, $data);
