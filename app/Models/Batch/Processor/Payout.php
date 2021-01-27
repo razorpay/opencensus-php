@@ -93,7 +93,7 @@ class Payout extends Base
         }
         else
         {
-            new BadRequestException(
+            throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH,
                 null,
                 [

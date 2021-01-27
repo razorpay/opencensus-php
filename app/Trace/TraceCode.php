@@ -2853,6 +2853,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_DOWNTIME_NOTIFY_SMS_FAILURE                       = 'FTS_DOWNTIME_NOTIFY_SMS_FAILURE';
     const FTS_DOWNTIME_NOTIFY_WEBHOOK_INIT                      = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_INIT';
     const FTS_DOWNTIME_NOTIFY_WEBHOOK_FAILURE                   = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_FAILURE';
+    const FTS_DOWNTIME_NOTIFY_WEBHOOK_COMPLETE                  = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_COMPLETE';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
