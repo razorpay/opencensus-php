@@ -63,6 +63,7 @@ class Service extends Base\Service
      *
      * @param array $notificationFilters Filter values inside notification.
      * @param array $user                User details.
+     * @param bool  $inverse             Signifies whether the function behaves inversely or not. i.e. The user should pass the filter checks or fail them
      *
      * @return bool
      */

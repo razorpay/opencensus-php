@@ -113,6 +113,11 @@ export default class AnnouncementDetails extends React.Component {
         <div className="panel panel-default SliderPanel announcement-details__container">
           <div className="panel-heading">
             <div className="heading-content">
+              {closeUrl ? (
+                <Link to={closeUrl} onClick={this.handleBackButtonClick}>
+                  <i className="i i-chevron-left"></i>
+                </Link>
+              ) : null}
               <b>Announcements</b>
             </div>
           </div>
@@ -122,11 +127,6 @@ export default class AnnouncementDetails extends React.Component {
               this.handleContentScroll(target, notificationId, title);
             }}
           >
-            {closeUrl ? (
-              <Link to={closeUrl} onClick={this.handleBackButtonClick}>
-                <i className="i i-chevron-left"></i> Back
-              </Link>
-            ) : null}
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
           <div className="announcement-details__footer action-buttons">
