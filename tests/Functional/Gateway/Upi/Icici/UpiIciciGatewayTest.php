@@ -1478,5 +1478,47 @@ EOT;
             'BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED',
             $payment['internal_error_code']
         );
+
+        // Fetch the UPI Entity from database
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        // Assert status_code in UPI Entity
+        $this->assertSame(
+            'U03',
+            $upiEntity['status_code']
+        );
+    }
+
+    function testErrorCodeWithoutResponseCodeForCallback()
+    {
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $payment = $this->getDbLastPayment();
+        $upiEntity = $this->getDbLastEntity('upi')->toArray();
+
+        // Set response in Mock Server Content Function for TxnStatus field
+        // There will be no ResponseCode field in the callback
+        // This test case you check the case when there is no ResponseCode in callback
+        $server = $this->mockServerContentFunction(function (& $content)
+        {
+            $content['TxnStatus'] = 'FAILURE';
+            $content['response'] = 8000;
+        });
+
+        // Get the callback content
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment->toArray());
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+        $this->assertEquals($response, ['success' => false]);
+
+        // Assert Payment INTERNAL_ERROR_CODE
+        $payment = $this->getDbLastPayment();
+        $this->assertSame(
+            'GATEWAY_ERROR_REQUEST_ERROR',
+            $payment['internal_error_code']
+        );
+
+        // Assert status_code in UPI Entity
+        $upiEntity = $this->getLastEntity('upi', true);
+        $this->assertSame('8000', $upiEntity['status_code']);
     }
 }

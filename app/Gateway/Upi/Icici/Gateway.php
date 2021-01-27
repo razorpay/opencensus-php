@@ -73,6 +73,8 @@ class Gateway extends Base\Gateway
         Fields::PAYER_NAME                => Entity::NAME,
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
+        Fields::TXN_STATUS                => Entity::STATUS_CODE,
+        Fields::RESPONSE_CODE             => Entity::STATUS_CODE,
         Fields::MERCHANT_TRAN_ID          => Entity::MERCHANT_REFERENCE,
         // NOTE: The GATEWAY_PAYMENT_ID is resolved into NPCI_REFERENCE_ID for Payments
         // If trying to change its definition, Kindly find the solution for NPCI_REFERENCE_ID too
@@ -1321,8 +1323,6 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $status = $content[Fields::TXN_STATUS];
-
         $actualPaymentId = $content[Fields::MERCHANT_TRAN_ID];
 
         if ($this->isSecondRecurringPayment($input) === true)
@@ -1347,20 +1347,11 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        // We have mapped status_code to response field of authorized
-        // Thus we need to change field name in callback to update it
-        $content[Fields::RESPONSE] = $status;
-
         // We are saving the gateway entity even if txn was failed
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        // For few merchants ICICI has started sending ResponseCode and we need to utilize that
-        // Now for merchants where it is not send, we can add custom response code
-        if (isset($content[Fields::RESPONSE_CODE]) === false)
-        {
-            // Response Code 1 will result in BAD_REQUEST_PAYMENT_FAILED
-            $content[Fields::RESPONSE_CODE] = 1;
-        }
+        // Process and Map fields for throwing Exception
+        $this->processGatewayCallbackContentFields($content);
 
         $this->checkCallbackResponseStatus($content);
 
@@ -1800,6 +1791,35 @@ class Gateway extends Base\Gateway
         {
             $vpa = explode( '=', $data['MobileAppData']);
             return $vpa[1];
+        }
+    }
+
+    /***
+     * Process Gateway Callback Content Fields
+     *
+     * @param $content
+     */
+    private function processGatewayCallbackContentFields(& $content)
+    {
+        // For few merchants ICICI has started sending ResponseCode and we need to utilize that
+        // If ResponseCode is already set then no need to store anything in ResponsceCode field
+        // as it's already mapped to `status_code` of UPI Entity in DB
+        if (isset($content[Fields::RESPONSE_CODE]) === true)
+        {
+            return;
+        }
+
+        // In some cases there will be a `response` field so store this to ResponceCode
+        // because we are displaying error code from ResponseCode only
+        // If Response Code is not there then store TxnStatus to ResponseCode
+        // Since we will be using ResponseCode to throw Exception for all the cases
+        if (isset($content[Fields::RESPONSE]) === true)
+        {
+            $content[Fields::RESPONSE_CODE] = $content[Fields::RESPONSE];
+        }
+        else
+        {
+            $content[Fields::RESPONSE_CODE] = $content[Fields::TXN_STATUS];
         }
     }
 }
