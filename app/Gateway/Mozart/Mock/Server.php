@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
+use phpseclib\Crypt\RSA;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Mozart\Action;
 use RZP\Gateway\Mozart\UpiJuspay;
@@ -1190,6 +1191,36 @@ class Server extends Base\Mock\Server
         $cipher->enablePadding();
 
         return $cipher;
+    }
+
+    /**
+     * Encrypting recurring callback for ICICI key
+     */
+    protected function encryptICICIKey($plaintext)
+    {
+        $rsa = $this->getRSAInstance();
+
+        return $rsa->encrypt($plaintext);
+    }
+
+    protected function getRSAInstance()
+    {
+        $rsa = new RSA();
+
+        $rsa->loadKey($this->getPublicKey());
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        return $rsa;
+    }
+
+    /**
+     * Public key of the client that is connecting
+     * to us, in this case, the Mock Gateway
+     */
+    protected function getPublicKey()
+    {
+        return file_get_contents(__DIR__ . '/keys/mockclient.pub');
     }
 
     protected function encrypt($plaintext)

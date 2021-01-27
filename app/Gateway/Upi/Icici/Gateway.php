@@ -266,6 +266,37 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getMandateCallbackResponseIfApplicable($response){
+        if (($this->isMandatePauseCallback($response) === true))
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $response[Fields::UMN],
+                    'status'  => 'pause',
+                ]
+            ];
+        }
+        else if ($this->isMandateResumeCallback($response) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $response[Fields::UMN],
+                    'status'  => 'resume',
+                ]
+            ];
+        }
+        else if ($this->isMandateRevokeCallback($response) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $response[Fields::UMN],
+                    'status'  => 'revoke',
+                ]
+            ];
+        }
+        return [];
+    }
+
     /**
      * @param string $response
      * @param bool   $forceDecryption
@@ -1085,8 +1116,9 @@ class Gateway extends Base\Gateway
     public function preProcessServerCallback($body, $isBharatQr = false, bool $isUpiTransfer = false): array
     {
         // This is a temporary check added to handle recurring callbacks. For normal payments, we get a normal string
-        // in callback, whereas for recurring we get json. Currently, there is no encryption for recurring, so we need
-        // to check the callback. We are checking if we are getting json response and UMN field (which we get only for
+        // in callback, whereas for recurring we get json. Now, there will be encryption for recurring, so we need
+        // to check the callback.We also have to be backward compatible if encryption is enabled stepwise.
+        // We are checking if we are getting json response and UMN field (which we get only for
         // recurring). If yes, then we process recurring callback, otherwise normal.
 
         $decoded = json_decode($body, true);
@@ -1094,38 +1126,22 @@ class Gateway extends Base\Gateway
         if (($decoded !== null) and (isset($decoded[Fields::UMN]) === true))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
-
-            if (($this->isMandatePauseCallback($response) === true))
-            {
-                return [
-                    'upi_mandate' => [
-                        'umn'     => $response[Fields::UMN],
-                        'status'  => 'pause',
-                    ]
-                ];
-            }
-            else if ($this->isMandateResumeCallback($response) === true)
-            {
-                return [
-                    'upi_mandate' => [
-                        'umn'     => $response[Fields::UMN],
-                        'status'  => 'resume',
-                    ]
-                ];
-            }
-            else if ($this->isMandateRevokeCallback($response) === true)
-            {
-                return [
-                    'upi_mandate' => [
-                        'umn'     => $response[Fields::UMN],
-                        'status'  => 'revoke',
-                    ]
-                ];
-            }
         }
         else
         {
             $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
+        }
+
+        // if we are getting a UMN field (which we get only for recurring), we will process for mandatecallbacks.
+
+        if (isset($response[Fields::UMN]) === true)
+        {
+            $mandateResponse = $this->getMandateCallbackResponseIfApplicable($response);
+
+            if (empty($mandateResponse) === false)
+            {
+                return $mandateResponse;
+            }
         }
 
         $traceResponse = $this->maskUpiDataForTracing($response, [

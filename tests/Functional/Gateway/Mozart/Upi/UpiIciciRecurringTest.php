@@ -36,4 +36,10 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
             BadRequestException::class,
             "App not Supported for Upi AutoPay");
     }
+
+    public function testEncryptedRecurringCallback(){
+
+        // test when callback is encrypted.
+        $this->testRecurringMandateCreate(true);
+    }
 }

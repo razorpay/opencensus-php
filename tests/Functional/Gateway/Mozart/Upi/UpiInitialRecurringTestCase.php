@@ -34,12 +34,11 @@ class UpiInitialRecurringTestCase extends TestCase
      */
     protected $terminal;
 
-    public function testRecurringMandateCreate()
+    public function testRecurringMandateCreate($encrypted=false)
     {
         $orderId = $this->createUpiRecurringOrder();
 
         $upiMandate = $this->getDbLastEntity('upi_mandate');
-
         $this->assertArraySubset([
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
@@ -104,7 +103,7 @@ class UpiInitialRecurringTestCase extends TestCase
             ]
         ], $upi->toArray());
 
-        $this->mandateCreateCallback($payment);
+        $this->mandateCreateCallback($payment, $encrypted);
 
         $payment->reload();
 
@@ -760,11 +759,11 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
-    protected function mandateCreateCallback($payment)
+    protected function mandateCreateCallback($payment, $encrypted=false)
     {
         $gateway = $this->terminal->getGateway();
 
-        $content = $this->mockMozartServer()->getAsyncCallbackResponseMandateCreate($payment, $gateway);
+        $content = $this->mockMozartServer()->getAsyncCallbackResponseMandateCreate($payment, $gateway, $encrypted);
 
         return $this->makeS2sCallbackAndGetContentSilently($content, $gateway);
     }

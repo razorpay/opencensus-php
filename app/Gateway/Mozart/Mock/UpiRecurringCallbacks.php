@@ -13,14 +13,14 @@ trait UpiRecurringCallbacks
 {
     /******************************** PUBLIC *****************************************/
 
-    public function getAsyncCallbackResponseMandateCreate(Payment\Entity $payment)
+    public function getAsyncCallbackResponseMandateCreate(Payment\Entity $payment, bool $encrypted=false)
     {
         $gateway = $payment->getGateway();
 
         switch ($gateway)
         {
             case Payment\Gateway::UPI_ICICI:
-                return $this->getAsyncCallbackResponseMandateCreateForIcici($payment);
+                return $this->getAsyncCallbackResponseMandateCreateForIcici($payment, $encrypted);
 
             case Payment\Gateway::UPI_MINDGATE:
                 return $this->getAsyncCallbackResponseMandateCreateForMindgate($payment);
@@ -117,7 +117,7 @@ trait UpiRecurringCallbacks
 
     /******************************** PAYMENT ****************************************/
 
-    protected function getAsyncCallbackResponseMandateCreateForIcici($payment)
+    protected function getAsyncCallbackResponseMandateCreateForIcici(Payment\Entity $payment, bool $encrypted=false)
     {
         $response = [
             'merchantId'        => '400660',
@@ -135,7 +135,16 @@ trait UpiRecurringCallbacks
             'UMN'               => $payment['id'] . '@icici',
         ];
 
-        return json_encode($response);
+        $jsonResponse = json_encode($response);
+
+        if ($encrypted === false)
+        {
+            return $jsonResponse;
+        }
+
+        $encryptedResponse = $this->encryptICICIKey($jsonResponse);
+
+        return base64_encode($encryptedResponse);
     }
 
     protected function getAsyncCallbackResponseMandateCreateForMindgate($payment)
