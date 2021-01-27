@@ -213,9 +213,16 @@ RequestInterface
 
         $resp = $httpClient->sendRequest($req);
 
-        $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_RESPONSE, [
+        $traceData = [
             'status_code'   => $resp->getStatusCode(),
-        ]);
+        ];
+
+        if ($resp->getStatusCode() >= 400)
+        {
+            $traceData['body'] = $resp->getBody();
+        }
+
+        $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_RESPONSE, $traceData);
 
         $span->addAttribute('http.status_code', $resp->getStatusCode());
         if ($resp->getStatusCode() >= 400)
@@ -231,11 +238,6 @@ RequestInterface
     protected function parseResponse($code, $body)
     {
         $body = json_decode($body, true);
-
-        if ($code === 404)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
 
         return ApiResponse::json($body, $code);
     }
