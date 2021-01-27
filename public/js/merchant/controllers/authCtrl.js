@@ -87,7 +87,7 @@ app
       $scope.showGAuthPopup = false;
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
-      $scope.currentService = 'PG';
+      $scope.currentService = serviceName();
 
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
@@ -304,6 +304,8 @@ app
         sessionId: window.session_id,
         service: $scope.currentService,
         version: 1.1,
+        ref_url: $location.search().utm_source || document.referrer,
+        url: document.location.href,
       };
 
       const fireDLFailureEvents = function (eventName, properties) {
@@ -780,19 +782,17 @@ app
         var service = 'PG';
         if (isMerchantX) {
           service = 'X';
-        } else if ($scope.signup.settings.partner_intent) {
+        } else if (role === 'partner') {
           service = 'Partner';
         } else if (
           referral_code ||
-          $scope.signup.data.invitation ||
-          $scope.signup.data.merchant_invitation
+          $location.search().invitation ||
+          $location.search().merchant_invitation
         ) {
           service = 'Other';
         }
         return service;
       }
-
-      $scope.currentService = serviceName();
 
       $scope.createAccount = function ($valid) {
         window.rzpAnalytics({
@@ -1043,26 +1043,6 @@ app
         location.hash = '';
         location.pathname = '/app';
         location.reload();
-      };
-
-      $scope.onLoginInputFocus = function (type) {
-        tracking.pushEvents({
-          event_name: 'login',
-          event_type: 'initiated',
-          properties: {
-            action: 'Type ' + type,
-          },
-        });
-      };
-
-      $scope.onLogin = function () {
-        tracking.pushEvents({
-          event_name: 'login',
-          event_type: 'initiated',
-          properties: {
-            action: 'click Login',
-          },
-        });
       };
 
       $scope.onContactUs = function () {
