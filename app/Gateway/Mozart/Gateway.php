@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
     protected $gateway = 'mozart';
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
-
+    const BAJAJ_FINSERV_REST_API =  'bajaj_finserv_rest_api';
     protected $map = [
         'data'      => Entity::RAW,
     ];
@@ -1550,6 +1550,21 @@ class Gateway extends Base\Gateway
 
         $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
 
+
+        $isBajajFinserv = $this->isBajajFinservGateway($input);
+
+        if($isBajajFinserv === true)
+        {
+            $variant = $this->app->razorx->getTreatment($input['merchant']['id'], self::BAJAJ_FINSERV_REST_API, $this->mode);
+            if(strtolower($variant) === 'v2')
+            {
+                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v2/' . $this->action;
+            }
+            else {
+                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
+            }
+        }
+
         $isGooglePay = $this->isGooglePayGateway($input);
 
         if ($isGooglePay === true)
@@ -2538,6 +2553,15 @@ class Gateway extends Base\Gateway
     protected function isGooglePayGateway($input)
     {
         if ($this->getGateway($input) === Payment\Gateway::GOOGLE_PAY)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    protected function isBajajFinservGateway($input)
+    {
+        if ($this->getGateway($input) === Payment\Gateway::BAJAJFINSERV)
         {
             return true;
         }
