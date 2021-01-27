@@ -29,7 +29,7 @@ export default class PasswordReLogin extends Component {
       });
     };
 
-    if (window.grecaptcha) {
+    if (window.grecaptcha && !this.props.isGoogleLogin) {
       window.grecaptcha.ready(() => {
         const gCaptchaParent = document.getElementsByClassName('g-recaptcha')[0];
 
