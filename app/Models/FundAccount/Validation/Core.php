@@ -51,7 +51,6 @@ class Core extends Base\Core
 
             $processor->preProcessValidation();
 
-            (new Metric)->pushCreatedMetrics();
         }
         catch (\Throwable $e)
         {
@@ -59,6 +58,8 @@ class Core extends Base\Core
 
             throw $e;
         }
+
+        (new Metric)->pushCreatedMetrics($fundAccountValidation->getFundAccountType());
 
         return $fundAccountValidation;
     }

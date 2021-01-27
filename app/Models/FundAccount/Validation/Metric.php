@@ -13,13 +13,38 @@ class Metric extends Base\Core
 {
     // Labels for Fund Account Validation Metrics
 
-    // Metric Names
-    const FUND_ACCOUNT_VALIDATION_CREATED           = 'fund_account_validation_created';
-    const FUND_ACCOUNT_VALIDATION_FAILED            = 'fund_account_validation_failed';
+    // Counters
+    const FUND_ACCOUNT_VALIDATION_CREATED_TOTAL          = 'fund_account_validation_created_total';
+    const FUND_ACCOUNT_VALIDATION_COMPLETED_TOTAL        = 'fund_account_validation_completed_total';
+    const FUND_ACCOUNT_VALIDATION_FAILED_TOTAL           = 'fund_account_validation_failed_total';
 
-    public function pushCreatedMetrics()
+    // Metric Names
+    const FUND_ACCOUNT_VALIDATION_CREATED                = 'fund_account_validation_created';
+    const FUND_ACCOUNT_VALIDATION_FAILED                 = 'fund_account_validation_failed';
+
+    const FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS               = 'fund_account_validation_created_to_completed_duration_seconds.histogram';
+    const FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS                  = 'fund_account_validation_created_to_failed_duration_seconds.histogram';
+
+    public function pushCreatedMetrics(string $fundAccountType)
     {
-        $this->trace->count(self::FUND_ACCOUNT_VALIDATION_CREATED);
+        try {
+            $dimensions = [
+                "fund_account_type" => $fundAccountType,
+            ];
+
+            $this->trace->count(self::FUND_ACCOUNT_VALIDATION_CREATED, $dimensions);
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION,
+                [
+                    'fundAccountType' => $fundAccountType,
+
+                ]);
+        }
     }
 
     protected function getDefaultExceptionDimensions(\Throwable $e): array
@@ -58,4 +83,96 @@ class Metric extends Base\Core
 
         $this->trace->count($metricName, $dimensions);
     }
+
+    public static function pushStatusChangeMetrics(Entity $fav, string $previousStatus = null)
+    {
+        $currentStatus = $fav->getStatus();
+
+        try
+        {
+            if (empty($previousStatus) === false and (Status::hasFinalStatus($fav)))
+            {
+                $functionName = self::getFunctionNameToCallForStatusChange($currentStatus, $previousStatus);
+
+                self::$functionName($fav);
+            }
+
+            self::pushCountMetrics($fav);
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION,
+                [
+                    'id'              => $fav->getId(),
+                    'previous_status' => $previousStatus,
+                    'current_status'  => $currentStatus,
+                ]);
+        }
+    }
+
+    protected static function pushCountMetrics(Entity $fav)
+    {
+        $currentStatus = $fav->getStatus();
+
+        $metricConstantKey = 'FUND_ACCOUNT_VALIDATION_' . strtoupper($currentStatus) . '_TOTAL';
+
+        $metricConstantValue = constant("self::{$metricConstantKey}");
+
+        $extraDimensions = self::getMetricExtraDimensions($fav);
+
+        $metricDimensions = self::getMetricDimensions($fav, $extraDimensions);
+
+        app('trace')->count($metricConstantValue, $metricDimensions);
+    }
+
+
+    protected static function getMetricExtraDimensions(Entity $fav)
+    {
+        return [];
+    }
+
+    protected static function getMetricDimensions(Entity $fav, array $extra = []): array
+    {
+        return $extra +
+            [
+                "fund_account_type" => $fav->getFundAccountType()
+            ];
+
+    }
+
+    protected static function getFunctionNameToCallForStatusChange(string $currentStatus, string $previousStatus)
+    {
+        $functionName = 'push' . ucfirst($previousStatus) . 'To' . ucfirst($currentStatus) . 'Metrics';
+
+        return camel_case($functionName);
+    }
+
+
+    protected static function pushCreatedToCompletedMetrics(Entity $fav)
+    {
+        $metricDimensions = self::getMetricDimensions($fav);
+
+        $timeDuration     = $fav->getCreatedAt() - $fav->getUpdatedAt();
+
+        app('trace')->histogram(
+            self::FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushCreatedToFailedMetrics(Entity $fav)
+    {
+        $metricDimensions = self::getMetricDimensions($fav);
+
+        $timeDuration     = $fav->getCreatedAt() - $fav->getUpdatedAt();
+
+        app('trace')->histogram(
+            self::FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
 }

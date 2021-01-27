@@ -2212,6 +2212,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VALIDATE_VPA_RESPONSE                                 = 'VALIDATE_VPA_RESPONSE';
     const VALIDATE_VPA_STATUS_FAILED                            = 'VALIDATE_VPA_STATUS_FAILED';
     const VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE            = 'VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE';
+    const FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION         = 'FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';

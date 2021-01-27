@@ -188,7 +188,12 @@ class Entity extends Base\PublicEntity
 
     public function setStatus(string $status = null)
     {
-        return $this->setAttribute(self::STATUS, $status);
+        $previousStatus = $this->getStatus();
+
+        $this->setAttribute(self::STATUS, $status);
+
+        Metric::pushStatusChangeMetrics($this, $previousStatus);
+
     }
 
     public function setAttempts(int $attempts)
