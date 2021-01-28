@@ -102,7 +102,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_SVC     => ['/Recon file for the date [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/'],
         RequestProcessor\Base::NETBANKING_JSB     => ["/Payment Gateway Reconcilation File from JFS/"],
         RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated [0-9]{2}-(January|February|March|April|May|June|July|August|September|October|November|December)-20[0-9]{2}/"],
-        RequestProcessor\Base::NETBANKING_IOB     => ["/IOB RazorPay Recon File - 20[0-9]{6}/"],
+        RequestProcessor\Base::NETBANKING_IOB     => ["/IOB RazorPay Recon File -20[0-9]{6}/"],
         RequestProcessor\Base::NETBANKING_JKB     => ["/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
     ];
 
