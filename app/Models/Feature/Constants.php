@@ -551,6 +551,11 @@ class Constants
      */
     const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
 
+    /**
+     * Skips Risk check for merchants
+     */
+    const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -830,6 +835,7 @@ class Constants
         self::PREVENT_TEST_MODE               => true,
         self::GSTIN_SELF_SERVE                => true,
         self::DIRECT_TRANSFER                 => true,
+        self::APPS_EXTEMPT_RISK_CHECK         => true,
     ];
 
     // Entity type constants
@@ -1212,6 +1218,11 @@ class Constants
         self::GSTIN_SELF_SERVE => [
             'feature'       => self::GSTIN_SELF_SERVE,
             'display_name'  => 'gstin self serve flow',
+            'documentation' => '',
+        ],
+        self::APPS_EXTEMPT_RISK_CHECK => [
+            'feature'       => self::APPS_EXTEMPT_RISK_CHECK,
+            'display_name'  => 'Exempts merchant from risk check for Apps products',
             'documentation' => '',
         ],
     ];
