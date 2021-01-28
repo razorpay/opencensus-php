@@ -102,11 +102,11 @@
             <li>To get GST input, please make sure that you have updated your GSTIN in your Razorpay Dashboard.</li>
             <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
 
+            @if (isset($einvoice_data['callout_message']))
             <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
-                @if (isset($einvoice_data['callout_message']))
                     NOTE: {{{$einvoice_data['callout_message']}}}
-                @endif
             </div>
+            @endif
         </ol>
     </div>
 
