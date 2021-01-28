@@ -3,6 +3,8 @@
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
+$sidebar-width = 230px;
+
 a, .btn-link {
   color: $primary-color;
 }
@@ -54,7 +56,7 @@ body {
 }
 
 .main-content {
-  margin-left: 200px;
+  margin-left: $sidebar-width;
   margin-top: 51px;
   @media (max-width $screen-sm-min) {
     margin-left: 0;
@@ -96,7 +98,7 @@ body {
   background-color: rgba(46, 51, 68, 0.5);
 }
 
-$sidebar-width = 200px;
+
 
 .sidebar {
   position: fixed;

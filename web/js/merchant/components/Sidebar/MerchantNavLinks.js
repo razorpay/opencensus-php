@@ -118,7 +118,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-rewards text-danger"
         to="/checkout-rewards"
         additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
-        style={{ paddingRight: '3px' }}
+        isNew
       />
 
       <MainNavLink
