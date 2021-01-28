@@ -63,6 +63,19 @@ class Repository extends Base\Repository
 
     }
 
+    public function fetchBankingSignUpTimeStamp(string $merchantId, string $userId)
+    {
+        $query =  $this->newQuery()
+                    ->select(Entity::CREATED_AT)
+                    ->where(Entity::USER_ID, $userId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::PRODUCT, 'banking')
+                    ->orderBy(Entity::CREATED_AT);
+
+        return $query->pluck(Entity::CREATED_AT)
+            ->first();
+    }
+
     /**
      * returns the products used for given merchant ids and product as an array in the form of {merchant_id1, product1}
      *

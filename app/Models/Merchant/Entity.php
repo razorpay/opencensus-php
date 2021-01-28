@@ -255,6 +255,8 @@ class Entity extends Base\PublicEntity
 
     const ALLOW_REVERSALS           = 'allow_reversals';
 
+    const BUSINESS_BANKING_SIGNUP_AT= 'business_banking_signup_at';
+
     protected $entity = 'merchant';
 
     /**

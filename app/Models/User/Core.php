@@ -809,7 +809,10 @@ class Core extends Base\Core
         $merchantsUnique = $this->getUnifiedMerchants($merchants);
 
         // Additional resources for users.
-        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
+
+        $userId = $user->getUserId();
+
+        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique, $userId);
 
         $merchantsUnique = $this->addProductSpecificDetails($merchantsUnique);
 
@@ -825,17 +828,24 @@ class Core extends Base\Core
 
     /**
      * Appends banking specific details in serialized unique list of merchants where applies.
-     * @param  array $merchants
+     * @param array $merchants
+     * @param string|null $userId
      * @return array
      */
-    protected function appendBankingSpecificDetails(array $merchants)
+    protected function appendBankingSpecificDetails(array $merchants, string $userId = null)
     {
         return array_map(
-            function (array $merchant)
+            function (array $merchant) use ($userId)
             {
                 if ($merchant[Entity::BANKING_ROLE] === null)
                 {
                     return $merchant;
+                }
+
+                // Banking Signup time (Created_at of merchant_user)
+                if (empty($userId) === false)
+                {
+                    $merchant[Merchant\Entity::BUSINESS_BANKING_SIGNUP_AT] = $this->repo->merchant_user->fetchBankingSignUpTimeStamp($merchant['id'], $userId);
                 }
 
                 // Attach Permission

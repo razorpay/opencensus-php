@@ -906,7 +906,13 @@ class UserTest extends TestCase
 
         $userRepoMock = Mockery::mock('RZP\Models\User\Repository');
 
+        $merchantUserRepoMock = Mockery::mock('RZP\Models\Merchant\MerchantUser') ;
+
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($userRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_user')->andReturn($merchantUserRepoMock);
+
+        $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStamp')->andReturn(21323);
 
         $userData = [
             'id'                    => '100002Razorpay',
@@ -961,7 +967,6 @@ class UserTest extends TestCase
             'merchants'             => $merchantUnique,
             'invitations'           => [],
             'settings'              => [],
-
         ];
 
         $response = $this->userService->get('100002Razorpay');
@@ -2118,6 +2123,10 @@ class UserTest extends TestCase
 
         $this->basicAuthMock->shouldReceive('isProxyAuth')->andReturn(false);
 
+        $merchantUserRepoMock = Mockery::mock('RZP\Models\Merchant\MerchantUser') ;
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_user')->andReturn($merchantUserRepoMock);
+
         $this->repoMock->shouldReceive('driver')->with('balance')->andReturn($balanceRepoMock);
 
         $this->repoMock->shouldReceive('driver')->with('banking_account')->andReturn($bankingAccountRepoMock);
@@ -2125,6 +2134,8 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('merchant_attribute')->andReturn($merchantAttributeRepoMock);
 
         $this->repoMock->shouldReceive('driver')->with('credit_balance')->andReturn($creditBalanceRepoMock);
+
+        $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStamp')->andReturn(232434);
 
         $this->coreMock->shouldReceive('getBulkPayoutsUserType')->andReturn('existing_bulk_user_rupees');
 
@@ -2146,7 +2157,7 @@ class UserTest extends TestCase
 
         $this->coreMock->shouldReceive('fetchBankingCreditBalances')->andReturn('24334');
 
-        $response = $r->invoke($this->coreMock,[$content] );
+        $response = $r->invoke($this->coreMock,[$content], '1cXSLlUU8V9sXl');
 
         $this->assertEquals($expected['id'], $response[0]['id']);
 
@@ -2583,7 +2594,7 @@ class UserTest extends TestCase
 
         //already covered as independent functions
 
-        $this->coreMock->shouldReceive('appendBankingSpecificDetails')->withAnyArgs()->andReturn(['100000Razorpay']);
+        $this->coreMock->shouldReceive('appendBankingSpecificDetails')->andReturn(['100000Razorpay']);
 
         $response = $this->coreMock->checkAccessForMerchant($this->userEntityMock, '100002Razorpay', 'banking');
 
