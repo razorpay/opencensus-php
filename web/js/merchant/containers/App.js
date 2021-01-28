@@ -160,7 +160,7 @@ export default class App extends Component {
     const user = window.rzp_user;
     if (user) {
       analyticsService.identify({
-        id: user.id,
+        id: user.user.id,
         properties: getCommonAnalyticsProperties(window.rzp_user),
       });
     }

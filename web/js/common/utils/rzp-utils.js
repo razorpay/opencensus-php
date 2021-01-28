@@ -40,7 +40,7 @@ export function getCommonAnalyticsProperties(user) {
   const activatedAt = user.activated_at;
 
   return {
-    userId: user.id,
+    userId: user.user.id,
     emailId: user.email,
     activatedAt,
     mode,
