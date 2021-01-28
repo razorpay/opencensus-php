@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected static $sign = 'sth';
+
     protected $fillable = [
         self::MERCHANT_ID,
         self::EMAIL,

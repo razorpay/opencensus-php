@@ -23,8 +23,8 @@ class Helper
         if (isset($input[Constants::RELATIONSHIP]) === true)
         {
             $keyMap = [
-                Entity::DIRECTOR   => Constants::EXECUTIVE,
-                Entity::EXECUTIVE  => Constants::DIRECTOR,
+                Entity::DIRECTOR   => Constants::DIRECTOR,
+                Entity::EXECUTIVE  => Constants::EXECUTIVE,
             ];
 
             self::addKeyMapFromInput($keyMap, $input[Constants::RELATIONSHIP], $stakeholderInput);

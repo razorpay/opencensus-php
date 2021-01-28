@@ -13,6 +13,8 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
         $stakeholder = $this->core()->create($accountId, $input);
 
         return (new Response)->createResponse($stakeholder);
@@ -21,6 +23,9 @@ class Service extends Base\Service
     public function fetch(string $accountId, string $id)
     {
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
+
+        Entity::verifyIdAndSilentlyStripSign($id);
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
 
         $stakeholder = $this->core()->fetch($accountId, $id);
 
@@ -32,6 +37,9 @@ class Service extends Base\Service
         (new Validator)->validateInput('edit_stakeholder', $input);
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
+
+        Entity::verifyIdAndSilentlyStripSign($id);
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
 
         $stakeholder = $this->core()->update($accountId, $id, $input);
 

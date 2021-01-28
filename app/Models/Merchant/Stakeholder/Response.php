@@ -10,6 +10,7 @@ class Response extends Base\Core
     public function createResponse(Entity $stakeholder): array
     {
         $response = [
+            Entity::ID              => $stakeholder->getPublicId(),
             'entity'                => $stakeholder->getEntity(),
             Constants::RELATIONSHIP => [],
             Constants::PHONE        => [],

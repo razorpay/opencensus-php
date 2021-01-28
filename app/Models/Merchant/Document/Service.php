@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\GenericDocument;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Error\PublicErrorDescription;
 
 
@@ -83,15 +84,18 @@ class Service extends Base\Service
 
     public function getDocuments(string $accountId, string $entityType, string $entityId)
     {
+        Account\Entity::verifyIdAndStripSign($accountId);
         $account = $this->repo->merchant->findOrFailPublic($accountId);
         [$entity, $merchant] = $this->validateAndGetDocumentRequest($account, $entityType, $entityId);
 
-        return (new DocumentResponse)->linkDocumentsResponse($merchant, $entityType, $entityId);
+        return (new DocumentResponse)->linkDocumentsResponse($merchant, $entityType, $entity->getId());
     }
 
     public function linkDocuments(string $accountId, string $entityType, string $entityId, array $input)
     {
         [$entity, $merchant] = $this->validateDocumentLinkRequestAndGetEntities($input, $entityId, $entityType, $accountId);
+
+        $entityId = $entity->getId();
 
         $lockId = 'DOCUMENT_LINK_' . $entityId;
 
@@ -142,6 +146,7 @@ class Service extends Base\Service
      */
     protected function validateDocumentLinkRequestAndGetEntities(array $input, string $entityId, string $entityType, string $accountId): array
     {
+        Account\Entity::verifyIdAndStripSign($accountId);
         $account   = $this->repo->merchant->findOrFailPublic($accountId);
         $validator = new Validator;
 
@@ -192,6 +197,8 @@ class Service extends Base\Service
         }
         else
         {
+            Stakeholder\Entity::verifyIdAndStripSign($entityId);
+
             $stakeHolder = $this->repo->stakeholder->findOrFailPublic($entityId);
 
             $stakeHolder->getValidator()->validateAccountStakeholder($account, $stakeHolder);

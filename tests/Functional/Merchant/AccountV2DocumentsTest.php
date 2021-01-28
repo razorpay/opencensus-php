@@ -62,11 +62,11 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $subMerchant = $this->setupPrivateAuthForPartner();
 
         $testData                   = $this->testData['testInvalidProofTypeDocumentLink'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
 
         $testData                   = $this->testData['testInvalidDocumentTypeDocumentLink'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
 
     }
@@ -80,7 +80,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
         ]);
 
         $testData                   = $this->testData['testStakeholderDoesnotBelongToMerchantDocumentLink'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/stakeholders/' . $stakeholder->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_'.$subMerchant->getId() . '/stakeholders/sth_'. $stakeholder->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
 
         $stakeholder = $this->fixtures->create('stakeholder', [
@@ -88,11 +88,11 @@ class AccountV2DocumentsTest extends OAuthTestCase
         ]);
 
         $testData = $this->testData['testSendStakeholderDocsForAccountLink'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testSendIncorrectDocumentForProofType'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_'.$subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
     }
 
@@ -101,7 +101,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $subMerchant = $this->setupPrivateAuthForPartner();
         $testData    = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
 
@@ -112,7 +112,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
 
         $testData = $this->testData['testAccountDocumentFetch'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
     }
 
@@ -125,7 +125,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
             'merchant_id' => $subMerchant->getId()
         ]);
 
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/stakeholders/' . $stakeholder->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
 
@@ -136,7 +136,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
 
         $testData = $this->testData['testStakeholderDocumentFetch'];
-        $testData['request']['url'] = '/v2/accounts/' . $subMerchant->getId() . '/stakeholders/' . $stakeholder->getId() . '/documents';
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
     }

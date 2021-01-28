@@ -30,7 +30,7 @@ class StakeholderTest extends OAuthTestCase
         list($subMerchant) = $this->createSubMerchant($partner, $app);
 
         $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/v2/accounts/'. $subMerchant->getId() .'/stakeholders';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
 
         $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
         $key = 'rzp_live_' . $key->getKey();
@@ -40,11 +40,11 @@ class StakeholderTest extends OAuthTestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testFetchStakeholder'];
-        $testData['request']['url'] = '/v2/accounts/'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
-        $testData['request']['url'] = '/v2/accounts/'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
         $this->runRequestResponseFlow($testData);
     }
 
@@ -57,7 +57,7 @@ class StakeholderTest extends OAuthTestCase
         list($subMerchant) = $this->createSubMerchant($partner, $app);
 
         $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/v2/accounts/'. $subMerchant->getId() .'/stakeholders';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
 
         $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
         $key = 'rzp_live_' . $key->getKey();
@@ -67,7 +67,7 @@ class StakeholderTest extends OAuthTestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testUpdateStakeholderThinToCompleteRequest'];
-        $testData['request']['url'] = '/v2/accounts/'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
         $this->runRequestResponseFlow($testData);
     }
 }
