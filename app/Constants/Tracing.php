@@ -25,11 +25,23 @@ class Tracing
         $routesToInclude = array_merge(Route::$public, Route::$direct);
 
         return array_merge($routesToInclude, [
+                // used by capital-cards service
                 'user_fetch',
                 'capital_cards_service',
                 'capital_cards_admin',
+
+                // used by fts service
                 'update_fts_fund_transfer',
                 'fts_channel_notification',
+
+                // used by capital-collections service
+                'merchant_balance_create',
+                'internal_balance_fetch',
+                'credit_repayment_transaction_create',
+                'capital_transaction_create',
+                'internal_balance_fetch_by_id',
+                'capital_collections_service',
+                'capital_collections_admin',
             ]);
     }
 
