@@ -22,11 +22,14 @@ use RZP\Services\UfhService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\InvoiceReport;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
+use RZP\Jobs\EInvoice\PgEInvoice as PgEInvoiceJob;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
+use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
@@ -423,7 +426,38 @@ class Core extends Base\Core
         }
     }
 
-    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup): array
+    protected function getPgDocumentCount($documentData) : int
+    {
+        $documentCount = 0;
+        foreach ($documentData as $documentType => $data)
+        {
+            if(sizeof($data) !== 0)
+            {
+                $documentCount++;
+            }
+        }
+
+        return $documentCount;
+    }
+
+    public function dispatchForPgEInvoice($data, $month, $year, $merchantId)
+    {
+        $params = [
+            EInvoice\Entity::MONTH          => $month,
+            EInvoice\Entity::YEAR           => $year,
+            EInvoice\Entity::GSTIN          => $data['gstin'],
+            EInvoice\Entity::INVOICE_NUMBER => $data['invoice_number'],
+        ];
+
+        $documentData = $data[InvoiceReport::PAGES];
+
+        $documentCount = $this->getPgDocumentCount($documentData);
+
+        PgEInvoiceJob::dispatch($this->mode, $merchantId, $documentCount,
+            $data[InvoiceReport::PAGES], $params);
+    }
+
+    public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup) : array
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
@@ -438,12 +472,28 @@ class Core extends Base\Core
 
         $data = (new InvoiceReport())->getpgInvoiceTemplateDate($input, $merchant, $invoiceBreakup);
 
+        return [$date, $isGstApplicable, $data];
+    }
+
+    public function getPgInvoiceBreakupGroupedData($input, $merchant)
+    {
+        $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData($merchant->getId(), $input['month'], $input['year']);
+
+        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $input['month'], $input['year'], $invoiceBreakup);
+
+        return $data;
+    }
+
+    public function getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []): array
+    {
+        [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $month, $year, $invoiceBreakup);
+
         $data['merchant'] = $merchant;
 
         $data['merchant_id'] = $merchant->getId();
 
         $data['dates'] = [
-                'startDate'   => $date->format('d/m/y'),
+                'startDate'   => $this->getPatchedFirstDay($month, $year)->format('d/m/y'),
                 'billingDate' => $this->getPatchedLastDay($month, $year)->format('d/m/y'),
                 'endDate'     => $this->getPatchedLastDay($month, $year)->format('d/m/y'),
         ];
@@ -476,6 +526,8 @@ class Core extends Base\Core
             $data['merchant_details']['business_registered_state'] = IndianStates::getStateNameByCode($state_code);
         }
 
+        $data['einvoice_data'] = $eInvoiceData;
+
         return $data;
     }
 
@@ -498,6 +550,16 @@ class Core extends Base\Core
 
         if (empty($file) === true)
         {
+            $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+            $shouldGeneratePgEInvoice = (new PgEInvoice())->shouldGenerateEInvoice($this->merchant, $date->getTimestamp());
+
+            if($shouldGeneratePgEInvoice === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Razorpay was unable to generate an invoice either due to incorrect GSTIN and/or Address PIN or due to some technical error. Please try again in some time.');
+            }
+
             $invoiceBreakup = $this->repo
                                    ->merchant_invoice
                                    ->fetchInvoiceReportData($merchantId, $month, $year);
@@ -506,6 +568,17 @@ class Core extends Base\Core
         }
 
         return (new FileStore\Accessor())->getSignedUrlOfFile($file);
+    }
+
+    private function getPatchedFirstDay($month, $year)
+    {
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+        if ($month == 01 and $year == 2021) {
+            return $date->firstOfMonth()->subDays(1)->startOfDay();
+        }
+        else {
+            return $date;
+        }
     }
 
     private function getPatchedLastDay($month, $year)

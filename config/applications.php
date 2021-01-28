@@ -421,6 +421,31 @@ return [
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 
+    'einvoice' => [
+        'url'               => [
+            'live'    =>   env('GSP_LIVE_URL'),
+            'test'    =>   env('GSP_TEST_URL'),
+        ],
+        'access_token' => [
+            'live' => [
+                'username'              => env('GSP_LIVE_ACCESS_TOKEN_USERNAME'),
+                'password'              => env('GSP_LIVE_ACCESS_TOKEN_PASSWORD'),
+                'client_id'             => env('GSP_LIVE_ACCESS_TOKEN_CLIENT_ID'),
+                'client_secret'         => env('GSP_LIVE_ACCESS_TOKEN_CLIENT_SECRET'),
+                'grant_type'            => env('GSP_LIVE_ACCESS_TOKEN_GRANT_TYPE'),
+                'static_access_token'   => env('GSP_LIVE_STATIC_ACCESS_TOKEN'),
+            ],
+            'test' => [
+                'username'              => env('GSP_TEST_ACCESS_TOKEN_USERNAME'),
+                'password'              => env('GSP_TEST_ACCESS_TOKEN_PASSWORD'),
+                'client_id'             => env('GSP_TEST_ACCESS_TOKEN_CLIENT_ID'),
+                'client_secret'         => env('GSP_TEST_ACCESS_TOKEN_CLIENT_SECRET'),
+                'grant_type'            => env('GSP_TEST_ACCESS_TOKEN_GRANT_TYPE'),
+                'static_access_token'   => env('GSP_TEST_STATIC_ACCESS_TOKEN'),
+            ],
+        ],
+    ],
+
     //
     // Configuration for one of the internal applications allowed
     // access to select routes of APIs.

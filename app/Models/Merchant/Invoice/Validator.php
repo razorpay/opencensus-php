@@ -63,6 +63,7 @@ class Validator extends Base\Validator
         Entity::MONTH    => 'required|digits_between:1,2',
         'action'         => 'required|string|in:delete,create',
         'reason'         => 'required|string',
+        'b2b_overwrite'   => 'required|boolean'
     ];
 
     protected static $generationControlRules = [

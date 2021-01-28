@@ -117,6 +117,7 @@ class Table
     const STAKEHOLDER                = 'stakeholders';
     const CUSTOMER_BALANCE           = 'customer_balance';
     const MERCHANT_INVOICE           = 'merchant_invoice';
+    const MERCHANT_E_INVOICE         = 'merchant_e_invoice';
     const MERCHANT_REQUEST           = 'merchant_requests';
     const MERCHANT_TERMINAL          = 'merchant_terminal';
     const BATCH_FUND_TRANSFER        = 'daily_settlements';

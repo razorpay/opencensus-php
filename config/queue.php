@@ -342,6 +342,11 @@ return [
         'live'      => env('AWS_SYNC_ORDER_PG_ROUTER_LIVE_QUEUE'),
     ],
 
+    'pg_einvoice' => [
+        'test'      => env('AWS_PG_EINVOICE_TEST_QUEUE'),
+        'live'      => env('AWS_PG_EINVOICE_LIVE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

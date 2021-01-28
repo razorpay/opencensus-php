@@ -13,6 +13,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Traits\ProcessAccountNumber;
+use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 
 class Service extends Base\Service
 {
@@ -160,7 +161,8 @@ class Service extends Base\Service
 
         switch ($input['action']){
             case Constants::ACTION_CREATE:
-                $result =  $this->createPgMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
+                $result =  $this->createPgMerchantInvoicePdf($input['merchant_ids'], $input['month'],
+                    $input['year'], $input['b2b_overwrite']);
                 break;
             case Constants::ACTION_DELETE:
                 $result = $this->removeMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
@@ -170,7 +172,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function createPgMerchantInvoicePdf($merchantIds, $month, $year)
+    public function createPgMerchantInvoicePdf($merchantIds, $month, $year, $b2bOverwrite = false)
     {
         $result = [
             'success_mids' => [],
@@ -185,7 +187,7 @@ class Service extends Base\Service
                          ->file_store
                          ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
 
-            if (empty($file) == false)
+            if ((empty($file) === false) and ($b2bOverwrite === false))
             {
                 $this->trace->info(
                     TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
@@ -206,7 +208,43 @@ class Service extends Base\Service
                                            ->merchant_invoice
                                            ->fetchInvoiceReportData($merchantId, $month, $year);
 
-                    (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+                    if($b2bOverwrite === true)
+                    {
+                        $pgEInvoiceCore = (new PgEInvoice());
+                        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
+
+                        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+                        if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
+                            (Processor::hasTaxableLineItem($invoiceBreakup) === true))
+                        {
+                            $invoiceCore = (new Core());
+                            [$date, $isGstApplicable, $data] = $invoiceCore->getPgInvoiceData($merchant, $month,
+                                $year, $invoiceBreakup);
+
+                            $invoiceCore->dispatchForPgEInvoice($data, $month, $year, $merchant->getId());
+                        }
+                        else
+                        {
+                            $this->trace->info(
+                                TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                                [
+                                    'merchant_id'   => $merchantId,
+                                    'year'          => $year,
+                                    'month'         => $month,
+                                    'reason'        => 'merchant not qualified for e-invoicing',
+                                    'b2b_owerwrite' => $b2bOverwrite,
+                                ]);
+
+                            $result['failed_mids'][] = $merchantId;
+
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+                    }
 
                     $result['success_mids'][] = $merchantId;
                 }

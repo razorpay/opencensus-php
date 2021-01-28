@@ -117,6 +117,7 @@ class Entity
     const GATEWAY_DOWNTIME           = 'gateway_downtime';
     const GATEWAY_DOWNTIME_ARCHIVE   = 'gateway_downtime_archive';
     const MERCHANT_INVOICE           = 'merchant_invoice';
+    const MERCHANT_E_INVOICE         = 'merchant_e_invoice';
     const INVOICE_REMINDER           = 'invoice_reminder';
     const MERCHANT_REMINDERS         = 'merchant_reminders';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
@@ -592,6 +593,7 @@ class Entity
         self::CREDIT_BALANCE            => \RZP\Models\Merchant\Credits\Balance::class,
         self::MERCHANT_PROMOTION        => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE          => \RZP\Models\Merchant\Invoice::class,
+        self::MERCHANT_E_INVOICE        => \RZP\Models\Merchant\Invoice\EInvoice::class,
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
@@ -889,6 +891,8 @@ class Entity
         self::SETTLEMENT_ONDEMAND_BULK          => \RZP\Models\Settlement\Ondemand\Bulk::class,
         self::SETTLEMENT_ONDEMAND_TRANSFER      => \RZP\Models\Settlement\Ondemand\Transfer::class,
         self::SETTLEMENT_ONDEMAND_ATTEMPT       => \RZP\Models\Settlement\Ondemand\Attempt::class,
+
+        self::MERCHANT_E_INVOICE                => \RZP\Models\Merchant\Invoice\EInvoice::class,
     ];
 
     protected static $externalServiceClass = [

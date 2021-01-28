@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 
 class PdfGenerator extends Base\Core
@@ -116,7 +117,9 @@ class PdfGenerator extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
 
-        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup);
+        $eInvoiceData = (new EInvoice\PgEInvoice())->getEInvoiceDataForPdf($merchantId, $month, $year, EInvoice\Types::PG);
+
+        $html = $this->getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData);
 
         $pdfContent = $this->getPdfContentForPgInvoice($html);
 
@@ -132,9 +135,9 @@ class PdfGenerator extends Base\Core
             ->getFileInstance();
     }
 
-    protected function getHtml($merchant, $month, $year, $invoiceBreakup) : string
+    protected function getHtml($merchant, $month, $year, $invoiceBreakup, $eInvoiceData = []) : string
     {
-        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup) ;
+        $data = (new Core())->getTemplateDataForPgInvoice($merchant, $month, $year, $invoiceBreakup, $eInvoiceData) ;
 
         $view = ($data['isGstApplicable'] === true) ?'merchant.pg_invoice.invoice' : 'merchant.pg_invoice.invoice_old';
 

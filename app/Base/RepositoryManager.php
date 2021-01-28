@@ -77,6 +77,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\D2cBureauReport\Repository                   $d2c_bureau_report
  * @property Models\Merchant\MerchantUser\Repository             $merchant_user
  * @property Models\Merchant\Invoice\Repository                  $merchant_invoice
+ * @property Models\Merchant\Invoice\EInvoice\Repository         $merchant_e_invoice
  * @property Models\Address\Repository                           $address
  * @property Models\Options\Repository                           $options
  * @property Models\Merchant\FreshdeskTicket\Repository          $merchant_freshdesk_tickets

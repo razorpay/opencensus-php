@@ -189,7 +189,24 @@ class Processor extends Base\Core
                     }
                 }
 
-                (new PdfGenerator())->generatePgInvoice($this->merchantId, $this->month, $this->year, $invoiceBreakup);
+                $pgEInvoiceCore = (new Merchant\Invoice\EInvoice\PgEInvoice());
+                $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
+
+                $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+
+                if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
+                    ($this->hasTaxableLineItem($invoiceBreakup) === true))
+                {
+                    $invoiceCore = (new Core());
+                    [$date, $isGstApplicable, $data] = $invoiceCore->getPgInvoiceData($merchant, $this->month,
+                        $this->year, $invoiceBreakup);
+
+                    $invoiceCore->dispatchForPgEInvoice($data, $this->month, $this->year, $merchant->getId());
+                }
+                else
+                {
+                    (new PdfGenerator())->generatePgInvoice($this->merchantId, $this->month, $this->year, $invoiceBreakup);
+                }
             }
             catch (\Throwable $e)
             {
@@ -204,6 +221,21 @@ class Processor extends Base\Core
                     ]);
             }
         }
+    }
+
+    public static function hasTaxableLineItem($invoiceBreakup) : bool
+    {
+        foreach ($invoiceBreakup as $index => $entity)
+        {
+            $tax = abs($entity->getTax());
+
+            if($tax !== 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function calculateFeesForPrimaryBalance($balanceId, array & $details)
@@ -564,7 +596,7 @@ class Processor extends Base\Core
 
         $beginDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
 
-        $this->beginTimestamp = $beginDate->startOfMonth()->timestamp;
+        $this->beginTimestamp = $this->getPatchedFirstDay($this->month, $this->year)->timestamp;
 
         $this->endTimestamp = $this->getPatchedLastDay($this->month, $this->year)->timestamp;
 
@@ -618,6 +650,18 @@ class Processor extends Base\Core
             }
         }
     }
+
+    private function getPatchedFirstDay($month, $year)
+    {
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+        if ($month == 01 and $year == 2021) {
+            return $date->firstOfMonth()->subDays(1)->startOfDay();
+        }
+        else {
+            return $date;
+        }
+    }
+
     private function getPatchedLastDay($month, $year)
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);

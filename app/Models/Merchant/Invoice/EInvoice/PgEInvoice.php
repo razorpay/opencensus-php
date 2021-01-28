@@ -1,0 +1,169 @@
+<?php
+
+namespace RZP\Models\Merchant\Invoice\EInvoice;
+
+use Carbon\Carbon;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Invoice;
+use RZP\Models\Report\Types\InvoiceReport;
+use RZP\Models\Pricing\Calculator as PricingCalculator;
+
+class PgEInvoice extends Core
+{
+    public static $documentTypeMap = [
+        DocumentTypes::INV => InvoiceReport::TAX_INVOICE,
+        DocumentTypes::DBN => InvoiceReport::TAX_DEBIT_NOTE,
+        DocumentTypes::CRN => InvoiceReport::TAX_CREDIT_NOTE,
+    ];
+
+    public $eInvoiceData;
+
+    public function getItemList(Entity $eInvoiceEntity)
+    {
+        //TODO: Refactor this with new flow.
+        $input = [
+            'month'     => $eInvoiceEntity->getMonth(),
+            'year'      => $eInvoiceEntity->getYear(),
+            'format'    => 'new',
+        ];
+
+        $invoiceData = (new Invoice\Core())->getPgInvoiceBreakupGroupedData($input, $eInvoiceEntity->merchant);
+
+        $documentType = self::$documentTypeMap[$eInvoiceEntity->getDocumentType()];
+        $invoiceBreakup = $invoiceData[InvoiceReport::PAGES][$documentType];
+
+        $totalIgstValue = 0;
+        $totalSgstValue = 0;
+        $totalCgstValue = 0;
+        $itemSerialNumber = 0;
+        $totalInvoiceValue = 0;
+        $totalAssessableValue = 0;
+
+        $items = [];
+
+        foreach ($invoiceBreakup[InvoiceReport::ROWS] as $invoiceItem)
+        {
+            if ($this->shouldIgnoreLineItem($documentType, $invoiceItem) === true)
+            {
+                continue;
+            }
+
+            $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+
+            $amount = $invoiceItem[InvoiceReport::AMOUNT];
+            $totalAssessableValue += $amount;
+
+            $totalItemValue = $invoiceItem[InvoiceReport::GRAND_TOTAL];
+            $totalInvoiceValue += $totalItemValue;
+
+            $igstAmount = $invoiceItem[InvoiceReport::IGST];
+            $totalIgstValue += $igstAmount;
+
+            $sgstAmount = $invoiceItem[InvoiceReport::SGST];
+            $totalSgstValue += $sgstAmount;
+
+            $cgstAmount = $invoiceItem[InvoiceReport::CGST];
+            $totalCgstValue += $cgstAmount;
+
+            $items[] = [
+                Constants::ITEM_SERIAL_NUMBER => ++$itemSerialNumber,
+                Constants::IS_SERVICE => 'Y',
+                Constants::HSN_CODE => $invoiceItem[InvoiceReport::GST_SAC_CODE],
+                Constants::UNIT => 'OTH',
+                Constants::QUANTITY => 1,
+                Constants::UNIT_PRICE => $amount,
+                Constants::TOTAL_AMOUNT => $amount,
+                Constants::ASSESSABLE_VALUE => $amount,
+                Constants::GST_RATE => $gstRate,
+                Constants::IGST_AMOUNT => $igstAmount,
+                Constants::SGST_AMOUNT => $sgstAmount,
+                Constants::CGST_AMOUNT => $cgstAmount,
+                Constants::TOTAL_ITEM_VALUE => $totalItemValue,
+            ];
+        }
+
+        $valueDetails = [
+            Constants::TOTAL_ASSESSABLE_VALUE => $totalAssessableValue,
+            Constants::TOTAL_INVOICE_VALUE => $totalInvoiceValue,
+            Constants::TOTAL_IGST_VALUE => $totalIgstValue,
+            Constants::TOTAL_SGST_VALUE => $totalSgstValue,
+            Constants::TOTAL_CGST_VALUE => $totalCgstValue,
+        ];
+
+        return [$items, $valueDetails];
+    }
+
+    public function shouldIgnoreLineItem($documentType, $item) : bool
+    {
+        if ($item[InvoiceReport::DESCRIPTION] === 'Total')
+        {
+            return true;
+        }
+
+        if ($documentType === InvoiceReport::TAX_CREDIT_NOTE or $documentType === InvoiceReport::TAX_DEBIT_NOTE)
+        {
+            return false;
+        }
+
+        if(($item[InvoiceReport::IGST] === 0) and ($item[InvoiceReport::SGST] === 0) and ($item[InvoiceReport::CGST] === 0))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function shouldGenerateB2C(string $errorMessage) : bool
+    {
+        return ($this->isInvalidDataError($errorMessage) === true);
+    }
+
+    public function getEInvoiceDataForPdf($merchantId, $month, $year, $type) : array
+    {
+        $eInvoiceData = [];
+
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
+
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+        $shouldGeneratePgEInvoice = $this->shouldGenerateEInvoice($merchant, $date->getTimestamp());
+        if($shouldGeneratePgEInvoice === true)
+        {
+            [$count, $entityMap] = $this->getEInvoiceData($merchantId, $month, $year, $type);
+
+            $eInvoiceData[self::CALLOUT_MESSAGE] = 'Invoices generated for the billing period of January 2021 onwards will be registered on the GST Invoice Registration Portal (IRP) as per the guidelines issued by the GST Council with effect from 1st January 2021';
+
+            foreach ($entityMap as $documentType => $eInvoice)
+            {
+                $gspError = $eInvoice->getGspError();
+
+                if((isset($gspError) === true) and ($this->shouldGenerateB2C($gspError) === true))
+                {
+                    $this->trace->info(TraceCode::EINOVICE_FALLBACK_TO_B2C,
+                        [
+                            'merchant_id'   => $merchantId,
+                            'month'         => $month,
+                            'year'          => $year,
+                            'type'          => $type,
+                            'document_type' => $documentType,
+                            'error_message' => $gspError,
+                        ]);
+
+                    $eInvoiceData = [];
+
+                    $eInvoiceData[self::CALLOUT_MESSAGE] = 'Razorpay was unable to register your invoice on the GST IRN portal due to some error related to the current GSTIN and Address PIN code for your Razorpay Account. Please have your GST details updated on your Razorpay Account to have this invoice registered on the GST Invoice Registration Portal IRP';
+
+                    break;
+                }
+                $eInvoiceData[PgEInvoice::$documentTypeMap[$documentType]] = [
+                    self::IRN             => $eInvoice->getGspIrn(),
+                    self::SIGNED_QR_CODE  => $eInvoice->getGspSignedQrCode(),
+                    self::QR_CODE_URL     => $eInvoice->getGspQRCodeUrl(),
+                ];
+            }
+        }
+
+        return $eInvoiceData;
+    }
+}

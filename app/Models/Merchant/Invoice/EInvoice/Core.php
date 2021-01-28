@@ -1,0 +1,322 @@
+<?php
+
+namespace RZP\Models\Merchant\Invoice\EInvoice;
+
+use Carbon\Carbon;
+use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+
+class Core extends Base\Core
+{
+    const BODY = 'body';
+    const RESULTS = 'results';
+    const MESSAGE = 'message';
+    const IRN = 'Irn';
+    const SIGNED_INVOICE = 'SignedInvoice';
+    const SIGNED_QR_CODE = 'SignedQRCode';
+    const QR_CODE_URL = 'QRCodeUrl';
+    const E_INVOICE_PDF_URL = 'EinvoicePdf';
+    const GSP_STATUS = 'Status';
+    const RESULT_STATUS = 'status';
+    const SUCCESS_STATUS = 'Success';
+    const FAILURE_STATUS = 'Failed';
+    const ERROR_MESSAGE = 'errorMessage';
+    const ERROR_DELIMITER = ':';
+    const CALLOUT_MESSAGE   = 'callout_message';
+
+    // 1st Jan 2021 00:00:00 IST - Timestamp at which e-invoicing becomes mandatory.
+    const EINVOICE_START_TIMESTAMP = 1609439400;
+
+    public function create(array $input, Merchant\Entity $merchant): Entity
+    {
+        $eInvoiceEntity = new Entity;
+
+        $eInvoiceEntity->setStatus(Status::STATUS_CREATED);
+
+        $eInvoiceEntity->merchant()->associate($merchant);
+
+        $eInvoiceEntity->build($input);
+
+        $this->repo->saveOrFail($eInvoiceEntity);
+
+        return $eInvoiceEntity;
+    }
+
+    public function generateEInvoice(Entity $eInvoiceEntity)
+    {
+        $input = null;
+        $response = null;
+        $failure = false;
+
+        $attempts = $eInvoiceEntity->getAttempts() + 1;
+        $eInvoiceEntity->setAttempts($attempts);
+
+        try
+        {
+            $input = $this->getEInvoiceRequestData($eInvoiceEntity);
+
+            $eInvoiceEntity->setStatus(Status::STATUS_INITIATED);
+
+            $response =  app('einvoice_client')->getEInvoice($this->mode, $input);
+
+            $this->updateEInvoiceFromResponse($eInvoiceEntity, $response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EINVOICE_REQUEST_EXCEPTION,
+                [
+                    'request'   => $input,
+                    'response'  => $response,
+                ]);
+
+            $failure = true;
+
+            $eInvoiceEntity->setRzpError($e->getMessage());
+            $eInvoiceEntity->setStatus(Status::STATUS_FAILED);
+
+            $this->repo->saveOrFail($eInvoiceEntity);
+        }
+
+        return [$response, $failure];
+    }
+
+    protected function updateEInvoiceFromResponse(Entity $eInvoiceEntity, array $response)
+    {
+        $result = $response[self::BODY][self::RESULTS];
+        $resultStatus = $result[self::RESULT_STATUS];
+
+        if($resultStatus === self::SUCCESS_STATUS)
+        {
+            $message = $result[self::MESSAGE];
+
+            $eInvoiceEntity->setGspStatus($message[self::GSP_STATUS]);
+            $eInvoiceEntity->setGspIrn($message[self::IRN]);
+            $eInvoiceEntity->setGspSignedInvoice($message[self::SIGNED_INVOICE]);
+            $eInvoiceEntity->setGspSignedQrCode($message[self::SIGNED_QR_CODE]);
+            $eInvoiceEntity->setGspQRCodeUrl($message[self::QR_CODE_URL]);
+            $eInvoiceEntity->setGspEInvoicePdf($message[self::E_INVOICE_PDF_URL]);
+
+            $errorMessage = isset($result[self::ERROR_MESSAGE]) ? $result[self::ERROR_MESSAGE] : null;
+            $eInvoiceEntity->setGspError($errorMessage);
+
+            $eInvoiceEntity->setStatus(Status::STATUS_GENERATED);
+        }
+        else
+        {
+            $eInvoiceEntity->setGspError($result[self::ERROR_MESSAGE]);
+            $eInvoiceEntity->setStatus(Status::STATUS_FAILED);
+        }
+
+        $this->repo->saveOrFail($eInvoiceEntity);
+    }
+
+    public function getEInvoiceRequestData(Entity $eInvoiceEntity)
+    {
+        [$itemList, $valueDetails] = $this->getItemList($eInvoiceEntity);
+
+        return [
+            Constants::ACCESS_TOKEN         => $this->getAccessToken(),
+            Constants::USER_GSTIN           => $this->getUserGstin(),
+            Constants::TRANSACTION_DETAILS  => [
+                Constants::SUPPLY_TYPE => Constants::B2B,
+            ],
+            Constants::DOCUMENT_DETAILS => $this->getDocumentDetails($eInvoiceEntity),
+            Constants::SELLER_DETAILS   => $this->getSellerDetails(),
+            Constants::BUYER_DETAILS    => $this->getBuyerDetails($eInvoiceEntity),
+            Constants::VALUE_DETAILS    => $valueDetails,
+            Constants::ITEM_LIST        => $itemList,
+        ];
+    }
+
+    protected function getAccessToken()
+    {
+        $config = $this->app['config']->get('applications.einvoice.access_token');
+
+        return $config[$this->mode]['static_access_token'];
+    }
+
+    protected function getUserGstin()
+    {
+        return Constants::RZP_GSTIN;
+    }
+
+    protected function getDocumentDetails(Entity $eInvoiceEntity)
+    {
+        Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
+            ->format('d/m/Y');
+
+        $documentDate = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
+            ->format('d/m/Y');
+
+        return [
+            Constants::DOCUMENT_TYPE    => $eInvoiceEntity->getDocumentType(),
+            Constants::DOCUMENT_NUMBER  => $eInvoiceEntity->getInvoiceNumber(),
+            Constants::DOCUMENT_DATE    => $documentDate,
+        ];
+    }
+
+    protected function getSellerDetails()
+    {
+        [$address1, $address2] = $this->getFormattedAddress(Constants::RZP_ADDRESS);
+
+        $data = [
+            Constants::GSTIN        => Constants::RZP_GSTIN,
+            Constants::LEGAL_NAME   => Constants::RZP_LEGAL_NAME,
+            Constants::LOCATION     => Constants::RZP_LOCATION,
+            Constants::PINCODE      => Constants::RZP_PINCODE,
+            Constants::STATE_CODE   => Constants::RZP_STATE_CODE,
+            Constants::ADDRESS_1    => $address1,
+        ];
+
+        if(empty($address2) === false)
+        {
+            $data[] = [
+                Constants::ADDRESS_2 => $address2,
+            ];
+        }
+
+        return $data;
+    }
+
+    protected function getBuyerDetails(Entity $eInvoiceEntity)
+    {
+        $merchant = $eInvoiceEntity->merchant;
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $stateCode = $merchantDetails->getBusinessStateCode();
+
+        [$address1, $address2] = $this->getFormattedAddress($merchantDetails->getBusinessRegisteredAddress());
+
+        $buyerDetails = [
+            Constants::GSTIN => $merchantDetails->getGstin(),
+            Constants::LEGAL_NAME => $merchantDetails->getBusinessName(),
+            Constants::LOCATION => $merchantDetails->getBusinessRegisteredCity(),
+            Constants::PINCODE  => (int) $merchantDetails->getBusinessRegisteredPin(),
+            Constants::PLACE_OF_SUPPLY => $stateCode,
+            Constants::STATE_CODE => $stateCode,
+            Constants::ADDRESS_1 => $address1,
+        ];
+
+
+        if(empty($address2) === false)
+        {
+            $buyerDetails[] = [
+                Constants::ADDRESS_2 => $address2,
+            ];
+        }
+
+        return $buyerDetails;
+    }
+
+    protected function getFormattedAddress(string $addressString)
+    {
+        $address = str_split($addressString, 100);
+        $address1 = $address[0];
+        $address2 = null;
+
+        if (sizeof($address) > 1)
+        {
+            $address2 = $address[1];
+        }
+
+        return [$address1, $address2];
+    }
+
+    public function getItemList(Entity $eInvoiceEntity)
+    {
+        return [null, null];
+    }
+
+    public function isInvalidDataError(string $errorString) : bool
+    {
+        $isInvalidDataError = false;
+
+        foreach (StatusCodes::$invalidDataErrorCodes as $errorCode)
+        {
+            if(strpos($errorString, $errorCode . self::ERROR_DELIMITER) !== false)
+            {
+                $isInvalidDataError = true;
+
+                break;
+            }
+        }
+
+        return $isInvalidDataError;
+    }
+
+    public function isRetryableError(string $errorString) : bool
+    {
+        $isRetryableError = false;
+
+        foreach (StatusCodes::$retryableErrorCodes as $errorCode)
+        {
+            if(strpos($errorString, $errorCode . self::ERROR_DELIMITER) !== false)
+            {
+                $isRetryableError = true;
+
+                break;
+            }
+        }
+
+        return $isRetryableError;
+    }
+
+    public function shouldGenerateB2C(string $errorMessage) : bool
+    {
+        return false;
+    }
+
+    public function shouldRetry($response) : bool
+    {
+        $result = $response[self::BODY][self::RESULTS];
+        $resultStatus = $result[self::RESULT_STATUS];
+
+        if($resultStatus === self::SUCCESS_STATUS)
+        {
+            return false;
+        }
+
+        $errorMessage = $result[self::ERROR_MESSAGE];
+
+        return ($this->isRetryableError($errorMessage) === true);
+    }
+
+    public function shouldGenerateEInvoice(Merchant\Entity $merchant, $fromTimestamp) : bool
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $gstin = $merchantDetails->getGstin();
+        $pinCode = $merchantDetails->getBusinessRegisteredPin();
+
+        if((empty($gstin) === true) or (empty($pinCode) === true))
+        {
+            return false;
+        }
+
+        return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
+    }
+
+    public function getEInvoiceData(string $merchantId, int $month, int $year, string $type, string $documentType = null)
+    {
+        $entities = $this->repo->merchant_e_invoice->fetchEInvoicesFromMonthAndType($merchantId, $month, $year,
+            $type, $documentType);
+
+        $count = $entities->count();
+        $entityMap = [];
+
+        foreach ($entities as $entity)
+        {
+            $entityMap[$entity->getDocumentType()] = $entity;
+        }
+
+        return [$count, $entityMap];
+    }
+}

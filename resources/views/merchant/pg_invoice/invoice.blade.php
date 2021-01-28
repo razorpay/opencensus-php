@@ -101,18 +101,13 @@
         <ol>
             <li>To get GST input, please make sure that you have updated your GSTIN in your Razorpay Dashboard.</li>
             <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
-            <li>In case your GSTIN is not updated then we will generate an SGST &amp; CGST invoice.</li>
-            <li>If you are a registered entity, the invoice raised for the next billing cycle will be registered on the
-                GST IRP (Invoice Registration Portal) as per GST guidelines.
-                <br>Please ensure that your GSTIN, Registered Address and PIN code is updated as per GST portal.
-                  You can click here to learn more:<a href="https://razorpay.com/docs/announcements/gst-changes/">
-                    https://razorpay.com/docs/announcements/gst-changes/</a></li>
+
+            <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
+                @if (isset($einvoice_data['callout_message']))
+                    NOTE: {{{$einvoice_data['callout_message']}}}
+                @endif
+            </div>
         </ol>
-        @if($dates['endDate'] == '30/12/20')
-        <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
-                This invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30, 2020. The charges for December 31, 2020 will be added to the next billing cycle.
-        </div>
-        @endif
     </div>
 
 @endif
@@ -130,10 +125,19 @@
                 <div class="page-title">
                     {{{ $pageName }}}
                 </div>
-                <table cellpadding="0" cellspacing="0">
-
+                <div>
                     @include('merchant/pg_invoice/components/pageheader')
-
+                </div>
+                <div style=“position:absolute;bottom:350px;“>
+                    @if (isset($einvoice_data[$pageName]['Irn']))
+                        IRN - {{{$einvoice_data[$pageName]['Irn']}}}<br/>
+                    @endif
+                    @if (isset($einvoice_data[$pageName]['QRCodeUrl']))
+                        <img style=“height:140px;width:140px;” src={{{$einvoice_data[$pageName]['QRCodeUrl']}}}/>
+                        <br/>
+                    @endif
+                </div>
+                <table style=“position:relative;">
                     <tr>
                         <td colspan="2">
                             <table>

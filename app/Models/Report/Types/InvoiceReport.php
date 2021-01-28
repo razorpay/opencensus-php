@@ -15,6 +15,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
+use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Trace\TraceCode;
 
 class InvoiceReport extends BaseReport
@@ -72,6 +73,12 @@ class InvoiceReport extends BaseReport
     protected $totalInvoiceAmountDue = 0;
     protected $totalDebitNoteAmountDue = 0;
     protected $totalCreditNoteAmountDue = 0;
+
+    public static $documentTypeMap = [
+        InvoiceReport::TAX_INVOICE      => DocumentTypes::INV,
+        InvoiceReport::TAX_DEBIT_NOTE   => DocumentTypes::DBN,
+        InvoiceReport::TAX_CREDIT_NOTE  => DocumentTypes::CRN,
+    ];
 
     public function __construct()
     {

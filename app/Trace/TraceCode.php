@@ -3589,6 +3589,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENTS_RESPONSE                                  = 'SETTLEMENTS_RESPONSE';
     const SETTLEMENTS_REQUEST_EXCEPTION                         = 'SETTLEMENTS_REQUEST_EXCEPTION';
 
+    // EInvoice client
+    const EINVOICE_REQUEST                                      = 'EINVOICE_REQUEST';
+    const EINVOICE_RESPONSE                                     = 'EINVOICE_RESPONSE';
+    const EINVOICE_REQUEST_EXCEPTION                            = 'EINVOICE_REQUEST_EXCEPTION';
+    const EINOVICE_FALLBACK_TO_B2C                              = 'EINOVICE_FALLBACK_TO_B2C';
+    const EINVOICE_GSP_RETRYABLE_RESPONSE                       = 'EINVOICE_GSP_RETRYABLE_RESPONSE';
+    const EINVOICE_GSP_FAILURE_RESPONSE                         = 'EINVOICE_GSP_FAILURE_RESPONSE';
+    const EINVOICE_GSP_SUCCESS_RESPONSE                         = 'EINVOICE_GSP_SUCCESS_RESPONSE';
+    const EINVOICE_JOB_FAILURE_EXCEPTION                        = 'EINVOICE_JOB_FAILURE_EXCEPTION';
+    const EINVOICE_PG_PDF_PERSIST_BEGIN                         = 'EINVOICE_PG_PDF_PERSIST_BEGIN';
+    const EINVOCICE_INVALID_REQUEST_IN_PG_JOB                   = 'EINVOCICE_INVALID_REQUEST_IN_PG_JOB';
+
     const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
     const UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE                 = 'UPI_MANDATE_STATUS_MISMATCH_FOR_PAUSE';
