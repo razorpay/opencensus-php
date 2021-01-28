@@ -654,11 +654,12 @@ class Processor extends Base\Core
     private function getPatchedFirstDay($month, $year)
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
         if ($month == 01 and $year == 2021) {
             return $date->firstOfMonth()->subDays(1)->startOfDay();
         }
         else {
-            return $date;
+            return $date->startOfMonth();
         }
     }
 
