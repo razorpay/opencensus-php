@@ -74,6 +74,7 @@ export const logout = () => {
   return {
     type: USER_LOGOUT,
     payload: ajax({
+      method: 'post',
       url: '/user/logout',
       appendModeInURL: false,
     }),

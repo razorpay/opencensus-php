@@ -9,7 +9,7 @@ app.controller('ConfirmCtrl', [
   'organization',
   'isHostedInBB',
   'appHost',
-  function(
+  function (
     $scope,
     $http,
     $state,
@@ -18,7 +18,7 @@ app.controller('ConfirmCtrl', [
     alertsFactory,
     organization,
     isHostedInBB,
-    appHost
+    appHost,
   ) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -30,7 +30,7 @@ app.controller('ConfirmCtrl', [
       $state.go('access.signin');
     }
 
-    organization.fetchCurrentOrg().then(function(data) {
+    organization.fetchCurrentOrg().then(function (data) {
       if (data.login_logo_url) {
         $scope.confirm_logo = data.login_logo_url;
       } else {
@@ -53,7 +53,7 @@ app.controller('ConfirmCtrl', [
     $scope.requestDone = false;
 
     request
-      .success(function(data) {
+      .success(function (data) {
         $scope.requestDone = true;
         $scope.alerts.resetAlerts();
         if (data.success) {
@@ -73,18 +73,18 @@ app.controller('ConfirmCtrl', [
             return $scope.successCb() && $scope.successCb();
           }
 
-          $timeout(function() {
+          $timeout(function () {
             try {
               // try-catch, since there could be tracker blocking scripts
               _dcq.push(['identify', dripPayload]);
             } catch (e) {}
 
             var logoutRequest = $http({
-              method: 'get',
+              method: 'post',
               url: '/user/logout',
             });
 
-            logoutRequest.success(function(data) {
+            logoutRequest.success(function (data) {
               location.hash = '/access/signin';
             });
           }, 3000);
@@ -95,16 +95,16 @@ app.controller('ConfirmCtrl', [
 
           $scope.alerts.addAlert(
             'danger',
-            'Invalid confirmation token or the merchant is already confirmed.'
+            'Invalid confirmation token or the merchant is already confirmed.',
           );
         }
       })
-      .error(function() {
+      .error(function () {
         $scope.requestDone = true;
         $scope.alerts.addAlert('danger', null, true);
       });
 
-    organization.fetchCurrentOrg().then(function(data) {
+    organization.fetchCurrentOrg().then(function (data) {
       $scope.confirm_logo = data.login_logo_url || 'img/logo_black.png';
     });
 
@@ -117,7 +117,7 @@ app.controller('ConfirmCtrl', [
             {
               name: 'notifyConfirmationSuccess',
               hasReply: true,
-              callback: function(reply) {
+              callback: function (reply) {
                 if ($scope.requestDone && $scope.success) {
                   return reply();
                 }
@@ -128,7 +128,7 @@ app.controller('ConfirmCtrl', [
             {
               name: 'notifyConfirmationFail',
               hasReply: true,
-              callback: function(reply) {
+              callback: function (reply) {
                 if ($scope.requestDone && !$scope.success) {
                   return reply();
                 }
@@ -137,7 +137,7 @@ app.controller('ConfirmCtrl', [
               },
             },
           ],
-          'confirmation'
+          'confirmation',
         );
     }
   },

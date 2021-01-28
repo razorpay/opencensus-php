@@ -2336,7 +2336,7 @@ app
 
       $scope.logoutAndGoToLogin = function () {
         var request = $http({
-          method: 'get',
+          method: 'post',
           url: '/user/logout',
         });
         request.finally(function () {

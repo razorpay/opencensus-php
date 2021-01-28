@@ -15,7 +15,7 @@ app
     '$cookies',
     'jqTourbusService',
     'organization',
-    function(
+    function (
       $scope,
       $http,
       $state,
@@ -28,86 +28,74 @@ app
       transformRequestAsFormPost,
       $cookies,
       jqTourbusService,
-      organization
+      organization,
     ) {
       $scope.mode = modeFactory.getMode();
       $scope.invitations = [];
       $scope.logo_full = '';
 
-      $scope.getPendingInvitations = function() {
+      $scope.getPendingInvitations = function () {
         var request = $http.get('/settings/invitations');
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
               $scope.invitations = data.data;
             } else {
               $scope.alerts.addAlert('danger', null, true);
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.alerts.addAlert('danger', null, true);
           });
       };
 
-      $scope.fetchBankAccount = function() {
+      $scope.fetchBankAccount = function () {
         var request = $http.get('/bank_account');
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
               $scope.bankAccount = data.data;
             } else {
               $scope.bankAccount = false;
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.bankAccount = false;
           });
       };
 
-      $scope.acceptInvitation = function(invite) {
-        var request = $http.post(
-          'settings/invitations/' + invite.id + '/accept'
-        );
+      $scope.acceptInvitation = function (invite) {
+        var request = $http.post('settings/invitations/' + invite.id + '/accept');
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'You have accepted the invite.',
-                true
-              );
+              $scope.alerts.addAlert('success', 'You have accepted the invite.', true);
               location.reload();
             } else {
               $scope.alerts.addAlert('danger', null, true);
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.alerts.addAlert('danger', null, true);
           });
       };
-      $scope.rejectInvitation = function(invite) {
-        var request = $http.delete(
-          'settings/invitations/' + invite.id + '/reject'
-        );
+      $scope.rejectInvitation = function (invite) {
+        var request = $http.delete('settings/invitations/' + invite.id + '/reject');
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'You have rejected the invite.',
-                true
-              );
+              $scope.alerts.addAlert('success', 'You have rejected the invite.', true);
               $scope.getPendingInvitations();
             } else {
               $scope.alerts.addAlert('danger', null, true);
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.alerts.addAlert('danger', null, true);
           });
       };
 
-      $scope.upgradeAcount = function(business_name) {
+      $scope.upgradeAcount = function (business_name) {
         var request = $http({
           method: 'post',
           url: '/merchants/register',
@@ -117,28 +105,24 @@ app
           },
         });
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Merchant Account Created',
-                true
-              );
+              $scope.alerts.addAlert('success', 'Merchant Account Created', true);
               $state.reload();
             } else {
               $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
+              angular.forEach(data.errors, function (value) {
                 $scope.alerts.addAlert('danger', value);
               });
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.alerts.addAlert('danger', null, true);
           });
       };
 
-      $scope.refreshUser = function(force) {
-        user.identity(force).then(function(data) {
+      $scope.refreshUser = function (force) {
+        user.identity(force).then(function (data) {
           $scope.user = data;
           $scope.merchantCount = Object.keys(data.merchants).length;
           $scope.loggedInUser = data.user;
@@ -148,7 +132,7 @@ app
             $cookies.show_rzp_welcome_guide &&
             ['owner', 'manager', 'admin'].indexOf($scope.role) !== -1
           ) {
-            setTimeout(function() {
+            setTimeout(function () {
               jqTourbusService.start();
             }, 1500);
             delete $cookies.show_rzp_welcome_guide;
@@ -157,9 +141,7 @@ app
           // Does the user have an associated merchant account
           for (var i in data.user.merchants) {
             var merchant = data.user.merchants[i];
-            if (
-              merchant.email.toLowerCase() === data.user.email.toLowerCase()
-            ) {
+            if (merchant.email.toLowerCase() === data.user.email.toLowerCase()) {
               $scope.hasMerchant = true;
             }
           }
@@ -172,61 +154,59 @@ app
       };
       $scope.refreshUser();
       $scope.alerts = alertsFactory.getHandler();
-      $scope.logout = function() {
-        logoutRequest().finally(function() {
+      $scope.logout = function () {
+        logoutRequest().finally(function () {
           $state.go('access.signin');
         });
       };
-      $scope.changePassword = function() {
+      $scope.changePassword = function () {
         var modalInstance = $modal.open({
           templateUrl: 'passwordModalContent.html',
           controller: 'passwordModalCtrl',
         });
         modalInstance.result.then(
-          function(data) {
+          function (data) {
             passwordChangeRequest(data);
           },
-          function() {}
+          function () {},
         );
       };
-      $scope.$on('$idleStart', function() {
+      $scope.$on('$idleStart', function () {
         closeModals();
         $scope.warning = $modal.open({
           templateUrl: 'warning-dialog.html',
           windowClass: 'modal-danger',
         });
       });
-      $scope.$on('$idleEnd', function() {
+      $scope.$on('$idleEnd', function () {
         closeModals();
       });
-      $scope.$on('$idleTimeout', function() {
-        logoutRequest().finally(function() {
-          $state
-            .go('access.lockme', { email: $scope.user.user.email })
-            .finally(function() {
-              closeModals();
-            });
+      $scope.$on('$idleTimeout', function () {
+        logoutRequest().finally(function () {
+          $state.go('access.lockme', { email: $scope.user.user.email }).finally(function () {
+            closeModals();
+          });
         });
       });
-      $scope.$on('$keepalive', function() {
+      $scope.$on('$keepalive', function () {
         $http({
           method: 'get',
           url: '/user/keepalive',
           notBusy: true,
         })
-          .success(function(data) {
+          .success(function (data) {
             if (data.success === false) {
               location.reload();
             }
           })
-          .error(function() {
+          .error(function () {
             if ($scope.connectModal) return;
             var connectModalInstance = $modal.open({
               controller: [
                 '$scope',
                 '$modalInstance',
-                function($scope, $modalInstance) {
-                  $scope.ok = function() {
+                function ($scope, $modalInstance) {
+                  $scope.ok = function () {
                     $modalInstance.close();
                   };
                 },
@@ -243,17 +223,17 @@ app
                 '</div>',
             });
             $scope.connectModal = true;
-            connectModalInstance.result.finally(function() {
+            connectModalInstance.result.finally(function () {
               $scope.connectModal = false;
             });
           });
       });
       function logoutRequest() {
         var request = $http({
-          method: 'get',
+          method: 'post',
           url: '/user/logout',
         });
-        request.finally(function() {
+        request.finally(function () {
           user.identity(true);
         });
         return request;
@@ -265,21 +245,17 @@ app
           data: data,
         });
         request
-          .success(function(data) {
+          .success(function (data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Password changed successfully.',
-                true
-              );
+              $scope.alerts.addAlert('success', 'Password changed successfully.', true);
             } else {
               $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
+              angular.forEach(data.errors, function (value) {
                 $scope.alerts.addAlert('danger', value);
               });
             }
           })
-          .error(function() {
+          .error(function () {
             $scope.alerts.addAlert('danger', null, true);
           });
       }
@@ -295,7 +271,7 @@ app
       }
 
       // Show correct logo according to the organization
-      organization.fetchCurrentOrg().then(function(data) {
+      organization.fetchCurrentOrg().then(function (data) {
         $scope.logo_full = data.main_logo_url || 'img/logo_full.png';
       });
     },
@@ -303,11 +279,11 @@ app
   .controller('passwordModalCtrl', [
     '$scope',
     '$modalInstance',
-    function($scope, $modalInstance) {
-      $scope.ok = function(data) {
+    function ($scope, $modalInstance) {
+      $scope.ok = function (data) {
         $modalInstance.close(data);
       };
-      $scope.cancel = function() {
+      $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
       };
     },

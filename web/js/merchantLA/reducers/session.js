@@ -9,7 +9,7 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 
-export const updateSession = payload => {
+export const updateSession = (payload) => {
   return {
     type: UPDATE_SESSION,
     payload,
@@ -35,7 +35,7 @@ export const fetchOrg = () => {
   };
 };
 
-export const switchMerchant = merchantId => {
+export const switchMerchant = (merchantId) => {
   return () => {
     return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
@@ -48,13 +48,14 @@ export const logout = () => {
   return {
     type: USER_LOGOUT,
     payload: ajax({
+      method: 'post',
       url: '/user/logout',
       appendModeInURL: false,
     }),
   };
 };
 
-export const showOrHideTour = toShowTour => {
+export const showOrHideTour = (toShowTour) => {
   return {
     type: SHOW_HIDE_TOUR,
     toShowTour,
@@ -69,7 +70,7 @@ let initialState = {
   isTourVisible: false,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case UPDATE_SESSION:
       return merge(state, {

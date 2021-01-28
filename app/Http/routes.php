@@ -49,6 +49,10 @@ Route::group(['middleware' => ['web']], function () {
         ->name('extension_user_logout')
         ->middleware(['jwt']);
 
+    Route::post('/extension/user/logout', 'UserController@getExtensionLogout')
+        ->name('extension_user_logout')
+        ->middleware(['jwt']);
+
     // Org
     Route::get('/org', 'AdminController@getOrg');
 
@@ -82,6 +86,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');
+        Route::post('/logout', 'UserController@getLogout');
+
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
@@ -152,6 +158,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
+        Route::post('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
