@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Bank\IFSC;
 use RZP\Http\CheckoutView;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
@@ -32,6 +33,10 @@ class Gateway extends Base\Gateway
     protected $gateway = 'enach_npci_netbanking';
 
     protected $crypto;
+
+    protected $changeBankCodeGatewayMapping = [
+        IFSC::UJVN => 'USFB',
+    ];
 
     public function authorize(array $input)
     {
@@ -187,6 +192,9 @@ class Gateway extends Base\Gateway
         {
             $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
         }
+
+        // Change bank code if ISFC present in changeBankCodeGatewayMapping
+        $bank = $this->getBankCodeMapping($bank);
 
         $content = [
             RequestFields::MERCHANT_ID => $mid2,
@@ -473,6 +481,16 @@ class Gateway extends Base\Gateway
         }
 
         return str_limit($merchantName, 25, '');
+    }
+
+    protected function getBankCodeMapping($bank)
+    {
+        if (array_key_exists($bank, $this->changeBankCodeGatewayMapping) === true)
+        {
+            $bank = $this->changeBankCodeGatewayMapping[$bank];
+        }
+
+        return $bank;
     }
 
     // -------------------------- callback helper functions ----------------------------------

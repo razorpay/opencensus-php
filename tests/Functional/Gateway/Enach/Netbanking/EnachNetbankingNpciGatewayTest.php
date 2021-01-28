@@ -1239,4 +1239,89 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         return $values;
     }
+
+    public function testPaymentUjvn()
+    {
+        $paymentInput = $this->getEmandatePaymentArray('UJVN', 'netbanking', 0);
+
+        $paymentInput['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'UJVN0000001',
+            'name'           => 'Test account',
+            'account_type'   => 'current',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount'], 'currency' => $paymentInput['currency'], 'method' => $paymentInput['method'], 'payment_capture' => '1', 'receipt' => 'test1', 'bank' => $paymentInput['bank']]);
+        $paymentInput['order_id'] = $order->getPublicId();
+
+        $this->mockServerRequestFunction(function (& $content)
+        {
+                $this->assertNotNull($content);
+                $this->assertEquals('USFB', $content['BankID']);
+        });
+
+        $this->doAuthPayment($paymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['gateway_reference_id2']);
+        $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('true', $enach['status']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals('netbanking', $token['auth_type']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals($token['gateway_token'], $enach['umrn']);
+        $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
+        $this->assertNull($token['expired_at']);
+    }
+
+    public function testOrderCreationWithBankAccount()
+    {
+        $orderInput = [
+            'amount' => 0,
+            'payment_capture' => true,
+            'method' => Method::EMANDATE,
+            'currency' => 'INR',
+            'receipt' => 'test1',
+            'bank' => 'UJVN',
+            'bank_account'=>[
+                'name' => 'Test account',
+                'account_number' => '1111111111111',
+                'ifsc' => 'UJVN0000001'
+            ]
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $this->assertEquals('created', $order['status']);
+    }
+
+    public function testPaymentUsfb()
+    {
+        $paymentInput = $this->getEmandatePaymentArray('USFB', 'netbanking', 0);
+
+        $paymentInput['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'USFB0000001',
+            'name'           => 'Test account',
+            'account_type'   => 'current',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount'], 'currency' => $paymentInput['currency'], 'method' => $paymentInput['method'], 'payment_capture' => '1', 'receipt' => 'test1', 'bank' => $paymentInput['bank']]);
+        $paymentInput['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($paymentInput) {
+            $this->doAuthPayment($paymentInput);
+        });
+    }
 }

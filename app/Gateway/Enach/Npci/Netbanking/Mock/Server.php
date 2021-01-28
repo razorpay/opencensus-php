@@ -27,6 +27,8 @@ class Server extends Base\Mock\Server
 
         $this->setCryptoAttributes();
 
+        $this->request($input, $this->action);
+
         $requestXmlString = $input['MandateReqDoc'];
 
         $this->crypto->verifySignature($requestXmlString, $this->crypto->getEncryptionPublicKey());
