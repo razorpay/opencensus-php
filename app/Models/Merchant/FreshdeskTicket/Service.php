@@ -34,9 +34,10 @@ class Service extends Base\Service
         'status'   => 2,
     ];
 
-    const FRESKDESK_INSTANCES = [
-        Constants::RZP    => Constants::URL,
-        Constants::RZPSOL => Constants::URL2
+    const FRESHDESK_INSTANCES = [
+        Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX],
+        Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
+                                      Constants::RZPSOL => Constants::URL2]
     ];
 
     const TECH_SUBCATEGORIES = ['Technical support', 'Integrations'];
@@ -109,7 +110,7 @@ class Service extends Base\Service
 
         $fdInstance = $this->getFdInstance($input);
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -154,7 +155,7 @@ class Service extends Base\Service
 
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
         $tickets = $this->app[Constants::FRESHDESK_CLIENT]->getCustomerTickets($queryParams, $url);
 
@@ -218,7 +219,7 @@ class Service extends Base\Service
 
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
 
@@ -288,9 +289,9 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
 
-        $fdInstance = $this->getFdInstance($input);
+        $fdInstance = $this->getFdInstanceFromType($type, $input);
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -323,7 +324,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         $ticketWithStats = $this->app[Constants::FRESHDESK_CLIENT]->getTicketWithStats($ticketEntity->getTicketId(), $url);
 
@@ -352,25 +353,7 @@ class Service extends Base\Service
             Constants::PAGE  => $input[Constants::PAGE],
         ];
 
-        $allTickets = [];
-
-        foreach (self::FRESKDESK_INSTANCES as $fdInstance => $url)
-        {
-            $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
-
-            $results = $response[Constants::RESULTS] ?? [];
-
-            // Adding FD instance in each ticket
-            array_walk(
-                $results,
-                function(&$value, $key, $fdInstanceKey) {
-                    $value[Constants::FD_INSTANCE] = $fdInstanceKey;
-                },
-                $fdInstance
-            );
-
-            $allTickets = array_merge($allTickets, $results);
-        }
+        $allTickets = $this->getTicketsFromType($queryParams, $type);
 
         // Sorting the tickets in descending order of created_at
         $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
@@ -408,12 +391,14 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         $queryParams = [
             Constants::PAGE     => $input[Constants::PAGE],
             Constants::PER_PAGE => $input[Constants::PER_PAGE]
         ];
+
+        $queryParams = $type === Type::SUPPORT_DASHBOARD_X ? [] : $queryParams;
 
         $conversations = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($ticketEntity->getTicketId(), $queryParams, $url);
 
@@ -437,7 +422,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $input, $url);
 
@@ -455,9 +440,9 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = self::FRESKDESK_INSTANCES[$fdInstance];
-
         (new Validator)->validateInput('create_' . studly_case($type) . '_grievance', $input);
+
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         $data = [
             Constants::TICKET_STATUS    => TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING),
@@ -497,7 +482,7 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED, null, $response['errors']);
         }
 
-        throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR);
+        throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR, $response);
 
     }
 
@@ -620,6 +605,31 @@ class Service extends Base\Service
         return $statusGroupedAndOrderedTickets;
     }
 
+
+    protected function getTicketsFromType(array $queryParams, $type): array
+    {
+        $instances = self::FRESHDESK_INSTANCES[$type];
+        $allTickets = [];
+        foreach ($instances as $fdInstance => $url) {
+            $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
+
+            $results = $response[Constants::RESULTS] ?? [];
+
+            // Adding FD instance in each ticket
+            array_walk(
+                $results,
+                function (&$value, $key, $fdInstanceKey) {
+                    $value[Constants::FD_INSTANCE] = $fdInstanceKey;
+                },
+                $fdInstance
+            );
+
+            $allTickets = array_merge($allTickets, $results);
+        }
+        return $allTickets;
+    }
+
+
     protected function preProcessInputCustomer(array &$input): string
     {
         $transactionId = $input[Constants::CUSTOM_FIELDS][Constants::TRANSACTION_ID];
@@ -655,6 +665,12 @@ class Service extends Base\Service
     protected function updateStatusFields(array &$input)
     {
         $input = array_merge($input, self::STATUS_FIELDS);
+    }
+
+    protected function getFdInstanceFromType($type, array &$input)
+    {
+        if($type === Type::SUPPORT_DASHBOARD_X) return Constants::RZPX;
+        return $this->getFdInstance($input);
     }
 
     protected function getFdInstance(array &$input): string
@@ -806,9 +822,9 @@ class Service extends Base\Service
 
     protected function rewriteFreshdeskConversations($conversations, $ticketEntity)
     {
-        return array_map(function ($conversation) use ($ticketEntity) {
+        return array_values(array_filter(array_map(function ($conversation) use ($ticketEntity) {
             return $this->rewriteFreshdeskConversation($conversation, $ticketEntity);
-        }, $conversations);
+        }, $conversations)));
     }
 
     protected function rewriteFreshdeskConversation($conversation, $ticketEntity)
@@ -822,6 +838,8 @@ class Service extends Base\Service
         {
             $conversation['ticket_id'] = $ticketEntity->getId();
         }
+
+        if (isset($conversation['private']) === true and $conversation['private'] == true) return null;
 
         return $conversation;
     }
@@ -922,6 +940,23 @@ class Service extends Base\Service
         {
             $input[Constants::GROUP_ID] = $this->getGroupIdFromRzpSolutionsTicketInput($input);
         }
+
+        return $input;
+    }
+
+    protected function makeInputForSupportDashboardXPostTicket($input)
+    {
+        $input['email'] = $this->merchant->getEmail();
+
+        $input['name'] = $this->merchant->getName();
+
+        $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
+
+        $input['custom_fields']['cf_merchant_id_dashboard'] = $this->getQueryParamMerchantIdForSearchAPI();
+
+        $input['priority'] = 1;
+
+        $input['status'] = 2;
 
         return $input;
     }

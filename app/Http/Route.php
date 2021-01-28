@@ -5356,6 +5356,14 @@ class Route
         'get_free_payouts_attributes'                  => Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
         'payouts_bulk_sample_file'                     => '*',
         'payouts_bulk_amount_type_update'              => Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
+
+        //freshdesk ticket permissions
+        'fd_create_ticket'                             => '*',
+        'fd_fetch_tickets'                             => '*',
+        'fd_fetch_converations'                        => '*',
+        'fd_fetch_ticket'                              => '*',
+        'fd_post_ticket_reply'                         => '*',
+        'fd_post_ticket_grievance'                     => '*',
     ];
 
     public static $direct = [

@@ -50,6 +50,11 @@ class Validator extends Base\Validator
         Constants::PER_PAGE     => 'required|integer|max:100',
     ];
 
+    protected static $getSupportDashboardXConversationsRules = [
+        Constants::PAGE         => 'required|integer|min:1',
+        Constants::PER_PAGE     => 'required|integer|max:100',
+    ];
+
     protected static $createSupportDashboardTicketRules = [
         'name'                                                   => 'required|string',
         'email'                                                  => 'required|email',
@@ -67,6 +72,22 @@ class Validator extends Base\Validator
         'fd_instance'                                            => 'sometimes',
     ];
 
+    protected static $createSupportDashboardXTicketRules = [
+        'name'                                                   => 'required|string',
+        'email'                                                  => 'required|email',
+        'subject'                                                => 'required|string',
+        'description'                                            => 'required|string',
+        'phone'                                                  => 'sometimes',
+        'attachments'                                            => 'sometimes',
+        'priority'                                               => 'required:min:1|max:4',
+        'cc_emails'                                              => 'sometimes|array',
+        'custom_fields'                                          => 'required|array',
+        'custom_fields.cf_requestor_subcategory'                 => 'sometimes',
+        'custom_fields.cf_merchant_id_dashboard'                 => 'required',
+        'fd_instance'                                            => 'sometimes',
+        'status'                                                 => 'sometimes',
+    ];
+
     protected static $createSupportDashboardTicketReplyRules = [
         'user_id'       => 'required',
         'body'          => 'sometimes|string',
@@ -74,7 +95,19 @@ class Validator extends Base\Validator
         'attachments.*' => 'custom:attachment',
     ];
 
+    protected static $createSupportDashboardXTicketReplyRules = [
+        'user_id'       => 'required',
+        'body'          => 'sometimes|string',
+        'attachments'   => 'sometimes',
+    ];
+
     protected static $getSupportDashboardTicketsRules = [
+        Constants::PAGE         => 'required|integer|min:1',
+        'per_page'              => 'sometimes|integer|max:100',
+        'status'                => 'sometimes|integer|min:2|max:5|nullable',
+    ];
+
+    protected static $getSupportDashboardXTicketsRules = [
         Constants::PAGE         => 'required|integer|min:1',
         'per_page'              => 'sometimes|integer|max:100',
         'status'                => 'sometimes|integer|min:2|max:5|nullable',
@@ -140,6 +173,11 @@ class Validator extends Base\Validator
         'xls'       => ['application/vnd.ms-excel'],
         'xlsx'      => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         'ods'       => ['application/vnd.oasis.opendocument.spreadsheet'],
+    ];
+
+    protected static $createSupportDashboardXGrievanceRules = [
+        'description'           => 'required|string',
+        'attachments'           => 'sometimes',
     ];
 
     protected function validateType($attribute, $type)

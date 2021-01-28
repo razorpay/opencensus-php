@@ -108,6 +108,8 @@ class SupportTicketDashboardTest extends TestCase
 
         $this->app['config']->set('applications.freshdesk.token2', 'random token 2');
 
+        $this->app['config']->set('applications.freshdesk.tokenx', 'random token x');
+
         $this->freshdeskClientMock = Mockery::mock('RZP\Services\FreshdeskTicketClient', [$this->app])->makePartial();
 
         $this->freshdeskClientMock->shouldAllowMockingProtectedMethods();
@@ -403,6 +405,54 @@ class SupportTicketDashboardTest extends TestCase
 
     }
 
+    public function testCreateTicketRzpX()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpx',
+            [
+                'description' => 'ticket description',
+                'subject' => 'ticket subject',
+                'cc_emails' => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Activation',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'email' =>  'test@razorpay.com',
+                'phone' => '9876543210',
+                'priority' =>  1,
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Activation',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzpx', $fdInstance);
+
+    }
+
     public function testCreateTicketFreshdeskError()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
@@ -677,9 +727,12 @@ class SupportTicketDashboardTest extends TestCase
 
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
 
+        $expectedUrlx = $this->app['config']->get('applications.freshdesk.urlx') . '/' . $expectedPath;
+
         $expectedUrls = [
             'rzp'       => $expectedUrl1,
-            'rzpsol'    =>$expectedUrl2
+            'rzpsol'    => $expectedUrl2,
+            'rzpx'      => $expectedUrlx
         ];
 
         $this->freshdeskClientMock

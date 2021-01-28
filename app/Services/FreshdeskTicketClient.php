@@ -35,6 +35,11 @@ class FreshdeskTicketClient
         'headers',
     ];
 
+    const URL_TOKEN_MAP = [
+        Constants::URL2        => 'token2',
+        Constants::URLX        => 'tokenx',
+    ];
+
     public function __construct(Application $app)
     {
         $this->app          = $app;
@@ -506,14 +511,7 @@ class FreshdeskTicketClient
 
     private function getAuthKey($urlKey) : string
     {
-        $authKey = 'token';
-
-        if ($urlKey === Constants::URL2)
-        {
-            $authKey = 'token2';
-        }
-
-        return $authKey;
+        return self::URL_TOKEN_MAP[$urlKey] ?? 'token';
     }
 
     private function getRedactedRequest(array $request) : array

@@ -63,6 +63,8 @@ class Constants
     const RZP    = 'rzp';
     const URL2   = 'url2';
     const RZPSOL = 'rzpsol';
+    const RZPX   = 'rzpx';
+    const URLX   = 'urlx';
 
     // Active tickets and work in progress tickets
     const ACTIVE_STATUSES = [2, 3, 8, 9, 10, 11];

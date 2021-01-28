@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\FreshdeskTicket\Processor;
 use RZP\Models\Merchant\FreshdeskTicket\Entity;
 use RZP\Models\Merchant\FreshdeskTicket\Core;
 use RZP\Models\Merchant\FreshdeskTicket\Constants;
+use RZP\Models\Merchant\FreshdeskTicket\Type;
 
 class TicketCreateCallback extends Base
 {
@@ -25,7 +26,7 @@ class TicketCreateCallback extends Base
 
     protected function setCfMerchantIdDashboardForTicket(Entity $ticket)
     {
-        $url = self::FRESKDESK_INSTANCES[$ticket->getFdInstance()];
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$ticket->getFdInstance()];
 
         $data = [
             Constants::CUSTOM_FIELDS => [
