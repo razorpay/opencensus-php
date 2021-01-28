@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -90,6 +90,7 @@ function BecomePartner(props) {
 
 function PartnerAppCard(props) {
   const product = props.product;
+  const [cardHoverBgColor, setCardHoverBgColor] = useState(``);
 
   return (
     <div className="product-col">
@@ -97,8 +98,10 @@ function PartnerAppCard(props) {
         onClick={() => appTileClickHandler(props, product.slug)}
         className="product-wrapper"
         to={'/app-store/' + product.slug}
+        onMouseEnter={() => setCardHoverBgColor(product.brandColor)}
+        onMouseLeave={() => setCardHoverBgColor(``)}
       >
-        <div className="image-x-title-flex">
+        <div className="image-x-title-flex" style={{ background: cardHoverBgColor }}>
           <div className="image-col">
             <div className="product-image-background">
               <img
@@ -111,7 +114,7 @@ function PartnerAppCard(props) {
             <h2 className="product-title">{product.title}</h2>
             <span className="product-category">{product.category}</span>
           </div>
-          <span className="left-strip"></span>
+          <span className="left-strip" style={{ background: cardHoverBgColor }}></span>
         </div>
 
         <div className="product-description">
@@ -119,7 +122,11 @@ function PartnerAppCard(props) {
         </div>
 
         <div className="more-details-container">
-          <Link className="mode-details-arrow-anchor" to={'/app-store/' + product.slug}>
+          <Link
+            className="mode-details-arrow-anchor"
+            to={'/app-store/' + product.slug}
+            style={{ background: cardHoverBgColor }}
+          >
             <i className="i i-arrow-forward"></i>
           </Link>
           <svg

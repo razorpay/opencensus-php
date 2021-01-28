@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -30,12 +34,18 @@ function Data(brandColor) {
       </div>
 
       <div className="how-to-use-razorpay">
-        <h2 className="how-to-use-heading">How to use Razorpay with QuickBooks</h2>
+        <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
+          How to use Razorpay with QuickBooks
+        </h2>
         <ol>
-          <li>Select the + New icon on the left and select Invoice.</li>
+          <li>
+            <div className="list-counter" style={brandStyles.listBg} />
+            Select the + New icon on the left and select Invoice.
+          </li>
           <li>
             <div className="list-flex">
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 In a new Invoice, you will see the option to make Online payments. Click Setup now.
               </p>
               <PaddedImage
@@ -47,8 +57,8 @@ function Data(brandColor) {
           <li>
             <div className="list-flex">
               <p>
-                A decision box will appear asking whether you want to leave without saving. Click
-                Yes.
+                <div className="list-counter" style={brandStyles.listBg} />A decision box will
+                appear asking whether you want to leave without saving. Click Yes.
               </p>
               <PaddedImage
                 alt="A popup with text Do you want to leave without saving and Yes and No Buttons. Mouse pointing on the Yes."
@@ -59,6 +69,7 @@ function Data(brandColor) {
           <li>
             <div className="list-flex">
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 You will be directed to a Razorpay QuickBooks integration page. Under Connect your
                 Razorpay Account, click one to create a new Razorpay account.
               </p>
@@ -71,6 +82,7 @@ function Data(brandColor) {
           <li>
             <div className="list-flex">
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 Once your account is set up, go back to QuickBooks and click{' '}
                 <strong className>Let’s get started</strong>.
               </p>
@@ -83,6 +95,7 @@ function Data(brandColor) {
           <li>
             <div className="list-flex">
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 If you are not signed in to your Razorpay account in the same browser window, you
                 will be asked to log in and thereafter you will be prompted to give QuickBooks
                 permission to connect with Razorpay. Click <strong>Allow</strong>.
@@ -93,10 +106,14 @@ function Data(brandColor) {
               />
             </div>
           </li>
-          <li>Check if any pop-ups are blocked and unblock them.</li>
+          <li>
+            <div className="list-counter" style={brandStyles.listBg} />
+            Check if any pop-ups are blocked and unblock them.
+          </li>
           <li>
             <div className="list-flex">
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 Click <strong>Authorise </strong>to let QuickBooks access your Razorpay account.
               </p>
               <PaddedImage
@@ -107,7 +124,10 @@ function Data(brandColor) {
           </li>
           <li>
             <div className="list-flex">
-              <p>You will get a success notification.</p>
+              <p>
+                <div className="list-counter" style={brandStyles.listBg} />
+                You will get a success notification.
+              </p>
               <PaddedImage
                 src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-16.png"
                 alt="Success Message that reads- Razorpay is Connected"

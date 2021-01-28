@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -27,10 +31,15 @@ function Data(brandColor) {
       <div className="how-to-use-razorpay">
         <article>
           <section>
-            <h2 className="how-to-use-heading">How to use Razorpay with Shopify</h2>
-            <p>To integrate your Shopify store with Razorpay:</p>
+            <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
+              How to use Razorpay with Shopify
+            </h2>
+            <p style={brandStyles.brandBorderLeft}>
+              To integrate your Shopify store with Razorpay:
+            </p>
             <ol>
               <li>
+                <div className="list-counter" style={brandStyles.listBg} />
                 Sign into your{' '}
                 <a href="https://www.shopify.in/" target="_blank">
                   Shopify store
@@ -38,12 +47,14 @@ function Data(brandColor) {
                 .
               </li>
               <li>
+                <div className="list-counter" style={brandStyles.listBg} />
                 Go to <strong>Settings</strong> → <strong>Payments</strong> →{' '}
                 <strong>Alternative Payments</strong>.
               </li>
               <li>
                 <div className="list-flex">
                   <p>
+                    <div className="list-counter" style={brandStyles.listBg} />
                     Select <strong>Razorpay</strong> from the drop down list.
                   </p>
                   <PaddedImage
@@ -55,6 +66,7 @@ function Data(brandColor) {
               <li>
                 <div className="list-flex">
                   <p>
+                    <div className="list-counter" style={brandStyles.listBg} />
                     Enter the <code>&lt;YOUR_KEY_ID&gt;</code> and{' '}
                     <code>&lt;YOUR_KEY_SECRET&gt;</code> generated in the previous section.
                   </p>
@@ -66,6 +78,7 @@ function Data(brandColor) {
               </li>
               <li>
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Activate</strong>. This activates your account to use Razorpay.
                 </p>
                 <div>

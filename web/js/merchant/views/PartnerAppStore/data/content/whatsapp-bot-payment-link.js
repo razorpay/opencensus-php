@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -19,14 +23,17 @@ function Data(brandColor) {
 
       <div className="how-to-use-razorpay">
         <article>
-          <h2 className="how-to-use-heading">
+          <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
             How to use Razorpay with Whatsapp Bot for Payment Links
           </h2>
-          <p>To enable Razorpay Payment Links with your Whatsapp account</p>
+          <p style={brandStyles.brandBorderLeft}>
+            To enable Razorpay Payment Links with your Whatsapp account
+          </p>
 
           <ol>
             <li>
               <p>
+                <div className="list-counter" style={brandStyles.listBg} />
                 <strong>Install</strong>
                 <br />
                 <span>Install the Whatsapp Bot for Payment Links from the Razorpay App Store</span>
@@ -36,6 +43,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   <strong>Welcome Message</strong>
                   <br />
                   <span>
@@ -53,6 +61,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   <strong>Create Payment Link</strong>
                   <br />
                   <span>
@@ -73,6 +82,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   <strong>Share Payment Link</strong>
                   <br />
                   <span>

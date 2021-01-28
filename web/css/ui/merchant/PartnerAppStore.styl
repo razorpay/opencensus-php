@@ -68,7 +68,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           color: rgba(255, 255, 255, 0.8);
 
       img.razorpay-partner-image
-        width: 364px;
+        width: 420px;
         position: absolute;
         right: 90px;
         top: 31px;
@@ -122,12 +122,15 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           height: 100%;
           min-height: 190px;
           width: 100%;
-          box-shadow: 0px 2px 15px rgba(11, 112, 231, 0.2);
+          box-shadow: 2px 4px 9px 1px rgba(0,0,0,0.05), 0 1px 1px rgba(0,0,0,0.04);
           border-radius: 6px;
           overflow: hidden;
           position: relative;
           vertical-align: top;
           background-color: #fff;
+
+        a.product-wrapper:hover
+          box-shadow: 0px 2px 15px rgba(11, 112, 231, 0.2);
 
         .image-x-title-flex
           position: relative;
@@ -146,7 +149,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
               border: 0.625px solid #EDF0F5;
               border-radius: 4px;
               padding: 6px;
-              display: table-cell; 
+              display: table-cell;
               vertical-align: middle;
 
               & > img
@@ -250,7 +253,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           padding: 12px 0px;
           font-size: 16px;
           color: rgba(22, 47, 86, 0.54);
-        
+
         .partner-links
           padding: 5px 0px;
 
@@ -266,7 +269,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
   .PartnerAppStore
     padding: 0px 0px;
-    
+
     section.appstore-card
       .appstore-header
         padding: 40px 24px;
@@ -326,7 +329,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           background-color: transparent;
           margin: 24px 0px;
           box-shadow: unset;
-          
+
           h2
             font-size: 24px;
 
@@ -336,11 +339,6 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 /* Partner Details Page START */
 .PartnerPage
   section.appstore-card
-    background-image: url(assets/app-store/partner-page-shape.svg);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-    background-position: 0px 100px;
-
     header
       padding: 28px 78px;
 
@@ -358,7 +356,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
       & > div.inline-block
         display: inline-block;
-      
+
       .product-logo-container
         position: relative;
         top: 5px;
@@ -376,6 +374,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           position: relative;
           bottom: -55px;
           text-align: center;
+          z-index: 2;
 
           img
             max-width: 100%;
@@ -384,18 +383,18 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
       .heading-container
         h1
-          font-size: 24px;
+          font-size: 32px;
           line-height: 36px;
           margin: 0px;
           margin-bottom: 4px;
           color: #fff;
           font-weight: 700;
-        
+
         p.category
           font-size: 16px;
           line-height: 24px;
           color: #fff;
-      
+
       .get-started-button-container
         position: absolute;
         padding: 0px;
@@ -413,10 +412,10 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
         .get-started-button
           background-color: #0003;
           color: #fff;
-
+          min-width: 149px;
 
     div.content
-      padding: 0px 180px 100px;
+      padding: 0px 0 100px;
       font-size: 16px;
 
       .pad-y-1
@@ -440,7 +439,6 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
       h2
         margin: 15px 0px 18px;
         font-size: 23px;
-        border-left: 8px solid #444;
         padding-left: 10px;
 
       h3, h4
@@ -461,9 +459,25 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
         margin-top: 12px !important;
 
       .description
-        padding: 60px 0px 80px;
+        padding: 60px 180px 0;
+        background: #FAFAFA;
+        position: relative;
+
+        &::after
+          content: " ";
+          position: absolute;
+          background-image: url(assets/app-store/partner-page-shape-new.svg);
+          background-repeat: no-repeat;
+          background-size: 100% auto;
+          width: 100%;
+          height: 86px;
+          left: 0;
+          bottom: -86px;
 
       .how-to-use-razorpay
+        padding: 0 180px;
+        margin-top: 100px;
+
         .content-image-holder
           display: inline-block;
           height: 285px;
@@ -480,6 +494,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
             margin: auto;
             max-height: 270px;
             max-width: 450px;
+            cursor: zoom-in
 
         h2.how-to-use-heading
           margin: 0px;
@@ -487,7 +502,6 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
           & + p
             color: #162F56;
             margin: 0px;
-            border-left: 8px solid #444;
             padding: 2px 0px;
             padding-left: 10px;
 
@@ -509,44 +523,48 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
                 flex: 1;
                 padding: 0px 20px 0px 0px
 
-          & > li::before
-            counter-increment: section;
-            content: counters(section, ".") " ";
-            background-color: #444;
-            color: #fff;
-            padding: 5px;
-            border-radius: 100%;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            margin: auto;
-            height: 28px;
-            width: 28px;
-            font-size: 13px;
-            text-align: center;
-            left: -20px;
+          & > li div.list-counter
+            position: relative
+
+            &::before
+              counter-increment: section;
+              content: counters(section, ".") " ";
+              background-color: inherit;
+              color: #fff;
+              padding: 5px;
+              border-radius: 100%;
+              position: absolute;
+              top: 0;
+              margin: auto;
+              height: 28px;
+              width: 28px;
+              font-size: 13px;
+              text-align: center;
+              left: -40px;
 
           & > li.number-label-top::before
             top: 20px;
             margin: unset;
 
-        table, th, td 
+        table, th, td
           border: 1px solid black;
 
-        th, td 
+        th, td
           padding: 5px 10px;
 
         table
           border-collapse: collapse;
 
-
+.app-store-setup-image-modal
+  .content-zoomed-image
+    width: 100%;
 
 /* PartnerPage Mobile Styles START */
 @media (max-width: 768px)
   .PartnerPage
     .partnerpage-colored-top
       background-size: 150px auto;
-      
+
     section.appstore-card
       header
         padding: 20px;
@@ -554,7 +572,17 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
       div.content
         padding: 0px 16px 60px;
 
+        .description
+          padding: 60px 0 80px;
+          background: none;
+
+          &::after
+            background: none;
+
         .how-to-use-razorpay
+          padding: 0;
+          margin: 0;
+
           ol
             padding-left: 10px;
 
@@ -569,6 +597,11 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
               .list-flex
                 display: block;
+
+            & > li div.list-counter
+              &::before
+                top: -30px;
+                left: -20px;
 
           .content-image-holder
             display: inline-block;
@@ -588,7 +621,7 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
         ul
           padding-left: 20px;
-      
+
       div.top-heading
         padding: 24px 16px 0px;
 

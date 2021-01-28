@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -28,12 +32,16 @@ function Data(brandColor) {
 
       <div className="how-to-use-razorpay">
         <article>
-          <h2 className="how-to-use-razorpay">How to use Razorpay with Wix</h2>
+          <h2 style={brandStyles.brandBorderLeft}>How to use Razorpay with Wix</h2>
           <ol>
-            <li>Navigate to your Wix website and switch to editor mode.</li>
+            <li>
+              <div className="list-counter" style={brandStyles.listBg} />
+              Navigate to your Wix website and switch to editor mode.
+            </li>
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Settings</strong> → <strong>Accept Payments</strong>.
                 </p>
                 <PaddedImage
@@ -45,6 +53,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Add Payment Methods</strong>.
                 </p>
                 <PaddedImage
@@ -56,6 +65,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Select <strong>Razorpay</strong> and click <strong>Add</strong>.
                 </p>
                 <PaddedImage
@@ -66,7 +76,10 @@ function Data(brandColor) {
             </li>
             <li>
               <div className="list-flex">
-                <p>Once added, a success message appears as shown</p>
+                <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
+                  Once added, a success message appears as shown
+                </p>
                 <PaddedImage
                   src="/dist/css/assets/app-store/content-assets/wix/wix-4.png"
                   alt="success message"
@@ -76,6 +89,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Razorpay appears added as a payment method. Click{' '}
                   <strong>Set up Account to Activate</strong>.
                 </p>
@@ -87,7 +101,10 @@ function Data(brandColor) {
             </li>
             <li>
               <div className="list-flex">
-                <p>In the dialog box that appears, select the appropriate action</p>
+                <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
+                  In the dialog box that appears, select the appropriate action
+                </p>
                 <PaddedImage
                   src="/dist/css/assets/app-store/content-assets/wix/wix-6.png"
                   alt="dialog box"
@@ -124,6 +141,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Connect My Account</strong>. A success message appears on screen.
                 </p>
                 <PaddedImage
@@ -135,18 +153,20 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Razorpay now appears under <strong>Payment Methods</strong>. Ensure{' '}
                   <strong>Active on your Checkout</strong> is enabled.
                 </p>
                 <PaddedImage
-                  className="click-zoom"
                   src="/dist/css/assets/app-store/content-assets/wix/wix-9.png"
                   alt="Active on Checkout"
-                  width={700}
                 />
               </div>
             </li>
-            <li>This completes the integration on Wix Dashboard.</li>
+            <li>
+              <div className="list-counter" style={brandStyles.listBg} />
+              This completes the integration on Wix Dashboard.
+            </li>
           </ol>
 
           <div>
@@ -209,14 +229,20 @@ function Data(brandColor) {
               set up only one webhook on the Razorpay Dashboard.
             </p>
           </callout>
-          <div className="text-center">
-            <p>Watch the short animation below for more details.</p>
-            <PaddedImage
-              src="/dist/css/assets/app-store/content-assets/wix/final-webhook.gif"
-              alt="webhook"
-            />
-            <p>This completes your integration.</p>
-          </div>
+          <ol>
+            <li>
+              <div className="list-flex">
+                <p>
+                  Watch the short animation below for more details.
+                  <p>This completes your integration.</p>
+                </p>
+                <PaddedImage
+                  src="/dist/css/assets/app-store/content-assets/wix/final-webhook.gif"
+                  alt="webhook"
+                />
+              </div>
+            </li>
+          </ol>
         </article>
       </div>
     </main>

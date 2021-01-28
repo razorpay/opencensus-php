@@ -2,6 +2,11 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
+
   return (
     <main>
       <div className="description">
@@ -28,7 +33,7 @@ function Data(brandColor) {
 
       <div className="how-to-use-razorpay">
         <article>
-          <h2>How to use Razorpay with WooCommerce</h2>
+          <h2 style={brandStyles.brandBorderLeft}>How to use Razorpay with WooCommerce</h2>
           <ul>
             <li>
               <a href="#step-1-install-plugin">Install Plugin</a>.
@@ -209,15 +214,16 @@ function Data(brandColor) {
                   />
                 </div>
               </li>
+              <li>
+                <div className="list-flex">
+                  <p>Watch the short animation below for more details.</p>
+                  <PaddedImage
+                    alt="Animations of above steps"
+                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation.gif"
+                  />
+                </div>
+              </li>
             </ol>
-
-            <div className="text-center" style={{ padding: '50px 0px' }}>
-              <p>Watch the short animation below for more details.</p>
-              <PaddedImage
-                alt="Animations of above steps"
-                src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation.gif"
-              />
-            </div>
 
             <h4>List of Events to Subscribe</h4>
             <p>You must subscribe to the following events:</p>

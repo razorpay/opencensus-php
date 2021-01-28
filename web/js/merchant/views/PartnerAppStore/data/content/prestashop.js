@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -19,9 +23,12 @@ function Data(brandColor) {
 
       <div className="how-to-use-razorpay">
         <article>
-          <h2 className="how-to-use-heading">How to use Razorpay with PrestaShop</h2>
+          <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
+            How to use Razorpay with PrestaShop
+          </h2>
           <ol>
             <li className="number-label-top">
+              <div className="list-counter" style={brandStyles.listBg} />
               Download the Source code zip file of the required version of the plugin from the
               Releases section in GitHub.
               <ul>
@@ -50,6 +57,7 @@ function Data(brandColor) {
               </ul>
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Log into{' '}
               <a href="https://addons.prestashop.com/en/" target="_blank">
                 PrestaShop account
@@ -57,20 +65,25 @@ function Data(brandColor) {
               .
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Navigate to the <strong>Modules</strong> tab and click{' '}
               <strong>Add a New Module</strong>.
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Click <strong>Browse</strong> to open the dialogue box enabling you to search your
               computer. Select the zip file that you have downloaded and click <strong>OK</strong>.
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Click <strong>Upload this Module</strong>.
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Click <strong>Install</strong> to install the module.
             </li>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               Click <strong>Configure</strong> to configure the module.
             </li>
           </ol>

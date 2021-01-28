@@ -2,6 +2,10 @@ import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
   const PaddedImage = PadImage(brandColor);
+  const brandStyles = {
+    listBg: { backgroundColor: brandColor },
+    brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
+  };
 
   return (
     <main>
@@ -31,10 +35,13 @@ function Data(brandColor) {
       </div>
       <div className="how-to-use-razorpay">
         <article>
-          <h2 className="how-to-use-heading">How to use Razorpay with Zoho Commerce</h2>
-          <p>To integrate Razorpay with your Zoho suite:</p>
+          <h2 className="how-to-use-heading" style={brandStyles.brandBorderLeft}>
+            How to use Razorpay with Zoho Commerce
+          </h2>
+          <p style={brandStyles.brandBorderLeft}>To integrate Razorpay with your Zoho suite:</p>
           <ol>
             <li>
+              <div className="list-counter" style={brandStyles.listBg} />
               <a
                 href="https://razorpay.com/docs/payment-gateway/dashboard-guide/sign-up/"
                 target="_blank"
@@ -46,6 +53,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Log into your Zoho Dashboard and click <strong>Settings</strong>.
                 </p>
                 <PaddedImage
@@ -57,6 +65,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Integrations</strong>.
                 </p>
                 <PaddedImage
@@ -68,6 +77,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Find <strong>Razorpay</strong> on the <strong>Customer Payments</strong> page and
                   click <strong>Setup Now</strong>.
                 </p>
@@ -80,6 +90,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   You are redirected to the Razorpay login page. Enter your credentials on this page
                   and click <strong>Login</strong>.
                 </p>
@@ -92,6 +103,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Authorize</strong>.
                 </p>
                 <PaddedImage
@@ -103,6 +115,7 @@ function Data(brandColor) {
             <li>
               <div className="list-flex">
                 <p>
+                  <div className="list-counter" style={brandStyles.listBg} />
                   The integration is complete, Razorpay is marked as <code>Active</code> and you can
                   start accepting payments from your customers using the Razorpay Payment Gateway.
                 </p>
@@ -112,16 +125,20 @@ function Data(brandColor) {
                 />
               </div>
             </li>
+            <li>
+              <div className="list-flex">
+                <p>
+                  {/* <div className="list-counter" style={brandStyles.listBg} /> */}
+                  The short animation below shows you how to integrate your Zoho suite with
+                  Razorpay.
+                </p>
+                <PaddedImage
+                  alt="Above steps in animation"
+                  src="/dist/css/assets/app-store/content-assets/zoho/integrate-razorpay-on-zoho.gif"
+                />
+              </div>
+            </li>
           </ol>
-          <div className="pad-y-1 text-center">
-            <p>
-              The short animation below shows you how to integrate your Zoho suite with Razorpay.
-            </p>
-            <PaddedImage
-              alt="Above steps in animation"
-              src="/dist/css/assets/app-store/content-assets/zoho/integrate-razorpay-on-zoho.gif"
-            />
-          </div>
         </article>
       </div>
     </main>
