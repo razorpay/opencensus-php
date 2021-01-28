@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Enach\Nach;
 use Excel;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
@@ -284,6 +285,41 @@ class NachGatewayTest extends TestCase
     public function testGatewayFileDebitBankResponseSuccess()
     {
         $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+        $this->assertEquals(300000, $batch['amount']);
+
+        $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testGatewayFileDebitBankResponseSuccessAfterPaymentTimeout()
+    {
+        $payment = $this->createRecurringNachPayment();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
+
+        $this->fixtures->edit('payment', $payment['razorpay_payment_id'], ['created_at' => $createdAt]);
+
+        $this->timeoutOldPayment();
+
+        $paymentEntity = $this->getDbEntityById('payment', $payment['razorpay_payment_id']);
+
+        $this->assertEquals('failed', $paymentEntity['status']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $paymentEntity['internal_error_code']);
+        $this->assertEquals('nach', $paymentEntity['method']);
+        $this->assertEquals('nach_citi', $paymentEntity['gateway']);
+        $this->assertEquals(300000, $paymentEntity['amount']);
 
         $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
 
