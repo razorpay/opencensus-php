@@ -146,7 +146,7 @@
                                                                 <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                             </div>
                                                         </div>
-                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Invoice of  <b>₹{{ $invoice['payout_amount'] }}</b> to {{ $payout['to']['name'] }} could not be completed {{ $invoice['failure_reason']}}. Details are shown below. </div>
+                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Invoice of  <b>₹{{ $amount_details['payout_amount'] }}</b> to {{ $payout['to']['name'] }} could not be completed {{ $invoice['failure_reason']}}. If any amount was deducted, it will be reversed to the bank. Details are shown below. </div>
                                                         <br><br>
                                                         <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">If the invoice requires corrections, you can edit the invoice and reinitiate the payment.</div>
                                                         <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="{{ $invoice['url'] }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;">VIEW ON DASHBOARD</a></div>
@@ -202,7 +202,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="card secondary highlight informative top-align-label" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-left: 24px; padding-right: 24px; border-color: #528ff0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
-                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Invoice Summary:</div>
+                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Invoice Details:</div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Invoice No.</div>
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $invoice['number'] }}</div>
@@ -216,19 +216,15 @@
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $invoice['due_date'] }}</div>
                                                         </div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Payout Amount</div>
-                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $invoice['payout_amount'] }}</div>
-                                                        </div>
-                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Description</div>
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $invoice['description'] }}</div>
                                                         </div>
                                                         <div class="divider" style="padding: 12px 0;">
                                                             <div class="divider-line" style="height: 1px; background: #3a405f;"></div>
                                                         </div>
-                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Payout Details</div>
+                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Transfer Details</div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Name</div>
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Payout To</div>
                                                             <div class="value left-align line-big" style="color: #bdbfC9; display: inline-block; width: 50%; line-height: 28px; text-align: left;"><a class="link mr-8" href="{{ $payout['to']['url'] }}" target="_blank" style="text-decoration: none; color: #528FF0; margin-right: 8px;">{{ $payout['to']['name'] }}</a><span class="pill no-margin" style="border: 1px solid #9195A6; color: #9195A6; padding: 2px 10px; margin-left: 10px; border-radius: 20px; font-size: 13px; line-height: 16px; display: inline-block; margin: 0px;">{{ $payout['to']['type']  }}</span></div>
                                                         </div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
@@ -291,6 +287,58 @@
                                                             <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5%;">
                                                                 <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Failed at</div>
                                                                 <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $payout['failed_at'] }}  </div>
+                                                            </div>
+                                                        @endif
+                                                        <div class="divider" style="padding: 12px 0;">
+                                                            <div class="divider-line" style="height: 1px; background: #3a405f;"></div>
+                                                        </div>
+                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Amount Details</div>
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Total Amount</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['total'] }}</div>
+                                                        </div>
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Subtotal</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['subtotal'] }}</div>
+                                                        </div>
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">TDS Calculated </div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['tds_calculated']['amount'] }}</div>
+                                                            <div class="label" style="color: #9195a6; display: inline-block; width: 40%; vertical-align: middle;"></div>
+                                                          <div class="value left-align sub-title" style="display: inline-block; width: 50%; text-align: left; color: #9195a6; font-size: 12px;">{{  $amount_details['tds_calculated']['percent'] }}% Tax • {{  $amount_details['tds_calculated']['code'] }}, {{  $amount_details['tds_calculated']['name'] }}</div>
+                                                        </div>
+                                                        @if(isset($amount_details['past_deductions']))
+                                                          <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                              <div class="label half-width" style="color: #9195a6; display: inline-block; width: 45%; vertical-align: top;">Past Deduction</div>
+                                                              <div class="value left-align" style="color: #9195a6; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['past_deductions'] }}</div>
+                                                          </div>
+                                                        @endif
+                                                        @if(isset($amount_details['vendor_dues']))
+                                                          <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                              <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Vendor Dues</div>
+                                                              <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['vendor_dues'] }}</div>
+                                                          </div>
+                                                        @endif
+                                                        @if(isset($amount_details['past_payments']))
+                                                          <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                              <div class="label half-width" style="color: #9195a6; display: inline-block; width: 45%; vertical-align: top;">Past Payments</div>
+                                                              <div class="value left-align" style="color: #9195a6; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['past_payments'] }}</div>
+                                                          </div>
+                                                        @endif
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Payout Amount</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['payout_amount'] }}</div>
+                                                        </div>
+                                                        @if(isset($amount_details['amount_pending']))
+                                                          <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                              <div class="label half-width" style="color: #9195a6; display: inline-block; width: 45%; vertical-align: top;">Amount Pending</div>
+                                                              <div class="value left-align" style="color: #9195a6; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['amount_pending'] }}</div>
+                                                          </div>
+                                                        @endif
+                                                        @if(isset($amount_details['tds_deducted']))
+                                                            <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                                <div class="label half-width" style="color: #9195a6; display: inline-block; width: 45%; vertical-align: top;">TDS Deducted</div>
+                                                                <div class="value left-align" style="color: #9195a6; display: inline-block; width: 50%; text-align: left;">₹{{ $amount_details['tds_deducted'] }}</div>
                                                             </div>
                                                         @endif
                                                     </div>
