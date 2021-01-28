@@ -834,6 +834,8 @@ class Service extends Base\Service
 
                     $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
 
+                    $data = $this->updateRXCASelfServeExperiment($merchant, $data);
+
                     $data = $this->appendBankingDetails($data);
 
                     if (((bool) $merchant['activated']) === true)
@@ -1494,6 +1496,42 @@ class Service extends Base\Service
                 $data['experiments'][$experimentFeatureFlag] = $experimentConfig[Constants::DEFAULT_RESULT];
             }
         }
+        return $data;
+    }
+
+    /**
+     * This function excludes users who are on old CA Self_Serve flow
+     * and users who did signup to rx within 60 days,
+     * and put remaining users to the new CA flow.
+     *
+     * @param array $merchant
+     * @param array $data
+     * @return array
+     * @throws BadRequestError
+     */
+
+    protected function updateRXCASelfServeExperiment(array $merchant, array $data): array
+    {
+        $merchantService = new Merchant\Service;
+
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        if (array_key_exists('business_banking_signup_at', $merchant) === false)
+        {
+            return $data;
+        }
+
+        if($data['experiments']['rx_ca_self_serve_flow'] !== ['result' => 'on']
+            and $merchant['business_banking_signup_at'] < strtotime('- 60 days') and $isBankingRequest)
+        {
+            $data['experiments']['rx_non_self_serve_ca_flow'] =
+                $merchantService->getTreatment('rx_non_self_serve_ca_flow');
+        }
+        else
+        {
+            $data['experiments']['rx_non_self_serve_ca_flow'] = ['result' => 'off'];
+        }
+
         return $data;
     }
 
