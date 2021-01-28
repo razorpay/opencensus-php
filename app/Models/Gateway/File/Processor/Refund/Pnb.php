@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Pnb\RefundFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -19,7 +20,7 @@ class Pnb extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::PNB_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_PNB;
-    const GATEWAY_CODE           = [Payment\Processor\Netbanking::PUNB_C, Payment\Processor\Netbanking::PUNB_R];
+    const GATEWAY_CODE           = [Payment\Processor\Netbanking::PUNB_C, Payment\Processor\Netbanking::PUNB_R, IFSC::ORBC, IFSC::UTBI];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected $type = Payment\Entity::BANK;

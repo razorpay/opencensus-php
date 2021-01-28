@@ -25,7 +25,7 @@ class Ubi extends Base
     const EXTENSION              = FileStore\Format::VAL;
     const FILE_TYPE              = FileStore\Type::UBI_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_UBI;
-    const GATEWAY_CODE           = IFSC::UBIN;
+    const GATEWAY_CODE           = [IFSC::UBIN, IFSC::CORP, IFSC::ANDB, Payment\Processor\Netbanking::ANDB_C];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected function formatDataForFile(array $data)

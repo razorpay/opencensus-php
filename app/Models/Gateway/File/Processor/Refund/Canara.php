@@ -28,7 +28,7 @@ class Canara extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::CANARA_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_CANARA;
-    const GATEWAY_CODE           = IFSC::CNRB;
+    const GATEWAY_CODE           = [IFSC::CNRB, IFSC::SYNB];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BANK_CODE              = 'CNRB';
     const HEADERS                = RefundFileFields::COLUMN_HEADERS;
