@@ -715,6 +715,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getVerifyRequest($verify);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $request,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
         $response = $this->sendGatewayRequest($request);
 
         $decodedJson = json_decode($response->body, true);
