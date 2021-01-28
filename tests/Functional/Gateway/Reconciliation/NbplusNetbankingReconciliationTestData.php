@@ -80,4 +80,13 @@ return [
         'Journal_no'      => '012371800',
         'Paidstatus'      => 'Y',
     ],
+
+    'testScbSuccessRecon' => [
+        'Bank Code'                             => 'SCBL',
+        'payment reference number'              => '',
+        'Transaction Amount'                    => '500.00',
+        'date'   => Carbon::today()->format("d/m/Y"),
+        'Status of transaction'                 => 'Y',
+        'bank ref no.'                          => '123456'
+    ],
 ];
