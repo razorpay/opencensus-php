@@ -93,7 +93,8 @@ class Core extends Base\Core
             (new UpiTransferRequest\Core())->updateUpiTransferRequest($upiTransferInput, $paymentSuccess, $errorMessage,
                                                                       $upiTransferRequestId);
 
-            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected, $paymentSuccess, $terminal->getGateway());
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected,
+                                                              $paymentSuccess, $terminal->getGateway(), $errorMessage);
 
             $this->pushUpiTransferSourceToLake($upiTransfer);
         }

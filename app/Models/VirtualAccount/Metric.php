@@ -19,6 +19,7 @@ class Metric extends Base\Core
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';
     const LABEL_HAS_QR_CODE                 = 'has_qr_code';
     const LABEL_HAS_VPA                     = 'has_vpa';
+    const LABEL_MERCHANT_ID                 = 'merchant_id';
 
     protected function getDefaultDimensions(array $input): array
     {
@@ -39,6 +40,7 @@ class Metric extends Base\Core
             Metric::LABEL_HAS_BANK_ACCOUNT       => in_array(Receiver::BANK_ACCOUNT, $types),
             Metric::LABEL_HAS_QR_CODE            => in_array(Receiver::QR_CODE, $types),
             Metric::LABEL_HAS_VPA                => in_array(Receiver::VPA, $types),
+            Metric::LABEL_MERCHANT_ID            => $this->merchant ? $this->merchant->getId() : null,
         ];
 
         return $dimensions;
@@ -92,13 +94,15 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false, string $gateway = null)
+    public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false,
+                                       string $gateway = null, string $error = null)
     {
         $dimensions = [
             'method'            => $method,
             'expected'          => $isExpected,
             'successful'        => $success,
             'gateway'           => $gateway,
+            'error'             => $error
         ];
 
         $this->trace->count(

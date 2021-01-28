@@ -136,7 +136,7 @@ class Core extends Base\Core
 
             $this->bankTransferRequestCore->updateBankTransferRequest($input[Entity::REQ_UTR], $paymentSuccess, $errorMessage);
 
-            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage);
 
             $this->pushBankTransferSourceToLake($bankTransfer);
         }
@@ -203,7 +203,7 @@ class Core extends Base\Core
 
         $bankTransfer = $this->mutex->acquireAndRelease(
             $mutexKey,
-            function () use ($processor, $bankTransfer) 
+            function () use ($processor, $bankTransfer)
             {
                 return $processor->process($bankTransfer);
             },
@@ -239,7 +239,7 @@ class Core extends Base\Core
             ->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
 
         $this->virtualAccountMetrics
-            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider);
+            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage);
     }
 
     public function getAccountForRefund(Entity $bankTransfer)
