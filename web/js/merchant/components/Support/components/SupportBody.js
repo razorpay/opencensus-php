@@ -4,6 +4,7 @@ import Banner from 'common/ui/Banner';
 import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -126,14 +127,31 @@ export default class SupportBody extends Component {
           <i class="i i-close pull-right mob-close" onClick={onToggle} />
         </header>
         <ul class="support-list">
-          <li class="support-item p-all ticket" onClick={() => handleClick('ticket')}>
-            Write to us
-            <small class="help-block">For integration, account and payment issues</small>
-          </li>
-          <ShowWhen myRole="owner admin" additionalCondition={(user) => user.isFdTicketsEnabled}>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
+          >
+            <li class="support-item p-all ticket" onClick={() => handleClick('ticket')}>
+              Have a query?
+              <small class="help-block">For integration, account and payment issues</small>
+            </li>
+          </ShowWhen>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={(user) => user.isNewGrievanceFlowEnabled}
+          >
+            <li class="support-item p-all ticket" onClick={() => handleClick('tickets')}>
+              Have a query?
+              <small class="help-block">Check existing query/raise a new one</small>
+            </li>
+          </ShowWhen>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
+          >
             <li class="support-item p-all history">
               <Link
-                to={`/ticket-support/tickets`}
+                to="/ticket-support/tickets"
                 onClick={() => {
                   window.rzpAnalytics({
                     eventCategory: 'Ticket Dashboard',

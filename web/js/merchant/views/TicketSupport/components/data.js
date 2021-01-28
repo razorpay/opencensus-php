@@ -37,7 +37,7 @@ export const statuses = {
   },
   '100': {
     name: 'Loading..',
-    class: 'info',
+    class: 'pending',
   },
 };
 
@@ -246,3 +246,7 @@ export const MAX_SIZE_LIMIT = 15 * 1024 * 1024; // 15MB limit
 export const MAX_PAGE_SIZE = 100;
 export const MAX_CONVERSATION = 100;
 export const MIN_TIME_TO_REFRESH = 2 * 60 * 60 * 1000; // 2 hours
+export const PRERECORDED_RESPONSES = [
+  "I didn't receive a satisfactory response",
+  "I haven't received any response yet",
+];

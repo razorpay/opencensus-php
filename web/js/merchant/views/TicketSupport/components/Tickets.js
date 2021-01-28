@@ -35,6 +35,33 @@ export default class Tickets extends React.Component {
     loading: false,
   };
 
+  raiseTicket = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Ticket Dashboard',
+      eventAction: 'write to us clicked',
+      eventLabel: `Tickets`,
+    });
+
+    if (window.rzpTicketSystem) {
+      const rzpTicketSystem = window.rzpTicketSystem;
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+
+      let options = {};
+      if (this.props.user.isNewGrievanceFlowEnabled) {
+        options = {
+          screens: 'dashboardRequest',
+          email: window.rzp_user ? window.rzp_user.email : '',
+        };
+      }
+
+      rzpTicketSystem.openModal('#ticket', options);
+
+      setTimeout(() => {
+        rzpTicketSystem.modal.next();
+      }, 0);
+    }
+  };
+
   goNext = (page, bypass) => {
     if (
       !(this.props.support_tickets.data[page] && this.props.support_tickets.data[page].length) ||
@@ -63,17 +90,60 @@ export default class Tickets extends React.Component {
       return <h2 class="no-tickets-f">Please click on write to us for any queries</h2>;
     }
 
+    // if (currentPageTickets) {
+    //   currentPageTickets[0].status = 6;
+    // }
+
+    const CLOSED_TICKETS = [];
+    const OPEN_TICKETS = [];
+
+    currentPageTickets.forEach((ticket) => {
+      if (
+        statuses[ticket.status] &&
+        (statuses[ticket.status].name === 'Resolved' || statuses[ticket.status].name === 'Closed')
+      ) {
+        CLOSED_TICKETS.push(ticket);
+      } else {
+        OPEN_TICKETS.push(ticket);
+      }
+    });
+
     return (
       <div>
-        {currentPageTickets.map((ticket, index) => {
-          return (
-            <TicketBrief
-              last={index == currentPageTickets.length - 1}
-              ticket={ticket}
-              key={index}
-            />
-          );
-        })}
+        {OPEN_TICKETS.length !== 0 && (
+          <h1 className="tickets-section-title">Open tickets ({OPEN_TICKETS.length})</h1>
+        )}
+        <div>
+          {OPEN_TICKETS.map((ticket, index) => {
+            return (
+              <TicketBrief
+                last={index == currentPageTickets.length - 1}
+                ticket={ticket}
+                key={index}
+              />
+            );
+          })}
+        </div>
+        {OPEN_TICKETS.length !== 0 && CLOSED_TICKETS.length !== 0 && (
+          <div className="tickets-section-separator"></div>
+        )}
+        {CLOSED_TICKETS.length !== 0 && (
+          <h1 className="tickets-section-title">
+            <span>Closed tickets ({CLOSED_TICKETS.length})</span>
+            <i class="i i-chevron-up section-collapse" />
+          </h1>
+        )}
+        <div>
+          {CLOSED_TICKETS.map((ticket, index) => {
+            return (
+              <TicketBrief
+                last={index == currentPageTickets.length - 1}
+                ticket={ticket}
+                key={index}
+              />
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -91,17 +161,7 @@ export default class Tickets extends React.Component {
         <div class="content-wrapper content-sm ticket-support">
           <HeaderAction>
             <div class="btn-toolbar pull-right">
-              <button
-                onClick={() => {
-                  window.rzpAnalytics({
-                    eventCategory: 'Ticket Dashboard',
-                    eventAction: 'write to us clicked',
-                    eventLabel: `Tickets`,
-                  });
-                  raiseTicket();
-                }}
-                className="btn btn-primary pull-right"
-              >
+              <button onClick={this.raiseTicket} className="btn btn-primary pull-right">
                 Write to us
               </button>
             </div>
@@ -116,40 +176,6 @@ export default class Tickets extends React.Component {
                 ) : null}
                 {this.showTickets(total_tickets, tickets)}
               </div>
-              <div className="panel">
-                <div className="panel-body">
-                  <p>
-                    {!(tickets.length < MAX_PAGE_SIZE) && this.state.current_page == 1 ? (
-                      <b>Page {this.state.current_page}</b>
-                    ) : null}
-                  </p>
-                  {total_tickets.length >= MAX_PAGE_SIZE ? (
-                    <button
-                      disabled={tickets.length < this.state.size}
-                      className="btn btn-outline pull-right"
-                      onClick={() => {
-                        const current_page = this.state.current_page + 1;
-                        this.setState({ current_page }, () => this.goNext(current_page));
-                      }}
-                    >
-                      Next
-                    </button>
-                  ) : null}
-
-                  {this.state.current_page > 1 ? (
-                    <button
-                      style={{ marginRight: '10px' }}
-                      className="btn btn-outline pull-right"
-                      onClick={() => {
-                        const current_page = this.state.current_page - 1;
-                        this.setState({ current_page }, () => this.goNext(current_page));
-                      }}
-                    >
-                      Prev
-                    </button>
-                  ) : null}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -157,14 +183,3 @@ export default class Tickets extends React.Component {
     );
   }
 }
-
-const raiseTicket = () => {
-  if (window.rzpTicketSystem) {
-    const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
-  }
-};

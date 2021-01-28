@@ -67,7 +67,7 @@ export default class Reply extends React.Component {
     this.setState({ loading: true });
     this.props
       .replyToConversation(this.props.ticketID, bodyFormData)
-      .then((r) => {
+      .then((response) => {
         this.setState({ loading: false, body: null });
 
         this.replyRef.current.value = null;
@@ -76,8 +76,19 @@ export default class Reply extends React.Component {
         });
 
         if (this.props.onSuccess) {
-          this.props.onSuccess(r.data);
-          this.track('reply delivered', 'Tickets | Status: Success');
+          if (response.success) {
+            this.props.onSuccess(response.data);
+            this.track('reply delivered', 'Tickets | Status: Success');
+          } else {
+            this.props.showNotification({
+              type: 'error',
+              message: `Failed to reply, please try later! Status CODE: ${
+                response.data ? response.data.code : 'UNKNOWN'
+              }`,
+            });
+
+            this.track('reply undelivered', 'Tickets | Status: Failed');
+          }
         } else {
           this.track('reply undelivered', 'Tickets | Status: Failed');
         }
@@ -177,7 +188,7 @@ export default class Reply extends React.Component {
             <div className="panel-body" style={{ paddingLeft: 0 }}>
               <div className="row">
                 <div className="col-xs-2">{img}</div>
-                <div className="col-xs-10">
+                <div className="col-xs-10 reply-textarea">
                   <h5 style={{ marginBottom: 0 }}>
                     <div className="row">
                       <div className="col-xs-5 message-owner">
@@ -193,7 +204,7 @@ export default class Reply extends React.Component {
                       cols="30"
                       rows="3"
                       className="form-control reply-text"
-                      placeholder="Please type something..."
+                      placeholder="Write your message..."
                       ref={this.replyRef}
                     />
                   </div>
@@ -230,7 +241,14 @@ export default class Reply extends React.Component {
                       disabled={this.state.loading || !this.state.body}
                       className="btn btn-primary ticket-reply-btn"
                     >
-                      {this.state.loading ? 'Sending' : 'Send Reply'}
+                      {this.state.loading ? (
+                        'Sending'
+                      ) : (
+                        <span>
+                          <span>Send</span>
+                          <i class="i i-send reply-icon" />
+                        </span>
+                      )}
                     </button>
                   </div>
                 </div>

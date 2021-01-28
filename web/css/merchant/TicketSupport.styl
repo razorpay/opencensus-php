@@ -5,7 +5,7 @@
         display: block;
         margin: auto;
         border-radius: 50%;
-        width: 60px;
+        width: 56px;
     }
 
     .user-image {
@@ -21,6 +21,10 @@
 
     .message-owner {
         color: #162F56;
+    }
+
+    .reply-message-container {
+        padding-left: 0;
     }
 
     .message-to {
@@ -59,7 +63,7 @@
     }
 
     .message {
-        margin-bottom: 25px;
+        // margin-bottom: 25px;
 
         .row {
             overflow: hidden;
@@ -88,29 +92,46 @@
             margin-top: 0;
         }
 
+        .reply-textarea {
+            padding-left: 0;
+        }
+
         .reply-text {
             border-radius: 2px 2px 0 0;
         }
     }
 
-    .message-subject {
+    .ticket-subject {
         color: rgba(22, 47, 86, 0.87);
         font-weight: 700;
         margin-bottom: 5px;
+    }
+
+    .ticket-short-details {
+        color: rgba(81, 89, 120, 0.72);
     }
 
     .ticket-conv-body {
         background: rgba(216, 219, 223, 0.1);
         border: 1px solid rgba(22, 47, 86, 0.24);
         box-sizing: border-box;
-        padding: 15px;
+        padding: 15px 0;
         border: 1px solid rgba(22, 47, 86, 0.1);
+        overflow: hidden;
+    }
+
+    .tickets-section-separator {
+        margin-bottom: 40px;
     }
 
     .ticket-row-panel {
         margin-bottom: 0;
         border: 1px solid rgba(22, 47, 86, 0.1);
         border-bottom: 0;
+
+        &:last-child {
+            border-bottom: 1px solid rgba(22, 47, 86, 0.1);
+        }
 
         .label-active {
             background: #1F890E;
@@ -119,24 +140,24 @@
         .ticket-detail-separator {
             padding: 0 9px;
         }
-
     }
 
     .ticket-reply-btn {
+        font-size: 12px;
+        line-height: 14px;
+        padding: 7px 16px;
         float: right;
         margin-top: 12px;
+
+        .reply-icon {
+            font-size: 13px;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
     }
 
     .reply-quill {
         margin-top: 10px;
-    }
-
-    .message-panel-body {
-        &:last-child {
-            .panel-body {
-                // border-bottom: 1px solid rgba(22, 47, 86, 0.1);
-            }
-        }
     }
 
     .active-ticket-grey {
@@ -147,6 +168,20 @@
 
     .tickets-container {
         min-height: 35rem;
+    }
+
+    .tickets-section-title {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: bold;
+        margin: 0 0 22px;
+
+        .section-collapse {
+            color: rgba(22, 47, 86, 0.54);
+            margin-left: 6px;
+            vertical-align: middle;
+            font-size: 24px;
+        }
     }
 
     .ticket-cont-spinner {
@@ -162,6 +197,59 @@
         font-weight: bold;
         margin-bottom: 22px;
         font-size: 16px;
+    }
+
+    .escalate-banner {
+        margin-top: 15px;
+        margin-bottom: -15px;
+        background: rgba(22, 47, 86, 0.1);
+        color: rgba(22, 47, 86, 0.87);
+        font-size: 12px;
+        line-height: 14px;
+        padding: 8px 0;
+
+        &.escalation-warning {
+            color: #F89A23;
+            background: linear-gradient(0deg, rgba(255, 159, 0, 0.1), rgba(255, 159, 0, 0.1)), #FFFFFF;
+        }
+
+        .link {
+            font-weight: bold;
+        }
+    }
+
+    .ticket-escalated-response {
+        font-size: 12px;
+        line-height: 14px;
+        color: #F2B852;
+
+        .ticket-escalated-response-time {
+            margin-left: 4px;
+            color: #F39F31;
+        }
+    }
+
+    .ticket-escalated-icon {
+        vertical-align: middle;
+        margin-right: 6px;
+    }
+
+    .ticket-replies-container {
+        .message:not(:last-child)  {
+            border-bottom: 0;
+        }
+    }
+
+    .ticket-replies-title {
+        margin: 25px 0 16px;
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: bold;
+        color: rgba(22, 47, 86, 0.87);
+    }
+
+    .ticket-details-caption {
+        padding-left: 6px;
     }
 
 }
@@ -181,10 +269,12 @@
     font-weight: 600;
 }
 
-.m-body-stroke {
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(22, 47, 86, 0.1);
+.ticket-title-section {
     padding-bottom: 16px;
+}
+
+.ticket-title-divider {
+    border-bottom: 1px solid rgba(22, 47, 86, 0.1);
 }
 
 .ticket-img-round {
@@ -209,17 +299,22 @@
     &.label-active {
         background: #1f890e;
     }
+
+    &.label-info {
+        background-color: #37ABFF;
+    }
+
 }
 
 .message-user-circle {
-    font-size: 48px;
+    font-size: 56px;
     position: relative;
     top: 6px;
     left: 20px;
 }
 
 .reply-user-circle {
-    font-size: 60px;
+    font-size: 56px;
     position: relative;
     top: 8px;
     left: 20px;

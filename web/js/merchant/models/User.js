@@ -450,6 +450,10 @@ export default class User {
     return this.getExpStatus('view_fd_tickets');
   }
 
+  get isNewGrievanceFlowEnabled() {
+    return this.getExpStatus('show_new_grievance_flow');
+  }
+
   get isAnnouncementIconEnabled() {
     return this.getExpStatus('AnnouncementIconJan2021');
   }

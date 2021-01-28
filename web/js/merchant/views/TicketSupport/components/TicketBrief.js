@@ -1,8 +1,7 @@
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { statuses } from './data.js';
-import { titleCase } from 'common/utils/rzp-utils.js';
 import TicketStatus from './TicketStatus.js';
 
 export default class TicketBrief extends React.Component {
@@ -16,32 +15,12 @@ export default class TicketBrief extends React.Component {
 
   render() {
     const ticket = this.props.ticket;
-    const status = statuses[ticket.status];
-    let message;
-    // if (status == 'closed') {
-    //   message = `Ticket closed ${moment(ticket.stats.closed_at).fromNow()}`;
-    // }
-    // if (status == 'resolved') {
-    //   message = `Ticket resolved ${moment(ticket.stats.resolved_at).fromNow()}`;
-    // }
-    // if (status == 'pending') {
-    //   message = `Team is investigating the ticket`;
-    // }
-    // if (status == 'open') {
-    //   if (ticket.stats.requester_responded_at) {
-    //     message = `You have responded ${moment(ticket.stats.requester_responded_at).fromNow()}`;
-    //   }
-    //   if (ticket.stats.agent_responded_at) {
-    //     message = `Razorpay responded ${moment(ticket.stats.requester_responded_at).fromNow()}`;
-    //   }
-    //   if (!(ticket.stats.requester_responded_at && ticket.stats.agent_responded_at)) {
-    //     message = `Support team will respond within 8hrs`;
-    //   }
-    // }
+
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
 
     const formattedDate = moment(ticket.created_at).fromNow();
+    const responseFormatDate = moment(ticket.fr_due_by).format('HH:mm, DD MMM');
     return (
       <div className="panel ticket-row-panel">
         <div
@@ -55,18 +34,42 @@ export default class TicketBrief extends React.Component {
                   <div className="row">
                     <div className="col-xs-8">
                       <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
-                        <p class="message-subject">{subject}</p>
+                        <p className="ticket-subject">{subject}</p>
                       </Link>
 
-                      <p>
-                        <span>Ticket ID #{ticket.id}</span>
-                        <span className="ticket-detail-separator">•</span>
-                        <span>Raised {formattedDate}</span>
-                      </p>
+                      <Link to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/conversation`}>
+                        <p className="ticket-short-details">
+                          <span>Ticket # {ticket.ticket_id}</span>
+                          <span className="ticket-detail-separator">•</span>
+                          <span>Raised {formattedDate}</span>
+                        </p>
+                      </Link>
                     </div>
-                    <div className="col-xs-4">
-                      <TicketStatus ticket={ticket} />
-                    </div>
+                    {/* Render only if status `Awaiting Your Reply` */}
+                    {statuses[ticket.status] &&
+                      statuses[ticket.status].name === 'Awaiting Your Reply' && (
+                        <div className="col-xs-4">
+                          <TicketStatus ticket={ticket} />
+                        </div>
+                      )}
+                    {statuses[ticket.status] &&
+                      statuses[ticket.status].name === 'Active' &&
+                      ticket.priority === 4 && (
+                        <div className="ticket-escalated-response">
+                          <span>
+                            <i class="i i-forward ticket-escalated-icon" />
+                            <Popover align="bottom" theme="dark">
+                              <PopoverBody>
+                                <div>We are looking at this escalation on priority.</div>
+                              </PopoverBody>
+                            </Popover>
+                          </span>
+                          <span>Response expected before:</span>
+                          <span className="ticket-escalated-response-time">
+                            {responseFormatDate}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

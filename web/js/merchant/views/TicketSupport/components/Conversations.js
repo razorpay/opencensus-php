@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
 import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION, MIN_TIME_TO_REFRESH } from './data.js';
-import { getExpiryTime } from '../utils';
+import { getExpiryTime, getEscalationType } from '../utils';
 import Ticket from './Ticket';
 import * as axios from 'axios';
 import { withRouter } from 'react-router-dom';
@@ -16,6 +16,7 @@ import {
 } from 'merchant/reducers/config.js';
 import Reply from './Reply.js';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { PRERECORDED_RESPONSES } from './data';
 
 @withRouter
 @connect(
@@ -39,6 +40,7 @@ export default class Conversations extends React.Component {
       data: { 1: [] },
       loading: false,
     },
+    loadingTicket: true,
     size: MAX_CONVERSATION,
     current_page: 1,
   };
@@ -57,7 +59,8 @@ export default class Conversations extends React.Component {
       .then((e) => {
         const conversations = this.state.conversations;
         conversations.loading = false;
-        conversations.data[page] = e.data;
+        conversations.data[page] =
+          e.data instanceof Array ? e.data : Object.entries(e.data).map((c) => c[1]);
         this.setState({ conversations: conversations });
         this.setTimerToReload(conversations.data[page]);
       })
@@ -79,7 +82,7 @@ export default class Conversations extends React.Component {
   loadTicketDetails() {
     return merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
       .then((e) => {
-        this.setState({ ticket: e.data });
+        this.setState({ ticket: e.data, loadingTicket: false });
       })
       .catch((e) => {
         this.track('conversation loading failed', 'Conversation | Status: Failed');
@@ -93,8 +96,8 @@ export default class Conversations extends React.Component {
   }
 
   componentDidMount() {
-    this.goNext(1);
     this.loadTicketDetails();
+    this.goNext(1);
   }
 
   componentWillUnmount() {
@@ -132,6 +135,21 @@ export default class Conversations extends React.Component {
     }, timeToRefresh);
   }
 
+  shouldBeVisible(ticket) {
+    // Hide reply if it's a private message/escaltion reply
+    if (ticket.private) return false;
+
+    if (ticket.category !== 3) return true;
+
+    let isEscalationReply = false;
+
+    PRERECORDED_RESPONSES.forEach((RESPONSE) => {
+      isEscalationReply = isEscalationReply || ticket.body_text.indexOf(RESPONSE) !== -1;
+    });
+
+    return !isEscalationReply;
+  }
+
   render() {
     let conversations = [];
     let total_conversations = [];
@@ -140,10 +158,10 @@ export default class Conversations extends React.Component {
     Object.keys(this.state.conversations.data).forEach((k) => {
       total_conversations.push(...this.state.conversations.data[k]);
     });
-    total_conversations = total_conversations.filter((m) => !m.private);
-    conversations = this.state.conversations.data[this.state.current_page] || [];
-    const last_page =
-      conversations.length < this.state.size ? null : !this.state.conversations.loading;
+
+    // Remove escalations/private messages from the conversation
+    total_conversations = total_conversations.filter(this.shouldBeVisible);
+
     return (
       <Fragment>
         <div class="content-wrapper content-sm ticket-support">
@@ -176,64 +194,49 @@ export default class Conversations extends React.Component {
                 ticket={this.state.ticket}
                 ticketID={TICKET_ID}
               />
-              <div className="panel">
-                <div className="panel-body message-panel-body" style={{ padding: 0 }}>
-                  <div>
-                    {total_conversations
-                      // .filter(m => !m.private)
-                      .map((conversation, i) => {
-                        return (
-                          <Message
-                            last={i == total_conversations.length - 1}
-                            ticket={this.state.ticket}
-                            key={i}
-                            message={conversation}
-                          />
-                        );
-                      })}
-                    {this.state.conversations.loading ? (
-                      <div className="ticket-cont-spinner">
-                        <Spinner />
-                      </div>
-                    ) : null}
-                    {last_page && (
-                      <div className="panel">
-                        <div className="panel-body message-panel-body text-center">
-                          <button
-                            onClick={() => {
-                              const current_page = this.state.current_page + 1;
-                              this.setState({ current_page }, () => this.goNext(current_page));
-                            }}
-                            className="btn btn-link"
-                          >
-                            View More
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    <Reply
-                      email={this.props.user.contact_email}
-                      last={total_conversations.length === 0}
-                      logo_url={this.props.user.logo_url}
-                      replyToConversation={this.props.replyToConversation}
-                      ticket={this.state.ticket}
-                      ticketID={TICKET_ID}
-                      onSuccess={(reply) => {
-                        const data = { ...this.state.conversations.data };
-                        let k = Object.keys(this.state.conversations.data);
-                        const last = k[k.length - 1];
-                        if (data[last].length < this.state.size) {
-                          data[last].push(reply);
-                        }
-                        this.setState({ data });
-                        this.props.showNotification({
-                          type: 'success',
-                          message: 'Reply has been sent',
-                          closeTimeout: 5000,
-                        });
-                      }}
-                    />
-                  </div>
+              <div>
+                <h1 className="ticket-replies-title">
+                  {total_conversations && total_conversations.length > 0 ? 'All Replies' : ''}
+                </h1>
+                <div class="ticket-replies-container">
+                  {total_conversations &&
+                    total_conversations.map((conversation, i) => {
+                      return (
+                        <Message
+                          last={i == total_conversations.length - 1}
+                          ticket={this.state.ticket}
+                          key={i}
+                          message={conversation}
+                        />
+                      );
+                    })}
+                  {this.state.conversations.loading || this.state.loadingTicket ? (
+                    <div className="ticket-cont-spinner">
+                      <Spinner />
+                    </div>
+                  ) : null}
+                  <Reply
+                    email={this.props.user.contact_email}
+                    last={total_conversations.length === 0}
+                    logo_url={this.props.user.logo_url}
+                    replyToConversation={this.props.replyToConversation}
+                    ticket={this.state.ticket}
+                    ticketID={TICKET_ID}
+                    onSuccess={(reply) => {
+                      const data = { ...this.state.conversations.data };
+                      let k = Object.keys(this.state.conversations.data);
+                      const last = k[k.length - 1];
+                      if (data[last].length < this.state.size) {
+                        data[last].push(reply);
+                      }
+                      this.setState({ data });
+                      this.props.showNotification({
+                        type: 'success',
+                        message: 'Reply has been sent',
+                        closeTimeout: 5000,
+                      });
+                    }}
+                  />
                 </div>
               </div>
             </div>
