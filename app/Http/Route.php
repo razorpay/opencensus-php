@@ -1989,8 +1989,8 @@ class Route
 
         //account and stakeholder document related routes
         'document_upload_v2'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
-        'document_get_v2'                            => ['get',       'documents/{fileStoreId}         ',                                   'GenericDocumentController@getDocument'                     ],
-        'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content ',                                   'GenericDocumentController@getDocumentContent'              ],
+        'document_get_v2'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
+        'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
         'link_account_documents_v2'                  => ['post',      'accounts/{accountId}/documents',                                     'DocumentControllerV2@linkAccountDocuments'                 ],
         'get_account_documents_v2'                   => ['get',       'accounts/{accountId}/documents',                                     'DocumentControllerV2@getAccountDocuments'                  ],
         'link_stakeholder_documents_v2'              => ['post',      'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@linkStakeHolderDocuments'             ],
@@ -3042,6 +3042,17 @@ class Route
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
 
+        'account_create_v2',
+        'account_fetch_v2',
+        'account_edit_v2',
+        'account_delete_v2',
+        'stakeholder_create_v2',
+        'stakeholder_update_v2',
+        'stakeholder_fetch_v2',
+        'link_account_documents_v2',
+        'link_stakeholder_documents_v2',
+        'get_account_documents_v2',
+        'get_stakeholder_documents_v2',
 
         // Temp fix to allow partners creating their own QR codes for
         // submerchants to use only one set of credentials everywhere
