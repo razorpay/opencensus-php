@@ -17,6 +17,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     const BLACKLISTED_COLUMNS = [];
 
+    const RECON_STATUS   = 'recon_status';
+    const GATEWAY_STATUS = 'gateway_status';
+
     protected function getRefundId(array $row)
     {
         return Base\SubReconciliator\Helper::getArrayFirstValue($row, self::COLUMN_REFUND_ID);
@@ -43,18 +46,35 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $rowStatus = strtolower($row[self::BANK_REMARK] ?? null);
 
+        $bankRemark = $row[self::BANK_REMARK] ?? null;
+
         if ($rowStatus === self::SUCCESS)
         {
-            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys(['reconStatus' => Payment\Refund\Status::PROCESSED]);
+            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                self::RECON_STATUS   => Payment\Refund\Status::PROCESSED,
+                self::GATEWAY_STATUS => $bankRemark,
+                ]
+            );
+
             return Payment\Refund\Status::PROCESSED;
         }
         elseif (in_array($rowStatus,self::FAILED_STATUSES) === true)
         {
-            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys(['reconStatus' => Payment\Refund\Status::FAILED]);
+            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                self::RECON_STATUS   => Payment\Refund\Status::FAILED,
+                self::GATEWAY_STATUS => $bankRemark,
+                ]
+            );
+
             return Payment\Refund\Status::FAILED;
         }
 
-        static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys(['reconStatus' => Payment\Refund\Status::PENDING]);
+        static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+            self::RECON_STATUS   => Payment\Refund\Status::PENDING,
+            self::GATEWAY_STATUS => $bankRemark,
+            ]
+        );
+
         return Payment\Refund\Status::FAILED;
     }
 }

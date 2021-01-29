@@ -283,12 +283,15 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->app->instance('scrooge', $scroogeMock);
 
         $this->app->scrooge->method('initiateRefundRecon')
-            ->will($this->returnCallback(
-                function ($data)
-                {
-                    $this->assertEquals($data[ScroogeReconciliate::REFUNDS][0][ScroogeReconciliate::GATEWAY_KEYS]['reconStatus'], Payment\Refund\Status::PENDING);
-                    $this->assertEquals($data[ScroogeReconciliate::REFUNDS][1][ScroogeReconciliate::GATEWAY_KEYS]['reconStatus'], Payment\Refund\Status::FAILED);
-                }));
+                           ->will($this->returnCallback(
+                               function ($data)
+                               {
+                                   $this->assertEquals(Payment\Refund\Status::PENDING, $data[ScroogeReconciliate::REFUNDS][0][ScroogeReconciliate::GATEWAY_KEYS]['recon_status']);
+                                   $this->assertEquals('Invalid OrderNo', $data[ScroogeReconciliate::REFUNDS][0][ScroogeReconciliate::GATEWAY_KEYS]['gateway_status']);
+                                   $this->assertEquals(Payment\Refund\Status::FAILED, $data[ScroogeReconciliate::REFUNDS][1][ScroogeReconciliate::GATEWAY_KEYS]['recon_status']);
+                                   $this->assertEquals('Duplicate request', $data[ScroogeReconciliate::REFUNDS][1][ScroogeReconciliate::GATEWAY_KEYS]['gateway_status']);
+                               })
+                           );
 
         $this->reconcile($uploadedFile, 'UpiSbi');
 
