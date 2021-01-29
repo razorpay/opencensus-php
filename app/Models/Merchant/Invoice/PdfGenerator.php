@@ -167,7 +167,7 @@ class PdfGenerator extends Base\Core
         return $pdfContent;
     }
 
-    public function getNameForMerchantPgInvoice($year, $month, $merchantId)
+    public function getNameForMerchantPgInvoice(int $year, int $month, $merchantId)
     {
         return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/' . $year . '/'. $month . '/' . $merchantId;
     }
