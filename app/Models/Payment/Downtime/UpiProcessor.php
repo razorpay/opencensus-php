@@ -30,7 +30,16 @@ class UpiProcessor extends BaseProcessor
 
         foreach ($vpaList as $vpa)
         {
-            $this->createPaymentDowntime($gatewayDowntimes, $vpa);
+            if($vpa === GatewayDowntime::ALL)
+            {
+                $downtimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', null);
+            }
+            else
+            {
+                $downtimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
+            }
+
+            $this->createPaymentDowntime($downtimes, $vpa);
         }
 
         $this->endOngoingDowntimes($vpaList);
