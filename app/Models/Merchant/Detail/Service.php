@@ -1323,6 +1323,56 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateMerchantFraudType($input)
+    {
+        $merchantId = $input['merchant_id'];
+
+        $fraudType = $input['fraud_type'];
+
+        $response = [];
+
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+        if ($merchantDetail !== null)
+        {
+            if ($merchantDetail->getFraudType() !== $fraudType)
+            {
+                try
+                {
+                    $merchantDetail->setFraudType($fraudType);
+
+                    $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+                    $this->trace->info(TraceCode::MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_REQUEST,
+                        [
+                            'merchant_id'   => $merchantId,
+                            Entity::FRAUD_TYPE      => $fraudType
+                        ]);
+
+                    $response = [
+                        'updated_ids'       => $merchantId
+                    ];
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->error(TraceCode::MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_SKIPPED,
+                        [
+                            'merchant_id'        => $merchantId,
+                            'reason'             => $ex->getMessage(),
+                        ]);
+
+                    $response = [
+                        'not_updated_ids'   => $merchantId
+                    ];
+                }
+            }
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_DETAIL_FRAUD_TYPE_UPDATED, $response);
+
+        return $response;
+    }
+
     public function getGstinSelfServeStatus()
     {
         $status = DEConstants::GSTIN_SELF_SERVE_STATUS_NOT_STARTED;

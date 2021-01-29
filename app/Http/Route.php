@@ -360,6 +360,7 @@ class Route
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
+        'merchant_update_fraud_type'               => ['post',     'merchant/update_fraud_type',                     'MerchantController@updateMerchantFraudType'                        ],
         'methods_update_merchants'                 => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'gratis_postpaid_transactions'             => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'terminal_delete'                          => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -2632,6 +2633,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_update_fraud_type',
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
         // crons for autoKYC'd merchants who have not been verified manually yet
@@ -5636,6 +5638,7 @@ class Route
         'cron' => [
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
+            'merchant_update_fraud_type',
             'gstin_e_invoice_cron',
 
             // crons for autoKYC'd merchants who have not been verified manually yet

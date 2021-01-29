@@ -787,6 +787,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMerchantFraudType()
+    {
+        $input = Request::all();
+
+        $data =  $this->service(E::MERCHANT_DETAIL)->updateMerchantFraudType($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getOffers(string $mid)
     {
         $data = $this->service()->getOffers($mid);

@@ -157,6 +157,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const BUSINESS_SUGGESTED_PIN                   = 'business_suggested_pin';
     const BUSINESS_SUGGESTED_ADDRESS               = 'business_suggested_address';
 
+    const FRAUD_TYPE                               = 'fraud_type';
+
     // relation name
     const STAKEHOLDER    = 'stakeholder';
 
@@ -288,6 +290,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::CLIENT_APPLICATIONS,
         self::BUSINESS_SUGGESTED_PIN,
         self::BUSINESS_SUGGESTED_ADDRESS,
+        self::FRAUD_TYPE
     ];
 
     protected $public = [
@@ -396,6 +399,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::CLIENT_APPLICATIONS,
         self::BUSINESS_SUGGESTED_PIN,
         self::BUSINESS_SUGGESTED_ADDRESS,
+        self::FRAUD_TYPE
     ];
 
     protected $defaults = [
@@ -619,7 +623,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
-    
+
     public function setBusinessRegisteredPin(string $businessPin)
     {
         return $this->setAttribute(self::BUSINESS_REGISTERED_PIN, $businessPin);
@@ -1291,5 +1295,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBusinessSuggestedAddress()
     {
         return $this->getAttribute(self::BUSINESS_SUGGESTED_ADDRESS);
+    }
+
+    public function getFraudType()
+    {
+        return $this->getAttribute(self::FRAUD_TYPE);
+    }
+
+    public function setFraudType($fraudType)
+    {
+        return $this->setAttribute(self::FRAUD_TYPE, $fraudType);
     }
 }
