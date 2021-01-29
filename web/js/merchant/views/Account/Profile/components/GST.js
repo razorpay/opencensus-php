@@ -163,11 +163,12 @@ export default class GSTDetails extends Component {
               user.isAllowedEdit('profile') && user.isFeatureEnabled(`gstin_self_serve`)
             }
           >
-            {this.state.selfServeStatus === 'not_started' && (
-              <span class="pull-right">
-                <a onClick={this.openAddGSTModal}>{title}</a>
-              </span>
-            )}
+            {this.state.selfServeStatus === 'not_started' &&
+              this.state.activationResponse !== null && (
+                <span class="pull-right">
+                  <a onClick={this.openAddGSTModal}>{title}</a>
+                </span>
+              )}
             {this.state.selfServeStatus === 'in_progress' && (
               <span class="pull-right">
                 <a>Request under review</a>
