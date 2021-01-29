@@ -554,7 +554,25 @@ class Constants
             'filters'     => [
                 'experiments_with_variant'  => ['rx_opfin_sso_announcement' => 'on'],
             ]
-        ]
+        ],
+        [
+            'id'          => 'JAN21-PG-GTM1',
+            'title'       => 'Create an online store using Shopify',
+            'description' => 'Build your ecommerce website in no time with Shopify and integrate Razorpay in one-click. Trusted by 1M+ businesses worldwide',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/shopify.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Sign up for free trial',
+                    'url'   => 'https://www.shopify.in/shopifyxrazorpay/?ref=thirdwatch-data',
+                ],
+            ],
+            'start_ts'    => 1610908200,
+            'end_ts'      => 1619807399,
+            'filters'     => [
+                'experiments'         => ['shopify_gtm_notification'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array

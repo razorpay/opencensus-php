@@ -1453,6 +1453,7 @@ class Service extends Base\Service
             'whats-new-dec-2020',
             'rx_opfin_sso_announcement',
             'AnnouncementIconJan2021',
+            'shopify_gtm_notification'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
