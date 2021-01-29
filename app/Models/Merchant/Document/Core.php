@@ -368,8 +368,11 @@ class Core extends Base\Core
 
             $merchantDetails->setPoaVerificationStatus(null);
 
-            (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
-            $merchantDetails->stakeholder->setPoaStatus(null);
+            $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
+            if ($exists === true)
+            {
+                $merchantDetails->stakeholder->setPoaStatus(null);
+            }
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
         }

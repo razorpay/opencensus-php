@@ -159,6 +159,13 @@ class Core extends Base\Core
         return $stakeholder;
     }
 
+    public function checkIfStakeholderExists(Detail\Entity $merchantDetails)
+    {
+        $stakeholder = $merchantDetails->stakeholder;
+
+        return (empty($stakeholder) === false);
+    }
+
     protected function createStakeholderFromMerchantDetails(Detail\Entity $merchantDetails): Entity
     {
         $mutexResource = self::STAKEHOLDER_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();

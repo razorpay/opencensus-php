@@ -50,6 +50,21 @@ class AccountV2Test extends TestCase
         $this->assertEmpty($stakeholders);
     }
 
+    public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $response = $this->startTest();
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEmpty($stakeholders);
+    }
+
     public function testEditAccountV2ProfileAddress()
     {
         $this->setUpPartnerWithKycHandled();

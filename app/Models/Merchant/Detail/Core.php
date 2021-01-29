@@ -863,8 +863,11 @@ class Core extends Base\Core
         {
             $merchantDetails->setPoiVerificationStatus(null);
 
-            (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
-            $merchantDetails->stakeholder->setPoiStatus(null);
+            $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
+            if ($exists === true)
+            {
+                $merchantDetails->stakeholder->setPoiStatus(null);
+            }
 
             return;
         }
