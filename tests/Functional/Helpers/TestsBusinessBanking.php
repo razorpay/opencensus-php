@@ -122,6 +122,11 @@ trait TestsBusinessBanking
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
         $this->fixtures->on('live')->merchant->activate();
 
         // Creates banking balance

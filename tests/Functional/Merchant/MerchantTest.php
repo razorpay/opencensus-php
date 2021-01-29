@@ -7828,6 +7828,12 @@ class MerchantTest extends TestCase
             ]
         );
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
             ['merchant_id' => '100000Razorpay']);
 
@@ -7980,6 +7986,12 @@ class MerchantTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
@@ -8018,6 +8030,12 @@ class MerchantTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant', $merchantData);
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
@@ -8033,6 +8051,12 @@ class MerchantTest extends TestCase
             'convert_currency'  => false,
         ];
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->edit('merchant', $merchant['id'], $merchantData);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
@@ -8043,6 +8067,12 @@ class MerchantTest extends TestCase
     public function testInternationalToggleWithInvalidValue()
     {
         $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 

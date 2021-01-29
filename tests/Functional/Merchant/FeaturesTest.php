@@ -761,6 +761,12 @@ class FeaturesTest extends TestCase
      */
     public function testAddMerchantLocStage2FeatureFailure()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
@@ -773,6 +779,12 @@ class FeaturesTest extends TestCase
     public function testAddMerchantLocStage2FeatureSuccess()
     {
         $this->addFeatures(Mode::LIVE, false, [Constants::LOC_STAGE_1]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
@@ -826,6 +838,12 @@ class FeaturesTest extends TestCase
          * $input[3] - $expectBadRequestException
          * $input[4] - $shouldSync
          */
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $inputs = [
             ['add', Mode::LIVE, 'marketplace', true, false],
@@ -1229,7 +1247,6 @@ class FeaturesTest extends TestCase
         $this->ba->$authMethod();
 
         $testData = $this->testData[__FUNCTION__];
-
         if ($action === 'add')
         {
             $testData['request']['content']['features'][$featureName] = '1';
@@ -1790,6 +1807,12 @@ class FeaturesTest extends TestCase
     {
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->startTest();
     }
 
@@ -1810,6 +1833,12 @@ class FeaturesTest extends TestCase
                });
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $response = $this->startTest();
 

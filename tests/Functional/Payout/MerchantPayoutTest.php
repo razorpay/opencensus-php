@@ -305,6 +305,12 @@ class MerchantPayoutTest extends TestCase
 
         $this->fixtures->on('live')->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();

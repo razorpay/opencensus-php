@@ -32,10 +32,11 @@ class SettlementOndemandTest extends TestCase
 
         parent::setUp();
 
-        $this->merchantDetail = $this->fixtures->create('merchant_detail:sane', [
+        $this->merchantDetail = $this->fixtures->create('merchant_detail', [
             'merchant_id'   => '10000000000000',
             'contact_name'  => 'dummy_name',
             'contact_email' => 'test@gmail.com',
+            'business_type' => 3
         ]);
 
 

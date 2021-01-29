@@ -1206,6 +1206,12 @@ class UserTest extends TestCase
 
         $apiKey = 'rzp_live_'.$merchantId;
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth($apiKey, $user->getId());
 
         $this->startTest();
@@ -1226,6 +1232,12 @@ class UserTest extends TestCase
 
         $apiKey = 'rzp_live_'.$merchantId;
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth($apiKey, $user->getId());
 
         $this->startTest();
@@ -1245,6 +1257,12 @@ class UserTest extends TestCase
                         ->toArray()[0];
 
         $apiKey = 'rzp_live_'.$merchantId;
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth($apiKey, $user->getId());
 
@@ -2430,6 +2448,12 @@ class UserTest extends TestCase
     {
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->fixtures->merchant->setRestricted(true, '10000000000000');
@@ -2453,6 +2477,12 @@ class UserTest extends TestCase
                 UserEntity::CONTACT_MOBILE              => '9123456789',
                 UserEntity::CONTACT_MOBILE_VERIFIED     => true,
             ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
@@ -2479,6 +2509,12 @@ class UserTest extends TestCase
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
             UserEntity::CONTACT_MOBILE              => '9123456789',
             UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
         ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);

@@ -1581,6 +1581,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
 
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->create(
             'merchant_access_map',
             [
@@ -1641,6 +1647,12 @@ class PartnerTest extends OAuthTestCase
         ]);
 
         $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->fixtures->create(
             'merchant_access_map',

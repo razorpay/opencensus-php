@@ -43,6 +43,12 @@ class ReportingTest extends TestCase
 
     public function testReportXDashboardAuth()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+        
         // This is required, because this is going to on board the merchant on X on the test mode
         // which requires the terminal entity to be present
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',

@@ -340,8 +340,7 @@ class LowBalanceConfigTest extends TestCase
     // 2 shared account with config enabled
     public function createSampleLowBalanceConfigs()
     {
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id'                   => '10000000000000',
+        $merchantDetail = $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
             'contact_name'                  => 'Test Account',
             'contact_email'                 => 'test@razorpay.com',
             'contact_mobile'                => '9876543210',

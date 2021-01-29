@@ -44,6 +44,8 @@ class UserTest extends TestCase
 
     protected $deviceEntityMock;
 
+    protected $merchantDetailRepoMock;
+
     public function setUp()
     {
 
@@ -2501,6 +2503,16 @@ class UserTest extends TestCase
         $this->merchantRepoMock->shouldReceive('getMerchantUserMapping')->andReturn();
 
         $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
+
+        $this->merchantDetailRepoMock = Mockery::mock('RZP\Models\Merchant\Detail\Repository');
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepoMock);
+
+        $this->merchantDetailRepoMock->shouldReceive('getBusinessType')->andReturn('proprietorship');
+
+        $this->merchantDetailRepoMock->shouldReceive('getByMerchantId')->andReturn($this->merchantDetailRepoMock);
+
+        $this->merchantRepoMock->shouldReceive('getMerchantOrg')->andReturn('100000razorpay');
 
         $response = $this->userService->syncMerchantUserOnProducts('10000000000');
 

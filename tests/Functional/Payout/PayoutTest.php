@@ -2799,7 +2799,6 @@ class PayoutTest extends OAuthTestCase
 
         //1. I approve the level1 finL1Role of workflow
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL1RoleUser->getId());
-
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
@@ -3411,6 +3410,12 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
 
         $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 3
+        ]);
 
         $userId = $viewOnlyRoleUser['id'];
 
@@ -7886,7 +7891,6 @@ class PayoutTest extends OAuthTestCase
         $this->ba->addXOriginHeader();
 
         $testData = $this->testData[__FUNCTION__];
-
         $balanceId = $this->bankingBalance->getId();
 
         $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';

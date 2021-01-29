@@ -101,6 +101,12 @@ class MerchantDocumentTest Extends TestCase
     {
         $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->updateUploadDocumentData(__FUNCTION__);
 
         $this->startTest();
@@ -227,6 +233,12 @@ class MerchantDocumentTest Extends TestCase
 
     public function testFetchMerchantDocuments()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_live_' . '1cXSLlUU8V9sXl');
 
         $this->createMerchantDocumentAndFileStoreEntity();

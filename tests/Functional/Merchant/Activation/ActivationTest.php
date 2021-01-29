@@ -2116,6 +2116,12 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
@@ -2814,6 +2820,12 @@ class ActivationTest extends OAuthTestCase
 
         $merchantId = '1cXSLlUU8V9sXl';
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
@@ -2853,6 +2865,12 @@ class ActivationTest extends OAuthTestCase
         }, 0);
 
         $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 

@@ -4475,6 +4475,16 @@ class Service extends Base\Service
         return false;
     }
 
+    public function isAllowedForBusinessBanking(string $merchantId)
+    {
+        $org = $this->repo->merchant->getMerchantOrg($merchantId);
+
+        $businessType = $this->repo->merchant_detail->getByMerchantId($merchantId)->getBusinessType();
+
+        return (in_array($org, \RZP\Models\Admin\Org\Constants:: ALLOW_TO_BUSINESS_BANKING, true) and
+            (Merchant\Detail\BusinessType::isUnregisteredBusiness($businessType) === false));
+    }
+
     public function switchProductMerchant($product = null)
     {
         // TODO: remove this once Yesbank issue is resolved
@@ -4484,6 +4494,8 @@ class Service extends Base\Service
                              ($this->auth->isProductBanking()));
 
         $isMerchantBankingEnabled = $merchant->isBusinessBankingEnabled();
+
+        $merchantId = $merchant->getMerchantId();
 
         if (($isMerchantBankingEnabled === false) and
             ($isProductBanking === true))
@@ -4500,6 +4512,11 @@ class Service extends Base\Service
                         'config'            => $config
                     ]);
 
+                return;
+            }
+
+            if ($this->isAllowedForBusinessBanking($merchantId) === false)
+            {
                 return;
             }
         }

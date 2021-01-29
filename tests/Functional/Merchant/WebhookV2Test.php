@@ -128,6 +128,12 @@ class WebhookV2Test extends TestCase
 
     public function testGetWebhookEventsForProductBanking()
     {
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
         // This is required, because this is going to on board the merchant on X on the test mode
         // which requires the terminal entity to be present
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
@@ -176,6 +182,12 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForBanking()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->expectStorkServiceRequestForAction('listWebhookForBankingWhenReturnsNoWebhooks');
@@ -186,6 +198,12 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForBankingAlreadyExistsFailure()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->expectStorkServiceRequestForAction('listWebhookForBankingBeforeCreate');
@@ -217,6 +235,12 @@ class WebhookV2Test extends TestCase
 
     public function testGetWebhookForBanking()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->expectStorkServiceRequestForAction('getWebhookForBanking');
@@ -241,6 +265,12 @@ class WebhookV2Test extends TestCase
 
     public function testListWebhookForBanking()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->expectStorkServiceRequestForAction('listWebhookForBanking');
@@ -279,6 +309,11 @@ class WebhookV2Test extends TestCase
 
     public function testUpdateWebhookForBanking()
     {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 4
+        ]);
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->expectStorkServiceRequestForAction('updateWebhookForBanking');

@@ -852,7 +852,13 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCreateMerchantDetailIfNotExist()
     {
-        $merchant = $this->fixtures->create('merchant:with_keys');
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
 
@@ -1941,6 +1947,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->create('referrals');
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
@@ -2014,6 +2026,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->create('referrals');
 
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
 
         $this->startTest();
@@ -2060,6 +2078,12 @@ class MerchantDetailTest extends OAuthTestCase
         $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
 
         $this->fixtures->create('referrals');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth('rzp_live_' . $referredSubMerchantId);
 

@@ -172,6 +172,11 @@ class MerchantAttributeTest extends TestCase
     public function testMerchantGetPreferencesByGroup()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'business_category', 'School');
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -181,6 +186,11 @@ class MerchantAttributeTest extends TestCase
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'business_category', 'School');
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'monthly_payout_count', '1000');
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
         $this->ba->proxyAuth();
         $this->startTest();
     }
