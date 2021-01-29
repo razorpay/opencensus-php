@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: razorpay/checkout-action@master
 
       - name: Checkout GitHub Action Repo
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
         with:
           repository: Razorpay/check-commit-jira
           path: .github/actions/check-commit-jira

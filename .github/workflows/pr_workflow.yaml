@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize,reopened,edited]
 
 jobs:
-  pull_request: 
+  pull_request:
     runs-on: [self-hosted]
     steps:
     - name: Validate skipRoast Flag for PR
@@ -16,7 +16,7 @@ jobs:
         script: |
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
-          return Boolean(skipFlag)    
+          return Boolean(skipFlag)
     - name: Run bvt suite if PR approved
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
@@ -24,7 +24,7 @@ jobs:
         GITHUB_TOKEN:  ${{ github.token }}
         SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
       run: |
-        sh ./.github/actions/triggerBvtSuite.sh       
+        sh ./.github/actions/triggerBvtSuite.sh
     - name: Check Test file has changed or added
       if : ${{github.event_name == 'pull_request'}}
       uses: actions/github-script@0.9.0
@@ -54,4 +54,4 @@ jobs:
       run: |
         echo "Step failed as no test file added or change"
         echo "change skipUTworkflow variable to true in pr description to skip this step"
-        exit 1    
+        exit 1

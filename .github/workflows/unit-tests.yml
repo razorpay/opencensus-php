@@ -30,7 +30,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -45,7 +45,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
@@ -70,7 +70,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
@@ -95,7 +95,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
@@ -120,7 +120,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
@@ -145,7 +145,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: build
         uses: docker/build-push-action@v1
         with:
@@ -163,7 +163,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: build
         uses: docker/build-push-action@v1
         with:
@@ -181,7 +181,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: build
         uses: docker/build-push-action@v1
         with:
@@ -199,7 +199,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v2
+        uses: razorpay/checkout-action@v2
       - name: build
         uses: docker/build-push-action@v1
         with:
@@ -223,7 +223,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
       env:
         ACTIONS_STEP_DEBUG: true
     - name: prepare_test
@@ -275,7 +275,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -325,7 +325,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -375,7 +375,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -425,7 +425,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -475,7 +475,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -530,7 +530,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -583,7 +583,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -636,7 +636,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
@@ -689,7 +689,7 @@ jobs:
     steps:
     - name: checkout
       id: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
