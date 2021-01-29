@@ -28,7 +28,7 @@ const RepayFailure = ({ setView, resultAmounts }) => {
         <div className="repayment-amount">
           <div className="details--heading">Repayment Amount</div>
           <div className="details--amount">
-            <Amount currency="INR" value={resultAmounts.repayAmount * 100} />
+            <Amount currency="INR" value={resultAmounts.repayAmount} />
           </div>
         </div>
         <div className="repayment-via">

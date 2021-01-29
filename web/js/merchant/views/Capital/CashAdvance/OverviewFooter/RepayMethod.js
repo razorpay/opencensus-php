@@ -68,7 +68,7 @@ const RepayMethod = ({
         RepaymentInstance.createRepayment({
           ...paymentParams,
           payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.CREDIT_REPAYMENT,
-          amount: Number(settlementBalance.amount) * 100,
+          amount: Number(settlementBalance.amount),
         }),
       );
     }
@@ -122,7 +122,7 @@ const RepayMethod = ({
       RepaymentInstance.createRepayment({
         ...paymentParams,
         payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.ORDER,
-        amount: Number(bankBalance.amount) * 100,
+        amount: Number(bankBalance.amount),
       }),
     ];
 
@@ -197,13 +197,13 @@ const RepayMethod = ({
     } else if (value > repayAmount) {
       error = (
         <p>
-          Max. amount can be selected <Amount value={repayAmount * 100} currency="INR" />
+          Max. amount can be selected <Amount value={repayAmount} currency="INR" />
         </p>
       );
     } else if (value > balance) {
       error = (
         <p>
-          Max. Available Balance is <Amount value={balance * 100} currency="INR" />
+          Max. Available Balance is <Amount value={balance} currency="INR" />
         </p>
       );
     }
@@ -270,7 +270,7 @@ const RepayMethod = ({
                     </div>
                   }
                   name="amount"
-                  value={settlementBalance.customAmount}
+                  value={Math.round(settlementBalance.customAmount) / 100}
                   onChange={handleCustomAmountChange}
                 />
                 <div className="text-danger error-message mt-5">
@@ -285,7 +285,7 @@ const RepayMethod = ({
                     <Amount
                       className="repay--amount"
                       currency="INR"
-                      value={settlementBalance.amount * 100}
+                      value={settlementBalance.amount}
                     />
                   </div>
                 ) : (
@@ -294,7 +294,7 @@ const RepayMethod = ({
                     <Amount
                       className="repay--amount"
                       currency="INR"
-                      value={settlementBalance.amount * 100}
+                      value={settlementBalance.amount}
                     />{' '}
                     from balance.
                     <Button.Transparent className="edit-btn" onClick={handleEditClick}>
@@ -328,11 +328,7 @@ const RepayMethod = ({
               ) : (
                 <p>
                   Remaining{' '}
-                  <Amount
-                    className="repay--amount"
-                    currency="INR"
-                    value={bankBalance.amount * 100}
-                  />{' '}
+                  <Amount className="repay--amount" currency="INR" value={bankBalance.amount} />{' '}
                   will repay using
                 </p>
               )}
@@ -355,11 +351,11 @@ const RepayMethod = ({
       {isBalanceZero || !isSettlementBalanceLessThanRepayAmount ? (
         <div>
           Amount to be repaid{' '}
-          <Amount className="repay--amount" currency="INR" value={repayAmount * 100} />
+          <Amount className="repay--amount" currency="INR" value={repayAmount} />
         </div>
       ) : (
         <div>
-          <Amount className="repay--amount" currency="INR" value={repayAmount * 100} /> will be the
+          <Amount className="repay--amount" currency="INR" value={repayAmount} /> will be the
           Repayable amount
         </div>
       )}

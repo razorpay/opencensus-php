@@ -34,7 +34,7 @@ const Summary = ({ setView, nextRepayableAmount, totalOwedAmount, loading, nextR
         <Fragment>
           <p className="title">Next Automatic Repayment</p>
           <div className="large-amount">
-            <Amount value={nextRepayableAmount * 100} />
+            <Amount value={nextRepayableAmount} />
           </div>
           <div className="scheduled-text">
             <p>{totalOwedAmount === 0 ? 'No pending amount needs to be repaid.' : repaymentDate}</p>

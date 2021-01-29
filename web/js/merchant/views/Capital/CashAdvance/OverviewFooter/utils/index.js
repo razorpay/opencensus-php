@@ -31,10 +31,10 @@ export const getTotalAmountBreakup = (balances) => {
   return balances.data.reduce((amountBreakup, { balance_type, balance_amount }) => {
     switch (balance_type) {
       case COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_INTEREST:
-        amountBreakup.totalInterestAmount += Number(balance_amount) / 100;
+        amountBreakup.totalInterestAmount += Number(balance_amount);
         return amountBreakup;
       case COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_PRINCIPAL:
-        amountBreakup.totalPrincipalAmount += Number(balance_amount) / 100;
+        amountBreakup.totalPrincipalAmount += Number(balance_amount);
         return amountBreakup;
       default:
         return amountBreakup;
@@ -54,17 +54,17 @@ export const getNextRepayBreakup = (installments) => {
       !installment.hasOwnProperty('principal_collected') &&
       !installment.hasOwnProperty('interest_collected')
     ) {
-      nextRepayBreakup.nextRepayInterestAmount = Number(installment.interest) / 100;
-      nextRepayBreakup.nextRepayPrincipalAmount = Number(installment.principal) / 100;
+      nextRepayBreakup.nextRepayInterestAmount = Number(installment.interest);
+      nextRepayBreakup.nextRepayPrincipalAmount = Number(installment.principal);
       nextRepayBreakup.nextRepaymentDate = installment.repayment_date;
       return nextRepayBreakup;
     } else {
-      const principalCollected = Number(installment.principal_collected) / 100 || 0;
-      const interestCollected = Number(installment.interest_collected) / 100 || 0;
+      const principalCollected = Number(installment.principal_collected) || 0;
+      const interestCollected = Number(installment.interest_collected) || 0;
       const amountCollected = principalCollected + interestCollected;
-      const installmentTotalPayment = Number(installment.payment) / 100 || 0;
-      const installmentPrincipal = Number(installment.principal) / 100 || 0;
-      const installmentInterest = Number(installment.interest) / 100 || 0;
+      const installmentTotalPayment = Number(installment.payment) || 0;
+      const installmentPrincipal = Number(installment.principal) || 0;
+      const installmentInterest = Number(installment.interest) || 0;
       if (installmentTotalPayment > amountCollected) {
         nextRepayBreakup.nextRepayInterestAmount = installmentInterest - interestCollected;
         nextRepayBreakup.nextRepayPrincipalAmount = installmentPrincipal - principalCollected;

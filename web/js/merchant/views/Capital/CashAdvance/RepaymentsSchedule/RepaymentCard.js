@@ -35,7 +35,7 @@ const RepaymentCard = ({
 
   const nextRepayableAmount = nextRepayInterestAmount + nextRepayPrincipalAmount;
   const totalOwedAmount = totalInterestAmount + totalPrincipalAmount;
-  const balance = account_balance.data.balance / 100 || 0;
+  const balance = account_balance.data.balance || 0;
 
   useEffect(() => {
     if (view === REPAYMENT_VIEWS.SUMMARY) {
@@ -119,7 +119,7 @@ const Summary = ({ totalOwedAmount, loading, setView, installments }) => {
         <div class="left">
           <p className="title">Total Owed Amount</p>
           <div className="large-amount">
-            {loading ? <PlaceholderLoader /> : <Amount value={totalOwedAmount * 100} />}
+            {loading ? <PlaceholderLoader /> : <Amount value={totalOwedAmount} />}
           </div>
         </div>
         {totalOwedAmount > 0 && (
@@ -145,9 +145,10 @@ const Summary = ({ totalOwedAmount, loading, setView, installments }) => {
               <Fragment>
                 This amount will be deducted on a daily basis in parts from your settlement balance
                 {lastDate ? (
-                  <Fragment>
-                    by <strong>lastDate</strong>.
-                  </Fragment>
+                  <span>
+                    {' '}
+                    by <strong>{lastDate}</strong>.
+                  </span>
                 ) : (
                   '.'
                 )}

@@ -49,7 +49,7 @@ function OverviewFooter({
     }
   }, [view]);
 
-  const balance = account_balance.data.balance / 100 || 0;
+  const balance = account_balance.data.balance || 0;
 
   const { totalInterestAmount, totalPrincipalAmount } = getTotalAmountBreakup(balances);
 

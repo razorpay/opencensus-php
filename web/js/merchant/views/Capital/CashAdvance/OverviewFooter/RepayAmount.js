@@ -61,7 +61,7 @@ const RepayAmount = ({
     if (value > totalOwedAmount)
       setCustomAmountError(
         <p>
-          Max. amount can be repaid <Amount currency="INR" value={totalOwedAmount * 100} />
+          Max. amount can be repaid <Amount currency="INR" value={totalOwedAmount} />
         </p>,
       );
     else if (value < 10)
@@ -125,7 +125,7 @@ const RepayAmount = ({
           <div>
             <div className="repay--type-title mb-4">Next Repayable</div>
             <div className="mt-4">
-              <Amount className="repay--amount" currency="INR" value={nextRepayableAmount * 100} />
+              <Amount className="repay--amount" currency="INR" value={nextRepayableAmount} />
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@ const RepayAmount = ({
           <div>
             <div className="repay--type-title">Total Owed</div>
             <div className="mt-4">
-              <Amount className="repay--amount" currency="INR" value={totalOwedAmount * 100} />
+              <Amount className="repay--amount" currency="INR" value={totalOwedAmount} />
             </div>
           </div>
         </div>
@@ -210,7 +210,7 @@ const RepayAmount = ({
                   </Button.Transparent>
                 ) : (
                   <div>
-                    <Amount className="repay--amount" currency="INR" value={customAmount * 100} />
+                    <Amount className="repay--amount" currency="INR" value={customAmount} />
                     <Button.Transparent className="edit-btn" onClick={handleEditClick}>
                       Edit
                     </Button.Transparent>
@@ -239,11 +239,11 @@ const RepayAmount = ({
           <div className="flex">
             <div className="principal">
               <div className="amount--title">Principal</div>
-              <Amount className="amount" currency="INR" value={principalAmount * 100} />
+              <Amount className="amount" currency="INR" value={principalAmount} />
             </div>
             <div>
               <div className="amount--title">Interest</div>
-              <Amount className="amount" currency="INR" value={interestAmount * 100} />
+              <Amount className="amount" currency="INR" value={interestAmount} />
             </div>
           </div>
         )}

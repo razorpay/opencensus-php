@@ -29,7 +29,7 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
           <Amount
             className="repay--amount"
             currency="INR"
-            value={resultAmounts.remainingSettlementBalance * 100}
+            value={resultAmounts.remainingSettlementBalance}
           />
           .
         </p>
@@ -39,14 +39,14 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
           <div className="total-repaid">
             <div className="details--heading">Total Repaid</div>
             <div className="details--amount">
-              <Amount currency="INR" value={resultAmounts.repayAmount * 100} />
+              <Amount currency="INR" value={resultAmounts.repayAmount} />
             </div>
           </div>
           {resultAmounts.interestAmount !== 0 && (
             <div className="interest-paid">
               <div className="details--heading">Interest Repaid</div>
               <div className="details--amount">
-                <Amount currency="INR" value={resultAmounts.interestAmount * 100} />
+                <Amount currency="INR" value={resultAmounts.interestAmount} />
               </div>
             </div>
           )}
@@ -54,7 +54,7 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
             <div className="principal-repaid">
               <div className="details--heading">Principal Repaid</div>
               <div className="details--amount">
-                <Amount currency="INR" value={resultAmounts.principalAmount * 100} />
+                <Amount currency="INR" value={resultAmounts.principalAmount} />
               </div>
             </div>
           )}
@@ -71,7 +71,7 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
                     Settlement Balance
                   </div>
                   <div>
-                    <Amount currency="INR" value={resultAmounts.settlementAmount * 100} />
+                    <Amount currency="INR" value={resultAmounts.settlementAmount} />
                   </div>
                 </div>
               )}
@@ -79,7 +79,7 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
                 <div>
                   <div className="settlement-title">{userRepayMethodText}</div>
                   <div>
-                    <Amount currency="INR" value={resultAmounts.bankAmount * 100} />
+                    <Amount currency="INR" value={resultAmounts.bankAmount} />
                   </div>
                 </div>
               )}
