@@ -44,6 +44,10 @@ return [
         ]
     ],
 
+    'merchants-risk' => [
+        'secret'    => env('MERCHANTS_RISK_SECRET'),
+    ],
+
     'express' => [
         'secret'    => env('EXPRESS_SECRET'),
     ],

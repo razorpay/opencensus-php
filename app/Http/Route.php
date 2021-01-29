@@ -5638,7 +5638,6 @@ class Route
         'cron' => [
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
-            'merchant_update_fraud_type',
             'gstin_e_invoice_cron',
 
             // crons for autoKYC'd merchants who have not been verified manually yet
@@ -5990,6 +5989,10 @@ class Route
             'setl_notify_h2h',
             'bank_transfer_process_file_rbl',
             'bank_transfer_process_file',
+        ],
+
+        'merchants-risk' => [
+            'merchant_update_fraud_type',
         ],
 
         'auth_service' => [
