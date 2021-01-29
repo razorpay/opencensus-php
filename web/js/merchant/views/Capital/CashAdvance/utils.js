@@ -166,27 +166,29 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
       };
     }
     case CASH_ADVANCE_CAROUSEL_SLIDES.FULL_DAY_AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT: {
-      const nextRepayment = upcomingRepayments[0];
+      const { nextRepayInterestAmount = 0, nextRepayPrincipalAmount = 0 } = getNextRepayBreakup({
+        data: upcomingRepayments,
+      });
+      const nextRepayableAmount = nextRepayPrincipalAmount + nextRepayInterestAmount;
       return {
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.red],
         id: CASH_ADVANCE_CAROUSEL_SLIDES.FULL_DAY_AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT,
         title: 'Today’s Repayable Amount',
-        subTitle: nextRepayment && (
-          <Amount value={nextRepayment.principal_amount + nextRepayment.interest_amount} />
-        ),
+        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount * 100} />,
         body:
           'Due to the low settlement balance, today’s repayable amount has not been collected. You can repay the amount manually by clicking on the button below.',
       };
     }
     case CASH_ADVANCE_CAROUSEL_SLIDES.THREE_DAY_REPAYMENT_FAILED_PROMPT: {
-      const nextRepayment = upcomingRepayments[0];
+      const { nextRepayInterestAmount = 0, nextRepayPrincipalAmount = 0 } = getNextRepayBreakup({
+        data: upcomingRepayments,
+      });
+      const nextRepayableAmount = nextRepayPrincipalAmount + nextRepayInterestAmount;
       return {
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.red],
         id: CASH_ADVANCE_CAROUSEL_SLIDES.THREE_DAY_REPAYMENT_FAILED_PROMPT,
         title: 'Due Repayment Amount',
-        subTitle: nextRepayment && (
-          <Amount value={nextRepayment.principal_amount + nextRepayment.interest_amount} />
-        ),
+        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount * 100} />,
         body:
           'You have missed your repayments for the last 3 days due to low settlement balance. Repay now to avoid getting additional fees.',
       };
