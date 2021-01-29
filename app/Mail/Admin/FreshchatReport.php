@@ -10,7 +10,7 @@ class FreshchatReport extends Mailable
 {
 
     const RECIPIENTS = [
-        'chat-reports@razorpay.com ',
+        'chat-reports@razorpay.com',
     ];
     /**
      * Create a new message instance.

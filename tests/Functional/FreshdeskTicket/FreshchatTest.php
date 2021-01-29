@@ -165,6 +165,12 @@ class FreshchatTest extends TestCase
 
             $this->assertCount(1, $mail->to);
 
+            $this->assertArraySelectiveEquals([
+                [
+                    'address' => 'chat-reports@razorpay.com',
+                ]
+            ], $mail->to);
+
             $this->assertCount(2, $mail->attachments);
 
             return true;
