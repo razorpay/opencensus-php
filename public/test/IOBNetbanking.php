@@ -4,7 +4,7 @@
 require('../scripts/sanitizeParams.php');
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
-$key_id = $_GET['key'] ?? 'rzp_test_vmJxc1uOeDFQUL';
+$key_id = $_GET['key'] ?? 'rzp_test_ZAxCg9TB9J6ifu';
 $secret = 'thisissupersecret';
 $public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
@@ -91,7 +91,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td>
-            <input type="hidden" value="rzp_test_vmJxc1uOeDFQUL" name="key_id">
+            <input type="hidden" value="rzp_test_ZAxCg9TB9J6ifu" name="key_id">
         </td>
     </tr>
     <tr>
