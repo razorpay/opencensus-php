@@ -18,6 +18,7 @@
 namespace OpenCensus\Trace\Integrations;
 
 use OpenCensus\Trace\Span;
+use OpenCensus\Trace\Tracer;
 
 /**
  * This class handles instrumenting Redis requests using the opencensus extension.
@@ -54,9 +55,9 @@ class Redis implements IntegrationInterface
         }
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
-              // checks if spanlimit has reached and if yes flushes the closed spans
-              if (Redis::$tracer != null) {
-                  Redis::$tracer->checkSpanLimit();
+              // checks if span limit has reached and if yes flushes the closed spans
+              if (Tracer::$tracer != null) {
+                  Tracer::$tracer->checkSpanLimit();
               }
 
               return [

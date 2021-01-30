@@ -44,21 +44,28 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
 
     private $exporter;
 
-    const DEFAULT_SPAN_LIMIT = 100;
+    private $spanLimit = 100;
 
     /**
      * Create a new ExtensionTracer
      *
      * @param SpanContext|null $initialContext The starting span context.
-     * @param null $exporter
+     * @param null $exporter.
+     * @param array $options
      */
-    public function __construct(SpanContext $initialContext = null, $exporter = null)
+    public function __construct(SpanContext $initialContext = null, $exporter = null, $options = [])
     {
         if ($initialContext) {
             opencensus_trace_set_context($initialContext->traceId(), $initialContext->spanId());
         }
 
         $this->exporter = $exporter;
+
+        // set span limit from options if present
+        if (isset($options['span_limit'])){
+            $this->spanLimit = $options['span_limit'];
+        }
+
     }
 
     public function inSpan(array $spanOptions, callable $callable, array $arguments = [])
@@ -128,12 +135,9 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     the closed span present in memory, to free up the memory */
     public function checkSpanLimit()
     {
-        $count = count($this->spans());
+        $count = opencensus_trace_count();
 
-        // TODO:: to read from config
-        $limit = self::DEFAULT_SPAN_LIMIT;
-
-        if ($count > $limit) {
+        if ($count > $this->spanLimit) {
 
             $closedSpans = [];
             $spans = $this->spans();

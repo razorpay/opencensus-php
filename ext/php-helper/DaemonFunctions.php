@@ -62,7 +62,7 @@ function opencensus_trace_list(): array {
 }
 
 /**
- * Retrieve the count of collected trace spans
+ * Retrieve the count of collected trace spans, currently in memory
  *
  * @return int
  */

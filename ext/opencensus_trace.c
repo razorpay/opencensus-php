@@ -171,7 +171,6 @@ PHP_FUNCTION(opencensus_trace_add_attribute)
 PHP_FUNCTION(opencensus_trace_remove_span)
 {
     zend_string *k;
-
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &k) == FAILURE) {
         RETURN_FALSE;
     }
@@ -180,9 +179,6 @@ PHP_FUNCTION(opencensus_trace_remove_span)
     if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
         RETURN_FALSE
     }
-
-    // release zend string
-    zend_string_release(k);
 
     RETURN_TRUE;
 }

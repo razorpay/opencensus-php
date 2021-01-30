@@ -18,6 +18,7 @@
 namespace OpenCensus\Trace\Integrations;
 
 use OpenCensus\Trace\Span;
+use OpenCensus\Trace\Tracer;
 
 /**
  * This class handles instrumenting PDO requests using the opencensus extension.
@@ -31,8 +32,6 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
-    static $tracer;
-
     /**
      * Static method to add instrumentation to the PDO requests
      */
@@ -63,13 +62,6 @@ class PDO implements IntegrationInterface
     }
 
     /**
-     * Static method to add tracer
-     */
-    public static function setTracer($tracer){
-        PDO::$tracer = $tracer;
-    }
-
-    /**
      * Handle extracting the SQL query from the first argument
      *
      * @internal
@@ -79,9 +71,9 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
-        // checks if spanlimit has reached and if yes flushes the closed spans
-        if (PDO::$tracer != null) {
-            PDO::$tracer->checkSpanLimit();
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
         }
 
         return [
@@ -100,9 +92,9 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        // checks if spanlimit has reached and if yes flushes the closed spans
-        if (PDO::$tracer != null) {
-            PDO::$tracer->checkSpanLimit();
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
         }
 
         $attributes = ['dsn' => $dsn, 'db.type' => 'sql', 'span.kind' => Span::KIND_CLIENT];
@@ -126,9 +118,9 @@ class PDO implements IntegrationInterface
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
 
-        // checks if spanlimit has reached and if yes flushes the closed spans
-        if (PDO::$tracer != null) {
-            PDO::$tracer->checkSpanLimit();
+        // checks if span limit has reached and if yes flushes the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
         }
 
         $rowCount = $statement->rowCount();
