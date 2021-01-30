@@ -29,6 +29,7 @@
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
 
+// Global value to keep the current number of spans in memory
 static int SPAN_COUNT = 0;
 
 void opencensus_trace_ginit()

@@ -43,8 +43,6 @@ const CMD_MAX_LEN = 256;
 class Redis implements IntegrationInterface
 {
 
-    static $tracer;
-
     /**
      * Static method to add instrumentation to redis requests
      */
@@ -92,13 +90,6 @@ class Redis implements IntegrationInterface
                     'kind' => Span::KIND_CLIENT
                 ];
         });
-    }
-
-    /**
-     * Static method to add tracer
-     */
-    public static function setTracer($tracer){
-        PDO::$tracer = $tracer;
     }
 
     public static function formatArguments($arguments)
