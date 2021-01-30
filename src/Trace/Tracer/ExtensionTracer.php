@@ -146,12 +146,12 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
                 }
             }
 
-            $this->export($closedSpans);
+            $this->exportAndDeleteSpans($closedSpans);
         }
     }
 
     // Exports all the span provided as argument and also remove from memory
-    public function export($closedSpans)
+    public function exportAndDeleteSpans($closedSpans)
     {
         if ($this->exporter != null) {
             $this->exporter->export($closedSpans);

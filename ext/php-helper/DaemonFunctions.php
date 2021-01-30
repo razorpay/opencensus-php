@@ -62,6 +62,16 @@ function opencensus_trace_list(): array {
 }
 
 /**
+ * Retrieve the count of collected trace spans
+ *
+ * @return int
+ */
+function opencensus_trace_count(): int {
+    return 0;
+}
+
+
+/**
  * Clear the list of collected trace spans
  *
  * @return bool Returns true if clear was successful
@@ -103,9 +113,16 @@ function opencensus_trace_add_attribute($key, $value, $options = []): void {
 
 }
 
+/**
+ * Removes a span from the list.
+ *
+ * @param string $key
+ *
+ */
 function opencensus_trace_remove_span($key): bool {
 
 }
+
 /**
  * Add an annotation to a span
  * @param string $description

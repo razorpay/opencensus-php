@@ -94,6 +94,7 @@ static zend_function_entry opencensus_functions[] = {
     PHP_FE(opencensus_trace_function, arginfo_opencensus_trace_function)
     PHP_FE(opencensus_trace_method, arginfo_opencensus_trace_method)
     PHP_FE(opencensus_trace_list, NULL)
+    PHP_FE(opencensus_trace_count, NULL)
     PHP_FE(opencensus_trace_begin, arginfo_opencensus_trace_begin)
     PHP_FE(opencensus_trace_finish, NULL)
     PHP_FE(opencensus_trace_clear, NULL)

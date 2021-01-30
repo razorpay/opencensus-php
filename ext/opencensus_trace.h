@@ -28,6 +28,7 @@
 PHP_FUNCTION(opencensus_trace_function);
 PHP_FUNCTION(opencensus_trace_method);
 PHP_FUNCTION(opencensus_trace_list);
+PHP_FUNCTION(opencensus_trace_count);
 PHP_FUNCTION(opencensus_trace_begin);
 PHP_FUNCTION(opencensus_trace_finish);
 PHP_FUNCTION(opencensus_trace_clear);

@@ -28,7 +28,8 @@
  */
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
-static int SPAN_LIMIT = 100;
+
+static int SPAN_COUNT = 0;
 
 void opencensus_trace_ginit()
 {
@@ -53,7 +54,7 @@ void opencensus_trace_gshutdown()
 void opencensus_trace_rinit()
 {
 	/* initialize storage for user traced functions - per request basis */
-	ALLOC_HASHTABLE(OPENCENSUS_G(user_traced_functions));
+    ALLOC_HASHTABLE(OPENCENSUS_G(user_traced_functions));
     zend_hash_init(OPENCENSUS_G(user_traced_functions), 16, NULL, ZVAL_PTR_DTOR, 0);
 
     /* initialize storage for recorded spans - per request basis */
@@ -175,6 +176,7 @@ PHP_FUNCTION(opencensus_trace_remove_span)
         RETURN_FALSE;
     }
 
+    // deleting th span assosciated with the given span_id
     if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
         RETURN_FALSE
     }
@@ -381,7 +383,7 @@ static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_e
 
     /* add the span to the list of spans */
     zend_hash_add_ptr(OPENCENSUS_G(spans), span->span_id, span);
-
+    SPAN_COUNT++;
     return span;
 }
 
@@ -489,6 +491,7 @@ void span_dtor(zval *zv)
     opencensus_trace_span_t *span = Z_PTR_P(zv);
     opencensus_trace_span_free(span);
     ZVAL_PTR_DTOR(zv);
+    SPAN_COUNT--;
 }
 
 /**
@@ -770,4 +773,15 @@ PHP_FUNCTION(opencensus_trace_list)
         opencensus_trace_span_to_zval(trace_span, &span);
         add_next_index_zval(return_value, &span TSRMLS_CC);
     } ZEND_HASH_FOREACH_END();
+}
+
+/**
+ * Return the count of trace spans that have been collected for this
+ * request
+ *
+ * @return long
+ */
+PHP_FUNCTION(opencensus_trace_count)
+{
+    RETURN_LONG(SPAN_COUNT)
 }

@@ -52,7 +52,7 @@ class Curl implements IntegrationInterface
      * Static method to add tracer
      */
     public static function setTracer($tracer){
-        PDO::$tracer = $tracer;
+        Curl::$tracer = $tracer;
     }
 
     /**
