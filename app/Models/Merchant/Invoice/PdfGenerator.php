@@ -27,12 +27,13 @@ class PdfGenerator extends Base\Core
 
     const TEMP_PATH = '/tmp/';
 
-    const ISSUED_TO      = 'issued_to';
-    const ROWS           = 'rows';
-    const INVOICE_NUMBER = 'invoice_number';
-    const INVOICE_DATE   = 'invoice_date';
-    const GSTIN          = 'gstin';
-    const BILLING_PERIOD = 'billing_period';
+    const ISSUED_TO          = 'issued_to';
+    const ROWS               = 'rows';
+    const INVOICE_NUMBER     = 'invoice_number';
+    const INVOICE_DATE       = 'invoice_date';
+    const GSTIN              = 'gstin';
+    const BILLING_PERIOD     = 'billing_period';
+    const E_INVOICE_DETAILS  = 'e_invoice_details';
 
     const MERCHANT_INVOICE_PG_PDF_PREFIX = 'merchant_pg_invoices';
 
@@ -75,7 +76,8 @@ class PdfGenerator extends Base\Core
                     ->with(self::INVOICE_NUMBER, $data[BankingInvoiceReport::INVOICE_NUMBER])
                     ->with(self::INVOICE_DATE, $data[BankingInvoiceReport::INVOICE_DATE])
                     ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
-                    ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD]);
+                    ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD])
+                    ->with(self::E_INVOICE_DETAILS, $data[BankingInvoiceReport::E_INVOICE_DETAILS]);
 
         $options = [
             'print-media-type',

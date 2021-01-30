@@ -22,6 +22,7 @@ use RZP\Services\UfhService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
+use RZP\Jobs\EInvoice\XEInvoice;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\InvoiceReport;
 use RZP\Models\Settlement\SlackNotification;
@@ -205,6 +206,16 @@ class Core extends Base\Core
         $data = (new BankingInvoiceReport)->getInvoiceReport($input);
 
         $invoiceEntity = (new Repository)->findByIdAndMerchantId($data[Entity::ID], $this->merchant->getId());
+
+        $XEInvoiceCore = (new Merchant\Invoice\EInvoice\XEInvoice());
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchant->getId(), ['merchantDetail']);
+        $date = Carbon::createFromDate($input[Entity::YEAR], $input[Entity::MONTH], 1, Timezone::IST);
+
+        if($XEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true)
+        {
+            $data[BankingInvoiceReport::E_INVOICE_DETAILS] = $XEInvoiceCore->getEInvoiceDataForPdf($this->merchant->getId(),
+                $input[Entity::MONTH], $input[Entity::YEAR], EInvoice\Types::BANKING);
+        }
 
         $pathToTemporaryFile = (new PdfGenerator)->generateBankingInvoice($data);
 
@@ -457,6 +468,18 @@ class Core extends Base\Core
             $data[InvoiceReport::PAGES], $params);
     }
 
+    public function dispatchForXEInvoice($data, $month, $year, $merchantId)
+    {
+        $params = [
+            Einvoice\Entity::MONTH          => $month,
+            Einvoice\Entity::YEAR           => $year,
+            Einvoice\Entity::GSTIN          => $data['gstin'],
+            Einvoice\Entity::INVOICE_NUMBER => $data['invoice_number'],
+        ];
+
+        XEInvoice::dispatch($this->mode, $merchantId, $params);
+    }
+
     public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup) : array
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
@@ -477,7 +500,9 @@ class Core extends Base\Core
 
     public function getPgInvoiceBreakupGroupedData($input, $merchant)
     {
-        $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData($merchant->getId(), $input['month'], $input['year']);
+        $invoiceBreakup = $this->repo
+            ->merchant_invoice
+            ->fetchInvoiceReportData($merchant->getId(), $input['month'], $input['year']);
 
         [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $input['month'], $input['year'], $invoiceBreakup);
 
@@ -529,6 +554,16 @@ class Core extends Base\Core
         $data['einvoice_data'] = $eInvoiceData;
 
         return $data;
+    }
+
+    public function getXEInvoiceData($month, $year, $merchant)
+    {
+        $input = [
+            'month'           => $month,
+            'year'            => $year,
+        ];
+
+        return (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $merchant);
     }
 
     public function isYesBankMerchant($merchantDetails)

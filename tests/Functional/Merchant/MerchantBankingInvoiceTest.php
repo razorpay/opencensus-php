@@ -46,8 +46,9 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->fixtures->create(
             'merchant_detail',
             [
-                'merchant_id' => '10000000000000',
-                'gstin'       => '29kjsngjk213922',
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => '29kjsngjk213922',
+                'business_registered_pin'   => '123456',
             ]);
 
         $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
@@ -238,6 +239,56 @@ class MerchantBankingInvoiceTest extends TestCase
         $data['rx_transactions']['balance_id'] = $balanceId;
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoice()
+    {
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'];
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::BALANCE_ID => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['rx_transactions']['balance_id'] = $balanceId;
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertEquals('10000000000000', $eInvoiceEntities[0]['merchant_id']);
+        $this->assertEquals(7, $eInvoiceEntities[0]['month']);
+        $this->assertEquals(2021, $eInvoiceEntities[0]['year']);
 
         Carbon::setTestNow();
     }

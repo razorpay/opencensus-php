@@ -46,6 +46,7 @@ class BankingInvoiceReport extends BaseReport
     const BUSINESS_REGISTERED_STATE = 'business_registered_state';
     const BUSINESS_REGISTERED_PIN   = 'business_registered_pin';
     const COMBINED                  = 'combined';
+    const E_INVOICE_DETAILS         = 'e_invoice_details';
 
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
@@ -60,6 +61,93 @@ class BankingInvoiceReport extends BaseReport
     {
         parent::__construct();
 
+    }
+
+    public function getInvoiceReportForEInvoice($input, $merchant)
+    {
+        $this->merchant = $merchant;
+
+        (new JitValidator)->rules(self::VALIDATION_RULES)->input($input)->validate();
+
+        $this->month = $input['month'];
+
+        $this->year = $input['year'];
+
+        $invoices = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchant->getId(),
+            $this->month,
+            $this->year);
+
+        if (count($invoices) === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice not generated yet for merchant',
+                null,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'year'        => $this->year,
+                    'month'       => $this->month,
+                ]);
+        }
+
+        foreach ($invoices as $invoice)
+        {
+            $reportData = $this->getInvoiceReportDataForEInvoice($invoice);
+
+            $combinedData[$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
+        }
+
+        $invoiceReport = $this->groupDataForInvoice($invoice, $combinedData);
+
+        return $invoiceReport;
+    }
+
+    protected function getInvoiceReportDataForEInvoice(Invoice\Entity $invoice)
+    {
+        $type = $invoice->getType();
+
+        $tax = $invoice->getTax();
+
+        $amount = $invoice->getAmount();
+
+        // Current row
+        $row = $this->getNewRow();
+
+        $row[self::ACCOUNT_NUMBER] = $invoice->getAccountNumberAttribute();
+
+        $balance = $this->repo->balance->getBalanceByAccountNumberAndMerchantIDOrFail($row[self::ACCOUNT_NUMBER], $this->merchant->getId());
+
+        $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+
+        $row[self::CHANNEL] = $balance->getChannel();
+
+        $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
+
+        $row[self::DESCRIPTION] = $invoice->getDescription();
+
+        $row[self::AMOUNT] = $amount;
+
+        $row[self::TAX_TOTAL] = $tax;
+
+        $row[self::GRAND_TOTAL] = $tax + $amount;
+
+        $taxComponents = $this->getTaxComponents($invoice->getGstin());
+
+        if (count($taxComponents) === 1)
+        {
+            $row[self::IGST] = $tax;
+        }
+        else
+        {
+            $taxComponentValue = (int) round($tax / 2);
+
+            $row[self::CGST] = $taxComponentValue;
+
+            $row[self::SGST] = $taxComponentValue;
+        }
+
+        $reportData = $row;
+
+        return $reportData;
     }
 
     public function getInvoiceReport($input)
@@ -165,9 +253,7 @@ class BankingInvoiceReport extends BaseReport
 
     protected function getBillingPeriod()
     {
-        $from = Carbon::createFromDate($this->year, $this->month , 1, Timezone::IST)
-                      ->startOfDay()
-                      ->getTimestamp();
+        $from = $this->getPatchedStartDateForBillingPeriod();
 
         $to = $this->getPatchedEndDateForBillingPeriod();
 
@@ -175,6 +261,17 @@ class BankingInvoiceReport extends BaseReport
         $to = Carbon::createFromTimestamp($to,Timezone::IST)->format(self::BILLING_PERIOD_DATE_FORMAT);
 
         return $from . '-' . $to;
+    }
+
+    protected function getPatchedStartDateForBillingPeriod()
+    {
+        $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+        if ($this->month == 1 and $this->year == 2021) {
+            return $date->startOfDay()->subDays(1)->getTimestamp();
+        }
+        else {
+            return $date->startOfMonth()->getTimestamp();
+        }
     }
 
     protected function getPatchedEndDateForBillingPeriod()
@@ -209,14 +306,15 @@ class BankingInvoiceReport extends BaseReport
         $allRows[self::COMBINED] = $finalRow;
 
         $invoiceReport = [
-            self::TITLE          => self::TAX_INVOICE,
-            self::ISSUED_TO      => $this->getIssuedToDetails(),
-            self::INVOICE_NUMBER => $invoice->getInvoiceNumber(),
-            self::INVOICE_ID     => $invoice->getId(),
-            self::BILLING_PERIOD => $this->getBillingPeriod(),
-            self::INVOICE_DATE   => $this->getInvoiceDate($invoice->getCreatedAt()),
-            self::GSTIN          => $invoice->getGstin(),
-            self::ROWS           => $allRows
+            self::TITLE              => self::TAX_INVOICE,
+            self::ISSUED_TO          => $this->getIssuedToDetails(),
+            self::INVOICE_NUMBER     => $invoice->getInvoiceNumber(),
+            self::INVOICE_ID         => $invoice->getId(),
+            self::BILLING_PERIOD     => $this->getBillingPeriod(),
+            self::INVOICE_DATE       => $this->getInvoiceDate($invoice->getCreatedAt()),
+            self::GSTIN              => $invoice->getGstin(),
+            self::ROWS               => $allRows,
+            self::E_INVOICE_DETAILS  => [],
         ];
 
         return $invoiceReport;

@@ -221,6 +221,35 @@ class Processor extends Base\Core
                     ]);
             }
         }
+        else if (($balance->isTypeBanking() === true) and ($this->hasNonZeroTaxAmount($invoiceBreakup) === true))
+        {
+            try
+            {
+                $XEInvoiceCore = (new Merchant\Invoice\EInvoice\XEInvoice());
+                $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
+                $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+
+                if(($XEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true))
+                {
+                    $invoiceCore = (new Core());
+                    $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+
+                    $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'year'        => $this->year,
+                        'month'       => $this->month,
+                    ]);
+            }
+        }
     }
 
     public static function hasTaxableLineItem($invoiceBreakup) : bool
@@ -230,6 +259,21 @@ class Processor extends Base\Core
             $tax = abs($entity->getTax());
 
             if($tax !== 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function hasNonZeroTaxAmount($invoiceBreakup) : bool
+    {
+        foreach ($invoiceBreakup as $index => $entity)
+        {
+            $tax = abs($entity->getTax());
+
+            if($tax >= 0)
             {
                 return true;
             }

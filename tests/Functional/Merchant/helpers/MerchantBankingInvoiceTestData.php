@@ -11,6 +11,12 @@ return [
             'tax'    => 90,
         ],
     ],
+    'testBankingInvoiceEntityCreateWithEInvoice' => [
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
+        ],
+    ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYear'  => [
         'rx_transactions' => [
             [

@@ -361,6 +361,11 @@
                             -
                             {{$issued_to['business_registered_pin']}}<br />
                             {{$issued_to['business_registered_state']}}<br /> <br />
+                            <div style=“position:absolute;bottom:350px;“>
+                                @if (isset($e_invoice_details['Irn']))
+                                    IRN - {{{$e_invoice_details['Irn']}}}<br/>
+                                @endif
+                            </div>
                         </td>
 
                         <td class="text-right">
@@ -371,7 +376,14 @@
                             Bangalore, Karnataka - 560 030.<br /><br />
                             <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
                             <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
-                            <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389
+                            <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
+
+                            <div style=“position:absolute;bottom:350px;“>
+                                @if (isset($e_invoice_details['QRCodeUrl']))
+                                    <img style=“height:140px;width:140px;” src={{{$e_invoice_details['QRCodeUrl']}}}/>
+                                    <br/>
+                                @endif
+                            </div>
                         </td>
 
                     </tr>
