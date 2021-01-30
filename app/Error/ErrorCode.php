@@ -2032,4 +2032,7 @@ class ErrorCode
 
     const BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE                        = 'BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE';
     const BAD_REQUEST_INVALID_SURVEY_TYPE                                           = 'BAD_REQUEST_INVALID_SURVEY_TYPE';
+
+    // Aadhar E-sign error codes
+    const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
 }

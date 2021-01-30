@@ -6139,5 +6139,10 @@ ALTER TABLE merchant_documents
     ADD COLUMN entity_id CHAR(14) DEFAULT NULL,
     ADD INDEX `merchant_documents_entity_id_index` (`entity_id`);
 
+ALTER TABLE stakeholders
+    ADD COLUMN aadhaar_esign_status VARCHAR(30) DEFAULT NULL,
+    ADD COLUMN aadhaar_pin VARCHAR(30) DEFAULT NULL,
+    ADD COLUMN aadhaar_linked BOOLEAN DEFAULT 1;
+
 INSERT INTO mozart (payment_id, action, gateway, amount, created_at, updated_at, raw)
        VALUES ('GOLOnKDdCCqMuP', 'authorize', 'upi_juspay',299700, 1611044604, 1611044604, '{}');

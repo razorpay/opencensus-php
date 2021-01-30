@@ -1,0 +1,206 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
+use Psr\Http\Message\RequestInterface;
+use RZP\Http\Controllers\Processors\PostProcessor;
+use RZP\Http\Controllers\Processors\PreProcessor;
+use RZP\Trace\TraceCode;
+
+abstract class BaseProxyController extends Controller {
+    protected $service;
+    protected $serviceConfig;
+
+    protected $routesMap;
+    protected $merchantRoutes;
+    protected $adminRoutes;
+
+    protected $preProcessor;
+    protected $postProcessor;
+
+    protected $maskErrors;
+
+    public function __construct(string $service, $maskErrors=false)
+    {
+        parent::__construct();
+
+        $this->service = $service;
+        $this->serviceConfig = config('services.'.$service);
+
+        $this->maskErrors = $maskErrors;
+    }
+
+    protected function getBaseUrl() : string
+    {
+        return $this->serviceConfig['url'];
+    }
+
+    protected abstract function getAuthorizationHeader();
+
+    protected function registerRoutesMap(array $map)
+    {
+        $this->routesMap = $map;
+    }
+
+    protected function registerMerchantRoutes(array $routes)
+    {
+        $this->merchantRoutes = $routes;
+    }
+
+    protected function registerProcessors(PreProcessor $preProcessor, PostProcessor $postProcessor)
+    {
+        $this->preProcessor = $preProcessor;
+        $this->postProcessor = $postProcessor;
+    }
+
+    protected function getHeadersForDashboardRequest(array $body = [])
+    {
+        return [
+            'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? '',
+            'X-Merchant-Email' => optional($this->ba->getMerchant())->getEmail() ?? '',
+            'x-user-id'        => optional($this->ba->getUser())->getId() ?? '',
+            'X-User-Role'      => $this->ba->getUserRole() ?? '',
+            'X-Auth-Type'      => 'proxy',
+            'x-otp'            => $body['otp'] ?? '',
+            'X-Task-Id'        => $this->app['request']->getTaskId(),
+            'Content-Type'     => 'application/json',
+            'Accept'           => 'application/json',
+            'Authorization'    => $this->getAuthorizationHeader(),
+            'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
+        ];
+    }
+
+    protected function getRoute($path = null):string
+    {
+        foreach ($this->merchantRoutes as $route)
+        {
+            if (preg_match($this->routesMap[$route], $path, $matches) === 1)
+            {
+                return $route;
+            }
+        }
+
+        return '';
+    }
+
+    protected function handleDashboardProxyRequests($path = null){
+        $request = Request::instance();
+        $body    = $request->all();
+
+        $route = $this->getRoute($path);
+
+        if (empty($route) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        if (($request->method() === 'GET') and
+            (empty($body) === false))
+        {
+            $path .= '?' . http_build_query($body);
+        }
+
+        $headers = $this->getHeadersForDashboardRequest($body);
+
+        return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
+    }
+
+    protected function sendRequestAndParseResponse(
+        string $route,
+        string $method,
+        string $path,
+        array $body = [],
+        array $headers = [],
+        array $options = [])
+    {
+        if(empty($this->preProcessor) === false)
+        {
+            $body = $this->preProcessor->process($route, $body, []);
+        }
+
+        $resp = $this->sendRequest($headers, $path, $method, $body);
+
+        $parsedResponse = $this->parseResponse($resp->getStatusCode(), $resp->getBody());
+
+        if($resp->getStatusCode() === 200 and empty($this->postProcessor) === false)
+        {
+            return $this->postProcessor->process($route, $body, $parsedResponse);
+        }
+        else
+        {
+            return $parsedResponse;
+        }
+    }
+
+    protected function sendRequest($headers, $path, $method, $body)
+    {
+        $this->trace->info(TraceCode::PROXY_REQUEST, [
+            'path'      => $path,
+            'method'    => $method,
+            'service'   => $this->service
+        ]);
+
+        $arrHeaders = new ArrayHeaders($headers);
+        $headers = $arrHeaders->toArray();
+
+        $baseUrl = $this->getBaseUrl();
+        $url = $baseUrl.'/'.$path;
+        $body = empty($body) ? '{}' : json_encode($body);
+
+        $req = $this->newRequest($method, $url, $body , $headers);
+
+        $httpClient = Psr18ClientDiscovery::find();
+
+        $resp = $httpClient->sendRequest($req);
+
+        $this->trace->info(TraceCode::PROXY_RESPONSE, [
+            'status_code'   => $resp->getStatusCode(),
+            'path'      => $path,
+            'method'    => $method,
+            'service'   => $this->service
+        ]);
+
+        return $resp;
+    }
+
+    protected function newRequest( string $method, string $url, string $reqBody, array $headers): RequestInterface
+    {
+        $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
+
+        $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
+
+        $body = $streamFactory->createStream($reqBody);
+
+        $req = $requestFactory->createRequest($method, $url);
+
+        foreach ($headers as $key => $value) {
+            $req = $req->withHeader($key, $value);
+        }
+
+        return $req->withBody($body);
+    }
+
+    protected function parseResponse($code, $body)
+    {
+        $body = json_decode($body, true);
+
+        if($this->maskErrors) {
+            // throwing exception to keep the error response format consistent
+            if ($code === 404) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            } else if ($code !== 200) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
+            }
+        }
+
+        return $body;
+    }
+}

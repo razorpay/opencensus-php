@@ -15,7 +15,10 @@ class Helper
             Entity::NAME                   => Entity::NAME,
             Entity::PERCENTAGE_OWNERSHIP   => Entity::PERCENTAGE_OWNERSHIP,
             Entity::EMAIL                  => Entity::EMAIL,
-            Entity::NOTES                  => Entity::NOTES
+            Entity::NOTES                  => Entity::NOTES,
+            Entity::AADHAAR_LINKED         => Entity::AADHAAR_LINKED,
+            Entity::AADHAAR_ESIGN_STATUS   => Entity::AADHAAR_ESIGN_STATUS,
+            Entity::AADHAAR_PIN            => Entity::AADHAAR_PIN
         ];
 
         self::addKeyMapFromInput($keyMap, $input, $stakeholderInput);

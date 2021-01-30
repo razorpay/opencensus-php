@@ -48,6 +48,7 @@ class Validator extends Base\Validator
     const BULK_EDIT                                     = 'bulkEdit';
 
     protected static $createRules = [
+        Entity::STAKEHOLDER                     =>'sometimes|array|custom',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
@@ -127,6 +128,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+        Entity::STAKEHOLDER                              =>'sometimes|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
@@ -422,7 +424,7 @@ class Validator extends Base\Validator
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
-        
+
         $this->validateActivationFormSubmitted();
 
         $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
@@ -783,6 +785,11 @@ class Validator extends Base\Validator
     public function validateKYCClarificationReasons(string $attribute, $value)
     {
         (new Validator())->validateInput("kycClarificationReason", $value);
+    }
+
+    public function validateStakeholder(string $attribute, $value)
+    {
+        (new Merchant\Stakeholder\Validator)->validateInput("activation", $value);
     }
 
     /**

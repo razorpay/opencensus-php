@@ -1308,4 +1308,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST                       = 'Must not be able to make live request when not activated';
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
+
+    const BAD_REQUEST_INVALID_SESSION_ID    = "BAD_REQUEST_INVALID_SESSION_ID";
 }

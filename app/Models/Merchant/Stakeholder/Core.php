@@ -58,9 +58,9 @@ class Core extends Base\Core
         return $this->saveStakeholder(null, $merchantId, $input);
     }
 
-    private function saveStakeholder($id, string $merchantId, array $input): Entity
+    public function saveStakeholder($id, string $merchantId, array $input, string $rule='edit'): Entity
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($id, $merchantId, $input) {
+        return $this->repo->transactionOnLiveAndTest(function () use ($id, $merchantId, $input, $rule) {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
             $merchantDetailInput = Helper::getMerchantDetailInput($input);
 
@@ -82,8 +82,7 @@ class Core extends Base\Core
                 $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
                 $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
             }
-
-            $this->editStakeholder($stakeholder, $stakeholderInput);
+            $this->editStakeholder($stakeholder, $stakeholderInput, $rule);
 
             return $stakeholder;
         });
@@ -105,7 +104,7 @@ class Core extends Base\Core
         return $this->saveStakeholder($id, $merchantId, $input);
     }
 
-    protected function editStakeholder(Entity $stakeholder, $input)
+    public function editStakeholder(Entity $stakeholder, $input, $rule='edit')
     {
         if (isset($input[Constants::ADDRESSES]) === true)
         {
@@ -127,7 +126,7 @@ class Core extends Base\Core
         }
         unset($input[Constants::ADDRESSES]);
 
-        $stakeholder->edit($input);
+        $stakeholder->edit($input, $rule);
 
         $this->repo->saveOrFail($stakeholder);
     }

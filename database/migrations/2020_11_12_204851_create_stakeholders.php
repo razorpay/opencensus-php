@@ -33,6 +33,10 @@ class CreateStakeholders extends Migration
             $table->string(Entity::POA_STATUS)->nullable();
             $table->text(Entity::NOTES)->nullable();
 
+            $table->string(Entity::AADHAAR_ESIGN_STATUS)->nullable();
+            $table->string(Entity::AADHAAR_PIN)->nullable();
+            $table->boolean(Entity::AADHAAR_LINKED)->default(1);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

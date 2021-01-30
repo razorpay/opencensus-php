@@ -37,6 +37,10 @@ class Entity extends Base\PublicEntity
     const POI_STATUS                = 'poi_status';
     const PAN_DOC_STATUS            = 'pan_doc_status';
     const POA_STATUS                = 'poa_status';
+    const AADHAAR_ESIGN_STATUS      = 'aadhaar_esign_status';
+    const AADHAAR_PIN               = 'aadhaar_pin';
+    const AADHAAR_LINKED            = 'aadhaar_linked';
+
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
 
@@ -60,6 +64,9 @@ class Entity extends Base\PublicEntity
         self::POI_STATUS,
         self::PAN_DOC_STATUS,
         self::POA_STATUS,
+        self::AADHAAR_ESIGN_STATUS,
+        self::AADHAAR_PIN,
+        self::AADHAAR_LINKED
     ];
 
     protected $public = [
@@ -77,6 +84,9 @@ class Entity extends Base\PublicEntity
         self::POI_STATUS,
         self::PAN_DOC_STATUS,
         self::POA_STATUS,
+        self::AADHAAR_ESIGN_STATUS,
+        self::AADHAAR_PIN,
+        self::AADHAAR_LINKED
     ];
 
     protected $casts = [
@@ -128,6 +138,16 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getAadhaarLinked()
+    {
+        return $this->getAttribute(self::AADHAAR_LINKED);
+    }
+
+    public function getAadhaarEsignStatus()
+    {
+        return $this->getAttribute(self::AADHAAR_ESIGN_STATUS);
     }
 
     public function getName()

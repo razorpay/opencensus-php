@@ -98,6 +98,8 @@ class Constant
 
     const RAZORX_EXPERIMENT = 'razorx_experiment';
 
+    const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
+
     const FIELD_ARTEFACT_DETAILS_MAP = [
         Type::AADHAR_FRONT                => [
             self::ARTEFACT_TYPE   => self::AADHAAR,

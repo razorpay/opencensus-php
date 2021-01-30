@@ -89,17 +89,19 @@ class Core extends Base\Core
      * this function store activation file in merchantDocument by new route.
      *
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     * @param bool            $validateLock
+     * @param array $input
+     * @param bool $validateLock
      *
+     * @param string $rule
      * @return array
      * @throws BadRequestException
      * @throws \RZP\Exception\BadRequestValidationFailureException
      * @throws \RZP\Exception\LogicException
      */
-    public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
+    public function uploadActivationFile(
+        Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument')
     {
-        (new Validator)->validateInput('uploadDocument', $input);
+        (new Validator)->validateInput($rule, $input);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 

@@ -810,6 +810,9 @@ class Route
         'wallet_service'                           => ['any',      'wallet/service/{path}',                          'WalletController@handleProxyMerchantRequests'                      ],
         'wallet_service_admin'                     => ['any',      'wallet/admin/{path}',                            'WalletController@handleProxyAdminRequests'                         ],
 
+        'bvs_service_dashboard'                    => ['any',      'bvs/dashboard/{path?}',                          'BvsProxyController@handleDashboardProxyRequests'                       ],
+        'bvs_service_admin'                        => ['any',      'bvs/admin/{path?}',                              'BvsProxyController@handleAdminProxyRequests'                       ],
+
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -3093,6 +3096,7 @@ class Route
         'settlement_ondemand_fees_dashboard',
         'loc_service',
         'capital_cards_service',
+        'bvs_service_dashboard',
         'merchants_risk_service',
         'capital_collections_service',
         'merchant_verify_attributes',
@@ -3566,6 +3570,7 @@ class Route
         'paper_nach_approve_failure',
         'loc_service_admin',
         'capital_cards_admin',
+        'bvs_service_admin',
         'wallet_service_admin',
         'capital_collections_admin',
         'merchants_risk_admin',
@@ -4291,6 +4296,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'bvs_service_dashboard'                    => '*',
+        'bvs_Service_admin'                        => '*',
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,

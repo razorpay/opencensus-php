@@ -26,6 +26,8 @@ class Validator extends Base\Validator
         Entity::PAN_DOC_STATUS            => 'sometimes|string|nullable', // required when create from merchant details
         Entity::POI_STATUS                => 'sometimes|string|nullable',
         Entity::POA_STATUS                => 'sometimes|string|nullable',
+        Entity::AADHAAR_ESIGN_STATUS      => 'sometimes|string|nullable',
+        Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
     ];
 
     protected static $editRules = [
@@ -38,6 +40,8 @@ class Validator extends Base\Validator
         Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
         Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::NOTES                     => 'sometimes|notes',
+        Entity::AADHAAR_ESIGN_STATUS      => 'sometimes|string|nullable',
+        Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
     ];
 
     protected static $createStakeholderRules = [
@@ -94,6 +98,10 @@ class Validator extends Base\Validator
         Constants::STATE       => 'sometimes|alpha_space|between:2,32|custom',
         Constants::POSTAL_CODE => 'sometimes|string|between:2,10',
         Constants::COUNTRY     => 'sometimes|alpha_space|between:2,64|custom',
+    ];
+
+    public static $activationRules = [
+        Entity::AADHAAR_LINKED  => 'sometimes|boolean'
     ];
 
     protected static $createStakeholderValidators = [

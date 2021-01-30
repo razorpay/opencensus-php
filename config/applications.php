@@ -680,6 +680,10 @@ return [
         'aes_key'           => env('BATCH_AES_KEY'),
     ],
 
+    'stakeholders' => [
+        'aes_key'   => env('STAKEHOLDERS_AES_KEY'),
+    ],
+
     'smart_routing' => [
         'url'       => env('SMART_ROUTING_URL'),
         'mock'      => env('SMART_ROUTING_MOCK',false),

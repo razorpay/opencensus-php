@@ -3655,6 +3655,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRODUCT_INTERNATIONAL_TRIGGERED                       = 'PRODUCT_INTERNATIONAL_TRIGGERED';
     const PRODUCT_INTERNATIONAL_APPROVED                        = 'PRODUCT_INTERNATIONAL_APPROVED';
 
+    // Proxy route tracecodes
+    const PROXY_REQUEST     = "PROXY_REQUEST";
+    const PROXY_RESPONSE    = "PROXY_RESPONSE";
+
     // ICICI Integration
     const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';
 

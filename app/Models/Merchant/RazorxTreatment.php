@@ -182,6 +182,9 @@ final class RazorxTreatment
     // experiment to enable whatsapp notifications and also refactoring notifications;
     const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
 
+    // experiment to enable esign aadhar functionality
+    const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
+
     // experiment to enable dedupe functionality
     const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
 

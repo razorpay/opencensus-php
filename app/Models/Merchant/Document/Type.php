@@ -29,6 +29,8 @@ class Type
     const DRIVER_LICENSE_BACK            = 'driver_license_back';
     const AADHAR_FRONT                   = 'aadhar_front';
     const AADHAR_BACK                    = 'aadhar_back';
+    const AADHAR_XML                     = 'aadhar_xml';
+    const AADHAR_ZIP                     = 'aadhar_zip';
     const PASSPORT_BACK                  = 'passport_back';
     const PASSPORT_FRONT                 = 'passport_front';
     const VOTER_ID_FRONT                 = 'voter_id_front';
@@ -104,6 +106,9 @@ class Type
         self::DRIVER_LICENSE_FRONT,
         self::AADHAR_FRONT,
         self::AADHAR_BACK,
+        self::AADHAR_XML,
+        self::AADHAR_ZIP,
+
         self::PASSPORT_FRONT,
         self::PASSPORT_BACK,
         self::VOTER_ID_FRONT,
@@ -151,6 +156,8 @@ class Type
         self::DRIVER_LICENSE_FRONT            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::AADHAR_FRONT                    => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::AADHAR_BACK                     => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_ZIP                      => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_XML                      => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::PASSPORT_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::PASSPORT_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::VOTER_ID_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,

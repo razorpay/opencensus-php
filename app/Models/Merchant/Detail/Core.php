@@ -3,12 +3,14 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Mail;
+use phpseclib\Crypt\AES;
 use Queue;
 use Config;
 
 use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-
+use RZP\Encryption;
+use RZP\Encryption\AESEncryption;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
@@ -28,6 +30,7 @@ use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Constants\IndianStates;
@@ -60,6 +63,9 @@ use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
+use SplFileInfo;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Core extends Base\Core
 {
@@ -135,6 +141,7 @@ class Core extends Base\Core
                     $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
                     $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+
                     $oldActivationStatus = $merchantDetails->getActivationStatus();
 
                     $response = $this->createResponse($merchantDetails);
@@ -852,6 +859,7 @@ class Core extends Base\Core
      */
     protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
+
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             $merchantDetails->setPoiVerificationStatus(null);
@@ -1225,6 +1233,11 @@ class Core extends Base\Core
 
         // dual write promoter related fields to stakeholder entity
         (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
+
+        if(isset($input['stakeholder']) === true)
+        {
+            (new Stakeholder\Core)->editStakeholder($merchantDetails->stakeholder, $input['stakeholder'], 'activation');
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -1925,8 +1938,6 @@ class Core extends Base\Core
     public function createResponse(Entity $merchantDetails): array
     {
         $response = $merchantDetails->toArrayPublic();
-
-
         //
         // refreshing the merchant relation here as createResponse is called at many places
         // just after updating the merchant entity
@@ -1965,6 +1976,7 @@ class Core extends Base\Core
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
         $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
+        $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
@@ -2331,9 +2343,33 @@ class Core extends Base\Core
 
         $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
 
-        return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails){
-            return in_array($merchantDetails->getAttribute($key), $value, true);
+        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails){
+
+            $entity = $condition[AutoKyc\Constants::ENTITY];
+            $in = $condition[AutoKyc\Constants::IN];
+
+            switch ($entity)
+            {
+                case E::MERCHANT_DETAIL:
+                    return in_array($merchantDetails->getAttribute($key), $in, true);
+                case E::STAKEHOLDER:
+                    return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
+            }
         });
+    }
+
+    private function verifyStakeHolderCondition(Entity $merchantDetails, string $key, array $in)
+    {
+        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchantDetails->getMerchantId(),
+            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+
+        if($isAadhaarEsignEnabled === true and empty($merchantDetails->stakeholder) === false)
+        {
+            return in_array($merchantDetails->stakeholder->getAttribute($key), $in, true);
+        }
+
+        return true;
     }
 
     /**
@@ -2773,6 +2809,32 @@ class Core extends Base\Core
         return new Document\Core();
     }
 
+    private function isAadhaarEsignVerificationDone(Entity $merchantDetails)
+    {
+        $stakeholder = $merchantDetails->stakeholder;
+
+        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+
+        // is experiment is not enabled always assume its done;
+        if($isAadhaarEsignEnabled === false)
+        {
+            return true;
+        }
+
+        if(empty($stakeholder) === true)
+        {
+            return false;
+        }
+
+        if($stakeholder->getAadhaarLinked() === true)
+        {
+            return $stakeholder->getAadhaarEsignStatus() === 'verified';
+        }
+
+        return true;
+    }
+
     private function setVerificationDetails(Entity $merchantDetails, Merchant\Entity $merchant, array $response)
     {
         $requiredFields = [];
@@ -2788,6 +2850,7 @@ class Core extends Base\Core
         $response['documents'] = $documentsResponse;
 
         $this->setShopEstablishmentVerifiableZone($merchantDetails, $response);
+
 
         foreach ($validationFields as $key)
         {
@@ -2822,10 +2885,13 @@ class Core extends Base\Core
                 $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
             }
         }
+        $isAadhaarEsignDone = $this->isAadhaarEsignVerificationDone($merchantDetails);
 
         if ((count($requiredFields) > 0) or
             ($isAutoKycDocumentsVerificationStatusAllowed === false) or
-            ($activationFlow === ActivationFlow::BLACKLIST))
+            ($activationFlow === ActivationFlow::BLACKLIST) or
+            ($isAadhaarEsignDone === false)
+        )
         {
             $remainingFields = count($requiredFields);
 
@@ -3668,6 +3734,103 @@ class Core extends Base\Core
     {
         $this->getStateCodeFromMapping($input, 'business_operation_state');
         $this->getStateCodeFromMapping($input, 'business_registered_state');
+    }
+
+    public function setEsignAadhaarSession(string $merchantId, string $sessionId)
+    {
+        $redis = $this->app['redis']->Connection();
+
+        $key = 'aadhar_esign_session_'.$merchantId;
+
+        $redis->set($key, $sessionId, 'ex', 60*10);
+    }
+
+    public function getEsignAadhaarSession(string $merchantId)
+    {
+        $redis = $this->app['redis']->Connection();
+
+        $key = 'aadhar_esign_session_'.$merchantId;
+
+        return $redis->get($key);
+    }
+
+    public function processEsignAadhaarVerification(string $merchantId, string $pin, string $fileUrl)
+    {
+        $stakeholderInput = [
+            Stakeholder\Entity::AADHAAR_ESIGN_STATUS  => 'verified',
+            Stakeholder\Entity::AADHAAR_PIN           => $pin
+        ];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $zip = $this->getFileFromUrl($merchantId, $fileUrl);
+        $xml = $this->extractXmlFromZip($merchantId, $pin, $zip);
+        $this->encryptFile($xml);
+
+        $this->uploadAadharEsignDocument($merchant,Document\Type::AADHAR_ZIP, $zip);
+        $this->uploadAadharEsignDocument($merchant,Document\Type::AADHAR_XML, $xml);
+
+        (new Stakeholder\Core)->saveStakeholder(null, $merchantId, $stakeholderInput);
+    }
+
+    private function uploadAadharEsignDocument($merchant, string $document_type, UploadedFile $file)
+    {
+        $input = [
+            'document_type' => $document_type,
+            'file'      => $file
+        ];
+
+        $this->documentCore()->uploadActivationFile($merchant, $input, true, 'aadharUpload');
+    }
+
+    private function getFileFromUrl(string $merchantId, string $fileUrl)
+    {
+        $tmpZipFilePath = '/tmp/'.$merchantId.'zip';
+        if(file_put_contents($tmpZipFilePath, file_get_contents($fileUrl)))
+        {
+            return new UploadedFile($tmpZipFilePath, 'file.zip', null, null, null, true);
+        }
+
+        throw new Exception\BadRequestValidationFailureException("unable to fetch aadhar zip file");
+    }
+
+    private function extractXmlFromZip(string $merchantId, string $pin, $zip)
+    {
+        $tmpFolder = '/tmp/'.$merchantId;
+
+        $zipArchive = new \ZipArchive();
+
+        if($zipArchive->open($zip->getPath().'/'.$zip->getFilename()) === TRUE) {
+            $zipArchive->setPassword($pin);
+            // Unzip Path
+            $zipArchive->extractTo($tmpFolder);
+            $zipArchive->close();
+
+            $allFiles = scandir($tmpFolder);
+            foreach ($allFiles as $xmlFile) {
+                if (ends_with($xmlFile, 'xml')) {
+                    return new UploadedFile($tmpFolder. '/' . $xmlFile,
+                        'file.xml', null, null, null, true);
+                }
+            }
+        }
+
+        throw new Exception\BadRequestValidationFailureException("unable to extract xml file");
+    }
+
+    private function encryptFile(UploadedFile $file)
+    {
+        $config = $this->app['config']->get('applications.stakeholders');
+
+        $params = [
+            AESEncryption::MODE   => AES::MODE_CBC,
+            AESEncryption::IV     => $config['aes_key'],
+            AESEncryption::SECRET => $config['aes_key']
+        ];
+
+        $handler = new Encryption\Handler(Encryption\Type::AES_ENCRYPTION, $params);
+
+        $handler->encryptFile($file->getPath().'/'.$file->getFilename());
     }
 
     /**
