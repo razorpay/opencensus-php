@@ -339,9 +339,8 @@ class Core extends Base\Core
         $this->autoUpdateMerchantActivationFlows(
             $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false, $isImpersonated);
 
-        if($isImpersonated === true)
+        if ($isImpersonated === true)
         {
-            $merchant->deactivate();
             $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
         }
 
@@ -474,7 +473,7 @@ class Core extends Base\Core
 
         $this->updateActivationFlows($merchant, $merchantDetails, $partner, $activationFlowTypes, $batchFlow);
 
-        if($isImpersonated === true)
+        if ($isImpersonated === true)
         {
             $merchantDetails->setActivationFlow(ActivationFlow::GREYLIST);
         }
@@ -742,15 +741,9 @@ class Core extends Base\Core
     {
         $isImpersonated = $this->isMerchantImpersonated($merchant);
 
-        if($isImpersonated)
+        if ($isImpersonated === true)
         {
             $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
-
-            // This is only for un-reg merchants; for reg we already show FE greylist popup;
-            if($merchantDetails->isUnregisteredBusiness())
-            {
-                $merchantDetails->setLocked(true);
-            }
         }
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
@@ -3447,19 +3440,81 @@ class Core extends Base\Core
         $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::DEDUPE_FUNCTIONALITY);
 
-        if($isDedupeEnabled === true)
+        if ($isDedupeEnabled === true)
         {
-            $riskFactor = $this->mrclient->getMerchantRiskFactor($merchant);
+            $fields = [];
 
-            if (isset($riskFactor['impersonated']) === true and
-                $riskFactor['impersonated'] === true)
+            foreach (Constants::MERCHANT_RISK_CONFIG as $key => $value)
             {
-                return true;
+                foreach ($value['lists'] as $list)
+                {
+                    if ($merchant->merchantDetail->getAttribute($key) != null)
+                    {
+                        $fields[] = [
+                            'key' => $key,
+                            'value' => $merchant->merchantDetail->getAttribute($key),
+                            'list' => $list,
+                            'config_key' => $value['config_key']
+                        ];
+                    }
+                }
+            }
+
+            $riskScores = $this->mrclient->getMerchantRiskScores(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId(), $fields);
+
+            if (isset($riskScores['fields']) === false)
+            {
+                return false;
+            }
+
+            $response = [];
+
+            foreach ($riskScores['fields'] as $riskScore)
+            {
+                $response[$riskScore['key']][$riskScore['list']] = $riskScore['score'];
+            }
+
+            foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
+            {
+                $flag = true;
+                foreach ($action['keysToCheck'] as $key => $value)
+                {
+                    if (isset($response[$key]))
+                    {
+                        $score = $response[$key][$value['list']];
+                        switch ($value['matchType']) {
+                            case Constants::FUZZY_MATCH:
+                                if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
+                                break;
+                        }
+                    }
+                }
+                if ($flag)
+                {
+                    $method = $action['method'];
+                    $this->{$method}($merchant);
+                    return true;
+                }
             }
         }
 
         return false;
     }
+
+    private function lockFormDeactivate(Merchant\Entity $merchant)
+    {
+        $merchant->merchantDetail->setLocked(true);
+        $merchant->deactivate();
+    }
+
+    private function regUnderReview(Merchant\Entity $merchant)
+    {
+        if ($merchant->merchantDetail->isUnregisteredBusiness())
+        {
+            $this->lockFormDeactivate($merchant);
+        }
+    }
+
 
     /**
      * Check if promotional coupon campaign is enabled

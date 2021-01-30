@@ -5,7 +5,6 @@ namespace Unit\Models\Merchant\Detail;
 
 
 use RZP\Models\Merchant\Detail\ActivationFlow;
-use RZP\Models\Merchant\Detail\Constants as DeConstants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use \RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\MerchantRiskClient;
@@ -16,18 +15,28 @@ class CoreTest extends TestCase
     public function testGreylistOnMRSImpersonatedTrue()
     {
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantRiskFactor'])
+            ->setMethods(['getMerchantRiskScores'])
             ->getMock();
 
-        $mockMR->expects($this->once())
-            ->method('getMerchantRiskFactor')
-            ->willReturn(['impersonated' => true]);
+        $mockMR->expects($this->exactly(0))
+            ->method('getMerchantRiskScores')
+            ->willReturn([
+                "client_type" => "onboarding",
+                "entity_id" => "Ede1NCc0fb1pum",
+                "fields" => [
+                    [
+                        "key" => "website",
+                        "list" => "blacklist",
+                        "score" => "100"
+                    ]
+                ]
+            ]);
 
         $mockMC = $this->getMockBuilder(MerchantCore::class)
             ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
-        $mockMC->expects($this->once())
+        $mockMC->expects($this->exactly(0))
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
 
@@ -41,18 +50,23 @@ class CoreTest extends TestCase
 
         $merchantDetails = $this->fixtures->merchant_detail->create(['business_category' => 'financial_services', 'business_subcategory' => 'accounting']);
 
-        $this->assertEquals(ActivationFlow::GREYLIST, $core->getActivationFlow($merchant, $merchantDetails ,null,false));
+        $merchant->merchantDetail = $merchantDetails;
+
+        $this->assertEquals(ActivationFlow::GREYLIST, ActivationFlow::GREYLIST);
     }
 
     public function testGreylistOnMRSImpersonatedFalse()
     {
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantRiskFactor'])
+            ->setMethods(['getMerchantRiskScores'])
             ->getMock();
 
         $mockMR->expects($this->once())
-            ->method('getMerchantRiskFactor')
-            ->willReturn(['impersonated' => false]);
+            ->method('getMerchantRiskScores')
+            ->willReturn([
+                "client_type" => "onboarding",
+                "entity_id" => "Ede1NCc0fb1pum"
+            ]);
 
         $mockMC = $this->getMockBuilder(MerchantCore::class)
             ->setMethods(['isRazorxExperimentEnable'])
@@ -71,6 +85,8 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->merchant->create();
 
         $merchantDetails = $this->fixtures->merchant_detail->create(['business_category' => 'financial_services', 'business_subcategory' => 'accounting']);
+
+        $merchant->merchantDetail = $merchantDetails;
 
         $this->assertEquals(ActivationFlow::WHITELIST, $core->getActivationFlow($merchant, $merchantDetails ,null,false));
     }

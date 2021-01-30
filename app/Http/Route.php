@@ -803,8 +803,13 @@ class Route
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
+
+        'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
+        'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
+
         'wallet_service'                           => ['any',      'wallet/service/{path}',                          'WalletController@handleProxyMerchantRequests'                      ],
         'wallet_service_admin'                     => ['any',      'wallet/admin/{path}',                            'WalletController@handleProxyAdminRequests'                         ],
+
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -3088,6 +3093,7 @@ class Route
         'settlement_ondemand_fees_dashboard',
         'loc_service',
         'capital_cards_service',
+        'merchants_risk_service',
         'capital_collections_service',
         'merchant_verify_attributes',
         'feature_get_status',
@@ -3562,6 +3568,7 @@ class Route
         'capital_cards_admin',
         'wallet_service_admin',
         'capital_collections_admin',
+        'merchants_risk_admin',
         'payout_reject_admin_bulk',
         'emi_plans_migrate',
         'los_service_admin',
@@ -4289,6 +4296,8 @@ class Route
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
         'capital_cards_service'                    => Permission::CAPITAL_DEVELOPER,
         'capital_collections_admin'                => Permission::CAPITAL_DEVELOPER,
+        'merchants_risk_service'                   => '*',
+        'merchants_risk_admin'                     => '*',
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,

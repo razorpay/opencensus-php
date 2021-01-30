@@ -25,7 +25,7 @@ class MerchantRiskClient
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
     // path to check impersonation
-    const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Check";
+    const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
 
     /**
      * @var Requests_Session
@@ -108,20 +108,14 @@ class MerchantRiskClient
             });
     }
 
-    public function getMerchantRiskFactor(Merchant\Entity $merchant)
+    public function getMerchantRiskScores(string $clientType, string $entityId, array $fields)
     {
-        $merchantDetail = $merchant->merchantDetail;
-
         $this->init();
 
         $requestPayload = [
-            "merchant_id"   => $merchant->getId(),
-            "fields"        => [
-                "billing_label"     => $merchant->getBillingLabel(),
-                "website"           => $merchant->getWebsite(),
-                "email"             => $merchant->getEmail(),
-                "business_name"     => $merchantDetail->getBusinessName()
-            ]
+            "client_type" => $clientType,
+            "entity_id" => $entityId,
+            "fields" => $fields
         ];
 
         try {
