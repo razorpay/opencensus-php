@@ -75,6 +75,9 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
         }
         if (res.data.error_code) {
           setError(res.data.error_code);
+          if (res.data.error_code === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
+          }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
               error_code: res.data.error_code,
@@ -111,6 +114,9 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           ) {
             setInputValue({ ...inputValue, captcha: '' });
             document.getElementsByName('captcha')[0].value = '';
+          }
+          if (res.data.error_code === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
@@ -163,6 +169,9 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             setIsOtpGenerated(false);
             setCaptcha({});
             setPin('');
+          }
+          if (res.data.error_code === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
@@ -382,7 +391,10 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       Didn’t receive an OTP?{' '}
                       <AsyncBtn.Transparent
                         pendingState="Sending OTP..."
-                        onClick={generateCaptcha}
+                        onClick={() => {
+                          generateCaptcha();
+                          setPin('');
+                        }}
                         class="m-l"
                         showLoader={false}
                       >

@@ -1553,10 +1553,8 @@ export default class ActivationWizard extends React.Component {
   };
 
   onEAadharCheckboxChange = (isChecked) => {
-    this.props.save({ stakeholder: { aadhaar_linked: isChecked } }).then((response) => {
-      if (response.data.can_submit) {
-        this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-      }
+    this.props.save({ stakeholder: { aadhaar_linked: isChecked } }).then(() => {
+      this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
     });
   };
 
@@ -2220,8 +2218,11 @@ function isFieldValid(field, activation) {
 
   if (
     field.name == 'promoter_pan' &&
-    props.business_type == 11 &&
-    !props.user.instantActivation.isL1Submitted
+    props.user.business_type == 11 &&
+    hasAPIL1Error({
+      poi_verification_status: data.poi_verification_status,
+      is_unreg: true,
+    })
   ) {
     return false;
   }
