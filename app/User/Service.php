@@ -1451,6 +1451,7 @@ class Service extends Base\Service
             'block_bank_account_update_merchant_dashboard',
             'rx_opfin_announcement_v2',
             'whats-new-dec-2020',
+            'esign_aadhar_functionality',
             'rx_opfin_sso_announcement',
             'AnnouncementIconJan2021',
             'shopify_gtm_notification'

@@ -42,6 +42,7 @@ import {
   hasUploadedBusinessProofUrl,
   hasUploadedBusinessProofTypeDoc,
   isBusinessProofTypeDocFieldVisible,
+  canShowEAadharComponent,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
@@ -106,6 +107,7 @@ const BANK_PROOF_TYPE_DOC = {
 
 export const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
+export const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const contactFields = [
@@ -617,6 +619,27 @@ const bankAccountFields = [
 ];
 
 const uploadFields = [
+  {
+    name: 'e_aadhar',
+    customField: canShowEAadharComponent,
+    _when: canShowEAadharComponent,
+    isFieldValid: (activation) => {
+      if (
+        activation.props.data.stakeholder &&
+        (activation.props.data.stakeholder.aadhaar_linked === 0 ||
+          activation.props.data.stakeholder.aadhaar_linked === false)
+      ) {
+        return true;
+      }
+      if (
+        activation.props.data.stakeholder &&
+        activation.props.data.stakeholder.aadhaar_esign_status
+      ) {
+        return true;
+      }
+      return false;
+    },
+  },
   {
     label: 'Address Proof',
     getLabel: (activation) => {

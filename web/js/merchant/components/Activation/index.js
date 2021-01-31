@@ -98,6 +98,7 @@ import Footer from './components/Footer';
 import RxCaInterest from './components/RxCaInterest';
 import { LOADING, FOOTER_BUTTONS } from './Constants';
 import { TypeAhead } from 'react-power-select';
+import EAadhard from './components/E-Aadhar';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
 /*
@@ -275,7 +276,7 @@ export default class ActivationWizard extends React.Component {
         // set default additional doc
         const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
         this.state.additional_doc = defaultAdditionalDoc || '';
-        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 13;
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 14;
         FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
           ADDITIONAL_DOC_SELECT_FIELD_INDEX
         ].options = getAdditionalDocOptions(this);
@@ -1438,7 +1439,7 @@ export default class ActivationWizard extends React.Component {
       if (doesHaveAdditionalDocs(this, bizCatSubCatPair)) {
         const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
         const additionalDocOptions = getAdditionalDocOptions(this, bizCatSubCatPair);
-        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 13;
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 14;
 
         if (
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
@@ -1549,6 +1550,14 @@ export default class ActivationWizard extends React.Component {
         }
       },
     );
+  };
+
+  onEAadharCheckboxChange = (isChecked) => {
+    this.props.save({ stakeholder: { aadhaar_linked: isChecked } }).then((response) => {
+      if (response.data.can_submit) {
+        this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+      }
+    });
   };
 
   /* Find if all tabs are valid */
@@ -2025,13 +2034,21 @@ function ActivationField(field) {
   if (typeof rest.customField === 'function') {
     rest.customField = rest.customField(this);
   }
-
   // Attach addition properties only if field is Custom Field i.e PowerSelect
   // Business Name has customField = true only for PG Activation (Not for RX Activation)
   if (field.name === 'business_name' && rest.customField) {
     rest.options = this.state.business_name_options || [];
     rest.selected = this.state.business_name_selected_option;
     rest.onChange = this.onOptionChange;
+  }
+
+  if (field.name === 'e_aadhar' && rest.customField) {
+    rest.aadharStatus =
+      this.props.data.stakeholder && this.props.data.stakeholder.aadhaar_esign_status;
+    rest.isAadharLinked = this.props.data.stakeholder
+      ? !!this.props.data.stakeholder.aadhaar_linked
+      : true;
+    rest.mobileLinkedOnChange = this.onEAadharCheckboxChange;
   }
 
   if (rest.getName) {
@@ -2190,6 +2207,10 @@ function isFieldValid(field, activation) {
     isFieldRequired = isFieldRequired(activation);
   }
 
+  if (name === 'e_aadhar') {
+    return field.isFieldValid(activation);
+  }
+
   if (isFieldRequired && !value) {
     field.autoFocus = true; // To autofocus first unfilled required field
 
@@ -2241,20 +2262,21 @@ function handleInstantActivationSuccess(props) {
 }
 
 function CustomField(props) {
+  const { name, disabled, selected, validator, aadharStatus, isAadharLinked } = props;
   let error = '';
-  const businessName = props.selected.company_name;
 
-  if (typeof props.validator === 'function' && isPresent(businessName)) {
-    error = props.validator(businessName);
-  }
-
-  switch (props.name) {
+  switch (name) {
     case 'business_name':
+      const businessName = selected.company_name;
+
+      if (typeof validator === 'function' && isPresent(businessName)) {
+        error = validator(businessName);
+      }
       return (
         <div
           className={classList(
             'Input Input--required Input--small',
-            props.disabled && 'Input--disabled',
+            disabled && 'Input--disabled',
             error && 'PowerSelectError is-mature is-invalid',
           )}
         >
@@ -2270,6 +2292,12 @@ function CustomField(props) {
             />
             {error && <div className="Input-error">{error}</div>}
           </div>
+        </div>
+      );
+    case 'e_aadhar':
+      return (
+        <div className={classList(disabled && 'Input--disabled')}>
+          <EAadhard {...props} aadharStatus={aadharStatus} isAadharLinked={isAadharLinked} />
         </div>
       );
     default:

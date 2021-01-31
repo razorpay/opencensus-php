@@ -653,6 +653,10 @@ export default class User {
     return this.getExpStatus('upi_caw');
   }
 
+  get isEsignAadharEnable() {
+    return this.getExpStatus('esign_aadhar_functionality');
+  }
+
   get isWebhooksStatsEnabled() {
     // currently this experiment is not added in User/Service.php
     return this.getExpStatus('webhook_stats');

@@ -55,7 +55,7 @@ export default class ActivationCard extends Component {
         poi_verification_status,
         isUnregisteredBusiness,
         locked,
-        merchant
+        merchant,
       } = nextProps,
       { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 

@@ -10,6 +10,7 @@ import {
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
   BUSINESS_PROOF_TYPE_DOCS,
 } from './Constants';
+import { E_SIGN_AADHAR } from './ActivationFormMap';
 
 const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const INDIVIDUAL = 2; // Legacy Type, Now combined under Unregistered Type
@@ -351,6 +352,19 @@ function isBusinessProofTypeDocFieldVisible(activation) {
   return false;
 }
 
+function canShowEAadharComponent(activation) {
+  const currentBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  if (
+    E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
+    activation.props.user.isEsignAadharEnable
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function isDedupe(activation) {
   if (!!activation.locked && !activation.activated && activation.merchant.hold_funds) {
     return true;
@@ -393,4 +407,5 @@ export {
   hasUploadedBusinessProofUrl,
   hasUploadedBusinessProofTypeDoc,
   isBusinessProofTypeDocFieldVisible,
+  canShowEAadharComponent,
 };
