@@ -3545,14 +3545,17 @@ class Core extends Base\Core
                 $flag = true;
                 foreach ($action['keysToCheck'] as $key => $value)
                 {
-                    if (isset($response[$key]))
+                    if (isset($response[$key][$value['list']]) === false)
                     {
-                        $score = $response[$key][$value['list']];
-                        switch ($value['matchType']) {
-                            case Constants::FUZZY_MATCH:
-                                if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
-                                break;
-                        }
+                        $flag = false;
+                        break;
+                    }
+
+                    $score = $response[$key][$value['list']];
+                    switch ($value['matchType']) {
+                        case Constants::FUZZY_MATCH:
+                            if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
+                            break;
                     }
                 }
                 if ($flag)

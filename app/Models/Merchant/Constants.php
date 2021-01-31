@@ -504,7 +504,7 @@ final class Constants
             'keysToCheck' => [
                 Detail\Entity::CONTACT_NAME => [
                     'list' => self::BRAND_LIST,
-                    'matchType'=> self::FUZZY_MATCH
+                    'matchType'=> self::EXACT_MATCH
                 ]
             ],
             'method' => 'regUnderReview'
@@ -513,7 +513,7 @@ final class Constants
             'keysToCheck' => [
                 Detail\Entity::BUSINESS_DBA => [
                     'list' => self::BRAND_LIST,
-                    'matchType'=> self::FUZZY_MATCH
+                    'matchType'=> self::EXACT_MATCH
                 ]
             ],
             'method' => 'regUnderReview'
