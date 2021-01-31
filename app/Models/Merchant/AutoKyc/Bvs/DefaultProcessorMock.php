@@ -11,9 +11,23 @@ class DefaultProcessorMock extends DefaultProcessor
 {
     private $mockStatus;
 
+    const UNITTEST_VALIDATION_ARRAY_CACHE_KEY = 'unittest_bvs_validation_array';
+
+    const UNITTEST_VALIDATION_ARRAY_CACHE_TTL = 15 * 60; // 15 minutes
+
     public function Process(): Response
     {
         $validationResponse = new ValidationResponse();
+
+        $app = \App::getFacadeRoot();
+
+        if ($app->runningUnitTests() === true)
+        {
+            // setting it to redis here so that we can assert in tests that the correct values were sent to BvsService
+            $app['cache']->put(self::UNITTEST_VALIDATION_ARRAY_CACHE_KEY,
+                $this->getCreateValidationArray(),
+            self::UNITTEST_VALIDATION_ARRAY_CACHE_TTL);
+        }
 
         switch ($this->mockStatus)
         {

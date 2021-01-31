@@ -209,4 +209,6 @@ final class RazorxTreatment
 
     // This is to be used to block VA to VA payouts
     const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';
+
+    const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 }

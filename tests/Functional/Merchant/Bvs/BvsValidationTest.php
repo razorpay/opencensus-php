@@ -7,6 +7,7 @@ use App;
 use Config;
 use Illuminate\Support\Facades\Queue;
 
+use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Tests\Functional\TestCase;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class BvsValidationTest extends TestCase
 {
+    use BvsTrait;
     use RazorxTrait;
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
@@ -558,40 +560,6 @@ class BvsValidationTest extends TestCase
             true);
     }
 
-    private function processBvsResponseAndValidate(array $bvsResponse, string $validationId)
-    {
-        (new KafkaMessageProcessor())->process('api-bvs-validation-result-events',
-                                               $bvsResponse, 'test');
-
-        $bvsValidationPostResponse = $this->getDbEntity('bvs_validation',
-                                                        ['validation_id' => $validationId]);
-
-        $expectedValues                      = $bvsResponse['data'];
-        $expectedValues['validation_status'] = $expectedValues['status'];
-
-        //
-        // Unsetting status because field is different in bvs kafka response and bvs validation entity
-        //
-        unset($expectedValues['status']);
-
-        $this->bvsValidation($bvsValidationPostResponse, $expectedValues);
-    }
-
-    private function getBvsResponse(string $validationId,
-                                    string $status = 'success',
-                                    string $errorCode = '',
-                                    string $errorDesc = '')
-    {
-        $bvsResponse['data'] = [
-            'validation_id'     => $validationId,
-            'status'            => $status,
-            'error_code'        => $errorCode,
-            'error_description' => $errorDesc,
-        ];
-
-        return $bvsResponse;
-    }
-
     private function triggerBvsVerification(string $test,
                                             array $merchantDetailsData,
                                             bool $bvsMock = true,
@@ -612,20 +580,5 @@ class BvsValidationTest extends TestCase
         $this->startTest($testData);
 
         return $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
-    }
-
-    private function bvsValidation(Entity $bvsValidation,
-                                   array $expectedValues = [])
-    {
-        //
-        // resetting time based data
-        //
-        unset($expectedValues['created_at']);
-        unset($expectedValues['updated_at']);
-
-        foreach ($expectedValues as $key => $value)
-        {
-            $this->assertEquals($value, $bvsValidation->getAttribute($key));
-        }
     }
 }

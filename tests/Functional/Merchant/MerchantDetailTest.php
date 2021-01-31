@@ -13,9 +13,11 @@ use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\Merchant\Rejection;
+use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -28,6 +30,7 @@ use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Mail\Merchant\GstinSelfServeVerificationFailure;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
@@ -35,6 +38,7 @@ use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 
 class MerchantDetailTest extends OAuthTestCase
 {
+    use BvsTrait;
     use RazorxTrait;
     use PaymentTrait;
     use TerminalTrait;
@@ -2621,15 +2625,13 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testUpdateGstinSelfServe()
     {
-        $this->fixtures->merchant->addFeatures('gstin_self_serve');
+        $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
 
         $this->assertGstinSelfServeStatus('not_started');
 
-        $this->ba->proxyAuth();
-
         $this->startTest();
 
-        $data = $this->app['cache']->get('gstin_self_serve_input_10000000000000');
+        $data = $this->app['cache']->get('gstin_self_serve_input_' . $merchant['id']);
 
         $this->assertEquals([
             'gstin'                       => '18AABCU9603R1ZM',
@@ -2644,9 +2646,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testUpdateGstinSelfServeWhenInProgressShouldFail()
     {
-        $this->fixtures->merchant->addFeatures('gstin_self_serve');
-
-        $this->ba->proxyAuth();
+        $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
 
@@ -2684,7 +2684,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testUpdateGstinSelfServeInvalidUserRole()
     {
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
 
         $invalidRoles = [
             'manager',
@@ -2700,9 +2700,6 @@ class MerchantDetailTest extends OAuthTestCase
             'auth_link_supervisor',
             'auth_link_agent',
         ];
-
-        $this->fixtures->merchant->addFeatures('gstin_self_serve', $merchant['id']);
-
 
         foreach ($invalidRoles as $invalidRole)
         {
@@ -2720,6 +2717,165 @@ class MerchantDetailTest extends OAuthTestCase
 
             $this->startTest();
         }
+    }
+
+    public function testUpdateGstinSelfServeV2()
+    {
+        $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
+
+        $this->initiateGstinSelfServeV2();
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $requestToBvs = $this->app['cache']->get('unittest_bvs_validation_array');
+
+        $artefactToBvs = $requestToBvs['artefact'];
+
+        $rulesListToBvs = $requestToBvs['rules']['rules_list'];
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsProcessValidationHandler = $this->app['cache']->get('bvs_validation_custom_process_validation_' . $bvsValidationEntity['validation_id']);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => null,
+            'business_registered_address' => null,
+            'business_registered_state'   => null,
+            'business_registered_city'    => null,
+            'business_registered_pin'     => null,
+            ], $merchantDetail); // asserting old values still present
+
+
+        $this->assertArraySelectiveEquals([
+            'owner_id'   => $merchant['id'],
+            'owner_type' => 'merchant',
+            'type'       => 'gstin',
+            'details'    => [
+                'gstin'            => '18AABCU9603R1ZM',
+                'legal_name'       => 'randomLegalName',
+                'trade_name'       => 'randomTradeName',
+                'primary_pin_code' => '560050',
+            ],
+        ], $artefactToBvs);
+
+        $this->assertCount(3, $rulesListToBvs);
+
+        // explicity asserting for pincode rule
+        $pincodeRule = $rulesListToBvs[2];
+
+        $this->assertEquals([
+            "rule_type" => "string_comparison_rule",
+            "rule_def"  => [
+                "equals" => [
+                    [
+                        "var" => "artefact.details.primary_pin_code.value",
+                    ],
+                    [
+                        "var" => "enrichments.online_provider.details.primary_pin_code.value",
+                    ],
+                ],
+            ],
+        ], $pincodeRule);
+
+        $this->assertArraySelectiveEquals([
+            'validation_id'     => 'ValidationId12',
+            'owner_id'          => $merchant['id'],
+            'owner_type'        => 'merchant',
+            'validation_status' => 'captured',
+            'artefact_type'     => 'gstin',
+        ], $bvsValidationEntity);
+
+        $this->assertEquals('GstinSelfServeCallbackHandler', $bvsProcessValidationHandler);
+    }
+
+    public function testUpdateGstinSelfServeV2BvsValidationCreationError()
+    {
+        $this->setupMerchantForGstinSelfServeTest();
+
+        Config::set('services.bvs.response', 'failure');
+
+        $this->expectException(ServerErrorException::class);
+
+        $this->initiateGstinSelfServeV2();
+    }
+
+    public function testGstinSelfServeBvsCallback()
+    {
+        extract($this->setupMerchantForGstinSelfServeTest());
+
+        $this->initiateGstinSelfServeV2();
+
+        $this->assertGstinSelfServeStatus('in_progress');
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id']);
+
+        $this->processBvsResponseAndValidate($bvsResponse, $bvsValidationEntity['validation_id']);
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $cacheData = $this->app['cache']->get('gstin_self_serve_input_' . $merchant['id']);
+
+        $this->assertNull($cacheData);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => 'Registered Address',
+            'business_registered_state'   => 'DL',
+            'business_registered_city'    => 'Delhi',
+            'business_registered_pin'     => '560050',
+        ], $merchantDetail);
+
+        Mail::assertNotQueued(GstinSelfServeVerificationFailure::class);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->assertGstinSelfServeStatus('not_started');
+    }
+
+
+    public function testGstinSelfServeBvsCallbackVerificationFailure()
+    {
+        $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
+
+        $this->fixtures->edit('merchant_detail', $merchant['id'], [
+            'business_registered_address' => 'old business address',
+            'business_registered_state'   => 'KA',
+            'business_registered_city'    => 'bangalore',
+            'business_registered_pin'     => '560040',
+            'merchant_id'                 => $merchant['id'],
+            'promoter_pan_name'           => 'randomLegalName',
+            'business_name'               => 'randomTradeName',
+        ]);
+
+        $this->initiateGstinSelfServeV2();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        $this->processBvsResponse($bvsResponse);
+
+        $cacheData = $this->app['cache']->get('gstin_self_serve_input_' . $merchant['id']);
+
+        $this->assertNull($cacheData);
+
+        Mail::assertQueued(GstinSelfServeVerificationFailure::class, function($mail) {
+           return true;
+        });
+
+        $this->assertGstinSelfServeStatus('not_started');
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => null,
+            'business_registered_address' => 'old business address',
+            'business_registered_state'   => 'KA',
+            'business_registered_city'    => 'bangalore',
+            'business_registered_pin'     => '560040',
+        ], $merchantDetail); // asserting old values still present
     }
 
     protected function createBalanceForSharedMerchant()
@@ -2984,12 +3140,75 @@ class MerchantDetailTest extends OAuthTestCase
 
     protected function assertGstinSelfServeStatus(string $expectedStatus)
     {
-        $this->ba->proxyAuth();
-
         $data = $this->testData['getSelfServeGetStatus'];
 
         $data['response']['content']['status'] = $expectedStatus;
 
         $this->startTest($data);
     }
+
+    protected function setGstinSelfServeV2Flow()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'gstin_self_serve_v2')
+                    {
+                        return 'on';
+                    }
+                    return 'control';
+                }));
+    }
+
+    protected function setupMerchantForGstinSelfServeTest()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant->create();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant['id'],
+            'promoter_pan_name' => 'randomLegalName',
+            'business_name'     => 'randomTradeName',
+        ]);
+
+        $this->fixtures->merchant->addFeatures('gstin_self_serve', $merchant['id']);
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        Config::set('services.bvs.mock', true);
+
+        return [
+            'merchant'  => $merchant,
+            'user'      => $user,
+        ];
+    }
+
+    private function initiateGstinSelfServeV2()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
+        $this->setGstinSelfServeV2Flow();
+
+        $this->startTest();
+    }
+
 }

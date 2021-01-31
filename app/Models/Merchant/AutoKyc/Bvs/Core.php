@@ -41,7 +41,11 @@ class Core extends Base\Core
 
             $validationObject = $this->getValidationObject($input, $response);
 
-            $validation = (new BvsValidation\Core())->create($validationObject);
+            $bvsCore = new BvsValidation\Core();
+
+            $validation = $bvsCore->create($validationObject);
+
+            $bvsCore->setCustomCallbackHandlerIfApplicable($validation, $input);
         }
         catch (\Exception $ex)
         {

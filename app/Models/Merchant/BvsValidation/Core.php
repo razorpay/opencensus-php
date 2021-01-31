@@ -16,9 +16,15 @@ class Core extends Base\Core
 {
     const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT  = 'bvs_validation_processing_attempt_count_';
 
+    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY = 'bvs_validation_custom_process_validation_%s';
+
     const MAX_RETRY_COUNT = 3;
 
     const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_MIN = 180;
+
+    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_MIN  = 180;
+
+    const DEFAULT_CALLBACK_HANDLER_FUNCTION = 'updateValidationStatusForMerchant';
 
     protected $mutex;
 
@@ -141,6 +147,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchantDetails);
     }
 
+    protected function GstinSelfServeCallbackHandler(string $merchantId, Entity $validation): void
+    {
+        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $service = (new Merchant\Detail\Service());
+
+        $service->handleGstinSelfServeCallback($merchantDetails, $validation);
+    }
+
     /**
      * @param string $validationId
      * @param array  $validationObj
@@ -162,7 +177,9 @@ class Core extends Base\Core
 
                         $this->repo->bvs_validation->saveOrFail($validation);
 
-                        $this->updateValidationStatusForMerchant(
+                        $callbackHandlerFn = $this->getCallbackHandlerFunction($validation);
+
+                        $this->$callbackHandlerFn(
                             $merchantId,
                             $validation);
                     });
@@ -244,4 +261,50 @@ class Core extends Base\Core
     {
         return self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT . $validationId;
     }
+
+    protected function getCallbackHandlerFunction(Base\Entity $validation)
+    {
+        $defaultHandlerFunction = self::DEFAULT_CALLBACK_HANDLER_FUNCTION;
+
+        $customCallbackHandlerKey = $this->getCustomHandlerKey($validation);
+
+        $customCallbackHandlerFunction = $this->cache->get($customCallbackHandlerKey);
+
+        if ($customCallbackHandlerFunction === null)
+        {
+            return $defaultHandlerFunction;
+        }
+
+        $this->trace->info(TraceCode::BVS_USING_CUSTOM_CALLBACK_PROCESSOR, [
+            'validation_id'     => $validation->getValidationId(),
+            'handler'           => $customCallbackHandlerFunction,
+        ]);
+
+        return $customCallbackHandlerFunction;
+    }
+
+    public function setCustomCallbackHandlerIfApplicable(Base\Entity $validation, $input)
+    {
+        if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === false)
+        {
+            return;
+        }
+
+        $customHandler = studly_case($input[Constant::CUSTOM_CALLBACK_HANDLER]);
+
+        $this->trace->info(TraceCode::BVS_SET_CUSTOM_CALLBACK_PROCESSOR, [
+            'validation_id'     => $validation->getValidationId(),
+            'handler'           => $customHandler,
+        ]);
+
+        $customHandlerKey = $this->getCustomHandlerKey($validation);
+
+        $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_MIN);
+    }
+
+    protected function getCustomHandlerKey(Base\Entity $validation)
+    {
+        return sprintf(self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY, $validation->getValidationId());
+    }
+
 }

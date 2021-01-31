@@ -98,7 +98,10 @@ class Constant
 
     const RAZORX_EXPERIMENT = 'razorx_experiment';
 
+    const CUSTOM_CALLBACK_HANDLER = 'custom_callback_handler';
+
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
+
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         Type::AADHAR_FRONT                => [

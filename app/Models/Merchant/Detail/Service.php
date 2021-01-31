@@ -13,6 +13,7 @@ use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -22,6 +23,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
+use Illuminate\Support\Facades\Mail;
+use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
@@ -31,8 +34,11 @@ use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Service extends Base\Service
 {
@@ -1384,6 +1390,10 @@ class Service extends Base\Service
             $status = DEConstants::GSTIN_SELF_SERVE_STATUS_IN_PROGRESS;
         }
 
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_STATUS, [
+           'status' => $status,
+        ]);
+
         return $status;
     }
 
@@ -1398,8 +1408,6 @@ class Service extends Base\Service
             'flow'  => $flow,
         ]);
 
-        $this->storeGstinSelfServeInput($input);
-
         switch ($flow)
         {
             case DEConstants::GSTIN_SELF_SERVE_V2_FLOW:
@@ -1413,19 +1421,63 @@ class Service extends Base\Service
         return $response;
     }
 
+
+    public function handleGstinSelfServeCallback(Entity $detail, Merchant\BvsValidation\Entity $validation)
+    {
+        $this->trace->info(TraceCode::GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
+
+        switch ($validation->getValidationStatus())
+        {
+            case 'success':
+                $this->handleGstinSelfServeCallbackSuccess($detail);
+                break;
+            default:
+                $this->handleGstinSelfServeCallbackFailure($detail);
+
+        }
+        $this->deleteGstinSelfServeInput();
+    }
+
     protected function getGstinSelfServeFlow()
     {
-        return DEConstants::GSTIN_SELF_SERVE_V1_FLOW;
+        $variant = $this->app['razorx']->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::GSTIN_SELF_SERVE_V2,
+            Mode::LIVE
+        );
+
+        switch ($variant)
+        {
+            case 'on':
+                return DEConstants::GSTIN_SELF_SERVE_V2_FLOW;
+            default:
+                return DEConstants::GSTIN_SELF_SERVE_V1_FLOW;
+        }
     }
 
     protected function updateGstinSelfServeV1($input)
     {
+        $this->storeGstinSelfServeInput($input);
+
         return $input;
     }
 
     protected function updateGstinSelfServeV2($input)
     {
-        throw new Exception\ServerErrorException('not implemented', ErrorCode::SERVER_ERROR);
+        $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
+
+        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+
+        if ($validation === null)
+        {
+            throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED, $validation->toArrayPublic());
+
+        $this->storeGstinSelfServeInput($input);
+
+        return $input;
     }
 
     protected function storeGstinSelfServeInput($input)
@@ -1433,6 +1485,13 @@ class Service extends Base\Service
         $cacheKey = $this->getGstinSelfServeInputCacheKey();
 
         $this->app['cache']->put($cacheKey, $input, DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_TTL);
+    }
+
+    protected function deleteGstinSelfServeInput()
+    {
+        $cacheKey = $this->getGstinSelfServeInputCacheKey();
+
+        $this->app['cache']->delete($cacheKey);
     }
 
     protected function getGstinSelfServeInputCacheKey()
@@ -1445,5 +1504,44 @@ class Service extends Base\Service
         $cacheKey = $this->getGstinSelfServeInputCacheKey();
 
         return $this->app['cache']->get($cacheKey);
+    }
+
+    /**
+     * @param $input
+     * @return array
+     */
+    protected function getUpdateGstinSelfServeBvsPayload($input): array
+    {
+        return [
+            BvsConstant::CUSTOM_CALLBACK_HANDLER => 'gstin_self_serve_callback_handler',
+            BvsConstant::ARTEFACT_TYPE           => BvsConstant::GSTIN,
+            BvsConstant::CONFIG_NAME             => 'gstin_self_serve',
+            BvsConstant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,
+            BvsConstant::DETAILS                 => [
+                BvsConstant::GSTIN      => $input[Entity::GSTIN],
+                BvsConstant::LEGAL_NAME => $this->merchant->merchantDetail->getPromoterPanName() ?? '',
+                BvsConstant::TRADE_NAME => $this->merchant->merchantDetail->getBusinessName() ?? '',
+                'primary_pin_code'      => $input[Entity::BUSINESS_REGISTERED_PIN],
+            ],
+        ];
+    }
+
+    /**
+     * @param Entity $detail
+     */
+    private function handleGstinSelfServeCallbackSuccess(Entity $detail): void
+    {
+        $input = $this->getGstinSelfServeInputFromCache();
+
+        $detail->edit($input);
+
+        $this->repo->merchant_detail->saveOrFail($detail);
+    }
+
+    protected function handleGstinSelfServeCallbackFailure(Entity $detail)
+    {
+        $mail = (new MerchantMail\GstinSelfServeVerificationFailure($detail->merchant->toArray(), $detail->toArray()));
+
+        Mail::queue($mail);
     }
 }

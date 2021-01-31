@@ -66,13 +66,7 @@ class DefaultProcessor implements Processor
      */
     public function Process(): Response
     {
-        $validation = [];
-
-        $validation[Constant::ARTEFACT] = $this->getArtefact();
-
-        $validation[Constant::ENRICHMENTS] = $this->getEnrichments();
-
-        $validation[Constant::RULES] = $this->getRules();
+        $validation = $this->getCreateValidationArray();
 
         $response = (new BvsClient\BvsValidationClient())->createValidation($validation);
 
@@ -138,5 +132,18 @@ class DefaultProcessor implements Processor
             [
                 Constant::CONFIG_NAME => $configName,
             ]);
+    }
+
+    protected function getCreateValidationArray(): array
+    {
+        $validation = [];
+
+        $validation[Constant::ARTEFACT] = $this->getArtefact();
+
+        $validation[Constant::ENRICHMENTS] = $this->getEnrichments();
+
+        $validation[Constant::RULES] = $this->getRules();
+
+        return $validation;
     }
 }
