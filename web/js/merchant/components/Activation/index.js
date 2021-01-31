@@ -2218,7 +2218,7 @@ function isFieldValid(field, activation) {
 
   if (
     field.name == 'promoter_pan' &&
-    props.user.business_type == 11 &&
+    data.business_type == 11 &&
     hasAPIL1Error({
       poi_verification_status: data.poi_verification_status,
       is_unreg: true,
