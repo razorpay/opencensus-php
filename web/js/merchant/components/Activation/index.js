@@ -98,6 +98,8 @@ import Footer from './components/Footer';
 import RxCaInterest from './components/RxCaInterest';
 import { LOADING, FOOTER_BUTTONS } from './Constants';
 import { TypeAhead } from 'react-power-select';
+import SupportButton from 'merchant/components/Home/SupportButton';
+
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -1789,11 +1791,6 @@ export default class ActivationWizard extends React.Component {
 
             let secondaryMsg = 'For any clarifications, you can';
             const ticketLink = <Link to="#ticket">write to support</Link>;
-            const supportLink = (
-              <a href="https://razorpay.com/support/#request" target="_blank">
-                contact support
-              </a>
-            );
             if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
                 // **1. Alert: Account Activated
@@ -1819,6 +1816,26 @@ export default class ActivationWizard extends React.Component {
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
+              } else if (
+                !!this.props.user.locked &&
+                !this.props.user.isActivated &&
+                this.props.user.merchant.hold_funds
+              ) {
+                icon = 'i-warning';
+                Component = Alert.Warning;
+                msg = (
+                  <React.Fragment>
+                    We need more information regarding your submitted details. Please{' '}
+                    <SupportButton
+                      type="anchor"
+                      buttonLabel="Contact Support"
+                      category="merchant"
+                      openSection="account-activation"
+                    />{' '}
+                    to complete your activation.
+                  </React.Fragment>
+                );
+                secondaryMsg = '';
               } else if (isFormLocked && isFormSubmitted) {
                 // **4. Alert: Form is Locked (for reasons other than above)
                 // 'locked' status has more priority than 'submitted'
@@ -1830,22 +1847,6 @@ export default class ActivationWizard extends React.Component {
                 secondaryMsg = (
                   <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
                 );
-              } else if (
-                !!this.props.user.locked &&
-                !this.props.user.instantActivation.isL1Submitted &&
-                !this.props.user.isActivated &&
-                this.props.user.instantActivation.isUnregisteredBusiness &&
-                FORM_TABS[activeTab] === 'Business Details'
-              ) {
-                icon = 'i-warning';
-                Component = Alert.Warning;
-                msg = (
-                  <React.Fragment>
-                    `We need some more information regarding your submitted details please{' '}
-                    {supportLink} to assist you further in activating your account.`
-                  </React.Fragment>
-                );
-                secondaryMsg = '';
               } else if (isFormSubmitted) {
                 // **5. Alert: Form is Submitted
 
@@ -2209,17 +2210,17 @@ function isFieldValid(field, activation) {
 
 function handleInstantActivationSuccess(props) {
   if (props.user.business_type == 11) {
-    const { poi_verification_status, locked, instantActivation, isActivated } = props.user;
+    const {
+      poi_verification_status,
+      locked,
+      instantActivation,
+      isActivated,
+      merchant,
+    } = props.user;
     if (poi_verification_status == 'verified' && !locked) {
       props.showPANStatusModal();
       fireL1FormSuccessEvents(props.user);
-    } else if (
-      !!locked &&
-      !instantActivation.isL1Submitted &&
-      !isActivated &&
-      instantActivation.isUnregisteredBusiness
-    ) {
-      props.showFraudDetectionModal();
+    } else if (!!locked && !isActivated && merchant.hold_funds) {
       fireL1FormSuccessEvents(props.user);
     }
   } else {

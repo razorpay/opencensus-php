@@ -82,7 +82,7 @@ export default class LiveMode extends Component {
             in order to unlock Live Payments
           </span>
         );
-      } else if (!!locked && !isActivated && isUnregisteredBusiness) {
+      } else if (!!locked && !isActivated) {
         content = <span>Complete activation in order to unlock live payments</span>;
       } else if (isGraylistFlow) {
         if (!isSubmitted) {

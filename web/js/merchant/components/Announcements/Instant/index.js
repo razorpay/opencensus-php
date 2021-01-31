@@ -6,6 +6,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import { showProductsModal } from 'merchant/reducers/home';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import SupportButton from 'merchant/components/Home/SupportButton';
 
 import { trackGoToActivationFromError } from '../../../containers/Home/ga';
 
@@ -160,6 +161,20 @@ export default class InstantActivationAnnouncements extends Component {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;
         content = commonSettlementBanner.content;
+      } else if (!user.isActivated && !!user.locked && user.merchant.hold_funds) {
+        title = 'Contact Support';
+        content = (
+          <>
+            We need more information regarding your submitted details. Please{' '}
+            <SupportButton
+              type="anchor"
+              buttonLabel="contact support"
+              category="merchant"
+              openSection="account-activation"
+            />{' '}
+            to complete your activation.
+          </>
+        );
       } else {
         let activation_tat = '1-2 days';
         const clarification_submitted = LocalStorageService.getItem(

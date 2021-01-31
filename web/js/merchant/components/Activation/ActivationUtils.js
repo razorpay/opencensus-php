@@ -351,6 +351,13 @@ function isBusinessProofTypeDocFieldVisible(activation) {
   return false;
 }
 
+function isDedupe(activation) {
+  if (!!activation.locked && !activation.activated && activation.merchant.hold_funds) {
+    return true;
+  }
+  return false;
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -379,6 +386,7 @@ export {
   hasAPIL1Error,
   showSubcategory,
   isSourceRX,
+  isDedupe,
   removeArrayDuplicatesByProp,
   doesHaveBusinessProofDocs,
   getDefaultBusinessProofDoc,

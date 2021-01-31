@@ -26,6 +26,8 @@ import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 
+import { isDedupe } from 'merchant/components/Activation/ActivationUtils';
+
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
 
@@ -173,6 +175,7 @@ export default class ActivationContainer extends React.Component {
     const { activation_progress, activated, activation_status, submitted } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
+
     const user = new User({
       ...session.user,
       activation_progress,
@@ -206,7 +209,11 @@ export default class ActivationContainer extends React.Component {
           return response;
         }
 
-        this.postSubmitStep(response);
+        if (isDedupe(response.data)) {
+          location.href = '/app/dashboard';
+        } else {
+          this.postSubmitStep(response);
+        }
 
         return response;
       })

@@ -37,6 +37,7 @@ import {
 } from './ga';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
+import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
@@ -300,6 +301,10 @@ class AnalyticsDesktop extends Component {
           {this.state.showNcPopup && user.needsClarification && (
             <NCModal onClose={this.onNcModalClose} />
           )}
+
+          {!!this.props.user.locked &&
+            !this.props.user.activated &&
+            this.props.user.merchant.hold_funds && <DedupeModal />}
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>

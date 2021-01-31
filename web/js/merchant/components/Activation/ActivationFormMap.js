@@ -610,7 +610,6 @@ const bankAccountFields = [
       },
       _when: (activation) => {
         const isLocked = activation.props.data.locked;
-
         return !isLocked;
       },
     },

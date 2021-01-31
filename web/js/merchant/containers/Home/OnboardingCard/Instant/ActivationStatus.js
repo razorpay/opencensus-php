@@ -7,6 +7,7 @@ import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { trackGoToActivationFromError } from '../../ga';
 import RTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import SupportButton from 'merchant/components/Home/SupportButton';
 
 const initialState = {
   status: null,
@@ -54,6 +55,7 @@ export default class ActivationCard extends Component {
         poi_verification_status,
         isUnregisteredBusiness,
         locked,
+        merchant
       } = nextProps,
       { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 
@@ -92,6 +94,20 @@ export default class ActivationCard extends Component {
       } else if (isRejected) {
         status = possibleStatuses.blocked;
         content = 'Your KYC form has been rejected.';
+      } else if (!!locked && !activated && merchant.hold_funds) {
+        status = possibleStatuses.blocked;
+        content = (
+          <span>
+            Please{' '}
+            <SupportButton
+              type="anchor"
+              buttonLabel="contact support"
+              category="merchant"
+              openSection="account-activation"
+            />{' '}
+            to activate your account
+          </span>
+        );
       } else {
         status = possibleStatuses.progress;
         content = this.accountUnderReviewContent;
@@ -158,19 +174,6 @@ export default class ActivationCard extends Component {
                   Review Details
                 </Link>
               </div>
-            </div>
-          );
-        } else if (!!locked && !isActivated) {
-          status = possibleStatuses.warning;
-          content = (
-            <div>
-              Please{' '}
-              <span>
-                <a href="https://razorpay.com/support/#request" rel="noopener" target="_blank">
-                  contact support
-                </a>
-              </span>{' '}
-              to get your account activated
             </div>
           );
         }
