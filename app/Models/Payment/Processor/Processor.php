@@ -348,8 +348,6 @@ class Processor
 
             $payment = $this->payment;
 
-            $this->preProcessDCCInputs($input, $payment);
-
             $this->preProcessPaymentMeta($input, $payment);
 
             // This flow is being used for only hosted (Shopify).
@@ -605,49 +603,6 @@ class Processor
         }
 
         (new Payment\PaymentMeta\Core)->addMetaInformation($payment, $input[Payment\Entity::META]);
-    }
-
-    protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
-    {
-        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabled() === false))
-        {
-            return;
-        }
-
-        if ((isset($input['dcc_currency']) === true) and
-            (isset($input['currency_request_id']) === true))
-        {
-            $dccCurrency = $input['dcc_currency'];
-
-            $dccCurrencyRequestId = $input['currency_request_id'];
-
-            $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId);
-
-            if (empty($requestedCurrencyData) === true)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
-                    [
-                        'currency_request_id' => $dccCurrencyRequestId,
-                        'dcc_currency'        => $dccCurrency,
-                    ], 'Invalid currency_request_id');
-            }
-
-            $paymentMetaInput = [
-                'gateway_amount'            => $requestedCurrencyData['amount'],
-                'gateway_currency'          => $requestedCurrencyData['currency'],
-                'forex_rate'                => $requestedCurrencyData['forex_rate'],
-                'dcc_offered'               => true,
-                'payment_id'                => $payment->getId(),
-                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
-            ];
-
-            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
-
-            $paymentMetaEntity->payment()->associate($payment);
-
-            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
-        }
     }
 
     protected function preProcessPaymentInputs(array & $input, Payment\Entity $payment)

@@ -102,12 +102,8 @@ class PaymentCreateDCCTest extends TestCase
         });
 
         $payment = $this->getLastEntity('payment', true);
-        $paymentMeta = $this->getLastEntity('payment_meta', true);
 
         $this->assertEquals("failed", $payment['status']);
-        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
-        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
-        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
 
         //Payment entity fetch with Admin auth
         $paymentFetchRequestData = [
@@ -118,10 +114,7 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($paymentFetchRequestData);
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertTrue($responseContent['dcc']);
-
-        $this->assertEquals($paymentMeta['gateway_currency'], $responseContent['gateway_currency']);
-        $this->assertEquals($paymentMeta['gateway_amount'], $responseContent['gateway_amount']);
+        $this->assertFalse($responseContent['dcc']);
     }
 
     public function testPaymentCreateWithDCCINR()
@@ -346,5 +339,129 @@ class PaymentCreateDCCTest extends TestCase
         $paymentArray['card']['number'] = '4012010000000007';
 
         return $paymentArray;
+    }
+
+    public function testForceOfferPaymentCreateWithDCC()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $flowsData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsData['content']['amount'] = 90000;
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+    }
+
+    public function testOfferPaymentCreateWithDCC()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers([$offer]);
+
+        $flowsData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsData['content']['amount'] = 90000;
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+        $payment['offer_id'] = $offer->getPublicId();
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+    }
+
+    public function testOfferPaymentCreateWithDCCINR()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers([$offer]);
+
+        $flowsData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsData['content']['amount'] = 90000;
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+        $payment['offer_id'] = $offer->getPublicId();
+        $payment['dcc_currency'] = 'INR';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment['amount'], $paymentMeta['gateway_amount']);
+
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
     }
 }
