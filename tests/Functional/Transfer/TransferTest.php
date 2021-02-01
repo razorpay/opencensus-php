@@ -35,11 +35,25 @@ class TransferTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'direct_transfer']);
 
         $account = $this->fixtures->create('merchant:marketplace_account');
 
         $this->linkedAccountId = $account['id'];
+    }
+
+    public function testDirectTransferWithoutFeature()
+    {
+        $this->fixtures->merchant->removeFeatures(['direct_transfer']);
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $this->createTransfer('account');
+            },
+            BadRequestException::class,
+            'This feature is not enabled for this merchant.'
+        );
     }
 
     public function testFetchTransferReversals()

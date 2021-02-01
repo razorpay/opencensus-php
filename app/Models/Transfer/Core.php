@@ -48,11 +48,10 @@ class Core extends Base\Core
             TraceCode::TRANSFER_CREATE_REQUEST,
             ['input' => $input]);
 
-//      Commenting this for now. Will get the feature flag enabled for the required merchants and then uncomment this.
-//        if (isset($input[ToType::ACCOUNT]) === true)
-//        {
-//            $this->checkForDirectTransferFeature($merchant);
-//        }
+        if (isset($input[ToType::ACCOUNT]) === true)
+        {
+            $this->checkForDirectTransferFeature($merchant);
+        }
 
         $this->validateMerchantForTransfer($merchant);
 
@@ -747,7 +746,8 @@ class Core extends Base\Core
                 null,
                 [
                     'merchant_id' => $merchant->getId(),
-                ]
+                ],
+                'This feature is not enabled for this merchant.'
             );
         }
     }
