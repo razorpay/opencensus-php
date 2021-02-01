@@ -180,6 +180,7 @@ trait Authorize
             function() use ($payment, $input, $gatewayInput){
                 return $this->coreAuthorize($payment, $input, $gatewayInput);
             });
+
         return $response;
     }
 
@@ -361,6 +362,17 @@ trait Authorize
             (empty($request['redirect']) === false))
         {
             return $request;
+        }
+
+        // edge case in s2s json flow. Merchant requested for OTP but we couldn't process it via healdess and tried the payment
+        // on 3ds. We return respawn corpoto instead of redirect URL.
+        //
+        if ((empty($this->isJsonRoute) === false) and
+            ($this->isJsonRoute === true) and
+            ($payment->isMethodCardOrEmi() === true) and
+            ($payment->getAuthType() === Payment\AuthType::_3DS))
+        {
+            return $this->validateAndReturnRedirectResponseIfApplicable($payment, []);
         }
 
         //
@@ -7697,17 +7709,12 @@ trait Authorize
             return true;
         }
 
-        if ((empty($gatewayInput['auth_type']) === false) and
-            ($gatewayInput['auth_type'] === Payment\AuthType::_3DS))
+        if (((empty($gatewayInput['auth_type']) === false) and
+            ($gatewayInput['auth_type'] === Payment\AuthType::_3DS)) or
+            ($payment->getAuthType() === Payment\AuthType::_3DS))
         {
             return true;
         }
-
-        if ($merchant->isHeadlessEnabled() === false)
-        {
-            return true;
-        }
-
 
         // check only for headless need to figure out for IVR and Axis express pay
         if (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === true) and
@@ -7727,7 +7734,7 @@ trait Authorize
     // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
     // since it has auth terminal selection data and if we can return a redirect response, we are using
     // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array $terminalGatewayInput, array & $gatewayInput)
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array $terminalGatewayInput, array & $gatewayInput = [])
     {
         try
         {

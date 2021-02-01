@@ -751,6 +751,81 @@ class CardPaymentServiceTest extends TestCase
         $this->razorxValue = "on";
     }
 
+     public function testIvr3dsFallbackJson()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+
+        $this->mockCardVault();
+
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'ivr' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '5567630000002004';
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'ivr_fallback_mock');
+
+         $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $paymentArray
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->razorxValue = "on";
+    }
+
     public function testPaymentAuthorized()
     {
         $this->markTestSkipped();
