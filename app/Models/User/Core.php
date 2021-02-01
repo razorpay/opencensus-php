@@ -386,8 +386,7 @@ class Core extends Base\Core
             }
         }
 
-        if ($validate2fa === false or
-            ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android')))
+        if ($validate2fa === false)
         {
             return $this->get($user);
         }
