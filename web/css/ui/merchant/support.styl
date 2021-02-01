@@ -159,3 +159,36 @@ div[class$="feedback_minimized_label"]
     padding-top: 10px
     height: 60px
 
+.write-to-us
+  padding: 20px
+  .write-to-us-heading-container
+    margin:-20px -20px 20px -20px
+    height: 100px;
+    display: flex
+    align-items:center
+    justify-content:center
+    background: url('assets/instant_activations/pending_background.png') top left no-repeat;
+    &.write-to-us-heading
+      color: #fff
+      margin:20px 20px
+  .write-to-us-content
+    margin: 0px 0px 20px 0px
+    text-align: justify
+  .write-to-us-button-container
+    display: flex
+    justify-content: space-between
+    &.thanks-button, &.continue-button
+      border:none
+      border-radius: 2px
+    &.thanks-button
+      color: #fff
+      background-color: #528ff0
+      &:hover:not(.disabled)
+        background-color:#3b80ee
+      margin: 0px 0px 20px 10px;
+      width: 50%;
+      padding-left: 37px;
+    &.continue-button
+      background-image: none;
+      background-color:rgb(250,250,250)
+      margin:0px 0px 20px 0px;

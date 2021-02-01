@@ -8,8 +8,15 @@ import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { connect } from 'react-redux';
+import WriteToUsPopup from './WriteToUsPopup';
 
-export default class SupportBody extends Component {
+@connect(null, {
+  openModal,
+  closeModal,
+})
+class SupportBody extends Component {
   openDashboardGuide = (_) => {
     analyticsService.track({
       objectName: 'help and support',
@@ -26,9 +33,9 @@ export default class SupportBody extends Component {
   };
 
   handleClick = (id) => {
+    const user = this.props.user;
     const { onToggle, onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
-
     if (rzpTicketSystem) {
       trackSupportOptions(id);
 
@@ -70,7 +77,20 @@ export default class SupportBody extends Component {
         },
       });
       onToggle();
-      rzpTicketSystem.openModal(`#${id}`);
+      if (this.props.supportFlags.show_create_ticket_popup) {
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <WriteToUsPopup
+              businessName={user.name}
+              id={id}
+              supportFlags={this.props.supportFlags}
+              rzpTicketSystem={rzpTicketSystem}
+              closeModal={this.props.closeModal}
+            />
+          ),
+        });
+      } else rzpTicketSystem.openModal(`#${id}`);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
     }
@@ -168,7 +188,7 @@ export default class SupportBody extends Component {
           {window.rzp_user ? (
             ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
               window.rzp_user.activation_status,
-            ) > -1 ? (
+            ) > -1 && this.props.supportFlags.show_chat ? (
               <li
                 class={`support-item p-all chat ${
                   shouldDisable && notifyCount < 1 ? 'disabled' : ''
@@ -220,3 +240,5 @@ export default class SupportBody extends Component {
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isWorkingDay;
 };
+
+export default SupportBody;

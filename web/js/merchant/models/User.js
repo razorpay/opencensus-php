@@ -326,6 +326,10 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
+  get isNewSupportChangesEnabled() {
+    return this.getExpStatus('TicketSystemSupport');
+  }
+
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
   }

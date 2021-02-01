@@ -5,6 +5,7 @@ import { trackSupportButton } from './ga';
 import { checkCallEligibility } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import { classList } from 'common/utils/rzp-utils';
 
@@ -12,6 +13,7 @@ import { classList } from 'common/utils/rzp-utils';
   (state) => {
     return {
       isCallEnabled: state.config.isCallEnabled,
+      user: state.session.user,
     };
   },
   {
@@ -23,11 +25,28 @@ export default class Support extends Component {
     isOpened: false,
     isHidden: false,
     notifyCount: 0,
+    supportFlags: {
+      show_chat: true,
+      show_create_ticket_popup: false,
+      no_of_days_for_activation: '3 to 5',
+    },
   };
 
   componentDidMount() {
     this.props.checkCallEligibility();
     this.bindEvents();
+    if (this.props.user.isNewSupportChangesEnabled) {
+      merchantFetch({
+        url: 'merchants/support/option/flags',
+      }).then((res) => {
+        this.setState({
+          supportFlags: {
+            no_of_days_for_activation: '3 to 5',
+            ...res.data,
+          },
+        });
+      });
+    }
   }
 
   bindEvents = () => {
@@ -92,6 +111,8 @@ export default class Support extends Component {
           onChat={this.handleChat}
           notifyCount={notifyCount}
           isCallEnabled={isCallEnabled}
+          supportFlags={this.state.supportFlags}
+          user={this.props.user}
         />
       </div>
     );
