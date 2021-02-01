@@ -354,7 +354,7 @@ class Service extends Base\Service
 
         try
         {
-            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
+            $bankingAccount = $this->core->fetchByBankReferenceAndChannel(
                 $input[Entity::CHANNEL],
                 $input[Entity::BANK_REFERENCE_NUMBER]);
 

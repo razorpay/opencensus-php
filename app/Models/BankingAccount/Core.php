@@ -32,6 +32,7 @@ use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -411,19 +412,16 @@ class Core extends Base\Core
 
             $attributes = $processor->processAccountInfoNotification($input);
 
-            $bankingAccount = $this->repo
-                                   ->banking_account
-                                   ->findByBankReferenceAndChannel($channel,
-                                                                   $attributes[Entity::BANK_REFERENCE_NUMBER]);
+            $bankingAccount = $this->fetchByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
             if ($this->isAccountInfoWebhookAlreadyProcessed($bankingAccount) === true)
             {
                 $this->handleDuplicateWebhook($input, $channel, $bankingAccount);
             }
-            else
-            {
-                $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant, true);
-            }
+
+            $this->checkIfAccountNumberWithChannelAlreadyExists($attributes[Entity::ACCOUNT_NUMBER], $channel);
+
+            $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant, true);
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
         }
@@ -448,6 +446,46 @@ class Core extends Base\Core
             ]);
 
         return $response;
+    }
+
+    public function checkIfAccountNumberWithChannelAlreadyExists(string $bankAccountNumber, string $channel)
+    {
+        $bankingAccount =  $this->repo->banking_account->fetchByAccountNumberAndChannel($bankAccountNumber, $channel);
+
+        if($bankingAccount != null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_EXIST_WITH_THE_CHANNEL_ASSOCIATED,
+                null,
+                [
+                    'account_number' => $bankingAccount->getAccountNumber(),
+                    'channel'        => $bankingAccount->getChannel(),
+                ],
+                'Account Number for the channel: ' . $bankingAccount->getChannel() . ' sent in the payload is already present in our system.'
+            );
+        }
+    }
+
+    public function fetchByBankReferenceAndChannel(string $channel, string $bankReference)
+    {
+        $bankingAccount = $this->repo
+                               ->banking_account
+                               ->findByBankReferenceAndChannel($channel, $bankReference);
+
+        if ($bankingAccount === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_INCORRECT_RZP_REF_NO,
+                null,
+                [
+                    'rzp_ref_no' => $bankReference,
+                    'channel'    => $channel,
+                ],
+                'No records found for Channel:' . $channel . ', with RZP Ref No: '. $bankReference
+            );
+        }
+
+        return $bankingAccount;
     }
 
     /**

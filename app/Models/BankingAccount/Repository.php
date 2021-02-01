@@ -66,7 +66,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
                     ->where(Entity::CHANNEL, '=', $channel)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function getBankingAccountOfMerchant(Merchant\Entity $merchant, string $channel)
@@ -455,4 +455,11 @@ class Repository extends Base\Repository
                     ->get([Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_TYPE, Entity::CHANNEL, Entity::STATUS])
                     ->toArray();
     }
+
+    public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel)
+    {
+        return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
+                    ->first();
+    }
+
 }

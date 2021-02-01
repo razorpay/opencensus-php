@@ -241,6 +241,83 @@ class BankingAccountTest extends TestCase
         return $response;
     }
 
+    public function testValidateAccountOpeningDateInWebhook()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180851'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
+    }
+
+    public function createAccountOpeningSuccessfulWebhook()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+    }
+
+    public function testAccountOpeningWebhookWithExistingAccountNumber()
+    {
+        $this->createAccountOpeningSuccessfulWebhook();
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount('1cXSLlUU8V9sXl');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
+
+    }
+
     public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
     {
         $response = $this->testFailedBankAccountInfoNotification();
@@ -2838,5 +2915,21 @@ class BankingAccountTest extends TestCase
         $this->startTest();
 
         Mail::assertQueued(UpdatesForAuditor::class);
+    }
+
+    /**
+     * @param string $merchantId
+     * @return mixed
+     */
+    public function setAuthAndCreateBankingAccount(string $merchantId)
+    {
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->testCreateBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+        return $bankingAccount;
     }
 }

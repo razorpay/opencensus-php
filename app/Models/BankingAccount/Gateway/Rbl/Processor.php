@@ -453,6 +453,19 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function parseAndFormatRblDate(string $date)
     {
+        $isInCorrectFormat = Carbon::hasFormat($date, self::DATE_FORMAT);
+        if(!$isInCorrectFormat)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_INCORRECT_FORMAT_FOR_ACCOUNT_OPEN_DATE,
+                null,
+                [
+                    'account_activation_date'  => $date
+                ],
+                'Account activation date: ' . $date . ' in the payload is in incorrect format.'
+            );
+        }
+
         $epochDate = Carbon::createFromFormat(self::DATE_FORMAT, $date, Timezone::IST)
                             ->getTimestamp();
 
