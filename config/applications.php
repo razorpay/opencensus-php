@@ -607,6 +607,7 @@ return [
         'username'      => 'api',
         'secret'        => env('APP_CAPITAL_COLLECTIONS_SECRET', 'api'),
         'timeout'       => env('APP_CAPITAL_COLLECTIONS_TIMEOUT', 60),
+        'webhook_secret'=> env('APP_CAPITAL_COLLECTIONS_WEBHOOK_SECRET'),
     ],
 
     'offline_verification' => [

@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 use RZP\Http\Request\Requests;
 use RZP\Models\Admin\Permission\Name;
 use Psr\Http\Message\RequestInterface;
@@ -53,6 +54,42 @@ class CapitalCollectionsController extends Controller
         $response = $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
 
         return $response;
+    }
+
+    protected function handleDirectRequests($path = null)
+    {
+        $request = Request::instance();
+
+        $rawContent = Request::getContent();
+
+        $headers = Request::header();
+
+        $receivedSignature = $headers['x-razorpay-signature'][0];
+
+        $expectedSignature = hash_hmac(HashAlgo::SHA256,  $rawContent, config('applications.capital_collections.webhook_secret'));
+
+        if ($receivedSignature !== $expectedSignature)
+        {
+            throw new Exception\BadRequestException(
+                'unauthorised request : signature send by webhook does not match the expected signature');
+        }
+
+        $url     = $path;
+        $body    = $request->all();
+        $headers = [
+            'X-Auth-Type'   => 'direct'
+        ];
+
+        if ($request->getQueryString() !== null)
+        {
+            $url .= '?' . $request->getQueryString();
+        }
+
+        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
+            'request' => $url,
+        ]);
+
+        return $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
     }
 
     protected function handleAdminRequests($path = null)

@@ -804,6 +804,7 @@ class Route
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
+        'capital_collections_webhook'              => ['any',      'capital_collections/orders/{path?}',             'CapitalCollectionsController@handleDirectRequests'                 ],
 
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
         'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
@@ -4316,6 +4317,7 @@ class Route
         'capital_transaction_create'               => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_id'             => Permission::CAPITAL_DEVELOPER,
         'capital_collections_service'              => Permission::CAPITAL_DEVELOPER,
+        'capital_collections_webhook'              => Permission::CAPITAL_DEVELOPER,
         'correct_merchant_owners_products'         => Permission::CORRECT_MERCHANT_OWNER_MISMATCH,
         'paper_nach_fetch_failure'                 => Permission::VERIFY_NACH_UPLOADS,
         'paper_nach_approve_failure'               => Permission::VERIFY_NACH_UPLOADS,
@@ -5387,6 +5389,7 @@ class Route
     ];
 
     public static $direct = [
+        'capital_collections_webhook',
         'download_papernach_form',
         'splitz_evaluate',
         'splitz_preflight',
