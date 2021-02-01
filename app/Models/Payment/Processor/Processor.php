@@ -1476,6 +1476,30 @@ class Processor
             return;
         }
 
+        if(Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
+        {
+            $featureFlag = "nb_" . $payment->getGateway() . "_nbplus_merchant_whitelisting";
+
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
+
+            if($variant === "nbplusps")
+            {
+                $this->setPaymentService($payment, $variant);
+            }
+
+            $traceData = [
+                'payment_id'             => $payment->getId(),
+                'merchant_id'            => $payment->getMerchantId(),
+                'gateway'                => $payment->getGateway(),
+                'feature_flag'           => $featureFlag,
+                'razorx_variant'         => $variant,
+            ];
+
+            $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
+
+            return;
+        }
+
         if ($this->isNbPlusServiceConfigEnabled() === true)
         {
             $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
