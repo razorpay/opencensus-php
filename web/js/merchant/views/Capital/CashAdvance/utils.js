@@ -157,7 +157,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         backgroundPattern: true,
         color: SLIDE_COLORS.red,
         title: 'Scheduled Repayment',
-        subTitle: <Amount value={nextRepayableAmount * 100} />,
+        subTitle: <Amount value={nextRepayableAmount} />,
         body:
           nextRepayableAmount > 0
             ? 'If we are not able to collect this Next repayable amount on time,' +
@@ -170,11 +170,12 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         data: upcomingRepayments,
       });
       const nextRepayableAmount = nextRepayPrincipalAmount + nextRepayInterestAmount;
+
       return {
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.red],
         id: CASH_ADVANCE_CAROUSEL_SLIDES.FULL_DAY_AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT,
         title: 'Today’s Repayable Amount',
-        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount * 100} />,
+        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount} />,
         body:
           'Due to the low settlement balance, today’s repayable amount has not been collected. You can repay the amount manually by clicking on the button below.',
       };
@@ -184,11 +185,12 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         data: upcomingRepayments,
       });
       const nextRepayableAmount = nextRepayPrincipalAmount + nextRepayInterestAmount;
+
       return {
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.red],
         id: CASH_ADVANCE_CAROUSEL_SLIDES.THREE_DAY_REPAYMENT_FAILED_PROMPT,
         title: 'Due Repayment Amount',
-        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount * 100} />,
+        subTitle: nextRepayableAmount && <Amount value={nextRepayableAmount} />,
         body:
           'You have missed your repayments for the last 3 days due to low settlement balance. Repay now to avoid getting additional fees.',
       };
