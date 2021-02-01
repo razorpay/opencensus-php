@@ -1,4 +1,5 @@
 ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api
+ARG OPENRESTY_IMAGE=openresty/openresty:1.17.8.2-0-alpine-fat-nosse42
 
 FROM $ONGGI_IMAGE as php-builder
 
@@ -26,7 +27,7 @@ RUN set -eu && \
 
 
 # Usage specific image which has luarocks compiled.
-FROM openresty/openresty:1.17.8.2-0-alpine-fat-nosse42
+FROM $OPENRESTY_IMAGE
 
 RUN apk update && \
     apk upgrade && \

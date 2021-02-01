@@ -1,0 +1,97 @@
+on: [push]
+jobs:
+  cancel:
+    runs-on: [self-hosted]
+    name: Cancel Previous Runs
+    if: always()
+    steps:
+      - uses: styfle/cancel-workflow-action@d57d93c
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+  application_test_suite:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Application Test Suite
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@v2
+        env:
+          ACTIONS_STEP_DEBUG: true
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      - name: application_test_suite
+        run: ci-assets/application_test_suite.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  workflow_status:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    name: Update Status Check
+    needs: [
+        application_test_suite
+    ]
+    if: always()
+    steps:
+      - name: Failed
+        id: failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo 'Failing the workflow for github status check.'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "failure" , "context" : "github/application_test_suite" , "description" : "github/application_test_suite", "target_url" : "https://github.com/razorpay/api" }' \
+          https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
+          exit 1
+      - name: Success
+        if: steps.failed.conclusion == 'skipped'
+        run: |
+          echo 'Status check has passed!'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "github/application_test_suite" , "description" : "github/application_test_suite", "target_url" : "https://github.com/razorpay/api" }' \
+          https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
+          exit 0
+
