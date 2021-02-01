@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use Carbon\Carbon;
-use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Refund;
@@ -11,7 +10,6 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Base as UpiBase;
-use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -100,14 +98,9 @@ class UpiJuspayGatewayTest extends TestCase
 
         $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
 
-        $this->makeRequestAndCatchException(
-            function () use ($request) {
-                $this->makeRequestAndGetContent($request);
-            },
-            GatewayErrorException::class,
-            'Payment failed because UPI request expired' . PHP_EOL .
-            'Gateway Error Code: gateway_error_code' . PHP_EOL .
-            'Gateway Error Desc: gateway_error_desc');
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response, ['success' => false]);
 
         $payment->refresh();
 

@@ -429,7 +429,7 @@ class GatewayController extends Controller
                     'body'    => $input,
                 ];
 
-                $data = $this->processServerCallback($input, $gateway);
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
 
                 break;
 
