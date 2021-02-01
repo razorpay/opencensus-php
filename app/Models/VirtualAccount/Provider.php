@@ -491,10 +491,15 @@ class Provider
             }
         }
 
+        $traceIdentifiers = $identifiers;
+        unset($traceIdentifiers[Terminal\Entity::VISA_MPAN]);
+        unset($traceIdentifiers[Terminal\Entity::MC_MPAN]);
+        unset($traceIdentifiers[Terminal\Entity::RUPAY_MPAN]);
+
         $this->trace->info(TraceCode::BHARAT_QR_CARD_IDENTIFIERS,
                            [
                                'qr_code'    => $qrCode->toArrayPublic(),
-                               'identifiers' => $identifiers,
+                               'identifiers' => $traceIdentifiers,
                            ]);
 
         return $identifiers;
