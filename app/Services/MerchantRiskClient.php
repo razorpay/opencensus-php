@@ -118,9 +118,15 @@ class MerchantRiskClient
             "fields" => $fields
         ];
 
+        $requestLog = [
+            "client_type" => $clientType,
+            "entity_id" => $entityId,
+            "fields" => array_column($fields, "key")
+        ];
+
         try {
             $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
-                'payload'   => $requestPayload,
+                'payload'   => $requestLog,
                 'service'   => 'merchants-risk'
             ]);
 
@@ -130,7 +136,7 @@ class MerchantRiskClient
             $this->trace->traceException($e, Trace::CRITICAL,
                 TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
                 [
-                    'payload'   => $requestPayload,
+                    'payload'   => $requestLog,
                     'service'   => 'merchants-risk',
                     'path'      => ''
                 ]
@@ -151,10 +157,15 @@ class MerchantRiskClient
 
         // Returns parsed body..
         $parsedBody = json_decode($res->body, true);
+
+        $bodyLog = $parsedBody;
+
+        $bodyLog["fields"] = array_column($bodyLog["fields"], "key");
+
         if (json_last_error() === JSON_ERROR_NONE)
         {
             $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
-                'response'   => $parsedBody,
+                'response'   => $bodyLog,
                 'service'   => 'merchants-risk'
             ]);
             return $parsedBody;
