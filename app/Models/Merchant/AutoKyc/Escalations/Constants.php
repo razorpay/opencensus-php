@@ -57,7 +57,7 @@ class Constants
             ],
             3   => [
                 'method'    => self::EMAIL,
-                'duration'  => 2880 // in minutes [48 hrs after 2nd escalation]
+                'duration'  => 1440 // in minutes [48 hrs after 1st escalation]
             ]
         ]
     ];

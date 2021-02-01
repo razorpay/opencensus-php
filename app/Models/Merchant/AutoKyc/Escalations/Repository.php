@@ -50,4 +50,14 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
+
+    public function fetchEscalationsForMerchantAndTypeAndLevel(string $merchantId, string $type, string $level)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ESCALATION_TYPE, $type)
+            ->where(Entity::ESCALATION_LEVEL, $level)
+            ->get()
+            ->toArray();
+    }
 }

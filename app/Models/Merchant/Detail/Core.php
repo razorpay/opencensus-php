@@ -1972,12 +1972,16 @@ class Core extends Base\Core
 
         $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
 
+        $hardEscalationLevel3 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
+        ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 3);
+
         $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
         $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
         $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
+        $response['isHardLimitReached']                         = empty($hardEscalationLevel3) ? false : true;
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;

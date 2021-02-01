@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Escalations;
 
+use Mail;
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Core extends Base\Core
 {
@@ -202,6 +206,7 @@ class Core extends Base\Core
                     $merchant->liveDisable();
                     $merchant->setHoldFunds(true);
                     $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
+                    $this->sendMailToInformHardLimitReached($merchant);
                     $this->repo->merchant->saveOrFail($merchant);
                 }
             }
@@ -241,5 +246,25 @@ class Core extends Base\Core
         }
 
         return $escalationLevelMap;
+    }
+
+    private function sendMailToInformHardLimitReached(MerchantEntity $merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $data = [
+            DEConstants::MERCHANT             => [
+                MerchantEntity::NAME          => $merchant->getName(),
+                MerchantEntity::BILLING_LABEL => $merchant->getBillingLabel(),
+                MerchantEntity::EMAIL         => $merchant->getEmail(),
+                DEConstants::ORG              => [
+                    DEConstants::HOSTNAME     => $org->getPrimaryHostName(),
+                ]
+            ],
+        ];
+
+        $email = new HardLimitLevelThreeEmail($data, $org->toArray());
+
+        Mail::queue($email);
     }
 }

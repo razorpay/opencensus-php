@@ -65,6 +65,14 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Merchant\AutoKyc\Escalations\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'       =>  '10000000000000',
+                'escalation_level'  =>  3,
+                'escalation_type'   =>  'soft_limit'
+            ]
+        );
+
         /**
          * Entity data type of merchant_email
          */

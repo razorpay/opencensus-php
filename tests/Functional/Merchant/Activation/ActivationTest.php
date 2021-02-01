@@ -52,6 +52,7 @@ class ActivationTest extends OAuthTestCase
     use FundAccountValidationTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
+    const RZP_ORG                   = '100000razorpay';
 
     public function setUp()
     {
@@ -2875,5 +2876,79 @@ class ActivationTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+    }
+
+    public function testHardLimitReachedWithLevelThree()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->fixtures->create('merchant_auto_kyc_escalations', [
+            'merchant_id'       =>  $merchantId,
+            'escalation_level'  =>  3,
+            'escalation_type'   =>  'hard_limit'
+        ]);
+
+        $response = $this->startTest();
+
+    }
+
+    public function testHardLimitNotReached()
+    {
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+    }
+    public function testHardLimitEmailSent()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $data = [
+            'activation_status'     => 'activated_mcc_pending'
+        ];
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, $data);
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, $data);
+
+       $this->fixtures->on('live')->create('merchant_auto_kyc_escalations', [
+            'merchant_id'       =>  $merchantId,
+            'escalation_level'  =>  2,
+            'escalation_type'   =>  'hard_limit',
+           'created_at'     => '1600000000',
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $testData = [
+            'url'     => '/merchants/auto-kyc-cron/escalations',
+            'method'  => 'post',
+            'content' => [
+
+            ],
+        ];
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        $this->makeRequestAndGetContent($testData);
+
+        Mail::assertQueued(\RZP\Mail\Merchant\HardLimitLevelThreeEmail::class, function ($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('emails.merchant.hard_limit_reached', $mail->view);
+
+            return true;
+        });
     }
 }
