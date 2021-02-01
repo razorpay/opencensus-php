@@ -1260,6 +1260,18 @@ class MerchantController extends Controller
     }
 
     /**
+     * returns merchant info along with merchant_details, to be used by internal apps
+     */
+    public function sendMerchantEmail($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendMerchantEmail($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Bulk updates merchant attributes against given CSV input(refer service method).
      * @return \Illuminate\Http\JsonResponse
      */

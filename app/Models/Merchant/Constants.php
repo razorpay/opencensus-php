@@ -304,6 +304,10 @@ final class Constants
         ]
     ];
 
+    // Merchant Email Types For Instrumentation
+    const MERCHANT_INSTRUMENT_STATUS_UPDATE = "merchant_instrument_status_update";
+    const INSTRUMENT_STATUS_UPDATE_MERCHANT_MAIL = "instrument_status_update_merchant_mail";
+
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
@@ -524,3 +528,5 @@ final class Constants
     const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_PASSED    =     "3 to 5";
     const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED    =     "7";
 }
+
+

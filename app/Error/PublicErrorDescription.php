@@ -1294,6 +1294,7 @@ class PublicErrorDescription
     const BAD_REQUEST_COMPANY_SEARCH_RETRIES_EXHAUSTED                              = 'Company Search retries exhausted';
 
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
+    const BAD_REQUEST_INVALID_EMAIL_TYPE                                            = 'Invalid email type.';
 
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';

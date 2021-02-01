@@ -330,6 +330,7 @@ class Route
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
+        'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',                  'MerchantController@sendMerchantEmail'                            ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
@@ -2893,6 +2894,7 @@ class Route
         'internal_merchant_fetch',
         'internal_merchant_checkout_preferences',
         'internal_merchant_auto_disabled_methods',
+        'internal_send_merchant_email',
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
@@ -6129,7 +6131,8 @@ class Route
             'merchant_methods_edit_internal',
             'terminal_fetch_by_id_internal',
             'internal_merchant_checkout_preferences',
-            'internal_merchant_auto_disabled_methods'
+            'internal_merchant_auto_disabled_methods',
+            'internal_send_merchant_email'
         ],
 
         'mozart' => [

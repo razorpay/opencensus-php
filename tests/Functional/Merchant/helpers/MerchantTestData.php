@@ -6535,6 +6535,80 @@ return [
         ]
     ],
 
+    'testInternalMerchantSendEmail'    =>  [
+        'request'       =>  [
+            'method'    =>  'POST',
+            'url'       =>  '/internal/merchants/10000000000000/send_email',
+            'content' => [
+                'type' => 'merchant_instrument_status_update',
+                'data' => ['current_status'=> 'activated', 'old_status'=>'requested', "instrument_name"=>'visa']
+
+            ],
+        ],
+        'response'      =>  [
+            'content'   => [
+                "success" => true
+            ],
+            'mail_content' => [
+                'current_status' => "activated",
+                'old_status'     =>"requested",
+                'instrument_name'=> "visa",
+                'contact_email'  =>"test@razorpay.com",
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
+    'testInternalMerchantSendEmailInvalidType'    =>  [
+        'request'       =>  [
+            'method'    =>  'POST',
+            'url'       =>  '/internal/merchants/10000000000000/send_email',
+            'content' => [
+                'type' => 'test',
+                'data' => ['current_status'=> 'activated', 'old_status'=>'requested']
+
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid email type.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_EMAIL_TYPE,
+        ],
+    ],
+
+    'testInternalMerchantSendEmailInstrumentNameMissing'    =>  [
+        'request'       =>  [
+            'method'    =>  'POST',
+            'url'       =>  '/internal/merchants/10000000000000/send_email',
+            'content' => [
+                'type' => 'merchant_instrument_status_update',
+                'data' => ['current_status'=> 'activated', 'old_status'=>'requested']
+
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The instrument name field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetBalances' => [
         'request' => [
             'url' => '/balances',

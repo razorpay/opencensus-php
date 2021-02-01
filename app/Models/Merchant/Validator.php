@@ -212,6 +212,21 @@ class Validator extends Base\Validator
         'merchant_id'  => 'required|alpha_num|size:14'
     ];
 
+    protected static $merchantMailRules = [
+        'type'           => 'required|string',
+        'data'           => 'required|array'
+    ];
+
+    protected static $instrumentStatusUpdateMerchantMailRules = [
+        'contact_name'      => 'required|string',
+        'contact_email'     => 'required|string',
+        'current_status'    => 'required|string',
+        'old_status'        => 'required|string',
+        'instrument_name'   => 'required|string',
+        'comment'           => 'sometimes|string',
+        'profile_link'      => 'sometimes|string'
+    ];
+
     protected static $featureRules = [
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',

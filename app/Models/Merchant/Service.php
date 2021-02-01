@@ -62,6 +62,7 @@ use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
+use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Constants\Entity as EntityConstants;
@@ -95,6 +96,7 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE               = 'apply_coupon';
     const OAUTH_MAIL                    = 'oauth_mail';
+    const MERCHANT_MAIL                 = 'merchant_mail';
     const SUPPORT_DETAILS               = 'support_details';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
@@ -3291,6 +3293,53 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function sendMerchantEmail($merchantId, $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SEND_EMAIL_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput(self::MERCHANT_MAIL, $input);
+
+        $emailType = $input["type"];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $data = $input["data"];
+
+        $data['contact_name'] =  $merchant->getName();
+
+        $data['contact_email'] = $merchant->getEmail();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_SEND_EMAIL_REQUEST,
+            $data
+        );
+        
+        switch ($emailType)
+        {
+            case Constants::MERCHANT_INSTRUMENT_STATUS_UPDATE:
+
+                (new Validator)->validateInput(Constants::INSTRUMENT_STATUS_UPDATE_MERCHANT_MAIL, $data);
+
+                $mail = new StatusNotify($data);
+
+                break;
+
+            default:
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_EMAIL_TYPE,
+                    null,
+                    [
+                        'type' => $emailType,
+                    ]);
+        }
+
+        Mail::queue($mail);
+
+        return ['success' => true];
+    }
     /**
      * Will provide if merchant is confirmed or not.
      *

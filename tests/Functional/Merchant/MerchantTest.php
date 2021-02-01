@@ -78,6 +78,8 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
+
 use function Clue\StreamFilter\fun;
 use function foo\func;
 
@@ -8780,6 +8782,40 @@ class MerchantTest extends TestCase
         $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
+
+        $this->startTest();
+    }
+
+    public function testInternalMerchantSendEmail()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(StatusNotifyMail::class, function ($mail)
+        {
+            $this->assertEquals('instrumentation', $mail->originProduct);
+
+            $testData = $this->testData['testInternalMerchantSendEmail']['response']['mail_content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+    }
+
+    public function testInternalMerchantSendEmailInvalidType()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testInternalMerchantSendEmailInstrumentNameMissing()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }
