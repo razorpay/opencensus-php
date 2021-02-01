@@ -552,12 +552,13 @@ class Core extends Base\Core
     {
         // order of fetching:
         // 1. try to find existing reversal using utr.
-        // 2. if not found , then try to find payout with given return utr and utr
+        // 2. if not found , then try to find payout with given utr
         // 3. if no payout is found using utr , then try finding payout with given cms ref no
+        // 4. if no payout is found using cms ref no, then try finding payout using return utr.
 
         // Cases for mapping bas record:
         // *  No existing reversal with the UTR
-        //    1.Search for payout ((SEARCHING IN PAYOUT TABLE)with same UTR/ RETURN UTR/CMS REF NO
+        //    1.Search for payout ((SEARCHING IN PAYOUT TABLE)with same UTR/CMS REF NO/RETURN UTR
         //      If more than 1 payout with the same UTR ,then raise alert and link with external.
         //      Same for CMS REF NO  and IFT cases
         //    2.If single payout is found then use this payout and create reversal and reversal transaction
@@ -876,56 +877,6 @@ class Core extends Base\Core
 
         if (empty($utr) === false)
         {
-            if ($basEntity->getType() === Type::CREDIT)
-            {
-                /** @var Base\Collection $payouts */
-                $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
-
-                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_RETURN_UTR,
-                                   [
-                                       'return_utr' => $utr,
-                                       'payout_ids' => $payouts->getQueueableIds(),
-                                       'bas_id'     => $basEntity->getId(),
-                                       'account_no' => $basEntity->getAccountNumber(),
-                                   ]);
-
-                if ($payouts->count() === 1)
-                {
-                    return $payouts->first();
-                }
-
-                // TODO: remove unique constraint from utr fields in db .
-                // https://razorpay.atlassian.net/browse/RX-2390
-                if ($payouts->count() > 1)
-                {
-                    $createExternalSource = true;
-                    $remarks                = 'multiple payouts found with same return utr '. $utr .
-                                              ' for credit mapping';
-
-                    $data = [
-                        'channel'    => $basEntity->getChannel(),
-                        'amount'     => $basEntity->getAmount(),
-                        'payout_ids' => $payouts->getQueueableIds(),
-                        'return_utr' => $utr
-                    ];
-
-                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_RETURN_UTR, [
-                        'data' => $data,
-                    ]);
-
-                    $operation = 'multiple payouts found with same return utr for credit mapping';
-
-                    (new SlackNotification)->send(
-                        $operation,
-                        $data,
-                        null,
-                        1,
-                        'rx_ca_rbl_alerts');
-
-                    return null;
-                }
-            }
-
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_CREDIT_MAPPING,
@@ -1050,6 +1001,11 @@ class Core extends Base\Core
                                'account_no' => $basEntity->getAccountNumber(),
                            ]);
 
+        if ($payouts->count() === 1)
+        {
+            return $payouts->first();
+        }
+
         if ($payouts->count() > 1)
         {
             $createExternalSource = true;
@@ -1078,6 +1034,59 @@ class Core extends Base\Core
 
             return null;
 
+        }
+
+        // check on return utr is done at the end as the query is consuming more time.
+        // Thread: https://razorpay.slack.com/archives/C01CX0EC34M/p1611572847006900
+        if ((empty($utr) === false) and ($basEntity->getType() === Type::CREDIT))
+        {
+            /** @var Base\Collection $payouts */
+            $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+            $data = [
+                'return_utr' => $utr,
+                'payout_ids' => $payouts->getQueueableIds(),
+                'bas_id'     => $basEntity->getId(),
+                'account_no' => $basEntity->getAccountNumber(),
+            ];
+
+            if($payouts->count() === 1)
+            {
+                $data['utr'] = $payouts->first()->getId();
+            }
+
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_RETURN_UTR, $data);
+
+            // TODO: remove unique constraint from utr fields in db .
+            // https://razorpay.atlassian.net/browse/RX-2390
+            if ($payouts->count() > 1)
+            {
+                $createExternalSource = true;
+                $remarks                = 'multiple payouts found with same return utr '. $utr .
+                    ' for credit mapping';
+
+                $data = [
+                    'channel'    => $basEntity->getChannel(),
+                    'amount'     => $basEntity->getAmount(),
+                    'payout_ids' => $payouts->getQueueableIds(),
+                    'return_utr' => $utr
+                ];
+
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_RETURN_UTR, [
+                    'data' => $data,
+                ]);
+
+                $operation = 'multiple payouts found with same return utr for credit mapping';
+
+                (new SlackNotification)->send(
+                    $operation,
+                    $data,
+                    null,
+                    1,
+                    'rx_ca_rbl_alerts');
+
+                return null;
+            }
         }
 
         return $payouts->first();

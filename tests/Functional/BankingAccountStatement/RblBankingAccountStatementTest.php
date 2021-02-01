@@ -4194,6 +4194,134 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($reversal['transaction_id'], $basEntries[2]['transaction_id']);
     }
 
+
+    // An entry in statement has utr and CMS Ref. no. For this testcase a situation is created where the utr in statement is present as return utr of one payout
+    // and CMS Ref. No. of the same statement record is linked to another payout. Hence the reversal should be created against the payout found via cms ref. no.
+    // This is an arbitrary situation which should not happen on prod.
+    public function testRblReversalTxnCreationViaCmsRefNoBeforeReturnUTR()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807069','utr' => '123456']);
+
+        // Update status
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('processed', $payout['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $this->fixtures->edit('payout', $payout['id'], ['return_utr' => '143539']);
+
+        $this->createRblPayout();
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '143567']);
+
+        // Update status
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('processed', $payout['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $this->fixtures->edit('payout', $payout['id'], ['return_utr' => '143535']);
+
+        // Fetch account statement from RBL
+
+        $mockedResponse = $this->getRblTxnCreation();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+        $reversal = $this->getDbEntities('reversal');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externalEntries[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externalEntries[0]['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($transactions[0]['entity_id'],$externalEntries[0]['id']);
+
+        $payout = $this->getDbEntities('payout');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout[0]['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout[0]['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($transactions[1]['entity_id'],$payout[0]['id']);
+
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($reversal[0]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($reversal[0]['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($reversal[0]['entity_id'], $payout[0]['id']);
+    }
+
     /*
      * case when status check processed is received first and in first account stmt fetch we get debit row.
      * Later we get status reversed via status check and reversal is created on our end . in next stmt fetch
