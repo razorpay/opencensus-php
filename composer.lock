@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "02392fb0d2b8a8321fd89f58711b07f2",
+    "content-hash": "81f5874511e4f23bd4bf0bdd869f5801",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -649,12 +649,12 @@
             "version": "v1.4.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/clue/php-stream-filter.git",
+                "url": "https://github.com/clue/stream-filter.git",
                 "reference": "5a58cc30a8bd6a4eb8f856adf61dd3e013f53f71"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/clue/php-stream-filter/zipball/5a58cc30a8bd6a4eb8f856adf61dd3e013f53f71",
+                "url": "https://api.github.com/repos/clue/stream-filter/zipball/5a58cc30a8bd6a4eb8f856adf61dd3e013f53f71",
                 "reference": "5a58cc30a8bd6a4eb8f856adf61dd3e013f53f71",
                 "shasum": ""
             },
@@ -6803,23 +6803,24 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "0.1.1",
+            "version": "0.1.5",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "aa071ad5bee263fd49f018f641682bcb9986a9eb"
+                "reference": "f98030fca70f53fcdc455c43fa2e49185cb2eaaf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/aa071ad5bee263fd49f018f641682bcb9986a9eb",
-                "reference": "aa071ad5bee263fd49f018f641682bcb9986a9eb",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/f98030fca70f53fcdc455c43fa2e49185cb2eaaf",
+                "reference": "f98030fca70f53fcdc455c43fa2e49185cb2eaaf",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": "^5.0",
+                "laravel/framework": "5.5.*",
+                "lcobucci/jwt": "~3.3.1",
                 "league/oauth2-server": "^6.0",
                 "php": ">=5.6",
-                "razorpay/spine": "0.1.3",
+                "razorpay/spine": "^0.1.3",
                 "zendframework/zend-diactoros": "^1.4"
             },
             "require-dev": {
@@ -6848,10 +6849,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/0.1.1",
+                "source": "https://github.com/razorpay/oauth/tree/0.1.5",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2019-06-06T12:04:00+00:00"
+            "time": "2021-01-29T06:44:34+00:00"
         },
         {
             "name": "razorpay/phpexcel",
@@ -9168,12 +9169,12 @@
             "version": "1.4.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
+                "url": "https://github.com/webmozarts/assert.git",
                 "reference": "83e253c8e0be5b0257b881e1827274667c5c17a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/83e253c8e0be5b0257b881e1827274667c5c17a9",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/83e253c8e0be5b0257b881e1827274667c5c17a9",
                 "reference": "83e253c8e0be5b0257b881e1827274667c5c17a9",
                 "shasum": ""
             },
