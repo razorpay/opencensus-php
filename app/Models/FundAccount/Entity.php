@@ -62,14 +62,17 @@ class Entity extends Base\PublicEntity
 
     const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';
 
-    const ICICI_PREFIX_TO_BLOCK = [
-        '5656',
-        '3434',
-    ];
-
-    const YES_BANK_PREFIX_TO_BLOCK = [
-        '787878',
-        '456456',
+    const VA_TO_VA_BLOCKING_MAPPING = [
+        '222333'    => 'YESB',
+        '787878'    => 'YESB',
+        '456456'    => 'YESB',
+        '2233'      => 'ICIC',
+        '2244'      => 'ICIC',
+        '5656'      => 'ICIC',
+        '3434'      => 'ICIC',
+        '2224'      => 'RATN',
+        '2223'      => 'RATN',
+        '567890'    => 'RATN',
     ];
 
     protected $generateIdOnCreate = true;

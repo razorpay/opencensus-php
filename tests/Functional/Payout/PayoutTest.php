@@ -9981,6 +9981,25 @@ class PayoutTest extends OAuthTestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function createFundAccountOfRBLVA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'RATN0000104',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '2223780111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function mockRazorxToAllowVAToVAPayouts()
     {
         $this->mockRazorxTreatment('yesbank',
@@ -10039,6 +10058,23 @@ class PayoutTest extends OAuthTestCase
     public function testBlockVAtoVAPayoutsWithYesbankDestination()
     {
         $fundAccount = $this->createFundAccountOfYesbankVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest($testData);
+    }
+
+    // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
+    // Below test is to block RX to Smart collect payouts
+    public function testBlockVAtoVAPayoutsWithRBLDestination()
+    {
+        $fundAccount = $this->createFundAccountOfRBLVA();
 
         $fundAccountId = $fundAccount['id'];
 
