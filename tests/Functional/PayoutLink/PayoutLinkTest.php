@@ -9,8 +9,10 @@ use Mockery;
 use Exception;
 use ReflectionClass;
 use RZP\Models\Payout;
+use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Models\PayoutLink\Core;
 use RZP\Mail\PayoutLink\Failed;
 use RZP\Mail\PayoutLink\Success;
@@ -2254,5 +2256,49 @@ class PayoutLinkTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testCreatePLForMissingContactDetails()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andThrow(new BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED, null, null, 'Invalid request payload'));
+
+        $this->app->instance('payout-links', $plMock);
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'    => '12345678901234'
+            ]);
+
+        $auth->setMerchant($merchant);
+
+        // use razorx feature
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
     }
 }

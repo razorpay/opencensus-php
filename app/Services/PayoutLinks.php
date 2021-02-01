@@ -637,14 +637,25 @@ class PayoutLinks
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
-            $description = array_pull($responseBody, 'msg', $responseBody);
-
-            if(strpos($description, self::INVALID_REQUEST_ERROR_MSG) !== false)
+            if(empty($responseBody) === true)
             {
                 $description = self::INVALID_REQUEST_RESPONSE_MSG;
             }
+            else
+            {
+                $description = array_pull($responseBody, 'msg', $responseBody);
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED, null, null, $description);
+                if(strpos($description, self::INVALID_REQUEST_ERROR_MSG) !== false)
+                {
+                    $description = self::INVALID_REQUEST_RESPONSE_MSG;
+                }
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+                null,
+                null,
+                $description);
         }
         return json_decode($response->body, true);
     }

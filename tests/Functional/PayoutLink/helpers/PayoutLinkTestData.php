@@ -2078,4 +2078,25 @@ return [
             ],
         ]
     ],
+
+    'testCreatePLForMissingContactDetails' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid request payload',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ],
+    ],
 ];
