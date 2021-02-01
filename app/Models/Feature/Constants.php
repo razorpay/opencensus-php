@@ -499,6 +499,11 @@ class Constants
     */
     const ESIGN = 'esign';
 
+    /*
+    * This feature is enabled when the merchant wants emandate debit to have same day settlement.
+    */
+    const EARLY_MANDATE_PRESENTMENT = 'early_mandate_presentment';
+
     // For merchants who want to use the alias feature on Route.
     const ROUTE_CODE_SUPPORT                = 'route_code_support';
 
@@ -836,6 +841,7 @@ class Constants
         self::GSTIN_SELF_SERVE                => true,
         self::DIRECT_TRANSFER                 => true,
         self::APPS_EXTEMPT_RISK_CHECK         => true,
+        self::EARLY_MANDATE_PRESENTMENT       => true,
     ];
 
     // Entity type constants

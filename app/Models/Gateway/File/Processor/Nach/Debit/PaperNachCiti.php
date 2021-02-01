@@ -505,6 +505,26 @@ class PaperNachCiti extends Debit\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
+        foreach ($tokens as $key => $token)
+        {
+            if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
+            {
+                $end = Carbon::createFromTimestamp($begin, Timezone::IST)
+                                ->addHours(7)
+                                ->getTimestamp();
+
+                $createdAt = $token['payment_created_at'];
+                /*
+                 * the payments done from previous day 9am to 4pm should not be considered here as
+                 * these payments will be part of mutual fund exclusive timing cycle (9am to 4pm)
+                 */
+                if (($createdAt >= $begin) and ($createdAt < $end))
+                {
+                    unset($tokens[$key]);
+                }
+            }
+        }
+
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
         $this->trace->info(

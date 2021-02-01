@@ -874,6 +874,11 @@ class Entity extends Base\PublicEntity
         return($this->isDCCEnabled() === true && $this->isInternational() === true);
     }
 
+    public function isEarlyMandatePresentmentEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::EARLY_MANDATE_PRESENTMENT) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *
