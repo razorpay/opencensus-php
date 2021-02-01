@@ -295,6 +295,15 @@ return [
             ],
             'contact' => [
                 'type' => 'text',
+            ],
+            'bank_account_id'=> [
+                'type'=> 'keyword'
+            ],
+            'vpa_id'=> [
+                'type'=> 'keyword'
+            ],
+            'qr_code_id'=> [
+                'type'=> 'keyword'
             ]
         ],
     ],
