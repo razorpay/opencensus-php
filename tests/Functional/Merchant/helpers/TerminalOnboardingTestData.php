@@ -14,6 +14,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'links' =>  "https://www.sandbox.paypal.com/IN/merchantsignup/partner/onboardingentry?token=MWRiYWM1NDQtZWJlZC00M2VjLTlkMGMtZmM2MjRmYzc0N2M4ZW5NUGdxS2FUb0ozcTRRYmtSUkd5bXNtYnJiOUs0Y2ZYQU9JZURVL29SWT12MQ==&context_token=4909428984085513216"
             ],
             'status_code'   => 200,
         ],
@@ -51,8 +52,75 @@ return [
         ],
         'response' => [
             'content' => [
+                'data' => [
+                    'id'                => 'ETbhgqkBRIiAkt',
+                    'merchant_id'       => '10000000000000',
+                    'org_id'            => '100000razorpay',
+                    'procurer'          => 'Razorpay',
+                    'gateway_acquirer'  => 'axis',
+                ]
             ],
             'status_code'   => 200,
+        ],
+    ],
+
+    'testInitiateOnboardingAdminRoutePaysecureAxisExtraFieldsValidationFailure' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'paysecure', 'currency_code' => "INR"]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 400,
+        ],
+    ],
+
+    'testInitiateOnboardingAdminRoutePaysecureAxisValidationFailureInvalidAcquirer' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'ratn']
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 400,
+        ],
+    ],
+
+
+    'testInitiateOnboardingAdminRouteFulcrum' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'fulcrum', 'currency_code' => 'INR']
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'id'                => 'ETbhgqkBRIiAkt',
+                    'merchant_id'       => '10000000000000',
+                    'org_id'            => '100000razorpay',
+                    'procurer'          => 'Razorpay',
+                    'gateway_acquirer'  => 'ratn',
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testInitiateOnboardingAdminRouteExtraFieldsFulcrumValidationFailure' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals/onboard',
+            'content' => ['gateway' => 'fulcrum', 'gateway_acquirer' => 'axis']
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 400,
         ],
     ],
 

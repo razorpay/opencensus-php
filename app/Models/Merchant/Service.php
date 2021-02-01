@@ -4865,13 +4865,17 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('onboard_merchant_input', $input);
 
+        (new Validator)->validateInput('onboard_merchant_input_' . $input['gateway'], $input); //validate input based on gateway
+
         if ($input['gateway'] === Payment\Gateway::HITACHI)
         {
             return (new TerminalService)->onboardMerchant($merchant, $input, false)
             ->toArrayAdmin();
         }
 
-        $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], null, [], $input);
+        $currency = isset($input['currency_code']) ? [$input['currency_code']] : [];
+
+        $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], null, $currency, $input);
 
         return $response;
     }

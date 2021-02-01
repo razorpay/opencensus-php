@@ -63,6 +63,53 @@ class TerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
+    public function testInitiateOnboardingAdminRoutePaysecureAxisExtraFieldsValidationFailure()
+    {
+        $this->ba->adminAuth();
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED);
+
+        $this->expectExceptionMessage(
+            'currency_code is/are not required and should not be sent');
+
+        $this->startTest();
+    }
+
+    public function testInitiateOnboardingAdminRoutePaysecureAxisValidationFailureInvalidAcquirer()
+    {
+        $this->ba->adminAuth();
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'The selected gateway acquirer is invalid.');
+
+        $this->startTest();
+    }
+
+
+    public function testInitiateOnboardingAdminRouteFulcrum()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testInitiateOnboardingAdminRouteExtraFieldsFulcrumValidationFailure()
+    {
+        $this->ba->adminAuth();
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED);
+
+        $this->expectExceptionMessage(
+            'gateway_acquirer is/are not required and should not be sent');
+
+        $this->startTest();
+    }
+
     public function testInitiateOnboardingAdminRouteInvalidGateway()
     {
         $this->ba->adminAuth();

@@ -136,6 +136,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
         Payment\Gateway::CASHFREE,
+        Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
     ];
 
@@ -355,7 +356,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:razorpay',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
     ];
 
     protected static $amexTerminalRules = [
@@ -516,6 +517,19 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                       => 'sometimes|in:2,3',
+    ];
+
+    protected static $fulcrumEditTerminalRules = [
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::EXPECTED                   => 'sometimes|boolean',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::IFSC_CODE                  => 'sometimes|string|size:11',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::MODE                       => 'sometimes|in:3',
     ];
 
     protected static $payuEditTerminalRules = [

@@ -348,9 +348,25 @@ class Validator extends Base\Validator
     ];
 
     protected static $onboardMerchantInputRules = [
-        Terminal\Entity::GATEWAY               => 'required|in:hitachi,paysecure',
+        Terminal\Entity::GATEWAY               => 'required|in:hitachi,paysecure,fulcrum',
         'gateway_input'                        => 'sometimes',
         Terminal\Entity::GATEWAY_ACQUIRER      => 'sometimes',
+        'currency_code'                        => 'sometimes',
+    ];
+
+    protected static $onboardMerchantInputHitachiRules = [
+        Terminal\Entity::GATEWAY               => 'required|in:hitachi',
+        'gateway_input'                        => 'required',
+    ];
+
+    protected static $onboardMerchantInputPaysecureRules = [
+        Terminal\Entity::GATEWAY               => 'required|in:paysecure',
+        Terminal\Entity::GATEWAY_ACQUIRER      => 'required|in:axis',
+    ];
+
+    protected static $onboardMerchantInputFulcrumRules = [
+        Terminal\Entity::GATEWAY               => 'required|in:fulcrum',
+        'currency_code'                        => 'required',
     ];
 
     protected static $restrictSettingsMerchantRules = [
