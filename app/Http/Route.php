@@ -6682,6 +6682,9 @@ class Route
         'tax_payments_edit',
         'tax_payments_cancel',
 
+        // NPS routes
+        'survey_create',
+        'nps_survey_process_scheduled',
     ];
 
     public static $routesWithV2Prefix = [

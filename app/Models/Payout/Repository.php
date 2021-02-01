@@ -1488,6 +1488,7 @@ class Repository extends Base\Repository
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
+                    ->groupBy(Entity::MERCHANT_ID, Entity::USER_ID)
                     ->get();
     }
 

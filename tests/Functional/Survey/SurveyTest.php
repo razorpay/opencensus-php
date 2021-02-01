@@ -153,6 +153,133 @@ class SurveyTest extends TestCase
         $this->startTest();
     }
 
+    public function testSurveyWithSameMerchantAndUserId()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901234',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000000',
+            'user_id' => $this->user1['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901235',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000000',
+            'user_id' => $this->user1['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'RazorpayX survey',
+            'description' => 'RazorpayX survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]['request']['content']['survey_id'] = $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testSurveyWithSameMerchantAndDifferentUserId()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901234',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000000',
+            'user_id' => $this->user1['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901235',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000000',
+            'user_id' => $this->user2['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'RazorpayX survey',
+            'description' => 'RazorpayX survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]['request']['content']['survey_id'] = $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testSurveyWithDifferentMerchantAndSameUserId()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $merchant = $this->fixtures->on('live')->create('merchant',
+                ['id'                    => '10000000000001',
+                'product_international' => '2000',
+                'pricing_plan_id'       => 'BTo98voDY05ueB']);
+
+        $this->fixtures->on('live')->create('balance', ['id' => '10000000000001', 'type' => 'banking', 'balance' => '0', 'merchant_id' => '10000000000001']);
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901234',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000000',
+            'user_id' => $this->user1['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $this->fixtures->on('live')->create('payout' , [
+            'id' =>  '12345678901235',
+            'status' => 'created',
+            'balance_id' =>  $balance->getId(),
+            'merchant_id' =>  '10000000000001',
+            'user_id' => $this->user1['id'],
+            'amount' =>  1,
+            'created_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'=> Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ]);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'RazorpayX survey',
+            'description' => 'RazorpayX survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]['request']['content']['survey_id'] = $survey['id'];
+
+        $this->startTest();
+    }
+
     public function testSurveyWithEmailAlreadySent()
     {
         $balance = $this->getDbLastEntity('balance', 'live');
