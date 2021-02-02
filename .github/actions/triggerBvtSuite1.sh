@@ -4,13 +4,12 @@ run_bvt_suite_when_approved() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
   commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
   skipRoast=${SKIP_ROAST}
-  echo "Temporary logs for testing"
+  echo "Hello"
   if [ "$skipRoast" = "true" ]; then
-    echo "Triggering skip regression webhook for bvt execution for :" + "$commitId"
-    echo "Temporary logs for testing 2"
+    echo "Triggering skip regression webhook for bvt execution for :" $commitId
     curl -X POST \
-      -u github-actions:"$SPINNAKER_PASSWORD" \
-       https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
+      -u github-actions:$SPINNAKER_PASSWORD \
+       https://deploy-github-actions.razorpay.com/webhooks/webhook/$WEBHOOK_TRIGGER \
        -H "content-type: application/json" \
        -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
     exit 0
@@ -39,36 +38,35 @@ run_bvt_suite_when_approved() {
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
   -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .trigger.parameters.api_commit_id,pr_number: .trigger.parameters.pr_number}]')
-  echo "Temporary logs for testing 3"
   echo "${spinnakerBody}"
   pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
-  echo "$pipelines"
+  echo $pipelines
   for p in $pipelines; do
     pipeline="$(echo "$p"|base64 -d)"
     pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
     pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-    echo "$pCommitId"
-    echo "$pStatus"
+    echo $pCommitId
+    echo $pStatus
       if [ "$pCommitId" = "$commitId" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
         echo "CommitId already in queue, ignoring for bvt execution"
         exit 0
       fi
   done
-  for p in $pipelines; do
-  pipeline="$(echo "$p"|base64 -d)"
-  pId=$(echo "$pipeline" | jq --raw-output '.id')
-  pPRNumber=$(echo "$pipeline" | jq --raw-output '.pr_number')
-  pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-    if [ "$pPRNumber" = "$PRNumber" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
-      spinnakerCancelRequest=$(curl --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
-      -H "${SPINNAKER_HEADER}" )
-      echo "$spinnakerCancelRequest"
-    fi
-  done
-  echo "Triggering webhook for bvt testing execution for :" + "$commitId"
+    for p in $pipelines; do
+    pipeline="$(echo "$p"|base64 -d)"
+    pId=$(echo "$pipeline" | jq --raw-output '.id')
+    pPRNumber=$(echo "$pipeline" | jq --raw-output '.pr_number')
+    pStatus=$(echo "$pipeline" | jq --raw-output '.status')
+      if [ "$pPRNumber" = "$PRNumber" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
+        spinnakerCancelRequest=$(curl --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
+        -H "${SPINNAKER_HEADER}" )
+        echo $spinnakerCancelRequest
+      fi
+    done
+  echo "Triggering webhook for bvt testing execution for :" $commitId
   curl -X POST \
-  -u github-actions:"$SPINNAKER_PASSWORD" \
-  https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
+  -u github-actions:$SPINNAKER_PASSWORD \
+  https://deploy-github-actions.razorpay.com/webhooks/webhook/$WEBHOOK_TRIGGER \
   -H "content-type: application/json" \
   -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
 
