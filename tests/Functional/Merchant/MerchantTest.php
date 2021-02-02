@@ -8786,6 +8786,18 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // Internal merchant_details route return merchant name and website
+    public function testInternalGetMerchantBulk()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00', "name" => 'test0']);
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi01', "name" => 'test1']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants?ids[]=100ghi000ghi00&ids[]=100ghi000ghi01';
+
+    }
+
     public function testInternalMerchantSendEmail()
     {
         Mail::fake();

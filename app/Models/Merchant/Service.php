@@ -3341,6 +3341,20 @@ class Service extends Base\Service
         return ['success' => true];
     }
     /**
+     * returns merchant id, name and website
+     */
+    public function getMerchantBulk($input)
+    {
+        $ids = $input["ids"];
+
+        $merchants = $this->repo->merchant->findMany($ids, [Entity::ID, Entity::NAME, Entity::WEBSITE]);
+
+        $data = $merchants->toArrayPublic();
+
+        return $data;
+    }
+
+    /**
      * Will provide if merchant is confirmed or not.
      *
      * @param  $merchant

@@ -329,6 +329,7 @@ class Route
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
+        'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
         'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',                  'MerchantController@sendMerchantEmail'                            ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
@@ -2893,6 +2894,7 @@ class Route
         'payout_reject_internal',
 
         'internal_merchant_fetch',
+        'internal_merchants_fetch',
         'internal_merchant_checkout_preferences',
         'internal_merchant_auto_disabled_methods',
         'internal_send_merchant_email',
@@ -5557,6 +5559,7 @@ class Route
             'vendor_payment_verify_otp',
             'vendor_payment_send_failure_email',
             'internal_merchant_fetch',
+            'internal_merchants_fetch',
             'vendor_payment_composite_expands_helper',
             'settings_fetch_internal',
             'settings_upsert_internal',
@@ -6129,6 +6132,7 @@ class Route
 
         'terminals_service' => [
             'internal_merchant_fetch',
+            'internal_merchants_fetch',
             'merchant_create_terminal_internal',
             'pricing_add_plan_rule_bulk',
             'merchant_methods_edit_internal',

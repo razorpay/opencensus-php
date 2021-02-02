@@ -1260,8 +1260,17 @@ class MerchantController extends Controller
     }
 
     /**
-     * returns merchant info along with merchant_details, to be used by internal apps
+     * returns merchant name and website only, to be used by internal apps
      */
+    public function getMerchantBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function sendMerchantEmail($id)
     {
         $input = Request::all();

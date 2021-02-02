@@ -6535,6 +6535,31 @@ return [
         ]
     ],
 
+    'testInternalGetMerchantBulk'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/internal/merchants/{id}'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'        => '100ghi000ghi00',
+                        'entity'    =>  'merchant',
+                        'name'      => 'test0',
+                    ],
+                    [
+                        'id'        => '100ghi000ghi01',
+                        'entity'    =>  'merchant',
+                        'name'      => 'test1',
+                    ],
+                ],
+            ],
+            'status_code'   =>  200
+        ],
+    ],
+
     'testInternalMerchantSendEmail'    =>  [
         'request'       =>  [
             'method'    =>  'POST',
