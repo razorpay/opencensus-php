@@ -1304,24 +1304,19 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('created', $order['status']);
     }
 
-    public function testPaymentUsfb()
+    public function testCreateEmandateRegistrationOrderWithUSFB()
     {
-        $paymentInput = $this->getEmandatePaymentArray('USFB', 'netbanking', 0);
-
-        $paymentInput['bank_account'] = [
-            'account_number' => '1111111111111',
-            'ifsc'           => 'USFB0000001',
-            'name'           => 'Test account',
-            'account_type'   => 'current',
+        $orderInput = [
+            Order::AMOUNT          => 0,
+            Order::BANK            => IFSC::USFB,
+            Order::METHOD          => Method::EMANDATE,
+            Order::PAYMENT_CAPTURE => true,
         ];
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount'], 'currency' => $paymentInput['currency'], 'method' => $paymentInput['method'], 'payment_capture' => '1', 'receipt' => 'test1', 'bank' => $paymentInput['bank']]);
-        $paymentInput['order_id'] = $order->getPublicId();
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($paymentInput) {
-            $this->doAuthPayment($paymentInput);
+        $this->runRequestResponseFlow($testData, function() use ($orderInput) {
+            $this->createOrder($orderInput);
         });
     }
 }

@@ -454,6 +454,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::UBIN,
         IFSC::UJVN,
+        IFSC::USFB,
         IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
@@ -488,6 +489,7 @@ class Gateway
         IFSC::SIBL,
         IFSC::TMBL,
         IFSC::UJVN,
+        IFSC::USFB,
         IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
@@ -498,6 +500,7 @@ class Gateway
         IFSC::IDIB,
         IFSC::ORBC,
         IFSC::ANDB,
+        IFSC::USFB,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -717,6 +720,7 @@ class Gateway
         IFSC::UKGX,
         IFSC::UMSX,
         IFSC::UJVN,
+        IFSC::USFB,
         IFSC::UTIB,
         IFSC::UTZX,
         IFSC::UUCX,
@@ -884,6 +888,7 @@ class Gateway
         IFSC::UMSX,
         //todo: After removing USFB from Disable banks list needs to add condition to route through UJVN.
         IFSC::UJVN,
+        IFSC::USFB,
         IFSC::UTIB,
         IFSC::UTZX,
         IFSC::UUCX,
@@ -1860,6 +1865,7 @@ class Gateway
         IFSC::UJVN,
         IFSC::DLXB,
         IFSC::PSIB,
+        IFSC::USFB,
     ];
 
     /**
