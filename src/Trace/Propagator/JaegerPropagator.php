@@ -68,12 +68,18 @@ class JaegerPropagator implements PropagatorInterface
         if (!$data) {
             return new SpanContext();
         }
-
-        $n = sscanf($data, self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentSpanId, $flags);
-
-        if ($n == 0) {
+        
+        // Jaeger trace id can be of length either 16 or 32. (https://www.jaegertracing.io/docs/1.21/client-libraries/#value)
+        // We have decided to continue with trace id of length 32 for injection. While extraction can accept both length 16 and 32.
+        $data = explode($data, ':');
+        if (count($data) < 4) {
             return new SpanContext();
         }
+        
+        $traceId = $data[0];
+        $spanId = $data[1];
+        $parentSpanId = $data[2];
+        $flags = $data[3];
 
         $enabled = $flags & 0x01;
 
