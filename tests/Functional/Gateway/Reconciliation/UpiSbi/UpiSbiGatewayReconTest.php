@@ -133,6 +133,10 @@ class UpiSbiGatewayReconTest extends TestCase
         $transaction = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('SBI0000000000119', $upiEntity['gateway_merchant_id']);
     }
 
     public function testUpiSbiForceAuthorizePayment()

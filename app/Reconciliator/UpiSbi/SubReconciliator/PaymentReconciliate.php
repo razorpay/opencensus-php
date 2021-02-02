@@ -151,6 +151,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         ];
 
         $callbackInput['upi'] = [
+                        'gateway_merchant_id'   => $input[self::PG_MERCHANT_ID],
                         'merchant_reference'    => $input[self::ORDER_NUMBER],
                         'npci_reference_id'     => $input[self::CUSTOMER_REF_NO],
                         'gateway_payment_id'    => $input[self::TRANS_REF_NUMBER],

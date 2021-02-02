@@ -834,6 +834,7 @@ class Gateway extends Base\Gateway
             Entity::MERCHANT_REFERENCE      => $callbackData['data']['paymentId'],
             Entity::RECEIVED                => 1,
             Entity::VPA                     => $callbackData['data']['gateway_response']['payerVPA'],
+            Entity::GATEWAY_MERCHANT_ID     => $callbackData['pgMerchantId'],
         ];
 
         $attributes = array_merge($callbackData['data']['gateway_response'], $attributes);

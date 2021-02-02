@@ -822,6 +822,7 @@ class UpiSbiGatewayTest extends TestCase
             $paymentTransactionEntity['type']      => 'payment',
             $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
             Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+            'SBI0000000000119'                     => $authorizeUpiEntity['gateway_merchant_id'],
         ];
 
         foreach ($assertEqualsMap as $matchLeft => $matchRight)
