@@ -18,10 +18,10 @@ run_bvt_suite_when_approved() {
   URI="https://api.github.com"
   API_HEADER="Accept: application/vnd.github.v3+json"
   AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"
-  (curl -c /tmp/cookies --location --request GET 'https://deploy-api.razorpay.com/credentials' \
+  (curl -c /tmp/cookies --location --request GET 'https://deploy-api.razorpay.com/login' \
   --header "Authorization: Bearer ${GITHUB_TOKEN}")
-  cookies=($(cat /tmp/cookies))
-  SPINNAKER_HEADER="Cookie: SESSION=${cookies[${#cookies[@]}-1]}"
+  cookies="$(cat /tmp/cookies| awk '/SESSION/ { print $NF }')"
+  SPINNAKER_HEADER="Cookie: SESSION=$cookies"
   PIPELINE_ID="5fb496f3-1e92-4974-a09c-2d64d99ae1e5"
   flag=false
   reviews=$(curl -sSL -H "${AUTH_HEADER}" -H "${API_HEADER}" "${URI}/repos/${GITHUB_REPOSITORY}/pulls/${PRNumber}/reviews?per_page=100"| jq --raw-output '.[] | {state: .state} | @base64')

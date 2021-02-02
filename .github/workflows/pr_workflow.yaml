@@ -8,6 +8,8 @@ jobs:
   pull_request:
     runs-on: [self-hosted]
     steps:
+    - name: checkout
+      uses: razorpay/checkout-action@v2
     - name: Validate skipRoast Flag for PR
       uses: actions/github-script@0.9.0
       id: skip-roast
@@ -24,7 +26,7 @@ jobs:
         GITHUB_TOKEN:  ${{ github.token }}
         SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
       run: |
-        sh ./.github/actions/triggerBvtSuite.sh
+        sh ./.github/actions/triggerBvtSuite1.sh
     - name: Check Test file has changed or added
       if : ${{github.event_name == 'pull_request'}}
       uses: actions/github-script@0.9.0
