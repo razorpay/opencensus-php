@@ -25,6 +25,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Config as Config;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -743,7 +744,8 @@ class Checkout
 
             if ((isset($data['subscription']) === true) and
                 ($cardChange === false) and
-                ($this->isSubscriptionOffersEnabled($merchant, $mode) === true))
+                ($this->isSubscriptionOffersEnabled($merchant, $mode) === true) and
+                ($input['currency'][0] === Currency::INR))
             {
                 $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 

@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card as Card;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
@@ -96,6 +97,11 @@ class Service extends Base\Service
     public function fetch(string $id)
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($offer->getProductType() === ProductType::SUBSCRIPTION)
+        {
+            $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), false, true);
+        }
 
         return $offer->toArrayProxy();
     }

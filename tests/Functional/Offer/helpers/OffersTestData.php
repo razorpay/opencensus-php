@@ -1324,6 +1324,31 @@ return [
         ]
     ],
 
+    'testFetchSubscriptionOfferById' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'max_payment_count'   => 2,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
+                'redemption_type'     => 'cycle',
+                'applicable_on'       => 'both',
+                'no_of_cycles'        => 10,
+            ]
+        ]
+    ],
+
     'testGetMultipleOffers' => [
         'request' => [
             'url'      => '/offers',

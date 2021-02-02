@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\Offer;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class OffersTest extends TestCase
 {
+    use RazorxTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -355,6 +357,30 @@ class OffersTest extends TestCase
     public function testFetchOfferById()
     {
         $offer = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testFetchSubscriptionOfferById()
+    {
+        $this->mockRazorX(__FUNCTION__, 'offer_on_subscription', 'on');
+
+        $offer = $this->fixtures->create('offer:card',
+            [
+                'active'       => 1,
+                'product_type' => 'subscription',
+            ]);
+
+        $subOffer = $this->fixtures->create('subscription_offers_master', [
+            'redemption_type' => 'cycle',
+            'applicable_on'   => 'both',
+            'no_of_cycles'    => 10,
+            'offer_id'        => $offer->getId(),
+        ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 

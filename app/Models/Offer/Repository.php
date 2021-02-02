@@ -102,10 +102,15 @@ class Repository extends Base\Repository
         $now = Carbon::now()->getTimestamp();
 
         $offerIdCol = $this->dbColumn(Entity::ID);
+
         $subOfferIdCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::OFFER_ID);
+        $subApplOnCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::APPLICABLE_ON);
+        $subRedempTypeCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::REDEMPTION_TYPE);
+        $subCycleCol = $this->repo->subscription_offers_master->dbColumn(SubscriptionOfferEntity::NO_OF_CYCLES);
 
         $offerQuery = $this->newQuery()
                            ->select($this->dbColumn('*'), $this->repo->subscription_offers_master->dbColumn('*'))
+                           ->select($this->dbColumn('*'), $subOfferIdCol, $subApplOnCol, $subRedempTypeCol, $subCycleCol)
                            ->join(Table::SUBSCRIPTION_OFFERS_MASTER, $offerIdCol, '=', $subOfferIdCol)
                            ->where(Entity::STARTS_AT, '<=', $now)
                            ->where(Entity::PRODUCT_TYPE, '=', 'subscription')
