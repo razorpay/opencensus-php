@@ -28,7 +28,7 @@ class Entity extends Base\PublicEntity
     const USED_COUNT           = 'used_count';
     const LATE_CONFIRMED       = 'late_confirmed';
     const CONFIRMED_AT         = 'confirmed_at';
-
+    const SEQUENCE_NUMBER      = 'sequence_number';
     // Input keys
     const VPA                  = 'vpa';
 
@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::RRN,
         self::NPCI_TXN_ID,
         self::GATEWAY_DATA,
+        self::CONFIRMED_AT,
     ];
 
     protected $public = [
@@ -71,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::LATE_CONFIRMED,
         self::CONFIRMED_AT,
         self::CREATED_AT,
+        self::SEQUENCE_NUMBER,
     ];
 
     protected $visible = [
@@ -96,12 +98,17 @@ class Entity extends Base\PublicEntity
         self::CONFIRMED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SEQUENCE_NUMBER,
     ];
 
     protected $defaults = [
         self::STATUS            => 'created',
         self::LATE_CONFIRMED    => false,
         self::USED_COUNT        => 0,
+    ];
+
+    protected $appends = [
+        self::SEQUENCE_NUMBER,
     ];
 
     protected $dates = [
@@ -114,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_DATA      => 'array',
         self::LATE_CONFIRMED    => 'boolean',
         self::USED_COUNT        => 'integer',
+        self::SEQUENCE_NUMBER   => 'integer',
     ];
 
     // Relations
@@ -213,6 +221,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getFrequency()
+    {
+        return $this->getAttribute(self::FREQUENCY);
+    }
+
     public function getTokenId()
     {
         return $this->getAttribute(self::TOKEN_ID);
@@ -256,5 +269,12 @@ class Entity extends Base\PublicEntity
     public function getUmn()
     {
         return $this->getAttribute(self::UMN);
+    }
+
+    public function getSequenceNumberAttribute()
+    {
+        $sequenceNumber = new SequenceNumber($this->getConfirmedAt(), $this->freshTimestamp());
+
+        return $sequenceNumber->generate($this->getFrequency());
     }
 }
