@@ -69,6 +69,8 @@ class JaegerPropagator implements PropagatorInterface
             return new SpanContext();
         }
         
+        // Jaeger trace id can be of length either 16 or 32. (https://www.jaegertracing.io/docs/1.21/client-libraries/#value)
+        // We have decided to continue with trace id of length 32 for injection. While extraction can accept both length 16 and 32.
         $data = explode($data, ':');
         if (count($data) < 4) {
             return new SpanContext();
