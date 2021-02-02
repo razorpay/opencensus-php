@@ -502,6 +502,7 @@ export default class ActivationWizard extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
           clickSource: 'save-next',
+          currentTabName: mainFormTabs[currenActiveTab],
         }),
       );
     let callBack =
@@ -1133,7 +1134,6 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitForm = () => {
-    this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
     return this.props.submitForm().then((data) => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)
@@ -1145,7 +1145,11 @@ export default class ActivationWizard extends React.Component {
           error: data.errors,
           type: false,
         };
-
+        this.props.tracking.trackEvent(
+          window.rzpQ.onbr().initiated('kyc.submit_form', {
+            error: data.errors[0] ? data.errors[0] : 'Failed',
+          }),
+        );
         fireKYCSubmitEvents(_data);
       } else {
         const isUnregisteredBusiness = this.isUnregBiz;
@@ -1153,7 +1157,7 @@ export default class ActivationWizard extends React.Component {
           ...data.data,
           isUnregisteredBusiness,
         };
-
+        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
         fireKYCSubmitEvents(_data);
         window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }

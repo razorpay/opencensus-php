@@ -82,6 +82,7 @@ import { fetchTlsVersion } from 'merchant/reducers/profile';
         business_type: user.business_type,
         activation_status: user.activated,
         is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
+        is_esign_aadhar_enabled: user.isEsignAadharEnabled,
       };
     }
     if (query.merchant) {

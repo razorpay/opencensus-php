@@ -657,7 +657,7 @@ export default class User {
     return this.getExpStatus('upi_caw');
   }
 
-  get isEsignAadharEnable() {
+  get isEsignAadharEnabled() {
     return this.getExpStatus('esign_aadhar_functionality');
   }
 

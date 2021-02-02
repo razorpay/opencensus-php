@@ -67,28 +67,30 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
       .then((res) => {
         if (res.success && !res.data.error_code) {
           setCaptcha(res.data);
-          trackEvent(
-            window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
-              trigger: true,
-            }),
-          );
         }
         if (res.data.error_code) {
           setError(res.data.error_code);
           if (res.data.error_code === 'NO_PROVIDER_ERROR') {
             mobileLinkedOnChange(false);
           }
-          trackEvent(
-            window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
-              error_code: res.data.error_code,
-            }),
-          );
         }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+            trigger: true,
+            error_code: res.data?.error_code ? res.data?.error_code : null,
+          }),
+        );
       })
       .catch((err) => {
         if (!err.success) {
           setError(err.errors[0]);
         }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+            trigger: true,
+            error_code: err.errors[0],
+          }),
+        );
       });
   };
 
@@ -105,6 +107,11 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
       .then((res) => {
         if (res.success && !res.data.error_code) {
           setIsOtpGenerated(res.data.is_success);
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+              trigger: true,
+            }),
+          );
         }
         if (res.data.error_code) {
           setError(res.data.error_code);
@@ -118,11 +125,6 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           if (res.data.error_code === 'NO_PROVIDER_ERROR') {
             mobileLinkedOnChange(false);
           }
-          trackEvent(
-            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
-              error_code: res.data.error_code,
-            }),
-          );
         }
         if (res.data.code) {
           setError(res.data.code);
@@ -132,6 +134,14 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
               error_code: res.data.code,
+              trigger: true,
+            }),
+          );
+        } else {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+              error_code: res.data?.error_code ? res.data.error_code : null,
+              trigger: true,
             }),
           );
         }
@@ -141,6 +151,12 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           setError(err.errors[0]);
           setCaptcha({});
         }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+            error_code: err.errors[0],
+            trigger: true,
+          }),
+        );
       });
   };
 
@@ -173,11 +189,6 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           if (res.data.error_code === 'NO_PROVIDER_ERROR') {
             mobileLinkedOnChange(false);
           }
-          trackEvent(
-            window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
-              error_code: res.data.error_code,
-            }),
-          );
         }
         if (res.data.code) {
           setError(res.data.code);
@@ -188,6 +199,14 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
               error_code: res.data.code,
+              trigger: true,
+            }),
+          );
+        } else {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+              error_code: res.data?.error_code ? res.data.error_code : null,
+              trigger: true,
             }),
           );
         }
@@ -198,6 +217,12 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           setIsOtpGenerated(false);
           setCaptcha({});
         }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+            error_code: err.errors[0],
+            trigger: true,
+          }),
+        );
       });
   };
 
