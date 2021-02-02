@@ -41,6 +41,7 @@ class Table
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';
     const COMMISSION                   = 'commissions';
+    const COMMISSION_COMPONENT         = 'commission_components';
     const PAYOUT_LINK                  = 'payout_links';
     const PAYOUT_SOURCE                = 'payout_sources';
     const FEE_RECOVERY                 = 'fee_recovery';

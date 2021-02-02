@@ -16,6 +16,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Partner\Commission\Component;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Models\P2p\Transaction\Status as TransactionStatus;
@@ -2680,6 +2681,25 @@ class AdminFetch
                         Config\CommissionModel::SUBVENTION,
                     ],
                 ],
+            ],
+
+            Entity::COMMISSION_COMPONENT => [
+                Component\Entity::COMMISSION_ID => [
+                    Fetch::LABEL => 'Commission Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                Component\Entity::PRICING_TYPE => [
+                    Fetch::LABEL => 'Commission pricing type',
+                    Fetch::TYPE  => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Commission\Constants::VARIABLE,
+                        Commission\Constants::FIXED
+                    ]
+                ],
+                Component\Entity::PRICING_FEATURE => [
+                    Fetch::LABEL => 'Commission pricing feature',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ]
             ],
 
             Entity::MERCHANT_USER => [

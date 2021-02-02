@@ -19,6 +19,8 @@ use RZP\Jobs\CommissionCapture;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Constants as BaseConstants;
+use RZP\Models\Transaction\FeeBreakup;
+use RZP\Models\Partner\Commission\Component;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
@@ -104,6 +106,11 @@ class Calculator extends Base\Core
     protected $commissions = [];
 
     /**
+     * @var array
+     */
+    protected $commissionComponents = [];
+
+    /**
      * @var null
      */
     protected $implicitPricingPlan = null;
@@ -131,6 +138,8 @@ class Calculator extends Base\Core
      * @var array
      */
     protected $taxComponents = [];
+
+    protected $merchantPricingComponents = [];
 
     /**
      * Calculator constructor.
@@ -583,6 +592,11 @@ class Calculator extends Base\Core
         $this->commissions[] = $commission;
     }
 
+    protected function addCommissionComponent(Component\Entity $commissionComponent)
+    {
+        $this->commissionComponents[] = $commissionComponent;
+    }
+
     /**
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)]
      * and updates the class property - $this->commissions.
@@ -665,8 +679,12 @@ class Calculator extends Base\Core
             return;
         }
 
-        foreach ($this->commissions as $commission)
+        for ($index = 0; $index < count($this->commissions); $index++)
         {
+            $commission = $this->commissions[$index];
+
+            $commissionComponent = $this->commissionComponents[$index];
+
             $commissionData = $commission->toArrayPublic();
 
             // merchant and source relation need not be logged
@@ -675,11 +693,18 @@ class Calculator extends Base\Core
 
             $this->repo->saveOrFail($commission);
 
+            $commissionComponent->commission()->associate($commission);
+
+            $this->repo->saveOrFail($commissionComponent);
+
             $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);
+
+            $this->traceContext(TraceCode::COMMISSION_COMPONENTS_SAVED, ['commission_component_id' => $commissionComponent->getId()]);
 
             // send to queue to create transaction and update balance of partner
             CommissionCapture::dispatch($this->mode, $commission->getPublicId())->delay(self::COMMISSION_CAPTURE_DELAY);;
         }
+
     }
 
     /**
@@ -738,7 +763,7 @@ class Calculator extends Base\Core
             return;
         }
 
-        list($commissionFee, $commissionTax) = $this->getExplicitCommissionFeeSplit();
+        list($commissionFee, $commissionTax, $commissionSplit) = $this->getExplicitCommissionFeeSplit();
 
         $isCommissionFeeValid = $this->isExplicitCommissionValid($commissionFee, $commissionTax);
 
@@ -760,6 +785,12 @@ class Calculator extends Base\Core
         $commission = $this->buildCommission($payload);
 
         $this->addCommission($commission);
+
+        $commissionComponent = (new Component\Core)->getCommissionComponent($commissionSplit, $this->merchantPricingComponents, Constants::COMMISSION_BREAK_UP_PREFIX, $this->getSource()->getEntity());
+
+        $commissionComponent->setPricingFeature($this->getSource()->getEntity());
+
+        $this->addCommissionComponent($commissionComponent);
     }
 
     /**
@@ -779,8 +810,13 @@ class Calculator extends Base\Core
 
         $commissionFee = $feeDetails['total_fee'];
         $commissionTax = $feeDetails['total_tax'];
+        $commissionSplit = $feeDetails['fee_split'];
+        
+        $commissionComponent = (new Component\Core)->getCommissionComponent($commissionSplit, $this->merchantPricingComponents, '', $this->getSource()->getEntity());
 
-        $this->addImplicitCommission($commissionFee, $commissionTax);
+        $commissionComponent->setPricingFeature($this->getSource()->getEntity());
+
+        $this->addImplicitCommission($commissionFee, $commissionTax, $commissionComponent);
     }
 
     /**
@@ -819,8 +855,13 @@ class Calculator extends Base\Core
 
         $commissionFee = $this->calculateFeeForImplicitVariableCommission($partnerFeeSplit);
 
+        $commissionComponent = (new Component\Core)->getCommissionComponent($partnerFeeSplit, $this->merchantPricingComponents, '', $this->getSource()->getEntity());
+
+        $commissionComponent->setPricingFeature($this->getSource()->getEntity());
+
         // CommissionFee calculated doesnt contain commissionTax. Hence commissionTax is passed as 0.
-        $this->addImplicitCommission($commissionFee, 0);
+        $this->addImplicitCommission($commissionFee, 0, $commissionComponent);
+
     }
 
     /**
@@ -858,7 +899,7 @@ class Calculator extends Base\Core
         return $commissionFee;
     }
 
-    protected function addImplicitCommission(int $commissionFee, $commissionTax)
+    protected function addImplicitCommission(int $commissionFee, $commissionTax, Component\Entity $commissionComponent)
     {
         $isCommissionFeeValid = $this->isImplicitCommissionValid($commissionFee, $commissionTax);
 
@@ -890,6 +931,8 @@ class Calculator extends Base\Core
         $commission = $this->buildCommission($payload);
 
         $this->addCommission($commission);
+
+        $this->addCommissionComponent($commissionComponent);
     }
 
     protected function getCommissionComponents(int $commissionFee, int $commissionTax): array
@@ -1027,6 +1070,15 @@ class Calculator extends Base\Core
         $this->setMerchantFee($merchantFee);
         $this->setMerchantTax($merchantTax);
         $this->setMerchantFeeSplit($feeSplit);
+        $paymentFee = $feeSplit->filter(function($split) {
+            return ($split->getName() === $this->getSource()->getEntity());
+        })->first();
+
+        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_AMOUNT]       = $paymentFee->getAmount();
+        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_PLAN_RULE_ID] = $paymentFee->getPricingRule();
+        $merchantPricingRule                                                              = $this->repo->pricing->getPricingFromPricingId($paymentFee->getPricingRule());
+        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_PERCENTAGE ]  = $merchantPricingRule->getPercentRate();
+        $this->merchantPricingComponents[Component\Entity::MERCHANT_PRICING_FIXED]        = $merchantPricingRule->getFixedRate();
     }
 
     /**

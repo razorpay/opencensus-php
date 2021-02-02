@@ -123,6 +123,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\AppStore\Repository                            $app_store;
  * @property Models\Survey\Tracker\Repository                      $survey_tracker;
  * @property Models\Survey\Repository                              $survey;
+ * @property Models\Pricing\Repository                             $pricing;
+ * @property Models\Partner\Commission\Component\Repository        $commission_component;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

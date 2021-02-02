@@ -393,6 +393,7 @@ class Entity
     const UFH_FILES                      = 'ufh.files';
 
     const COMMISSION = 'commission';
+    const COMMISSION_COMPONENT = 'commission_component';
 
     // these entities doesn't exist in api. they are required for transaction entity operations.
     const CREDIT_REPAYMENT               = 'credit_repayment';
@@ -777,6 +778,7 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+        self::COMMISSION_COMPONENT => \RZP\Models\Partner\Commission\Component::class,
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,

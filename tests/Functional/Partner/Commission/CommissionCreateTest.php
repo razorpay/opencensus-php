@@ -14,6 +14,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Settlement\Holidays;
 use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
@@ -61,6 +62,12 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
 
         $this->checkClearOnHoldAndSettlement($commission, Config\Entity::DEFAULT_TDS_PERCENTAGE/100);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
     }
 
     public function testImplicitVariableOnHoldClearForHighTdsPercentage()
@@ -243,7 +250,13 @@ class CommissionCreateTest extends TestCase
 
         $this->startTest($testData);
 
-        $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getCommissionPricingAmount());
     }
 
     /**
@@ -266,6 +279,12 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
 
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getCommissionPricingAmount());
     }
 
     /**
@@ -399,11 +418,27 @@ class CommissionCreateTest extends TestCase
 
         $this->startTest($testData);
 
-        $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 2);
+        list($payment, $implicitCommission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 2);
 
-        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
+        list($payment, $explicitCommission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
 
-        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+        $commissionComponents = $this->getDbEntities("commission_component");
+
+        $this->assertEquals(2, count($commissionComponents));
+
+        $implicitCommissionComponent = $commissionComponents->filter(function($component) use ($implicitCommission) {
+            return ($component->getCommissionId() === $implicitCommission[Commission\Entity::ID]);
+        })->first();
+
+        $explicitCommissionComponent =  $commissionComponents->filter(function($component) use ($explicitCommission) {
+            return ($component->getCommissionId() === $explicitCommission[Commission\Entity::ID]);
+        })->first();
+
+        $this->assertEquals($implicitCommission[Commission\Entity::FEE] - $implicitCommission[Commission\Entity::TAX], $implicitCommissionComponent->getCommissionPricingAmount());
+
+        $this->assertEquals($explicitCommission[Commission\Entity::FEE] - $explicitCommission[Commission\Entity::TAX], $explicitCommissionComponent->getCommissionPricingAmount());
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $explicitCommission);
     }
 
     /**
@@ -689,6 +724,10 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
 
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+
+        $commissionComponents = $this->getDbEntities("commission_component");
+
+        $this->assertEquals(2, count($commissionComponents));
     }
 
     /**
@@ -717,6 +756,10 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
 
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+
+        $commissionComponents = $this->getDbEntities("commission_component");
+
+        $this->assertEquals(2, count($commissionComponents));
     }
 
     /**

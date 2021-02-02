@@ -33,6 +33,9 @@ class Constants
     const TDS              = 'tds';
     const TDS_PERCENTAGE   = 'tds_percentage';
 
+    const FIXED    = 'fixed';
+    const VARIABLE = 'variable';
+
     const ADJUSTMENT_TDS_DESCRIPTION = 'Tds deduction on commission payout';
 
     // line item names
