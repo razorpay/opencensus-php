@@ -2044,6 +2044,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
     const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
+    const USER_OAUTH_PROVIDER_LOGIN_SAVED                       = 'USER_OAUTH_PROVIDER_LOGIN_SAVED';
+    const USER_OAUTH_PROVIDER_REGISTER                          = 'USER_OAUTH_PROVIDER_REGISTER';
     const INVALIDATE_CONTACT_DETAILS_ERROR                      = 'INVALIDATE_CONTACT_DETAILS_ERROR';
 
     //Trace codes for users 2fa factory

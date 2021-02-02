@@ -187,6 +187,15 @@ class Core extends Base\Core
 
         $user->setOauthProvider($currentOauthProvider);
 
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        // log user with timestamp and currentOauth Provider.
+        $this->trace->info(TraceCode::USER_OAUTH_PROVIDER_LOGIN_SAVED,
+                           ['user_id'          => $user->getId(),
+                            'email'            => $user->getEmail(),
+                            'currentTimestamp' => $currentTimestamp,
+                            'oauth_provider'   => $decodedCurrentOauthProvider]);
+
         $this->repo->saveOrFail($user);
     }
 

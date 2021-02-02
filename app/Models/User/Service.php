@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
+use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
 use RZP\Mail\User as UserMail;
 use RZP\Services\HubspotClient;
@@ -131,6 +132,15 @@ class Service extends Base\Service
          */
         if (empty($input[Entity::OAUTH_PROVIDER]) === false)
         {
+            // log user with timestamp for oauth provider.
+            $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->trace->info(TraceCode::USER_OAUTH_PROVIDER_REGISTER,
+                               ['email'            => $user[Entity::EMAIL] ?? null,
+                                'user_id'          => $user[Entity::ID],
+                                'currentTimestamp' => $currentTimestamp,
+                                'oauth_provider'   => $input[Entity::OAUTH_PROVIDER]]);
+
             $this->confirm($user[Entity::ID]);
         }
 
