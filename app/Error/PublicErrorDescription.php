@@ -347,6 +347,7 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                            = 'This prefix is already in use. Please try another prefix.';
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED                            = 'Prefix is not enabled for this merchant.';
 
+    const BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES                             = 'Business infringement phrases have been identified, please review the text in the field : ';
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
     const BAD_REQUEST_ACCOUNT_BLOCKED                                           = 'Bank Account is blocked.';

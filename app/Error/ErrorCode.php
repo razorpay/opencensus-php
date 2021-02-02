@@ -996,6 +996,8 @@ class ErrorCode
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                                = 'BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE';
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED                                = 'BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED';
 
+    const BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES                                 = 'BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES';
+
     const BAD_REQUEST_ACCOUNT_CLOSED                                                = 'BAD_REQUEST_ACCOUNT_CLOSED';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                       = 'BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH';
     const BAD_REQUEST_ACCOUNT_BLOCKED                                               = 'BAD_REQUEST_ACCOUNT_BLOCKED';

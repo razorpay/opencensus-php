@@ -14,6 +14,8 @@ use RZP\Http\Request\Hooks;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\TwirpException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 
 class MerchantRiskClient
@@ -26,6 +28,8 @@ class MerchantRiskClient
 
     // path to check impersonation
     const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
+
+    const MATCH_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
 
     /**
      * @var Requests_Session
@@ -238,4 +242,55 @@ class MerchantRiskClient
         return $res;
     }
 
+    public function validateRiskFactorForMerchantRequest(array $requestPayload)
+    {
+        $this->init();
+
+        $response = [];
+        try
+        {
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST,
+                               [
+                                   'payload' => $requestPayload,
+                                   'service' => 'merchants-risk'
+                               ]);
+
+            $response = $this->requestAndGetParsedBody(self::MATCH_IMPERSONATION_PATH, $requestPayload);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::CRITICAL,
+                                         TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                                         [
+                                             'payload' => $requestPayload,
+                                             'service' => 'merchants-risk',
+                                             'path'    => self::MATCH_IMPERSONATION_PATH,
+                                         ]
+            );
+        }
+
+        $this->validateRiskFactorResponse($response);
+    }
+
+    protected function validateRiskFactorResponse(array $response)
+    {
+        $riskFactorFields = (array_key_exists('fields', $response) === true) ? $response['fields'] : [];
+
+        foreach ($riskFactorFields as $riskFactorField)
+        {
+            if ($riskFactorField['score'] > 60)
+            {
+                $description = PublicErrorDescription::BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES .
+                               $riskFactorField['key'];
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES,
+                    null,
+                    null,
+                    $description);
+            }
+        }
+    }
 }
