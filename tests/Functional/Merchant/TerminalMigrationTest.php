@@ -174,6 +174,109 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount + 1, $afterCount);
     }
 
+    public function testRazorflowTerminalFetchByIdInternalAuth()
+    {
+        $terminal = $this->fixtures->create('terminal');
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+
+            $this->assertEquals("", $content);
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertStringEndsWith('/admin/terminals/'.$terminal->getId(), $path);
+
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+
+            $data['id'] = 'term_'.$data['id'];
+
+            return $this->getDefaultTerminalServiceResponse($data);
+
+        }, 1);
+
+        $this->razorxValue = 'proxy';
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'razorflow_admin_fetch_terminal_by_id',
+            'message'       => null,
+            'terminal_id'   => 'term_'.$terminal['id'],
+
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+
+        $url = '/rf/admin/terminal/'. $terminal->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testRazorflowMultipleTerminalFetchInternalAuth()
+    {
+        $input = [
+            'gateway_merchant_id' => 'testGatewayMerchantId',
+            'enabled' => 1,
+        ];
+
+        $terminal = $this->fixtures->create('terminal', $input);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+
+            $this->assertEquals("", $content);
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertStringEndsWith('/admin/terminals/?gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
+
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+
+            $data['id'] = 'term_'.$data['id'];
+
+            $data['entity'] = 'terminal';
+
+            $body = json_encode(['data' => [$data]]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 1);
+
+        $this->razorxValue = 'proxy';
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'razorflow_admin_fetch_terminal_multiple',
+            'message'       => null,
+            'terminal_id'   => 'term_'.$terminal['id'],
+
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+
+        $url = '/rf/admin/terminal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     // terminal is created via this route in fulcrum onboarding, then its synced to terminals service
     public function testAssignTerminalInternalAuthMigrateVariantFulcrum()
     {
@@ -1629,18 +1732,12 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount - 1, $afterCount);
     }
 
-    // these are tests for asserting behavior for admin_fetch_terminal_by_id route
-    // in this route, we fetch terminal from API database
-    // we also fetch the same terminal from Terminals Service and compare for equality
-    // based on success/failure, we push metrics with dimensions.
-
-    public function testAdminFetchTerminalByIdTerminalServiceValidResponse()
+    public function testAdminFetchMultipleTerminalsProxy()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', [
-            'used'        => true,
-            'enabled'     => '1',
-            'sync_status' => 'sync_success',
+            'terminal', [
+            'gateway_merchant_id'        => 'testGatewayMerchantId',
+            'enabled' => '1'
         ]);
 
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
@@ -1649,36 +1746,48 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertEquals(Requests::GET, $method);
 
-            $this->assertStringEndsWith($terminal['id'], $path);
-
-            $response = new \Requests_Response;
+            $this->assertStringEndsWith('gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
 
             $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
 
-            return $this->getDefaultTerminalServiceResponse($data);
+            $data['id'] = 'term_'.$data['id'];
+
+            $data['entity'] = 'terminal';
+
+            $body = json_encode(['data' => [$data]]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
 
         }, 1);
 
-        $this->razorxValue = 'migrate';
-
-        $this->app['config']->set('applications.terminals_service.sync', true);
+        $this->razorxValue = 'proxy';
 
         $mock = $this->createMetricsMock();
 
         $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
+            'route'         => 'admin_fetch_terminal_multiple',
             'message'       => null,
-            'terminal_id'   => $terminal['id'],
+            'terminal_id'   => 'term_'.$terminal['id'],
 
         ];
 
         $mock->expects($this->at(1))
-              ->method('count')
-              ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
-        $url = '/admin/terminal/' . $terminal['id'] . '/';
+        $url = '/admin/terminal/';
+
+        $input = [
+            'gateway_merchant_id' => 'testGatewayMerchantId',
+            'enabled' => 1,
+        ];
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
 
         $this->startTest();
     }
@@ -1823,55 +1932,6 @@ class TerminalMigrationTest extends TestCase
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/terminals/';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-    }
-
-    public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
-    {
-        $this->razorxValue = 'migrate';
-
-        $this->app['config']->set('applications.terminals_service.sync', true);
-
-        $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', [
-            'used'        => true,
-            'enabled'     => '1',
-            'sync_status' => 'sync_success',
-        ]);
-
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-
-            $this->assertEquals("", $content);
-
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertStringEndsWith($terminal['id'], $path);
-
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArray();
-
-            $data['merchant_id'] = strrev($data['merchant_id']);
-
-            return $this->getDefaultTerminalServiceResponse($data);
-
-        }, 1);
-
-        $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
-            'message'       => null,
-            'terminal_id'   => $terminal['id'],
-
-        ];
-
-        $mock = $this->createMetricsMock();
-
-        $mock->expects($this->at(1))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, 1, $expected);
-
-        $url = '/admin/terminal/' . $terminal['id'];
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

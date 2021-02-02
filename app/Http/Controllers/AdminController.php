@@ -9,6 +9,7 @@ use ApiResponse;
 use Illuminate\Support\Facades\File;
 
 use RZP\Models\Admin;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Report;
 use RZP\Models\Terminal;
 use RZP\Services\Stork;
@@ -67,6 +68,49 @@ class AdminController extends Controller
              return ApiResponse::json($response);
 
         }
+        return ApiResponse::json($data);
+    }
+
+    public function getTerminalMultiple()
+    {
+        $input = Request::all();
+
+        $type = 'terminal';
+
+        $data = $this->service()->fetchMultipleEntities($type, $input);
+
+        $mode = $this->ba->getMode();
+
+        $variantFlag = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), "ROUTE_PROXY_TS_ADMIN_MULTIPLE_TERMINAL_FETCH", $mode);
+
+        if ($variantFlag === 'proxy')
+        {
+            $path = "v1/admin/terminals/?";
+
+            foreach ($input as $queryParam => $value)
+            {
+                $path .= $queryParam. '=' .$value. '&';
+            }
+
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+            $dataToCompare = $data["items"];
+
+            if ((new Terminal\Service())->compareArrayOfTerminalArrays($dataToCompare, $response) === false)
+            {
+                $traceData = ["input" => $input];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_COMPARISON_FAILED, $traceData);
+            }
+
+            $resData = [];
+            $resData["entity"] = "collection";
+            $resData["count"] = count($response);
+            $resData["items"] = $response;
+
+            return $resData;
+        }
+
         return ApiResponse::json($data);
     }
 

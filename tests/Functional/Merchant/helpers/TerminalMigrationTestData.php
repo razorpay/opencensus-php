@@ -392,14 +392,31 @@ return [
             ]
         ],
     ],
-
-    'testAdminFetchTerminalByIdTerminalServiceValidResponse' => [
+    'testRazorflowTerminalFetchByIdInternalAuth' => [
+        'request'    => [
+            'method'    => 'GET'
+        ],
+        'response'   => [
+            'content'   => [],
+        ],
+    ],
+    'testRazorflowMultipleTerminalFetchInternalAuth' => [
         'request'    => [
             'method'    => 'GET'
         ],
         'response'   => [
             'content'   => [
-
+                'count' => 1
+            ],
+        ],
+    ],
+    'testAdminFetchMultipleTerminalsProxy' => [
+        'request'    => [
+            'method'    => 'GET',
+        ],
+        'response'   => [
+            'content'   => [
+                'count' => 1,
             ],
         ],
     ],
@@ -451,18 +468,6 @@ return [
             ],
         ],
     ],
-
-    'testAdminFetchTerminalByIdTerminalServiceInvalidResponse' => [
-        'request'    => [
-            'method'    => 'GET'
-        ],
-        'response'   => [
-            'content'   => [
-
-            ],
-        ],
-    ],
-
     'testFetchTerminalsAdminAuthTerminalIdMismatch' => [
         'request' => [
           'method'  => 'GET',
