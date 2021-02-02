@@ -63,9 +63,19 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        //checking verification_id and payment_id before adding to entity for excluding duplicates.
+        $gatewayPayment = $this->checkTraceIdAndPaymentIdPresent($content, $input);
+
+        if ($gatewayPayment === null)
+        {
+            $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        }
 
         $merchantId = $this->getMerchantId();
+
+        $content['TraceNumber'] = $gatewayPayment['verification_id'];
+
+        $content['checksum'] = $this->getHashOfArray($content);
 
         $contentString = implode('|', $content);
 
@@ -315,8 +325,6 @@ class Gateway extends Base\Gateway
                 $data['MerchantId'] = $this->getTestTpvMerchantId();
             }
         }
-
-        $data['checksum'] = $this->getHashOfArray($data);
 
         return $data;
     }
@@ -706,5 +714,29 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    public function checkTraceIdAndPaymentIdPresent($content, $input)
+    {
+        $gatewayResponse = $this->repo->findByVerificationIdOrPaymentIdAndAction($content['TraceNumber'], Action::AUTHORIZE, $input['payment']['id']);
+
+        if ($gatewayResponse !== null)
+        {
+            if ($gatewayResponse['payment_id'] === $input['payment']['id'])
+            {
+                return $gatewayResponse;
+            }
+            elseif ($gatewayResponse['verification_id'] === $content['TraceNumber'])
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    [
+                        'gateway'    => $this->gateway,
+                        'payment_id' => $input['payment']['id'],
+                        'trace_id'   => $gatewayResponse['verification_id'],
+                    ]);
+            }
+        }
+        return $gatewayResponse;
     }
 }

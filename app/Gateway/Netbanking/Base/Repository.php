@@ -38,6 +38,18 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByVerificationIdOrPaymentIdAndAction($verificationId, $action, $paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTION, '=', $action)
+                    ->where(function ($query) use ($verificationId, $paymentId)
+                {
+                    $query->where(Entity::VERIFICATION_ID, '=', $verificationId)
+                          ->orWhere(Entity::PAYMENT_ID, '=', $paymentId);
+                })
+                    ->first();
+    }
+
     public function findByRefundIdActionAndReference1($refundId, $action, $reference1)
     {
         return $this->newQuery()
