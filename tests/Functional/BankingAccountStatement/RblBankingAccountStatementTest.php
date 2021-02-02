@@ -107,6 +107,10 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+
+        $this->fixtures->create('org:razorpay_org_live');
+
+        $this->fixtures->base->connection('test');
     }
 
     protected function mockMozartResponseForFetchingBalanceFromRblGateway(int $amount): void
@@ -7122,8 +7126,6 @@ class RblBankingAccountStatementTest extends TestCase
     //gets linked to external . manually credit row is linked with that payout reversal
     public function testRblSourceUpdateFromReversedToReversed()
     {
-        $this->markTestSkipped();
-
         $channel = Channel::RBL;
 
         $this->setupForRblPayout($channel);
@@ -7833,24 +7835,23 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->cronAuth();
         $this->startTest();
 
-        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
-        $transactions = $this->getDbEntities('transaction');
+        $basEntries      = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions    = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
+        $reversal        = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
         $this->assertEquals($externalEntries[0]['transaction_id'], $basEntries[0]['transaction_id']);
         $this->assertEquals($externalEntries[0]['banking_account_statement_id'], $basEntries[0]['id']);
-        $this->assertEquals($transactions[0]['entity_id'],$externalEntries[0]['id']);
+        $this->assertEquals($transactions[0]['entity_id'], $externalEntries[0]['id']);
 
         $payout = $this->getDbEntities('payout');
 
         $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
         $this->assertEquals($payout[0]['id'], $basEntries[1]['entity_id']);
         $this->assertEquals($payout[0]['transaction_id'], $basEntries[1]['transaction_id']);
-        $this->assertEquals($transactions[1]['entity_id'],$payout[0]['id']);
-
+        $this->assertEquals($transactions[1]['entity_id'], $payout[0]['id']);
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
         $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
@@ -7867,6 +7868,7 @@ class RblBankingAccountStatementTest extends TestCase
                 'debit_bas_id'  => $basEntries[1]['id'],
                 'end_status'    => 'reversed'],
         ];
+
 
         $content = $this->makeRequestAndCatchException(function() use ($request) {
             $this->makeRequestAndGetContent($request);

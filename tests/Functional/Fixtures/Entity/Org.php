@@ -7,10 +7,13 @@ use Hash;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 
 class Org extends Base
 {
+    use DbEntityFetchTrait;
+
     const SBIN_ORG                  = 'SBINbankOrgnId';
     const HDFC_ORG                  = '6dLbNSpv5XbCOG';
     const RZP_ORG                   = '100000razorpay';
@@ -178,6 +181,36 @@ class Org extends Base
         return $org;
     }
 
+    public function createRazorpayOrgLive()
+    {
+        $permissions = $this->fixtures->on('live')->create('permission:default_permissions_live');
+
+        // Default organisation to be used for tests
+        $org = $this->getDbEntity('org', ['id' => self::RZP_ORG], 'live');
+
+        $org->permissions()->attach($permissions);
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.in'
+        ]);
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        $this->fixtures->on('live')->create('group', [
+            'id'     => self::DEFAULT_GRP,
+            'name'   => 'razorpay_group',
+            'org_id' => self::RZP_ORG,
+        ]);
+
+        $this->createAdminForRazorpayOrgLive($permissions);
+
+        return $org;
+    }
+
     public function createAdminForRazorpayOrg($permissions = null)
     {
         if (empty($permissions) === true)
@@ -208,6 +241,44 @@ class Org extends Base
         $admin->roles()->attach($adminRole);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::DEFAULT_TOKEN_PRINCIPAL,
+            'admin_id'   => self::SUPER_ADMIN,
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
+            'created_at' => Carbon::now()->getTimestamp(),
+            'expires_at' => Carbon::now()->addYears(10)->timestamp,
+        ]);
+    }
+
+    public function createAdminForRazorpayOrgLive($permissions = null)
+    {
+        if (empty($permissions) === true)
+        {
+            $permissions = $this->fixtures->create('permission:default_permissions_live');
+        }
+
+        $adminRole = $this->fixtures->on('live')->create('role', [
+            'id'     => self::ADMIN_ROLE,
+            'org_id' => self::RZP_ORG,
+            'name'   => Config::get('heimdall.default_role_name'),
+        ]);
+
+        $this->fixtures->on('live')->create('role', [
+            'id'     => self::MANAGER_ROLE,
+            'org_id' => self::RZP_ORG,
+            'name'   => 'Admin',
+        ]);
+
+        $adminRole->permissions()->attach($permissions);
+
+        $admin = $this->fixtures->on('live')->create('admin', [
+            'id'     => self::SUPER_ADMIN,
+            'org_id' => self::RZP_ORG,
+            'email'  => 'superadmin@razorpay.com'
+        ]);
+
+        $admin->roles()->attach($adminRole);
+
+        $this->fixtures->on('live')->create('admin_token', [
             'id'         => self::DEFAULT_TOKEN_PRINCIPAL,
             'admin_id'   => self::SUPER_ADMIN,
             'token'      => Hash::make(self::DEFAULT_TOKEN),

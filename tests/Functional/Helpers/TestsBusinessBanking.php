@@ -244,22 +244,23 @@ trait TestsBusinessBanking
     public function createContact(array $contact = [])
     {
         if (empty($contact)) {
-            $this->contact = $this->fixtures->create(
-                'contact',
-                [
-                    'id' => '1000010contact',
-                    'email' => 'contact@razorpay.com',
-                    'contact' => '8888888888',
-                    'name' => 'test user'
-                ]);
+            $input  = [
+                'id' => '1000010contact',
+                'email' => 'contact@razorpay.com',
+                'contact' => '8888888888',
+                'name' => 'test user'
+            ];
+
+            $this->contact = $this->fixtures->on('test')->create('contact', $input);
+
         } else{
-            $this->contact = $this->fixtures->create('contact', $contact);
+            $this->contact = $this->fixtures->on('test')->create('contact', $contact);
         }
     }
 
     protected function createFundAccount()
     {
-        $this->fundAccount = $this->fixtures->fund_account->createBankAccount(
+        $this->fundAccount = $this->fixtures->on('test')->fund_account->createBankAccount(
             [
                 'source_type' => 'contact',
                 'source_id'   => $this->contact->getId(),
@@ -269,6 +270,7 @@ trait TestsBusinessBanking
                 'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
+
     }
 
     protected function createVpaFundAccount(array $attributes = [])

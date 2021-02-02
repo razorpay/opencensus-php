@@ -347,13 +347,13 @@ class Authorization
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
-    public function cronAuth($mode = 'test')
+    public function cronAuth($mode = 'test', $hostname = null)
     {
         $cronConfig = \Config::get('applications.cron');
 
         $pwd = $cronConfig['secret'];
 
-        $this->appAuth('rzp_' . $mode, $pwd);
+        $this->appAuth('rzp_' . $mode, $pwd, $hostname);
     }
 
     public function expressAuth($mode = 'test', $user = null)
