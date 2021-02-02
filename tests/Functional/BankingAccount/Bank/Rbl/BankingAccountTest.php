@@ -318,6 +318,32 @@ class BankingAccountTest extends TestCase
 
     }
 
+    public function testRzpRefNumberNotExistScenarioInAccountOpeningWebhook()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => '00000',
+                            'Account No' => '31900299180858'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
     {
         $response = $this->testFailedBankAccountInfoNotification();

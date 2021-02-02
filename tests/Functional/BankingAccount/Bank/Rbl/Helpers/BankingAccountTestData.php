@@ -386,6 +386,49 @@ return [
         ],
     ],
 
+    'testRzpRefNumberNotExistScenarioInAccountOpeningWebhook' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No.'       => '309002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-05-2019',
+                        'RZP_Ref No'        => '00000',
+                        'IFSC'              => 'HDFC0000090',
+                        'Address1'          => 'RAM NAGAR',
+                        'Address2'          => 'ADARSHA LANE',
+                        'Address3'          => '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '123456',
+                        'Phone no.'         => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Failure'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateBankingAccountToInitiated' => [
         'request'  => [
             'url'     => '/banking_account',
