@@ -212,11 +212,38 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
   } else if (paymentMethod === 'app') {
     const paymentProvider = payment.provider;
 
-    el = (
-      <Definition>
-        <span>{titleCase(paymentMethod) + '-' + titleCase(paymentProvider)}</span>
-      </Definition>
-    );
+    if (paymentProvider === 'cred') {
+      el = (
+        <ContentToggler>
+          <span>{paymentProvider.toUpperCase()}</span>
+          <Definition allowEmptyTitle={true}>
+            {null}
+            <span>
+              Paid via Card:
+              <Amount
+                value={payment.acquirer_data.amount * 100}
+                currency={payment.currency}
+                className="cred-payment-amount"
+              />
+            </span>
+            <span>
+              Paid via Cred Coins:
+              <Amount
+                value={payment.acquirer_data.discount * 100}
+                currency={payment.currency}
+                className="cred-payment-amount"
+              />
+            </span>
+          </Definition>
+        </ContentToggler>
+      );
+    } else {
+      el = (
+        <Definition>
+          <span>{titleCase(paymentMethod) + '-' + titleCase(paymentProvider)}</span>
+        </Definition>
+      );
+    }
   }
 
   return el;
