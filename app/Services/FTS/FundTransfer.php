@@ -809,6 +809,11 @@ class FundTransfer extends Base
                 RazorxTreatment::ALLOWED_MERCHANTS,
                 $this->mode);
 
+        $this->trace->info(TraceCode::FTS_DEBUG_RAZORX_HM,
+            [
+                'variant' => $variant,
+            ]);
+
         if (strtolower($variant) === 'on')
         {
             return [true, 'Razorx allowed merchant'];
