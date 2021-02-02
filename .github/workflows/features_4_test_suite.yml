@@ -10,6 +10,7 @@ jobs:
         name: cancel old workflows
         id: cancel
         with:
+          workflow_id: "features_4_test_suite.yml"
           access_token: ${{ github.token }}
       - if: github.ref == 'refs/heads/master'
         name: Don't cancel old workflows
