@@ -55,6 +55,7 @@ export default class ActivationCard extends Component {
         poi_verification_status,
         isUnregisteredBusiness,
         locked,
+        isHardLimitReached,
         merchant,
       } = nextProps,
       { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
@@ -94,6 +95,10 @@ export default class ActivationCard extends Component {
       } else if (isRejected) {
         status = possibleStatuses.blocked;
         content = 'Your KYC form has been rejected.';
+      } else if (isHardLimitReached) {
+        title = 'Account Under Review';
+        status = possibleStatuses.blocked;
+        content = 'Your submitted KYC documents are being reviewed. This will be done in less than 48 hours.';
       } else if (!!locked && !activated && merchant.hold_funds) {
         status = possibleStatuses.blocked;
         content = (

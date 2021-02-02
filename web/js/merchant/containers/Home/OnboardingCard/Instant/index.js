@@ -134,6 +134,7 @@ export default class OnboardingCardInstant extends Component {
         campaigns,
         locked,
         isAutoKycDone,
+        isHardLimitReached,
         merchant,
       } = user,
       { showTransactionsHelper, isKLA, isWebsiteInWorkflow, contentWidth, activeStep } = this.state,
@@ -169,6 +170,7 @@ export default class OnboardingCardInstant extends Component {
         isWebsiteInWorkflow,
         locked,
         isAutoKycDone,
+        isHardLimitReached,
         merchant,
       };
     const showCaFlow = isActivated && hasNeoCouponCode(campaigns);
