@@ -5578,17 +5578,26 @@ class Service extends Base\Service
 
         $merchantDetail = $merchantDetailsCore->getMerchantDetails($this->merchant);
 
-        $isUnregistered = MerchantDetBusinessType::isUnregisteredBusiness($merchantDetail->getBusinessType());
+        $isUnregistered = $merchantDetail->isUnregisteredBusiness();
 
-        // get partners if any
-        $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
+        $activationFlow = null;
 
-        $partner = $partners->filter(function(Merchant\Entity $partner) {
-            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
-        })->first();
+        if($merchantDetail->canDetermineActivationFlow())
+        {
+            if($isUnregistered === false)
+            {
+                // get partners if any
+                $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
 
-        $isWhitelisted = ($merchantDetailsCore->getActivationFlow($this->merchant, $merchantDetail,
-                $partner, false) === ActivationFlow::WHITELIST);
+                $partner = $partners->filter(function(Merchant\Entity $partner) {
+                    return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+                })->first();
+
+                $activationFlow = $merchantDetailsCore->getActivationFlow($this->merchant, $merchantDetail, $partner, false);
+            }
+        }
+
+        $isWhitelisted = $activationFlow === ActivationFlow::WHITELIST;
 
         if ($isActivated === true)
         {

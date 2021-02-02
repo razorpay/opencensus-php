@@ -526,7 +526,7 @@ final class Constants
 
     // No of days for manual KYC
     const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_PASSED    =     "3 to 5";
-    const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED    =     "7";
+    const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED    =     "8 to 10";
 }
 
 

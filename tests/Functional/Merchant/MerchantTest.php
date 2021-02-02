@@ -9917,7 +9917,7 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "7",
+                        "no_of_days_for_activation" =>  "8 to 10",
                     ],
                 ],
                 self::CREATE_MERCHANT_DETAILS   =>  [
@@ -9936,7 +9936,7 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "7",
+                        "no_of_days_for_activation" =>  "8 to 10",
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS     =>  [
@@ -10005,7 +10005,7 @@ class MerchantTest extends TestCase
                 'content' => [
                     "show_chat"                 => true,
                     "show_create_ticket_popup"  => true,
-                    "no_of_days_for_activation" => "7",
+                    "no_of_days_for_activation" => "8 to 10",
                 ],
             ],
             self::EDIT_MERCHANT_DETAILS   =>  [
@@ -10024,7 +10024,7 @@ class MerchantTest extends TestCase
                 'content' => [
                     "show_chat"                 => true,
                     "show_create_ticket_popup"  => true,
-                    "no_of_days_for_activation" => "7",
+                    "no_of_days_for_activation" => "8 to 10",
                 ]
             ],
             self::EDIT_MERCHANT_DETAILS   =>  [
