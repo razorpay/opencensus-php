@@ -68,12 +68,16 @@ class JaegerPropagator implements PropagatorInterface
         if (!$data) {
             return new SpanContext();
         }
-
-        $n = sscanf($data, self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentSpanId, $flags);
-
-        if ($n == 0) {
+        
+        $data = explode($data, ':');
+        if (count($data) < 4) {
             return new SpanContext();
         }
+        
+        $traceId = $data[0];
+        $spanId = $data[1];
+        $parentSpanId = $data[2];
+        $flags = $data[3];
 
         $enabled = $flags & 0x01;
 
