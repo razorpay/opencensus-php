@@ -33,6 +33,8 @@ class Type
     const CITI_NACH_REGISTER                = 'citi_nach_register';
     const CITI_NACH_DEBIT                   = 'citi_nach_debit';
     const CITI_NACH_DEBIT_SUMMARY           = 'citi_nach_debit_summary';
+    const CITI_NACH_EARLY_DEBIT             = 'citi_nach_early_debit';
+    const CITI_NACH_EARLY_DEBIT_SUMMARY     = 'citi_nach_early_debit_summary';
 
     const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
     const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
@@ -239,6 +241,8 @@ class Type
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
+            self::CITI_NACH_EARLY_DEBIT,
+            self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::ICICI_PAYLATER_REFUND,
@@ -396,6 +400,8 @@ class Type
         self::ICICI_NACH_REGISTER,
         self::CITI_NACH_DEBIT_SUMMARY,
         self::CITI_NACH_DEBIT,
+        self::CITI_NACH_EARLY_DEBIT,
+        self::CITI_NACH_EARLY_DEBIT_SUMMARY,
         self::CITI_NACH_REGISTER,
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
@@ -552,6 +558,8 @@ class Type
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
+            self::CITI_NACH_EARLY_DEBIT,
+            self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::ICICI_NACH_REGISTER,
             self::FIRST_DATA_PARES_FILE,
             self::SBI_UPI_REFUND,

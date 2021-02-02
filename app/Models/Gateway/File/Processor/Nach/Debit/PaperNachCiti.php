@@ -37,14 +37,15 @@ class PaperNachCiti extends Debit\Base
     const SUMMARY_EXTENSION = FileStore\Format::XLS;
     const STEP              = 'debit';
     const GATEWAY           = Payment\Gateway::NACH_CITI;
-    const USER_NAME         = 'CTRAZORPAY';
     const FILE_METADATA     = [
         'gid'   => '10000',
         'uid'   => '10006',
         'mode'  => '33188'
     ];
 
-    protected $pageCount = 90000;
+    protected $pageCount   = 90000;
+    protected $userName    = 'CTRAZORPAY';
+    protected $productType = '10 ';
 
     protected $fileStore;
 
@@ -207,7 +208,7 @@ class PaperNachCiti extends Debit\Base
                     Headings::SPONSOR_BANK_IFSC                => $data[Fields::SPONSER_BANK],
                     Headings::USER_NUMBER                      => $data[Fields::UTILITY_CODE],
                     Headings::TRANSACTION_REFERENCE            => $data[Fields::TRANSACTION_REFERENCE],
-                    Headings::PRODUCT_TYPE                     => Fields::PRODUCT_TYPE,
+                    Headings::PRODUCT_TYPE                     => $this->productType,
                     Headings::BENEFICIARY_AADHAR_NUMBER        => Fields::BENEFICIARY_AADHAR_NUMBER,
                     Headings::UMRN                             => $data[Fields::UMRN],
                     Headings::FILLER                           => Fields::FILLER,
@@ -368,7 +369,7 @@ class PaperNachCiti extends Debit\Base
         $fieldLength = FieldsLength::BENEFICIARY_ACCOUNT_HOLDER_NAME;
         $accountName = $this->getPaddedValue($accountName, $fieldLength, ' ', STR_PAD_RIGHT);
 
-        $userName = self::USER_NAME;
+        $userName = $this->userName;
         $fieldLength = FieldsLength::USER_NAME;
         $userName = $this->getPaddedValue($userName, $fieldLength, ' ', STR_PAD_RIGHT);
 

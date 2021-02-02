@@ -20,7 +20,6 @@ class Fields
     const CHECK_SUM                                       = '          ';
     const FLAG                                            = ' ';
     const REASON_CODE                                     = '  ';
-    const PRODUCT_TYPE                                    = '10 ';
     const BENEFICIARY_AADHAR_NUMBER                       = '               ';
     const FILLER                                          = '       ';
     const END_TIMESTAMP                                   = 'end_timestamp';
