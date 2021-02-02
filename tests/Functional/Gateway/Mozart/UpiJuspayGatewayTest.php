@@ -29,6 +29,10 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_juspay';
 
         $this->setMockGatewayTrue();

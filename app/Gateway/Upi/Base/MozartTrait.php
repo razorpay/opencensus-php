@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Upi\Base;
 
-
+use RZP\Gateway\Upi;
 use RZP\Gateway\Base\Verify;
 
 trait MozartTrait
@@ -62,12 +62,34 @@ trait MozartTrait
         return $mozart->getPaymentIdFromServerCallback($response, $gateway);
     }
 
+    /**
+     * Returns mozart gateway
+     * TODO: Eventually remove this function when dependency of mozart gateway is
+     * removed
+     * @return \RZP\Gateway\Mozart\Gateway
+     */
     protected function getMozartGatewayWithModeSet()
     {
         /**
          * @var $gateway \RZP\Gateway\Mozart\Gateway
          */
         $gateway = $this->app['gateway']->gateway('mozart');
+
+        $gateway->setMode($this->getMode());
+
+        return $gateway;
+    }
+
+    /**
+     * Returns UPI Mozart gateway
+     * @return Upi\Mozart\Gateway
+     */
+    protected function getUpiMozartGatewayWithModeSet()
+    {
+        /**
+         * @var $gateway Upi\Mozart\Gateway
+         */
+        $gateway = $this->app['gateway']->gateway('upi_mozart');
 
         $gateway->setMode($this->getMode());
 

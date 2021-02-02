@@ -87,6 +87,7 @@ return [
         'upi_npci',
         'upi_rbl',
         'upi_yesbank',
+        'upi_mozart',
         'aeps_icici',
         'wallet_olamoney',
         'wallet_payzapp',

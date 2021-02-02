@@ -863,7 +863,7 @@ class Entity
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
         self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
-        self::UPI_MOZART             => \RZP\Gateway\Upi\Base::class,
+        self::UPI_MOZART             => \RZP\Gateway\Mozart::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
