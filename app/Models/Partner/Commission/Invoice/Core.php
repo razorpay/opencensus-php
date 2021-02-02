@@ -527,6 +527,16 @@ class Core extends Base\Core
                 continue;
             }
 
+            // if line item amount is less than 100 paisa, skip creating the line item
+            if ($amount < 100)
+            {
+                $this->trace->info(TraceCode::COMMISSION_INVOICE_LINE_ITEMS_CREATE_SKIPPED, [
+                    'reason' => 'line item amount less than 100 paisa',
+                    'amount' => $amount,
+                ]);
+                continue;
+            }
+
             $lineItem = [
                 LineItem\Entity::NAME          => Commission\Constants::COMMISSION,
                 LineItem\Entity::AMOUNT        => $amount,
@@ -557,6 +567,11 @@ class Core extends Base\Core
             }
 
             $lineItemInput[] = $lineItem;
+        }
+
+        if (empty($lineItemInput) === true)
+        {
+            return false;
         }
 
         (new LineItem\Core)->updateLineItemsAsPut($lineItemInput, $partner, $invoice);

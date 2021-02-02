@@ -192,6 +192,64 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testInvoiceGenerateForLineItemsLessThanRupee()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 17,
+            'debit'  => 0,
+            'fee'    => 17,
+            'tax'    => 2,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYjuyZsOlMK',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'CGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYqgYcqpr8q',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'SGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertNull($invoice);
+    }
+
     public function testCaptureCommission()
     {
         list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
