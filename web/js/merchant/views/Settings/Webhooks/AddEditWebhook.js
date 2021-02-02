@@ -79,11 +79,15 @@ export default class webhookForm extends Component {
         this.setState({ isSecretPresent: true });
       }
 
+      const userMerchantTxnMails = userData.merchant.transaction_report_email;
+      const userTxnReportEmail =
+        Array.isArray(userMerchantTxnMails) && userMerchantTxnMails.length > 0
+          ? userMerchantTxnMails[0]
+          : userMerchantTxnMails;
+
       this.props.initialize({
         url: webhook.url,
-        alert_email: webhook.alert_email
-          ? webhook.alert_email
-          : userData.merchant.transaction_report_email,
+        alert_email: webhook.alert_email ? webhook.alert_email : userTxnReportEmail,
         secret_exists: webhook.secret_exists,
         eventGroup: {},
         events: {},
