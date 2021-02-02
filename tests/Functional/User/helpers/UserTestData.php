@@ -1908,6 +1908,23 @@ return [
         ],
     ],
 
+    'testSendBulkPayoutLinksOtpViaEMail' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'          => 'email',
+                'action'          => 'create_bulk_payout_link',
+                'total_payout_link_amount'          => 10000,
+                'account_number'  => '1234567890',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testOptOutForWhatsapp' => [
         'request' => [
             'url'     => '/users/whatsapp/opt_out',

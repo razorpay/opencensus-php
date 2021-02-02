@@ -2615,6 +2615,29 @@ class UserTest extends TestCase
         });
     }
 
+    public function testSendBulkPayoutLinksOtpViaEMail()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function($mail) {
+            $this->assertEquals('create_bulk_payout_link', $mail->input['action']);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals(10000, $mail->input['total_payout_link_amount']);
+            $this->assertEquals('emails.user.otp_create_bulk_payout_link', $mail->view);
+            $this->assertTrue(($mail->otp['expires_at'] > (Carbon::now(Timezone::IST)->getTimestamp() + 19800)) === true);
+            $this->assertTrue(($mail->otp['expires_at'] < (Carbon::now(Timezone::IST)->addMinutes(45)->getTimestamp() + 19800)) === true);
+
+            return true;
+        });
+    }
+
     public function testGetUserAndCheckEnabledMethods()
     {
         $user = $this->fixtures->create('user');

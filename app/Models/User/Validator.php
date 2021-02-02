@@ -178,22 +178,24 @@ class Validator extends Base\Validator
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,'
                                  . 'user_auth,'
-                                 . 'bulk_payout_approve',
+                                 . 'bulk_payout_approve,'
+                                 . 'create_bulk_payout_link',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'                 => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
-        'account_number'         => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link|alpha_num|between:5,22',
-        'fund_account_id'        => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'                => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
-        'payout_id'              => 'required_if:action,approve_payout|public_id|size:19',
-        'payout_total_amount'    => 'required_if:action,approve_payout_bulk|integer|min:100',
-        'payout_count'           => 'required_if:action,approve_payout_bulk|integer|min:1',
-        'approved_payout_count'  => 'required_if:action,bulk_payout_approve|integer',
-        'approved_payout_amount' => 'required_if:action,bulk_payout_approve|numeric',
-        'rejected_payout_count'  => 'required_if:action,bulk_payout_approve|integer',
-        'rejected_payout_amount' => 'required_if:action,bulk_payout_approve|numeric',
-        'total_payout_amount'    => 'sometimes|integer|min:100',
+        'amount'                  => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
+        'account_number'          => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link,create_bulk_payout_link|alpha_num|between:5,22',
+        'fund_account_id'         => 'required_if:action,create_payout|public_id|size:17',
+        'purpose'                 => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
+        'payout_id'               => 'required_if:action,approve_payout|public_id|size:19',
+        'payout_total_amount'     => 'required_if:action,approve_payout_bulk|integer|min:100',
+        'payout_count'            => 'required_if:action,approve_payout_bulk|integer|min:1',
+        'approved_payout_count'   => 'required_if:action,bulk_payout_approve|integer',
+        'approved_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
+        'rejected_payout_count'   => 'required_if:action,bulk_payout_approve|integer',
+        'rejected_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
+        'total_payout_amount'     => 'sometimes|integer|min:100',
+        'total_payout_link_amount'=> 'required_if:action,create_bulk_payout_link|integer',
     ];
 
     protected static $sendOtpWithContactRules = [

@@ -139,6 +139,9 @@ class Otp extends Mailable
             case 'bulk_payout_approve':
                 $view = 'emails.user.otp_bulk_payout_approve';
                 break;
+            case 'create_bulk_payout_link':
+                $view = 'emails.user.otp_create_bulk_payout_link';
+                break;
 
             // Generic fall back template.
             default:

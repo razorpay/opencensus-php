@@ -1463,6 +1463,13 @@ class Core extends Base\Core
                 'rejected_payout_amount' => $input['rejected_payout_amount'],
             ];
         }
+        else if ($action === 'create_bulk_payout_link')
+        {
+            $payload += [
+                'total_payout_link_amount'  => amount_format_IN($input['total_payout_link_amount']),
+                'account_number'            => mask_except_last4($input['account_number']),
+            ];
+        }
 
         return $payload;
     }
