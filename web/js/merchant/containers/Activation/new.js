@@ -190,6 +190,13 @@ export default class ActivationContainer extends React.Component {
     });
   }
 
+  fetchBusinessCategory = () => {
+    return merchantFetch('merchant/activation/business_categories')
+      .then((response) => {
+        return response;
+      })
+  }
+
   submitForm = (data) => {
     return merchantFetch({
       url: 'merchant/activation',
@@ -508,6 +515,7 @@ export default class ActivationContainer extends React.Component {
           verifyData={this.verifyData}
           rxCaCheckboxSelect={this.state.rxCaCheckboxSelect}
           handleRxCaCheckboxChange={this.handleRxCaCheckboxChange}
+          fetchBusinessCategory={this.fetchBusinessCategory}
         />
       );
     }

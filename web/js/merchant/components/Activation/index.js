@@ -100,6 +100,7 @@ import { LOADING, FOOTER_BUTTONS } from './Constants';
 import { TypeAhead } from 'react-power-select';
 import EAadhard from './components/E-Aadhar';
 import SupportButton from 'merchant/components/Home/SupportButton';
+import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 
 /*
  *             Main-form        LA-form
@@ -1133,7 +1134,9 @@ export default class ActivationWizard extends React.Component {
     }
   }
 
-  submitForm = () => {
+  submitForm = async () => {
+    const businessCategories = await this.props.fetchBusinessCategory();
+
     return this.props.submitForm().then((data) => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)
@@ -1157,6 +1160,22 @@ export default class ActivationWizard extends React.Component {
           ...data.data,
           isUnregisteredBusiness,
         };
+
+        let activationFlow = '';
+        if (businessCategories && businessCategories.data && !businessCategories.data.errors){
+          activationFlow =  businessCategories.data[this.props.data.business_category].subcategories[
+            this.props.data.business_subcategory
+          ].activation_flow;
+        } 
+
+        if(isUnregisteredBusiness) {
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessUnReg)
+        } else if ( activationFlow ===  'whitelist'){
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegWhitelist)
+        } else if ( activationFlow === 'greylist') {
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegGreylist)
+        }
+
         this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
         fireKYCSubmitEvents(_data);
         window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
