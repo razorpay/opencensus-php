@@ -9,7 +9,7 @@ const SUB_MERCHANT_FETCH_DETAILS = 'SUB_MERCHANT_FETCH_DETAILS';
 const SUB_MERCHANT_INVITE = 'SUB_MERCHANT_INVITE';
 const SUB_MERCHANT_RESEND_INVITE = 'SUB_MERCHANT_RESEND_INVITE';
 
-export const create = payload => {
+export const create = (payload) => {
   return {
     type: SUB_MERCHANT_CREATE,
     payload: new Submerchant().create(payload),
@@ -28,7 +28,7 @@ export const invite = (...args) => ({
   payload: new Submerchant().invite(...args),
 });
 
-export const resendInvite = submerchantId => ({
+export const resendInvite = (submerchantId) => ({
   type: SUB_MERCHANT_RESEND_INVITE,
   payload: new Submerchant().resendInvite(submerchantId),
 });
@@ -47,29 +47,25 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
    * Mentioned config_ids are the id of configs of those respective configurations (which will get us the list of submerchants)
    * For more info see the code of download report
    */
-  const config_id = isPurePlatform
-    ? 'config_C26ykx5qWFJq0N'
-    : 'config_C26zkCd7EcdfTQ';
+  const config_id = isPurePlatform ? 'config_C26ykx5qWFJq0N' : 'config_C26zkCd7EcdfTQ';
 
   // fake params, since reporting service makes it mandatory
   // and they should be one month apart
   // any value won't affect the results
   const end_time = moment().format('X');
-  const start_time = moment(end_time, 'X')
-    .subtract(1, 'months')
-    .format('X');
+  const start_time = moment(end_time, 'X').subtract(1, 'months').format('X');
 
   return createLog({
     start_time,
     end_time,
     config_id,
     generated_by,
-  }).then(logResponse => {
+  }).then((logResponse) => {
     if (logResponse.data.id) {
       return poll({
         fetchFunc: () => getLog(logResponse.data.id),
 
-        validator: validatorResp => {
+        validator: (validatorResp) => {
           const timeElapsed = new Date() - startTime;
           return (
             validatorResp.error ||
@@ -77,13 +73,12 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
             (validatorResp.data || {}).status !== 'created'
           );
         },
-      }).promise.then(pollResponse => {
+      }).promise.then((pollResponse) => {
         const { error, data } = pollResponse;
 
-        if (error || ['created', 'failed'].includes((data || {}).status)) {
+        if (error || ['created', 'processing', 'failed'].includes((data || {}).status)) {
           return errorObject;
         }
-
         const fileId = pollResponse.data.file_id;
         return getFile(fileId);
       });
@@ -97,7 +92,7 @@ const initialState = {
   error: null,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${SUB_MERCHANT_FETCH_DETAILS}::PENDING`:
       return merge(state, {
