@@ -7,8 +7,8 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Jobs\PaymentDowntimeEvent;
 use RZP\Gateway\Upi\Base\ProviderPsp;
-use RZP\Models\Payment\Downtime\Service;
 use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
 use RZP\Models\Payment\Downtime\Constants;
@@ -54,7 +54,12 @@ class BaseProcessor extends Base\Core
 
             $this->getRepo()->saveOrFail($downtime);
 
-            (new Service())->eventDowntimeResolved($downtime);
+            $this->trace->info(
+                TraceCode::PAYMENT_DOWNTIME_RESOLVE,
+                $downtime->toArray()
+            );
+
+            PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
         }
     }
 
