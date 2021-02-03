@@ -367,6 +367,7 @@ class Route
         'gratis_postpaid_transactions'             => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'terminal_delete'                          => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
         'terminal_edit'                            => ['put',      'terminals/{id}',                                 'TerminalController@putTerminal'                                    ],
+        'terminal_edit_internal'                   => ['put',      'terminals/{id}/internal',                        'TerminalController@putTerminal'                                    ],
         'terminal_restore'                         => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                          => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
         'terminal_update_bulk'                     => ['patch',    'terminals/bulk',                                 'TerminalController@updateTerminalsBulk',                           ],
@@ -2904,6 +2905,7 @@ class Route
         'internal_merchants_fetch',
         'internal_merchant_checkout_preferences',
         'internal_merchant_auto_disabled_methods',
+        'terminal_edit_internal',
         'internal_send_merchant_email',
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
@@ -6158,6 +6160,7 @@ class Route
             'terminal_fetch_by_id_internal',
             'internal_merchant_checkout_preferences',
             'internal_merchant_auto_disabled_methods',
+            'terminal_edit_internal',
             'internal_send_merchant_email'
         ],
 

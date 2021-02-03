@@ -47,7 +47,7 @@ class TerminalOnboardingController extends Controller
     }
 
     public function postInitiateOnboarding()
-    {        
+    {
         $input = Request::all();
 
         $response = $this->service()->initiateOnboarding($input);
