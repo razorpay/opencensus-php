@@ -196,7 +196,7 @@ class Core extends Base\Core
         [$address1, $address2] = $this->getFormattedAddress($merchantDetails->getBusinessRegisteredAddress());
 
         $buyerDetails = [
-            Constants::GSTIN => $merchantDetails->getGstin(),
+            Constants::GSTIN => $eInvoiceEntity->getGstin(),
             Constants::LEGAL_NAME => $merchantDetails->getBusinessName(),
             Constants::LOCATION => $merchantDetails->getBusinessRegisteredCity(),
             Constants::PINCODE  => (int) $merchantDetails->getBusinessRegisteredPin(),
@@ -296,12 +296,36 @@ class Core extends Base\Core
         $gstin = $merchantDetails->getGstin();
         $pinCode = $merchantDetails->getBusinessRegisteredPin();
 
-        if((empty($gstin) === true) or (empty($pinCode) === true))
+        $feeBearer = $merchant->getFeeBearer();
+
+        if((empty($gstin) === true) or (empty($pinCode) === true) or ($feeBearer === Merchant\FeeBearer::CUSTOMER))
         {
             return false;
         }
 
         return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
+    }
+
+    public function isEinvoiceSuccess(string $merchantId, int $month, int $year, string $type) : bool
+    {
+        $generatedCount = 0;
+
+        [$count, $entityMap] = $this->getEInvoiceData($merchantId, $month, $year, $type);
+
+        foreach ($entityMap as $documentType => $entity)
+        {
+            if ($entity->getStatus() === Status::STATUS_GENERATED)
+            {
+                $generatedCount++;
+            }
+        }
+
+        if($count === 0)
+        {
+            return false;
+        }
+
+        return ($generatedCount === $count);
     }
 
     public function getEInvoiceData(string $merchantId, int $month, int $year, string $type, string $documentType = null)
@@ -318,5 +342,25 @@ class Core extends Base\Core
         }
 
         return [$count, $entityMap];
+    }
+
+    public function updateGstinForEinvoice(string $merchantId, string $invoiceNumber, string $currentGstin)
+    {
+        $entities = $this->repo->merchant_e_invoice->fetchByInvoiceNumber($merchantId, $invoiceNumber);
+
+        $this->repo->transaction(function() use ($entities, $currentGstin)
+        {
+            foreach ($entities as $entity)
+            {
+                $entity->setGstin($currentGstin);
+
+                $this->repo->saveOrFail($entity);
+            }
+        });
+    }
+
+    public function getInvoiceNumber(string $merchantId, int $month, int $year, string $type)
+    {
+        return $this->repo->merchant_e_invoice->getInvoiceNumber($merchantId, $month, $year, $type);
     }
 }

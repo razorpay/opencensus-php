@@ -168,6 +168,12 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
+        $this->trace->info(TraceCode::INVOICE_GSTIN_UPDATE_REQUEST, [
+            'merchant_id'  => $merchantId,
+            'invoice_number' => $invoiceNumber,
+            'current_gstin' => $currentGstin,
+        ]);
+
         $entities = $this->repo->merchant_invoice->fetchByInvoiceNumber($merchantId, $invoiceNumber);
 
         $count = $entities->count();
@@ -197,6 +203,8 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($entity);
             }
         });
+
+        (new PgEInvoice())->updateGstinForEinvoice($merchantId, $invoiceNumber, $currentGstin);
 
         return $count;
     }
@@ -466,6 +474,12 @@ class Core extends Base\Core
 
         PgEInvoiceJob::dispatch($this->mode, $merchantId, $documentCount,
             $data[InvoiceReport::PAGES], $params);
+
+        $this->trace->info(TraceCode::EINVOICE_JOB_DISPATCH_FOR_PG,
+            [
+                'merchant_id'   => $merchantId,
+                'params'        => $params,
+            ]);
     }
 
     public function dispatchForXEInvoice($data, $month, $year, $merchantId)

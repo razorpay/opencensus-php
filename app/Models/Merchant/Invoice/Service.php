@@ -12,6 +12,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Base\Traits\ProcessAccountNumber;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 
@@ -159,10 +160,17 @@ class Service extends Base\Service
 
         $result = [];
 
+        $strictB2c = false;
+
+        if($input['strict_b2c'] === '1')
+        {
+            $strictB2c = true;
+        }
+
         switch ($input['action']){
             case Constants::ACTION_CREATE:
                 $result =  $this->createPgMerchantInvoicePdf($input['merchant_ids'], $input['month'],
-                    $input['year'], $input['b2b_overwrite']);
+                    $input['year'], $strictB2c);
                 break;
             case Constants::ACTION_DELETE:
                 $result = $this->removeMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
@@ -172,7 +180,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function createPgMerchantInvoicePdf($merchantIds, $month, $year, $b2bOverwrite = false)
+    public function createPgMerchantInvoicePdf($merchantIds, $month, $year, $strictB2c = false)
     {
         $result = [
             'success_mids' => [],
@@ -187,7 +195,15 @@ class Service extends Base\Service
                          ->file_store
                          ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
 
-            if ((empty($file) === false) and ($b2bOverwrite === false))
+            $pgEInvoiceCore = (new PgEInvoice());
+
+            $eInvoiceSuccess = $pgEInvoiceCore->isEinvoiceSuccess($merchantId, $month, $year, EInvoice\Types::PG);
+
+            $invoiceBreakup = $this->repo
+                                   ->merchant_invoice
+                                   ->fetchInvoiceReportData($merchantId, $month, $year);
+
+            if ((empty($file) === false) and ($eInvoiceSuccess === true))
             {
                 $this->trace->info(
                     TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
@@ -204,49 +220,57 @@ class Service extends Base\Service
             {
                 try
                 {
-                    $invoiceBreakup = $this->repo
-                                           ->merchant_invoice
-                                           ->fetchInvoiceReportData($merchantId, $month, $year);
-
-                    if($b2bOverwrite === true)
+                    if ((empty($file) === true) and ($eInvoiceSuccess === true))
                     {
-                        $pgEInvoiceCore = (new PgEInvoice());
                         $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
 
-                        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+                        $this->checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, false);
 
-                        if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
-                            (Processor::hasTaxableLineItem($invoiceBreakup) === true))
+                        $result['success_mids'][] = $merchantId;
+                    }
+                    else if ($eInvoiceSuccess === false)
+                    {
+                        if(empty($file) === false)
                         {
-                            $invoiceCore = (new Core());
-                            [$date, $isGstApplicable, $data] = $invoiceCore->getPgInvoiceData($merchant, $month,
-                                $year, $invoiceBreakup);
+                            $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
 
-                            $invoiceCore->dispatchForPgEInvoice($data, $month, $year, $merchant->getId());
+                            $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+                            if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
+                                (Processor::hasTaxableLineItem($invoiceBreakup) === true))
+                            {
+                                $this->checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, true);
+
+                                $result['success_mids'][] = $merchantId;
+                            }
+                            else
+                            {
+                                $result['failed_mids'][] = $merchantId;
+                            }
                         }
                         else
                         {
-                            $this->trace->info(
-                                TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
-                                [
-                                    'merchant_id'   => $merchantId,
-                                    'year'          => $year,
-                                    'month'         => $month,
-                                    'reason'        => 'merchant not qualified for e-invoicing',
-                                    'b2b_owerwrite' => $b2bOverwrite,
-                                ]);
+                            $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
 
-                            $result['failed_mids'][] = $merchantId;
+                            $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
-                            continue;
+                            if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
+                                (Processor::hasTaxableLineItem($invoiceBreakup) === true) and ($strictB2c === false))
+                            {
+                                $this->checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, true);
+
+                                $result['success_mids'][] = $merchantId;
+                            }
+                            else
+                            {
+                                (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+
+                                $result['success_mids'][] = $merchantId;
+                            }
+
                         }
-                    }
-                    else
-                    {
-                        (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
-                    }
 
-                    $result['success_mids'][] = $merchantId;
+                    }
                 }
                 catch (\Throwable $e)
                 {
@@ -267,6 +291,22 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    public function checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, $updateGstin = false)
+    {
+        $merchantId = $merchant->getId();
+
+        $invoiceCore = (new Core());
+        [$date, $isGstApplicable, $data] = $invoiceCore->getPgInvoiceData($merchant, $month,
+            $year, $invoiceBreakup);
+
+        if($updateGstin === true)
+        {
+            $this->updateGstin($merchantId, [Entity::INVOICE_NUMBER => $data[Entity::INVOICE_NUMBER]]);
+        }
+
+        $invoiceCore->dispatchForPgEInvoice($data, $month, $year, $merchant->getId());
     }
 
     public function removeMerchantInvoicePdf($merchantIds, $month, $year)

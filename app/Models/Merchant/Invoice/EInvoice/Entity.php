@@ -214,4 +214,14 @@ class Entity extends PublicEntity
     {
         return $this->setAttribute(self::ATTEMPTS, $attempt);
     }
+
+    public function getGstin()
+    {
+        return $this->getAttribute(self::GSTIN);
+    }
+
+    public function setGstin(string $gstin)
+    {
+        return $this->setAttribute(self::GSTIN, $gstin);
+    }
 }

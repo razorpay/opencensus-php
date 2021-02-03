@@ -67,6 +67,9 @@ class PgEInvoice extends Job
 
         try
         {
+            $this->trace->info(TraceCode::EINVOICE_PG_JOB_INIT,
+                $this->getTraceData());
+
             $input = $this->params;
 
             $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);

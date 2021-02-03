@@ -3620,6 +3620,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EINVOICE_JOB_FAILURE_EXCEPTION                        = 'EINVOICE_JOB_FAILURE_EXCEPTION';
     const EINVOICE_PG_PDF_PERSIST_BEGIN                         = 'EINVOICE_PG_PDF_PERSIST_BEGIN';
     const EINVOCICE_INVALID_REQUEST_IN_PG_JOB                   = 'EINVOCICE_INVALID_REQUEST_IN_PG_JOB';
+    const EINVOICE_JOB_DISPATCH_FOR_PG                          = 'EINVOICE_JOB_DISPATCH_FOR_PG';
+    const INVOICE_GSTIN_UPDATE_REQUEST                          = 'INVOICE_GSTIN_UPDATE_REQUEST';
+    const EINVOICE_PG_JOB_INIT                                  = 'EINVOICE_PG_JOB_INIT';
 
 
     const EINVOICE_FALLBACK_TO_B2C_FOR_X                        = 'EINVOICE_FALLBACK_TO_B2C_FOR_X';
