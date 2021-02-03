@@ -273,7 +273,6 @@ trait PaymentsUpiRecurringTrait
             'status'        => UpiMandate\Status::CONFIRMED,
             'umn'           => 'FirstUpiRecPayment@razorpay',
             'rrn'           => '001000100001',
-            'confirmed_at'  => $this->getMockConfirmedAt(UpiMandate\Frequency::MONTHLY),
             'npci_txn_id'   => 'RZP12345678910111213141516',
             'used_count'    => 1,
         ], $mInput);
@@ -384,24 +383,5 @@ trait PaymentsUpiRecurringTrait
     protected function mockMozartServer(): Server
     {
         return $this->getMockServer();
-    }
-
-    protected function getMockConfirmedAt($frequency)
-    {
-        switch ($frequency) {
-            case UpiMandate\Frequency::MONTHLY:
-                $confirmedAt = Carbon::parse('first day of last month', 'UTC');
-                break;
-
-            case UpiMandate\Frequency::DAILY:
-                $confirmedAt = Carbon::now()->subDays(2);
-                break;
-
-            default:
-                $confirmedAt = Carbon::now();
-                break;
-        }
-
-        return $confirmedAt->timestamp;
     }
 }

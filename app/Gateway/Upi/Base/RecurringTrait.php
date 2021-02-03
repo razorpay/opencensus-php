@@ -389,25 +389,16 @@ trait RecurringTrait
             }
         }
 
+        // This is more like a hack for now, we need to see how its flowing on ICICI
+        // And then we can make it more general approach
+        // Here the sequence no is being passed in payment description as <text>seqno <seqno>
         $sequenceNo = explode('seqno ', $input['payment']['description'])[1] ?? 1;
 
-        /* Earlier, sequence number was populated with the hack : '<text>seqno <seqno>' where,
-        the sequence no was being passed in payment description.
-        This has now been replaced by sequence number generating algorithm.
-         */
-
+        // Still giving preference to the hack as we have made couple of mandate and hit few notification api
+        // For which the sequence numbers are not updated in this, this hack will let us test with any number
         if ($sequenceNo === 1)
         {
-            //When mandate is not in confirmed state, $input['upi_mandate']['sequence_number']) will not be set.
-            //In such situation return default sequence number.
-            if (isset($input['upi_mandate']['sequence_number']) === true)
-            {
-                $sequenceNo = $input['upi_mandate']['sequence_number'];
-            }
-            else
-            {
-                $sequenceNo = UpiMandate\SequenceNumber::DEFAULT_SEQUENCE_NUMBER;
-            }
+            $sequenceNo = $input['upi_mandate']['used_count'];
         }
 
         $attr = [
