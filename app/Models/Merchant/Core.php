@@ -274,6 +274,8 @@ class Core extends Base\Core
             }
         }
 
+        unset($input[Entity::PRODUCT]);
+
         $subMerchant = $entity->build($input);
 
         $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
@@ -2206,13 +2208,15 @@ class Core extends Base\Core
      *
      * @param string $ownerId
      * @param Entity $subMerchant
+     * @param string|null $product
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, string $product = null)
     {
         $userMerchantMappingInputData = [
             'action'      => 'attach',
             'role'        => $subMerchant->getUserOwnerRole(),
             'merchant_id' => $subMerchant->getId(),
+            'product'     => $product,
         ];
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
@@ -2458,7 +2462,9 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser, $product);
 
         return $merchant;
     }
@@ -2698,18 +2704,19 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity      $submerchant
+     * @param Entity $submerchant
      * @param User\Entity $partnerUser
      *
+     * @param string|null $product
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser, string $product = null): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
-        $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);
+        $submerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
 
         $submerchant[Entity::USER] = ($submerchantOwner === null) ? null : $submerchantOwner->toArrayPublic();
 
@@ -2726,16 +2733,19 @@ class Core extends Base\Core
      * A submerchant account can have at a max of 2 users with the `owner` role -
      * One being his own user and second being the partner merchant's user linked as an owner to the submerchant.
      *
-     * This function returns the first type of primary owner.
+     * This function returns the first type of given product owner.
      *
-     * @param Entity      $merchant
+     * @param Entity $merchant
      * @param User\Entity $partnerUser
+     * @param string|null $product
      *
      * @return null
      */
-    protected function getNonPartnerPrimaryOwner(Entity $merchant, User\Entity $partnerUser)
+    protected function getNonPartnerOwner(Entity $merchant, User\Entity $partnerUser, string $product = null)
     {
-        $owners = $merchant->owners;
+        $product = $product ?? Product::PRIMARY;
+
+        $owners = $merchant->owners($product)->get();
 
         foreach ($owners as $owner)
         {

@@ -319,11 +319,13 @@ class Service extends Base\Service
      * @param string $ownerId
      * @param Entity $subMerchant
      * @param Entity $aggregatorMerchant
+     * @param string|null $product
      */
     protected function attachSubMerchantOwnerIfApplicable(
         string $ownerId,
         Entity $subMerchant,
-        Entity $aggregatorMerchant)
+        Entity $aggregatorMerchant,
+        string $product = null)
     {
         $isPartner = $aggregatorMerchant->isPartner();
 
@@ -340,7 +342,7 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
+            $this->core()->attachSubMerchantOwner($ownerId, $subMerchant, $product);
         }
     }
 
@@ -3316,7 +3318,7 @@ class Service extends Base\Service
             TraceCode::MERCHANT_SEND_EMAIL_REQUEST,
             $data
         );
-        
+
         switch ($emailType)
         {
             case Constants::MERCHANT_INSTRUMENT_STATUS_UPDATE:
@@ -3562,12 +3564,13 @@ class Service extends Base\Service
      * create login for a submerchant in the old aggregator model where we will
      * just attach the user found instead of creating one.
      *
-     * @param  Entity $subMerchant
-     * @param  string $email
+     * @param Entity $subMerchant
+     * @param string $email
+     * @param string|null $product
      *
      * @return array
      */
-    public function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
+    public function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): array
     {
         $created = false;
 
@@ -3576,25 +3579,25 @@ class Service extends Base\Service
 
         if (empty($subMerchantUser) === true)
         {
-            $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $email);
+            $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $email, $product);
 
             $created = true;
         }
         else
         {
-            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $product);
         }
 
         return [$subMerchantUser, $created];
     }
 
-    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email): User\Entity
+    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
     {
         $userData = $this->formatUserCreationData($email, $subMerchant);
 
         $subMerchantUser = (new User\Core)->create($userData);
 
-        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $product);
 
         return $subMerchantUser;
     }
@@ -3687,11 +3690,14 @@ class Service extends Base\Service
 
         unset($input['account']);
 
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
         list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function () use (
             $input,
             $merchant,
             $isLinkedAccount,
-            $ownerId
+            $ownerId,
+            $product
         )
         {
             $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
@@ -3718,7 +3724,7 @@ class Service extends Base\Service
             {
                 $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
 
-                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant);
+                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
 
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
@@ -3730,7 +3736,7 @@ class Service extends Base\Service
             // dashboard access is true.
             if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
             {
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
             }
 
             $this->repo->saveOrFail($subMerchant);
@@ -3766,7 +3772,7 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
 
-        return $this->getSubMerchantResponseArray($merchant, $subMerchant);
+        return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }
 
     /**
@@ -3774,11 +3780,13 @@ class Service extends Base\Service
      * flow and subMerchant with additional partner dashboard details in case of
      * partner flow.
      *
-     * @param  Entity $merchant
-     * @param  Entity $subMerchant
+     * @param Entity $merchant
+     * @param Entity $subMerchant
+     * @param string|null $product
+     *
      * @return array
      */
-    protected function getSubMerchantResponseArray(Entity $merchant, Entity $subMerchant): array
+    protected function getSubMerchantResponseArray(Entity $merchant, Entity $subMerchant, string $product = null): array
     {
         if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
         {
@@ -3786,7 +3794,7 @@ class Service extends Base\Service
             // This gets submerchant for a partner, with extra details required by partner dashboard.
             // This does not get called for pure platform partners.
             //
-            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
+            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId(), [Entity::PRODUCT => $product]);
 
             $subMerchant = $subMerchant->toArrayPartner();
         }
@@ -3798,7 +3806,7 @@ class Service extends Base\Service
         return $subMerchant;
     }
 
-    protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant)
+    protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant, string $product = null)
     {
         $subMerchantUser = null;
         $createdNew      = false;
@@ -3807,7 +3815,7 @@ class Service extends Base\Service
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
-                $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail());
+                $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail(), $product);
         }
 
         return [$subMerchantUser, $createdNew];

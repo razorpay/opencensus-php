@@ -1370,6 +1370,42 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePartnerSubmerchantWithProduct()
+    {
+        $this->createPartnerAndUser();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // fetch submerchant id from response (ignoring prefix acc_)
+        $submerchantId = substr($response['id'], 4);
+
+        $subMerchant = $this->getDbEntityById('merchant', $submerchantId);
+
+        $subMerchantPrimaryOwners = ($subMerchant->owners('primary')->get())->toArrayPublic();
+
+        $this->assertEquals(0, $subMerchantPrimaryOwners['count']);
+
+        $subMerchantBankingOwners = ($subMerchant->owners('banking')->get())->toArrayPublic();
+
+        $this->assertEquals(2, $subMerchantBankingOwners['count']);
+
+        $submerchantUserId = $subMerchantBankingOwners['items'][0]['id'];
+
+        $subMerchantUser = DB::table('merchant_users')->where('user_id', '=', $submerchantUserId)->get();
+
+        $this->assertEquals('banking', $subMerchantUser[0]->product);
+
+        $partnerUserId = $subMerchantBankingOwners['items'][1]['id'];
+
+        $partnerUser = DB::table('merchant_users')->where('user_id', '=', $partnerUserId)->get();
+
+        $this->assertEquals('primary', $partnerUser[0]->product);
+    }
+
     public function testDeleteRelatedEntitiesOnUnmarkingPartner()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;

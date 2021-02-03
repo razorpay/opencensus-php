@@ -278,8 +278,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSubMerchantUserRules = [
-        'merchant_id' => 'required|alpha_num|size:14',
-        Entity::EMAIL => 'required|email',
+        'merchant_id'   => 'required|alpha_num|size:14',
+        Entity::EMAIL   => 'required|email',
+        Entity::PRODUCT => 'sometimes|string|in:primary,banking',
     ];
 
     protected static $editMethodsRules = [

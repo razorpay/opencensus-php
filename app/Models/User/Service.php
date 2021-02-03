@@ -446,7 +446,7 @@ class Service extends Base\Service
 
     public function updateUserMerchantMapping(string $id, array $input): array
     {
-        $input[Merchant\Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
+        $input[Merchant\Entity::PRODUCT] = $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct();
 
         $user = $this->repo->user->findOrFailPublic($id);
 

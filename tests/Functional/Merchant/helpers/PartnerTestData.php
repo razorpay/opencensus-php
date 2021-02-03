@@ -1244,6 +1244,22 @@ return [
         ],
     ],
 
+    'testCreatePartnerSubmerchantWithProduct' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'name'    => 'random_name_1',
+                'email'   => 'user@example.com',
+                'product' => 'banking'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testAddPartnerAccessMapForLinkedAccountSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
