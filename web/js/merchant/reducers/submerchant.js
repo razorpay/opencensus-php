@@ -70,7 +70,7 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
           return (
             validatorResp.error ||
             timeElapsed > TIMEOUT ||
-            (validatorResp.data || {}).status !== 'created'
+            ['processed', 'failed'].includes((validatorResp.data || {}).status)
           );
         },
       }).promise.then((pollResponse) => {
@@ -79,6 +79,7 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
         if (error || ['created', 'processing', 'failed'].includes((data || {}).status)) {
           return errorObject;
         }
+
         const fileId = pollResponse.data.file_id;
         return getFile(fileId);
       });
