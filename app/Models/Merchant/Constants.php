@@ -311,7 +311,7 @@ final class Constants
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
-                 self::BLACKLIST,
+                self::BLACKLIST,
             ],
             'config_key' => 'promoter_pan'
         ],
@@ -364,7 +364,7 @@ final class Constants
             ],
             'config_key' => 'website'
         ],
-        Detail\Entity::CONTACT_NAME => [
+        Detail\Entity::BUSINESS_NAME => [
             'lists' => [
                 self::BLACKLIST,
                 self::BRAND_LIST,
@@ -461,7 +461,7 @@ final class Constants
         ],
         [
             'keysToCheck' => [
-                Detail\Entity::CONTACT_NAME => [
+                Detail\Entity::BUSINESS_NAME => [
                     'list' => self::BLACKLIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
@@ -488,7 +488,7 @@ final class Constants
         ],
         [
             'keysToCheck' => [
-                Detail\Entity::CONTACT_NAME => [
+                Detail\Entity::BUSINESS_NAME => [
                     'list' => self::HIGH_RISK_LIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
@@ -506,7 +506,7 @@ final class Constants
         ],
         [
             'keysToCheck' => [
-                Detail\Entity::CONTACT_NAME => [
+                Detail\Entity::BUSINESS_NAME => [
                     'list' => self::BRAND_LIST,
                     'matchType'=> self::EXACT_MATCH
                 ]

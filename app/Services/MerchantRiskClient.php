@@ -28,6 +28,7 @@ class MerchantRiskClient
 
     // path to check impersonation
     const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
+    const GET_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
 
     const MATCH_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
 
@@ -125,7 +126,7 @@ class MerchantRiskClient
         $requestLog = [
             "client_type" => $clientType,
             "entity_id" => $entityId,
-            "fields" => array_column($fields, "key")
+            "fields" => array_column($fields, "field")
         ];
 
         try {
@@ -141,6 +142,35 @@ class MerchantRiskClient
                 TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
                 [
                     'payload'   => $requestLog,
+                    'service'   => 'merchants-risk',
+                    'path'      => ''
+                ]
+            );
+        }
+    }
+
+    public function getMerchantImpersonatedDetails(string $clientType, string $entityId)
+    {
+        $this->init();
+
+        $requestPayload = [
+            "client_type" => $clientType,
+            "entity_id" => $entityId
+        ];
+
+        try {
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_GET_REQUEST, [
+                'payload'   => $requestPayload,
+                'service'   => 'merchants-risk'
+            ]);
+
+            return $this->requestAndGetParsedBody(self::GET_IMPERSONATION_PATH, $requestPayload);
+        }
+        catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::DOWNSTREAM_SERVICE_GET_REQUEST_FAILED,
+                [
+                    'payload'   => $requestPayload,
                     'service'   => 'merchants-risk',
                     'path'      => ''
                 ]
@@ -164,7 +194,10 @@ class MerchantRiskClient
 
         $bodyLog = $parsedBody;
 
-        $bodyLog["fields"] = array_column($bodyLog["fields"], "key");
+        if (isset($bodyLog["fields"]) === true)
+        {
+            $bodyLog["fields"] = array_column($bodyLog["fields"], "field");
+        }
 
         if (json_last_error() === JSON_ERROR_NONE)
         {

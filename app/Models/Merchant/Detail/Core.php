@@ -341,7 +341,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $isImpersonated = $this->isMerchantImpersonated($merchant);
+        $isImpersonated = $this->calculateIsMerchantImpersonated($merchant);
 
         $this->autoUpdateMerchantActivationFlows(
             $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false, $isImpersonated);
@@ -746,7 +746,7 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        $isImpersonated = $this->isMerchantImpersonated($merchant);
+        $isImpersonated = $this->calculateIsMerchantImpersonated($merchant);
 
         if ($isImpersonated === true)
         {
@@ -3497,7 +3497,7 @@ class Core extends Base\Core
             return ActivationFlow::GREYLIST;
         }
 
-        if ($this->isMerchantImpersonated($merchant))
+        if ($this->getIsMerchantImpersonated($merchant))
         {
             return ActivationFlow::GREYLIST;
         }
@@ -3505,7 +3505,25 @@ class Core extends Base\Core
         return $activationFlow;
     }
 
-    private function isMerchantImpersonated(Merchant\Entity $merchant) : bool
+    private function getIsMerchantImpersonated(Merchant\Entity $merchant) : bool
+    {
+        $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::DEDUPE_FUNCTIONALITY);
+
+        if ($isDedupeEnabled === true)
+        {
+            $riskScores = $this->mrclient->getMerchantImpersonatedDetails(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId());
+
+            if ($this->checkImpersonation($merchant, $riskScores, 'get') === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function calculateIsMerchantImpersonated(Merchant\Entity $merchant) : bool
     {
         $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::DEDUPE_FUNCTIONALITY);
@@ -3521,7 +3539,7 @@ class Core extends Base\Core
                     if ($merchant->merchantDetail->getAttribute($key) != null)
                     {
                         $fields[] = [
-                            'key' => $key,
+                            'field' => $key,
                             'value' => $merchant->merchantDetail->getAttribute($key),
                             'list' => $list,
                             'config_key' => $value['config_key']
@@ -3532,45 +3550,57 @@ class Core extends Base\Core
 
             $riskScores = $this->mrclient->getMerchantRiskScores(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId(), $fields);
 
-            if (isset($riskScores['fields']) === false)
+            if ($this->checkImpersonation($merchant, $riskScores, 'calculate') === true)
             {
-                return false;
-            }
-
-            $response = [];
-
-            foreach ($riskScores['fields'] as $riskScore)
-            {
-                $response[$riskScore['key']][$riskScore['list']] = $riskScore['score'];
-            }
-
-            foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
-            {
-                $flag = true;
-                foreach ($action['keysToCheck'] as $key => $value)
-                {
-                    if (isset($response[$key][$value['list']]) === false)
-                    {
-                        $flag = false;
-                        break;
-                    }
-
-                    $score = $response[$key][$value['list']];
-                    switch ($value['matchType']) {
-                        case Constants::FUZZY_MATCH:
-                            if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
-                            break;
-                    }
-                }
-                if ($flag)
-                {
-                    $method = $action['method'];
-                    $this->{$method}($merchant);
-                    return true;
-                }
+                return true;
             }
         }
 
+        return false;
+    }
+
+    private function checkImpersonation($merchant, $riskScores, $mode): bool
+    {
+        if (isset($riskScores['fields']) === false)
+        {
+            return false;
+        }
+
+        $response = [];
+
+        foreach ($riskScores['fields'] as $riskScore)
+        {
+            $response[$riskScore['field']][$riskScore['list']] = $riskScore['score'];
+        }
+
+        foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
+        {
+            $flag = true;
+            foreach ($action['keysToCheck'] as $key => $value)
+            {
+                if (isset($response[$key][$value['list']]) === false)
+                {
+                    $flag = false;
+                    break;
+                }
+
+                $score = $response[$key][$value['list']];
+                switch ($value['matchType']) {
+                    case Constants::FUZZY_MATCH:
+                        if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
+                        break;
+                }
+            }
+            if ($flag)
+            {
+                if ($mode === 'calculate')
+                {
+                    $method = $action['method'];
+                    $this->{$method}($merchant);
+                }
+                return true;
+            }
+        }
         return false;
     }
 

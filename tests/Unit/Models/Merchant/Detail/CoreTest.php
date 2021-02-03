@@ -58,11 +58,11 @@ class CoreTest extends TestCase
     public function testGreylistOnMRSImpersonatedFalse()
     {
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantRiskScores'])
+            ->setMethods(['getMerchantImpersonatedDetails'])
             ->getMock();
 
         $mockMR->expects($this->once())
-            ->method('getMerchantRiskScores')
+            ->method('getMerchantImpersonatedDetails')
             ->willReturn([
                 "client_type" => "onboarding",
                 "entity_id" => "Ede1NCc0fb1pum"
