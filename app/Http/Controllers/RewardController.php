@@ -42,9 +42,14 @@ class RewardController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getRewardTerms($id)
+    public function getRewardTerms($id, $paymentId)
     {
-        $data = $this->service()->getRewardTerms($id);
+        $data = $this->service()->getRewardTerms($id, $paymentId);
+
+        if (isset($data) === false)
+        {
+            return View::make('reward.terms_error');;
+        }
 
         return View::make('reward.terms')->with('data', $data);
     }

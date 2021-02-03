@@ -35,4 +35,14 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function findByEntityIdAndOfferIdAndType($entityId, $offer_id)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->where(Entity::OFFER_ID,  '=', $offer_id)
+            ->where(Entity::ENTITY_OFFER_TYPE, '=', 'reward');
+
+        return $query->first();
+    }
 }

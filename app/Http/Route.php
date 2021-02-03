@@ -2239,7 +2239,7 @@ class Route
         'merchant_tag_map_create'                 => ['post',     'merchant/{id}/tag',                                      'ApplicationFrameworkController@createMerchantTag'             ],
         'merchant_tag_map_update'                 => ['patch',    'merchant/{id}/tag',                                      'ApplicationFrameworkController@updateMerchantTag'             ],
         'checkout_rewards'                        => ['get',     'checkout/rewards',                                        'MerchantController@getRewardsForCheckout'                     ],
-        'reward_terms'                            => ['get',     'reward/{id}/terms',                                       'RewardController@getRewardTerms'                              ],
+        'reward_terms'                            => ['get',     'reward/{id}/{payment_id}/terms',                          'RewardController@getRewardTerms'                              ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
 
         // pagination operations routes

@@ -493,7 +493,7 @@
                                       
                                       @foreach ($rewards as $reward)
                                         <div style="display: inline-block; width: 112px;">
-                                          <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/terms" target="_blank" style="text-decoration: none;">
+                                          <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" target="_blank" style="text-decoration: none;">
                                             <div style="height: 136px; background: linear-gradient(199.72deg, #FFFFFF 1.23%, #F8F8F8 99.45%); box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.18); border-radius: 5px;">
                                               <div>
                                                 <img src="https://cdn.razorpay.com/static/assets/email/ic-navigate.png"
@@ -514,7 +514,7 @@
                                             {{$reward["display_text"]}}
                                           </div>
                                           <div style="text-align: center; font-size: 8px; line-height: 17px; text-shadow: 2px 3px 12px rgba(0, 0, 0, 0.1);">
-                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/terms" style="color: #525A76; text-decoration: underline; opacity: 0.5;">
+                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" style="color: #525A76; text-decoration: underline; opacity: 0.5;">
                                               View T&C
                                             </a>
                                           </div>

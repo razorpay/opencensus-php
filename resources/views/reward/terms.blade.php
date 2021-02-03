@@ -56,7 +56,7 @@
                         'merchantActions':[
                             {
                                 propertyName:'event_type',
-                                value:'pg-dashboard'
+                                value:'email-events'
                             },
                             {
                                 propertyName:'mode',
@@ -65,10 +65,14 @@
                         ]
                     });
 
+                    const urlArr = window.location.href.split("/");
+                    const paymentId = urlArr[urlArr.length-2];
+
                     window.rzpQ.push(
                         window.rzpQ.now().merchantActions().success(
                             'reward_terms_page.visited',
                             {
+                                payment_id: paymentId,
                                 reward_id: "{{$data['id']}}",
                                 coupon_code: "{{$data['coupon_code']}}"
                             }

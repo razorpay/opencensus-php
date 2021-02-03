@@ -4278,4 +4278,54 @@ class PaymentCreateTest extends TestCase
             'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020'
             );
     }
+
+    public function testRewardsTermRouteWithPaymentId()
+    {
+        $callback = null;
+
+        $reward = $this->fixtures->create('reward', ['terms' => 'Random terms']);
+
+        $this->fixtures->create('merchant_reward', ['reward_id' => $reward->id, 'status' => 'live',
+            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['reward_ids'] = array('reward_' . $reward->getId());
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $rewardTermsRequest = [
+            'method' => 'GET',
+            'url' => '/reward/'. $reward->getId(). '/'. explode('_',$paymentEntity['id'])[1] . '/terms',
+            'content' => []
+        ];
+
+        $rewardTermsResponse = $this->makeRequestAndGetRawContent($rewardTermsRequest, $callback);
+
+        $this->assertResponse('http', $rewardTermsResponse);
+    }
+
+    public function testRewardsTermRouteWithWrongPaymentId()
+    {
+        $callback = null;
+
+        $reward = $this->fixtures->create('reward', ['terms' => 'Random terms']);
+
+        $this->fixtures->create('merchant_reward', ['reward_id' => $reward->id, 'status' => 'live',
+            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $wrongPaymentId = 'pay_Wsde213wsdfrtg';
+
+        $rewardTermsRequest = [
+            'method' => 'GET',
+            'url' => '/reward/'. $reward->getId(). '/'. explode('_',$wrongPaymentId)[1] . '/terms',
+            'content' => []
+        ];
+
+        $rewardTermsResponse = $this->makeRequestAndGetRawContent($rewardTermsRequest, $callback);
+
+        $rewardTermsResponse->assertSee('ERROR: Invalid Payment Id or Reward Id');
+    }
 }

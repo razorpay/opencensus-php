@@ -4,6 +4,7 @@
 namespace RZP\Models\Reward;
 
 use RZP\Models\Base;
+use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 use RZP\Models\Reward\MerchantReward\Validator as MerchantRewardValidator;
 
 
@@ -85,23 +86,56 @@ class Service extends Base\Service
         return (new Core())->fetchReward($this->merchant->getId());
     }
 
-    public function getRewardTerms($id)
+    public function getRewardTerms($id, $paymentId)
     {
-        try
+
+        $entityOffer = (new EntityOfferRepository())->findByEntityIdAndOfferIdAndType($paymentId, $id);
+
+        if (isset($entityOffer) === true)
         {
-            $reward = $this->repo->reward->findOrFailPublic($id);
+            try
+            {
+                $payment = $this->repo->payment->find($paymentId);
 
-            return $reward;
+                if ((isset($payment) === true) and
+                    ($payment->isAuthorized() === true) or
+                    ($payment->isCaptured() === true))
+                {
+                    $reward = $this->repo->reward->findOrFailPublic($id);
+
+                    return $reward;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
         }
-        catch (\Exception $e)
+
+        $this->app['basicauth']->setModeAndDbConnection('test');
+
+        $entityOffer = (new EntityOfferRepository())->findByEntityIdAndOfferIdAndType($paymentId, $id);
+
+        if (isset($entityOffer) === true)
         {
-            $this->app['basicauth']->setModeAndDbConnection('test');
+            try
+            {
+                $payment = $this->repo->payment->find($paymentId);
 
-            $reward = $this->repo->reward->findOrFailPublic($id);
+                if ((isset($payment) === true) and
+                    ($payment->isAuthorized() === true) or
+                    ($payment->isCaptured() === true))
+                {
+                    $reward = $this->repo->reward->findOrFailPublic($id);
 
-            return $reward;
+                    return $reward;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
         }
-
         return;
     }
 
