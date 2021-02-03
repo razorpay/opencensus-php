@@ -25,6 +25,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Currency\Currency;
 use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\MerchantRiskClient;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -44,6 +45,8 @@ class Core extends Base\Core
      */
     protected $plHostedBaseUrl;
 
+    protected $merchantRiskService;
+
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
 
     const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
@@ -54,6 +57,7 @@ class Core extends Base\Core
 
         $this->elfin           = $this->app['elfin'];
         $this->plHostedBaseUrl = $this->app['config']->get('app.payment_link_hosted_base_url');
+        $this->merchantRiskService = new MerchantRiskClient();
     }
 
     /**
@@ -98,6 +102,26 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
         $this->trackPaymentPageCreatedEvent($paymentLink, $input);
+
+        try
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::APPS_RISK_CHECK,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $riskCheckInput = $this->getRiskCheckInput($paymentLink);
+
+                $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, null, ['payment_page_id' => $paymentLink->getId()]);
+        }
 
         return $paymentLink;
     }
@@ -1554,5 +1578,35 @@ class Core extends Base\Core
         return [
             'branding'  => $branding
         ];
+    }
+
+    protected function getRiskCheckInput(Entity $paymentLink)
+    {
+        $riskInput = [
+            'client_type'   => 'payment_pages',
+            'entity_id'     => $paymentLink->getMerchantId(),
+            'fields'        => [
+                [
+                    'key'        => 'description',
+                    'value'      => $paymentLink->getDescription(),
+                    'list'       => 'high_risk_list',
+                    'config_key' => 'description',
+                ],
+                [
+                    'key'        => 'title',
+                    'value'      => $paymentLink->getTitle(),
+                    'list'       => 'high_risk_list',
+                    'config_key' => 'title',
+                ],
+                [
+                    'key'        => 'terms',
+                    'value'      => $paymentLink->getTerms(),
+                    'list'       => 'high_risk_list',
+                    'config_key' => 'terms',
+                ]
+            ]
+        ];
+
+        return $riskInput;
     }
 }

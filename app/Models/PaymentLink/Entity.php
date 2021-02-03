@@ -430,6 +430,21 @@ class Entity extends Base\PublicEntity
         return Order\ProductType::PAYMENT_BUTTON;
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getTitle()
+    {
+        return $this->getAttribute(self::TITLE);
+    }
+
+    public function getTerms()
+    {
+        return $this->getAttribute(self::TERMS);
+    }
+
     public function isActive(): bool
     {
         return ($this->getStatus() === Status::ACTIVE);

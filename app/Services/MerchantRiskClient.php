@@ -20,17 +20,13 @@ use RZP\Exception\ServerErrorException;
 
 class MerchantRiskClient
 {
-    // Request timeout in milliseconds for all HTTP requests to stork.
+
     const REQUEST_TIMEOUT = 2000;
-    // Request connect timeout in milliseconds for all HTTP requests to stork.
-    // Request timeout parameter applies after connection is established.
+
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
-    // path to check impersonation
     const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
     const GET_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
-
-    const MATCH_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
 
     /**
      * @var Requests_Session
@@ -202,7 +198,7 @@ class MerchantRiskClient
         if (json_last_error() === JSON_ERROR_NONE)
         {
             $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
-                'response'   => $bodyLog,
+                'response'   => $parsedBody,
                 'service'   => 'merchants-risk'
             ]);
             return $parsedBody;
@@ -288,7 +284,7 @@ class MerchantRiskClient
                                    'service' => 'merchants-risk'
                                ]);
 
-            $response = $this->requestAndGetParsedBody(self::MATCH_IMPERSONATION_PATH, $requestPayload);
+            $response = $this->requestAndGetParsedBody(self::CHECK_IMPERSONATION_PATH, $requestPayload);
 
         }
         catch (\Throwable $e)
@@ -299,7 +295,7 @@ class MerchantRiskClient
                                          [
                                              'payload' => $requestPayload,
                                              'service' => 'merchants-risk',
-                                             'path'    => self::MATCH_IMPERSONATION_PATH,
+                                             'path'    => self::CHECK_IMPERSONATION_PATH,
                                          ]
             );
         }
@@ -315,14 +311,7 @@ class MerchantRiskClient
         {
             if ($riskFactorField['score'] > 60)
             {
-                $description = PublicErrorDescription::BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES .
-                               $riskFactorField['key'];
-
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BUSINESS_INFRINGEMENT_PHRASES,
-                    null,
-                    null,
-                    $description);
+                // Call merchant alert service with necessary details once it is live
             }
         }
     }

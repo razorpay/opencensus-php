@@ -92,8 +92,10 @@ return [
 
     'merchants_risk' => [
         // Api url for merchant risks service.
-        'url' => env('MERCHANT_RISKS_URL'),
-
+        'url'                => env('MERCHANT_RISKS_URL'),
+        'mock'               => env('MERCHANT_RISK_SERVICE_MOCK', false),
+        'request_timeout'    => env('MERCHANT_RISK_SERVICE_REQUEST_TIMEOUT', 500),
+        'connection_timeout' => env('MERCHANT_RISK_SERVICE_CONNECTION_TIMEOUT', 500),
         'auth' => [
             'key'       => env('MERCHANT_RISKS_CLIENT_KEY'),
             'secret'    => env('MERCHANT_RISKS_CLIENT_SECRET')
