@@ -9,6 +9,8 @@ class Constants
 {
     const PAYMENT = 'payment';
 
+    const PAYOUT  = 'payout';
+
     const COMMISSION_BREAK_UP_PREFIX = 'commission_';
 
     /**
@@ -41,6 +43,9 @@ class Constants
     // line item names
     const COMMISSION = 'commission';
     const ADJUSTMENT = 'adjustment';
+
+    const PRIMARY_COMMISSION = 'primary_commission';
+    const BANKING_COMMISSION = 'banking_commission';
 
     /**
      * Used for bulk capture

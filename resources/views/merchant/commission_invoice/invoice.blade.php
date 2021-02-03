@@ -38,10 +38,6 @@
             padding: 5px 0;
         }
 
-        tbody > tr:first-child {
-            border-bottom: 1px solid grey;
-        }
-
         tr th:first-child {
             padding-left: 10px;
         }
@@ -146,7 +142,7 @@
     <thead>
     <tr class="highlighted large-row">
         <th>SAC Code</th>
-        <th>Particulars</th>
+        <th>Particulars (for the period {{ $start_date }} to {{ $end_date  }})</th>
         <th>&nbsp;</th>
         <th>Amount</th>
     </tr>
@@ -154,8 +150,12 @@
     <tbody>
     @foreach($invoice['line_items'] as $lineItem)
         <tr class="large-row">
-            <td>997158</td>
-            <td>Partner Commission Charges for the period {{ $start_date }} to {{ $end_date  }}
+        <td>997158</td>
+            @if($lineItem['name'] === 'banking_commission')
+                <td>Partner Commission Charges For RazorpayX
+            @else
+                <td>Partner Commission Charges For Payment Gateway
+            @endif
                 @if(count($invoice['line_items']) > 1)
                     -
                     @if($lineItem['tax_rate'] > 0)
@@ -175,6 +175,9 @@
                 <td><span>{{ $tax['tax_amount_spread'][0]  }}</span>&nbsp;<span>{{ $tax['tax_amount_spread'][1]  }}</span><span>.{{ $tax['tax_amount_spread'][2]  }}</span></td>
             </tr>
         @endforeach
+        <tr style="border-bottom:1px solid grey">
+            <td colspan="100%"></td>
+        </tr>
     @endforeach
     <tr class="highlighted large-row">
         <td colspan=2>&nbsp;</td>

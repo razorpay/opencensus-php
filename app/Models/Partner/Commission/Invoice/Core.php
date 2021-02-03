@@ -538,16 +538,19 @@ class Core extends Base\Core
             }
 
             $lineItem = [
-                LineItem\Entity::NAME          => Commission\Constants::COMMISSION,
                 LineItem\Entity::AMOUNT        => $amount,
                 LineItem\Entity::CURRENCY      => 'INR',
                 LineItem\Entity::TAX_INCLUSIVE => true,
             ];
 
-            if ($key === 'zero_tax')
+            // assigning line item tax components for primary and banking commissions
+            if (($key === 'zero_tax_primary') or ($key === 'zero_tax_banking'))
             {
                 $lineItem[LineItem\Entity::TAX_RATE] = 0;
                 $lineItem[LineItem\Entity::TAX_IDS]  = [];
+
+                $lineItem[LineItem\Entity::NAME] = ($key === 'zero_tax_primary') ? Commission\Constants::PRIMARY_COMMISSION
+                                                                                 : Commission\Constants::BANKING_COMMISSION;
             }
             else
             {
@@ -564,6 +567,9 @@ class Core extends Base\Core
 
                 $lineItem[LineItem\Entity::TAX_RATE] = $taxRate;
                 $lineItem[LineItem\Entity::TAX_IDS]  = $taxIds;
+
+                $lineItem[LineItem\Entity::NAME] = ($key === 'nonzero_tax_primary') ? Commission\Constants::PRIMARY_COMMISSION
+                                                                                    : Commission\Constants::BANKING_COMMISSION;
             }
 
             $lineItemInput[] = $lineItem;

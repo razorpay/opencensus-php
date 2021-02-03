@@ -58,7 +58,7 @@ return [
                 'status' => 'under_review',
                 'line_items' => [
                     [
-                        'name' => 'commission',
+                        'name' => 'primary_commission',
                         'gross_amount' => 1770,
                         'tax_amount' => 270,
                         'taxable_amount' => 1500,

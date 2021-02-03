@@ -83,19 +83,36 @@ class Repository extends BaseRepository
 
     public function fetchAggregateFeesAndTaxForInvoice(string $partnerId, int $start, int $end): array
     {
-        $query = $this->newQuery()
-                      ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
-                      ->where(Entity::PARTNER_ID, $partnerId)
-                      ->whereBetween(Entity::CREATED_AT, [$start, $end]);
+        // fetching aggregate Tax and Fee for payment (primary) commissions
+        $primaryQuery = $this->newQuery()
+                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                             ->where(Entity::PARTNER_ID, $partnerId)
+                             ->where(Entity::SOURCE_TYPE, Constants::PAYMENT)
+                             ->whereBetween(Entity::CREATED_AT, [$start, $end]);
 
-        $nonZeroTaxQuery = clone $query;
+        $nonZeroTaxPrimaryQuery = clone $primaryQuery;
 
-        $zeroTaxDetails    = $query->where(Entity::TAX, 0)->first();
-        $nonZeroTaxDetails = $nonZeroTaxQuery->where(Entity::TAX, '>', 0)->first();
+        $zeroTaxDetailsPrimary    = $primaryQuery->where(Entity::TAX, 0)->first();
+        $nonZeroTaxDetailsPrimary = $nonZeroTaxPrimaryQuery->where(Entity::TAX, '>', 0)->first();
 
+        // fetching aggregate Tax and Fee for payout (banking) commissions
+        $bankingQuery = $this->newQuery()
+                             ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                             ->where(Entity::PARTNER_ID, $partnerId)
+                             ->where(Entity::SOURCE_TYPE, Constants::PAYOUT)
+                             ->whereBetween(Entity::CREATED_AT, [$start, $end]);
+
+        $nonZeroTaxBankingQuery = clone $bankingQuery;
+
+        $zeroTaxDetailsBanking    = $bankingQuery->where(Entity::TAX, 0)->first();
+        $nonZeroTaxDetailsBanking = $nonZeroTaxBankingQuery->where(Entity::TAX, '>', 0)->first();
+
+        // taxable and non_taxable components of payment and payout commissions
         return [
-            'zero_tax'    => $zeroTaxDetails,
-            'nonzero_tax' => $nonZeroTaxDetails,
+            'zero_tax_primary'    => $zeroTaxDetailsPrimary,
+            'zero_tax_banking'    => $zeroTaxDetailsBanking,
+            'nonzero_tax_primary' => $nonZeroTaxDetailsPrimary,
+            'nonzero_tax_banking' => $nonZeroTaxDetailsBanking,
         ];
     }
 
