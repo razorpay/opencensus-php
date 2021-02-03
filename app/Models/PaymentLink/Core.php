@@ -938,6 +938,7 @@ class Core extends Base\Core
             IE::TERMS               => $terms,
             IE::RECEIPT             => $receipt,
             IE::REMINDER_ENABLE     => false,
+            IE::CURRENCY            => $paymentLink->getCurrency() ?? 'INR',
         ];
 
         $input = array_filter(
