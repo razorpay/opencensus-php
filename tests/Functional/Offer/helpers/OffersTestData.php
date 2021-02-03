@@ -928,7 +928,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Min amount for this offer should be greater than 319149'
+                    'description' => 'Min amount for this offer should be greater than 3191.49'
                 ]
             ],
             'status_code' => 400,
