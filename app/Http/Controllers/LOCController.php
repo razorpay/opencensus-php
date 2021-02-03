@@ -45,6 +45,8 @@ class LOCController extends Controller
     const POSIDEX_CRN                            = 'POSIDEX_CRN';
     const BULK_UPDATE_WITHDRAWAL                 = 'BULK_UPDATE_WITHDRAWAL';
     const REPAYMENTS_SCHEDULE                    = 'REPAYMENTS_SCHEDULE';
+    const GET_AUTOMATED_LOC                      = 'GET_AUTOMATED_LOC';
+    const SET_AUTOMATED_LOC                      = 'SET_AUTOMATED_LOC';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -58,6 +60,8 @@ class LOCController extends Controller
         self::GET_WITHDRAWAL_CONFIG_REGEX            => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetWithdrawalConfig',
         self::UPDATE_WITHDRAWAL_CONFIG_REGEX         => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/UpdateWithdrawalConfig',
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/ListOrSearchWithdrawalConfig',
+        self::GET_AUTOMATED_LOC                      => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetAutomatedLOC',
+        self::SET_AUTOMATED_LOC                      => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/SetAutomatedLOC',
         self::CREATE_SOURCE_ACCOUNT_REGEX            => 'twirp/rzp.capital.loc.defrayment.v1.SourceAccountsAPI/CreateSourceAccount',
         self::GET_SOURCE_ACCOUNT_REGEX               => 'twirp/rzp.capital.loc.defrayment.v1.SourceAccountsAPI/GetSourceAccount',
         self::UPDATE_SOURCE_ACCOUNT_REGEX            => 'twirp/rzp.capital.loc.defrayment.v1.SourceAccountsAPI/UpdateSourceAccount',
@@ -78,6 +82,8 @@ class LOCController extends Controller
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX,
         self::GET_DESTINATION_ACCOUNT_REGEX,
         self::REPAYMENTS_SCHEDULE,
+        self::GET_AUTOMATED_LOC,
+        self::SET_AUTOMATED_LOC,
     ];
 
     const ROUTE_PERMISSION_MAP = [
@@ -90,6 +96,8 @@ class LOCController extends Controller
         self::UPDATE_DESTINATION_ACCOUNT_REGEX       => Name::LOC_CONFIG_EDIT,
         self::POSIDEX_ACCESS_TOKEN                   => Name::LOC_CONFIG_EDIT,
         self::POSIDEX_CRN                            => Name::LOC_CONFIG_EDIT,
+        self::GET_AUTOMATED_LOC                      => Name::LOC_CONFIG_VIEW,
+        self::SET_AUTOMATED_LOC                      => Name::LOC_CONFIG_EDIT,
         self::GET_WITHDRAWAL_CONFIG_REGEX            => Name::LOC_CONFIG_VIEW,
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX => Name::LOC_CONFIG_VIEW,
         self::GET_DESTINATION_ACCOUNT_REGEX          => Name::LOC_CONFIG_VIEW,
