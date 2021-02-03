@@ -745,7 +745,8 @@ class Checkout
             if ((isset($data['subscription']) === true) and
                 ($cardChange === false) and
                 ($this->isSubscriptionOffersEnabled($merchant, $mode) === true) and
-                ($input['currency'][0] === Currency::INR))
+                (isset($input['currency']) === false or
+                (isset($input['currency'][0]) === true and $input['currency'][0] === Currency::INR)))
             {
                 $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 
