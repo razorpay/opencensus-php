@@ -135,6 +135,8 @@ class Type
 
     const PAYOUT_APPROVAL = 'payout_approval';
 
+    const PAYOUT_LINK_BULK       = 'payout_link_bulk';
+
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //
@@ -236,6 +238,7 @@ class Type
      * @var array
      */
     public static $queueGroup = [
+        self::PAYOUT_LINK_BULK,
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
         self::VIRTUAL_BANK_ACCOUNT,
@@ -330,6 +333,7 @@ class Type
      * @var array
      */
     public static $batchTypeMigrating = [
+        self::PAYOUT_LINK_BULK,
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::FUND_ACCOUNT,
@@ -367,6 +371,7 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
+        self::PAYOUT_LINK_BULK,
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::FUND_ACCOUNT,

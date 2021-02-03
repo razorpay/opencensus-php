@@ -1245,6 +1245,7 @@ class Route
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
         'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
+        'payout_links_create_batch'                 => ['post',      'payout-links/batch',                           'PayoutLinkController@createBatch'                                       ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
                                                                      . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
         'payout_links_generate_end_user_otp_cors'  => ['options',   'payout-links/{x_entity_id}'
@@ -1271,6 +1272,7 @@ class Route
         'payout_links_merchant_on_boarding_status' => ['get',       'payout-links/_meta/onboarding',                  'PayoutLinkController@onBoardingStatus'                             ],
         'payout_links_merchant_summary'            => ['get',       'payout-links/_meta/summary',                     'PayoutLinkController@summary'                                      ],
         'payout_links_resend_notification'         => ['post',      'payout-links/{id}/resend',                       'PayoutLinkController@resendNotification'                           ],
+        'payout_links_batch_summary'               => ['get',       'payout-links/batch/summary/{id}',                'PayoutLinkController@getBatchSummary'                              ],
         'payout_cancel'                            => ['post',      'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'payout_cancel_internal'                   => ['post',      'payouts_internal/{id}/cancel',                   'PayoutController@cancelPayout'                                     ],
         'payout_update_status'                     => ['patch',    'payouts/{id}/status',                            'PayoutController@updateTestPayoutStatus'                           ],
@@ -2397,6 +2399,7 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
+        'payout_links_create_batch',
         'payout_links_cancel',
         'payment_create_private',
         'payment_create_private_old',
@@ -3429,6 +3432,7 @@ class Route
         'payout_links_merchant_on_boarding_status',
         'payout_links_resend_notification',
         'payout_links_merchant_summary',
+        'payout_links_batch_summary',
         'fetch_payment_merchant_actions',
         'virtual_account_banking_fetch_multiple',
         'fetch_payment_config',
@@ -6107,6 +6111,7 @@ class Route
             'scrooge_refunds_retry_custom_fund_transfers',
             'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',
+            'payout_links_create_batch',
         ],
 
         'stork' => [
@@ -6585,6 +6590,7 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
+        'payout_links_create_batch',
         'payout_links_generate_end_user_otp',
         'payout_links_generate_end_user_otp_cors',
         'payout_links_verify_customer_otp',
@@ -6594,6 +6600,7 @@ class Route
         'payout_links_status_cors',
         'payout_update_pull_payout_status',
         'payout_links_customer_hosted_page',
+        'payout_links_batch_summary',
 
         'vendor_payment_contact_list',
         'vendor_payment_invoice_upload',

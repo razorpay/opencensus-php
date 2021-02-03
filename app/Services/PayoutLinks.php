@@ -17,6 +17,7 @@ use RZP\Models\PayoutLink\Validator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 
@@ -33,6 +34,7 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
 class PayoutLinks
 {
     const KEY                                      = 'api';
+    const BATCH_ID                                 = 'batch_id';
     const MERCHANT_ID                              = 'merchant_id';
     const PAYOUT_LINK_ID                           = 'payout_link_id';
     const CREATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CreatePayoutLink';
@@ -49,8 +51,14 @@ class PayoutLinks
     const GET_HOSTED_PAGE_DATA                     = 'twirp/payoutlinks.Payoutlinks/GetHostedPageData';
     const RESEND_NOTIFICATION                      = 'twirp/payoutlinks.Payoutlinks/ResendNotification';
     const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
+    const CREATE_BATCH                             = 'twirp/payoutlinks.Payoutlinks/CreateBatchPayoutLinks';
+    const BATCH_SUMMARY                            = 'twirp/payoutlinks.Payoutlinks/GetBatchSummary';
     const SUMMARY                                  = 'twirp/payoutlinks.Payoutlinks/Summary';
     const ADMIN_ACTIONS                            = 'twirp/payoutlinks.Payoutlinks/AdminActions';
+    const BATCH_PL_PROCESSED                       = 'batch_payout_links_processed';
+    const BATCH_PL_INITIATED                       = 'batch_payout_links_initiated';
+    const BATCH_PL_COUNT                           = 'batch_payout_links_count';
+    const BATCH_REQUEST_ROWS                       = 'batch_request_rows';
     const FUND_ACCOUNT_ID                          = 'fund_account_id';
     const ACCOUNT_NUMBER                           = 'account_number';
     const CANCELLED_AT                             = 'cancelled_at';
@@ -499,6 +507,48 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::ADMIN_ACTIONS);
 
         return $this->makeRequest($url, $input);
+    }
+
+    public function createBatch(array $input, string $batchId, string $merchantId)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_BATCH_CREATE_REQUEST,
+            [
+                self::BATCH_ID => $batchId,
+                'input'          => $input
+            ]);
+
+        $this->rzpModeCheck();
+
+        $request[self::BATCH_ID] = $batchId;
+
+        $request[self::MERCHANT_ID] = $merchantId;
+
+        $request[self::BATCH_REQUEST_ROWS] = $input;
+
+        $url = $this->getConstructedUrl(self::CREATE_BATCH);
+
+        return $this->makeRequest($url, $request);
+    }
+
+    public function getBatchSummary(string $merchantId, string $batchId)
+    {
+        $this->rzpModeCheck();
+
+        $request[self::BATCH_ID] = $batchId;
+
+        $request[self::MERCHANT_ID] = $merchantId;
+
+        $url = $this->getConstructedUrl(self::BATCH_SUMMARY);
+
+        $response = $this->makeRequest($url, $request);
+
+        $response[self::BATCH_PL_COUNT] = array_pull($response, self::BATCH_PL_COUNT, 0);
+
+        $response[self::BATCH_PL_INITIATED] = array_pull($response, self::BATCH_PL_INITIATED, 0);
+
+        $response[self::BATCH_PL_PROCESSED] = array_pull($response, self::BATCH_PL_PROCESSED, 0);
+
+        return $response;
     }
 
     /**

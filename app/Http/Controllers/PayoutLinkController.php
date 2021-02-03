@@ -198,4 +198,18 @@ class PayoutLinkController extends Controller
     {
         return $this->service()->adminActions($this->input);
     }
+
+    public function createBatch()
+    {
+        $response = $this->service()->createBatch($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBatchSummary($batchId)
+    {
+        $response = $this->service()->getBatchSummary($batchId);
+
+        return ApiResponse::json($response);
+    }
 }

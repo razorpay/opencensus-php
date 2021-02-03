@@ -653,6 +653,38 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $payoutLinkBulkValidateRules = [
+        Entity::TYPE        => 'required|in:payout_link_bulk',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+    ];
+
+    protected static $payoutLinkBulkTypeRowRules = [
+        Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required|string',
+        Header::PAYOUT_LINK_BULK_PAYOUT_DESC       => 'required|string',
+        Header::CONTACT_TYPE                       => 'required|string',
+        Header::PAYOUT_LINK_BULK_AMOUNT            => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
+        Header::PAYOUT_LINK_BULK_SEND_SMS          => 'required|in:Yes,No',
+        Header::PAYOUT_LINK_BULK_SEND_EMAIL        => 'required|in:Yes,No',
+        Header::PAYOUT_PURPOSE                     => 'required|string',
+        Header::PAYOUT_LINK_BULK_REFERENCE_ID      => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_NOTES_TITLE       => 'sometimes|string',
+        Header::PAYOUT_LINK_BULK_NOTES_DESC        => 'sometimes|string',
+    ];
+
+    protected static $payoutLinkBulkCreateRules = [
+        Entity::TYPE        => 'required|in:payout_link_bulk',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::OTP         => 'required|filled|min:4',
+        Entity::TOKEN       => 'required|unsigned_id',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);
@@ -1216,6 +1248,14 @@ class Validator extends Base\Validator
                 Entity::FILE,
                 compact('totalPayoutAmount', 'bankingBalance'));
         }
+    }
+
+    protected function validatePayoutLinkBulkEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('payoutLinkBulkTypeRow', $entry);
+        });
     }
 
     protected function validatePayoutApprovalEntries(array & $entries, array $params, ME $merchant)

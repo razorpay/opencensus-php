@@ -1026,6 +1026,19 @@ class Header
     const CAPTURE_SETTING_NAME              = 'Name';
     const CAPTURE_SETTING_CONFIG            = 'Config';
 
+    // Bulk Payout Links Creation
+    const PAYOUT_LINK_BULK_CONTACT_NAME        = 'Name of Contact';
+    const PAYOUT_LINK_BULK_CONTACT_NUMBER      = 'Contact Phone Number';
+    const PAYOUT_LINK_BULK_CONTACT_EMAIL       = 'Contact Email ID';
+    const PAYOUT_LINK_BULK_AMOUNT              = 'Payout Link Amount';
+    const PAYOUT_LINK_BULK_PAYOUT_DESC         = 'Payout Description';
+    const PAYOUT_LINK_BULK_PAYOUT_LINK_ID      = 'Payout Link ID';
+    const PAYOUT_LINK_BULK_SEND_SMS            = 'Send Link to Phone Number';
+    const PAYOUT_LINK_BULK_SEND_EMAIL          = 'Send Link to Mail ID';
+    const PAYOUT_LINK_BULK_REFERENCE_ID        = 'Reference ID(optional)';
+    const PAYOUT_LINK_BULK_NOTES_TITLE         = 'Internal notes(optional): Title';
+    const PAYOUT_LINK_BULK_NOTES_DESC          = 'Internal notes(optional): Description';
+
     // Following is a list of columns that are mandatory headers in the payout batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_PAYOUTS = [
         Header::RAZORPAYX_ACCOUNT_NUMBER,
@@ -1041,6 +1054,19 @@ class Header
         Header::FUND_ACCOUNT_NUMBER,
         Header::FUND_ACCOUNT_VPA,
         Header::CONTACT_NAME_2,
+    ];
+
+    // Following is a list of columns that are mandatory headers in the payout link batch file
+    const MANDATORY_HEADERS_FOR_PAYOUT_LINK_BULK = [
+        Header::PAYOUT_LINK_BULK_CONTACT_NAME,
+        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER,
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL,
+        Header::PAYOUT_LINK_BULK_PAYOUT_DESC,
+        Header::CONTACT_TYPE,
+        Header::PAYOUT_LINK_BULK_AMOUNT,
+        Header::PAYOUT_LINK_BULK_SEND_SMS,
+        Header::PAYOUT_LINK_BULK_SEND_EMAIL,
+        Header::PAYOUT_PURPOSE,
     ];
 
 
@@ -3344,6 +3370,41 @@ class Header
                 self::CAPTURE_SETTING_CONFIG,
             ]
         ],
+
+        Type::PAYOUT_LINK_BULK => [
+            self::INPUT => [
+                self::PAYOUT_LINK_BULK_CONTACT_NAME,
+                self::PAYOUT_LINK_BULK_CONTACT_NUMBER,
+                self::PAYOUT_LINK_BULK_CONTACT_EMAIL,
+                self::PAYOUT_LINK_BULK_PAYOUT_DESC,
+                self::CONTACT_TYPE,
+                self::PAYOUT_LINK_BULK_AMOUNT,
+                self::PAYOUT_LINK_BULK_SEND_SMS,
+                self::PAYOUT_LINK_BULK_SEND_EMAIL,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_LINK_BULK_REFERENCE_ID,
+                self::PAYOUT_LINK_BULK_NOTES_TITLE,
+                self::PAYOUT_LINK_BULK_NOTES_DESC,
+            ],
+            self::OUTPUT => [
+                self::PAYOUT_LINK_BULK_CONTACT_NAME,
+                self::PAYOUT_LINK_BULK_CONTACT_NUMBER,
+                self::PAYOUT_LINK_BULK_CONTACT_EMAIL,
+                self::PAYOUT_LINK_BULK_PAYOUT_DESC,
+                self::CONTACT_TYPE,
+                self::PAYOUT_LINK_BULK_AMOUNT,
+                self::PAYOUT_LINK_BULK_SEND_SMS,
+                self::PAYOUT_LINK_BULK_SEND_EMAIL,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_LINK_BULK_REFERENCE_ID,
+                self::PAYOUT_LINK_BULK_NOTES_TITLE,
+                self::PAYOUT_LINK_BULK_NOTES_DESC,
+                self::PAYOUT_LINK_BULK_PAYOUT_LINK_ID,
+                self::CONTACT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
     ];
 
     /**
@@ -3471,6 +3532,13 @@ class Header
         if ($type === Type::PAYOUT)
         {
             self::validatePayoutHeaders($expectedHeaders, $actualHeaders);
+
+            return;
+        }
+        // For Payout Links, some of the headers are optional.
+        elseif ($type === Type::PAYOUT_LINK_BULK)
+        {
+            self::validatePayoutLinkBulkHeaders($expectedHeaders, $actualHeaders);
 
             return;
         }
@@ -3638,5 +3706,45 @@ class Header
             // This is required so that we throw an exception if the same header is repeated twice.
             $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
         }
+    }
+
+    public static function validatePayoutLinkBulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_PAYOUT_LINK_BULK;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
     }
 }
