@@ -24,6 +24,13 @@ trait Vpa
     {
         $action = Payment\Action::VALIDATE_VPA;
 
+        // Since we are modifying input before validation,
+        // check if vpa field is present in input.
+        if (isset($input[Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Entity::VPA] = trim($input[Payment\Entity::VPA]);
+        }
+
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 

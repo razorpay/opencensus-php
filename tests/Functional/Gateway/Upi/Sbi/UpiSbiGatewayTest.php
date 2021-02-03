@@ -347,6 +347,28 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateVpaSuccessWithPrefixSpace()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaSuccessWithPrefixAndSuffixSpace()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testValidateVpaFailure()
     {
         config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');

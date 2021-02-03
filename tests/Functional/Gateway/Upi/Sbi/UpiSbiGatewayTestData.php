@@ -135,6 +135,40 @@ return [
         ]
     ],
 
+    'testValidateVpaSuccessWithPrefixSpace' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => ' success@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
+            ],
+        ]
+    ],
+
+    'testValidateVpaSuccessWithPrefixAndSuffixSpace' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => '   success@sbi ',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
+            ],
+        ]
+    ],
+
     'testValidateVpaFailure' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',

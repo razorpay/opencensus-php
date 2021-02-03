@@ -309,6 +309,31 @@ class UpiTraitTest extends TestCase
             ],
         ];
 
+        $cases['vpa_with_space'] = [
+            [
+                [
+                    'method' => 'upi',
+                    'upi' => [
+                        'vpa'   => ' abc@xyz  ',
+                        'flow'  => 'intent',
+                    ],
+                    'vpa' => ' abc@xyz  ',
+                ],
+            ],
+            [
+                'method' => 'upi',
+                'upi' => [
+                    'vpa'       => 'abc@xyz',
+                    'flow'      => 'intent',
+                    'type'      => 'default',
+                ],
+                'vpa' => "abc@xyz",
+                '_' => [
+                    'flow' => 'intent',
+                ],
+            ],
+        ];
+
         return $cases;
     }
 

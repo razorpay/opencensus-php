@@ -125,10 +125,14 @@ trait UpiTrait
         // Priority is always UPI block
         if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
         {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] = trim($input[Payment\Method::UPI][Payment\Entity::VPA]);
+
             $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
         }
         else if (isset($input[Payment\Entity::VPA]) === true)
         {
+            $input[Payment\Entity::VPA] = trim($input[Payment\Entity::VPA]);
+
             $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
         }
 
