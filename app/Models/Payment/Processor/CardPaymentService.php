@@ -94,7 +94,7 @@ trait CardPaymentService
 
             $this->handleCpsResponse($payment, $response);
             // If action is verify we get verify trace data
-            if ($action === Action::VERIFY)
+            if ($action === Action::VERIFY or ($action === Action::AUTHORIZE_FAILED))
             {
                 return $response;
             }

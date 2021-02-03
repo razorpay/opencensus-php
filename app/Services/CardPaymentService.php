@@ -228,6 +228,11 @@ class CardPaymentService
             $input['gateway']['redirect']['dynamicContent'] = $dynamicContent;
         }
 
+        if ($action === Action::AUTHORIZE_FAILED)
+        {
+            $action = Action::VERIFY;
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -599,6 +604,12 @@ class CardPaymentService
         $responseBody = $this->jsonToArray($response->body);
         $responseBody['success'] = false;
         $responseBody['status_code'] = $code;
+
+        if ($this->action === Action::AUTHORIZE_FAILED)
+        {
+            return $this->processAuthorizedFailedResponse($responseBody);
+        }
+
         if ($this->action === Action::VERIFY)
         {
             return $this->processVerifyResponse($responseBody);
@@ -753,6 +764,66 @@ class CardPaymentService
         }
 
         return $verify->getDataToTrace();
+    }
+
+    // ------------------------ Authorized Failed --------------------------------------
+
+    protected function processAuthorizedFailedResponse($response)
+    {
+        $e = null;
+
+        // since authorized failed action we do gateway verify
+        try
+        {
+            $verify = $this->processVerifyResponse($response);
+        }
+        catch (Exception\PaymentVerificationException $e) {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                [
+                    'message'    => 'Payment verification failed. Now converting to authorized',
+                    'payment_id' => $this->input['payment']['id']
+                ]);
+
+            if ($e->getAction() === Payment\Verify\Action::RETRY)
+            {
+                //
+                // When the response returned is a null, we throw
+                // a PaymentVerificationException with Action::RETRY
+                // and therefore we must return from here with an exception
+                // result without processing the rest of this flow
+                //
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                    null,
+                    null,
+                    [],
+                    $e);
+            }
+
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not',
+                null,
+                $this->input['payment']);
+        }
+
+        $verify = $e->getVerifyObject();
+
+        if (($verify->apiSuccess === false) and ($verify->gatewaySuccess === true))
+        {
+            // The update of gateway entities are handled in the cps.
+            return $verify->getDataToTrace();
+        }
+
+        throw new Exception\LogicException(
+            'Should not have reached here',
+            null,
+            ['payment' => $this->input['payment']]);
     }
 
     protected function verifyPayment($response)

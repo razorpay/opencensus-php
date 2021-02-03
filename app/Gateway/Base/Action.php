@@ -29,6 +29,7 @@ class Action
     const DEBIT            = 'debit';
     const PRE_DEBIT        = 'pre_debit';
     const MANDATE_CANCEL   = 'mandate_cancel';
+    const AUTHORIZE_FAILED = 'authorize_failed';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE,
@@ -49,6 +50,7 @@ class Action
         self::CAPTURE,
         self::VERIFY,
         self::DEBIT,
-        self::OTP_RESEND
+        self::OTP_RESEND,
+        self::AUTHORIZE_FAILED,
     ];
 }
