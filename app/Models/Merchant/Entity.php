@@ -591,6 +591,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUSPENDED_AT) !== null);
     }
 
+    public function getSuspendedAt()
+    {
+        return $this->getAttribute(self::SUSPENDED_AT);
+    }
+
     public function isArchived()
     {
         return ($this->getAttribute(self::ARCHIVED_AT) !== null);

@@ -16,18 +16,22 @@ class Response extends Core
     {
         $accountDetails = $account->merchantDetail;
 
-        $status = $account->isSuspended() === true ? Constants::INACTIVE : Constants::ACTIVE;
+        $status = $account->isSuspended() === true ? Constants::SUSPENDED : Constants::CREATED;
 
         $data = [
             Constants::ID           => Entity::getSignedId($account->getId()),
             Constants::TYPE         => Constants::STANDARD,
             Constants::STATUS       => $status,
-            Constants::RELATIONSHIP => Merchant\Constants::AGGREGATOR,
             Constants::EMAIL        => $account->getEmail(),
             Constants::PROFILE      => $this->getProfileData($account),
             Constants::NOTES        => $account->getNotes(),
             Constants::CREATED_AT   => $account->getCreatedAt(),
         ];
+
+        if ($status === Constants::SUSPENDED)
+        {
+            $data[Constants::SUSPENDED_AT] = $account->getSuspendedAt();
+        }
 
         $contactMobile =  $accountDetails->getContactMobile();
 
