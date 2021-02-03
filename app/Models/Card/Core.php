@@ -164,9 +164,12 @@ class Core extends Base\Core
             Card\Entity::CREATE_NEW_CARD_ENTITY_FEATURE_RC
         );
 
-        if ($newCardVariant === 'on') {
+        if ($newCardVariant === 'on')
+        {
             $card = $this->create($input, $merchant, $recurring);
-        } else {
+        }
+        else
+        {
             if (isset($input[Entity::VAULT]) === true) {
                 $newCard = (new Card\Entity)->build($input);
 
@@ -177,31 +180,51 @@ class Core extends Base\Core
                     $card = $this->findOneExistingCards($newCard, $merchant);
 
                     // temproary code
-                    if ($card != null) {
+                    if ($card != null)
+                    {
+                        // card change data capture
+                        $cardCDC = false;
+
+                        if ((empty($card->getName()) === true) and
+                            (empty($input[Entity::NAME]) === false))
+                        {
+                            $cardCDC = true;
+                            $card->setName($input[Entity::NAME]);
+                        }
+
                         if ((empty($card->getGlobalFingerprint()) === true) and
-                            (empty($newCard->getGlobalFingerprint()) === false)) {
+                            (empty($newCard->getGlobalFingerprint()) === false))
+                        {
+                            $cardCDC = true;
                             $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
                         }
 
                         if (($card->iinRelation !== null) and
                             ($card->isAmex() === false) and
-                            ($card->isInternational() !== $card->iinRelation->isInternational())) {
+                            ($card->isInternational() !== $card->iinRelation->isInternational()))
+                        {
+                            $cardCDC = true;
                             $card->setInternational($card->iinRelation->isInternational());
                         }
 
                         if (($card->iinRelation !== null) &&
-                            ($card->getSubType() !== $card->iinRelation->getSubType())) {
+                            ($card->getSubType() !== $card->iinRelation->getSubType()))
+                        {
+                            $cardCDC = true;
                             $card->setSubtype($card->iinRelation->getSubType());
                         }
 
-                        $this->repo->saveOrFail($card);
+                        if ($cardCDC === true)
+                        {
+                            $this->repo->saveOrFail($card);
+                        }
                     }
 
                     $this->card = $card;
                 }
             }
 
-            if ($card === null) 
+            if ($card === null)
             {
                 $card = $this->create($input, $merchant, $recurring);
             }

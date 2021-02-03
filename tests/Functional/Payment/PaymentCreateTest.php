@@ -3728,6 +3728,7 @@ class PaymentCreateTest extends TestCase
 
         $paymentArray = $this->getDefaultPaymentArray();
 
+        $paymentArray['card']['name']   = '';
         $paymentArray['card']['number'] = '555555555555558';
         $paymentArray['callback_url'] = $this->getLocalMerchantCallbackUrl();
 
@@ -3749,9 +3750,13 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals($card['sub_type'], 'consumer');
 
+        $this->assertEmpty($card['name']);
+
         $this->assertEquals($payment['international'], true);
 
         $this->fixtures->edit('iin', '555555', ['country' => 'IN', 'sub_type' => 'business']);
+
+        $paymentArray['card']['name']   = 'Test Card';
 
         $this->doS2SPrivateAuthPayment($paymentArray);
 
@@ -3762,6 +3767,8 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($card['sub_type'], 'business');
 
         $this->assertEquals($payment['international'], false);
+
+        $this->assertEquals($card['name'], 'Test Card');
     }
 
     public function testCreatePaymentAMEXExistingCardS2SPayment()

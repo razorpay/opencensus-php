@@ -106,11 +106,11 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
-        // $response = Tracer::inSpan(['name' => 'payment.callback'],
-            // function() use ($id, $hash, $gatewayInput){
+        $response = Tracer::inSpan(['name' => 'payment.callback'],
+            function() use ($id, $hash, $gatewayInput){
                 return $this->coreCallback($id, $hash, $gatewayInput);
-            // });
-        // return $response;
+            });
+        return $response;
     }
 
     public function s2sCallback($payment, array $gatewayInput)

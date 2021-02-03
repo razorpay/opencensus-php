@@ -489,6 +489,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NETWORK, $network);
     }
 
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
+
     public function setGlobalFingerprint($globalFingerPrint)
     {
         $this->setAttribute(self::GLOBAL_FINGERPRINT, $globalFingerPrint);
