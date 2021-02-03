@@ -6,6 +6,7 @@ use Queue;
 use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\TestCase;
@@ -37,7 +38,6 @@ class FundAccountValidationTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FundAccountValidationTestData.php';
-
 
         parent::setUp();
 
@@ -148,6 +148,21 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('postpaid', $txn['fee_model']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
+    }
+
+    public function testCreateValidationWithFundAccountEntityFromAdmin()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->setAllowAllMerchants();
+
+        (new Admin\Repository)->saveOrFail($admin);
+
+        $this->ba->adminAuth();
+
+        $this->createValidationWithFundAccountEntityFromAdmin();
     }
 
     public function testCreateValidationForBankNotAllowed()

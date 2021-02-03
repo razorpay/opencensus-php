@@ -1825,6 +1825,7 @@ class Route
 
         //admin dashboard access
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
+        'admin_fund_account_validate'              => ['post',     'fund_accounts/validations/admin',                'FundAccountValidationController@create'                            ],
 
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_get_internal'                => ['get',      'fund_accounts_internal/{id}',                    'FundAccountController@get'                                         ],
@@ -4304,6 +4305,8 @@ class Route
         'app_mapping_create',
         'app_mapping_delete',
         'app_tags_delete',
+
+       'admin_fund_account_validate',
     ];
 
     public static $routePermission = [
@@ -5163,6 +5166,8 @@ class Route
         'app_mapping_create'                                  => '*',
         'app_mapping_delete'                                  => '*',
         'app_tags_delete'                                     => '*',
+
+        'admin_fund_account_validate'                         => Permission::FUND_ACCOUNT_VALIDATION_ADMIN,
     ];
 
     public static $bankingRoutePermissions = [

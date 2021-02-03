@@ -239,7 +239,52 @@ return [
             ],
         ],
     ],
-
+    'createValidationWithFundAccountEntityFromAdmin' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations/admin',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+                        ],
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    "bank_account"            => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'account_number' => '123456789',
+                        'name'           => 'Rohit Keshwani',
+                        'ifsc'           => 'SBIN0010411',
+                        'bank_name'      => 'State Bank of India',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
     'testCreateValidationWithWrongFundAccountEntity' => [
         'request' => [
             'url'     => '/fund_accounts/validations',

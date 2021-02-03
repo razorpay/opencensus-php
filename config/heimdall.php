@@ -1122,6 +1122,11 @@ return [
                 'description'   => 'Bulk patch FAV requests',
                 'assignable'    => true,
             ],
+
+            Permission::FUND_ACCOUNT_VALIDATION_ADMIN => [
+                'description'   => 'Admin FAV requests',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_NOTIFICATION_CONFIG => [

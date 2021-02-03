@@ -401,6 +401,7 @@ class Name
     const VIEW_CONTACT_TYPE                   = 'view_contact_type';
     const CREATE_CONTACT_TYPE                 = 'create_contact_type';
     const FUND_ACCOUNT_VALIDATION             = 'fund_account_validation';
+    const FUND_ACCOUNT_VALIDATION_ADMIN       = 'fund_account_validation_admin';
     const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
     const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
     const BULK_PATCH_FUND_ACCOUNT_VALIDATION  = 'bulk_patch_fund_account_validation';
