@@ -414,7 +414,7 @@ class TerminalsService
 
             $headers = $this->getMerchantHeadersForInstrumentRequest($merchantId);
 
-            $response = $this->proxyTerminalService($input, Requests::POST, 'v2/default_merchant_instrument_requests', [], $headers);
+            $response = $this->proxyTerminalService($input, Requests::POST, 'v2/default_merchant_instrument_requests', ['timeout' => 1], $headers);
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_MERCHANT_DEFAULT_INSTRUMENTS_REQUEST_RESPONSE, $response);
         }

@@ -189,7 +189,7 @@ class InstrumentRequestController extends BaseController
             $input,
             \Requests::POST,
             'v2/merchant_instrument_request',
-            [],
+            ['timeout' => 0.5],
             $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
@@ -209,7 +209,7 @@ class InstrumentRequestController extends BaseController
             [],
             \Requests::GET,
             'v2/merchant_instrument_request?merchant_id=' . $merchant->getId(),
-            [],
+            ['timeout' => 1],
             $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
@@ -229,7 +229,7 @@ class InstrumentRequestController extends BaseController
             [],
             \Requests::GET,
             'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
-            ['timeout' => 2],
+            ['timeout' => 1],
             $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
