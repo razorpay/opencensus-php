@@ -1266,9 +1266,9 @@ class Service extends Base\Service
         ];
     }
 
-    // 
+    //
     // Support admin action for bulk retrying refunds via FTA to custom sources
-    // 
+    //
     public function retryRefundsViaCustomFundTransfersBatch(array  $input)
     {
        $tracePayload = [];
@@ -1653,9 +1653,15 @@ class Service extends Base\Service
 
                                 if ($refund->payment->hasBeenCaptured() === true)
                                 {
+                                    $variant = $this->app->razorx->getTreatment($refundId,
+                                        RefundConstants:: RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL,
+                                        $this->mode
+                                    );
+
                                     $this->trace->info(
                                         TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
                                         [
+                                            'razorx_variant'               => $variant,
                                             'refund_id'                    => $refundId,
                                             'payment_id'                   => $refund->payment->getId(),
                                             'payment_status'               => $refund->payment->getStatus(),
@@ -1664,7 +1670,10 @@ class Service extends Base\Service
                                             'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
                                         ]);
 
-                                    $processor->revertPaymentToRefundableState($refund);
+                                    if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
+                                    {
+                                        $processor->revertPaymentToRefundableState($refund);
+                                    }
                                 }
 
                                 $processor->eventRefundFailed($refund);
