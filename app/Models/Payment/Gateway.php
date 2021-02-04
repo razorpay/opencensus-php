@@ -3193,7 +3193,6 @@ class Gateway
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
             self::PAYU,
-            self::PAYTM,
             self::NETBANKING_IDFC,
             self::NETBANKING_OBC,
             self::NETBANKING_DCB,
