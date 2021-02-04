@@ -394,6 +394,8 @@ class Checkout
 
             $savedTokens = $tokenCore->removeDisabledNetworkTokens($savedTokens, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
+            $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
+
             $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
@@ -525,7 +527,9 @@ class Checkout
 
                         $tokensWithoutDisabledCardNetwork = (new Customer\Token\Core)->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
-                        $data['customer']['tokens'] = $tokensWithoutDisabledCardNetwork;
+                        $tokensWithoutCardName = (new Customer\Token\Core)->removeCardTokensWithoutName($tokensWithoutDisabledCardNetwork);
+
+                        $data['customer']['tokens'] = $tokensWithoutCardName;
                     }
                 }
             }

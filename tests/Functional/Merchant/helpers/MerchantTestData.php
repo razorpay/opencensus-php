@@ -4475,6 +4475,21 @@ return [
         ],
     ],
 
+   'testGetCheckoutRouteWithoutCardTokenNames' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithCheckoutFeatures' => [
         'request' => [
             'url' => '/preferences',

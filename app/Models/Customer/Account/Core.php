@@ -266,6 +266,8 @@ class Core extends Base\Core
 
             $tokens = (new Token\Core)->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
 
+            $tokens = (new Token\Core)->removeCardTokensWithoutName($tokens);
+
             $response['tokens'] = $tokens->toArrayPublic();
         }
 

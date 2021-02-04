@@ -493,6 +493,55 @@ class Core extends Base\Core
         return $tokens;
     }
 
+     /**
+     * This method takes in the current tokens collection, removes the
+     * card tokens which has empty name in the card entity
+     *
+     * @param $tokens
+     *
+     * @return mixed
+     */
+    public function removeCardTokensWithoutName($tokens)
+    {
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
+        {
+            $tokens = $tokens->reject(
+                function($token)
+                {
+                    //
+                    // If token has card and the card doesn't contain name then reject this token (true)
+                    //
+                    if (($token->hasCard() === true) and
+                        (empty($token->card->getName()) === true))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                })->values();
+        }
+        else
+        {
+            $tokenItems = & $tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, function ($item)
+            {
+                //
+                // If item contains field `card` then filter out token with card with empty name
+                //
+                if ((isset($item[Entity::CARD]) === true) and
+                    (empty($item[Entity::CARD][Card\Entity::NAME]) === true))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        return $tokens;
+    }
+
     public function updateTokenFromEmandateGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)

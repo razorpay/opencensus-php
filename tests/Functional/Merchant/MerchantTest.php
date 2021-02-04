@@ -9544,6 +9544,41 @@ class MerchantTest extends TestCase
 
     }
 
+    public function testGetCheckoutRouteWithoutCardTokenNames()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $noOfTokens = count($response['customer']['tokens']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['name'] = '';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['save'] = 1;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEmpty($card['name']);
+
+        $this->assertEquals('card_'.$token['card_id'], $card['id']);
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(count($response['customer']['tokens']), $noOfTokens);
+    }
+
     public function testGetPreferencesInternal()
     {
         $this->ba->appAuth();
