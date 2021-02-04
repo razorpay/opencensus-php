@@ -328,4 +328,16 @@ class PayoutLinkMicroserviceTest extends TestCase
             $this->assertExceptionClass($e, Exception\BadRequestException::class);
         }
     }
+
+    public function testGetBatchSummary()
+    {
+        $result = $this->setUpMocksAndFeature('getBatchSummary');
+
+        $this->ba->proxyAuth();
+
+        $result['service']->getBatchSummary('');
+
+        // assert that the microservice method was called when feature was enabled
+        $result['mock']->shouldHaveReceived('getBatchSummary');
+    }
 }

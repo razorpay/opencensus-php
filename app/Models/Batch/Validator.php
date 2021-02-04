@@ -1489,13 +1489,29 @@ class Validator extends Base\Validator
 
         $auth = app()->basicauth;
 
+        //TODO : Doing this for the bulk payout approval. This is not how it should be done,
+        // ideally would have wanted to take the action as a param, but because of previously hard coded create_{}_batch, needed to do this
+        // Change After this is fixed
+        switch($input[Entity::TYPE])
+        {
+            case 'payout_approval':
+                $action = 'bulk_payout_approve';
+                break;
+
+            //TODO: Doing this for now as a temporary fix (as changes in raven is also required to support this),
+            // Will change to create_bulk_payout_link_batch (the default behaviour) once done with raven side changes
+            case 'payout_link_bulk':
+                $action = 'create_bulk_payout_link';
+                break;
+
+            default:
+                $action = "create_{$input[Entity::TYPE]}_batch";
+        }
+
         $params   = [
             Entity::OTP         => $input[Entity::OTP],
             Entity::TOKEN       => $input[Entity::TOKEN],
-            //TODO : Doing this for the bulk payout approval. This is not how it should be done,
-            // ideally would have wanted to take the action as a param, but because of previously hard coded create_{}_batch, needed to do this
-            // Change After this is fixed
-            User\Entity::ACTION => $input[Entity::TYPE] === 'payout_approval'? 'bulk_payout_approve': "create_{$input[Entity::TYPE]}_batch",
+            User\Entity::ACTION => $action,
         ];
 
         (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser(), $this->isTestMode());
