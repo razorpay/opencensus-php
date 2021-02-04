@@ -190,6 +190,13 @@ class ApiEventSubscriber extends Base\Core
                     ]);
             }
         }
+
+        $this->dispatchEventToPlService($merchant);
+    }
+
+    protected function onAccountUnsuspended($merchant)
+    {
+        $this->dispatchEventToPlService($merchant);
     }
 
     protected function onAccountActivatedMccPending($merchant)
@@ -1498,5 +1505,18 @@ class ApiEventSubscriber extends Base\Core
 
         // default value
         $this->storkProduct = Constants\Product::PRIMARY;
+    }
+
+    /**
+     * Send events to pl service where some actions are to be done.
+     * eg : evict merchant cache in case merchant is suspended
+     * @param Merchant\Entity  $merchant
+     * @param array $payload
+     */
+    protected function dispatchEventToPlService(Merchant\Entity $merchant, array $payload = [])
+    {
+        $plService = $this->app['paymentlinkservice'];
+
+        $plService->notifyMerchantStatusAction($merchant);
     }
 }

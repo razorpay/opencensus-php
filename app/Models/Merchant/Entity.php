@@ -1009,6 +1009,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUSPENDED_AT, null);
         $this->liveEnable();
         $this->setHoldFunds(false);
+
+        $this->fireEventWithMerchantPayload('api.account.unsuspended');
     }
 
     public function liveEnable()

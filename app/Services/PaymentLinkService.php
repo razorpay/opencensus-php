@@ -92,7 +92,6 @@ class PaymentLinkService
     {
         try
         {
-
             $data = [
                 Entity::ORDER     => $order->toArray(),
                 Entity::PAYMENT   => $payment->toArray(),
@@ -108,7 +107,34 @@ class PaymentLinkService
             $merchant = $payment->merchant;
 
             $this->setRequestParamsAndSendRequest($merchant, $data,  $this->plUrls['verify_order'], Request::METHOD_POST);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_LINK_SERVICE_REQUEST_FAILURE,
+                [
+                    'data' => $data
+                ]);
+        }
+    }
 
+    public function notifyMerchantStatusAction(Merchant\Entity $merchant)
+    {
+        try
+        {
+            $data = [
+                Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+            ];
+
+            $this->trace->info(
+                TraceCode::MERCHANT_SUSPEND_REQUEST_FOR_PAYMENT_LINK_V2,
+                [
+                    'data'    => $data,
+                ]);
+
+            $this->setRequestParamsAndSendRequest($merchant, $data,  $this->plUrls['suspend_merchant'], Request::METHOD_POST);
         }
         catch(\Throwable $e)
         {

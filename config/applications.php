@@ -624,7 +624,8 @@ return [
         'secret'        => env('APP_PAYMENT_LINKS_SECRET'),
         'timeout'       => env('APP_PAYMENT_LINKS_TIMEOUT_SECS'),
         'pl_urls'       => [
-            'verify_order'  => 'v1/payment_links_verify_payment',
+            'verify_order'      => 'v1/payment_links_verify_payment',
+            'suspend_merchant'  => 'v1/evict_merchant_cache',
         ],
     ],
 
