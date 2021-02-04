@@ -1162,18 +1162,19 @@ export default class ActivationWizard extends React.Component {
         };
 
         let activationFlow = '';
-        if (businessCategories && businessCategories.data && !businessCategories.data.errors){
-          activationFlow =  businessCategories.data[this.props.data.business_category].subcategories[
-            this.props.data.business_subcategory
-          ].activation_flow;
-        } 
+        if (businessCategories && businessCategories.data && !businessCategories.data.errors) {
+          activationFlow =
+            businessCategories.data[this.props.data.business_category].subcategories[
+              this.props.data.business_subcategory
+            ].activation_flow;
+        }
 
-        if(isUnregisteredBusiness) {
-          invokeGtag(GTAG_KEYS.kycSubmitSuccessUnReg)
-        } else if ( activationFlow ===  'whitelist'){
-          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegWhitelist)
-        } else if ( activationFlow === 'greylist') {
-          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegGreylist)
+        if (isUnregisteredBusiness) {
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessUnReg);
+        } else if (activationFlow === 'whitelist') {
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegWhitelist);
+        } else if (activationFlow === 'greylist') {
+          invokeGtag(GTAG_KEYS.kycSubmitSuccessRegGreylist);
         }
 
         this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));

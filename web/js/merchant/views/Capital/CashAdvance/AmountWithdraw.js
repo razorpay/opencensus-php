@@ -20,7 +20,10 @@ import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import MinWithdrawAmountModal from './MinWithdrawAmountModal';
+import EnableAutomatedWithdrawModal from './EnableAutomatedWithdrawModal';
+import DisableAutomatedWithdrawModal from './DisableAutomatedWithdrawModal';
 import CancelWithdrawalReasons from './CancelWithdrawalReasons';
+import trackAutomatedCA from './ga/automated';
 import MaxWithdrawError from './MaxWithdrawError';
 
 @withRouter
@@ -52,6 +55,8 @@ export default class AmountWithdraw extends React.Component {
       currentView: VIEWS.WITHDRAW,
       showRepaymentDetailsBreakup: false,
       isTouched: false,
+      isAutomatedTagTouched: false,
+      isAutomatedTagPulsating: false,
     };
     this.state = this.initialState;
   }
@@ -62,6 +67,14 @@ export default class AmountWithdraw extends React.Component {
     // fetchSeedData();
     this.prefillData();
   }
+
+  startAutomatedTagPulsating = () => {
+    this.setState({ isAutomatedTagPulsating: true });
+  };
+
+  stopAutomatedTagPulsating = () => {
+    this.setState({ isAutomatedTagPulsating: false });
+  };
 
   gaEventDispatcher = (eventObject) => {
     eventObject['eventCategory'] = 'Dashboard CA - Apply';
@@ -218,6 +231,22 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
+  handleDisableAutomatedWithdrawalsClick = () => {
+    trackAutomatedCA.clickDisableAutomatedWithdrawal({});
+    this.props.openModal({
+      component: (
+        <DisableAutomatedWithdrawModal
+          eventCategory="Dashboard FC - Withdraw"
+          eventAction="Withdraw | Cancel | Reason"
+          closeReasons={CLOSE_OPTIONS}
+          onClose={this.props.closeModal}
+          openModal={this.props.openModal}
+        />
+      ),
+      size: 'small',
+    });
+  };
+
   withdraw = async () => {
     if (!this.canWithdraw()) return;
 
@@ -336,6 +365,42 @@ export default class AmountWithdraw extends React.Component {
     }));
   };
 
+  openEnableAutomatedWithdrawModal = () => {
+    const { interest, principle } = this.getRepayableAmount();
+    const {
+      withdrawalConfigurationDetails: {
+        data: {
+          configuration: { max_withdraw_amount, end_day_limit },
+        },
+      },
+    } = this.props;
+    trackAutomatedCA.openEnableAutomatedWithdrawModal({});
+    this.props.openModal({
+      component: (
+        <EnableAutomatedWithdrawModal
+          openModal={this.props.openModal}
+          onClose={this.props.closeModal}
+          interest={interest}
+          principle={principle}
+          max_withdraw_amount={max_withdraw_amount}
+          end_day_limit={end_day_limit}
+          startAutomatedTagPulsating={this.startAutomatedTagPulsating}
+        />
+      ),
+      size: 'small',
+    });
+  };
+
+  handleEnableNowClickForAutomatedWithdrawal = () => {
+    trackAutomatedCA.clickAutomatedWithdrawalEnable();
+    this.openEnableAutomatedWithdrawModal();
+  };
+
+  handleEnableNowClickForResults = () => {
+    trackAutomatedCA.clickAutomatedWithdrawalEnableForResults({});
+    this.openEnableAutomatedWithdrawModal();
+  };
+
   handleBlur = () => {
     this.setState({
       isTouched: true,
@@ -358,6 +423,14 @@ export default class AmountWithdraw extends React.Component {
       withdrawalConfigurationDetails.configuration.custom_partner_fields.partner_id ===
         'APOLLOFINVEST'
     );
+  };
+
+  handleAutomatedTextMouseOver = () => {
+    trackAutomatedCA.hoverAutomatedText({});
+    const { isAutomatedTagPulsating } = this.state;
+    if (isAutomatedTagPulsating) {
+      this.stopAutomatedTagPulsating();
+    }
   };
 
   getWithdrawCTA = () => {
@@ -445,17 +518,89 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
+  automatedWithdrawTooltipView = () => {
+    const {
+      withdrawalConfigurationDetails: {
+        data: {
+          configuration: { max_withdraw_amount, end_day_limit },
+        },
+      },
+    } = this.props;
+    return (
+      <div className="automated-withdraw-tooltip">
+        <div className="flex automated-withdraw-tooltip--enabled">
+          <div clasName="automated-withdraw-tooltip--enabled--heading">Automated Withdrawals</div>
+          <div className="automated-withdraw-tooltip--enabled-content">
+            <div className="enabled-dot" />
+            ENABLED
+          </div>
+        </div>
+        <div className="automated-withdraw-tooltip--enabled-summary">
+          Your next withdrawal will be automatically credited to your bank account as soon as you
+          repay your entire due amount.
+        </div>
+        <div className="automated-withdraw-tooltip--details">
+          <div className="automated-withdraw-tooltip--details-row">
+            <div>Maximum Withdrawable Amount</div>
+            <Amount
+              className="automated-withdraw-tooltip--max-amount"
+              value={Number(max_withdraw_amount)}
+            />
+          </div>
+          <div className="automated-withdraw-tooltip--details-row">
+            <div>Maximum Tenure</div>
+            <div className="automated-withdraw-tooltip--details-row-month">
+              {end_day_limit} days
+            </div>
+          </div>
+        </div>
+        <div
+          className="automated-withdraw-tooltip--disable-withdrawal"
+          onClick={this.handleDisableAutomatedWithdrawalsClick}
+        >
+          Disable Automated Withdrawals
+        </div>
+      </div>
+    );
+  };
+
   withdrawableSection = () => {
-    const { withdrawalAmount, selectedDueDate, showRepaymentDetailsBreakup } = this.state;
+    const {
+      withdrawalAmount,
+      isConfirmingWithdrawalTC,
+      selectedDueDate,
+      showRepaymentDetailsBreakup,
+      isAutomatedTagPulsating,
+    } = this.state;
+    const {
+      user,
+      withdrawalConfigurationDetails: { data: { automated_loc } } = {
+        data: { automated_loc: false },
+      },
+    } = this.props;
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
       ? this.getRepayableAmount()
       : {};
     const repayableAmount = getFormattedAmountNew((principle + interest) * 100, true);
-
     return (
       <div className="withdrawals__action-container card flex">
         <div class="no-margin full-width" style={{ position: 'relative' }}>
+          <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
+            <h3 className="title text--secondary">Withdraw Amount</h3>
+            {user.isAutomatedLOCEligible && automated_loc && (
+              <div style={{ marginLeft: 12 }} className="automated-popover-container">
+                <div className={`${isAutomatedTagPulsating ? 'pulsating-ring' : ''}`}>
+                  <div className="automated-tag" onMouseOver={this.handleAutomatedTextMouseOver}>
+                    AUTOMATED
+                  </div>
+                </div>
+                <Popover className="automated-popover" align="bottom" theme="dark">
+                  <PopoverBody>{this.automatedWithdrawTooltipView()}</PopoverBody>
+                </Popover>
+              </div>
+            )}
+          </div>
           <div class="full-width no-margin" style={{ position: 'absolute' }}>
             {this.getWithdrawalForm(withdrawalAmount)}
           </div>
@@ -463,6 +608,21 @@ export default class AmountWithdraw extends React.Component {
             <div class="repayable-amount-hint">
               <strong>{repayableAmount}</strong>
               <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
+              {user.isAutomatedLOCEligible && !automated_loc && (
+                <div className="automated-withdrawal flex">
+                  <div className="automated-withdrawal-wrapper">
+                    <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
+                    <Button.Transparent
+                      class="text-small enable-now-btn"
+                      onClick={this.handleEnableNowClickForAutomatedWithdrawal}
+                    >
+                      Enable Now
+                    </Button.Transparent>
+                  </div>
+
+                  <div className="rounded-rectange" />
+                </div>
+              )}
               <div class="flex">
                 <div class="text-small full-width no-margin text-strong p-r">
                   <strong>
@@ -564,6 +724,12 @@ export default class AmountWithdraw extends React.Component {
 
   withdrawalSuccessView = () => {
     const { selectedDueDate, withdrawalAmount } = this.state;
+    const {
+      user,
+      withdrawalConfigurationDetails: { data: { automated_loc } } = {
+        data: { automated_loc: false },
+      },
+    } = this.props;
     const { interest, principle } = this.getRepayableAmount();
     const repayableAmount = parseFloat((interest + principle) * 100).toFixed(2);
 
@@ -617,6 +783,27 @@ export default class AmountWithdraw extends React.Component {
             </Button.Transparent>
           </div>
         </div>
+        {user.isAutomatedLOCEligible && (
+          <div className="automated-withdrawal-enable-text">
+            <div className="rounded-square" />
+            {automated_loc ? (
+              <div className="automated-withdrawal-description">
+                Automated withdrawals are activated for your account. The next withdrawal will be
+                automatically credited to your bank account once you repay your entire due amount.
+              </div>
+            ) : (
+              <div className="automated-withdrawal-description">
+                <div style={{ marginRight: 12 }}>Automate your withdrawals</div>
+                <Button.Transparent
+                  class="enable-now-btn"
+                  onClick={this.handleEnableNowClickForResults}
+                >
+                  Enable Now
+                </Button.Transparent>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };

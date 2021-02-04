@@ -83,6 +83,13 @@ export default class LoanOriginationEntity extends GenericEntity {
     );
   }
 
+  fetchAutomatedLOCConfig(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'GetAutomatedLOC')}`,
+      data,
+    );
+  }
+
   fetchRepayments(data) {
     return this.request(
       `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepayments')}`,
@@ -90,6 +97,12 @@ export default class LoanOriginationEntity extends GenericEntity {
     );
   }
 
+  updateAutomatedLOCConfig(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'SetAutomatedLOC')}`,
+      data,
+    );
+  }
   fetchInstallments(data) {
     return this.request(
       `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepaymentsSchedule')}`,

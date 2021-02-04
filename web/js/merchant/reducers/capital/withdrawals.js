@@ -1,4 +1,4 @@
-import { merge } from 'common/utils/immutable';
+import { merge, set } from 'common/utils/immutable';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
 
 const FETCH_WITHDRAWAL_CONFIG = 'FETCH_WITHDRAWAL_CONFIG';
@@ -7,6 +7,7 @@ const FETCH_WITHDRAWALS = 'FETCH_WITHDRAWALS';
 const FETCH_WITHDRAWAL_DETAILS = 'FETCH_WITHDRAWAL_DETAILS';
 const FETCH_DESTINATION_DETAILS = 'FETCH_DESTINATION_DETAILS';
 const FETCH_INSTALLMENTS = 'FETCH_INSTALLMENTS';
+const UPDATE_AUTOMATED_LOC_CONFIG = 'UPDATE_AUTOMATED_LOC_CONFIG';
 
 export const fetchSeedData = () => {
   const withdrawal = new Withdrawal();
@@ -68,6 +69,14 @@ export const fetchInstallments = (data) => {
 export const createWithdrawal = (payload) => {
   const withdrawal = new Withdrawal();
   return withdrawal.createWithdrawal(payload);
+};
+
+export const updateAutomatedLOCConfig = (data) => {
+  const withdrawal = new Withdrawal();
+  return {
+    type: UPDATE_AUTOMATED_LOC_CONFIG,
+    payload: withdrawal.updateAutomatedLOCConfig(data),
+  };
 };
 
 const getInitialState = () => {
@@ -252,6 +261,12 @@ export default function (state = initialState, action) {
           error: action.payload.errors,
         },
       });
+    case `${UPDATE_AUTOMATED_LOC_CONFIG}::SUCCESS`:
+      return set(
+        state,
+        'withdrawalConfiguration.data.automated_loc',
+        action.payload.data.curr_automated_loc || false,
+      );
     default:
       return state;
   }

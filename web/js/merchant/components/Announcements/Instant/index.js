@@ -158,10 +158,10 @@ export default class InstantActivationAnnouncements extends Component {
           );
         }
       } else if (user.isHardLimitReached) {
-        theme = 'warning',
-        title = 'Account Under Review',
-        content =
-          'Our compliance team is reviewing your submitted KYC documents again. Once the review is successfully completed, you will be able to accept payments again. We will contact you over the registered email for any clarification, and we assure you that the review will be done in less than 48 hours.';
+        (theme = 'warning'),
+          (title = 'Account Under Review'),
+          (content =
+            'Our compliance team is reviewing your submitted KYC documents again. Once the review is successfully completed, you will be able to accept payments again. We will contact you over the registered email for any clarification, and we assure you that the review will be done in less than 48 hours.');
       } else if (user.activation_status === 'activated_mcc_pending') {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;

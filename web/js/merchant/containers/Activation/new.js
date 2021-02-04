@@ -191,11 +191,10 @@ export default class ActivationContainer extends React.Component {
   }
 
   fetchBusinessCategory = () => {
-    return merchantFetch('merchant/activation/business_categories')
-      .then((response) => {
-        return response;
-      })
-  }
+    return merchantFetch('merchant/activation/business_categories').then((response) => {
+      return response;
+    });
+  };
 
   submitForm = (data) => {
     return merchantFetch({

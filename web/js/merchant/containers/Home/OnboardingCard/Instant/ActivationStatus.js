@@ -98,7 +98,8 @@ export default class ActivationCard extends Component {
       } else if (isHardLimitReached) {
         title = 'Account Under Review';
         status = possibleStatuses.blocked;
-        content = 'Your submitted KYC documents are being reviewed. This will be done in less than 48 hours.';
+        content =
+          'Your submitted KYC documents are being reviewed. This will be done in less than 48 hours.';
       } else if (!!locked && !activated && merchant.hold_funds) {
         status = possibleStatuses.blocked;
         content = (

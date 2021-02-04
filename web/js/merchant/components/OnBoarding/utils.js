@@ -4,7 +4,7 @@ import LocalStorageService from 'common/utils/localStorage';
 
 import { getUser, getMode } from 'merchant/store';
 
-export const getOnBoardingKey = feature => {
+export const getOnBoardingKey = (feature) => {
   const mode = getMode(),
     user = getUser();
 
@@ -24,7 +24,7 @@ export const setOnBoardingDataInLocalState = ({ feature, data }) => {
   LocalStorageService.setItem(KEY, state);
 };
 
-export const getOnBoardingDataFromLocalState = feature => {
+export const getOnBoardingDataFromLocalState = (feature) => {
   const KEY = getOnBoardingKey(feature);
 
   const state = LocalStorageService.getItem(KEY);
@@ -38,7 +38,7 @@ export const getOnBoardingDataFromLocalState = feature => {
       };
 };
 
-export const getIsAllowedResetBoarding = feature => {
+export const getIsAllowedResetBoarding = (feature) => {
   const { lastVisitedTime } = getOnBoardingDataFromLocalState(feature);
 
   const momentLastVisitedTime = moment(lastVisitedTime),
@@ -59,9 +59,9 @@ export const GTAG_KEYS = {
 };
 
 /**
-* Invokes GTAG for conversion tracking.
-*/
-export const invokeGtag = GTAG_KEY => {
+ * Invokes GTAG for conversion tracking.
+ */
+export const invokeGtag = (GTAG_KEY) => {
   if (window.location.hostname !== 'dashboard.razorpay.com') {
     return;
   }

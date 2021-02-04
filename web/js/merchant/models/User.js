@@ -738,6 +738,10 @@ export default class User {
     return this.isFeatureEnabled('show_on_demand_deduction');
   }
 
+  get isAutomatedLOCEligible() {
+    return this.isFeatureEnabled('automated_loc_eligible');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)

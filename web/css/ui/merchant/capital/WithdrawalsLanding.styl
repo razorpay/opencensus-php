@@ -9,6 +9,7 @@
 
   tabbed-container content .content-wrapper
     padding: 0;
+    position: static;
 
     .filters-wrapper
       display: flex;
@@ -106,3 +107,409 @@
     .tc-content
       line-height: 24px;
       font-size: 13px;
+
+.cross-btn {
+  position: absolute;
+  right: 18px;
+  top: 28px;
+  cursor: pointer;
+  .i-close {
+    font-size: 140%;
+  }
+}
+
+.enable-automated-withdrawal-modal {
+  padding: 24px;
+  background: #F7FBFF;
+  .enable-automated-withdrawal-modal--heading {
+    font-weight: 900;
+    font-size: 16px;
+    color: rgba(22, 47, 86, 0.87);
+    padding-bottom: 16px;
+  }
+
+  .enable-automated-withdrawal-modal--description {
+    font-size: 14px;
+  }
+  
+  .enable-automated-withdrawal-modal--repayable-text {
+    font-size: 13px;
+    color: rgba(22, 47, 86, 0.87);
+  }
+
+  .enable-automated-withdrawal-modal--repayable-amount {
+    display: flex;
+    color: rgba(22, 47, 86, 0.87);
+    margin-left: -24px;
+    margin-bottom: 11px;
+    justify-content: space-between;
+  }
+
+  .enable-automated-withdrawal-modal--repayable-amount-text {
+    font-size: 14px;
+    padding-left: 21px;
+    .i-info-outline {
+      color: rgba(22, 47, 86, 0.67);
+      margin-left: 5px;
+    }
+  }
+}
+
+.automated-popover-container {
+  position: relative;
+}
+
+.automated-popover.rzp-popover.rzp-tooltip {
+  position: absolute;
+  left: -104px !important;
+  top: 24px !important;
+}
+
+.rzp-popover.rzp-tooltip {
+  width: 300px !important;
+}
+
+.rounded-square {
+  background: linear-gradient(344.26deg, #0B70E7 35.57%, #0066FF 90.59%);
+  border-radius: 2px;
+  width: 3px;
+}
+
+.enable-automated-withdrawal-modal--amount {
+  .rzp-whole {
+    font-weight: bold;
+    font-size: 14px;
+    color: rgba(22, 47, 86, 0.87);
+  }
+  .rzp-paise {
+    font-weight: bold;
+    font-size: 12px;
+    color: rgba(22, 47, 86, 0.78);
+  }
+  .rzp-currency {
+    font-size: 12px;
+    color: rgba(22, 47, 86, 0.87);
+  }
+}
+
+.enable-automated-withdrawal-modal--tooltip {
+  color: rgba(255, 255, 255, 0.72);
+  .total-repayable-amount {
+    color: #FFFFFF;
+    border-top: 1px solid rgba(173, 188, 201, 0.12);
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+  .flex {
+    justify-content: space-between;
+  }
+}
+
+.enable-automated-withdrawal-modal--subModal {
+  padding: 20px 24px;
+  background: #FFFFFF;
+  border: 1px solid #F2F6F9;
+  box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.16);
+  border-radius: 2px;
+  margin: 20px -48px;
+  position: relative;
+  .round-circle {
+    background: #ADBCC9;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-right: 6.3px;
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+  .enable-automated-withdrawal-modal--subModal-heading {
+    color: #162F56;
+    font-weight: bold;
+    font-size: 16px;
+    padding-bottom: 16px;
+  }
+  .enable-automated-withdrawal-modal--subModal-list {
+    padding-bottom: 10px;
+    align-items: flex-start;
+    display: flex;
+    width: 259px;
+    .list-text-3 {
+      color: rgba(22, 47, 86, 0.87);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .list-text-days {
+      color: rgba(22, 47, 86, 0.54);
+      font-weight: bold;
+      font-size: 14px;
+    }
+  }
+  .enable-automated-withdrawal-modal--subModal-list-item {
+    font-size: 14px;
+    color: #162F56;
+  }
+  .enable-withdrawals-btn {
+    margin-top: 10px;
+    width: 100%;
+  }
+  .enable-automated-withdrawal-modal--subModal-amount {
+    .rzp-whole {
+      font-weight: bold;
+      font-size: 14px;
+      color: rgba(22, 47, 86, 0.87);
+    }
+    .rzp-paise {
+      font-weight: bold;
+      font-size: 12px;
+      color: #818EA4;
+    }
+    .rzp-currency {
+      font-size: 12px;
+      color: #526582;
+    }
+  }
+}
+
+
+.enable-automated-withdrawal-image {
+  position: absolute;
+  right: -1px;
+  top: 17px;
+}
+
+.successfully-enabled-modal {
+  padding: 24px 24px 20px;
+  .successfully-enabled-modal--heading {
+    display: flex;
+    align-items: center;
+  }
+  .successfully-enabled-modal--title {
+    font-weight: bold;
+    font-size: 18px;
+    color: #0D2366;
+    padding-left: 7px;
+  }
+  .successfully-enabled-modal--description {
+    font-size: 14px;
+    color: #515978;
+    padding-top: 16px;
+  }
+  .successfully-enabled-modal-contact-support {
+    font-weight: bold;
+    font-size: 14px;
+    color: #528FF0;
+    text-align: center;
+  }
+  .successfully-enabled-subModal {
+    padding: 24px;
+    background: #FFFFFF;
+    border: 1px solid #F2F6F9;
+    box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.16);
+    border-radius: 2px;
+    margin: 20px -48px;
+  }
+  .successfully-enabled-subModal-description {
+    font-size: 14px;
+    color: #162F56;
+  }
+  .done-btn {
+    width: 100%;
+    margin-top: 20px;
+  }
+}
+
+.disable-automated-withdraw-modal
+  padding: 24px;
+  .disable-automated-withdraw-modal--heading
+    color: rgba(22, 47, 86, 0.87);
+    font-weight: 900;
+    font-size: 16px;
+    margin-bottom: 6px;
+  .disable-automated-withdraw-modal--action
+    margin-top: 14px;
+  .dont-disable-btn
+    width: 100%;
+    margin-right: 6px;
+    border: 1px solid rgba(173, 188, 201, 0.5);
+    box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12);
+    color: #515978;
+    font-weight: bold;
+    font-size: 14px;
+  .yes-disable-btn
+    width: 100%;
+    margin-left: 6px;
+    font-weight: bold;
+.disable-reason-automated-withdraw-modal
+  padding: 24px;
+  .disable-reason-automated-withdraw-modal--heading
+    font-weight: 900;
+    font-size: 16px;
+    color: rgba(22, 47, 86, 0.87);
+    margin-bottom: 16px;
+  .disable-reason-automated-withdraw-modal--description
+    font-size: 15px;
+    color: rgba(13, 35, 102, 0.87);
+    margin-bottom: 8px;
+  .close-choices
+    padding-bottom: 3px;
+    input[type='radio']
+      margin-right: 6px;
+    label
+      color: #515978;
+      font-weight: normal;
+      font-size: 14px;
+  .disable-reason-automated-withdraw-modal--confirm-btn
+    display: flex;
+    justify-content: flex-end;
+
+.automated-withdraw-tooltip {
+  .automated-withdraw-tooltip--enabled {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 9px;
+    font-weight: 700;
+  }
+  .automated-withdraw-tooltip--enabled--heading {
+    font-weight: bold;
+  }
+  .automated-withdraw-tooltip--enabled-content {
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #0FCAA9;
+    opacity: 0.7;
+    align-items: center;
+    .enabled-dot {
+      background: #0FCAA9;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+  }
+
+  .automated-withdraw-tooltip--enabled-summary {
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    line-height: 15px;
+  }
+
+  .automated-withdraw-tooltip--details {
+    margin: 10px 0px;
+    padding: 8px 0px;
+    border: 1px solid rgba(173, 188, 201, 0.12);
+    border-left: none;
+    border-right: none;
+  }
+
+  .automated-withdraw-tooltip--details-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0px;
+    color: rgba(255, 255, 255, 0.87);
+    font-size: 12px;
+  }
+
+  .automated-withdraw-tooltip--disable-withdrawal {
+    text-align: center;
+    color: rgba(199, 91, 91, 0.87);
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+
+  .automated-withdraw-tooltip--max-amount {
+    .rzp-whole, .rzp-paise, .rzp-currency {
+      font-weight: bold;
+      opacity: 1;
+    }
+  }
+
+  .automated-withdraw-tooltip--details-row-month {
+    color: rgba(255, 255, 255, 0.87);
+    font-weight: bold;
+    font-size: 12px;
+  }
+}
+
+.automated-tag {
+  background: rgba(4, 138, 115, 0.1);
+  border: 1px solid rgba(4, 138, 115, 0.87);
+  border-radius: 2px;
+  font-weight: bold;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #048A73;
+  opacity: 0.7;
+  padding: 4px 12px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.pulsating-ring::after {
+  display: flex;
+  height: 22px;
+  width: 92px;
+  animation: pulsate 1.5s ease-out;
+  animation-iteration-count: infinite;
+  opacity: 0.0;
+  content: "";
+  z-index: -1;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid rgba(4, 138, 115, 0.87);
+}
+
+@keyframes pulsate {
+  0% {
+    transform: scale(1, 1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.2, 1.8);
+    opacity: 0.0;
+  }
+}
+
+.rounded-rectange {
+  background: #118FF2;
+  border-radius: 50px;
+  width: 2px;
+  height: 35px;
+  margin-left: 8px;
+}
+.automated-withdrawal {
+  font-size: 13px;
+  position: absolute;
+  bottom: 0px;
+  left: 460px;
+  @media (max-width: 1400px) and (min-width: 1300px) {
+    left: 445px;
+  }
+  @media (max-width: 1299px) and (min-width: 1200px) {
+    left: 390px;
+  }
+  .enable-now-btn {
+    font-weight: bold;
+    padding: 0px;
+    align-self: flex-end;
+    margin: 0px;
+  }
+}
+
+.automated-withdrawal-wrapper {
+  display: flex;
+  flex-direction: column;
+}

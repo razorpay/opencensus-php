@@ -76,8 +76,6 @@ const RepayAmount = ({
     setTempCustomAmount(e.currentTarget.value);
   };
 
-  const handleCustomAmountBlur = () => {};
-
   const handleCustomAmountCloseClick = () => {
     setIsCustomAmountActive(false);
     setTempCustomAmount(customAmount);
@@ -193,7 +191,6 @@ const RepayAmount = ({
                     </div>
                   }
                   name="amount"
-                  onBlur={handleCustomAmountBlur}
                   value={tempCustomAmount}
                   onChange={handleCustomAmountChange}
                 />

@@ -125,6 +125,13 @@ export const CLOSE_OPTIONS = [
   'Other reasons',
 ];
 
+export const AUTOMATED_WITHDRAWAL_DISABLE_OPTIONS = [
+  { label: 'Want to choose withdrawal amount', value: 'Want to choose withdrawal amount' },
+  { label: 'Want to choose withdrwal tenure', value: 'Want to choose withdrwal tenure' },
+  { label: 'Need more guidance with feature', value: 'Need more guidance with feature' },
+  { label: 'Don’t want to be automated', value: 'Don’t want to be automated' },
+  { label: 'Other reasons', value: 'Other reasons' },
+];
 export const CASH_ADVANCE_BASE_URL = '/capital/cash-advance/';
 
 export const CASH_ADVANCE_SECTIONS = {

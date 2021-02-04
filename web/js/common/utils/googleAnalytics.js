@@ -25,14 +25,14 @@ const setTrackData = (fixedData = {}) => {
 export { setTrackData };
 export default track;
 
-export const trackFb = event => {
+export const trackFb = (event) => {
   window.rzpAnalytics({
     name: 'facebook',
     event,
   });
 };
 
-export const trackhubsContactUpdate = data => {
+export const trackhubsContactUpdate = (data) => {
   window.trackHubs({
     name: 'update_property',
     data,
