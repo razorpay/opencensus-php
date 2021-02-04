@@ -360,8 +360,7 @@ class Repository extends Base\Repository
 
                 $tsTerminal = $terminals->first();
 
-                if (((empty($terminal) == true) or (empty($tsTerminal) == true))
-                    and ($tsTerminal != $terminal))
+                if ((empty($terminal) == true) or (empty($tsTerminal) == true))
                 {
                     // return from here only when in sync
                     $data["isTerminalNull"] = empty($terminal);
@@ -420,8 +419,7 @@ class Repository extends Base\Repository
                 {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                    if (((empty($terminal) == true) or (empty($terminal2) == true))
-                        and ($terminal2 != $terminal))
+                    if ((empty($terminal) == true) or (empty($terminal2) == true))
                     {
                         // return from here only when in sync
                         $data["isTerminalNull"] = empty($terminal2);
@@ -1099,10 +1097,15 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                $terminalIds = $response->pluck(Entity::ID)->all();
+                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (sizeof($terminalIds) === sizeof($apiTerminalIds) && sizeof($terminalIds->diff($apiTerminalIds)->all()) !== 0)
+                $terminalIds = $tsTerminals->pluck(Entity::ID)->all();
+
+                if ((sizeof($terminalIds) === sizeof($apiTerminalIds)) and (count($apiTerminalIds, $terminalIds) > 0)
+                    and (count($terminalIds, $apiTerminalIds) > 0))
                 {
+                    $data["api_temrinal_ids"] = $apiTerminalIds;
+                    $data["terminal_ids"] = $terminalIds;
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
             }

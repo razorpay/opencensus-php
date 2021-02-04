@@ -208,7 +208,8 @@ class TerminalsService
 
     public function proxyTerminalService($input, $method, $path, $options = [], $headers = []) : array
     {
-        if ($method !== "DELETE"){
+        if ($method !== "DELETE")
+        {
 
             if ($input === [] || $input == '')
             {
@@ -218,6 +219,13 @@ class TerminalsService
             {
                 $input = json_encode($input);
             }
+        }
+
+        $fetchTerminalsPath = "v1/merchants/terminals";
+
+        if (($path == $fetchTerminalsPath) && (isset($options[self::TIMEOUT]) == false))
+        {
+            $options[self::TIMEOUT] = 200;
         }
 
         $response = $this->sendRequest($path, $input, $method, $options, $headers);
