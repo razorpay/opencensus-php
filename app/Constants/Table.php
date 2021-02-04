@@ -129,6 +129,7 @@ class Table
     const MERCHANT_DOCUMENT          = 'merchant_documents';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
     const VIRTUAL_ACCOUNT_TPV        = 'virtual_account_tpv';
+    const BANKING_ACCOUNT_TPV        = 'banking_account_tpvs';
     const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
     const MERCHANT_APPLICATION       = 'merchant_applications';
