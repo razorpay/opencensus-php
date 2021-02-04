@@ -1131,7 +1131,8 @@ trait UpiRecurring
         else if ($tokenRejected === true)
         {
             (new Token\Core)->updateTokenForUpi($token, [
-                Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::REJECTED,
+                Token\Entity::RECURRING_STATUS         => Token\RecurringStatus::REJECTED,
+                Token\Entity::RECURRING_FAILURE_REASON => $payment->getErrorDescription(),
             ]);
         }
 

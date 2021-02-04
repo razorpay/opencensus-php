@@ -14,6 +14,7 @@ use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\Mock\Server;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Payment\UpiMetadata\Entity as MetaData;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -22,6 +23,7 @@ use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 class UpiInitialRecurringTestCase extends TestCase
 {
     use PaymentTrait;
+    use TestsWebhookEvents;
     use PaymentsUpiRecurringTrait;
 
     /**
@@ -210,6 +212,8 @@ class UpiInitialRecurringTestCase extends TestCase
             }
         });
 
+        $this->expectWebhookEvent('token.rejected');
+
         $this->mandateCreateCallback($payment);
 
         $payment->reload();
@@ -231,6 +235,12 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertEquals(Status::REJECTED, $upiMandate['status']);
 
         $this->assertEquals('failed', $upiMetadata['internal_status']);
+
+        // Assert if the Description is correct for rejected mandates.
+        $this->assertEquals("Mandate rejected by PSP", $token['recurring_failure_reason']);
+
+        // Assert if it is equal to payment error description.
+        $this->assertEquals($payment->getErrorDescription(), $token['recurring_failure_reason']);
     }
 
     public function testRecurringMandateCreateDebitFailed()

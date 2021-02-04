@@ -563,6 +563,8 @@ class Core extends Base\Core
 
     public function updateTokenForUpi(Entity $token, array $input)
     {
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         if ($input[Entity::RECURRING_STATUS] === RecurringStatus::CONFIRMED)
         {
             $token->setRecurringStatus(RecurringStatus::CONFIRMED);
@@ -583,10 +585,14 @@ class Core extends Base\Core
             if ($token->getRecurringStatus() === RecurringStatus::INITIATED)
             {
                 $token->setRecurringStatus(RecurringStatus::REJECTED);
+
+                $token->setRecurringFailureReason($input[Entity::RECURRING_FAILURE_REASON]);
             }
         }
 
         $this->repo->saveOrFail($token);
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
     }
 
     public function updateTokenFromNachGatewayData(Entity $token, array $gatewayData)
