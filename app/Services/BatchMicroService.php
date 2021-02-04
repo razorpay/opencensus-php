@@ -77,6 +77,13 @@ class BatchMicroService
             'batchTypeId' => $input[Batch\Entity::TYPE],
         ];
 
+        if($data['batchTypeId'] === "nach")
+        {
+            $subType = $input[Batch\Entity::SUB_TYPE];
+            $gateway = $input[Batch\Entity::GATEWAY];
+            $data['batchTypeId'] = 'nach_' . $subType . '_' . $gateway . '';
+        }
+
         $this->checkAndInsert('name', $input, $data);
 
         if (isset($input['file_id']))

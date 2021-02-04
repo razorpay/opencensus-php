@@ -27,7 +27,6 @@ class NachGatewayTest extends TestCase
     use AttemptTrait;
     use AttemptReconcileTrait;
     use PartnerTrait;
-    use FileHandlerTrait;
 
     // 09-02-2020 Sunday
     const FIXED_NON_WORKING_DAY_TIME = 1581223905;
@@ -65,11 +64,25 @@ class NachGatewayTest extends TestCase
 
         $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
 
-        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
-        $this->assertEquals('nach', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
 
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "3", "00");
+
+        $this->runWithData($entries, $batchEntity['id']);
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
         $this->assertEquals('created', $payment['status']);
@@ -294,9 +307,64 @@ class NachGatewayTest extends TestCase
 
         $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
 
-        $this->assertEquals('nach', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-        $this->assertEquals(300000, $batch['amount']);
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+        $this->assertEquals(0, $batch['amount']);
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "1", "00");
+
+        $this->runWithData($entries, $batchEntity['id']);
+
+        $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDebitResponseFileProcessingViaBatchServiceSuccess()
+    {
+        $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+        $this->assertEquals(0, $batch['amount']);
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "1", "00");
+
+        $this->runWithData($entries, $batchEntity['id']);
 
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
@@ -329,9 +397,26 @@ class NachGatewayTest extends TestCase
 
         $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
 
-        $this->assertEquals('nach', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-        $this->assertEquals(300000, $batch['amount']);
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+        $this->assertEquals(0, $batch['amount']);
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "1", "00");
+
+        $this->runWithData($entries, $batchEntity['id']);
 
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
@@ -350,8 +435,25 @@ class NachGatewayTest extends TestCase
 
         $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
 
-        $this->assertEquals('nach', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "0", "04");
+
+        $this->runWithData($entries, $batchEntity['id']);
 
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
@@ -965,4 +1067,151 @@ class NachGatewayTest extends TestCase
 
         return $values;
     }
+
+    public function runWithData($entries, $batchId)
+    {
+        $this->ba->batchAuth();
+
+        $testData = $this->testData['process_via_batch_service'];
+
+        $testData['request']['server']['HTTP_X_Batch_Id'] = $batchId;
+
+        $testData['request']['content'] = $entries;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function createBatchRequestData($paymentId, $type, $subType, $gateway, $flag, $reasonCode)
+    {
+        $entries = [
+            "data" => [
+                Headings::ACH_TRANSACTION_CODE             =>  '67',
+                Headings::CONTROL_9S                       =>  '         ',
+                Headings::DESTINATION_ACCOUNT_TYPE         =>  '10',
+                Headings::LEDGER_FOLIO_NUMBER              =>  '   ',
+                Headings::CONTROL_15S                      =>  '               ',
+                Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  'ABIJITO GUHA                            ',
+                Headings::CONTROL_9SS                      =>  '17012020 ',
+                Headings::CONTROL_7S                       =>  '       ',
+                Headings::USER_NAME                        =>  'RAZORPAY SOFTWARE PV',
+                Headings::CONTROL_13S                      =>  '             ',
+                Headings::AMOUNT                           =>  '0000000300000',
+                Headings::ACH_ITEM_SEQ_NO                  =>  '4764222450',
+                Headings::CHECKSUM                         =>  '4081750481',
+                Headings::FLAG                             =>  $flag,
+                Headings::REASON_CODE                      =>  $reasonCode,
+                Headings::DESTINATION_BANK_IFSC            =>  'HDFC0001233',
+                Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  '1111111111111                      ',
+                Headings::SPONSOR_BANK_IFSC                =>  'CITI000PIGW',
+                Headings::USER_NUMBER                      =>  'NACH00000000013149',
+                Headings::TRANSACTION_REFERENCE            =>  'CTTATAAIAA' . $paymentId . '      ',
+                Headings::PRODUCT_TYPE                     =>  '10 ',
+                Headings::BENEFICIARY_AADHAR_NUMBER        =>  '000000000000000',
+                Headings::UMRN                             =>  'HDFC0000000010936518',
+                Headings::FILLER                           =>  '       ',
+            ],
+            'type'        => $type,
+            'sub_type'    => $subType,
+            'gateway'     => $gateway,
+        ];
+
+        return $entries;
+    }
+
+    protected function makeBatchDebitPayment($payment, $status)
+    {
+        $this->fixtures->create(
+            'enach',
+            [
+                'payment_id' => $payment['id'],
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'amount'     => $payment['amount'],
+            ]
+        );
+
+        $file = $this->getBatchDebitFile($payment, $status);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $fileContents = file($file);
+
+        $debitResponseRow = $fileContents[1];
+
+        $flag = substr($debitResponseRow, 153, 1);
+
+        $errCode = substr($debitResponseRow, 154, 2);
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $file, 'debit');
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['id'];
+
+        $entries = [
+            "data" => [
+                Headings::ACH_TRANSACTION_CODE             =>  '67',
+                Headings::CONTROL_9S                       =>  '         ',
+                Headings::DESTINATION_ACCOUNT_TYPE         =>  '10',
+                Headings::LEDGER_FOLIO_NUMBER              =>  '   ',
+                Headings::CONTROL_15S                      =>  '               ',
+                Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  'ABIJITO GUHA                            ',
+                Headings::CONTROL_9SS                      =>  '17012020 ',
+                Headings::CONTROL_7S                       =>  '       ',
+                Headings::USER_NAME                        =>  'RAZORPAY SOFTWARE PV',
+                Headings::CONTROL_13S                      =>  '             ',
+                Headings::AMOUNT                           =>  '0000000300000',
+                Headings::ACH_ITEM_SEQ_NO                  =>  '4764222450',
+                Headings::CHECKSUM                         =>  '4081750481',
+                Headings::FLAG                             =>  $flag,
+                Headings::REASON_CODE                      =>  $errCode,
+                Headings::DESTINATION_BANK_IFSC            =>  'HDFC0002497',
+                Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  '1111111111111                      ',
+                Headings::SPONSOR_BANK_IFSC                =>  'CITI000PIGW',
+                Headings::USER_NUMBER                      =>  'NACH00000000013149',
+                Headings::TRANSACTION_REFERENCE            =>  'CTTATAAIAA' . $paymentId . '      ',
+                Headings::PRODUCT_TYPE                     =>  '10 ',
+                Headings::BENEFICIARY_AADHAR_NUMBER        =>  '000000000000000',
+                Headings::UMRN                             =>  'HDFC0000000010936518',
+                Headings::FILLER                           =>  '       ',
+            ],
+            'type'        => 'nach',
+            'sub_type'    => 'debit',
+            'gateway'     => 'nach_citi',
+        ];
+
+        $this->runWithData($entries, $batchEntity['id']);
+
+        return $batch;
+    }
+
+    protected function getBatchDebitFile($payment, $status)
+    {
+        $paymentId = $payment['id'];
+        $this->fixtures->stripSign($paymentId);
+
+        $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status['status'] . $status['error_code']. 'HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+';
+
+        $name = 'temp.txt';
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile($name, $handle));
+
+        return $file;
+    }
+
 }

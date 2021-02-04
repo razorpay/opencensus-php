@@ -734,93 +734,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->fixtures->terminal->enableTerminal($this->sharedTerminal['id']);
     }
 
-    public function testDebitFileReconciliation()
-    {
-        $this->makeDebitPayment();
-
-        $payment = $this->getDbLastEntity('payment');
-
-        $fileStatuses = [
-            'status'     => '1',
-            'error_code' => '00',
-            'error_desc' => '',
-        ];
-
-        Carbon::setTestNow(Carbon::now()->addDays(5));
-
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
-
-        $this->assertEquals('processed', $batch['status']);
-
-        $payment = $this->getDbEntityById('payment', $payment['id']);
-
-        $this->assertEquals('captured', $payment['status']);
-
-        $transaction = $payment->transaction;
-
-        $this->assertNotNull($transaction['reconciled_at']);
-
-        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
-
-        $this->assertArraySelectiveEquals(
-            [
-                'status' => '1',
-            ],
-            $enach
-        );
-    }
-
-    public function testDebitFileRejectResponse()
-    {
-        $this->makeDebitPayment();
-
-        $payment = $this->getDbLastEntity('payment');
-
-        $fileStatuses = [
-            'status'     => '0',
-            'error_code' => '09',
-            'error_desc' => '',
-        ];
-
-        Carbon::setTestNow(Carbon::now()->addDays(5));
-
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
-
-        $this->assertEquals('processed', $batch['status']);
-
-        $payment = $this->getDbEntityById('payment', $payment['id']);
-
-        $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('GATEWAY_ERROR_DEBIT_FAILED', $payment['internal_error_code']);
-
-        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
-
-        $this->assertEquals('0', $enach['status']);
-    }
-
-    public function testDebitFilePendingResponse()
-    {
-        $this->makeDebitPayment();
-
-        $payment = $this->getDbLastEntity('payment');
-
-        $fileStatuses = [
-            'status'     => '3',
-            'error_code' => '00',
-            'error_desc' => '',
-        ];
-
-        Carbon::setTestNow(Carbon::now()->addDays(5));
-
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
-
-        $this->assertEquals('processed', $batch['status']);
-
-        $payment = $this->getDbEntityById('payment', $payment['id']);
-
-        $this->assertEquals('created', $payment['status']);
-    }
-
     protected function makeDebitPayment($amount = 300000)
     {
         $payment = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
@@ -1018,29 +931,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $file;
     }
 
-    protected function makeBatchDebitPayment($payment, $status)
-    {
-        $this->fixtures->create(
-            'enach',
-            [
-                'payment_id' => $payment['id'],
-                'action'     => 'authorize',
-                'bank'       => 'UTIB',
-                'amount'     => $payment['amount'],
-            ]
-        );
-
-        $file = $this->getBatchDebitFile($payment, $status);
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $file);
-
-        return $this->getDbEntityById('batch', $batch['id']);
-    }
-
     protected function makeRequestWithGivenUrlAndFile($url, $file)
     {
         $request = [
@@ -1059,98 +949,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    // enach refund migration to scrooge
-    public function testDebitFileReconciliationRefund()
-    {
-        $this->makeDebitPayment();
-
-        $payment = $this->getDbLastEntity('payment');
-
-        $fileStatuses = [
-            'status'     => '1',
-            'error_code' => '00',
-            'error_desc' => '',
-        ];
-
-        Carbon::setTestNow(Carbon::now()->addDays(5));
-
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
-
-        $this->assertEquals('processed', $batch['status']);
-
-        $payment = $this->getDbEntityById('payment', $payment['id']);
-
-        $this->assertEquals('captured', $payment['status']);
-
-        $transaction = $payment->transaction;
-
-        $this->assertNotNull($transaction['reconciled_at']);
-
-        // $response = $this->refundPayment('pay_' . $payment['id']);
-        $response = $this->refundPayment('pay_' . $payment['id'], null, ['is_fta' => true]);
-
-        $refund  = $this->getLastEntity('refund', true);
-
-        $this->assertEquals($response['id'], $refund['id']);
-
-        $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
-
-        // $this->assertEquals('initiated', $refund['status']);
-        $this->assertEquals('created', $refund['status']);
-
-        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
-
-        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
-
-        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
-
-        $bankAccount = $this->getLastEntity('bank_account', true);
-
-        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
-
-        $this->assertEquals('test', $bankAccount['beneficiary_name']);
-
-        $this->assertEquals('1111111111111', $bankAccount['account_number']);
-
-        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
-
-        $this->assertEquals('refund', $bankAccount['type']);
-    }
-
-    public function testDebitFileReconciliationRefundBankTransfer()
-    {
-        $this->testDebitFileReconciliationRefund();
-
-        $channel = Channel::YESBANK;
-
-        $content = $this->initiateTransfer(
-            $channel,
-            Attempt\Purpose::REFUND,
-            Attempt\Type::REFUND);
-
-        $data = $this->reconcileOnlineSettlements($channel, false);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
-
-        // Process entities
-        $this->reconcileEntitiesForChannel($channel);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        // $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
-        $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
-        $this->assertEquals(1, $refund['attempts']);
-        $this->assertNotNull($attempt['utr']);
-    }
-
     public function testDebitCancel()
     {
         $this->makeDebitPayment();
@@ -1164,10 +962,10 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         ];
 
         $excel = Excel::create("test_cancel", function($excel) use ($data) {
-                    $excel->sheet('Sheet1', function($sheet) use ($data) {
-                        $sheet->fromArray($data);
-                    });
-                 });
+            $excel->sheet('Sheet1', function($sheet) use ($data) {
+                $sheet->fromArray($data);
+            });
+        });
 
         $data = $excel->string('xlsx');
 
@@ -1238,6 +1036,19 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         ];
 
         return $values;
+    }
+
+    public function runWithData($entries, $batchId)
+    {
+        $this->ba->batchAuth();
+
+        $testData = $this->testData['process_via_batch_service'];
+
+        $testData['request']['server']['HTTP_X_Batch_Id'] = $batchId;
+
+        $testData['request']['content'] = $entries;
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testPaymentUjvn()

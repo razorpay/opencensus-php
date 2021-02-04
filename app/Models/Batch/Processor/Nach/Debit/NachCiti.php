@@ -193,4 +193,9 @@ class NachCiti extends Base
     {
         return ErrorCode::getDebitPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
     }
+
+    public function shouldSendToBatchService(): bool
+    {
+        return true;
+    }
 }

@@ -350,6 +350,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ABSENT_REFUND_RETRY_FAILED                    = 'GATEWAY_ABSENT_REFUND_RETRY_FAILED';
     const RECON_FILE_LINK_NOT_FOUND                             = 'RECON_FILE_LINK_NOT_FOUND';
     const RECON_BATCH_SERVICE_INPUT_CONFIG                      = 'RECON_BATCH_SERVICE_INPUT_CONFIG';
+    const EMANDATE_BATCH_SERVICE_INPUT_CONFIG                   = 'EMANDATE_BATCH_SERVICE_INPUT_CONFIG';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED                     = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION                      = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
     const CHANGING_FILE_PERMISSION                              = 'CHANGING_FILE_PERMISSION';
@@ -1749,6 +1750,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH                 = 'RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH';
     const BATCH_PROCESSING_ENTRY                                = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                                = 'BATCH_PROCESSING_ERROR';
+    const BATCH_PROCESSING_API_RESPONSE                         = 'BATCH_PROCESSING_API_RESPONSE';
     const RECON_ROW_PROCESSING_ERROR                            = 'RECON_ROW_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                                   = 'BATCH_PROCESS_ASYNC';
     const BATCH_PROCESS_ENTRIES_CLEANED                         = 'BATCH_PROCESS_ENTRIES_CLEANED';
@@ -4125,6 +4127,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                                     => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                               => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                                => 'Error in processing batch',
+        self::BATCH_PROCESSING_API_RESPONSE                         => 'API response to batch service',
         self::RECON_ROW_PROCESSING_ERROR                            => 'Error in processing the recon row',
         self::EMANDATE_RECON_FORCE_AUTH_RESPONSE                    => 'response received for force auth of emandate recon',
         self::FEATURE_DELETE_REQUEST                                => 'Feature delete request initiated',

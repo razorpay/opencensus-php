@@ -714,6 +714,8 @@ class Route
         // File-based Emandate Routes
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
+        'nach_batch_process'                       => ['post',     'nach/batch_service',                             'EMandateController@postProcessNachDebit'                                       ],
+
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
         'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
@@ -3005,6 +3007,8 @@ class Route
         'freshchat_retrieve_report_cron',
 
         'gateway_downtime_service_webhook',
+
+        'nach_batch_process'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6111,6 +6115,7 @@ class Route
             'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',
             'payout_links_create_batch',
+            'nach_batch_process'
         ],
 
         'stork' => [

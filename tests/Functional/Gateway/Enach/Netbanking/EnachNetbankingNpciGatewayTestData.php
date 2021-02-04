@@ -268,6 +268,19 @@ return [
         ],
     ],
 
+    'process_via_batch_service' => [
+        'request' => [
+            'url'    => '/nach/batch_service',
+            'method' => 'post',
+            'server' => [
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
     'testCreateEmandateRegistrationOrderWithUSFB' => [
         'response'  => [
             'content'     => [

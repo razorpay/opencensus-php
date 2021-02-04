@@ -7,6 +7,7 @@ use ApiResponse;
 
 use RZP\Exception;
 use RZP\Models\EMandate;
+use RZP\Trace\TraceCode;
 
 class EMandateController extends Controller
 {
@@ -25,6 +26,23 @@ class EMandateController extends Controller
 
         $data = $this->service()->reconcileDebitFile($gateway, $input);
 
+        return ApiResponse::json($data);
+    }
+
+    public function postProcessNachDebit()
+    {
+        $data = $this->service()->processNachBatch($this->input);
+
+        $this->trace->info(
+            TraceCode::BATCH_PROCESSING_API_RESPONSE,
+            [
+                'data' => $data
+            ]);
+
+        if(isset($data['data']['Error Code']) === true)
+        {
+            return ApiResponse::json(['Status' => 'Failure', 'body' => $data], 400);
+        }
         return ApiResponse::json($data);
     }
 }

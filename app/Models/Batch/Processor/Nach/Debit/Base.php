@@ -8,8 +8,10 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
@@ -189,5 +191,72 @@ class Base extends BaseProcessor
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('2048M');
+    }
+
+    public function addSettingsIfRequired(&$input)
+    {
+        $gateway = $this->batch->getGateway();
+        $subType = $this->batch->getSubType();
+
+        $input[Batch\Entity::CONFIG][Constants::GATEWAY]  = $gateway;
+        $input[Batch\Entity::CONFIG][Constants::SUB_TYPE] = $subType;
+
+        $this->trace->info(TraceCode::EMANDATE_BATCH_SERVICE_INPUT_CONFIG, $input);
+    }
+
+    public function batchProcessEntries(array $entries)
+    {
+
+        foreach ($entries as &$entry)
+        {
+            $entryTracePayload = $entry;
+
+            $this->removeCriticalDataFromTracePayload($entryTracePayload);
+
+            try
+            {
+
+                $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $entryTracePayload);
+
+                $this->processEntry($entry);
+
+                if ($this->resetErrorOnSuccess() === true)
+                {
+                    // Set errors as null
+
+                    $entry[Batch\Header::ERROR_CODE]        = null;
+                    $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                }
+
+                $this->removeCriticalDataFromTracePayload($entry);
+
+            }
+            catch (BaseException $e)
+            {
+                // RZP Exceptions have public error code & description which can be exposed in the output file
+                $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+
+                $error = $e->getError();
+
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE]        = $error->getPublicErrorCode();
+                $entry[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
+
+                $this->removeCriticalDataFromTracePayload($entry);
+
+            }
+            catch (\Throwable $e)
+            {
+                // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+
+                $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                $this->removeCriticalDataFromTracePayload($entry);
+            }
+        }
+
+        return $entries;
     }
 }

@@ -3,8 +3,11 @@
 namespace RZP\Models\EMandate;
 
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 
 class Service extends Base\Service
 {
@@ -23,5 +26,47 @@ class Service extends Base\Service
                             $this->mode);
 
         return $response;
+    }
+
+    public function processNachBatch(array $input)
+    {
+
+        $namespaceKeys = [
+            Batch\Entity::TYPE,
+            Batch\Entity::SUB_TYPE,
+            Batch\Entity::GATEWAY,
+        ];
+
+        $processor = "RZP\\Models\\Batch\\Processor";
+
+        foreach ($namespaceKeys as $key)
+        {
+            $methodValue = $input[$key];
+
+            if (empty($methodValue) === false)
+            {
+                $processor .= '\\' . studly_case($methodValue);
+            }
+        }
+
+
+        if (class_exists($processor) === false)
+        {
+            throw new LogicException(
+                'Bad request, Batch Processor class does not exist for the type:' . $input[Batch\Entity::TYPE] ,
+                ErrorCode::SERVER_ERROR_GATEWAY_BATCH_PROCESSOR_CLASS_ABSENCE,
+                [
+                    'sub_type' => $input[Batch\Entity::SUB_TYPE],
+                    'gateway'  => $input[Batch\Entity::GATEWAY],
+                ]);
+        }
+
+        $processor = new $processor;
+
+        unset($input[Batch\Entity::TYPE]);
+        unset($input[Batch\Entity::SUB_TYPE]);
+        unset($input[Batch\Entity::GATEWAY]);
+
+        return $processor->batchProcessEntries($input);
     }
 }
