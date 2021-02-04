@@ -3306,15 +3306,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 28,
+                'count' => 27,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'AUBL',
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -3517,20 +3510,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 28,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'HDFC',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'AUBL',
                         ],
                     ],
                     [
@@ -3938,7 +3924,6 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
-                                'AUBL',
                                 'BACB',
                                 'BBKM',
                                 'BDBL',

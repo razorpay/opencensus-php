@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_SBI,
         Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::NETBANKING_SCB,
+        Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -866,6 +867,19 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingAusfTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_ausf',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingAusfEditTerminalRules = [
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 

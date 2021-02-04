@@ -2833,6 +2833,24 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingAusfTerminal(){
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                         => Terminal\Shared::NETBANKING_AUSF_TERMINAL,
+                'merchant_id'                => Account::TEST_ACCOUNT,
+                'gateway'                    => Gateway::NETBANKING_AUSF,
+                'card'                       => '0',
+                'netbanking'                 => '1',
+                'gateway_merchant_id'        => 'netbanking_ausf_merchant_id',
+                'gateway_terminal_password'  => Crypt::encrypt('test_terminal_password'),
+                'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+                'created_at'                 => time(),
+                'updated_at'                 => time(),
+            ]
+        );
+    }
+
+
     protected function createCashfreeTerminal()
     {
         DB::table(Table::TERMINAL)->insert(

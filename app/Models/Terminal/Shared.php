@@ -139,6 +139,7 @@ class Shared
     const NETBANKING_FSB_TERMINAL            = '1000NbFsbTrmnl';
     const CARDLESS_EMI_FLEXMONEY_MULTILENDER_TERMINAL    = '20CrdlsEmiMlTl';
     const CARDLESS_EMI_FLEXMONEY_EMPTY_ENABLED_BANKS     = '20CrdlsEmiEmTl';
+    const NETBANKING_AUSF_TERMINAL           = '100NbAusfTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -175,6 +176,7 @@ class Shared
         self::NETBANKING_IDBI_TERMINAL,
         self::NETBANKING_FSB_TERMINAL,
         self::NETBANKING_DCB_TERMINAL,
+        self::NETBANKING_AUSF_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,

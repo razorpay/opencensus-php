@@ -84,6 +84,7 @@ class Gateway
     const NETBANKING_IOB         = 'netbanking_iob';
     const NETBANKING_FSB         = 'netbanking_fsb';
     const NETBANKING_DCB         = 'netbanking_dcb';
+    const NETBANKING_AUSF        = 'netbanking_ausf';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -973,6 +974,7 @@ class Gateway
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_KOTAK,
+        Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
         Payment\Gateway::MPGS,
@@ -1004,6 +1006,7 @@ class Gateway
         Payment\Gateway::NETBANKING_UBI,
         Payment\Gateway::PAYU,
         Payment\Gateway::NETBANKING_PNB,
+        Payment\Gateway::NETBANKING_AUSF,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1147,6 +1150,7 @@ class Gateway
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
             self::NETBANKING_DCB,
+            self::NETBANKING_AUSF,
         ],
 
         //
@@ -2112,6 +2116,7 @@ class Gateway
         IFSC::DCBL         => Gateway::NETBANKING_DCB,
         IFSC::ANDB         => Gateway::NETBANKING_UBI,
         IFSC::SYNB         => Gateway::NETBANKING_CANARA,
+        IFSC::AUBL         => Gateway::NETBANKING_AUSF,
     ];
 
     /**
@@ -3148,6 +3153,7 @@ class Gateway
             self::NETBANKING_DCB,
             self::NETBANKING_IBK,
             self::NETBANKING_UBI,
+            self::NETBANKING_AUSF,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3204,6 +3210,7 @@ class Gateway
             self::NETBANKING_FEDERAL,
             self::NETBANKING_CANARA,
             self::NETBANKING_KOTAK,
+            self::NETBANKING_AUSF,
         ];
 
         return (in_array($gateway, $gateways, true));
