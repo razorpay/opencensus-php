@@ -25,8 +25,9 @@ jobs:
         WEBHOOK_TRIGGER : api
         GITHUB_TOKEN:  ${{ github.token }}
         SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
+        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
       run: |
-        sh ./.github/actions/triggerBvtSuite1.sh
+        sh ./.github/actions/triggerBvtSuite.sh
     - name: Check Test file has changed or added
       if : ${{github.event_name == 'pull_request'}}
       uses: actions/github-script@0.9.0
