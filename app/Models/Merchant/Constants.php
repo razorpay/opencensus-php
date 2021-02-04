@@ -493,7 +493,7 @@ final class Constants
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
-            'method' => 'regUnderReview'
+            'method' => ''
         ],
         [
             'keysToCheck' => [
@@ -502,7 +502,7 @@ final class Constants
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
-            'method' => 'regUnderReview'
+            'method' => ''
         ],
         [
             'keysToCheck' => [
@@ -511,7 +511,7 @@ final class Constants
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
-            'method' => 'regUnderReview'
+            'method' => ''
         ],
         [
             'keysToCheck' => [
@@ -520,7 +520,7 @@ final class Constants
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
-            'method' => 'regUnderReview'
+            'method' => ''
         ]
     ];
 

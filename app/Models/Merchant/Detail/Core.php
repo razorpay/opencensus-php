@@ -2295,7 +2295,6 @@ class Core extends Base\Core
                 case BusinessType::INDIVIDUAL:
                     return Status::UNDER_REVIEW;
 
-                case BusinessType::PROPRIETORSHIP:
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
                 case BusinessType::LLP:
@@ -3593,9 +3592,9 @@ class Core extends Base\Core
             }
             if ($flag)
             {
-                if ($mode === 'calculate')
+                $method = $action['method'];
+                if ($mode === 'calculate' and empty($method) === false)
                 {
-                    $method = $action['method'];
                     $this->{$method}($merchant);
                 }
                 return true;
