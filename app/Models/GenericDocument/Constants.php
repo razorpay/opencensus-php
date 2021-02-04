@@ -20,17 +20,24 @@ class Constants
     const SIZE       = 'size';
     const ENTITY_TYPE = 'entity_type';
     const ENTITY_ID   = 'entity_id';
+    const ENTITY      = 'entity';
+    const DOCUMENT_ENTITY  = 'document';
+    const DOCUMENT_ID      = 'document_id';
+    const DOCUMENT_ID_SIGN = 'doc_';
+    const FILE_ID_SIGN     = 'file_';
 
 
 
     const DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT = '30';
     const DOCUMENT_UPLOAD_MUTEX_RETRY_COUNT  = '2';
 
-    const KYC_PROOF       = 'kyc_proof';
-    const TRADEMARK_LOGO = 'trademark_logo';
+    const KYC_PROOF        = 'kyc_proof';
+    const TRADEMARK_LOGO   = 'trademark_logo';
+    const DISPUTE_EVIDENCE = 'dispute_evidence';
 
     const PURPOSE_TYPE = [
         self::KYC_PROOF,
         self::TRADEMARK_LOGO,
+        self::DISPUTE_EVIDENCE
     ];
 }

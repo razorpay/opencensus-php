@@ -105,11 +105,21 @@ class Service extends Base\Service
         return $params;
     }
 
-    public function getDocument(array $input, string $fileStoreId)
+    public function getDocument(array $input, string $documentId)
     {
+        $fileStoreId = ResponseHelper::getDocumentId($documentId, Constants::DOCUMENT_ID_SIGN, Constants::FILE_ID_SIGN);
+
         $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId, $this->merchant->getId());
 
-        return  ResponseHelper::getDownloadFileResponse($signedUrlResponse);
+        $fileData = $this->fetchFiles([$fileStoreId], $this->merchant->getId());
+
+        $this->validateFileResponse($fileData, [$fileStoreId]);
+
+        $fileAttributes = $fileData['items'][0];
+
+        $response = array_merge($fileAttributes, $signedUrlResponse);
+
+        return ResponseHelper::getDownloadFileResponse($response);
     }
 
     public function getDocumentContent(array $input, string $fileStoreId)
@@ -143,27 +153,56 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
+            $documentId = ResponseHelper::getDocumentId($fileStoreId, Constants::FILE_ID_SIGN, Constants::DOCUMENT_ID_SIGN);
+
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_FILE_ACCESS, null, null, PublicErrorDescription::BAD_REQUEST_INVALID_FILE_DOWNLOAD.':'.$fileStoreId);
+                ErrorCode::BAD_REQUEST_INVALID_FILE_ACCESS, null, null, PublicErrorDescription::BAD_REQUEST_INVALID_FILE_ACCESS.':'.$documentId);
         }
     }
 
     public function fetchFiles(array $fileStoreIds, string $merchantId): array
     {
+        $fileStoreIds = ResponseHelper::getDocumentIds($fileStoreIds, Constants::DOCUMENT_ID_SIGN, Constants::FILE_ID_SIGN);
         try
         {
             $ufhService = $this->app['ufh.service'];
 
             $input[Constants::IDS] = $fileStoreIds;
 
-            return $ufhService->fetchFiles($input, $merchantId);
+            $response = $ufhService->fetchFiles($input, $merchantId);
 
+            $this->validateFileResponse($response, $fileStoreIds);
+
+            return $response;
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            throw $e;
         }
         catch (\Exception $e)
         {
+            $documentIds = ResponseHelper::getDocumentIds($fileStoreIds, Constants::FILE_ID_SIGN, Constants::DOCUMENT_ID_SIGN);
+
             throw new Exception\ServerErrorException(
-                'Error occurred while fetching files'.':'.implode(', ',$fileStoreIds),
+                'Error occurred while fetching files' . ':' . implode(', ', $documentIds),
                 ErrorCode::BAD_REQUEST_SERVER_ERROR_FILE_FETCH_FAILURE);
+        }
+    }
+
+    private function validateFileResponse(array $response, array $fileIds)
+    {
+        $fileData = $response['items'] ?? [];
+
+        $validFileIds = array_column($fileData, Constants::ID);
+
+        $invalidFileIds = array_diff($fileIds, $validFileIds);
+
+        if (count($invalidFileIds) > 0)
+        {
+            $documentIds = ResponseHelper::getDocumentIds($invalidFileIds, Constants::FILE_ID_SIGN, Constants::DOCUMENT_ID_SIGN);
+
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_INVALID_FILE_IDS_PROVIDED . ': ' . implode(', ', $documentIds));
         }
     }
 }

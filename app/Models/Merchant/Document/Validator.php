@@ -28,7 +28,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $documentLinkRules = [
-        Constants::FILE_ID   => 'required|string|min:14|max:19',
+        Constants::DOCUMENT_ID   => 'required|string|min:14|max:19',
         Constants::TYPE      => 'required|string|max:255|custom:document_type'
     ];
 

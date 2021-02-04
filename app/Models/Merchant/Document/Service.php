@@ -106,8 +106,9 @@ class Service extends Base\Service
                 {
                     foreach ($filesArr as $file)
                     {
+                        $fileId = GenericDocument\ResponseHelper::getDocumentId($file[GenericDocument\Constants::DOCUMENT_ID], GenericDocument\Constants::DOCUMENT_ID_SIGN, GenericDocument\Constants::FILE_ID_SIGN);
                         $fileAttributes = [
-                            Constants::FILE_ID => $file[Constants::FILE_ID],
+                            Constants::FILE_ID => $fileId,
                             Constants::SOURCE  => Source::UFH,
                         ];
 
@@ -176,13 +177,11 @@ class Service extends Base\Service
                     throw new Exception\BadRequestValidationFailureException('Incorrect Document '. $file[Constants::TYPE]. ' sent for proof type '. $proofType);
                 }
 
-                array_push($fileIds, $file[Constants::FILE_ID]);
+                array_push($fileIds, $file[Constants::DOCUMENT_ID]);
             }
         }
 
-        $fileResponse = $genericDocumentService->fetchFiles($fileIds, $accountId);
-
-        $this->validateFileResponse($fileResponse, $fileIds);
+        $genericDocumentService->fetchFiles($fileIds, $accountId);
 
         return $this->validateAndGetDocumentRequest($account, $entityType, $entityId);
     }
@@ -204,21 +203,6 @@ class Service extends Base\Service
             $stakeHolder->getValidator()->validateAccountStakeholder($account, $stakeHolder);
 
             return [$stakeHolder, $account];
-        }
-    }
-
-    private function validateFileResponse(array $response, array $fileIds)
-    {
-        $fileData = $response['items'] ?? [];
-
-        $validFileIds = array_column($fileData, Merchant\Entity::ID);
-
-        $invalidFileIds = array_diff($fileIds, $validFileIds);
-
-        if (sizeof($invalidFileIds) > 0)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_FILE_IDS_PROVIDED . ': ' . implode(', ', $invalidFileIds));
         }
     }
 }

@@ -4,7 +4,10 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\GenericDocument;
 use RZP\Models\Merchant\Document;
+use RZP\Models\GenericDocument\ResponseHelper;
+
 
 class DocumentResponse extends Detail\Core
 {
@@ -22,8 +25,8 @@ class DocumentResponse extends Detail\Core
         foreach ($documents as $document)
         {
             $documentsArr[$document->getDocumentType()] = [
-                Constants::TYPE    => $document->getDocumentType(),
-                Constants::FILE_ID => $document->getPublicFileStoreId(),
+                Constants::TYPE        => $document->getDocumentType(),
+                Constants::DOCUMENT_ID => ResponseHelper::getDocumentId($document->getPublicFileStoreId(), GenericDocument\Constants::FILE_ID_SIGN, GenericDocument\Constants::DOCUMENT_ID_SIGN),
             ];
         }
 

@@ -15,13 +15,14 @@ class Constants
     const OCR_NAME                = 'ocr_name';
 
 
-    const TYPE      = 'type';
-    const FILE      = 'file';
-    const FILE_NAME = 'file_name';
-    const FILE_ID   = 'file_id';
-    const SOURCE    = 'source';
-    const ENTITY    = 'entity';
-    const MERCHANT  = 'merchant';
+    const TYPE        = 'type';
+    const FILE        = 'file';
+    const FILE_NAME   = 'file_name';
+    const FILE_ID     = 'file_id';
+    const DOCUMENT_ID = 'document_id';
+    const SOURCE      = 'source';
+    const ENTITY      = 'entity';
+    const MERCHANT    = 'merchant';
 
 
     const OCR_MATCH_TYPE = 'ocr_match_type';

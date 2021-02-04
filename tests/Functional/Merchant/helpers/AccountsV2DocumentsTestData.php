@@ -16,7 +16,7 @@ return [
                 'mime_type' => 'image/png',
                 'purpose'   => 'kyc_proof',
                 'size'      => 12345,
-                'id'        => 'file_1cXSLlUU8V9sXl',
+                'id'        => 'doc_1cXSLlUU8V9sXl',
             ],
         ]
     ],
@@ -64,8 +64,8 @@ return [
             'content' => [
                 'wrong_proof_type' => [
                     [
-                        'type'    => 'shop_establishment_certificate',
-                        'file_id' => 'file_abc'
+                        'type'        => 'shop_establishment_certificate',
+                        'document_id' => 'file_abc'
                     ]
                 ]
             ]
@@ -91,8 +91,8 @@ return [
             'content' => [
                 'business_proof_of_identification' => [
                     [
-                        'type'    => 'abcd',
-                        'file_id' => 'file_abc'
+                        'type'        => 'abcd',
+                        'document_id' => 'file_abc'
                     ]
                 ]
             ]
@@ -119,8 +119,8 @@ return [
             'content' => [
                 'business_proof_of_identification' => [
                     [
-                        'type'    => 'nbfc_registration_certificate',
-                        'file_id' => 'file_asdf1234567890'
+                        'type'        => 'nbfc_registration_certificate',
+                        'document_id' => 'doc_asdf1234567890'
                     ]
                 ]
             ]
@@ -147,8 +147,8 @@ return [
             'content' => [
                 'individual_proof_of_address' => [
                     [
-                        'type'    => 'aadhar_front',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'aadhar_front',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ]
                 ]
             ]
@@ -175,8 +175,8 @@ return [
             'content' => [
                 'individual_proof_of_address' => [
                     [
-                        'type'    => 'aadhar_front',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'aadhar_front',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ]
                 ]
             ]
@@ -202,12 +202,12 @@ return [
             'content' => [
                 'individual_proof_of_address' => [
                     [
-                        'type'    => 'aadhar_front',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'aadhar_front',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'aadhar_back',
-                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                        'type'        => 'aadhar_back',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm',
                     ]
                 ]
             ]
@@ -216,18 +216,18 @@ return [
             'content' => [
                 'individual_proof_of_address' => [
                     [
-                        'type'    => 'aadhar_front',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'aadhar_front',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'aadhar_back',
-                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                        'type'        => 'aadhar_back',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm',
                     ]
                 ]
             ],
         ]
     ],
-    'testStakeholderDocumentFetch'                        => [
+    'testStakeholderDocumentFetch'                       => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
             'method'  => 'GET',
@@ -237,12 +237,12 @@ return [
             'content' => [
                 'individual_proof_of_address' => [
                     [
-                        'type'    => 'aadhar_front',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'aadhar_front',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'aadhar_back',
-                        'file_id' => 'file_1cXSLlUU8V9sXm',
+                        'type'        => 'aadhar_back',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm',
                     ]
                 ]
             ],
@@ -255,12 +255,12 @@ return [
             'content' => [
                 'business_proof_of_identification' => [
                     [
-                        'type'    => 'shop_establishment_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'shop_establishment_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'gst_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                        'type'        => 'gst_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm'
                     ],
                 ]
             ]
@@ -269,18 +269,18 @@ return [
             'content' => [
                 'business_proof_of_identification' => [
                     [
-                        'type'    => 'shop_establishment_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'shop_establishment_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'gst_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                        'type'        => 'gst_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm'
                     ],
                 ]
             ],
         ]
     ],
-    'testAccountDocumentFetch'                            => [
+    'testAccountDocumentFetch'                           => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/documents',
             'method'  => 'GET',
@@ -290,12 +290,12 @@ return [
             'content' => [
                 'business_proof_of_identification' => [
                     [
-                        'type'    => 'shop_establishment_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXl'
+                        'type'        => 'shop_establishment_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXl'
                     ],
                     [
-                        'type'    => 'gst_certificate',
-                        'file_id' => 'file_1cXSLlUU8V9sXm'
+                        'type'        => 'gst_certificate',
+                        'document_id' => 'doc_1cXSLlUU8V9sXm'
                     ],
                 ]
             ],
