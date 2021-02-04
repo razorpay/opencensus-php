@@ -8,13 +8,13 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { classList } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
-import HubspotCAForm from './HubspotCAForm';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncement from './components/OpfinAnnouncement';
 import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import RazorpayXAnnouncement from './RazorpayXAnnouncement';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -217,8 +217,8 @@ export default class NotificationsDropdown extends Component {
     });
   };
 
-  toggleHubSpotCAForm = () => {
-    this.setState({ showHubSpotCAForm: !this.state.showHubSpotCAForm });
+  toggleRazorpayXAnnouncement = () => {
+    this.setState({ showRazorpayXAnnouncement: !this.state.showRazorpayXAnnouncement });
   };
 
   handleContentScroll = debounce(::this.onScrollContent, 20);
@@ -256,7 +256,7 @@ export default class NotificationsDropdown extends Component {
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
-        this.toggleHubSpotCAForm();
+        this.toggleRazorpayXAnnouncement();
 
         break;
 
@@ -288,7 +288,7 @@ export default class NotificationsDropdown extends Component {
 
   render() {
     let { user, showMobileNav } = this.props;
-    const { showHubSpotCAForm } = this.state;
+    const { showRazorpayXAnnouncement } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
       'Payments-Mobile-App',
@@ -411,9 +411,9 @@ export default class NotificationsDropdown extends Component {
             </div>
           </div>
         </DropdownContent>
-        <HubspotCAForm
-          shouldShowModal={showHubSpotCAForm}
-          hideModal={this.toggleHubSpotCAForm}
+        <RazorpayXAnnouncement
+          shouldShowModal={showRazorpayXAnnouncement}
+          hideModal={this.toggleRazorpayXAnnouncement}
           fromWhere="announcement"
         />
       </Dropdown>

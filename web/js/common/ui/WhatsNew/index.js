@@ -6,7 +6,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
-import HubspotCAForm from '../NotificationsDropdown/HubspotCAForm';
+import RazorpayXAnnouncement from '../NotificationsDropdown/RazorpayXAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncement from '../NotificationsDropdown/components/OpfinAnnouncement';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
@@ -135,8 +135,8 @@ export default class WhatsNew extends Component {
     }
   }
 
-  toggleHubSpotCAForm = () => {
-    this.setState({ showHubSpotCAForm: !this.state.showHubSpotCAForm });
+  toggleRazorpayXAnnouncement = () => {
+    this.setState({ showRazorpayXAnnouncement: !this.state.showRazorpayXAnnouncement });
   };
 
   showOpfinAnnouncement = (id) => {
@@ -172,7 +172,7 @@ export default class WhatsNew extends Component {
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
-        this.toggleHubSpotCAForm();
+        this.toggleRazorpayXAnnouncement();
         break;
       case 'announcement-Nov20-Opfin-NitroV1-cta1':
       case 'announcement-Nov20-Opfin-NitroV2-cta1':
@@ -343,7 +343,7 @@ export default class WhatsNew extends Component {
   render() {
     const { lastReadTS, isOpenSlider1, totalUnread, showTooltip } = this.state;
     const { user, history } = this.props;
-    const { showHubSpotCAForm } = this.state;
+    const { showRazorpayXAnnouncement } = this.state;
 
     const eventTrackingRequired = [
       'Payments-Mobile-App',
@@ -433,9 +433,9 @@ export default class WhatsNew extends Component {
                   </div>
                 </div>
               </div>
-              <HubspotCAForm
-                shouldShowModal={showHubSpotCAForm}
-                hideModal={this.toggleHubSpotCAForm}
+              <RazorpayXAnnouncement
+                shouldShowModal={showRazorpayXAnnouncement}
+                hideModal={this.toggleRazorpayXAnnouncement}
                 fromWhere="announcement"
               />
             </ErrorBoundary>

@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import RTracking from 'react-tracking';
-import HubspotCAForm from 'common/ui/NotificationsDropdown/HubspotCAForm';
+import RazorpayXAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXAnnouncement';
 
 @RTracking(() => window.rzpQ.component('ScheduledNitroBanner'))
 export default class ScheduledNitroBanner extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showHubSpotCAForm: false,
+      showRazorpayXAnnouncement: false,
     };
   }
 
@@ -26,12 +26,12 @@ export default class ScheduledNitroBanner extends Component {
     );
   };
 
-  hideHubSpotCAForm = () => {
-    this.setState({ showHubSpotCAForm: false });
+  hideRazorpayXAnnouncement = () => {
+    this.setState({ showRazorpayXAnnouncement: false });
   };
 
   render() {
-    const { showHubSpotCAForm } = this.state;
+    const { showRazorpayXAnnouncement } = this.state;
 
     return (
       <div class="schedule-enable-container">
@@ -40,15 +40,15 @@ export default class ScheduledNitroBanner extends Component {
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"
           onClick={(e) => {
-            this.setState({ showHubSpotCAForm: true });
+            this.setState({ showRazorpayXAnnouncement: true });
             this.trackEvents(this.props.fromWhere);
           }}
         >
           Learn More
         </a>
-        <HubspotCAForm
-          shouldShowModal={showHubSpotCAForm}
-          hideModal={this.hideHubSpotCAForm}
+        <RazorpayXAnnouncement
+          shouldShowModal={showRazorpayXAnnouncement}
+          hideModal={this.hideRazorpayXAnnouncement}
           fromWhere={this.props.fromWhere}
         />
       </div>
