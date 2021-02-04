@@ -541,4 +541,12 @@ class Validator extends Base\Validator
     {
         ViewType::checkViewType($value);
     }
+
+    public function validatePageViewable(Entity $paymentLink)
+    {
+        if ($paymentLink->merchant->isSuspended() === true)
+        {
+            throw new BadRequestValidationFailureException("This account is suspended");
+        }
+    }
 }

@@ -1096,6 +1096,55 @@ class PaymentLinkTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testFetchButtonPreferencesForSuspendedMerchant()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [ 'suspended_at' => '123456789' ]);
+
+        $this->ba->directAuth();
+
+        $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'button']);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->startTest();
+    }
+
+    public function testFetchButtonDetailsForSuspendedMerchant()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [ 'suspended_at' => '123456789' ]);
+
+        $this->ba->directAuth();
+
+        $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'button']);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->startTest();
+    }
+
+    public function testPaymentPageHostedViewForSuspendedMerchant()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [ 'suspended_at' => '123456789' ]);
+
+        $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'page']);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/v1/payment_pages/pl_100000000000pl/view',
+        ];
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        }, BadRequestValidationFailureException::class);
+
+
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity

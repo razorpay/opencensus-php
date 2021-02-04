@@ -148,6 +148,8 @@ class Service extends Base\Service
         {
             $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
+            (new Validator)->validatePageViewable($paymentLink);
+
             $buttonPayload = $this->core->getHostedViewPayload($paymentLink);
 
             $payload['button'] = $buttonPayload;
@@ -165,6 +167,8 @@ class Service extends Base\Service
         /** @var Entity $paymentLink */
         $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
+        (new Validator)->validatePageViewable($paymentLink);
+
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 
         $view = $this->core->getHostedViewTemplate($paymentLink);
@@ -176,12 +180,16 @@ class Service extends Base\Service
     {
         $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
+        (new Validator)->validatePageViewable($paymentLink);
+
         return $this->core->getHostedViewPayload($paymentLink);
     }
 
     public function getHostedButtonPreferences(string $id)
     {
         $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+        (new Validator)->validatePageViewable($paymentLink);
 
         return $this->core->getHostedButtonPreferences($paymentLink);
     }
