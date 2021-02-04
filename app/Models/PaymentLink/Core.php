@@ -1587,19 +1587,19 @@ class Core extends Base\Core
             'entity_id'     => $paymentLink->getMerchantId(),
             'fields'        => [
                 [
-                    'key'        => 'description',
+                    'field'      => 'description',
                     'value'      => $paymentLink->getDescription(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'description',
                 ],
                 [
-                    'key'        => 'title',
+                    'field'      => 'title',
                     'value'      => $paymentLink->getTitle(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'title',
                 ],
                 [
-                    'key'        => 'terms',
+                    'field'      => 'terms',
                     'value'      => $paymentLink->getTerms(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'terms',
