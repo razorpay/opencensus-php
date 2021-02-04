@@ -480,8 +480,8 @@ class Core extends Base\Core
                 // If item contains field `card` then filter out token with card network in disabled network array
                 //
                 if ((isset($item[Entity::CARD]) === true) and
-                    (isset($item[Entity::CARD][Card\Entity::NETWORK_CODE]) === true)
-                    (in_array(Card\Network::getCode($item[Entity::CARD][Card\Entity::NETWORK_CODE]), $disabledNetwork, true) === true))
+                    (isset($item[Entity::CARD][Card\Entity::NETWORK]) === true)
+                    (in_array(Card\Network::getCode($item[Entity::CARD][Card\Entity::NETWORK]), $disabledNetwork, true) === true))
                 {
                     return false;
                 }
