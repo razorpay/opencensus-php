@@ -324,60 +324,6 @@ class Service extends Base\Service
 
     /**
      * @param array $input
-     * Eg. {"mid1" => {"on_demand": "14", "scheduled" : "15"}, "mid2" => {"on_demand": "12"}}
-     *
-     * @return array
-     */
-    public function setEarlySettlementPricingKeys(array $input): array
-    {
-        $this->trace->info(TraceCode::ES_PRICING_KEY_SET, $input);
-
-        $mids = array_keys($input);
-
-        $merchants = $this->repo->merchant->findMany($mids);
-
-        $successMids = [];
-
-        // 31st Dec 2018 end of day
-        $defaultExpiry = Carbon::now(Timezone::IST)->endOfYear()->getTimestamp();
-
-        $validator = (new Validator);
-
-        foreach ($merchants as $merchant)
-        {
-            $mid = $merchant->getId();
-
-            $data = $input[$mid];
-
-            $validator->validateInput('set_es_pricing_key', $data);
-
-            foreach ($data as $pricingType => $pricingValue)
-            {
-                $key = $mid . '_' . $pricingType . '_es_pricing';
-
-                $pricing = round($pricingValue / 100, 2);
-
-                Cache::put('espricing:' . $key, $pricing, $defaultExpiry);
-
-                $this->trace->info(
-                    TraceCode::ES_PRICING_MERCHANT_KEY_SET,
-                    [
-                        'mid'           => $mid,
-                        'key'           => $key,
-                        'value'         => $pricing,
-                    ]);
-            }
-
-            $successMids[] = $mid;
-        }
-
-        $failedMids = array_diff($mids, $successMids);
-
-        return ['success_mids' => $successMids, 'failed_mids' => $failedMids];
-    }
-
-    /**
-     * @param array $input
      * @return array
      * @throws Exception\BadRequestException
      */
