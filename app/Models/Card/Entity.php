@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
      */
     const NUMBER = 'number';
     const CVV    = 'cvv';
+    const IS_CVV_OPTIONAL = 'is_cvv_optional';
 
     const COUNTRY_LENGTH = 2;
 

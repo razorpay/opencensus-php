@@ -11,6 +11,7 @@ class TransactionFilter extends Terminal\Filter
         'capability',
         'google_pay',
         'visa_safe_click',
+        'visa_safe_click_step_up',
     ];
 
     public function gatewayFilter($terminal)
@@ -55,6 +56,10 @@ class TransactionFilter extends Terminal\Filter
 
             return false;
         }
+        elseif ($terminal['authentication_gateway'] === 'google_pay')
+        {
+            return false;
+        }
 
         return true;
     }
@@ -78,6 +83,23 @@ class TransactionFilter extends Terminal\Filter
             {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    public function visaSafeClickStepUpFilter($terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->getApplication() === 'visasafeclick_stepup')
+        {
+            if ($terminal['authentication_gateway'] === null)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         return true;

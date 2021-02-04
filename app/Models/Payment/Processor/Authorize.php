@@ -6460,6 +6460,8 @@ trait Authorize
 
         $this->setDummyCVVIfApplicable($cardInput);
 
+        $this->setIsCVVOptionalFlagIfApplicable($cardInput);
+
         $cardCore = new Card\Core;
 
         $recurring = (($this->payment->isRecurring()) or
@@ -8388,6 +8390,18 @@ trait Authorize
                     'method'        => $payment->getMethod(),
                 ]
             );
+        }
+    }
+
+    protected function setIsCVVOptionalFlagIfApplicable(array &$cardInput)
+    {
+        if ($this->payment->getApplication() === 'visasafeclick_stepup')
+        {
+            $cardInput[Card\Entity::IS_CVV_OPTIONAL] = true;
+        }
+        else
+        {
+            $cardInput[Card\Entity::IS_CVV_OPTIONAL] = false;
         }
     }
 }

@@ -1075,6 +1075,8 @@ class TransactionFilter extends Terminal\Filter
         {
             case 'google_pay':
                 return ($terminal->isTokenizationSupported() === true);
+            case 'visasafeclick_stepup':
+                return ($terminal->isGateway(Gateway::CYBERSOURCE) === true);
             default:
                 return true;
         }

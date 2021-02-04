@@ -3313,6 +3313,12 @@ class Processor
 
     protected function setApplicationIfApplicable(Payment\Entity $payment, $input)
     {
+        if ((isset($input['application']) === false) and
+            ($payment->isVisaSafeClickStepUpPayment() === true))
+        {
+            $input['application'] = 'visasafeclick_stepup';
+        }
+
         if (isset($input['application']) === true)
         {
             $payment->setApplication($input['application']);

@@ -1868,6 +1868,38 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testAuthorizeViaCpsVisaSafeClickStepUpPayment()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['vsc_authorization']);
+        $terminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']['cvv']);
+
+        $this->enableCpsConfig();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $this->mockCps($terminal, 'callback_split');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->disbaleCpsConfig();
+    }
+
     public function testAuthorizeWithoutAuthCodeFailure()
     {
         $this->razorxValue = "cardps";

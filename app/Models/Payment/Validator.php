@@ -961,6 +961,12 @@ class Validator extends Base\Validator
             return;
         }
 
+        // cvv not mandatory for vsc step up payments
+        if ($this->entity->isVisaSafeClickStepUpPayment() === true)
+        {
+            return;
+        }
+
         if (isset($input['card']['cvv']) === false)
         {
             throw new Exception\BadRequestException(

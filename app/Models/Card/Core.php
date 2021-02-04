@@ -232,6 +232,11 @@ class Core extends Base\Core
 
         $messageType = $card->iinRelation ? $card->iinRelation['message_type'] : null;
 
+        if ($this->isCvvOptional($input) === true)
+        {
+            $input['cvv'] = null;
+        }
+
         return array_merge(
             $card->toArray(),
             [
@@ -431,6 +436,12 @@ class Core extends Base\Core
                 return;
             }
 
+            // cases where cvv is not required
+            if ($this->isCvvOptional($input) === true)
+            {
+                return;
+            }
+
             throw new Exception\BadRequestValidationFailureException(
                 'The cvv field is required',
                 Entity::CVV);
@@ -492,5 +503,16 @@ class Core extends Base\Core
     public function getCardEntity($id)
     {
         return $this->repo->card->find($id);
+    }
+
+    public function isCvvOptional($input): bool
+    {
+        if ((isset($input[Card\Entity::IS_CVV_OPTIONAL]) === true) and
+            ($input[Card\Entity::IS_CVV_OPTIONAL] === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

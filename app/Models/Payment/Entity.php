@@ -2173,6 +2173,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->application === 'visasafeclick'));
     }
 
+    public function isVisaSafeClickStepUpPayment()
+    {
+        return (($this->isCard()) and
+            (isset($this->input[self::CARD]) === true) and
+            (isset($this->input[self::CARD][Card\Entity::CVV]) === false) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::VISA_SAFE_CLICK) === true));
+    }
+
     public function isCVVOptional()
     {
         return ($this->isVisaSafeClickPayment() === true);
