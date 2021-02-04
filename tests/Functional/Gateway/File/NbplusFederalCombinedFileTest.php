@@ -31,6 +31,8 @@ class NbplusNetbankingFederalCombinedFileTest extends NbPlusPaymentServiceNetban
 
     public function testGenerateCombinedFile()
     {
+        $this->markTestSkipped("Combined file in not required for nbplus gateway integration, claims are settled through dashboard provided by bank");
+
         Mail::fake();
 
         $payment = $this->getDefaultNetbankingPaymentArray('FDRL');

@@ -28,9 +28,12 @@ class Federal extends Base
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $sum += ($item['refund']['amount'] / 100);
+                if($item['payment']['cps_route'] !== 3)
+                {
+                    $sum += ($item['refund']['amount'] / 100);
 
-                return $sum;
+                    return $sum;
+                }
             });
 
             $count['refunds'] = count($data['refunds']);
@@ -42,9 +45,12 @@ class Federal extends Base
         {
             $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
-                $sum += ($item['payment']->getAmount() / 100);
+                if($item['payment']['cps_route'] !== 3)
+                {
+                    $sum += ($item['payment']->getAmount() / 100);
 
-                return $sum;
+                    return $sum;
+                }
             });
 
             $count['claims'] = count($data['claims']);
