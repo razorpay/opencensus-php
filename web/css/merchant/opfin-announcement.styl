@@ -1,7 +1,7 @@
 .OpfinAnnouncement--Modal
   max-width: 1150px
 
-.OpfinAnnouncement__HubspotForm--modal
+.OpfinAnnouncement__FormModal--modal
   max-width: 930px
   background: white
 
@@ -57,7 +57,7 @@
       font-size: 16px
       line-height: 24px
       color: rgba(22, 47, 86, 0.74)
-  
+
   .opfin-announcement-cta
     margin-top: 64px
 
@@ -66,52 +66,62 @@
       height: 46px
       width: 213px
       font-size: 16px
-  
+
 
 .hbspt-opfin-nitro-wrapper
   display: table
 
-  .spinner
-    position: absolute
-    left: 50%
-    top: 50%
-    transform: translate(-50%, -50%)
+  .success-message
+    padding: 40px
+    padding-bottom: 400px
+    h3, p
+      text-align center
 
-  #hbspt-opfin-nitro-form
+    p
+      margin-top 30px
+
+  .hbspt-opfin-nitro-form
     display: table-cell
     width: 560px
     padding: 40px 80px
     background: white
 
-    form.hs-form
-      margin: 0 auto
-
-      fieldset
-        max-width: none
-  
-    .hs-richtext.hs-main-font-element
-      margin-bottom: 16px
-
-      > h1
+    h1
         color: #252525
         font-size: 20px
         line-height: 30px
         font-weight: bold
         margin-top: 0px
-      
-      > p
+
+      p
         color: rgba(22, 47, 86, 0.54)
+        margin-bottom 16px
+
+    form
+      margin: 0 auto
+
+      fieldset
+        max-width: none
+
+      .footer
+        padding 20px 0 20px 0
+        display flex
+        justify-content center
+
+        button
+          height 50px
+          width 260px
 
     .hs-button
-      background: #3281FF 
+      background: #3281FF
       color: #fff
       border: none
       width: 260px
       margin: 0px auto
       display: block
-      height: auto 
+      height: auto
       border-radius: 3px
-      padding: 15px 16px 
+      padding: 15px 16px
       font-size: 15px
       cursor: pointer
       font-weight: bold
@@ -164,7 +174,7 @@
 
         li
           margin-bottom: 5px
-      
+
       label
         .hs-form-required
           color: #ff0000

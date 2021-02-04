@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import Button from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import Spinner from 'common/ui/Spinner';
 import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
+import OpfinAnnouncementForm from './OpfinAnnouncementForm';
 
 // STYLE - opfin-announcement.styl
-
-const hubspotFormMap = {
-  'announcement-Nov20-Opfin-NitroV3-cta1': {
-    portalId: '5558946',
-    formId: '6f7f348b-c318-48e1-bd08-b5f986c8fc2c',
-  },
-};
 
 const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => {
   const handleCloseAnnouncement = () => {
@@ -27,7 +20,7 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
     onClose();
   };
 
-  const handleCloseHubspot = () => {
+  const handleCloseFormModal = () => {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`announcement_click_popup_screen2_close`, {
         popUpId: id,
@@ -36,7 +29,7 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
     closeModal();
   };
 
-  const showHubspotForm = () => {
+  const showFormModal = () => {
     closeModal();
 
     tracking.trackEvent(
@@ -46,15 +39,9 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
     );
 
     openModal({
-      component: (
-        <HubspotForm
-          onClose={handleCloseHubspot}
-          portalId={hubspotFormMap[id].portalId}
-          formId={hubspotFormMap[id].formId}
-        />
-      ),
+      component: <FormModal onClose={handleCloseFormModal} id={id} tracking={tracking} />,
       size: 'xlarge',
-      className: 'OpfinAnnouncement__HubspotForm--modal',
+      className: 'OpfinAnnouncement__FormModal--modal',
     });
   };
 
@@ -85,68 +72,45 @@ const OpfinAnnouncement = ({ id, openModal, closeModal, onClose, tracking }) => 
         </div>
       </div>
 
-      <Button.Primary className="opfin-announcement-cta" onClick={showHubspotForm}>
+      <Button.Primary className="opfin-announcement-cta" onClick={showFormModal}>
         Get this offer
       </Button.Primary>
     </div>
   );
 };
 
-const HubspotForm = ({ onClose, portalId, formId }) => {
-  useEffect(() => {
-    if (window.hbspt) {
-      window.hbspt.forms.create({
-        portalId,
-        formId,
-        target: '#hbspt-opfin-nitro-form',
-        onFormReady: () => {
-          setHasFormLoaded(true);
-        },
-      });
-    }
-  }, []);
-
-  const [hasFormLoaded, setHasFormLoaded] = useState(false);
-
+const FormModal = ({ id, onClose, tracking }) => {
   return (
     <div>
-      <button
-        type="button"
-        className={classList('close', hasFormLoaded && 'inverted-close')}
-        onClick={onClose}
-      >
+      <button type="button" className={classList('close', 'inverted-close')} onClick={onClose}>
         <i class="i i-close" />
       </button>
       <div className="hbspt-opfin-nitro-wrapper">
-        <div id="hbspt-opfin-nitro-form"></div>
-        {hasFormLoaded ? (
-          <div className="hbspt-opfin-nitro-features">
-            <p className="hbspot-opfin-nitro-features-title">
-              Get your exclusive offer <br />
-              when you use Opfin Payroll
-            </p>
-            <div className="hbspot-opfin-nitro-offer">
-              <img src="/dist/css/assets/opfin/credits_offer_icon.svg" />
-              <span>5L of free credits on Razorpay</span>
-            </div>
-            <div className="hbspot-opfin-nitro-offer">
-              <img src="/dist/css/assets/opfin/payroll_offer_icon.svg" />
-              <span>
-                3 months of Opfin Payroll <br /> software for FREE
-              </span>
-            </div>
-            <ul className="hbspt-opfin-nitro-features-list">
-              <li>Automated Payroll</li>
-              <li>Compliance Processing</li>
-              <li>Easy to understand dashboards</li>
-              <li>Easy Reimbursements</li>
-              <li>Time & Leave Management</li>
-              <li>Employee Self-Service</li>
-            </ul>
+        <OpfinAnnouncementForm id={id} tracking={tracking} />
+        <div className="hbspt-opfin-nitro-features">
+          <p className="hbspot-opfin-nitro-features-title">
+            Get your exclusive offer <br />
+            when you use Opfin Payroll
+          </p>
+          <div className="hbspot-opfin-nitro-offer">
+            <img src="/dist/css/assets/opfin/credits_offer_icon.svg" />
+            <span>5L of free credits on Razorpay</span>
           </div>
-        ) : (
-          <Spinner />
-        )}
+          <div className="hbspot-opfin-nitro-offer">
+            <img src="/dist/css/assets/opfin/payroll_offer_icon.svg" />
+            <span>
+              3 months of Opfin Payroll <br /> software for FREE
+            </span>
+          </div>
+          <ul className="hbspt-opfin-nitro-features-list">
+            <li>Automated Payroll</li>
+            <li>Compliance Processing</li>
+            <li>Easy to understand dashboards</li>
+            <li>Easy Reimbursements</li>
+            <li>Time & Leave Management</li>
+            <li>Employee Self-Service</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
