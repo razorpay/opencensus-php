@@ -3,7 +3,6 @@
 namespace RZP\Services;
 
 
-use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -597,12 +596,7 @@ class TerminalsService
             'show_trace'      => true,
         ];
 
-        $env = $this->app->environment();
-
-        if(Environment::isEnvironmentQA($env) === false)
-        {
-            $options =  array_merge($defaultOptions, $additionalOptions);
-        }
+        $options =  array_merge($defaultOptions, $additionalOptions);
 
         return $options;
     }
