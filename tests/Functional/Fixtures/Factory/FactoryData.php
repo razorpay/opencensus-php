@@ -113,6 +113,7 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',
             'ref_code'           => 'teslacomikejzc',
+            'product'            => 'primary',
             'url'                => $faker->url,
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,

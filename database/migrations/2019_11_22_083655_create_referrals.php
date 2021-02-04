@@ -25,6 +25,8 @@ class CreateReferrals extends Migration
 
             $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->string(Entity::PRODUCT, 255)->default(\RZP\Constants\Product::PRIMARY);
+
             $table->string(Entity::REF_CODE, Entity::ID_LENGTH);
 
             $table->string(Entity::URL)
@@ -34,7 +36,7 @@ class CreateReferrals extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->unique(Entity::MERCHANT_ID);
+            $table->unique([Entity::MERCHANT_ID, Entity::PRODUCT]);
 
             $table->unique(Entity::REF_CODE);
 

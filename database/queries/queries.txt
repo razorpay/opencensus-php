@@ -6146,3 +6146,8 @@ ALTER TABLE stakeholders
 
 INSERT INTO mozart (payment_id, action, gateway, amount, created_at, updated_at, raw)
        VALUES ('GOLOnKDdCCqMuP', 'authorize', 'upi_juspay',299700, 1611044604, 1611044604, '{}');
+
+ALTER TABLE referrals
+    ADD COLUMN product varchar(255) NOT NULL DEFAULT 'primary',
+    DROP INDEX referrals_merchant_id_unique,
+    ADD UNIQUE INDEX referrals_merchant_id_product_unique (merchant_id,product);

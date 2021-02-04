@@ -48,7 +48,7 @@ class MerchantReferralTest extends OAuthTestCase
 
         $referrals = $this->getDbEntity('referrals',
                                         [
-                                            'merchant_id' => $merchantId
+                                            'merchant_id' => $merchantId, 'product' => 'primary'
                                         ], 'live');
 
         $this->assertNotEmpty($referrals->getReferralLink());
@@ -94,6 +94,47 @@ class MerchantReferralTest extends OAuthTestCase
         $testData['request']['url'] = "/merchant/referral";
 
         $this->startTest();
+    }
+
+    /**
+     * Asserts that the create referral returns the Referral Entity for a particular merchant
+     * by creating or fetching an existing entry from db.
+     *
+     */
+    public function testCreateOrFetchReferral()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $testData['request']['url'] = "/merchant/referral";
+
+        $response  = $this->startTest();
+
+        $bankingReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId, 'product' => 'banking'
+            ], 'live');
+
+        $this->assertEquals($bankingReferral->getReferralCode(), $response['referrals']['banking']['ref_code']);
+        $this->assertEquals($bankingReferral->getReferralLink(), $response['referrals']['banking']['url']);
+
+        $pgReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId, 'product' => 'primary'
+            ], 'live');
+
+        $this->assertEquals($pgReferral->getReferralCode(), $response['referrals']['primary']['ref_code']);
+        $this->assertEquals($pgReferral->getReferralLink(), $response['referrals']['primary']['url']);
+
+        $this->assertEquals($pgReferral->getReferralCode(), $response['ref_code']);
+        $this->assertEquals($pgReferral->getReferralLink(), $response['url']);
     }
 
 }

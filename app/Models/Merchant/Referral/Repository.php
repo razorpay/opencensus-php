@@ -31,7 +31,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->first();
+                    ->get();
     }
 
     public function getReferralByReferralCode(string $referralCode)

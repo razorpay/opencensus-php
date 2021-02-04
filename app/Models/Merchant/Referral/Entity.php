@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const  MERCHANT_ID        = 'merchant_id';
     const  REF_CODE           = 'ref_code';
     const  URL                = 'url';
+    const  PRODUCT            = 'product';
 
     protected $entity = 'referrals';
 
@@ -22,6 +23,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::REF_CODE,
         self::URL,
+        self::PRODUCT,
     ];
 
     protected $public = [
@@ -29,6 +31,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::REF_CODE,
         self::URL,
+        self::PRODUCT,
     ];
 
     protected $dates = [
@@ -56,5 +59,13 @@ class Entity extends Base\PublicEntity
     public function getReferralLink()
     {
         return $this->getAttribute(self::URL);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProduct()
+    {
+        return $this->getAttribute(self::PRODUCT);
     }
 }

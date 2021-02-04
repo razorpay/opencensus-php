@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Referral;
 
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -28,27 +29,36 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity $merchant
      *
-     * @return Entity
+     * @return array
      * @throws BadRequestException
      */
-    public function fetchMerchantReferral(Merchant\Entity $merchant): Entity
+    public function fetchMerchantReferral(Merchant\Entity $merchant)
     {
-        $referral = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
+        $referrals = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
+
+        $referralsMap = [];
+
+        for ($i = 0; $i < count($referrals); $i++){
+
+            $referral = $referrals[$i];
+
+            $referralsMap[$referral->getProduct()] = $referral->toArrayPublic();;
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_REFERRAL_FETCH_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
-                'referral'    => $referral
+                'referral'    => $referrals
             ]);
 
-        if ($referral === null)
+        if ($referrals === null || count($referrals) == 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_REFERRAL_DOES_NOT_EXIST);
         }
 
-        return $referral;
+        return $referralsMap;
     }
 
     /**
@@ -107,14 +117,13 @@ class Core extends Base\Core
      * Create Short url for merchant referral
      *
      * @param $refCode
+     * @param $dashboardUrl
      *
      * @return String
      */
-    public function createShortenReferralUrl($refCode): String
+    public function createShortenReferralUrl($refCode, $dashboardUrl): String
     {
         // Adds type label & dashboard path for referral.
-
-        $dashboardUrl = $this->config['applications.dashboard.url'];
 
         $longUrl = $dashboardUrl . "/signup?referral_code=";
 
@@ -126,55 +135,103 @@ class Core extends Base\Core
     }
 
     /**
-     * Either creates or fetch merchant referral
+     * Either creates or fetch merchant referrals
      *
      * @param Merchant\Entity $merchant
      *
-     * @return Entity
+     * @return array
      */
-    public function createOrFetch(Merchant\Entity $merchant): Entity
+    public function createOrFetch(Merchant\Entity $merchant)
     {
-        $referral = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
+        $referrals = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
 
-        if (empty($referral) === true)
+        $productConfig = array( Product::PRIMARY => $this->config['applications.dashboard.url'],
+
+                                Product::BANKING => $this->config['applications.banking_service_url']);
+
+
+        if (empty($referrals) === true)
         {
-            $referral = $this->create($merchant);
+            $referrals = $this->create($merchant, $productConfig);
+        }
+        else{
+            list($missingReferralConfig, $existingReferrals) = $this->findMissingReferrals($referrals, $productConfig);
+
+            $missingReferrals = $this->create($merchant, $missingReferralConfig);
+
+            $referrals = array_merge($existingReferrals, $missingReferrals);
         }
 
-        return $referral;
+        return $referrals;
     }
 
     /**
      * @param Merchant\Entity $merchant
+     * @param $productConfig
      *
-     * @return Entity
+     * @return array
      */
-    protected function create(Merchant\Entity $merchant): Entity
+    protected function create(Merchant\Entity $merchant, $productConfig)
     {
         // Calling this before the get call below to avoid calling validator
         // explicitly as build method will call it. The following get is to
 
-        $refCode = $this->generateReferralCode($merchant);
+        $newReferrals = [];
 
-        $input[Entity::REF_CODE] = $refCode;
+        foreach($productConfig as $product => $dashboardUrl)
+        {
+            $refCode = $this->generateReferralCode($merchant);
 
-        $shortenUrl = $this->createShortenReferralUrl($refCode);
+            $input[Entity::REF_CODE] = $refCode;
 
-        $input[Entity::URL] = $shortenUrl;
+            $shortenUrl = $this->createShortenReferralUrl($refCode, $dashboardUrl);
 
-        $newReferral = (new Entity)->build($input);
+            $input[Entity::URL] = $shortenUrl;
 
-        $newReferral->merchant()->associate($merchant);
+            $input[Entity::PRODUCT] = $product;
 
-        $this->trace->info(
-            TraceCode::MERCHANT_REFERRAL_CREATE_REQUEST,
-            [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input
-            ]);
+            $newReferral = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($newReferral);
+            $newReferral->merchant()->associate($merchant);
 
-        return $newReferral;
+            $this->trace->info(
+                TraceCode::MERCHANT_REFERRAL_CREATE_REQUEST,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'input'       => $input
+                ]);
+
+            $this->repo->saveOrFail($newReferral);
+
+            $newReferrals[$product] = $newReferral->toArrayPublic();
+        }
+
+        return $newReferrals;
+    }
+
+    /**
+     * @param $referrals
+     * @param array $productConfig
+     * @return array[]
+     */
+    public function findMissingReferrals($referrals, array $productConfig): array
+    {
+        $missingReferralConfig = [];
+
+        $existingReferralsMap = [];
+
+        foreach ($referrals as $referral)
+        {
+            $existingReferralsMap[$referral->getProduct()] = $referral->toArrayPublic();;
+        }
+
+        foreach ($productConfig as $product => $config)
+        {
+            if (array_key_exists($product, $existingReferralsMap) === false)
+            {
+                $missingReferralConfig[$product] = $config;
+            }
+        }
+        return array($missingReferralConfig, $existingReferralsMap);
     }
 }

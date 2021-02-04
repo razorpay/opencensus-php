@@ -5025,7 +5025,7 @@ class Service extends Base\Service
 
         $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
 
-        return $referrals->toArrayPublic();
+        return $this->formatReferralResponse($referrals);
     }
 
     /**
@@ -5033,7 +5033,7 @@ class Service extends Base\Service
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function createReferral(): array
+    public function createReferral()
     {
         $merchant = $this->auth->getMerchant();
 
@@ -5041,11 +5041,14 @@ class Service extends Base\Service
 
         (new Referral\Validator)->validateForReferral($partner);
 
-        $referral = (new Referral\Core)->createOrFetch($merchant);
+        $referrals = (new Referral\Core)->createOrFetch($merchant);
 
-        return $referral->toArrayPublic();
+        $result = $referrals[Product::PRIMARY];
+
+        $result['referrals'] = $referrals;
+
+        return $result;
     }
-
 
     /**
      * @param array $record
@@ -5637,5 +5640,28 @@ class Service extends Base\Service
         }
 
         return MerchantConstants::MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED;
+    }
+
+    /**
+     * @param array $referrals
+     * @return array|mixed
+     */
+    public function formatReferralResponse(array $referrals)
+    {
+        // In the current format, a single referral for the pg product
+        // is returned in response, going forward, we will be returning all
+        // the referrals for a merchant (pg, banking, etc.).
+        // To support backward compatibility, we are stuffing referral details of
+        // the pg at root level
+
+        if (array_key_exists(Product::PRIMARY, $referrals) === true) {
+            $result = $referrals[Product::PRIMARY];
+
+            $result['referrals'] = $referrals;
+
+            return $result;
+        }
+
+        return $referrals;
     }
 }

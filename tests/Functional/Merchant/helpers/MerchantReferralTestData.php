@@ -48,4 +48,25 @@ return [
         ],
     ],
 
+    'testCreateOrFetchReferral' => [
+        'request'   => [
+            'url'    => '/merchant/referral',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary',
+                'referrals'   =>  [
+                    'primary' => [
+                        'merchant_id' => '10000000000000'
+                    ],
+                    'banking' => [
+                        'merchant_id' => '10000000000000'
+                    ],
+                ]
+            ],
+        ],
+    ]
+
 ];
