@@ -7384,6 +7384,171 @@ return [
                         ]
                     ]
                 ],
+                'preferred_methods' => [
+                    '+919955555555' => [
+                        'instruments' => [
+                            [],
+                            [],
+                            [
+                                'method'   => 'card',
+                                'issuer'   => 'SBIN',
+                                'type'     => 'credit',
+                                'network'  => 'Mastercard',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testGetCheckoutPreferencesWithPreferredMethods' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'personalisation' => true,
+                'order_id' => 'null',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '1234567890' => [
+                        'instruments' =>[
+                            [
+                                'instrument' => 'abcd@okhdfc',
+                                'method'     => 'upi',
+                                'score'      =>  0.54,
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                                'score'      =>  0.54,
+                            ],
+                        ],
+                        "is_customer_identified"    => true,
+                        "user_aggregates_available" => false
+                    ],
+                ]
+            ],
+        ],
+    ],
+    'testGetCheckoutPersonalisation' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '1234567890' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'abcd@okhdfc',
+                                'method'     => 'upi',
+                                'score'      =>  0.54,
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                                'score'      =>  0.54,
+                            ],
+                        ],
+                        "is_customer_identified"    => true,
+                        "user_aggregates_available" => false
+                    ],
+                ]
+            ],
+        ],
+    ],
+    'testGetCheckoutPersonalisationForNonLoggedInUser' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'app_token' => 'test_app_token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+    'testGetCheckoutPersonalisationForContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact'   => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+    'testGetCheckoutPersonalisationForCustomerId' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'      => 'null',
+                'customer_id'   => 'cust_100005customer'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+    'testGetCheckoutPersonalisationWithCustomerIdAndInputContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'    => 'null',
+                'customer_id' => 'cust_100000customer',
+                'contact'     => 1234123412,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '1234567890' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'abcd@okhdfc',
+                                'method'     => 'upi',
+                                'score'      =>  0.54,
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                                'score'      =>  0.54,
+                            ],
+                        ],
+                        "is_customer_identified"    => true,
+                        "user_aggregates_available" => false
+                    ],
+                ]
             ],
         ],
     ]

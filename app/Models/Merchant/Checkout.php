@@ -117,6 +117,13 @@ class Checkout
 
         $this->checkAndFillOrgDetails($merchant, $data);
 
+        if ((isset($input['personalisation']) === true) and
+            (($input['personalisation'] === true) or
+              ($input['personalisation'] === '1')))
+        {
+            $this->fillPreferredMethods($merchant, $input, $data);
+        }
+
         return $data;
     }
 
@@ -1128,8 +1135,7 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
-        //commented to solve security issue
-        //$this->fillPreferredMethods($merchant, $input, $data);
+        $this->fillPreferredMethods($merchant, $input, $data);
 
         return $data;
     }
@@ -1138,6 +1144,13 @@ class Checkout
     {
         if ((isset($data['order']) === false) and
             (isset($input['amount']) === false))
+        {
+            return;
+        }
+
+        //return for non logged in users
+        if ((isset($input[Payment\Entity::APP_TOKEN]) === false) and
+            (isset($input[Payment\Entity::CUSTOMER_ID]) === false))
         {
             return;
         }
@@ -1286,18 +1299,6 @@ class Checkout
 
     protected function findContact($input, $merchant, $data)
     {
-        if (isset($input[Payment\Entity::CONTACT]) === true)
-        {
-            return $input[Payment\Entity::CONTACT];
-        }
-
-        if (isset($input['contact_id']) === true)
-        {
-            $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant);
-
-            return $contact->contact;
-        }
-
         if ((isset($data['customer']) === true) and
              (isset($data['customer']['contact']) === true))
         {

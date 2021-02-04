@@ -9922,6 +9922,98 @@ class MerchantTest extends TestCase
         return $response['response'];
     }
 
+    public function testGetCheckoutPreferencesWithPreferredMethods()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('preferred_methods', $response);
+
+    }
+
+    public function testGetCheckoutPersonalisation()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('preferred_methods', $response);
+
+    }
+
+    public function testGetCheckoutPersonalisationForNonLoggedInUser()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('preferred_methods', $response);
+    }
+
+    public function testGetCheckoutPersonalisationForContact()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('preferred_methods', $response);
+    }
+
+    public function testGetCheckoutPersonalisationForCustomerId()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('preferred_methods', $response);
+    }
+
+    public function testGetCheckoutPersonalisationWithCustomerIdAndInputContact()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('preferred_methods', $response);
+    }
+
     public function testMerchantSupportOptions()
     {
         $this->ba->proxyAuth();
@@ -10173,5 +10265,4 @@ class MerchantTest extends TestCase
             $this->fixtures->merchant->activate();
         }
     }
-
 }
