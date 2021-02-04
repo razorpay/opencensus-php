@@ -1316,6 +1316,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes',
         Entity::TYPE                       => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
     ];
