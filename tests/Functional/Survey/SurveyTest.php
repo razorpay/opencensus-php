@@ -69,6 +69,62 @@ class SurveyTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateSurveyTTL()
+    {
+        $survey = $this->fixtures->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'Test Survey',
+            'description' => 'This is test survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateSurveyName()
+    {
+        $survey = $this->fixtures->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'Test Survey',
+            'description' => 'This is test survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateSurveyDescription()
+    {
+        $survey = $this->fixtures->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'Test Survey',
+            'description' => 'This is test survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/survey/' . $survey['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateSurveyWithInvalidId()
+    {
+        $survey = $this->fixtures->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'name' => 'Test Survey',
+            'description' => 'This is test survey',
+            'survey_ttl' => 30,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/survey/abcdef' ;
+
+        $this->startTest();
+    }
+
     public function testInvalidSurveyId()
     {
         $survey = $this->fixtures->on('live')->create('survey', [

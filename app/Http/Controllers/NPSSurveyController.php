@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Models\Survey\Entity;
 use RZP\Models\Survey\Service as SurveyService;
 use RZP\Models\Survey\Tracker\Service as SurveyTrackerService;
 
@@ -37,6 +38,15 @@ class NPSSurveyController extends Controller
         $input = Request::all();
 
         $response = $this->service->create($input);
+
+        return response()->json($response);
+    }
+
+    public function editSurvey(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service->edit($id, $input);
 
         return response()->json($response);
     }

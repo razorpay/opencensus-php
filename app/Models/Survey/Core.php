@@ -14,4 +14,13 @@ class Core extends Base\Core
 
         return $survey;
     }
+
+    public function edit(Entity $survey, array $input): Entity
+    {
+        $survey->edit($input);
+
+        $this->repo->saveOrFail($survey);
+
+        return $survey;
+    }
 }

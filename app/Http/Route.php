@@ -2250,6 +2250,7 @@ class Route
         'gupshup_incoming_messages_callback'      => ['post',    'gupshup/incoming_messages/callback',                      'GupShupController@handleIncomingMessagesCallback'             ],
         'nps_survey_process_scheduled'            => ['post',    'survey/scheduled/process',                                'NPSSurveyController@initiateSurvey'                           ],
         'survey_create'                           => ['post',    'survey',                                                  'NPSSurveyController@createSurvey'                             ],
+        'survey_edit'                             => ['patch',   'survey/{id}',                                             'NPSSurveyController@editSurvey'                               ],
     ];
 
     public static $public = [
@@ -4305,6 +4306,7 @@ class Route
         'enable_merchant_notification_config_admin',
 
         'survey_create',
+        'survey_edit',
 
         //Application Framework
         'app_create',
@@ -5166,6 +5168,7 @@ class Route
         'merchant_details_suggested_update'                   => Permission::MERCHANT_INVOICE_CONTROL,
 
         'survey_create'                                       => Permission::NPS_SURVEY,
+        'survey_edit'                                         => Permission::NPS_SURVEY,
 
         'app_create'                                          => '*',
         'app_update'                                          => '*',
@@ -6720,6 +6723,7 @@ class Route
 
         // NPS routes
         'survey_create',
+        'survey_edit',
         'nps_survey_process_scheduled',
     ];
 

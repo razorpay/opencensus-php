@@ -23,6 +23,76 @@ return [
         ],
     ],
 
+    'testUpdateSurveyTTL' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'content' => [
+                'survey_ttl' => 60
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Test Survey',
+                'description' => 'This is test survey',
+                'survey_ttl' => '60'
+            ],
+        ],
+    ],
+
+    'testUpdateSurveyName' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'content' => [
+                'name' => 'Test Survey updated'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Test Survey updated',
+                'description' => 'This is test survey',
+                'survey_ttl' => 30
+            ],
+        ],
+    ],
+
+    'testUpdateSurveyDescription' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'content' => [
+                'description' => 'This is test survey updated'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Test Survey',
+                'description' => 'This is test survey updated',
+                'survey_ttl' => 30
+            ],
+        ],
+    ],
+
+    'testUpdateSurveyWithInvalidId' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'content' => [
+                'description' => 'This is test survey updated'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testInvalidSurveyId' => [
         'request'  => [
             'method'  => 'POST',

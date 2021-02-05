@@ -27,4 +27,20 @@ class Service extends Base\Service
 
         return $survey->toArrayPublic();
     }
+
+    /**
+     * @param string $id , array $input
+     * @param array $input
+     * @return array
+     */
+    public function edit(string $id, array $input)
+    {
+        (new Validator)->validateInput(Validator::BEFORE_EDIT, $input);
+
+        $survey = $this->repo->survey->findOrFailPublic($id);
+
+        $survey = $this->core->edit($survey, $input);
+
+        return $survey->toArrayPublic();
+    }
 }
