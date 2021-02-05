@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { getURLQueryParams, getMobileOperatingSystem } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentsList from 'merchant/views/Transactions/Payments/List';
@@ -17,12 +17,20 @@ import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import { openModal } from 'merchant_common/reducers/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
+import LocalStorageService from 'common/utils/localStorage';
+
+let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
+if (getMobileOperatingSystem() == 'iOS') {
+  url = 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144';
+}
 
 @connect(
   (state) => {
@@ -33,23 +41,63 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
       payments: state.payments,
     };
   },
-  { fetchSettlementAmount, openModal },
+  { fetchSettlementAmount, openModal, closeModal },
 )
 export default class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
       openAutoModal: false,
+      showPopup: false,
+      showFooter: false,
+      url: url,
     };
   }
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
+
+    const mwebPopupLS = !!LocalStorageService.getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
+    const mwebPopupSS = !!window.sessionStorage.getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.
+    let showPopup = isMobileDevice();
+    if (mwebPopupLS) {
+      showPopup = false;
+    } else if (mwebPopupSS) {
+      showPopup = false;
+    }
+    this.setState({ showPopup: showPopup });
   }
+
+  closePopup = () => {
+    this.setState({ showFooter: true, showPopup: false });
+  };
+
+  closeFooter = () => {
+    this.setState({ showFooter: false, showPopup: false });
+  };
+
+  showMobilePopup = () => {
+    const { url } = this.state;
+
+    this.props.openModal({
+      size: 'xlarge',
+      component: (
+        <MobilePopup
+          title="Tracking Payments Is Better in the Mobile App"
+          subtitle="Switch to the app for better ways to track payments, issue refunds, and more."
+          screen="Transactions"
+          url={url}
+          notNowClicked={this.closePopup}
+          closeModal={this.props.closeModal}
+        />
+      ),
+      className: 'mobile-app-popup',
+    });
+  };
 
   render() {
     const { user, mode } = this.props,
-      { showInstantActivation, isSubmitted } = user;
+      { showInstantActivation, isSubmitted, role, activation_status } = user;
 
     const nextSettlement = !this.props.settlement_amount.data.next_settlement_time;
 
@@ -214,7 +262,21 @@ export default class TransactionsContainer extends Component {
               <Route path="/disputes" component={DisputesList} />
             </Switch>
           </content>
+
+          {this.state.showPopup &&
+            activation_status === 'activated' &&
+            (role === 'owner' || role === 'admin' || role === 'manager' || role === 'operations') &&
+            this.showMobilePopup()}
         </tabbed-container>
+        {this.state.showFooter &&
+          activation_status === 'activated' &&
+          (role === 'owner' || role === 'admin' || role === 'manager' || role === 'operations') && (
+            <UseAppFooter
+              screen="Transactions"
+              url={this.state.url}
+              closeFooter={this.closeFooter}
+            />
+          )}
       </React.Fragment>
     );
   }

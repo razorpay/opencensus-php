@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
@@ -16,6 +17,12 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
+import { getMobileOperatingSystem } from 'common/utils/rzp-utils';
+import LocalStorageService from 'common/utils/localStorage';
 
 import OnBoarding, {
   getIsPaymentLinksEnabled,
@@ -23,6 +30,11 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
+
+let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
+if (getMobileOperatingSystem() == 'iOS') {
+  url = 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144';
+}
 
 @connect(
   (state) => {
@@ -32,9 +44,30 @@ import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
       paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
     };
   },
-  { handleProductQuickGuide },
+  { handleProductQuickGuide, openModal, closeModal },
 )
 export default class PaymentLinksContainer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showPopup: false,
+      showFooter: false,
+      url: url,
+    };
+  }
+
+  componentDidMount() {
+    const mwebPopupLS = !!LocalStorageService.getItem('payment links_mweb_popup'); // Check if popup is already shown to user once.
+    const mwebPopupSS = !!window.sessionStorage.getItem('transactions_mweb_popup'); // Check if popup is shown in session on another scrren.
+    let showPopup = isMobileDevice();
+    if (mwebPopupLS) {
+      showPopup = false;
+    } else if (mwebPopupSS) {
+      showPopup = false;
+    }
+    this.setState({ showPopup: showPopup });
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.paymentlinks.loading !== this.props.paymentlinks.loading) {
       this.initPaymentLinksOnboarding(nextProps);
@@ -82,8 +115,41 @@ export default class PaymentLinksContainer extends React.Component {
     this.props.handleProductQuickGuide(paymentLinksProductOnBoarding);
   };
 
+  closePopup = () => {
+    this.setState({ showFooter: true, showPopup: false });
+  };
+
+  closeFooter = () => {
+    this.setState({ showFooter: false, showPopup: false });
+  };
+
+  showMobilePopup = () => {
+    const { url } = this.state;
+
+    setTimeout(
+      () =>
+        this.props.openModal({
+          size: 'xlarge',
+          component: (
+            <MobilePopup
+              title="Send Payment Links Faster with the Mobile App"
+              subtitle="Switch to the app for better ways to track payments, issue refunds, and more."
+              screen="Payment Links"
+              url={url}
+              notNowClicked={this.closePopup}
+              closeModal={this.props.closeModal}
+            />
+          ),
+          className: 'mobile-app-popup',
+        }),
+      1000,
+    );
+  };
+
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentLinksProductOnBoarding;
+
+    const { activation_status, role } = window.rzp_user;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -128,7 +194,21 @@ export default class PaymentLinksContainer extends React.Component {
               <Route path="/paymentlinks" component={PaymentLinksList} />
             </Switch>
           </content>
+
+          {this.state.showPopup &&
+            activation_status === 'activated' &&
+            (role === 'owner' || role === 'admin' || role === 'manager' || role === 'operations') &&
+            this.showMobilePopup()}
         </tabbed-container>
+        {this.state.showFooter &&
+          activation_status === 'activated' &&
+          (role === 'owner' || role === 'admin' || role === 'manager' || role === 'operations') && (
+            <UseAppFooter
+              screen="Payment Links"
+              url={this.state.url}
+              closeFooter={this.closeFooter}
+            />
+          )}
       </React.Fragment>
     );
   }
