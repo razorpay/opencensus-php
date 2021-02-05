@@ -5031,9 +5031,9 @@ class Route
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
-        'unclaimed_merchant_poc_update'                     => '*',
-        'merchant_poc_update_with_time'                     => '*',
-        'merchant_poc_update'                               => '*',
+        'unclaimed_merchant_poc_update'                     => Permission::ADMIN_MANAGE_PARTNERS,
+        'merchant_poc_update_with_time'                     => Permission::ADMIN_MANAGE_PARTNERS,
+        'merchant_poc_update'                               => Permission::ADMIN_MANAGE_PARTNERS,
         'create_submerchant_user'                           => Permission::PARTNER_AND_SUBMERCHANT_ACTIONS,
 
         'fetch_merchant_balance_configs'                    => '*',
