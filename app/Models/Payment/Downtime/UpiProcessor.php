@@ -26,6 +26,31 @@ class UpiProcessor extends BaseProcessor
             $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
         }
 
+        $platformDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', null);
+
+        $merchantDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null);
+
+        $this->processPlatform($platformDowntime);
+
+        $this->processMerchant($merchantDowntime);
+    }
+
+    protected function processMerchant(Collection $gatewayDowntimes)
+    {
+        $merchantIds = $gatewayDowntimes->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchantDowntimes = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', $merchantId);
+
+            $this->processPlatform($merchantDowntimes, $merchantId);
+        }
+
+        $this->endOngoingDowntimesForMerchants($merchantIds);
+    }
+
+    protected function processPlatform(Collection $gatewayDowntimes, $mid=null)
+    {
         $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
 
         foreach ($vpaList as $vpa)
@@ -42,9 +67,9 @@ class UpiProcessor extends BaseProcessor
             $this->createPaymentDowntime($downtimes, $vpa);
         }
 
-        $this->endOngoingDowntimes($vpaList);
+        $this->endOngoingDowntimes($vpaList, $mid);
 
-        $this->googlePayDowntime($gatewayDowntimes);
+        $this->googlePayDowntime($gatewayDowntimes, $mid);
     }
 
     protected function impliesUpiDowntime(Collection $gatewayDowntimes)
@@ -86,12 +111,14 @@ class UpiProcessor extends BaseProcessor
         else
         {
             // During edit the status gets updated and hence multiple notifications are triggered.
-            if (isset($input[Entity::STATUS]))
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]))
             {
-                unset($input[Entity::STATUS]);
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
+                $downtime = (new Core)->edit($downtime, $updateList);
             }
-
-            $downtime = (new Core)->edit($downtime, $input);
         }
 
         return $downtime;
@@ -122,6 +149,13 @@ class UpiProcessor extends BaseProcessor
             Entity::VPA_HANDLE  => $vpa,
             Entity::PSP         => $psp ?? UpiVpaMapping::getPsp($vpa),
         ];
+
+        $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        if(sizeof($mids) === 1)
+        {
+            $input[Entity::MERCHANT_ID] = $mids[0];
+        }
 
         return $input;
     }
@@ -160,9 +194,10 @@ class UpiProcessor extends BaseProcessor
         return $vpa;
     }
 
-    protected function googlePayDowntime($gatewayDowntimes)
+    protected function googlePayDowntime($gatewayDowntimes, string $mid=null)
     {
-        $activeDowntime = $this->getRepo()->fetchOngoingDowntimesByMethod($this->method);
+        $activeDowntime = $this->getRepo()->fetchOngoingDowntimesByMethodAndMerchant($this->method, $mid);
+
         $activeDowntime = $activeDowntime->where(Entity::PSP, '=', ProviderPsp::GOOGLE_PAY);
 
         $gatewayDowntimes = $gatewayDowntimes

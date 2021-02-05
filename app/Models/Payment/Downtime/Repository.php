@@ -29,7 +29,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchOngoingDowntimesByMethod(string $method): PublicCollection
+    public function fetchOngoingDowntimesByMethodAndMerchant(string $method, string $mid=null): PublicCollection
     {
         $query = $this->newQuery();
 
@@ -42,6 +42,38 @@ class Repository extends Base\Repository
         });
 
         $query->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
+
+        if($mid != null)
+        {
+            $query->where(Entity::MERCHANT_ID, '=', $mid);
+        }
+        else
+        {
+            $query->whereNull(Entity::MERCHANT_ID);
+        }
+
+        return $query->get();
+    }
+
+    public function fetchOngoingDowntimesByMethodForMerchantsWithoutDowntimes(string $method, array $merchantsWithDowntime): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(Entity::METHOD, $method);
+
+        $query->where(function ($query) {
+            $query->whereNull(Entity::END)
+                ->orWhere(Entity::END, '>', Carbon::now()->getTimestamp());
+        });
+
+        $query->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
+
+        $query->whereNotNull(Entity::MERCHANT_ID);
+
+        if (isset($merchantsWithDowntime) === true)
+        {
+            $query->whereNotIn(Entity::MERCHANT_ID, $merchantsWithDowntime);
+        }
 
         return $query->get();
     }
@@ -60,6 +92,19 @@ class Repository extends Base\Repository
         if (isset($input[Entity::END]) === true)
         {
             $query->where(Entity::BEGIN, '<=', $input[Entity::END]);
+        }
+
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $query->where(function ($query) use ($input)
+            {
+                $query->whereNull(Entity::MERCHANT_ID)
+                    ->orWhere(Entity::MERCHANT_ID, '=', $input[Entity::MERCHANT_ID]);
+            });
+        }
+        else
+        {
+            $query->whereNull(Entity::MERCHANT_ID);
         }
 
         $this->addMethodSpecificQuery($query, $input);

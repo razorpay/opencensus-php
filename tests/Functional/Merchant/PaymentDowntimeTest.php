@@ -1347,6 +1347,177 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals($paymentDowntime['vpa_handle'], 'ALL');
     }
 
+    public function testCreatePaymentDowntimeByDowntimeService()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'card',
+                'network'     => 'Visa',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLFT',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+                'end'         => strval(Carbon::now()->subMinutes(3)->timestamp),
+                'eventTime'   => strval(Carbon::now()->subMinutes(2)->timestamp),
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('card', $response['method']);
+        $this->assertEquals('VISA', $response['network']);
+        $this->assertNull($response['merchant_id']);
+
+        $this->assertEquals('card', $paymentDowntime['method']);
+        $this->assertEquals('VISA', $paymentDowntime['network']);
+        $this->assertNull($paymentDowntime['merchant_id']);
+
+        $downtimeCreateRequest2 = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'card',
+                'network'     => 'Visa',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'MERCHANT',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+                'end'         => strval(Carbon::now()->subMinutes(3)->timestamp),
+                'eventTime'   => strval(Carbon::now()->subMinutes(2)->timestamp),
+                'ruleId'      => 'rule1',
+                'merchantId' => 'HGYAjhc'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest2);
+
+        $this->assertEquals('card', $response['method']);
+        $this->assertEquals('VISA', $response['network']);
+        $this->assertEquals('HGYAjhc', $response['merchant_id']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('card', $paymentDowntime['method']);
+        $this->assertEquals('VISA', $paymentDowntime['network']);
+        $this->assertNull($paymentDowntime['merchant_id']);
+    }
+
+    public function testCreatePaymentDowntimeByDowntimeServiceReverse()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $downtimeCreateRequest2 = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'card',
+                'network'     => 'Visa',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'MERCHANT',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+                'end'         => strval(Carbon::now()->subMinutes(3)->timestamp),
+                'eventTime'   => strval(Carbon::now()->subMinutes(2)->timestamp),
+                'ruleId'      => 'rule1',
+                'merchantId' => 'HGYAjhc'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest2);
+
+        $this->assertEquals('card', $response['method']);
+        $this->assertEquals('VISA', $response['network']);
+        $this->assertEquals('HGYAjhc', $response['merchant_id']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('card', $paymentDowntime['method']);
+        $this->assertEquals('VISA', $paymentDowntime['network']);
+        $this->assertEquals('HGYAjhc', $response['merchant_id']);
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'card',
+                'network'     => 'Visa',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'PLFT',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+                'end'         => strval(Carbon::now()->subMinutes(3)->timestamp),
+                'eventTime'   => strval(Carbon::now()->subMinutes(2)->timestamp),
+                'ruleId'      => 'rule1',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('card', $response['method']);
+        $this->assertEquals('VISA', $response['network']);
+        $this->assertNull($response['merchant_id']);
+
+        $this->assertEquals('card', $paymentDowntime['method']);
+        $this->assertEquals('VISA', $paymentDowntime['network']);
+        $this->assertNull($paymentDowntime['merchant_id']);
+    }
+
+    public function testCreatePaymentDowntimeMerchantByDowntimeService()
+    {
+        $this->enableGatewayDowntimeService();
+
+        $downtimeCreateRequest = [
+            'content' => [
+                'severity'    => 'HIGH',
+                'method'      => 'card',
+                'network'     => 'Visa',
+                'strategy'    => 'SUCCESS_RATE',
+                'action'      => 'CREATE',
+                'type'        => 'MERCHANT',
+                'begin'       => strval(Carbon::now()->subMinutes(5)->timestamp),
+                'end'         => strval(Carbon::now()->subMinutes(3)->timestamp),
+                'eventTime'   => strval(Carbon::now()->subMinutes(2)->timestamp),
+                'ruleId'      => 'rule1',
+                'merchantId' => 'HGYAjhc'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/downtime_service'
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
+
+        $this->assertEquals('card', $response['method']);
+        $this->assertEquals('VISA', $response['network']);
+        $this->assertEquals('HGYAjhc', $response['merchant_id']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('card', $paymentDowntime['method']);
+        $this->assertEquals('VISA', $paymentDowntime['network']);
+        $this->assertEquals('HGYAjhc', $paymentDowntime['merchant_id']);
+    }
+
     protected function createUpiAllGatewayDowntime()
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)

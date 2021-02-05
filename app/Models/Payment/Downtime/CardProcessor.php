@@ -17,8 +17,6 @@ class CardProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
-        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
-
         $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_CARD, false);
 
         if ($paymentDowntimesEnabled === false)
@@ -26,7 +24,33 @@ class CardProcessor extends BaseProcessor
             $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
         }
 
+        $platformDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', null);
+
+        $merchantDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null);
+
+        $this->processPlatform($platformDowntime);
+
+        $this->processMerchant($merchantDowntime);
+    }
+
+    protected function processMerchant(Collection $gatewayDowntimes)
+    {
+        $merchantIds = $gatewayDowntimes->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchantDowntimes = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', $merchantId);
+
+            $this->processPlatform($merchantDowntimes, $merchantId);
+        }
+
+        $this->endOngoingDowntimesForMerchants($merchantIds);
+    }
+
+    protected function processPlatform(Collection $gatewayDowntimes, $mid=null)
+    {
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
+
         $unavailableIssuer = $this->calculateUnavailableIssuer($gatewayDowntimes);
 
         foreach ($unavailableNetworks as $network)
@@ -36,13 +60,15 @@ class CardProcessor extends BaseProcessor
 
         foreach ($unavailableIssuer as $issuer)
         {
-            $this->createPaymentDowntime($issuer, $gatewayDowntimes, true);
+            $downtimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '=', $issuer);
+
+            $this->createPaymentDowntime($issuer, $downtimes, true);
         }
 
         // Since the The value of issuer and network can not be same, combined them in a single list
         $unavailable = array_merge($unavailableIssuer, $unavailableNetworks);
 
-        $this->endOngoingDowntimes($unavailable);
+        $this->endOngoingDowntimes($unavailable, $mid);
     }
 
     protected function calculateUnavailableNetworks(Collection $gatewayDowntimes)
@@ -118,12 +144,15 @@ class CardProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
-            if (isset($input[Entity::STATUS]))
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]))
             {
-                unset($input[Entity::STATUS]);
-            }
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
 
-            $downtime = (new Core)->edit($downtime, $input);
+                $downtime = (new Core)->edit($downtime, $updateList);
+            }
         }
     }
 
@@ -172,6 +201,13 @@ class CardProcessor extends BaseProcessor
         else
         {
             $input[Entity::NETWORK] = $network;
+        }
+
+        $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        if(sizeof($mids) === 1)
+        {
+            $input[Entity::MERCHANT_ID] = $mids[0];
         }
 
         return $input;

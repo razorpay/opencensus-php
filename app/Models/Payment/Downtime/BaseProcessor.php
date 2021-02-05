@@ -18,9 +18,10 @@ use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class BaseProcessor extends Base\Core
 {
-    protected function endOngoingDowntimes(array $unavailableList = [])
+    protected function endOngoingDowntimes(array $unavailableList = [], string $mid = null)
     {
-        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethod($this->method);
+        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethodAndMerchant($this->method, $mid);
+
         $ongoingDowntimes = $ongoingDowntimes->where(Entity::PSP, '!=', ProviderPsp::GOOGLE_PAY);
 
         /**
@@ -40,6 +41,13 @@ class BaseProcessor extends Base\Core
                 $ongoingDowntimes = $ongoingDowntimes->whereNotIn($attribute, $unavailableList);
             }
         }
+
+        $this->endDowntime($ongoingDowntimes);
+    }
+
+    protected function endOngoingDowntimesForMerchants(array $merchantsWithDowntime)
+    {
+        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethodForMerchantsWithoutDowntimes($this->method, $merchantsWithDowntime);
 
         $this->endDowntime($ongoingDowntimes);
     }

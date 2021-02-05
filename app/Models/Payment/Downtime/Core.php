@@ -52,6 +52,8 @@ class Core extends Base\Core
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
 
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {
             $downtimeProcessor = __NAMESPACE__ . '\\' . studly_case($method) . 'Processor';

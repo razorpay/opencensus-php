@@ -26,6 +26,31 @@ class NetbankingProcessor extends BaseProcessor
             $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
         }
 
+        $platformDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', null);
+
+        $merchantDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null);
+
+        $this->processPlatform($platformDowntime);
+
+        $this->processMerchant($merchantDowntime);
+    }
+
+    protected function processMerchant(Collection $gatewayDowntimes)
+    {
+        $merchantIds = $gatewayDowntimes->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchantDowntimes = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', $merchantId);
+
+            $this->processPlatform($merchantDowntimes, $merchantId);
+        }
+
+        $this->endOngoingDowntimesForMerchants($merchantIds);
+    }
+
+    protected function processPlatform(Collection $gatewayDowntimes, $mid=null)
+    {
         $unavailableBanks = $this->calculateUnavailableBanks($gatewayDowntimes);
 
         foreach ($unavailableBanks as $bank)
@@ -33,7 +58,7 @@ class NetbankingProcessor extends BaseProcessor
             $this->createPaymentDowntime($bank, $gatewayDowntimes);
         }
 
-        $this->endOngoingDowntimes($unavailableBanks);
+        $this->endOngoingDowntimes($unavailableBanks, $mid);
     }
 
     protected function calculateUnavailableBanks(Collection $gatewayDowntimes)
@@ -71,16 +96,15 @@ class NetbankingProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
-            if (isset($input[Entity::STATUS]))
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]))
             {
-                unset($input[Entity::STATUS]);
-            }
-            if (isset($input[Entity::BEGIN]))
-            {
-                unset($input[Entity::BEGIN]);
-            }
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
 
-            $downtime = (new Core)->edit($downtime, $input);
+                $downtime = (new Core)->edit($downtime, $updateList);
+            }
         }
     }
 
@@ -113,6 +137,13 @@ class NetbankingProcessor extends BaseProcessor
             Entity::SEVERITY  => $severity,
             Entity::ISSUER    => $bank,
         ];
+
+        $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
+
+        if(sizeof($mids) === 1)
+        {
+            $input[Entity::MERCHANT_ID] = $mids[0];
+        }
 
         return $input;
     }

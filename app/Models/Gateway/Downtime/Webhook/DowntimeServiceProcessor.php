@@ -7,13 +7,13 @@ use App;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Card;
 use RZP\Http\RequestHeader;
 use RZP\Models\Card\Network;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Gateway\Downtime\Entity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
@@ -102,7 +102,6 @@ class DowntimeServiceProcessor implements ProcessorInterface
                 return null;
             }
         }
-
 
         $this->trace->info(
             TraceCode::GATEWAY_DOWNTIME_SERVICE_REQUEST,
