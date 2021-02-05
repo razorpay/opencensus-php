@@ -2312,7 +2312,17 @@ class Core extends Base\Core
             Status::REJECTED
         ];
         $currentActivationStatus = $merchantDetails->getActivationStatus();
-        $isWhitelisted = ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST);
+
+        $currentActivationFlow = $merchantDetails->getActivationFlow();
+
+        if(empty($currentActivationFlow) === true and
+            $merchantDetails->canDetermineActivationFlow())
+        {
+            $currentActivationFlow = $this->getActivationFlow(
+                $merchantDetails->merchant, $merchantDetails, null, false);
+        }
+
+        $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
 
         if ($isWhitelisted === true and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
