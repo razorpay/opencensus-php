@@ -116,7 +116,7 @@ class Repository extends Base\Repository
         if ($manualRetry === false)
         {
             $query
-                ->where($attemptNumberColumn, '<', ($maxAttempts ?? Entity::AUTOMATIC_FEE_RECOVERY_MAX_ATTEMPT_NUMBER));
+                ->where($attemptNumberColumn, '<', Entity::AUTOMATIC_FEE_RECOVERY_MAX_ATTEMPT_NUMBER);
 
         }
 
