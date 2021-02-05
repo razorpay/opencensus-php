@@ -5137,8 +5137,8 @@ class Route
         'fee_recovery_payout_manual_retry'            => Permission::PROCESS_FEE_RECOVERY,
 
         'banking_account_statement_source_update'     => Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT,
-        //TODO: add permission if needed
-        'banking_account_statement_source_update_validate' => '*',
+
+        'banking_account_statement_source_update_validate' => Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT,
 
 
         'reward_create'                               => '*',
