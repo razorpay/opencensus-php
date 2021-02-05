@@ -2760,9 +2760,20 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $lastCreatedBankingAccount = $this->getDbLastEntity('banking_account');
+
         $dataToReplace = [
             'request' => [
                 'content' => $searchBody
+            ],
+            'response' => [
+                'content' => [
+                    'items' => [
+                        [
+                            'id' => $lastCreatedBankingAccount->getPublicId()
+                        ]
+                    ]
+                ]
             ]
         ];
 

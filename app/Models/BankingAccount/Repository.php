@@ -351,6 +351,11 @@ class Repository extends Base\Repository
     {
         $this->joinMerchantPromotions($query);
 
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
         $source = $params[Entity::SOURCE];
         $promotionNameColumn = $this->repo->promotion->dbColumn(\RZP\Models\Promotion\Entity::NAME);
 
