@@ -1123,6 +1123,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingScbEditTerminalRules = [
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingJkbTerminalRules = [
