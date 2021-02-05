@@ -1085,11 +1085,14 @@ return [
             'url'    => '/contacts/cont_1000000contact/public',
             'method' => 'GET'
         ],
-        'response' => [
-            'content' => [
-                'id' => "cont_1000000contact",
-                'name' => "Contact X"
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
             ],
+            'status_code' => 400,
         ],
     ],
 
