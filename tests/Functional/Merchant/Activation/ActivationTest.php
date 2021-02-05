@@ -209,6 +209,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
+            'phonepe'       => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -264,6 +265,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
+            'phonepe'       => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -331,6 +333,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
+            'phonepe'       => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -398,6 +401,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
+            'phonepe'       => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -464,6 +468,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => false,
             'payzapp'       => false,
             'sbibuddy'      => false,
+            'phonepe'       => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

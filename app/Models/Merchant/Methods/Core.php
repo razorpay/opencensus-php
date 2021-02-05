@@ -505,6 +505,13 @@ class Core extends Base\Core
 
         $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2);
 
+        $merchantDetails = (new Merchant\Detail\Core())->getMerchantDetails($merchant);
+        // disable phone for business type unregistered and others.
+        if ($merchantDetails->isUnregisteredBusiness() === true || $merchantDetails->getBusinessType() === Merchant\Detail\BusinessType::OTHER)
+        {
+            $defaultMethods[Entity::PHONEPE] = false;
+        }
+
         if ((is_null($methods) === true) or (is_null($defaultMethods) === true))
         {
             $this->trace->info(

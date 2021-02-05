@@ -7202,6 +7202,7 @@ return [
                     'payumoney',
                     'payzapp',
                     'sbibuddy',
+                    'phonepe',
                 ]
             ],
         ],

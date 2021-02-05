@@ -18,11 +18,11 @@ class DefaultMethodsForCategory
             // Financial Services
             '6211'    => [
                 Category::MUTUAL_FUNDS => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
+                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ],
                 Category::SECURITIES => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
+                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ],
             ],
@@ -57,7 +57,7 @@ class DefaultMethodsForCategory
             ],
             '8931'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ],
             ],
@@ -109,6 +109,7 @@ class DefaultMethodsForCategory
             // Healthcare
             '5912'  =>  [
                 Category::PHARMA    =>  [
+                    // need to support phonepe.
                     self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS,
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
                 ]
@@ -338,7 +339,7 @@ class DefaultMethodsForCategory
             ],
             '5999'  => [
                 Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
@@ -597,6 +598,7 @@ class DefaultMethodsForCategory
         Entity::PAYUMONEY,
         Entity::PAYZAPP,
         Entity::SBIBUDDY,
+        Entity::PHONEPE
     ];
 
     public static function getDefaultMethodsFromMerchantCategories($category, $category2)
