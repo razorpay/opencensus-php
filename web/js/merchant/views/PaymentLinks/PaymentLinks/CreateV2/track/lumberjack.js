@@ -1,9 +1,11 @@
 import uuid from 'uuid';
+import moment from 'moment';
 
 function _track() {
   let track = function () {};
   const defaultOptions = {};
   let local_order_id;
+  let initialization_time;
 
   function send(event, options) {
     track(
@@ -11,6 +13,7 @@ function _track() {
         ...defaultOptions,
         ...options,
         local_order_id,
+        time_diff: moment.duration(moment().diff(initialization_time)).asSeconds(),
       }),
     );
   }
@@ -60,6 +63,7 @@ function _track() {
     init({ track: _track }) {
       track = _track;
       local_order_id = uuid();
+      initialization_time = new Date();
     },
   };
 }

@@ -2,7 +2,7 @@ import Form from 'common/new-ui/Form';
 import Spinner from 'common/ui/Spinner';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-const CLASS_NAME = 'PaymentLinks--Create-Form';
+export const FORM_CLASS_NAME = 'PaymentLinks--Create-Form';
 
 export default class FormWizard extends React.Component {
   state = { disableSubmit: false };
@@ -17,7 +17,7 @@ export default class FormWizard extends React.Component {
 
   toggleDisableState = () => {
     // if value not selected, html marks it as ':invalid' which is tehnically valid in our case. Hence, relying on is-invalid.
-    const invalidFields = document.querySelectorAll(`.${CLASS_NAME} .Input.is-invalid`);
+    const invalidFields = document.querySelectorAll(`.${FORM_CLASS_NAME} .Input.is-invalid`);
     const disableSubmit = invalidFields.length;
 
     if (this.state.disableSubmit !== disableSubmit) {
@@ -34,7 +34,7 @@ export default class FormWizard extends React.Component {
       <div class="PaymentLinks--CreateV2-wizard">
         <div class="title">{title}</div>
         <div class="form-container">
-          <Form class={CLASS_NAME} onChange={props.onChange}>
+          <Form class={FORM_CLASS_NAME} onChange={props.onChange}>
             <main>
               {props.isLoading ? (
                 <div className="page-center">
