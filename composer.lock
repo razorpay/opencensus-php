@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "81f5874511e4f23bd4bf0bdd869f5801",
+    "content-hash": "700d9e80441721102d7bf8c36e61179c",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -693,6 +693,16 @@
                 "stream",
                 "stream_filter_append",
                 "stream_filter_register"
+            ],
+            "funding": [
+                {
+                    "url": "https://clue.engineering/support",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
             ],
             "time": "2019-04-09T12:31:48+00:00"
         },
@@ -4031,7 +4041,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4629,16 +4639,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.4",
+            "version": "v0.7.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "e3be8d73a6570266acb5f921978929d1986e77bc"
+                "reference": "007f1905d0b986fad303f6a1f81b8a050ea08e64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/e3be8d73a6570266acb5f921978929d1986e77bc",
-                "reference": "e3be8d73a6570266acb5f921978929d1986e77bc",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/007f1905d0b986fad303f6a1f81b8a050ea08e64",
+                "reference": "007f1905d0b986fad303f6a1f81b8a050ea08e64",
                 "shasum": ""
             },
             "archive": {
@@ -4700,10 +4710,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.4",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2020-11-26T06:58:21+00:00"
+            "time": "2021-02-02T15:44:09+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -5813,6 +5823,16 @@
                 "predis",
                 "redis"
             ],
+            "funding": [
+                {
+                    "url": "https://www.paypal.me/tillkruss",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/tillkruss",
+                    "type": "github"
+                }
+            ],
             "time": "2016-06-16T16:22:20+00:00"
         },
         {
@@ -6711,7 +6731,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2020-04-04T18:44:38+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -11491,7 +11511,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.1",
-        "ext-gmp": "*"
+        "ext-gmp": "*",
+        "ext-zip": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "1.1.0"
