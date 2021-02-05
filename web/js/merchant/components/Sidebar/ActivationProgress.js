@@ -35,14 +35,14 @@ export default RTracking((state, props, args) => {
     }
   } else if (user.isAccepted) {
     actionCopy = 'Settlements Enabled';
+  } else if (user.isActivated) {
+      actionCopy = 'Account Activated';
   } else if (user.isSubmitted) {
     actionCopy = 'Form submitted';
   } else if (user.activation_progress == 100) {
     // Form is unfilled and Not submitted
     actionCopy = 'Submit Form';
-  } else if (user.isActivated) {
-    actionCopy = 'Account Activated';
-  }
+  } 
 
   return !isBlacklistFlow ? (
     <ShowWhen
