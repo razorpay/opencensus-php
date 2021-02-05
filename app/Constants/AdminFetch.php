@@ -16,6 +16,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Partner\Commission\Invoice;
 use RZP\Models\Partner\Commission\Component;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Services\FTS\Constants as FtsConstants;
@@ -2681,6 +2682,10 @@ class AdminFetch
                         Config\CommissionModel::SUBVENTION,
                     ],
                 ],
+            ],
+
+            Entity::COMMISSION_INVOICE => [
+                Invoice\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::COMMISSION_COMPONENT => [

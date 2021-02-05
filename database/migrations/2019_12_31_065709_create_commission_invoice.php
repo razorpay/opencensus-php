@@ -51,6 +51,8 @@ class CreateCommissionInvoice extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::CREATED_AT);
+
+            $table->index(Entity::MERCHANT_ID);
         });
     }
 

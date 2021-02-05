@@ -13,6 +13,7 @@ class Repository extends Base\Repository
     protected $proxyFetchParamRules = [
         Entity::ID          => 'filled|string|size:14',
         Entity::BALANCE_ID  => 'filled|string|size:14',
+        Entity::MERCHANT_ID => 'filled|string|size:14',
         Entity::STATUS      => 'filled|string|custom',
         self::EXPAND_EACH   => 'filled|string|in:line_items,line_items.taxes',
     ];

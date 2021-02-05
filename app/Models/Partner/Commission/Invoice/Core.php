@@ -29,6 +29,7 @@ class Core extends Base\Core
 {
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
     const COMMISSION_GENERATE_MID_LIMIT = 100;
+    const COMMISSION_INVOICE_ACTION_DELAY = 120; // seconds
 
     /**
      * @var PdfGenerator
@@ -114,7 +115,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
-        CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+        CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
 
         $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
 
@@ -383,7 +384,7 @@ class Core extends Base\Core
 
             if ($invoice->isIssued() === true)
             {
-                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
             }
         });
     }
