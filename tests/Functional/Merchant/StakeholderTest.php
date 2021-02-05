@@ -46,6 +46,10 @@ class StakeholderTest extends OAuthTestCase
         $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
         $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testFetchAllAccountStakeholders'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateStakeholderForThinRequest()

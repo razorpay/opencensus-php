@@ -13,7 +13,7 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
-        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        Account\Entity::verifyIdAndStripSign($accountId);
 
         $stakeholder = $this->core()->create($accountId, $input);
 
@@ -24,12 +24,23 @@ class Service extends Base\Service
     {
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
-        Entity::verifyIdAndSilentlyStripSign($id);
-        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        Entity::verifyIdAndStripSign($id);
+        Account\Entity::verifyIdAndStripSign($accountId);
 
         $stakeholder = $this->core()->fetch($accountId, $id);
 
         return (new Response)->createResponse($stakeholder);
+    }
+
+    public function fetchAll(string $accountId)
+    {
+        (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
+
+        Account\Entity::verifyIdAndStripSign($accountId);
+
+        $stakeholders = $this->core()->fetchAll($accountId);
+
+        return (new Response)->createListResponse($stakeholders);
     }
 
     public function update(string $accountId, string $id, array $input)
@@ -38,8 +49,8 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
-        Entity::verifyIdAndSilentlyStripSign($id);
-        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        Entity::verifyIdAndStripSign($id);
+        Account\Entity::verifyIdAndStripSign($accountId);
 
         $stakeholder = $this->core()->update($accountId, $id, $input);
 

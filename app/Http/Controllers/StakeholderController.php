@@ -23,6 +23,13 @@ class StakeholderController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function fetchAll(string $accountId)
+    {
+        $entity = $this->service()->fetchAll($accountId);
+
+        return ApiResponse::json($entity);
+    }
+
     public function update(string $accountId, string $id)
     {
         $input = Request::all();

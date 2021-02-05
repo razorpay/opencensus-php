@@ -7,6 +7,18 @@ use RZP\Models\Address;
 
 class Response extends Base\Core
 {
+    public function createListResponse(Base\PublicCollection $stakeholders): array
+    {
+        $data = ['entity' => 'collection', 'items' => [], 'count' => $stakeholders->count()];
+
+        foreach ($stakeholders as $stakeholder)
+        {
+            $data['items'][] = $this->createResponse($stakeholder);
+        }
+
+        return $data;
+    }
+
     public function createResponse(Entity $stakeholder): array
     {
         $response = [

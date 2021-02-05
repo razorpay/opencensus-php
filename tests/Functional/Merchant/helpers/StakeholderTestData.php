@@ -139,6 +139,49 @@ return [
         ],
     ],
 
+    'testFetchAllAccountStakeholders' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/stakeholders',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'stakeholder',
+                        'percentage_ownership'=> 20,
+                        'name'=> 'Rahul SharmaJi',
+                        'email'=> 'rahul@acme.com',
+                        'relationship'=> [
+                        ],
+                        'phone'=> [
+                            'primary'=> '7474757474',
+                            'secondary'=> '7474757474'
+                        ],
+                        'addresses'=> [
+                            'residential'=> [
+                                'street'=> '507, Koramangala 1st block',
+                                'city'=> 'Bangalore',
+                                'state'=> 'Andhra Pradesh',
+                                'postal_code'=> '518501',
+                                'country'=> 'bd'
+                            ]
+                        ],
+                        'kyc'=> [
+                            'pan'=> 'AVOPB1111J'
+                        ],
+                        'notes'=> [
+                            'random_key_by_partner'=> 'random_value_2'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testFetchStakeholder' => [
         'request' => [
             'url'     => '/v2/accounts/{account_id}/stakeholders/{stakeholderId}',

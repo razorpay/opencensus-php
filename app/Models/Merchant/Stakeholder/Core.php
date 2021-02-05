@@ -93,6 +93,11 @@ class Core extends Base\Core
         return $this->repo->stakeholder->findByIdAndMerchantId($id, $merchantId);
     }
 
+    public function fetchAll(string $merchantId): Base\PublicCollection
+    {
+        return $this->repo->stakeholder->fetchStakeholders($merchantId);
+    }
+
     public function update(string $merchantId, string $id, array $input): Entity
     {
         $this->trace->info(TraceCode::MERCHANT_UPDATE_STAKEHOLDER_REQUEST, [

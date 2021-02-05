@@ -1683,6 +1683,7 @@ class Route
         'stakeholder_create_v2'                    => ['POST',    'accounts/{id}/stakeholders',                      'StakeholderController@create'                                      ],
         'stakeholder_update_v2'                    => ['PATCH',   'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@update'                                      ],
         'stakeholder_fetch_v2'                     => ['GET',     'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@fetch'                                       ],
+        'stakeholder_fetch_all_v2'                 => ['GET',     'accounts/{id}/stakeholders',                      'StakeholderController@fetchAll'                                    ],
 
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
@@ -2598,6 +2599,7 @@ class Route
         'stakeholder_create_v2',
         'stakeholder_update_v2',
         'stakeholder_fetch_v2',
+        'stakeholder_fetch_all_v2',
 
         'account_create_v2',
         'account_fetch_v2',
@@ -3077,6 +3079,7 @@ class Route
         'stakeholder_create_v2',
         'stakeholder_update_v2',
         'stakeholder_fetch_v2',
+        'stakeholder_fetch_all_v2',
         'link_account_documents_v2',
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
@@ -6729,6 +6732,7 @@ class Route
         'stakeholder_create_v2',
         'stakeholder_update_v2',
         'stakeholder_fetch_v2',
+        'stakeholder_fetch_all_v2',
         'account_create_v2',
         'account_fetch_v2',
         'account_edit_v2',
