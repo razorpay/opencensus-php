@@ -5,7 +5,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { uploadImageInDescription } from '../../model';
-import { validateEmbeddedVideoUrl } from 'common/utils/validators';
+import { validateEmbeddedVideoUrl, isUrlLenient } from 'common/utils/validators';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
@@ -21,17 +21,7 @@ const COLORS_LIST = [
 ];
 
 const QUILL_OPTIONS = {
-  formats: [
-    'header',
-    'color',
-    'bold',
-    'italic',
-    'underline',
-    'list',
-    'link',
-    'image',
-    'video',
-  ],
+  formats: ['header', 'color', 'bold', 'italic', 'underline', 'list', 'link', 'image', 'video'],
   modules: {
     toolbar: [
       [{ header: [2, 3, false] }],
@@ -83,11 +73,7 @@ export default class extends React.PureComponent {
   }
 
   componentWillUpdate(nextProps) {
-    if (
-      this.props.description !== nextProps.description &&
-      !this.props.isPageDirty &&
-      this.QUILL
-    ) {
+    if (this.props.description !== nextProps.description && !this.props.isPageDirty && this.QUILL) {
       nextProps.description
         ? this.QUILL.setContents(JSON.parse(nextProps.description).value)
         : this.QUILL.setText('');
@@ -99,8 +85,7 @@ export default class extends React.PureComponent {
     this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
     /* Pre-fill description */
-    this.props.description &&
-      this.QUILL.setContents(JSON.parse(this.props.description).value);
+    this.props.description && this.QUILL.setContents(JSON.parse(this.props.description).value);
 
     /* Update description via debounce */
     this.QUILL.on('text-change', (delta, oldDelta, source) => {
@@ -110,7 +95,7 @@ export default class extends React.PureComponent {
     });
 
     /* For style handling */
-    this.QUILL.on('selection-change', range => {
+    this.QUILL.on('selection-change', (range) => {
       if (!range) {
         this.setState({ isFocused: false });
       } else {
@@ -119,11 +104,9 @@ export default class extends React.PureComponent {
     });
 
     /* Custom Image handling */
-    this.QUILL.getModule('toolbar').addHandler('image', () =>
-      this.handleImageInsert()
-    );
+    this.QUILL.getModule('toolbar').addHandler('image', () => this.handleImageInsert());
 
-    this.addHookForVideoUrlValidation();
+    this.addHookForUrlValidation();
 
     /* Fix keyboard bindings */
     const keyboard = this.QUILL.getModule('keyboard');
@@ -134,7 +117,7 @@ export default class extends React.PureComponent {
     const bodyEditor = document.getElementById('description-quill');
 
     // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
-    bodyEditor.addEventListener('keydown', function(e) {
+    bodyEditor.addEventListener('keydown', function (e) {
       let ret = true;
 
       if (e.ctrlKey || e.metaKey) {
@@ -157,11 +140,11 @@ export default class extends React.PureComponent {
     });
   }
 
-  addHookForVideoUrlValidation() {
+  addHookForUrlValidation() {
     const self = this;
     const tooltipSave = this.QUILL.theme.tooltip.save;
 
-    this.QUILL.theme.tooltip.save = function() {
+    this.QUILL.theme.tooltip.save = function () {
       // overwrite save link functionality
       var url = this.textbox.value;
 
@@ -169,9 +152,16 @@ export default class extends React.PureComponent {
         url = 'https://' + url;
       }
 
-      // validate url
-      if (validateEmbeddedVideoUrl(url)) {
-        tooltipSave.call(this);
+      // validate url according to mode type
+      if (this.root && this.root.getAttribute) {
+        const isLink = this.root.getAttribute('data-mode') === 'link';
+        const isVideo = this.root.getAttribute('data-mode') === 'video';
+
+        if (isLink && isUrlLenient(url)) {
+          tooltipSave.call(this);
+        } else if (isVideo && validateEmbeddedVideoUrl(url)) {
+          tooltipSave.call(this);
+        }
       }
     };
   }
@@ -208,7 +198,7 @@ export default class extends React.PureComponent {
         });
 
         uploadImageInDescription(file)
-          .then(res => {
+          .then((res) => {
             if (res && res.success) {
               const url = res.data[0];
 
@@ -237,9 +227,7 @@ export default class extends React.PureComponent {
   updateDescription() {
     const desc = this.QUILL.getContents();
     let descMetaText = this.QUILL.getText(); // To consume for SEO
-    descMetaText = descMetaText
-      .replace(/(#)/gm, '')
-      .replace(/(\r\n|\n|\r)/gm, '. ');
+    descMetaText = descMetaText.replace(/(#)/gm, '').replace(/(\r\n|\n|\r)/gm, '. ');
 
     this.props.updateData({
       target: {
@@ -253,18 +241,13 @@ export default class extends React.PureComponent {
 
   render() {
     return (
-      <div
-        id="description"
-        class={classList(this.state.isFocused && 'is-focused')}
-      >
+      <div id="description" class={classList(this.state.isFocused && 'is-focused')}>
         <span class="help-content">
           <div id="description-container">
             <span id="description-quill" />
           </div>
           <Popover align="right" theme="dark">
-            <PopoverBody>
-              Give your customers more information about this page
-            </PopoverBody>
+            <PopoverBody>Give your customers more information about this page</PopoverBody>
           </Popover>
         </span>
       </div>

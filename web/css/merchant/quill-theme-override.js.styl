@@ -96,7 +96,7 @@
     z-index: 3
 
     &::before
-      content: 'Enter Video URL'
+      content: 'Enter URL'
       display: block
       font-size: 12px
       font-weight: 600
@@ -149,7 +149,10 @@
       max-width: unset
       pointer-events: none
 
-    &.ql-editing
+    &.ql-editing[data-mode="video"]
+      &::before
+        content: 'Enter Video URL'
+        
       .ql-action
         margin-left: 4px
 
