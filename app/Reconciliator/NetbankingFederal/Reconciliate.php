@@ -37,17 +37,8 @@ class Reconciliate extends Base\Reconciliate
      */
     public function getTypeName($fileName)
     {
-        $typeName = null;
-
-        foreach (self::SUCCESS as $name => $type)
-        {
-            if (strpos($fileName, $name) !== false)
-            {
-                $typeName = $type;
-            }
-        }
-
-        return $typeName;
+        // NOTE: revisit this logic if we have refunds recon as well in future
+        return self::PAYMENT;
     }
 
     public function getColumnHeadersForType($type)
