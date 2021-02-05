@@ -12,6 +12,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use  RZP\Models\Base\Service;
 use RZP\Http\Request\Requests;
+use RZP\Constants\Environment;
 use RZP\Models\Admin\Group\Core as core;
 use RZP\Models\Admin\Admin\Service as AdminService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -596,7 +597,15 @@ class TerminalsService
             'show_trace'      => true,
         ];
 
+        $env = $this->app->environment();
+
         $options =  array_merge($defaultOptions, $additionalOptions);
+
+        if(Environment::isEnvironmentQA($env) === true)
+        {
+            $options['timeout'] = self::getTimeout();
+            $options['connect_timeout'] = self::getTimeout();
+        }
 
         return $options;
     }
