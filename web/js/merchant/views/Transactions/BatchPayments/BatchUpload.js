@@ -14,7 +14,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 const hostToIframeHost = {
   'dashboard.razorpay.in': 'http://api.razorpay.in',
-  'dashboard.razorpay.com': 'https://api.razorpay.com',
+  'dashboard.razorpay.com': 'https://api-merchant-proxy.razorpay.com',
   'beta-dashboard.stage.razorpay.in': 'https://beta-api.razorpay.in',
 };
 
