@@ -17,7 +17,10 @@ export default RTracking((state, props, args) => {
   let actionContent = null;
   let trackingIntent = null;
 
-  if (user.activation_progress < 100) {
+
+  if(user.activation_status === 'under_review') {
+    actionCopy = 'KYC Under Review';
+  } else if (user.activation_progress < 100 ) {
     // If user form is still unfilled
     actionCopy = 'Activate your account';
     trackingIntent = 'act.form_fill';
