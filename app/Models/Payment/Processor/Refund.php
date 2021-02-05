@@ -2378,7 +2378,8 @@ trait Refund
         // Slack thread for reference:
         // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
         //
-        if ($payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        // For BYkgT8OL4FjqZK : Slack reference : https://razorpay.slack.com/archives/CA66F3ACS/p1612450040264200
+        if (($payment->getTerminalId() !== 'B2K2t8JD9z98vh') and ($payment->getTerminalId() !== 'BYkgT8OL4FjqZK'))
         {
             $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
         }

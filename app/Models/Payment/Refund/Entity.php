@@ -729,6 +729,13 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
+        // This terminal was deleted. And is a non direct settlement refund terminal
+        // Slack reference : https://razorpay.slack.com/archives/CA66F3ACS/p1612450040264200
+        if ($this->payment->getTerminalId() === 'BYkgT8OL4FjqZK')
+        {
+            return false;
+        }
+
         if (($this->payment->hasTerminal() === true) and
             ($this->payment->terminal->isDirectSettlementWithRefund() === true))
         {

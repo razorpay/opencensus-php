@@ -119,7 +119,8 @@ class EventTrackerClient extends AbstractEventClient
         // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
         //
         if (($payment->getTerminalId() !== null) and
-            ($payment->getTerminalId() !== 'B2K2t8JD9z98vh'))
+            ($payment->getTerminalId() !== 'B2K2t8JD9z98vh') and
+            ($payment->getTerminalId() !== 'BYkgT8OL4FjqZK'))
         {
             $terminal = $payment->terminal;
 
