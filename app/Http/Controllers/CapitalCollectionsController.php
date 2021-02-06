@@ -105,6 +105,7 @@ class CapitalCollectionsController extends Controller
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'x-merchant-id' => $body['merchant_id'] ?: '',
             'X-Auth-Type'   => 'admin'
         ];
 
