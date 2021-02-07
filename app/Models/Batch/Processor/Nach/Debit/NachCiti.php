@@ -126,8 +126,7 @@ class NachCiti extends Base
 
         $tokenAccNo = $token->getAccountNumber();
 
-        if (($payment->hasBeenAuthorized() === true) or
-            (in_array($payment->getGateway(), [Gateway::ENACH_NPCI_NETBANKING, Gateway::NACH_CITI], true) === false) or
+        if ((in_array($payment->getGateway(), [Gateway::ENACH_NPCI_NETBANKING, Gateway::NACH_CITI], true) === false) or
             ($payment->getRecurringType() !== RecurringType::AUTO) or
             ($token === null) or
             ($tokenAccNo !== $fileAccountNumber))

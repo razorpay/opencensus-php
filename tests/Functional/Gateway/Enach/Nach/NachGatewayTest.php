@@ -331,6 +331,9 @@ class NachGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
         $this->assertEquals('authorized', $payment['status']);
+
+        // already processed
+        $this->runWithData($entries, $batchEntity['id']);
     }
 
     public function testDebitResponseFileProcessingViaBatchServiceSuccess()
@@ -459,6 +462,9 @@ class NachGatewayTest extends TestCase
 
         $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $payment['internal_error_code']);
         $this->assertEquals('failed', $payment['status']);
+
+        // already processed
+        $this->runWithData($entries, $batchEntity['id']);
     }
 
     public function testGatewayFileSplitDebit()

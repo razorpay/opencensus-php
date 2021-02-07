@@ -116,11 +116,28 @@ class Base extends BaseProcessor
     {
         if ($this->isAuthorized($content) === true)
         {
-            $this->processAuthorizedPayment($payment);
+            // handle already processed
+            if ($payment->hasBeenAuthorized() === true)
+            {
+                $this->trace->info(TraceCode::PAYMENT_ALREADY_AUTHORIZED, ['payment_id' => $payment->getId()]);
+            }
+            else
+            {
+                $this->processAuthorizedPayment($payment);
+            }
         }
         else if ($this->isRejected($content) === true)
         {
-            $this->processFailedPayment($payment, $content);
+            // handle already processed
+            // for e-mandate, error code update of failed payments is supported due to low timeout window
+            if (($payment->isFailed() === true) and ($payment->isNach() === true))
+            {
+                $this->trace->info(TraceCode::PAYMENT_STATUS_FAILED, ['payment_id' => $payment->getId()]);
+            }
+            else
+            {
+                $this->processFailedPayment($payment, $content);
+            }
         }
     }
 

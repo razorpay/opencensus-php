@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Processor\Emandate\Debit;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Payment\Processor\Processor;
@@ -113,10 +114,21 @@ class Base extends BaseProcessor
     {
         if ($this->isAuthorized($content) === true)
         {
-            return $this->processAuthorizedPayment($payment);
+            // handle already processed
+            if ($payment->hasBeenAuthorized() === true)
+            {
+                $this->trace->info(TraceCode::PAYMENT_ALREADY_AUTHORIZED, ['payment_id' => $payment->getId()]);
+            }
+            else
+            {
+                $this->processAuthorizedPayment($payment);
+            }
         }
-
-        return $this->processFailedPayment($payment, $content);
+        else
+        {
+            // We do not check for already processed here, since we can update the error code of the payment
+            $this->processFailedPayment($payment, $content);
+        }
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
