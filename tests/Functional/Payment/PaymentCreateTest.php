@@ -3752,9 +3752,17 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEmpty($card['name']);
 
+        $this->assertEquals($card['issuer'], 'SBIN');
+
+        $this->assertEquals($card['network'], 'MasterCard');
+
+        $this->assertEquals($card['type'], 'credit');
+
         $this->assertEquals($payment['international'], true);
 
-        $this->fixtures->edit('iin', '555555', ['country' => 'IN', 'sub_type' => 'business']);
+        $this->fixtures->edit('iin', '555555', [
+            'country' => 'IN', 'sub_type' => 'business', 'issuer' => 'HDFC',
+            'network' => 'Visa', 'type' => 'debit']);
 
         $paymentArray['card']['name']   = 'Test Card';
 
@@ -3769,6 +3777,52 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['international'], false);
 
         $this->assertEquals($card['name'], 'Test Card');
+
+        $this->assertEquals($card['issuer'], 'HDFC');
+
+        $this->assertEquals($card['network'], 'Visa');
+
+        $this->assertEquals($card['type'], 'debit');
+    }
+
+    public function testCreateExistingCardPayment()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        
+        $paymentArray['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'US',
+            'network' => 'MasterCard',
+        ]);
+
+        $response = $this->doAuthPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $card = $this->getLastEntity('card', true );
+
+        $this->assertEquals($card['issuer'], 'SBIN');
+
+        $this->assertEquals($card['network'], 'MasterCard');
+
+        $this->assertEquals($card['type'], 'credit');
+
+        $this->fixtures->edit('iin', '555555', [
+            'issuer' => 'HDFC', 'network' => 'Visa', 'type' => 'debit']);
+
+        $this->doAuthPayment($paymentArray);
+
+        $card = $this->getLastEntity('card', true );
+
+        $this->assertEquals($card['issuer'], 'HDFC');
+
+        $this->assertEquals($card['network'], 'Visa');
+
+        $this->assertEquals($card['type'], 'debit');
     }
 
     public function testCreatePaymentAMEXExistingCardS2SPayment()

@@ -214,6 +214,15 @@ class Core extends Base\Core
                             $card->setSubtype($card->iinRelation->getSubType());
                         }
 
+                        if (($card->iinRelation !== null) &&
+                            ($card->getNetwork() != $card->iinRelation->getNetwork() ||
+                             $card->getType() != $card->iinRelation->getType() ||
+                             $card->getIssuer() != $card->iinRelation->getIssuer()))
+                        {
+                            $cardCDC = true;
+                            $card->overrideIINDetails();
+                        }
+
                         if ($cardCDC === true)
                         {
                             $this->repo->saveOrFail($card);
