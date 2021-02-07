@@ -78,6 +78,7 @@ class Base
         'config'                => \RZP\Models\Payment\Config\Entity::class,
         'counter'               => \RZP\Models\Counter\Entity::class,
         'payout_source'         => \RZP\Models\PayoutSource\Entity::class,
+        'banking_account_tpv'   => \RZP\Models\BankingAccountTpv\Entity::class,
 
         'settlement.ondemand_fund_account' => \RZP\Models\Settlement\OndemandFundAccount\Entity::class,
         'settlemnt.ondemand'               => \RZP\Models\Settlement\Ondemand\Entity::class,

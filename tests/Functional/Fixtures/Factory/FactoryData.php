@@ -1646,5 +1646,21 @@ final class FactoryData
         $factory(\RZP\Models\Offer\SubscriptionOffer\Entity::class, [
             'id'    => '10000000someid',
         ]);
+
+        $factory(\RZP\Models\BankingAccountTpv\Entity::class, [
+            'id'                         => $faker->uniqueid,
+            'merchant_id'                => '10000000000000',
+            'balance_id'                 => '10000000000000',
+            'status'                     => 'pending',
+            'is_active'                  => '1',
+            'payer_ifsc'                 => 'ICIC0000104',
+            'payer_name'                 => 'Test payer',
+            'payer_account_number'       => '9876543210123456789',
+            'type'                       => 'bank_account',
+            'fund_account_validation_id' => $faker->uniqueid,
+            'created_by'                 => 'admin',
+            'created_at'                 => $faker->timestamp,
+            'updated_at'                 => $faker->timestamp,
+        ]);
     }
 }

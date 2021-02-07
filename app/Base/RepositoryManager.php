@@ -125,6 +125,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Survey\Repository                              $survey;
  * @property Models\Pricing\Repository                             $pricing;
  * @property Models\Partner\Commission\Component\Repository        $commission_component;
+ * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

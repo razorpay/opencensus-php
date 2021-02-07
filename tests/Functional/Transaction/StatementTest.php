@@ -323,6 +323,26 @@ class StatementTest extends TestCase
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        // Doing this here as setUp uses setUpMerchantForBusinessBanking and hence the flow is of business banking.
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on'// just set this on, leave everything as default
+        );
+
         $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
     }
 

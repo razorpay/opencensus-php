@@ -8,12 +8,14 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
+use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
@@ -22,9 +24,11 @@ use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -37,6 +41,7 @@ class BankTransferTest extends TestCase
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
+    use TestsBusinessBanking;
     use AttemptReconcileTrait;
 
     protected $virtualAccountId;
@@ -2531,6 +2536,26 @@ class BankTransferTest extends TestCase
     {
         Mail::fake();
 
+        // Since this test also uses banking balance, we need to disable tpv flow for it.
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on'// just set this on, leave everything as default
+        );
+
         $balance = $this->getDbEntity('balance',
                                       [
                                           'merchant_id'  => '10000000000000',
@@ -3608,6 +3633,588 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
+    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID],
+                                                   'live');
+
+        // Assertions on payment entity created
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
+        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($expectedAmount, $payment->getAmount());
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
+            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+    }
+
+    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButApprovedActiveTpvAccountFound()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'payer_ifsc' => 'YESB0000022',
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
+    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButPendingTpvAccountFound()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'pending',
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID],
+                                                   'live');
+
+        // Assertions on payment entity created
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
+        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($expectedAmount, $payment->getAmount());
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
+            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+    }
+
+    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButInActiveTpvAccountFound()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'is_active'  => 0,
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID],
+                                                   'live');
+
+        // Assertions on payment entity created
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
+        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($expectedAmount, $payment->getAmount());
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
+            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+    }
+
+    // Razorx returns 'on' and flow is disabled for the merchants. This can be used to disable tpv flow for all
+    // merchants instantly at global level.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvDisabledViaRazorx()
+    {
+        Mail::fake();
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on'// just set this on, leave everything as default
+        );
+
+        $this->setupForXFundLoading();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
+    // Using feature flag to disable tpv flow for a specific merchant. This can be used to disable tpv flow for a
+    // specific merchant without affecting the flow for other merchants.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvDisabledViaFeatureFlag()
+    {
+        Mail::fake();
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->setupForXFundLoading();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since TPV account was found, we shall not send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
     protected function enableRazorXTreatmentForRblBankTransferProcess()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -3627,5 +4234,40 @@ class BankTransferTest extends TestCase
 
                     return 'off';
                 }));
+    }
+
+    protected function setIciciVaBankAccountTerminalForRazorpayX()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKICI', 'gateway' => Gateway::BT_ICICI, 'gateway_merchant_id' => '5656'];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+    }
+
+    protected function setupForXFundLoading()
+    {
+        $this->setIciciVaBankAccountTerminalForRazorpayX();
+
+        $this->setUpMerchantForBusinessBankingLive(true);
+
+        $this->fixtures->on('live')->edit(
+            'bank_account',
+            $this->bankAccount->getId(),
+            [
+                'ifsc_code' => 'ICIC0000104',
+            ]
+        );
+
+        $this->bankAccount = $this->bankAccount->reload();
+    }
+
+    protected function listCountOfPaymentTransactionAndBankTransferEntities(string $mode = 'test')
+    {
+        $countOfPayments = count($this->getDbEntities('payment', [], $mode));
+
+        $countOfTransactions = count($this->getDbEntities('transaction', [], $mode));
+
+        $countOfBankTransfers = count($this->getDbEntities('bank_transfer', [], $mode));
+
+        return [$countOfPayments, $countOfTransactions, $countOfBankTransfers];
     }
 }

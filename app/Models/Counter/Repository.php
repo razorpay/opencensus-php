@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Models\Counter;
 
 use RZP\Models\Base;

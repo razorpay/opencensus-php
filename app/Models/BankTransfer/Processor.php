@@ -3,6 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use App;
+use Mail;
 use Cache;
 use Config;
 use Request;
@@ -12,6 +13,8 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -22,12 +25,14 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
+use RZP\Models\BankingAccountTpv;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
 
 class Processor extends VirtualAccount\Processor
 {
@@ -40,6 +45,8 @@ class Processor extends VirtualAccount\Processor
     const AMOUNT_THRESHOLD_FOR_BANKING = 5000000000;
 
     const DATE_FORMAT = 'd/m/Y h:i A';
+
+    const RAZORX_RETRY_COUNT = 2;
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -118,7 +125,7 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->balance()->associate($this->virtualAccount->balance);
 
-            $this->repo->saveOrFail($bankTransfer);
+            $this->verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer($bankTransfer);
 
             $balanceType = $this->virtualAccount->getBalanceType();
 
@@ -139,7 +146,6 @@ class Processor extends VirtualAccount\Processor
                         compact('balanceType'));
             }
         }, $deadlockRetryAttempts);
-
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
         $this->dispatchEventForTransactionCreated($bankTransfer);
@@ -603,5 +609,162 @@ class Processor extends VirtualAccount\Processor
     protected function getReceiver()
     {
         return $this->virtualAccount->bankAccount;
+    }
+
+    /*
+     * This method checks if Balance type is banking or not -
+     * 1. If not banking, save bank transfer.
+     * 2. If banking, check whether TPV is enabled for the merchant or not -
+     *      2.1. If no, save bank transfer.
+     *      2.2. If yes, check whether tpv account exists for the payee details -
+     *              2.2.1. If yes, save bank transfer.
+     *              2.2.2. If no, dissociate balance, virtual account, and merchant from bank transfer and re-associate
+     *                     with the shared virtual account and it's corresponding merchant and primary balance. This is
+     *                     done so as to make the transaction happen as if it were to a invalid payee account and then
+     *                     get refunded eventually.
+     */
+    protected function verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer(Entity $bankTransfer)
+    {
+        $balanceType = $this->virtualAccount->getBalanceType();
+
+        $this->trace->info(TraceCode::FUND_LOADING_BANK_TRANSFER_PROCESSING,
+                           [
+                               'balance_type' => $balanceType,
+                               'virtual_account_id' => $this->virtualAccount->getId(),
+                           ]
+        );
+
+        if ($balanceType === Balance\Type::BANKING)
+        {
+            $merchantId = $this->virtualAccount->getMerchantId();
+
+            // This provides a granular or global support to disable fund loading for merchants.
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::DISABLE_TPV_FLOW_FOR_BANKING_ACCOUNT_FUND_LOADING,
+                $this->mode,
+                self::RAZORX_RETRY_COUNT
+            );
+
+            // This provides a granular approach to disable tpv for some specific merchants.
+            $disableTpvFeature = $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
+
+            $balanceId = $this->virtualAccount->getBalanceId();
+
+            $this->trace->info(TraceCode::FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
+                               [
+                                   'variant'                => $variant,
+                                   'disable_tpv_feature'    => $disableTpvFeature,
+                                   'merchant_id'            => $merchantId,
+                                   'balance_id'             => $balanceId,
+                               ]
+            );
+
+            /* This checks if tpv is disabled for the merchant via either razorx or feature flag, if it is not from both
+             * of those methods, tpv checks are applied on the bank transfer. This solves 5 things -
+             * 1. This provides a way to disable it for all merchants via razorx using ramp and enable it for a test
+             *    merchant via blacklisting to test the code on prod for a test merchant first.
+             * 2. It also enables the steady and controlled roll out to merchants as and when their migration of tpv
+             *    entries is done while keeping it enabled it for all via new merchants. We can disable it for non
+             *    migrated old merchants from feature flag while keeping it on via razorx for all (ramp 100%).
+             * 3. It provides to disable the feature for everyone at a global level in case the flow breaks for
+             *    something we have not accounted for in testing, makes rollback easier without new deployment.
+             * 4. It's default behaviour for razorx call failure (if even retries can't solve it) is tpv enable flow in
+             *    case it is not disabled via feature flag, which ensures that in no scenario for such merchants will
+             *    fund loading happen from a non verified source in case razorx fails.
+             * 5. It also takes into account that we won't have to terminate and create razorx experiment again and
+             *    again for complete rollout.
+             */
+            if ((strtolower($variant) !== 'on') and
+                ($disableTpvFeature === false))
+            {
+                $payerAccountNumber = $bankTransfer->getPayerAccount();
+
+                $firstFourDigitsOfIfsc = substr($bankTransfer->getPayerIfsc(), 0, 4);
+
+                $bankingAccountTpv = $this->repo->banking_account_tpv
+                                                ->getApprovedActiveTpvAccountWithPayerAccountNumberAndIfscFirstFour(
+                                                    $merchantId,
+                                                    $balanceId,
+                                                    $payerAccountNumber,
+                                                    $firstFourDigitsOfIfsc);
+
+                if (empty($bankingAccountTpv) === false)
+                {
+                    $this->trace->info(TraceCode::TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
+                                       [
+                                           'variant'                => $variant,
+                                           'disable_tpv_feature'    => $disableTpvFeature,
+                                           'merchant_id'            => $merchantId,
+                                           'balance_id'             => $balanceId,
+                                           'banking_account_tpv_id' => $bankingAccountTpv->getId(),
+                                       ]
+                    );
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
+                                       [
+                                           'variant'             => $variant,
+                                           'disable_tpv_feature' => $disableTpvFeature,
+                                           'merchant_id'         => $merchantId,
+                                           'balance_id'          => $balanceId,
+                                       ]
+                    );
+
+                    //
+                    // NOTE: After the function `dissociateExpectedRelationsForBankTransfer`, we associate the
+                    // bank_transfer to the shared razorpay virtual account. We are saving the original merchant
+                    // that the transfer was meant to go to so that we can send that merchant an email regarding
+                    // their failed fund loading attempt
+                    //
+                    $actualMerchantId = $bankTransfer->getMerchantId();
+
+                    $this->dissociateExpectedRelationsForBankTransfer($bankTransfer);
+
+                    $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+                    $this->merchant = $this->virtualAccount->merchant;
+
+                    $this->associateExpectedRelationsForBankTransfer($bankTransfer);
+
+                    // SaveOrFail needs to be done before the send mail, because id is created when entity is saved.
+                    $this->repo->saveOrFail($bankTransfer);
+
+                    $this->sendFundLoadingFailedEmail($bankTransfer->getId(), $actualMerchantId);
+
+                    return;
+                }
+            }
+        }
+
+        $this->repo->saveOrFail($bankTransfer);
+    }
+
+    protected function dissociateExpectedRelationsForBankTransfer(Entity & $bankTransfer)
+    {
+        $bankTransfer->merchant()->dissociate();
+
+        $bankTransfer->virtualAccount()->dissociate();
+
+        $bankTransfer->balance()->dissociate();
+
+        $bankTransfer->load( 'merchant', 'virtualAccount', 'balance');
+    }
+
+    protected function associateExpectedRelationsForBankTransfer(Entity & $bankTransfer)
+    {
+        $bankTransfer->merchant()->associate($this->merchant);
+
+        $bankTransfer->virtualAccount()->associate($this->virtualAccount);
+
+        $bankTransfer->balance()->associate($this->virtualAccount->balance);
+    }
+
+    protected function sendFundLoadingFailedEmail(string $bankTransferId, string $actualMerchantId)
+    {
+        $fundLoadingFailedMail = new FundLoadingFailedMail($bankTransferId, $actualMerchantId);
+
+        Mail::queue($fundLoadingFailedMail);
     }
 }

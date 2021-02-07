@@ -561,6 +561,9 @@ class Constants
      */
     const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
 
+    // Used to disable tpv flow for merchants for business banking (Razorpay X) fund loading.
+    const DISABLE_TPV_FLOW = 'disable_tpv_flow';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -842,6 +845,7 @@ class Constants
         self::DIRECT_TRANSFER                 => true,
         self::APPS_EXTEMPT_RISK_CHECK         => true,
         self::EARLY_MANDATE_PRESENTMENT       => true,
+        self::DISABLE_TPV_FLOW                => true,
     ];
 
     // Entity type constants

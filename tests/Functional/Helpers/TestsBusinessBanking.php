@@ -320,7 +320,8 @@ trait TestsBusinessBanking
                                            string $bulkPayoutsImprovementsRollout = 'on',
                                            string $oldToNewIfscForMergedBank = 'on',
                                            string $rejectCommentInWebhook = 'off',
-                                           string $allowVAToVAPayouts = 'control')
+                                           string $allowVAToVAPayouts = 'control',
+                                           string $disableTpvFlowForBankingAccountFundLoading = 'control')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -346,7 +347,8 @@ trait TestsBusinessBanking
                     $bulkPayoutsImprovementsRollout,
                     $oldToNewIfscForMergedBank,
                     $rejectCommentInWebhook,
-                    $allowVAToVAPayouts
+                    $allowVAToVAPayouts,
+                    $disableTpvFlowForBankingAccountFundLoading
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -413,6 +415,11 @@ trait TestsBusinessBanking
                     if ($feature === 'rx_allow_va_to_va_payouts')
                     {
                         return strtolower($allowVAToVAPayouts);
+                    }
+
+                    if ($feature === 'disable_tpv_flow_for_banking_account_fund_loading')
+                    {
+                        return strtolower($disableTpvFlowForBankingAccountFundLoading);
                     }
 
                     return strtolower($defaultBehaviour);

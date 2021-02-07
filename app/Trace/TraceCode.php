@@ -4019,6 +4019,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_FETCH_FAILED      = 'VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_FETCH_FAILED';
     const VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_FAILED     = 'VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_FAILED';
 
+    // Logs for monitoring and alerting when fund loading for non tpv account happens for a tpv enabled merchant.
+    const NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED = 'NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
+
+    const FUND_LOADING_BANK_TRANSFER_PROCESSING = 'FUND_LOADING_BANK_TRANSFER_PROCESSING';
+
+    const FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED = 'FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
+
+    const TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED = 'TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
