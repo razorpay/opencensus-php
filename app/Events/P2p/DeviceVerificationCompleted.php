@@ -40,6 +40,8 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
 
         $sender  = $client->getConfigValue(Config::SMS_SENDER);
 
+        $smsSignature = $client->getConfigValue(Config::SMS_SIGNATURE);
+
         return [
             'receiver' => $entity->getFormattedContact(),
             'source'   => "api.{$this->context->getMode()}.p2p",
@@ -47,6 +49,7 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
             'sender'   => $sender,
             'params'   => [
                 'app_name'      => $appName,
+                'sms_signature' => $smsSignature,
             ],
         ];
     }

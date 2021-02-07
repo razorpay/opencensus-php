@@ -2,6 +2,7 @@
 
 namespace RZP\Events\P2p;
 
+use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Client\Config;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,13 +36,16 @@ class DeviceCooldownCompleted extends Event implements ShouldQueue
 
         $sender  = $client->getConfigValue(Config::SMS_SENDER);
 
+        $smsSignature = $client->getConfigValue(Config::SMS_SIGNATURE);
+
         return [
             'receiver' => $entity->getFormattedContact(),
             'source'   => "api.{$this->context->getMode()}.p2p",
             'template' => 'sms.p2p.cooldown_completed',
             'sender' => $sender,
             'params' => [
-                'app_name' => $appName,
+                'app_name'      => $appName,
+                'sms_signature' => $smsSignature,
             ],
         ];
     }

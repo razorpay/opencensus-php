@@ -3,6 +3,7 @@
 namespace RZP\Events\P2p;
 
 use App;
+use RZP\Models\P2p\Client;
 use RZP\Models\P2p\Transaction\Entity;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,11 +35,20 @@ class TransactionCreated extends Event implements ShouldQueue
 
         if ($entity->isPendingCollect() === true)
         {
+            $handle = $this->context->getHandle();
+
+            /**
+             * @var $client Client\Entity
+             */
+            $client = $entity->device->client($handle);
+
             $payeeName    = strtoupper($entity->payee->getBeneficiaryName());
             $currency     = $entity->getCurrency();
             $amount       = $entity->getAmount();
-            $appName      = $entity->device->getAppFullName();
-            $sender       = $entity->device->getSmsSender();
+
+            $appName      = $client->getConfigValue(Client\Config::APP_FULL_NAME);
+            $sender       = $client->getConfigValue(Client\Config::SMS_SENDER);
+            $smsSignature = $client->getConfigValue(Client\Config::SMS_SIGNATURE);
 
             return [
                 'receiver' => $entity->device->getFormattedContact(),
@@ -51,7 +61,8 @@ class TransactionCreated extends Event implements ShouldQueue
                     'currency'          => $currency,
                     'currency_label'    => 'Rs.',
                     'amount'            => $amount,
-                    'formatted_amount'  => number_format($amount / 100, 2, '.', '')
+                    'formatted_amount'  => number_format($amount / 100, 2, '.', ''),
+                    'sms_signature'     => $smsSignature,
                 ],
             ];
         }

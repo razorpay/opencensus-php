@@ -105,7 +105,8 @@ class DeviceTest extends TestCase
                 'template'  => 'sms.p2p.verification_completed',
                 'sender'    => 'SENDER',
                 'params'    => [
-                    'app_name'      => 'APPLICATION NAME',
+                    'app_name'       => 'APPLICATION NAME',
+                    'sms_signature'  => 'SMS SIGNATURE',
                 ],
             ], $input);
         });

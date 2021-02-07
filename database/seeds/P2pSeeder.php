@@ -441,6 +441,7 @@ class P2pSeeder extends Seeder
                 Client\Config::VPA_SUFFIX       => '.suf',
                 Client\Config::SMS_SENDER       => 'SENDER',
                 Client\Config::APP_FULL_NAME    => 'APPLICATION NAME',
+                Client\Config::SMS_SIGNATURE    => 'SMS SIGNATURE',
             ],
         ]);
 

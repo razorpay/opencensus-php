@@ -129,14 +129,15 @@ class TransactionEventTest extends TestCase
                 'receiver' => '+919988771111',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.collect',
-                'sender'    => 'RZRPAY',
+                'sender'    => 'SENDER',
                 'params'    => [
-                    'app_name'          => 'Razorpay Mobile Application',
+                    'app_name'          => 'APPLICATION NAME',
                     'payee_name'        => 'ALOCAL CUSTOMER',
                     'amount'            => 100,
                     'currency'          => 'INR',
                     'formatted_amount'  => '1.00',
-                    'currency_label'    => 'Rs.'
+                    'currency_label'    => 'Rs.',
+                    'sms_signature'     => 'SMS SIGNATURE',
                 ],
             ], $input);
         });
