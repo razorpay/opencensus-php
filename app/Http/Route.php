@@ -5146,8 +5146,6 @@ class Route
         'terminals_proxy_fetch_gateway_credential'    => Permission::VIEW_GATEWAY_CREDENTIAL,
         'terminals_proxy_delete_gateway_credential'   => Permission::DELETE_GATEWAY_CREDENTIAL,
 
-        //payout downtime fetch from X dashboard
-        'fetch_payout_downtimes_enabled'              => '*',
         'get_irctc_settlement_file_admin'             => '*',
 
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
