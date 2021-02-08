@@ -215,7 +215,11 @@ class Core extends Base\Core
 
         if ($this->validateOfferForOrderProductType($order, $offer) === false)
         {
-            return null;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                [
+                    'offer_id' => $offer->getPublicId(),
+                    'order_id' => $order->getPublicId(),
+                ]);
         }
 
         $verbose = true;

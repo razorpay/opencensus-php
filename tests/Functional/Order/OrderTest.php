@@ -11,12 +11,14 @@ use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
 {
+    use RazorxTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -961,6 +963,28 @@ class OrderTest extends TestCase
         $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
         $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
         $this->assertEquals($order['entity'], $entityOffer['entity_type']);
+    }
+
+    public function testCreateOrderWithOfferIDDifferentProduct()
+    {
+        $this->mockRazorX(__FUNCTION__, 'offer_on_subscription', 'on');
+
+        $offer = $this->fixtures->create('offer:card',
+            [
+                'active'       => 1,
+                'product_type' => 'subscription',
+            ]);
+
+        $subOffer = $this->fixtures->create('subscription_offers_master', [
+            'redemption_type' => 'cycle',
+            'applicable_on'   => 'both',
+            'no_of_cycles'    => 10,
+            'offer_id'        => $offer->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
     }
 
     public function testCreateOrderWithOffersAndOfferID()
