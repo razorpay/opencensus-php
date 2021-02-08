@@ -22,7 +22,7 @@ jobs:
     - name: Run bvt suite if PR approved
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : api
+        WEBHOOK_TRIGGER : bvt-api-commit
         GITHUB_TOKEN:  ${{ github.token }}
         SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
         GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
