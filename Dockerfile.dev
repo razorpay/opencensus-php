@@ -15,6 +15,14 @@ VOLUME ['/app']
 
 WORKDIR /app
 
+ARG GIT_TOKEN
+
+RUN apk add make git
+ADD Makefile /app
+ADD error_modules /app
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN make error-module-fetch
+
 EXPOSE 80
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.dev.sh"]

@@ -432,6 +432,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerFTSChannelNotification();
 
+        $this->registerErrorMappingService();
+
         $this->registerMerchantRiskAlertClient();
     }
 
@@ -489,6 +491,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'credcase_http_client',
             'pg_router',
             'bvs_http_client',
+            'error_mapper'
         ];
     }
 
@@ -1219,6 +1222,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->bind('fts_channel_notification', function($app)
         {
             return new FTS\ChannelNotification($app);
+        });
+    }
+
+    protected function registerErrorMappingService()
+    {
+        $this->app->bind('error_mapper', function ($app)
+        {
+            return new ErrorMappingService($app);
         });
     }
 

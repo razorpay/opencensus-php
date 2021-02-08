@@ -30,6 +30,16 @@ PHPUNIT = vendor/bin/phpunit
 PHPUNIT_ENV_FLAG = APP_ENV=testing_docker
 AT=
 
+# ERROR_MODULE repo info
+ERROR_MODULE_GIT_URL := "https://github.com/razorpay/error-mapping-module"
+DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay//error-mapping-module"
+ifneq ($(GIT_TOKEN),)
+ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
+endif
+
+ERROR_MODULE_BRANCH ?= master
+ERROR_MODULE_ROOT := error_codes/
+
 init:
 	@echo "Initializing and restarting docker with disabled flushing"
 	$(SHELL) $(DOCKER_INIT_SCRIPT)
@@ -81,3 +91,13 @@ test:
 
 all: build
 
+error-module-fetch: ## Fetch ERROR_MODULE files from remote repo
+	@echo "\n + Fetching ERROR_MODULE files from branch: $(ERROR_MODULE_BRANCH) \n"
+	@mkdir $(ERROR_MODULE_ROOT) && \
+	cd $(ERROR_MODULE_ROOT) && \
+	git init --quiet && \
+	git config core.sparseCheckout true && \
+	cp $(CURDIR)/error_modules .git/info/sparse-checkout && \
+	git remote add origin $(ERROR_MODULE_GIT_URL)  && \
+	git fetch origin $(ERROR_MODULE_BRANCH) --quiet && \
+	git checkout origin/$(ERROR_MODULE_BRANCH) --quiet

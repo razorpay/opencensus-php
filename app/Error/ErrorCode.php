@@ -2042,16 +2042,22 @@ class ErrorCode
 
     const BAD_REQUEST_CALLBACK_URL_INCORRECT                                        = 'BAD_REQUEST_CALLBACK_URL_INCORRECT';
 
-
     // Accounts/ stakeholder V2 document upload errorcodes
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'BAD_REQUEST_INVALID_FILE_ACCESS';
     const BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT                       = 'BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT';
     const BAD_REQUEST_SERVER_ERROR_FILE_FETCH_FAILURE                               = 'BAD_REQUEST_SERVER_ERROR_FILE_FETCH_FAILURE';
-
     const BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE                        = 'BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE';
     const BAD_REQUEST_INVALID_SURVEY_TYPE                                           = 'BAD_REQUEST_INVALID_SURVEY_TYPE';
 
     // Aadhar E-sign error codes
     const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
+
+    static function getConstants()
+    {
+        $oClass = new \ReflectionClass(__CLASS__);
+
+        return $oClass->getConstants();
+    }
+
 }

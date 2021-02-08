@@ -54,7 +54,7 @@ class PayoutError extends Error
 
         if (is_null($statusCode) === false)
         {
-            $payoutErrorCodeMapping = $this->readMappingFromJsonFile('payout');
+            $payoutErrorCodeMapping = $this->readMappingFromJsonFile(Error::BANKING_ERROR_CODE_FILE_PATH,'payout');
 
             $errorDetails = $payoutErrorCodeMapping[self::INTERNAL_PAYOUT_ERROR][$statusCode] ?? null;
 

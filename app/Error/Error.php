@@ -4,14 +4,17 @@ namespace RZP\Error;
 
 use App;
 use ArrayObject;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use \JsonMachine\JsonMachine;
 use RZP\Services\DowntimeMetric;
 use RZP\Error\Twirp\ErrorCodeMap;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Payout\PayoutError;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\DetailedError;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -64,11 +67,15 @@ class Error extends Support\Fluent
 
     const ERROR_CODE_VERIFIABLE_FILE_PATH  = 'files/errorcodes/error_verifiable_%s.csv';
 
+    const READ_DESC_ERROR_CODES_FILE_PATH  = 'files/errorcodes/read_desc_error_codes.json';
+
     protected $attributes = array();
 
     protected $app;
 
     protected $trace;
+
+    protected $errorMapper;
 
     public function __construct(
         $code,
@@ -79,6 +86,8 @@ class Error extends Support\Fluent
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->errorMapper = $this->app['error_mapper'];
 
         $this->fill($code, $desc, $field, $data);
     }
@@ -120,31 +129,29 @@ class Error extends Support\Fluent
 
         $this->setEnglishDescription($this->getDescription());
 
-        $locale = App::getLocale();
-
-        if ($locale !== 'en')
-        {
-            $this->setDescForLocale($locale);
-        }
-
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
     }
 
-    private function setDescForLocale($locale)
+    private function setDescForLocale()
     {
-        $localeDescription = __($this->getDescription());
+        $locale = App::getLocale();
 
-        $this->trace->info(TraceCode::SET_LOCALE_TRACE,
-            [
-                'actual description'    => $this->getDescription(),
-                'locale description'    => $localeDescription,
-                'locale'                => $locale
-            ]
-        );
+        if ($locale !== 'en')
+        {
+            $localeDescription = __($this->getDescription());
 
-        $this->setDesc($localeDescription);
+            $this->trace->info(TraceCode::SET_LOCALE_TRACE,
+                [
+                    'actual description' => $this->getDescription(),
+                    'locale description' => $localeDescription,
+                    'locale' => $locale
+                ]
+            );
+
+            $this->setDesc($localeDescription);
+        }
     }
 
     public function appendToField(string $string)
@@ -300,6 +307,20 @@ class Error extends Support\Fluent
      */
     public function setDetailedError($code, $method)
     {
+        if ($this->shouldModifyForNewBankingErrorCode() === true)
+        {
+            $this->setBankingErrorDetails($code);
+        }
+        else
+        {
+            $this->setErrorDetailsFromCentralRepo($code, $method);
+        }
+
+        $this->setDescForLocale();
+    }
+
+    protected function setErrorDetailsFromCsv($code, $method)
+    {
         if (isset($method) === true)
         {
             $errorCodeMap = array();
@@ -308,10 +329,84 @@ class Error extends Support\Fluent
 
             $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
         }
-        else if($this->shouldModifyForNewBankingErrorCode() === true)
+    }
+
+    protected function setErrorDetailsFromCentralRepo($code, $method = '')
+    {
+        $this->trace->info(TraceCode::STARTED_READING_FROM_CENTRAL_REPO,
+            [
+                'payment_method'       => $method,
+                'internal_error_code'  => $code,
+            ]
+        );
+
+        $errorCodeJson = $this->errorMapper->getErrorMapping($code,$method);
+
+        if (isset($errorCodeJson) === false)
         {
-            $this->setBankingErrorDetails($code);
+            $this->trace->info(TraceCode::INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO,
+                [
+                    'payment_method'       => $method,
+                    'internal_error_code'  => $code,
+                ]
+            );
+
+            $this->setErrorDetailsFromCsv($code, $method);
         }
+
+        $this->setErrorParams($errorCodeJson, $code);
+    }
+
+    protected function readDescFromCodeMapping($code)
+    {
+        $readDescErrorsArray = $this->readMappingFromJsonFile(storage_path(self::READ_DESC_ERROR_CODES_FILE_PATH));
+
+        return in_array($code, $readDescErrorsArray, true);
+    }
+
+    protected function setErrorParams($errorCodeJson, $code)
+    {
+        $readDescFromCodeMapping = $this->readDescFromCodeMapping($code);
+
+        $reason = $errorCodeJson['reason'] ?: 'NA';
+        $source = $errorCodeJson['source'] ?: 'NA';
+        $step   = $errorCodeJson['step'] ?: 'NA';
+
+        $this->setReason($reason);
+
+        $this->setFailureType($errorCodeJson['failure_type']);
+
+        if ($readDescFromCodeMapping === false)
+        {
+            if ($this->getDescription() === $errorCodeJson['error_description'])
+            {
+                $this->setDesc($errorCodeJson['error_description']);
+
+                $this->setEnglishDescription($errorCodeJson['error_description']);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH,
+                    [
+                        'internal_error_code' => $code,
+                        'central_repo_desc' => $errorCodeJson['error_description'],
+                        'original_desc'     => $this->getDescription(),
+                    ]
+                );
+            }
+        }
+
+        $this->setPublicErrorCode($errorCodeJson['public_error_code']);
+
+        $this->setSource($source);
+
+        $this->setNextBestAction($errorCodeJson['next_best_action']);
+
+        $this->setStep($step);
+
+        $this->setRecoverable($errorCodeJson['recoverable']);
+
+        $this->setReasonCode($source, $step, $reason);
     }
 
     protected function setEnglishDescription($desc)
@@ -858,18 +953,32 @@ class Error extends Support\Fluent
         return in_array($code, $validationErrorCodes, true);
     }
 
-    public function readMappingFromJsonFile($product)
+    public static function readMappingFromJsonFile($path, $product = null, $bigJson = false)
     {
-        $filePath = storage_path(sprintf(self::BANKING_ERROR_CODE_FILE_PATH, $product));
+        if (isset($product) === true)
+        {
+            $filePath = storage_path(sprintf($path, $product));
+        }
+        else
+        {
+            $filePath = $path;
+        }
 
         if (file_exists($filePath) === false)
         {
             return null;
         }
 
-        $fileData = file_get_contents($filePath);
+        if ($bigJson === false)
+        {
+            $fileData = file_get_contents($filePath);
 
-        return json_decode($fileData, true);
+            return json_decode($fileData, true);
+        }
+        else
+        {
+            return JsonMachine::fromFile($filePath);
+        }
     }
 
     /**
@@ -882,13 +991,13 @@ class Error extends Support\Fluent
      */
     protected function setBankingErrorDetails($code)
     {
-        $errorCodeMap = $this->readMappingFromJsonFile(Product::BANKING);
+        $errorCodeMap = $this->readMappingFromJsonFile(self::BANKING_ERROR_CODE_FILE_PATH,Product::BANKING);
 
         $errorCodeDetails = $errorCodeMap[$code] ?? null;
 
         if (is_null($errorCodeDetails) === true)
         {
-            $errorCodeMap = $this->readMappingFromJsonFile(PayoutEntity::PAYOUT);
+            $errorCodeMap = $this->readMappingFromJsonFile(self::BANKING_ERROR_CODE_FILE_PATH,PayoutEntity::PAYOUT);
 
             $errorCodeDetails = $errorCodeMap[PayoutError::INTERNAL_PAYOUT_ERROR][$code] ?? null;
         }

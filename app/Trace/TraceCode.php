@@ -3997,6 +3997,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';
     const REWARD_TO_EXPIRE                                               =  'REWARD_TO_EXPIRE';
     const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
+    const INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO                          = 'INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO';
+    const STARTED_READING_FROM_CENTRAL_REPO                              = 'STARTED_READING_FROM_CENTRAL_REPO';
+    const ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH                  = 'ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH';
 
     // Logs for AppStore
     const INSTALL_APP_ON_APPSTORE_REQUEST           = 'INSTALL_APP_ON_APPSTORE_REQUEST';

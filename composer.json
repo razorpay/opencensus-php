@@ -69,6 +69,7 @@
         "kriswallsmith/buzz": "^1.1",
         "google/protobuf": "^3.12",
         "twirp/twirp": "^0.5.3",
+        "halaxa/json-machine": "^0.4.1",
         "ext-zip": "*"
     },
     "repositories": [

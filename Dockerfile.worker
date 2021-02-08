@@ -31,4 +31,10 @@ COPY . /app/
 RUN composer dump-autoload -o && \
     php artisan optimize
 
+RUN apk add make git
+ADD Makefile /app
+ADD error_modules /app
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN make error-module-fetch
+
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.worker.sh"]

@@ -31,4 +31,14 @@ class ErrorCode extends \RZP\Error\ErrorCode
     const BAD_REQUEST_PAYER_PAYEE_SAME                              = 'BAD_REQUEST_PAYER_PAYEE_SAME';
 
     // @codingStandardsIgnoreEnd
+
+    static function getConstants()
+    {
+        $oClass = new \ReflectionClass(__CLASS__);
+
+        return $oClass->getConstants();
+    }
 }
+
+
+
