@@ -1457,6 +1457,7 @@ class Service extends Base\Service
             'TicketSystemSupport',
             'shopify_gtm_notification',
             'rx_tax_payments_announcement',
+            'disable_tpv_flow',
             'rx_opfin_sso_announcement_xdashboard',
         ];
 
