@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Requests;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Foundation\Application;
 use RZP\Models\Merchant\FreshdeskTicket\Metric;
 use RZP\Models\Merchant\FreshdeskTicket\Constants;
@@ -39,6 +40,8 @@ class FreshdeskTicketClient
         Constants::URL2        => 'token2',
         Constants::URLX        => 'tokenx',
     ];
+
+    const X_SALESFORCE_EMAIL_ID         = 'X-Salesforce-Email-Id';
 
     public function __construct(Application $app)
     {
@@ -452,9 +455,7 @@ class FreshdeskTicketClient
         $trace_request = $this->getRedactedRequest($request);
 
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_REQUEST,
-            [
-                'request' => $trace_request
-            ]
+            $trace_request
         );
 
         if ($contentType === 'multipart/form-data')
@@ -521,6 +522,13 @@ class FreshdeskTicketClient
             unset($request[$field]);
         }
 
+        $salesforceAgentId = $this->app['request']->header(self::X_SALESFORCE_EMAIL_ID);
+
+        if (empty($salesforceAgentId) === false)
+        {
+            $request['salesforce_agent_id'] = $salesforceAgentId;
+        }
+
         return $request;
     }
 
@@ -540,4 +548,5 @@ class FreshdeskTicketClient
             Constants::RESPONSE_CODE    =>  $responseCode,
             ];
     }
+
 }

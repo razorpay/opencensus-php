@@ -759,6 +759,8 @@ return [
         'password'      => env('SALESFORCE_PASSWORD'),
         'client_id'     => env('SALESFORCE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+        // to add internalApp Auth which uses secret field to determine whether It is Internal Auth
+        'secret'        => env('SALESFORCE_SECRET'),
     ],
 
     'terminals_service' => [

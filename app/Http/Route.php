@@ -5646,6 +5646,11 @@ class Route
             '*'
         ],
 
+        'salesforce' => [
+            'fd_create_ticket',
+            'fd_fetch_tickets'
+        ],
+
         'mock_gateways' => [
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',

@@ -63,6 +63,48 @@ return [
         ],
     ],
 
+    'testFetchTicketsForMerchantSalesforceWrongAuth' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "error"            =>  [
+                        "code"          =>  "BAD_REQUEST_ERROR",
+                        "description"   =>  "The requested URL was not found on the server."
+                    ],
+            ],
+            'status_code' => 400,
+    ],
+],
+
+    'testFetchTicketsForMerchantSalesforce' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 4,
+                'results' => [
+                    [
+                        'id'    => 'razorpayid0012',
+                    ],
+                    [
+                        'id'    => 'razorpayid0034',
+                    ],
+                    [
+                        'id'    => 'razorpayid0012',
+                    ],
+                    [
+                        'id'    => 'razorpayid0034',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetConversationsForTicket' => [
         'request' => [
             'url' => '/fd/support_dashboard/ticket/razorpayid0012/conversations',
@@ -166,6 +208,27 @@ return [
     ],
 
     'testCreateTicketRzp' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testCreateTicketRzpSalesForce' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
             'method'  => 'POST',
