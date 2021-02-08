@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
@@ -93,7 +94,7 @@ class Core extends Base\Core
         // A superadmin should be able to execute any open workflow bypassing all the steps
         if (($checkerType === 'admin') and ($checkerEntity->isSuperAdmin() === true))
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity, $input)
+            $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity, $input, $permissionName)
             {
                 // State change if checker rejected
                 if ($input[Entity::APPROVED] == 1)
@@ -108,6 +109,8 @@ class Core extends Base\Core
                         $action,
                         $checkerEntity,
                         $checkerEntity->getSuperAdminRole());
+
+                    $this->notifyOnReject($action, $permissionName);
                 }
             });
 
@@ -299,6 +302,8 @@ class Core extends Base\Core
 
         $this->executeAction($action, $step->role, $checkerEntity);
 
+        $this->notifyOnReject($action, $permissionName);
+
         return $checker;
     }
 
@@ -308,6 +313,34 @@ class Core extends Base\Core
         if ($action->getApproved() === true)
         {
             (new Action\Service)->executeAction($action->getPublicId(), $role, $checkerEntity);
+        }
+    }
+
+    protected function notifyOnReject(Action\Entity $action, string $permissionName)
+    {
+        if ($action->isRejected() === true)
+        {
+            // get reject handler and call
+            // if the reject handler fails,
+            // the decision to retry or not will reside with the corresponding reject handler
+            try
+            {
+                $rejectHandler = Action\Constants::getActionRejectHandlerByPermissionName($permissionName);
+
+                if (is_null($rejectHandler) === false)
+                {
+                    (new $rejectHandler)->handleOnRejectWorkflowAction($action);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::WORKFLOW_ACTION_NOTIFY_REJECT_FAILED,
+                    ['id' => $action->getId()]
+                );
+            }
         }
     }
 }

@@ -431,6 +431,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerBvsHttpClients();
 
         $this->registerFTSChannelNotification();
+
+        $this->registerMerchantRiskAlertClient();
     }
 
     /**
@@ -1217,6 +1219,19 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->bind('fts_channel_notification', function($app)
         {
             return new FTS\ChannelNotification($app);
+        });
+    }
+
+    protected function registerMerchantRiskAlertClient()
+    {
+        $this->app->singleton('merchant_risk_alerts', function($app)
+        {
+            if ($app['config']->get('services.merchant_risks_alerts.mock') === true)
+            {
+                return new Mock\MerchantRiskAlertClient;
+            }
+
+            return new MerchantRiskAlertClient();
         });
     }
 }

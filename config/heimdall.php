@@ -485,6 +485,10 @@ return [
                 'description' => 'Fetch exchange rates for a currency',
                 'assignable'  => true
             ],
+            Permission::MERCHANT_RISK_ALERT_FOH          => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

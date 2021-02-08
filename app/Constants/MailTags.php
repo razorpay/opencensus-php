@@ -219,6 +219,9 @@ class MailTags
     //payout downtime notification
     const PAYOUT_DOWNTIME_NOTIFICATION                  = 'payout_downtime_notification';
 
+    // Merchant Risk Alert tags
+    const MERCHANT_RISK_ALERT_FUNDS_ON_HOLD  = 'merchant_risk_alert_funds_on_hold';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

@@ -1273,6 +1273,7 @@ class ErrorCode
     const SERVER_ERROR_STORK_FAILURE                                                = 'SERVER_ERROR_STORK_FAILURE';
 
     const SERVER_ERROR_MERCHANT_RISKS_FAILURE                                       = 'SERVER_ERROR_MERCHANT_RISKS_FAILURE';
+    const SERVER_ERROR_MERCHANT_RISK_ALERTS_FAILURE                                 = 'SERVER_ERROR_MERCHANT_RISK_ALERTS_FAILURE';
     const BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND                                       = 'BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND';
     const BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED                                 = 'BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED';
     const BAD_REQUEST_WEBHOOK_VALIDATION_FAILED                                     = 'BAD_REQUEST_WEBHOOK_VALIDATION_FAILED';

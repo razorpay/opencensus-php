@@ -68,6 +68,7 @@ class Workflow
         Permission::ADD_SHIELD_LIST_ITEMS,
         Permission::PURGE_SHIELD_LIST_ITEMS,
         Permission::DELETE_SHIELD_LIST_ITEM,
+        Permission::MERCHANT_RISK_ALERT_FOH,
     ];
 
     protected $app;

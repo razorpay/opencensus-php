@@ -840,5 +840,10 @@ return [
     'bvs' => [
         'username' => env("BVS_APP_USERNAME"),
         'secret'   => env('BVS_APP_SECRET')
+    ],
+
+    'merchant_risk_alerts' => [
+        'maker_email' => env('MERCHANT_RISK_ALERT_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
+        'secret'      => env('MERCHANT_RISK_ALERTS_SECRET')
     ]
 ];

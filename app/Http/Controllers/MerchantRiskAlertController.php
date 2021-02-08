@@ -1,0 +1,36 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use ApiResponse;
+
+class MerchantRiskAlertController extends Controller
+{
+    public function createFOHWorkflow()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createFOHWorkflow($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantDetails(string $mid)
+    {
+        $response = $this->service()->getMerchantDetails($mid);
+
+        return ApiResponse::json($response);
+    }
+
+    // NOTE: This is not mapped to an external route
+    // Meant foh execution (specifically for auto foh)
+    public function executeFOHWorkflow()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->executeFOHWorkflow($input);
+
+        return ApiResponse::json($response);
+    }
+}

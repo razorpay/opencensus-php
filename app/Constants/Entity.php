@@ -443,6 +443,9 @@ class Entity
     const SURVEY = 'survey';
     const SURVEY_TRACKER = 'survey_tracker';
 
+    // Merchant Risk Alert
+    const MERCHANT_RISK_ALERT = 'merchant_risk_alert';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -825,6 +828,8 @@ class Entity
 
         self::SURVEY_TRACKER    => \RZP\Models\Survey\Tracker::class,
         self::SURVEY            => \RZP\Models\Survey::class,
+
+        self::MERCHANT_RISK_ALERT => \RZP\Models\MerchantRiskAlert::class,
 
         self::BANKING_ACCOUNT_TPV   => \RZP\Models\BankingAccountTpv::class,
     ];

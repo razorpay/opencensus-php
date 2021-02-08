@@ -101,4 +101,13 @@ return [
             'secret'    => env('MERCHANT_RISKS_CLIENT_SECRET')
         ],
     ],
+
+    'merchant_risk_alerts' => [
+        'url'  => env('MERCHANT_RISK_ALERTS_URL'),
+        'mock' => env('MERCHANT_RISK_ALERTS_MOCK', false),
+        'auth' => [
+            'key'       => env('MERCHANT_RISK_ALERTS_CLIENT_KEY'),
+            'secret'    => env('MERCHANT_RISK_ALERTS_CLIENT_SECRET')
+        ],
+    ],
 ];
