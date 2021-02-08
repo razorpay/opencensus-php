@@ -1413,13 +1413,6 @@ class Repository extends Base\Repository
         return $vol;
     }
 
-    public function getTotalUsedCountForTerminal($terminalId)
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminalId)
-                    ->count();
-    }
-
     public function getCapturedAmountByGateway(string $gateway, int $from, int $to)
     {
         return $this->newQuery()

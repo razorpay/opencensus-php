@@ -1450,11 +1450,7 @@ class Repository extends Base\Repository
 
     public function deleteOrFail($entity)
     {
-        $count = $this->repo->payment->getTotalUsedCountForTerminal(
-                    $entity->getId());
-
-
-        return $this->transaction(function() use ($entity, $count)
+        return $this->transaction(function() use ($entity)
         {
             $sync = $this->app['config']->get('applications.terminals_service.sync');
 
@@ -1467,18 +1463,9 @@ class Repository extends Base\Repository
                 parent::saveOrFail($entity);
             }
 
-            if ($count === 0)
-            {
-                $entity->forceDelete();
+            $entity->deleteOrFail();
 
-                return null;
-            }
-            else
-            {
-                $entity->deleteOrFail();
-
-                return $entity;
-            }
+            return $entity;
         });
     }
 

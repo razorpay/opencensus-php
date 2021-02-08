@@ -861,7 +861,7 @@ class TerminalMigrationTest extends TestCase
 
         $afterCount = DB::table('terminals')->count();
 
-        $this->assertEquals($beforeCount - 1, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount);
 
     }
 
@@ -934,7 +934,7 @@ class TerminalMigrationTest extends TestCase
 
         $afterCount = DB::table('terminals')->count();
 
-        $this->assertEquals($beforeCount - 1, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant()
@@ -1049,7 +1049,7 @@ class TerminalMigrationTest extends TestCase
 
         $afterCount = DB::table('terminals')->count();
 
-        $this->assertEquals($beforeCount - 1, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount); // assert that terminal should be soft deleted
     }
 
 
@@ -1094,7 +1094,7 @@ class TerminalMigrationTest extends TestCase
 
         $afterCount = DB::table('terminals')->count();
 
-        $this->assertEquals($beforeCount, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount); // assert that terminal should be soft deleted // assert that terminal should be soft deleted
 
         $terminalEntity = DB::table('terminals')->where('id', '=', $tid)->first(); // stdClass object
 
@@ -1136,7 +1136,7 @@ class TerminalMigrationTest extends TestCase
 
         $afterCount = DB::table('terminals')->count();
 
-        $this->assertEquals($beforeCount, $afterCount);
+        $this->assertEquals($beforeCount, $afterCount); // assert that terminal should be soft deleted
 
         $terminal = $this->terminalRepository->findOrFail($tid);
 
