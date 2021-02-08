@@ -218,7 +218,7 @@ export default class InstantActivationAnnouncements extends Component {
               </React.Fragment>
             );
           }
-        } else {
+        } else if (mode !== 'live') {
           content = (
             <React.Fragment>
               We are reviewing your KYC details. It usually takes{' '}
@@ -230,6 +230,13 @@ export default class InstantActivationAnnouncements extends Component {
               >
                 you can try our products in test mode.
               </button>
+            </React.Fragment>
+          );
+        } else {
+          content = (
+            <React.Fragment>
+              We are reviewing your KYC details. It usually takes{' '}
+              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. We will reach out to you if we need any further details.
             </React.Fragment>
           );
         }
