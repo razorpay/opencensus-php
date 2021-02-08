@@ -355,6 +355,10 @@ class BankTransferController extends Controller
                 $mode = \RZP\Models\BankTransfer\Mode::IMPS;
                 break;
 
+            case 'u':
+                $mode = \RZP\Models\BankTransfer\Mode::UPI;
+                break;
+
             default:
                 throw new BadRequestValidationFailureException('invalid mode: '. $data['mode'], null, $data);
         }
