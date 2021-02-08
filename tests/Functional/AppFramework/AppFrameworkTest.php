@@ -8,18 +8,15 @@ use Hash;
 use Queue;
 use Config;
 
+use RZP\Constants;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-
 use RZP\Tests\Functional\Fixtures\Entity\App;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AppFrameworkTest extends TestCase
 {
     use PaymentTrait;
-
-    private $ownerRoleUser;
-
-    private $merchant;
 
     public function setUp()
     {
@@ -27,7 +24,35 @@ class AppFrameworkTest extends TestCase
 
         parent::setUp();
 
+        $this->createAndAssignPermission();
+
         $this->ba->adminAuth();
+    }
+
+    public function createAndAssignPermission()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permRegistration = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::APP_REGISTRATION]);
+
+        $permAppMapping = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::APP_MAPPING]);
+
+        $role->permissions()->attach($permRegistration->getId());
+
+        $role->permissions()->attach($permAppMapping->getId());
+    }
+
+    public function detachPermission(string $permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permissionId = (new Permission\Repository)->retrieveIdsByNames([$permissionName])[0];
+
+        $role->permissions()->detach($permissionId);
     }
 
     public function testCreateApp()
@@ -35,9 +60,16 @@ class AppFrameworkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWithoutRegistrationRole()
+    {
+        $this->detachPermission(Permission\Name::APP_REGISTRATION);
+
+        $this->startTest();
+    }
+
     public function testUpdateApp()
     {
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -53,7 +85,7 @@ class AppFrameworkTest extends TestCase
 
     public function testGetApp()
     {
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -69,7 +101,27 @@ class AppFrameworkTest extends TestCase
 
     public function testCreateAppMapping()
     {
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
+            [
+                'name' => 'Test App',
+                'title' => 'Test App',
+                'type' => 'app',
+                'home_app' => true,
+                'description' => 'This is test app',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['list'] = [
+            $x_app['id'],
+        ];
+
+        $this->startTest();
+    }
+
+    public function testCreateAppMappingWithoutMappingRole()
+    {
+        $this->detachPermission(Permission\Name::APP_MAPPING);
+
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -89,7 +141,7 @@ class AppFrameworkTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -98,7 +150,7 @@ class AppFrameworkTest extends TestCase
                 'description' => 'This is test app',
             ]);
 
-        $this->fixtures->create('application_mapping',
+        $this->fixtures->create(Constants\Entity::APPLICATION_MAPPING,
             [
                 'tag'    => 'ecommerce',
                 'app_id' => $x_app['id'],
@@ -113,7 +165,7 @@ class AppFrameworkTest extends TestCase
 
     public function testDeleteTag()
     {
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -122,7 +174,7 @@ class AppFrameworkTest extends TestCase
                 'description' => 'This is test app',
             ]);
 
-        $this->fixtures->create('application_mapping',
+        $this->fixtures->create(Constants\Entity::APPLICATION_MAPPING,
             [
                 'tag'    => 'ecommerce',
 	            'app_id' => $x_app['id'],
@@ -142,7 +194,7 @@ class AppFrameworkTest extends TestCase
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
-        $x_app = $this->fixtures->create('application',
+        $x_app = $this->fixtures->create(Constants\Entity::APPLICATION,
             [
                 'name' => 'Test App',
                 'title' => 'Test App',
@@ -151,7 +203,7 @@ class AppFrameworkTest extends TestCase
                 'description' => 'This is test app',
             ]);
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->fixtures->create(Constants\Entity::MERCHANT);
 
         $this->testData[__FUNCTION__]['request']['content']['merchant_id'] = $merchant->getId();
 
@@ -159,7 +211,7 @@ class AppFrameworkTest extends TestCase
 
         $this->startTest();
 
-        $xAppMerchantMapping = $this->getLastEntity('application_merchant_mapping', true);
+        $xAppMerchantMapping = $this->getLastEntity(Constants\Entity::APPLICATION_MERCHANT_MAPPING, true);
 
         $this->assertEquals($merchant->getId(), $xAppMerchantMapping['merchant_id']);
 

@@ -5188,12 +5188,12 @@ class Route
         'survey_create'                                       => Permission::NPS_SURVEY,
         'survey_edit'                                         => Permission::NPS_SURVEY,
 
-        'app_create'                                          => '*',
-        'app_update'                                          => '*',
-        'app_get'                                             => '*',
-        'app_mapping_create'                                  => '*',
-        'app_mapping_delete'                                  => '*',
-        'app_tags_delete'                                     => '*',
+        'app_create'                                          => Permission::APP_REGISTRATION,
+        'app_update'                                          => Permission::APP_REGISTRATION,
+        'app_get'                                             => Permission::APP_REGISTRATION,
+        'app_mapping_create'                                  => Permission::APP_MAPPING,
+        'app_mapping_delete'                                  => Permission::APP_MAPPING,
+        'app_tags_delete'                                     => Permission::APP_MAPPING,
 
         'admin_fund_account_validate'                         => Permission::FUND_ACCOUNT_VALIDATION_ADMIN,
 

@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 return [
     'testCreateApp' => [
         'request'  => [
@@ -20,6 +23,32 @@ return [
                 'type' => 'app',
                 'description' => 'This is test app',
             ],
+        ],
+    ],
+
+    'testCreateWithoutRegistrationRole' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/app',
+            'content' => [
+                'name' => 'Test App',
+                'title' => 'Test App',
+                'type' => 'app',
+                'home_app' => true,
+                'description' => 'This is test app',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
         ],
     ],
 
@@ -67,6 +96,29 @@ return [
             'content' => [
                 'ecommerce' => 'Tag Mapping Created',
             ],
+        ],
+    ],
+
+    'testCreateAppMappingWithoutMappingRole' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/app/mapping',
+            'content' => [
+                'tag' => 'ecommerce',
+                'list' => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
         ],
     ],
 
