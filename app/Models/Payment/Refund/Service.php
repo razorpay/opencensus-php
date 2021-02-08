@@ -530,7 +530,7 @@ class Service extends Base\Service
 
                         foreach ($input[Constants\Entity::PAYMENT] as $value)
                         {
-                            if ($value === "is_dcc")
+                            if ($value === RefundConstants::IS_DCC)
                             {
                                 $map[$value] = $payment->isDCC();
 

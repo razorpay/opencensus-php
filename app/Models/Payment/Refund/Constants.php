@@ -7,6 +7,7 @@ class Constants
     const META                                 = 'meta';
     const MODE                                 = 'mode';
     const IS_FTA                               = 'is_fta';
+    const IS_DCC                               = 'is_dcc';
     const MOZART                               = 'mozart';
     const ENTITIES                             = 'entities';
     const REFUND_IDS                           = 'refund_ids';

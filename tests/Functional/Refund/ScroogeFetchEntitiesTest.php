@@ -555,9 +555,9 @@ class ScroogeFetchEntitiesTest extends TestCase
         $paymentMeta = new PaymentMetaEntity();
 
         $paymentMeta->build([
-            PaymentMetaEntity::GATEWAY_AMOUNT => 30,
+            PaymentMetaEntity::PAYMENT_ID       => substr($subTestArgs['refund1']['payment_id'], 4),
+            PaymentMetaEntity::GATEWAY_AMOUNT   => 30,
             PaymentMetaEntity::GATEWAY_CURRENCY => 'USD',
-            PaymentMetaEntity::PAYMENT_ID => substr($subTestArgs['refund1']['payment_id'], 4)
         ]);
 
         $paymentMeta->save();
@@ -573,8 +573,8 @@ class ScroogeFetchEntitiesTest extends TestCase
             substr($subTestArgs['refund1']['id'], 5) => [
                 'entities' => [
                     'payment' => [
-                        'currency' => 'INR',
-                        'is_dcc' => true,
+                        'is_dcc'           => true,
+                        'currency'         => 'INR',
                         'gateway_captured' => true,
                     ]
                 ]
