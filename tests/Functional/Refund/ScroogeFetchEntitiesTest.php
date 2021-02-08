@@ -8,6 +8,7 @@ use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\UpiMetadata\Entity as UpiMetadataEntity;
+use RZP\Models\Payment\PaymentMeta\Entity as PaymentMetaEntity;
 
 class ScroogeFetchEntitiesTest extends TestCase
 {
@@ -519,7 +520,7 @@ class ScroogeFetchEntitiesTest extends TestCase
             'refund_ids' => [
                 substr($subTestArgs['refund1']['id'], 5),
             ],
-            'payment' => ['method'],
+            'payment' => ['method', 'is_dcc'],
             'extra_data' => [
                 'fta_data',
             ]
@@ -529,7 +530,8 @@ class ScroogeFetchEntitiesTest extends TestCase
             substr($subTestArgs['refund1']['id'], 5) => [
                 'entities' => [
                     'payment' => [
-                        'method' => 'upi'
+                        'method' => 'upi',
+                        'is_dcc' => false,
                     ]
                 ],
                 'extra_data' => [
@@ -542,6 +544,40 @@ class ScroogeFetchEntitiesTest extends TestCase
                         ]
                     ]
                 ],
+            ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    public function scroogeFetchEntitiesSubTest13($subTestArgs) : array
+    {
+        $paymentMeta = new PaymentMetaEntity();
+
+        $paymentMeta->build([
+            PaymentMetaEntity::GATEWAY_AMOUNT => 30,
+            PaymentMetaEntity::GATEWAY_CURRENCY => 'USD',
+            PaymentMetaEntity::PAYMENT_ID => substr($subTestArgs['refund1']['payment_id'], 4)
+        ]);
+
+        $paymentMeta->save();
+
+        $input = [
+            'refund_ids' => [
+                substr($subTestArgs['refund1']['id'], 5)
+            ],
+            'payment' => ['is_dcc', 'currency', 'gateway_captured']
+        ];
+
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'entities' => [
+                    'payment' => [
+                        'currency' => 'INR',
+                        'is_dcc' => true,
+                        'gateway_captured' => true,
+                    ]
+                ]
             ]
         ];
 

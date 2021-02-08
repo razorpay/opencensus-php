@@ -416,7 +416,7 @@ class Service extends Base\Service
      * Sample request:
      * {
      *   "refund":["amount"],
-     *   "payment":["reference2"],
+     *   "payment":["reference2", "is_dcc"],
      *   "entities":{
      *       "card":["iin", "last4"],
      *       "terminal":["gateway_terminal_id", "gateway_merchant_id"],
@@ -445,7 +445,8 @@ class Service extends Base\Service
      *                "amount": 100
      *            },
      *            "payment": {
-     *                "reference2": "54543"
+     *                "reference2": "54543",
+     *                "is_dcc": false
      *            },
      *            "card": {
      *                "iin": "401200",
@@ -529,6 +530,13 @@ class Service extends Base\Service
 
                         foreach ($input[Constants\Entity::PAYMENT] as $value)
                         {
+                            if ($value === "is_dcc")
+                            {
+                                $map[$value] = $payment->isDCC();
+
+                                continue;
+                            }
+
                             $map[$value] = $paymentEntity[$value];
                         }
 
