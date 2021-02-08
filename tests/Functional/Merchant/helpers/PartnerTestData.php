@@ -600,13 +600,10 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id' => 10000000000009,
-                    'products' => [
-                        'banking',
-                        'primary',
-                    ]
-                ],
+                '10000000000009' => [
+                    'banking',
+                    'primary',
+                ]
             ],
         ],
     ],
@@ -627,9 +624,7 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id' => '10000000000009',
-                ],
+                '10000000000009'
             ],
         ],
     ],

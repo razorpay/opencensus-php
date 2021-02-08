@@ -2391,6 +2391,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_NAME_RETAIN                                  = 'MERCHANT_NAME_RETAIN';
     const PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT        = 'PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT';
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
+    const PARTNER_FETCH_SUBMERCHANTS_FILTER                     = 'PARTNER_FETCH_SUBMERCHANTS_FILTER';
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN                  = 'SUBMERCHANT_PROMOTIONAL_PRICING_PLAN';

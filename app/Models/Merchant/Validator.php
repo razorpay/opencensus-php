@@ -336,6 +336,8 @@ class Validator extends Base\Validator
         Constants::TO                     => 'integer',
         Constants::COUNT                  => 'integer|min:1|max:50',
         Constants::SKIP                   => 'integer',
+        ENTITY::PRODUCT                   => 'sometimes|in:primary,banking',
+
         Entity::MERCHANT_ID               => 'sometimes|array',
         MerchantApplications\Entity::TYPE => 'sometimes|string|in:managed,referred,oauth',
     ];

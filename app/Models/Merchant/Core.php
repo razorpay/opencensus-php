@@ -2466,6 +2466,12 @@ class Core extends Base\Core
 
         $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser, $product);
 
+        $products = $this->fetchProductUsedByMerchants([$merchant->getId()]);
+
+        if(count($products) > 0){
+            $merchant[Entity::PRODUCT] = $products;
+        }
+
         return $merchant;
     }
 
@@ -2571,11 +2577,13 @@ class Core extends Base\Core
 
     /**
      * @param Entity $partner
-     * @param array  $params
+     * @param array $params
+     * @param bool $paginate
      *
-     * @return PublicCollection
+     * @return mixed
+     * @throws BadRequestException
      */
-    public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
+    public function listSubmerchants(Entity $partner, array $params)
     {
         $appIds = $this->getPartnerApplicationIds($partner);
 
@@ -2606,9 +2614,17 @@ class Core extends Base\Core
             unset($params[Constants::APPLICATION_ID]);
         }
 
-        $merchants = $this->repo
-                          ->merchant
-                          ->fetchSubmerchantsByAppIds($appIds, $params);
+        $applyProductFilter = array_key_exists(ENTITY::PRODUCT, $params);
+
+        if ($applyProductFilter === true){
+            list($offset, $merchants) = $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
+        }
+        else
+        {
+            $merchants = $this->repo
+                ->merchant
+                ->fetchSubmerchantsByAppIds($appIds, $params);
+        }
 
         $partnerUser = $partner->primaryOwner();
 
@@ -2617,7 +2633,7 @@ class Core extends Base\Core
             return $this->getPartnerSubmerchantData($submerchant, $partnerUser);
         });
 
-        return $merchants;
+        return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
     }
 
     /**
@@ -4490,20 +4506,9 @@ class Core extends Base\Core
      */
     public function fetchProductUsedByMerchants(array $merchantIds, $product = null, $limit = null)
     {
-        $this->trace->info(
-            TraceCode::PARTNER_DELETE_APPLICATION,
-            [
-                'merchant_ids' => $merchantIds,
-                'product' => $product,
-                'limit' => $limit,
-            ]
-        );
-
         $merchantsAndProducts = $this->repo->merchant_user->fetchProductUsedForMerchantIds($merchantIds, $product, $limit);
 
         $productUsedByMerchants = array();
-
-        $merchantProducts = array();
 
         // if the product is passed in the input param then response format is {merchant_id1, merchant_id2, ..}
         // and if product is not passed then the response format is {merchant_id, [product1, product2, ..]}
@@ -4516,36 +4521,96 @@ class Core extends Base\Core
             // if the product is passed than simply store the merchant ids using that product
             if (empty($product) === true)
             {
-                if (array_key_exists($merchantId, $merchantProducts) === false)
+                if (empty($productUsedByMerchants[$merchantId]) === true)
                 {
-                    $merchantProducts[$merchantId] = array();
+                    $productUsedByMerchants[$merchantId] = array();
                 }
 
-                array_push($merchantProducts[$merchantId], $productUsed);
+                array_push($productUsedByMerchants[$merchantId], $productUsed);
             }
             else
             {
-                $arrayInput = [
-                    'merchant_id' => $merchantId
-                ];
-
-                array_push($productUsedByMerchants, $arrayInput);
-            }
-        }
-
-        if (empty($product) === true)
-        {
-            foreach ($merchantProducts as $merchantId => $products)
-            {
-                $arrayInput = [
-                    'merchant_id' => $merchantId,
-                    "products"    => $products
-                ];
-
-                array_push($productUsedByMerchants, $arrayInput);
+                array_push($productUsedByMerchants, $merchantId);
             }
         }
 
         return $productUsedByMerchants;
+    }
+
+    /**
+     * This method fetches sub-merchants for a partner and applies
+     * product filter on the fetched result set.
+     * Why two separate call? To avoid a direct join on the two result sets,
+     * in future we may want to move one/both of repository calls to api.
+     *
+     * @param array $params
+     * @param array $appIds
+     * @param string $partnerId
+     *
+     * @return array
+     */
+    public function filterSubmerchantsOnProduct(array $params, array $appIds, string $partnerId): array
+    {
+        $skip = $params['skip'] ?? 0;
+
+        $count = $params['count'] ?? 25;
+
+        $product = $params[ENTITY::PRODUCT];
+
+        unset($params[ENTITY::PRODUCT]);
+
+        $recordsToTake = $count;
+
+        $result = new PublicCollection();
+
+        // fetch sub-merchants from the app ids and further filter them on product
+        // Do this until the desired number of records are fetched or
+        // no further records are available to fetch
+        do {
+            $merchants = $this->repo
+                ->merchant
+                ->fetchSubmerchantsByAppIds($appIds, $params);
+
+            if (count($merchants) == 0 || $recordsToTake == 0) {
+                break;
+            }
+
+            $merchantIds = $merchants->getIds();
+
+            $filteredMerchantIds = $this->fetchProductUsedByMerchants($merchantIds, $product);
+
+            $recordsRead = 0;
+            foreach ($merchants as $merchant)
+            {
+                if ($recordsToTake == 0)
+                {
+                    break;
+                }
+
+                if ((in_array($merchant->getId(), $filteredMerchantIds) === true) && $recordsToTake > 0)
+                {
+                    $result->push($merchant);
+
+                    $recordsToTake--;
+                }
+                $recordsRead++;
+            }
+
+            $skip += $recordsRead;
+
+            $params['skip'] = $skip;
+
+            $this->trace->debug(TraceCode::PARTNER_FETCH_SUBMERCHANTS_FILTER, [
+                'partnerId'                 => $partnerId,
+                'params'                    => $params,
+                'product'                   => $product,
+                'recordsFromApplicationIds' => $merchants->count(),
+                'recordsAfterProductFilter' => count($filteredMerchantIds),
+                'recordsTakenSoFar'         => count($result),
+            ]);
+
+        } while (count($result) < $count);
+
+        return array($skip, $result);
     }
 }

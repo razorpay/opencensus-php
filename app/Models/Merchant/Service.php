@@ -99,6 +99,7 @@ class Service extends Base\Service
     const MERCHANT_MAIL                 = 'merchant_mail';
     const SUPPORT_DETAILS               = 'support_details';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
+    const OFFSET                        = 'offset';
 
     const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
 
@@ -4102,9 +4103,16 @@ class Service extends Base\Service
         $input['skip'] = $input['skip'] ?? 0;
         $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
-        $submerchants = $this->core()->listSubmerchants($partner, $input);
+        $result = $this->core()->listSubmerchants($partner, $input);
 
-        return $submerchants->toArrayPartner();
+        $response = $result[0]->toArrayPartner();
+
+        if (array_key_exists(STATIC::OFFSET, $result) === true)
+        {
+            $response[static::OFFSET] = $result[STATIC::OFFSET];
+        }
+
+        return $response;
     }
 
     /**
@@ -4311,7 +4319,8 @@ class Service extends Base\Service
         else if ($merchant->isPartner() === true)
         {
             // submerchant accounts
-            $associatedAccounts = $this->core()->listSubmerchants($merchant, [])->getIds();
+            $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
+            $associatedAccounts = $submerchants->getIds();
         }
         else if ($merchant->hasAggregatorFeature() === true)
         {
