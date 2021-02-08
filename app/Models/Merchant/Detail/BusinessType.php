@@ -127,6 +127,18 @@ class BusinessType
         self::LLP,
     ];
 
+    protected static $validAadhaarEsignBusinessTypes = [
+        self::UNREGISTERED,
+        self::INDIVIDUAL,
+        self::PROPRIETORSHIP,
+        self::PARTNERSHIP
+    ];
+
+    public static function isAadhaarEsignVerificationRequired($businessType)
+    {
+        return in_array($businessType, self::$validAadhaarEsignBusinessTypes, true);
+    }
+
     public static function isBusinessTypeGreylistedForInternational($businessType = null)
     {
         if (empty($businessType) === true)

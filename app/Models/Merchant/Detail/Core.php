@@ -2826,23 +2826,79 @@ class Core extends Base\Core
     {
         $stakeholder = $merchantDetails->stakeholder;
 
-        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
-
-        // is experiment is not enabled always assume its done;
-        if($isAadhaarEsignEnabled === false)
-        {
-            return true;
-        }
-
         if(empty($stakeholder) === true)
         {
             return false;
         }
 
-        if($stakeholder->getAadhaarLinked() === true)
+        return $stakeholder->getAadhaarEsignStatus() === 'verified';
+    }
+
+    private function isAadhaarEsignVerificationRequired(Entity $merchantDetails)
+    {
+        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+
+        if($isAadhaarEsignEnabled === false)
         {
-            return $stakeholder->getAadhaarEsignStatus() === 'verified';
+            return false;
+        }
+
+        if(BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
+        {
+            return false;
+        }
+
+        $stakeholder = $merchantDetails->stakeholder;
+
+        if(empty($stakeholder) === true)
+        {
+            return true;
+        }
+
+        return $stakeholder->getAadhaarLinked();
+    }
+
+    public function canSubmitActivationForm(
+        Entity $merchantDetails, Merchant\Entity $merchant, $requiredFields)
+    {
+        if(count($requiredFields) > 0)
+        {
+            return false;
+        }
+
+        $isAutoKycDocumentsVerificationStatusAllowed = (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
+            $merchantDetails,
+            FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
+
+        if($isAutoKycDocumentsVerificationStatusAllowed === false)
+        {
+            return false;
+        }
+
+        $activationFlow = null;
+        if($merchantDetails->canDetermineActivationFlow())
+        {
+            if($merchantDetails->isUnregisteredBusiness())
+            {
+                $activationFlow = $this->getActivationFlowForUnregistered($merchant, $merchantDetails);
+            }
+            else{
+                $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
+            }
+        }
+
+        if($activationFlow === ActivationFlow::BLACKLIST)
+        {
+            return false;
+        }
+
+        if($merchant->isLinkedAccount() === false)
+        {
+            if($this->isAadhaarEsignVerificationRequired($merchantDetails) === true)
+            {
+                return $this->isAadhaarEsignVerificationDone($merchantDetails);
+            }
         }
 
         return true;
@@ -2883,28 +2939,7 @@ class Core extends Base\Core
             $documentsResponse,
             $requiredFields);
 
-        $isAutoKycDocumentsVerificationStatusAllowed = (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
-            $merchantDetails,
-            FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
-
-        $activationFlow = null;
-        if($merchantDetails->canDetermineActivationFlow())
-        {
-            if($merchantDetails->isUnregisteredBusiness())
-            {
-                $activationFlow = $this->getActivationFlowForUnregistered($merchant, $merchantDetails);
-            }
-            else{
-                $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
-            }
-        }
-        $isAadhaarEsignDone = $this->isAadhaarEsignVerificationDone($merchantDetails);
-
-        if ((count($requiredFields) > 0) or
-            ($isAutoKycDocumentsVerificationStatusAllowed === false) or
-            ($activationFlow === ActivationFlow::BLACKLIST) or
-            ($isAadhaarEsignDone === false)
-        )
+        if ($this->canSubmitActivationForm($merchantDetails, $merchant, $requiredFields) === false)
         {
             $remainingFields = count($requiredFields);
 
