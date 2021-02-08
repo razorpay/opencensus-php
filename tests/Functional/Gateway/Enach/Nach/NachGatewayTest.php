@@ -168,6 +168,62 @@ class NachGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedRegisterFileContent, $registerFileRows[0]);
     }
 
+    public function testGatewayFileRegisterWithIfscMapping()
+    {
+        $payment = $this->createDummyRegisterToken('ORBC0100326');
+
+        $this->fixtures->stripSign($payment['id']);
+
+        $this->ba->cronAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $zipFile = $files['items'][0];
+        $registerFile = $files['items'][1];
+
+        $expectedFileContentZip = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_10022020_test'
+        ];
+
+        $expectedFileContentRegister = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
+        $this->assertArraySelectiveEquals($expectedFileContentRegister, $registerFile);
+
+        $registerFileRows = Excel::load('storage/files/filestore/' . $registerFile['location'])->all()->toArray();
+
+        $expectedRegisterFileContent = [
+            'category_code'        => "U099",
+            'category_description' => "Others",
+            'start_date'           => "16/02/2020",
+            'end_date'             => "Until cancelled",
+            'client_code'          => "CTRAZORPAY",
+            'unique_reference_no'  => $payment['id'],
+            'account_no'           => "1111111111111",
+            'account_holder_name'  => "dead pool",
+            'account_type'         => "savings",
+            'bank_name'            => "ORBC",
+            'bank_micr_ifsc'       => "PUNB0244200",
+            'amount'               => "10000",
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRegisterFileContent, $registerFileRows[0]);
+    }
+
     public function testGatewayFileRegisterOnNonWorkingDay()
     {
         $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
@@ -834,7 +890,7 @@ class NachGatewayTest extends TestCase
         return $file;
     }
 
-    protected function createDummyRegisterToken()
+    protected function createDummyRegisterToken(string $ifsc = 'HDFC0001233')
     {
         $this->createOrder([
             'amount' => 0,
@@ -848,7 +904,10 @@ class NachGatewayTest extends TestCase
                     E::PAPER_MANDATE => [
                         'amount' => 1000000,
                         'status' => PaperMandate\Status::AUTHENTICATED,
-                        'uploaded_file_id' => '1000000000file'
+                        'uploaded_file_id' => '1000000000file',
+                        E::BANK_ACCOUNT => [
+                            'ifsc_code' => $ifsc,
+                        ],
                     ],
                 ],
             ],

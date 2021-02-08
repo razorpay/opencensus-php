@@ -16,6 +16,7 @@ use RZP\Models\UpiMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicCollection;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -104,6 +105,13 @@ class Entity extends Base\PublicEntity
      * In case he does not, we add 10 years to the current time.
      */
     const DEFAULT_EXPIRY_YEARS  = 10;
+
+    const MAPPED_IFSC = [
+        'ORBC' => 'PUNB0244200',
+        'CORP' => 'UBIN0550451',
+        'BKDN' => 'BARB0SERBOM',
+        'UTBI' => 'PUNB0244200',
+    ];
 
     const DCC_ENABLED           = 'dcc_enabled';
 
@@ -804,5 +812,22 @@ class Entity extends Base\PublicEntity
     public function isSaveVpaToken()
     {
         return (($this->getStartTime() === null) and ($this->getMethod() === Payment\Method::UPI));
+    }
+
+    public function mapIFSC($tokens)
+    {
+        $mappedTokens = collect($tokens)->map(function ($arr) {
+
+            $firstFourOfIFSC = substr($arr['ifsc'], 0, 4);
+
+            if (array_key_exists($firstFourOfIFSC, self::MAPPED_IFSC) === true)
+            {
+                $arr['ifsc'] = self::MAPPED_IFSC[$firstFourOfIFSC];
+            }
+
+            return $arr;
+        });
+
+        return new PublicCollection($mappedTokens);
     }
 }

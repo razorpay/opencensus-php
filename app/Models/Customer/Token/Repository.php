@@ -328,19 +328,21 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select($selectCols, 'payments.id as payment_id')
-            ->from(\DB::raw('`tokens`, `payments`'))
-            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
-            ->where($paymentRecurringColumn, '=', 1)
-            ->where($paymentMethodColumn, '=', Method::NACH)
-            ->where($paymentGatewayColumn, '=', $gateway)
-            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
-            ->where($tokenRecurringColumn, '!=', 1)
-            ->with(['customer', 'merchant'])
-            ->get();
+        $tokens = $this->newQueryWithConnection($this->getSlaveConnection())
+                        ->select($selectCols, 'payments.id as payment_id')
+                        ->from(\DB::raw('`tokens`, `payments`'))
+                        ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+                        ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                        ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+                        ->where($paymentRecurringColumn, '=', 1)
+                        ->where($paymentMethodColumn, '=', Method::NACH)
+                        ->where($paymentGatewayColumn, '=', $gateway)
+                        ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+                        ->where($tokenRecurringColumn, '!=', 1)
+                        ->with(['customer', 'merchant'])
+                        ->get();
+
+        return (new Entity)->mapIFSC($tokens);
     }
 
     // unused as of now
@@ -372,29 +374,31 @@ class Repository extends Base\Repository
             ->select($this->repo->payment->dbColumn('*'))
             ->whereBetween($paymentCreatedAtColumn, [$from, $to]);
 
-        return $this->newQuery()
-            ->select($selectCols,
-                'payments.id as payment_id',
-                'payments.amount as payment_amount',
-                'payments.created_at as payment_created_at',
-                'payments.email as payment_email')
-            ->joinSub(
-                $payments,
-                $paymentTableName,
-                function ($join) use($paymentTokenIdColumn, $tokenIdColumn)
-                {
-                    $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
-                }
-            )
-            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
-            ->where($paymentRecurringColumn, '=', 1)
-            ->where($paymentMethodColumn, '=', Method::NACH)
-            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
-            ->where($paymentGatewayColumn, '=', $gateway)
-            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
-            ->where($tokenRecurringColumn, '=', 1)
-            ->with(['merchant', 'terminal'])
-            ->get();
+        $tokens = $this->newQuery()
+                        ->select($selectCols,
+                            'payments.id as payment_id',
+                            'payments.amount as payment_amount',
+                            'payments.created_at as payment_created_at',
+                            'payments.email as payment_email')
+                        ->joinSub(
+                            $payments,
+                            $paymentTableName,
+                            function ($join) use($paymentTokenIdColumn, $tokenIdColumn)
+                            {
+                                $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
+                            }
+                        )
+                        ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+                        ->where($paymentRecurringColumn, '=', 1)
+                        ->where($paymentMethodColumn, '=', Method::NACH)
+                        ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+                        ->where($paymentGatewayColumn, '=', $gateway)
+                        ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+                        ->where($tokenRecurringColumn, '=', 1)
+                        ->with(['merchant', 'terminal'])
+                        ->get();
+
+        return (new Entity)->mapIFSC($tokens);
     }
 
     public function fetchPendingNachOrMandateDebit($gateways, $from, $to, $acquirer)
