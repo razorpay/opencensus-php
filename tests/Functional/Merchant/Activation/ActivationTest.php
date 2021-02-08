@@ -401,7 +401,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

@@ -34,24 +34,24 @@ class DefaultMethodsForCategory
             ],
             '6012' => [
                 Category::LENDING => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                    
                 ],
                 Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ],
             ],
             '6300' => [
                 Category::INSURANCE => [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX],
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ]
             ],
             '6010'  =>  [
                 Category::FOREX =>  [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ],
             ],
@@ -63,7 +63,7 @@ class DefaultMethodsForCategory
             ],
             '6050'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
