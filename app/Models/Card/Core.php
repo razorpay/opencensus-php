@@ -223,6 +223,8 @@ class Core extends Base\Core
                             $card->overrideIINDetails();
                         }
 
+                        $this->checkCvvLength($card, $input);
+
                         if ($cardCDC === true)
                         {
                             $this->repo->saveOrFail($card);
