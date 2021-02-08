@@ -1456,7 +1456,8 @@ class Service extends Base\Service
             'AnnouncementIconJan2021',
             'TicketSystemSupport',
             'shopify_gtm_notification',
-            'rx_tax_payments_announcement'
+            'rx_tax_payments_announcement',
+            'rx_opfin_sso_announcement_xdashboard',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
