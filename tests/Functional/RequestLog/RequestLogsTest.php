@@ -910,6 +910,13 @@ class RequestLogsTest extends TestCase
 
         $this->makeCreateLowBalanceConfigRequestAndGetContent();
 
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        if(! $this->checkIfRouteNameIsIncluded($route))
+        {
+            return;
+        }
+
         // Fetch the last record from request_logs table
         $observedDbContent = $this->getDbLastEntity('request_log', 'live');
         $expectedDbContent = [

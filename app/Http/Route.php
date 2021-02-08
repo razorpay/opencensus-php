@@ -6590,9 +6590,9 @@ class Route
     // These routes have been tested to work with RequestLogHandler middleware
     //
     const REQUEST_LOG_ROUTES = [
-        'payout_cancel',
-        'create_low_balance_config',
+        'payout_create',
         'payout_create_with_otp',
+        'fund_account_validate',
     ];
 
     //
