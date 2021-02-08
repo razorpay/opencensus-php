@@ -2496,11 +2496,12 @@ class BasicAuth
         $ctx = app('request.ctx');
 
         return [
-            'mode'   => $ctx->getMode(),
-            'route'  => $ctx->getRoute(),
-            'auth'   => $ctx->getAuth(),
-            'proxy'  => $ctx->getProxy(),
-            'bearer' => empty($ctx->getBearerToken()) === false,
+            'mode'           => $ctx->getMode(),
+            'route'          => $ctx->getRoute(),
+            'auth'           => $ctx->getAuth(),
+            'proxy'          => $ctx->getProxy(),
+            'bearer'         => empty($ctx->getBearerToken()) === false,
+            'auth_flow_type' => $ctx->getAuthFlowType(),
         ];
     }
 }

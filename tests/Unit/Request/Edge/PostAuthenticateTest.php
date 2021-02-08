@@ -34,6 +34,8 @@ class PostAuthenticateTest extends TestCase
         $expectedProxy,
         $expectPassportAttrsMismatch)
     {
+        $request = $this->mockPrivateRoute();
+        app('request.ctx')->init();
         $reqCtx = app('request.ctx.v2');
 
         // Sets up request.ctx.v2's passport which could be null i.e. not
@@ -47,7 +49,6 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
 
-        $request = $this->mockPrivateRoute();
         // Asserts that no exceptions are thrown.
         (new PostAuthenticate)->handle($expectedAuthenticated, $request);
         // Asserts request.ctx.v2.
