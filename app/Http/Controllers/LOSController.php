@@ -128,6 +128,8 @@ class LOSController extends Controller
         $headers = [
             'X-Merchant-Id'    => $this->ba->getMerchant()->getId() ?? '',
             'X-Merchant-Email' => $this->ba->getMerchant()->getEmail() ?? '',
+            'X-User-Id'        => $this->ba->getUser()->getId() ?? '',
+            'X-User-Role'      => $this->ba->getUserRole() ?? '',
             'X-Auth-Type'      => 'proxy',
         ];
 
