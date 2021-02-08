@@ -931,7 +931,7 @@ class Gateway extends Base\Gateway
 
         // If RID exists and status is registration success, set token related attributes here
         if ((empty($content[ResponseFields::SI_REFERENCE_ID]) === false) and
-            ($content[ResponseFields::STATUS] === Status::SI_REGISTRATION_SUCCESS))
+            (in_array($content[ResponseFields::STATUS], Status::SI_SUCCESS_STATUSES, true)))
         {
             $recurringData = [
                 Base\Entity::SI_TOKEN  => $content[ResponseFields::SI_REFERENCE_ID] ??

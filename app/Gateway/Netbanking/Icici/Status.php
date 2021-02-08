@@ -41,6 +41,10 @@ class Status
 
     const SI_REGISTRATION_SUCCESS = 'your payment is scheduled successfully';
 
+    const SI_REGISTRATION_SCHEDULED = 'Scheduled';
+
+    const SI_SUCCESS_STATUSES    = [self::SI_REGISTRATION_SUCCESS, self::SI_REGISTRATION_SCHEDULED];
+
     /**
      * Indicates that the SI registration was a failure
      */
@@ -74,6 +78,6 @@ class Status
         $status = strtolower($status);
 
         return (($status === self::SI_SUCCESS) or
-                ($status === self::SI_REGISTRATION_SUCCESS));
+                (in_array($status, self::SI_SUCCESS_STATUSES, true)));
     }
 }
