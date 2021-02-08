@@ -2,7 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use Razorpay\IFSC\Bank;
+
+use RZP\Models\Bank\IFSC;
 
 class Constants
 {
@@ -198,5 +199,55 @@ class Constants
     const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
     const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
+
+    const ACCOUNT_PREFIX    = "account_prefix";
+    const IFSC_PREFIX       = "ifsc_prefix";
+
+    const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
+        [
+            self::ACCOUNT_PREFIX => "222333",
+            self::IFSC_PREFIX    => IFSC::YESB
+        ],
+        [
+            self::ACCOUNT_PREFIX => "787878",
+            self::IFSC_PREFIX    => IFSC::YESB
+        ],
+        [
+            self::ACCOUNT_PREFIX => "456456",
+            self::IFSC_PREFIX    => IFSC::YESB
+        ],
+        [
+            self::ACCOUNT_PREFIX => "2233",
+            self::IFSC_PREFIX    => IFSC::ICIC
+        ],
+        [
+            self::ACCOUNT_PREFIX => "2244",
+            self::IFSC_PREFIX    => IFSC::ICIC
+        ],
+        [
+            self::ACCOUNT_PREFIX => "5656",
+            self::IFSC_PREFIX    => IFSC::ICIC
+        ],
+        [
+            self::ACCOUNT_PREFIX => "3434",
+            self::IFSC_PREFIX    => IFSC::ICIC
+        ],
+        [
+            self::ACCOUNT_PREFIX => "2224",
+            self::IFSC_PREFIX    => IFSC::RATN
+        ],
+        [
+            self::ACCOUNT_PREFIX => "222333",
+            self::IFSC_PREFIX    => IFSC::RATN
+        ],
+        [
+            self::ACCOUNT_PREFIX => "2223",
+            self::IFSC_PREFIX    => IFSC::RATN
+        ],
+        [
+            self::ACCOUNT_PREFIX => "567890",
+            self::IFSC_PREFIX    => IFSC::RATN
+        ]
+    ];
 }
 

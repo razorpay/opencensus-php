@@ -1089,6 +1089,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT                                   = 'BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT';
     const BAD_REQUEST_DUPLICATE_EXTERNAL_ID                                         = 'BAD_REQUEST_DUPLICATE_EXTERNAL_ID';
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          = 'BAD_REQUEST_INVALID_BANK_ACCOUNT';
+    const BAD_REQUEST_VIRTUAL_BANK_ACCOUNT                                          = 'BAD_REQUEST_VIRTUAL_BANK_ACCOUNT';
 
     // Features
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';

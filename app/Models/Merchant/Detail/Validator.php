@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Validator extends Base\Validator
 {
@@ -1095,10 +1096,43 @@ class Validator extends Base\Validator
 
     public function validateBankAccountNumber($attribute, $bankAccountNumber)
     {
+        $merchantDetails = $this->entity;
+        
+        if($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            $ifscCode      = $merchantDetails->getBankBranchIfsc();
+            $accountNumber = $merchantDetails->getBankAccountNumber();
+
+            $this->performBankAccountValidationForLinkedAccount($ifscCode, $accountNumber);
+        }
+
         if(\RZP\Models\BankAccount\Validator::isBlacklistedAccountNumber($bankAccountNumber))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT);
+        }
+    }
+
+    /**
+     * @param string|null $ifscCode
+     * @param string|null $accountNumber
+     */
+    private function performBankAccountValidationForLinkedAccount(?string $ifscCode, ?string $accountNumber)
+    {
+        if(empty($ifscCode) === false and empty($accountNumber) === false)
+        {
+            $virtualAccountPrefixList = array_column(
+                DetailConstants::VIRTUAL_BANK_ACCOUNTS_PREFIX, DetailConstants::ACCOUNT_PREFIX);
+            $virtualIfscPrefixList = array_column(
+                DetailConstants::VIRTUAL_BANK_ACCOUNTS_PREFIX, DetailConstants::IFSC_PREFIX);
+
+            $isVirtualAccount = starts_with($accountNumber, $virtualAccountPrefixList);
+            $isVirtualIfsc    = starts_with($ifscCode, $virtualIfscPrefixList);
+
+            if($isVirtualAccount === true and $isVirtualIfsc === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_BANK_ACCOUNT);
+            }
         }
     }
 

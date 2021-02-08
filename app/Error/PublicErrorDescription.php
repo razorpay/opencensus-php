@@ -1197,6 +1197,7 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+    const BAD_REQUEST_VIRTUAL_BANK_ACCOUNT                                          = 'The bank account entered is Virtual Account';
 
     //Invalid Product Name
     const BAD_REQUEST_INVALID_PRODUCT_NAME                                          = 'The product requested is invalid';

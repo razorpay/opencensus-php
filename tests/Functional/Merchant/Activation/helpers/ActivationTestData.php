@@ -2158,6 +2158,30 @@ return [
         'status_code' => 200,
     ],
 
+    'testAddingVirtualAccountInLinkedAccount' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'bank_account_number'         => '22233312312',
+                'bank_branch_ifsc'            => 'YESB0000719',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VIRTUAL_BANK_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_BANK_ACCOUNT,
+        ],
+    ],
+
     'testHardLimitReachedWithLevelThree' => [
         'request'     => [
             'method'  => 'POST',

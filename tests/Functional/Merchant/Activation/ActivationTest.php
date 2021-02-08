@@ -2883,6 +2883,19 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddingVirtualAccountInLinkedAccount()
+    {
+        $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $merchantId = $linkedAccount->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
     public function testHardLimitReachedWithLevelThree()
     {
         $merchantId = '1cXSLlUU8V9sXl';
