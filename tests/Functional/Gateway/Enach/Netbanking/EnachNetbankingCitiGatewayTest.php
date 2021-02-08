@@ -40,7 +40,7 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(5));
+        Carbon::setTestNow(Carbon::now()->addDays(29));
 
         $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -129,7 +129,7 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(5));
+        Carbon::setTestNow(Carbon::now()->addDays(29));
 
         $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -163,7 +163,7 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(5));
+        Carbon::setTestNow(Carbon::now()->addDays(29));
 
         $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -189,13 +189,40 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
             'error_desc' => '',
         ];
 
-        Carbon::setTestNow(Carbon::now()->addDays(5));
+        Carbon::setTestNow(Carbon::now()->addDays(29));
 
         $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('created', $payment['status']);
+    }
+
+    public function testDebitFileReconciliationAfter30Days()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => '1',
+            'error_code' => '00',
+            'error_desc' => '',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(31));
+
+        $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('emandate', $payment['method']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
     }
 
     protected function makeBatchDebitPayment($payment, $status)

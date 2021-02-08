@@ -515,7 +515,7 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $this->generateDebitGatewayFile();
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
+        $createdAt = Carbon::today(Timezone::IST)->subDays(31)->getTimestamp();
 
         $this->fixtures->edit('payment', $payment1['id'], ['created_at' => $createdAt]);
         $this->fixtures->edit('payment', $payment2['id'], ['created_at' => $createdAt - 10]);
