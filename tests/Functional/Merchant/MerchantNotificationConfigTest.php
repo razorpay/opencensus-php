@@ -33,6 +33,8 @@ class MerchantNotificationConfigTest extends TestCase
 
         parent::setUp();
 
+        $this->mockRazorxTreatment();
+
         $this->setUpMerchantForBusinessBanking(true, 10000000);
         $this->setUpMerchantForBusinessBankingLive(true, 10000000);
 

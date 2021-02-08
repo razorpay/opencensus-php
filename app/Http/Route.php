@@ -5179,15 +5179,6 @@ class Route
         'reward_create'                               => '*',
         'reward_delete'                               => '*',
 
-        // merchant notification configs
-        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
-        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
-        'fetch_merchant_notification_config'            => '*',
-        'list_merchant_notification_config'             => '*',
-        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
-        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
-        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
-
         // Admin merchant notification configs
         'create_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
         'update_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
@@ -5418,6 +5409,15 @@ class Route
         'delete_low_balance_config'                     => Permission::DELETE_LOW_BALANCE_CONFIG,
         'disable_low_balance_config'                    => Permission::DISABLE_LOW_BALANCE_CONFIG,
         'enable_low_balance_config'                     => Permission::ENABLE_LOW_BALANCE_CONFIG,
+
+        // merchant notification configs
+        'create_merchant_notification_config'           => Permission::CREATE_MERCHANT_NOTIFICATION_CONFIG,
+        'update_merchant_notification_config'           => Permission::UPDATE_MERCHANT_NOTIFICATION_CONFIG,
+        'fetch_merchant_notification_config'            => '*',
+        'list_merchant_notification_config'             => '*',
+        'delete_merchant_notification_config'           => Permission::DELETE_MERCHANT_NOTIFICATION_CONFIG,
+        'disable_merchant_notification_config'          => Permission::DISABLE_MERCHANT_NOTIFICATION_CONFIG,
+        'enable_merchant_notification_config'           => Permission::ENABLE_MERCHANT_NOTIFICATION_CONFIG,
 
         // tax payment permission
         'tax_payments_pay'                             => Permission::PAY_TAX_PAYMENTS,
