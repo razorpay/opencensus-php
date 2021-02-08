@@ -1459,6 +1459,7 @@ class Service extends Base\Service
             'rx_tax_payments_announcement',
             'disable_tpv_flow_for_banking_account_fund_loading',
             'rx_opfin_sso_announcement_xdashboard',
+            'enable_tpv_fe',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
