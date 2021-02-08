@@ -220,6 +220,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const DETAILED_REASON        = 'detailed_reason';
 
+    const VA_TRANSACTION_ID       = 'va_transaction_id';
+
     const ORDER                  = 'order';
 
     // constants and defaults

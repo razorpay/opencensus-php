@@ -14,6 +14,8 @@ class EsRepository extends Base\EsRepository
         Entity::RECURRING,
         Entity::CREATED_AT,
         Entity::AMOUNT_TRANSFERRED,
+        Entity::VA_TRANSACTION_ID,
+        Entity::STATUS,
     ];
 
     public function buildQueryForRecurring(array & $query, string $value)

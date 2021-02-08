@@ -1232,6 +1232,30 @@ return [
         ],
     ],
 
+    'testPaymentsFetchMultiple' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 5000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'bank_transfer',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => 'Test bank transfer',
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
+
     'testCreateVirtualAccountForVpaWithCustomPrefix' => [
         'name'        => 'Test virtual account',
         'entity'      => 'virtual_account',

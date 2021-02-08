@@ -238,17 +238,21 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function fetchVirtualAccountPayments(string $id = null)
+    private function fetchVirtualAccountPayments(string $id = null, string $vaTransactionId = null)
     {
         $url = '';
         if ($id === null)
         {
             $url = '/payments?virtual_account=1';
+
+            if ($vaTransactionId !== null)
+            {
+                $url .= ('&va_transaction_id=' . $vaTransactionId);
+            }
         }
         else
         {
             $url = '/virtual_accounts/' . $id . '/payments';
-
         }
         $request = [
             'method' => 'GET',

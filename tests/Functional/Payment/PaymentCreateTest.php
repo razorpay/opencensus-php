@@ -1037,7 +1037,7 @@ class PaymentCreateTest extends TestCase
             ],
         ];
 
-        $esMock->expects($this->once())
+        $esMock->expects($this->exactly(2))
                ->method('bulkUpdate')
                ->with(
                     $this->callback(

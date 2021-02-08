@@ -16,6 +16,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -28,7 +29,9 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Pricing\Calculator;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
@@ -42,6 +45,67 @@ class Repository extends Base\Repository
         Card\Entity::IIN,
         Card\Entity::LAST4,
     ];
+
+    protected function serializeForIndexing(PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        if ($entity->getReceiverType() === null) {
+            return $serialized;
+        }
+
+        $vaTransactionIdExists = ($entity->bankTransfer !== null) or
+                                 ($entity->upiTransfer !== null) or
+                                 ($entity->bharatQr !== null);
+
+        if ($vaTransactionIdExists !== true)
+        {
+            return $serialized;
+        }
+
+        $vaTransactionId = null;
+
+        try
+        {
+            switch ($entity->getReceiverType())
+            {
+                case VirtualAccount\Receiver::BANK_ACCOUNT:
+                    $vaTransactionId = $entity->bankTransfer->getUtr();
+                    break;
+
+                case VirtualAccount\Receiver::QR_CODE:
+                    $vaTransactionId = $entity->bharatQr->getProviderReferenceId();
+                    break;
+
+                case VirtualAccount\Receiver::VPA:
+                    $vaTransactionId = $entity->upiTransfer->getRRN();
+                    break;
+
+                default:
+                    $this->trace->info(
+                        TraceCode::INVALID_VA_RECEIVER_TYPE,
+                        [
+                            'receiver_type' => $entity->getReceiverType(),
+                        ]
+                    );
+                    break;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ES_SYNC_SERIALIZATION_EXCEPTION);
+        }
+
+        if ($vaTransactionId !== null)
+        {
+            $serialized[Entity::VA_TRANSACTION_ID] = strtolower($vaTransactionId);
+        }
+
+        return $serialized;
+    }
 
     protected function validateCustomerId($attribute, $value)
     {

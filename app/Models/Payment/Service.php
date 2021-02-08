@@ -1292,9 +1292,19 @@ class Service extends Base\Service
 
         $this->addInputTrace($input);
 
+        $this->modifyInputForVATransaction($input);
+
         $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
 
         return $payments->toArrayPublic();
+    }
+
+    private function modifyInputForVATransaction(&$input)
+    {
+        if (isset($input[Entity::VA_TRANSACTION_ID]) === true)
+        {
+            unset($input[Entity::VIRTUAL_ACCOUNT]);
+        }
     }
 
     public function fetchStatusCount(array $input)

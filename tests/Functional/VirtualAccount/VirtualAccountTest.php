@@ -2076,6 +2076,19 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testPaymentsFetchMultiple()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50, 'transaction_id' => '09870000000']);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id'], '09870000000');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testCreateVirtualAccountForVpaWithCustomPrefix()
     {
         $this->savePrefix('paytorazor');

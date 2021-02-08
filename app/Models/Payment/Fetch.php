@@ -51,6 +51,7 @@ class Fetch extends BaseFetch
             Entity::ACQUIRER_DATA                => 'sometimes',
             Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17',
             Entity::VIRTUAL_ACCOUNT              => 'sometimes|in:0,1',
+            Entity::VA_TRANSACTION_ID            => 'sometimes|string',
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -76,6 +77,7 @@ class Fetch extends BaseFetch
             Entity::NOTES,
             Entity::VIRTUAL_ACCOUNT_ID,
             Entity::VIRTUAL_ACCOUNT,
+            Entity::VA_TRANSACTION_ID,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
@@ -121,6 +123,7 @@ class Fetch extends BaseFetch
     const ES_FIELDS = [
         Entity::NOTES,
         Entity::RECURRING,
+        Entity::VA_TRANSACTION_ID,
     ];
 
     const SIGNED_IDS = [

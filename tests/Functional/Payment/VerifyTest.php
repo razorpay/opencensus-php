@@ -841,12 +841,10 @@ class VerifyTest extends TestCase
 
     public function testVerifyGooglePayCardPayments()
     {
-        $payment = $this->fixtures->create('payment', []);
-
-        $payment->setAuthenticationGateway('google_pay');
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        (new Payment\Repository)->saveOrFail($payment);
+        $payment = $this->fixtures->create('payment', [
+            'authentication_gateway' => 'google_pay',
+            'status' => Payment\Status::AUTHORIZED
+        ]);
 
         $this->ba->expressAuth();
 
@@ -866,13 +864,11 @@ class VerifyTest extends TestCase
 
     public function testVerifyGooglePayCardFailedPayments()
     {
-        $payment = $this->fixtures->create('payment', []);
-
-        $payment->setAuthenticationGateway('google_pay');
-        $payment->setStatus(Payment\Status::FAILED);
-        $payment['reference13'] = 'PRAZR004';
-
-        (new Payment\Repository)->saveOrFail($payment);
+        $payment = $this->fixtures->create('payment', [
+            'authentication_gateway' => 'google_pay',
+            'status' => Payment\Status::FAILED,
+            'reference13' => 'PRAZR004'
+        ]);
 
         $this->ba->expressAuth();
 
@@ -892,12 +888,10 @@ class VerifyTest extends TestCase
 
     public function testVerifyGooglePayCardPaymentNotFound()
     {
-        $payment = $this->fixtures->create('payment', []);
-
-        $payment->setAuthenticationGateway('google_pay');
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        (new Payment\Repository)->saveOrFail($payment);
+        $payment = $this->fixtures->create('payment', [
+            'authentication_gateway' => 'google_pay',
+            'status' => Payment\Status::AUTHORIZED
+        ]);
 
         $this->ba->expressAuth();
 
@@ -923,11 +917,7 @@ class VerifyTest extends TestCase
 
     public function testVerifyGooglePayCardPaymentNotOfGooglePay()
     {
-        $payment = $this->fixtures->create('payment', []);
-
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        (new Payment\Repository)->saveOrFail($payment);
+        $payment = $this->fixtures->create('payment', ['status' => Payment\Status::AUTHORIZED]);
 
         $this->ba->expressAuth();
 

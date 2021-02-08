@@ -179,6 +179,29 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/ap
     }
 }'
 
+#21 October 2020
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_live/_mapping/api_payment_live" -d '{
+    "properties": {
+        "va_transaction_id": {
+            "type": "keyword"
+        },
+        "status": {
+            "type": "keyword"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_test/_mapping/api_payment_test" -d '{
+    "properties": {
+        "va_transaction_id": {
+            "type": "keyword"
+        },
+        "status": {
+            "type": "keyword"
+        }
+    }
+}'
+
 curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_test/_mapping/api_virtual_account_test" -d '{
     "properties": {
         "description": {
@@ -218,32 +241,3 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_map
         }
     }
 }'
-
-curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_test/_mapping/api_virtual_account_test" -d '{
-    "properties": {
-        "bank_account_id": {
-            "type": "keyword"
-        },
-        "vpa_id": {
-            "type": "keyword"
-        },
-        "qr_code_id": {
-            "type": "keyword"
-        }
-    }
-}'
-
-curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_mapping/api_virtual_account_live" -d '{
-    "properties": {
-        "bank_account_id": {
-            "type": "keyword"
-        },
-        "vpa_id": {
-            "type": "keyword"
-        },
-        "qr_code_id": {
-            "type": "keyword"
-        }
-    }
-}'
-

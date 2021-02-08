@@ -267,6 +267,12 @@ return [
             'amount_transferred' => [
                 'type' => 'long',
             ],
+            'va_transaction_id' => [
+                'type' => 'keyword',
+            ],
+            'status' => [
+                'type' => 'keyword',
+            ],
         ],
     ],
 
