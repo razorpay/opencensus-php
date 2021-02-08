@@ -78,6 +78,8 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $payment = $this->getDbLastPayment();
         $token = $this->getDbLastEntity('token');
 
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
         $mandate = $this->assertUpiDbLastEntity('upi_mandate', [
             'status'            => 'confirmed',
             'token_id'          => $token->getId(),
@@ -87,8 +89,10 @@ class UpiRecurringPaymentSharpTest extends TestCase
             'gateway_data'      => [
                 'id'            => 'ID001000100001',
             ],
+            'confirmed_at'      => $upiMandate->getConfirmedAt(),
             'late_confirmed'    => false,
             'used_count'        => 1,
+            'sequence_number'   => 1,
         ]);
         $this->assertGreaterThanOrEqual(Carbon::now()->subMinute()->getTimestamp(), $mandate->getConfirmedAt());
 
