@@ -825,6 +825,8 @@ class Entity
 
         self::SURVEY_TRACKER    => \RZP\Models\Survey\Tracker::class,
         self::SURVEY            => \RZP\Models\Survey::class,
+
+        self::BANKING_ACCOUNT_TPV   => \RZP\Models\BankingAccountTpv::class,
     ];
 
     protected static $repository = [

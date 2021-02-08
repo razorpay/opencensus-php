@@ -66,6 +66,7 @@
           <exclude>./tests/Functional/Pagination/</exclude>
           <exclude>./tests/Functional/RequestLog/</exclude>
           <exclude>./tests/Functional/Survey/</exclude>
+          <exclude>./tests/Functional/BankingAccountTpv/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -79,6 +80,7 @@
           <directory>./tests/Functional/Item/</directory>
           <directory>./tests/Functional/Key/</directory>
           <directory>./tests/Functional/PayoutDowntime/</directory>
+          <directory>./tests/Functional/BankingAccountTpv/</directory>
       </testsuite>
       <testsuite name = "Features-2 Test Suite">
           <directory>./tests/Functional/Merchant/</directory>

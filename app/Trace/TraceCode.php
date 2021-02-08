@@ -3727,6 +3727,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_DOWNTIME_EMAIL_STATUS                        = 'PAYOUT_DOWNTIME_EMAIL_STATUS';
     const PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED          = 'PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED';
 
+    //TPV
+    const ADMIN_CREATE_TPV                                    = 'ADMIN_CREATE_TPV';
+    const ADMIN_EDIT_TPV                                      = 'ADMIN_EDIT_TPV';
+    const MERCHANT_FETCH_TPV                                  = 'MERCHANT_FETCH_TPV';
+    const MERCHANT_TPV_FAV_INFO                               = 'MERCHANT_TPV_FAV_INFO';
+    const AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT            = 'AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT';
+    const AUTO_APPROVED_TPV_CREATION_ERROR                    = 'AUTO_APPROVED_TPV_CREATION_ERROR';
+
     // Merchant Attribute
     const MERCHANT_ATTRIBUTE_EVENT                            = 'MERCHANT_ATTRIBUTE_EVENT';
     const MERCHANT_ATTRIBUTE_CREATE                           = 'MERCHANT_ATTRIBUTE_CREATE';

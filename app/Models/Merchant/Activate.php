@@ -18,6 +18,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountTpv;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
@@ -634,6 +635,9 @@ class Activate extends Base\Core
                 ]);
 
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
+
+            //create activated TPV
+            (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
         }
     }
 

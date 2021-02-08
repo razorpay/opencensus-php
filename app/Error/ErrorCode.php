@@ -1684,6 +1684,12 @@ class ErrorCode
 
     const BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT                                     = 'BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT';
 
+    //TPV - Third party validation
+    //- validations on source accounts through which money gets loaded to va.
+    const BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS                                  = 'BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS';
+    const BAD_REQUEST_DUPLICATE_TPV                                                 = 'BAD_REQUEST_DUPLICATE_TPV';
+    const BAD_REQUEST_TPV_NOT_EXISTS                                                = 'BAD_REQUEST_TPV_NOT_EXISTS';
+
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
     const GATEWAY_VERIFY_REFUND_IN_PROCESSING                                       = 'GATEWAY_VERIFY_REFUND_IN_PROCESSING';

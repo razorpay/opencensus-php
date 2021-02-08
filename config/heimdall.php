@@ -1139,6 +1139,21 @@ return [
                 'assignable'  => true
             ]
         ],
+
+        PermissionCategory::BANKING_ACCOUNT_TPV_CONFIG => [
+            Permission::CREATE_BANKING_ACCOUNT_TPV => [
+                'description' => 'Create tpv',
+                'assignable'  => true,
+            ],
+            Permission::EDIT_BANKING_ACCOUNT_TPV   => [
+                'description' => 'Edit tpv',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_BANKING_ACCOUNT_TPV   => [
+                'description' => 'View tpvs for a merchant',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

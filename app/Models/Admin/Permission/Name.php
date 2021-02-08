@@ -547,6 +547,11 @@ class Name
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';
 
+    //TPV
+    const CREATE_BANKING_ACCOUNT_TPV                   = 'create_banking_account_tpv';
+    const EDIT_BANKING_ACCOUNT_TPV                     = 'edit_banking_account_tpv';
+    const VIEW_BANKING_ACCOUNT_TPV                     = 'view_banking_account_tpv';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

@@ -7087,6 +7087,46 @@ class MerchantTest extends TestCase
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+
+        //TPV flow is created during switch merchant flow
+        $liveBankAccount = $this->getDbEntity('bank_account',
+                                              [
+                                                  'entity_id' => '10000000000000',
+                                                  'type'      => 'merchant'
+                                              ],
+                                              'live')->toArray();
+
+        $liveTpv = $this->getDbEntity('banking_account_tpv',
+                                      [
+                                          'merchant_id'          => '10000000000000',
+                                          'payer_ifsc'           => $liveBankAccount['ifsc_code'],
+                                          'payer_account_number' => $liveBankAccount['account_number'],
+                                          'payer_name'           => $liveBankAccount['beneficiary_name'],
+                                          'status'               => 'approved',
+                                      ],
+                                      'live')->toArray();
+
+        $this->assertNotNull($liveTpv);
+
+        $testBankAccount = $this->getDbEntity('bank_account',
+                                              [
+                                                  'entity_id' => '10000000000000',
+                                                  'type'      => 'merchant'
+                                              ],
+                                              'test')->toArray();
+
+        $testTpv = $this->getDbEntity('banking_account_tpv',
+                                      [
+                                          'merchant_id'          => '10000000000000',
+                                          'payer_ifsc'           => $testBankAccount['ifsc_code'],
+                                          'payer_account_number' => $testBankAccount['account_number'],
+                                          'payer_name'           => $testBankAccount['beneficiary_name'],
+                                          'status'               => 'approved',
+                                      ],
+                                      'test')->toArray();
+
+        $this->assertNotNull($testTpv);
+
     }
 
     /**

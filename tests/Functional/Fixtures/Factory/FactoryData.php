@@ -1657,7 +1657,7 @@ final class FactoryData
             'payer_name'                 => 'Test payer',
             'payer_account_number'       => '9876543210123456789',
             'type'                       => 'bank_account',
-            'fund_account_validation_id' => $faker->uniqueid,
+            'fund_account_validation_id' => null,
             'created_by'                 => 'admin',
             'created_at'                 => $faker->timestamp,
             'updated_at'                 => $faker->timestamp,

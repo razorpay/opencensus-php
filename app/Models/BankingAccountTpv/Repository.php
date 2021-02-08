@@ -35,4 +35,25 @@ class Repository extends Base\Repository
                     ->where($isActiveColumn, 1)
                     ->first();
     }
+
+    public function fetchMerchantTpvs(string $mid)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $mid)
+                    ->orderBy(Entity::STATUS)
+                    ->get();
+    }
+
+    public function fetchTpvOnMerchantBalanceAccountNumberIfsc(array $input)
+    {
+        $ifsc = substr($input[Entity::PAYER_IFSC], 0, 4);
+
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID])
+                    ->where(Entity::BALANCE_ID, $input[Entity::BALANCE_ID])
+                    ->where(Entity::PAYER_ACCOUNT_NUMBER, $input[Entity::PAYER_ACCOUNT_NUMBER])
+                    ->where(Entity::PAYER_IFSC, 'like', $ifsc . '%')
+                    ->first();
+    }
+
 }

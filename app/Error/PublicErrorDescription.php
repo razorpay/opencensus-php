@@ -1312,4 +1312,11 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
 
     const BAD_REQUEST_INVALID_SESSION_ID    = "BAD_REQUEST_INVALID_SESSION_ID";
+
+    //TPV - Third party validation
+    //- validations on source accounts through which money gets loaded to va.
+    const BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS                                  = 'Remarks should be provided for rejected status';
+    const BAD_REQUEST_DUPLICATE_TPV                                                 = 'TPV already exists for the corresponding merchantId, balance and account number';
+    const BAD_REQUEST_TPV_NOT_EXISTS                                                = 'No TPV found with the entered details';
+
 }

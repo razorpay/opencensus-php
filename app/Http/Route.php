@@ -2251,6 +2251,13 @@ class Route
         'nps_survey_process_scheduled'            => ['post',    'survey/scheduled/process',                                'NPSSurveyController@initiateSurvey'                           ],
         'survey_create'                           => ['post',    'survey',                                                  'NPSSurveyController@createSurvey'                             ],
         'survey_edit'                             => ['patch',   'survey/{id}',                                             'NPSSurveyController@editSurvey'                               ],
+
+        //TPV - Third party validation
+        //- validations on source accounts through which money gets loaded to va.
+        'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
+        'admin_tpv_edit'                          => ['patch',   'admin/tpv/edit',                                          'BankingAccountTpvController@adminEditTpv'                     ],
+        'merchant_fetch_tpvs'                     => ['get',     'merchant/tpvs',                                           'BankingAccountTpvController@fetchMerchantTpvs'                ],
+        'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'        ],
     ];
 
     public static $public = [
@@ -3572,6 +3579,10 @@ class Route
         //AppStore on Dashboard
         'merchant_install_app_on_appstore',
         'merchant_get_apps_on_appstore',
+
+        //TPV - Third party validation
+        //- validations on source accounts through which money gets loaded to va.
+        'merchant_fetch_tpvs',
     ];
 
     //
@@ -4318,6 +4329,12 @@ class Route
         'app_tags_delete',
 
        'admin_fund_account_validate',
+
+        //TPV - Third party validation
+        //- validations on source accounts through which money gets loaded to va.
+        'admin_tpv_create',
+        'admin_tpv_edit',
+        'admin_fetch_tpvs',
     ];
 
     public static $routePermission = [
@@ -5179,6 +5196,10 @@ class Route
         'app_tags_delete'                                     => '*',
 
         'admin_fund_account_validate'                         => Permission::FUND_ACCOUNT_VALIDATION_ADMIN,
+
+        'admin_tpv_create'                                    => Permission::CREATE_BANKING_ACCOUNT_TPV,
+        'admin_tpv_edit'                                      => Permission::EDIT_BANKING_ACCOUNT_TPV,
+        'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
     ];
 
     public static $bankingRoutePermissions = [
@@ -5411,6 +5432,10 @@ class Route
         'fd_fetch_ticket'                              => '*',
         'fd_post_ticket_reply'                         => '*',
         'fd_post_ticket_grievance'                     => '*',
+
+        //TPV - Third party validation
+        //- validations on source accounts through which money gets loaded to va.
+        'merchant_fetch_tpvs'                          => '*',
     ];
 
     public static $direct = [
@@ -6726,6 +6751,13 @@ class Route
         'survey_create',
         'survey_edit',
         'nps_survey_process_scheduled',
+
+        //TPV - Third party validation
+        //- validations on source accounts through which money gets loaded to va.
+        'admin_tpv_create',
+        'admin_tpv_edit',
+        'admin_fetch_tpvs',
+        'merchant_fetch_tpvs',
     ];
 
     public static $routesWithV2Prefix = [
