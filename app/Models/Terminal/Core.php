@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Procurer;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
@@ -289,6 +290,12 @@ class Core extends Base\Core
 
     public function validateExistingTerminal($terminal)
     {
+        // If procurer is merchant, them merchant can procure terminals having same attributes. E.g. merchant can have two same paytm terminals
+        if ($terminal->getProcurer() === Procurer::MERCHANT)
+        {
+            return;
+        }
+
         $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
         $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params);

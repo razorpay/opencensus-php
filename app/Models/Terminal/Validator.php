@@ -1325,6 +1325,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required',
         Entity::GATEWAY_SECURE_SECRET      => 'required',
         Entity::TYPE                       => 'sometimes',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
     ];
 
     protected static $paytmEditTerminalRules = [

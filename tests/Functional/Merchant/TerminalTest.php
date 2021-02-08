@@ -520,6 +520,47 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditPaytmTerminal()
+    {
+        // create two paytm terminals for merchant having same attributes except gateway_mid
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'paytm',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant'
+            ]);
+
+        $terminal2 = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVq',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'paytm',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '54321',
+                'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant'
+            ]);
+
+
+        $tid = $terminal2['id'];
+
+        $data = [
+            'gateway_terminal_id' => "1211",
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "1211", $content['gateway_terminal_id']);
+    }
+
     public function testCreateCredTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';

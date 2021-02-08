@@ -1061,6 +1061,7 @@ return [
                 'gateway_access_code'      => '12344',
                 'gateway_merchant_id'      => '12344',
                 'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant'
             ],
             'method' => 'POST'
         ],
