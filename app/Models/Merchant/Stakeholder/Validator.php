@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::PHONE_SECONDARY           => 'sometimes|numeric|digits_between:8,11',
         Entity::DIRECTOR                  => 'sometimes|boolean',
         Entity::EXECUTIVE                 => 'sometimes|boolean',
-        Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
+        Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric',
         Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::PAN_DOC_STATUS            => 'sometimes|string|nullable', // required when create from merchant details
         Entity::POI_STATUS                => 'sometimes|string|nullable',
@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         Entity::PHONE_SECONDARY           => 'sometimes|numeric|digits_between:8,11',
         Entity::DIRECTOR                  => 'sometimes|boolean',
         Entity::EXECUTIVE                 => 'sometimes|boolean',
-        Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric|digits_between:1,100',
+        Entity::PERCENTAGE_OWNERSHIP      => 'sometimes|numeric',
         Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::NOTES                     => 'sometimes|notes',
         Entity::AADHAAR_ESIGN_STATUS      => 'sometimes|string|nullable',
@@ -45,7 +45,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createStakeholderRules = [
-        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer|min:1|max:100',
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|numeric|min:0|max:100',
         Entity::NAME                  => 'required|max:255',
         Entity::EMAIL                 => 'required|email|max:255',
         Constants::RELATIONSHIP       => 'sometimes|array',
@@ -56,7 +56,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editStakeholderRules = [
-        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|integer|min:1|max:100',
+        Entity::PERCENTAGE_OWNERSHIP  => 'sometimes|numeric|min:0|max:100',
         Entity::NAME                  => 'sometimes|max:255',
         Entity::EMAIL                 => 'sometimes|email|max:255',
         Constants::RELATIONSHIP       => 'sometimes|array',

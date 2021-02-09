@@ -92,8 +92,13 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::DIRECTOR             => 'bool',
         self::EXECUTIVE            => 'bool',
-        self::PERCENTAGE_OWNERSHIP => 'integer',
+        self::PERCENTAGE_OWNERSHIP => 'float',
     ];
+
+    public function getPercentageOwnershipAttribute($value)
+    {
+        return $value ? round($value / 100, 2) : null;
+    }
 
     public function merchantDetail()
     {

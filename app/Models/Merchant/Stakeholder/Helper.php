@@ -11,9 +11,13 @@ class Helper
     {
         $stakeholderInput = [];
 
+        if (array_key_exists(Entity::PERCENTAGE_OWNERSHIP, $input) === true)
+        {
+            $stakeholderInput[Entity::PERCENTAGE_OWNERSHIP] = $input[Entity::PERCENTAGE_OWNERSHIP] ? (int) round(($input[Entity::PERCENTAGE_OWNERSHIP] * 100), 0) : null;
+        }
+
         $keyMap = [
             Entity::NAME                   => Entity::NAME,
-            Entity::PERCENTAGE_OWNERSHIP   => Entity::PERCENTAGE_OWNERSHIP,
             Entity::EMAIL                  => Entity::EMAIL,
             Entity::NOTES                  => Entity::NOTES,
             Entity::AADHAAR_LINKED         => Entity::AADHAAR_LINKED,

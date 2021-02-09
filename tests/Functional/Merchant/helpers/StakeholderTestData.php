@@ -14,7 +14,7 @@ return [
             'url'     => '/v2/accounts/{account_id}/stakeholders',
             'method'  => 'POST',
             'content' => [
-                'percentage_ownership'=> 10,
+                'percentage_ownership'=> 40.3,
                 'name'=> 'Rahul Sharma',
                 'email'=> 'rahul@acme.org',
                 'relationship'=> [
@@ -45,7 +45,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'stakeholder',
-                'percentage_ownership'=> 10,
+                'percentage_ownership'=> 40.3,
                 'name'=> 'Rahul Sharma',
                 'email'=> 'rahul@acme.org',
                 'relationship'=> [
@@ -191,7 +191,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'stakeholder',
-                'percentage_ownership'=> 10,
+                'percentage_ownership'=> 40.3,
                 'name'=> 'Rahul Sharma',
                 'email'=> 'rahul@acme.org',
                 'relationship'=> [
@@ -243,12 +243,31 @@ return [
         ],
     ],
 
+    'testCreateStakeholderInvalidPercentageOwnership' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/stakeholders',
+            'method'  => 'POST',
+            'content' => [
+                'name'=> 'Rahul Sharma',
+                'email'=> 'rahul@acme.org',
+                'percentage_ownership' => 87.456,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'=> 'Rahul Sharma',
+                'email'=> 'rahul@acme.org',
+                'percentage_ownership' => 87.46,
+            ],
+        ],
+    ],
+
     'testUpdateStakeholderThinToCompleteRequest' => [
         'request' => [
             'url'     => '/v2/accounts/{account_id}/stakeholders',
             'method'  => 'PATCH',
             'content' => [
-                'percentage_ownership'=> 20,
+                'percentage_ownership'=> 20.85,
                 'name'=> 'Rahul SharmaJi',
                 'email'=> 'rahul@acme.com',
                 'relationship'=> [
@@ -279,7 +298,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'stakeholder',
-                'percentage_ownership'=> 20,
+                'percentage_ownership'=> 20.85,
                 'name'=> 'Rahul SharmaJi',
                 'email'=> 'rahul@acme.com',
                 'relationship'=> [

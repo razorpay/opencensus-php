@@ -783,7 +783,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                            = 'Merchant handle must be in uppercase.';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
-    const BAD_REQUEST_STAKEHOLDER_ALREADY_EXISTS                                = 'Stakeholder already exists fot the merchant';
+    const BAD_REQUEST_STAKEHOLDER_ALREADY_EXISTS                                = 'Stakeholder already exists for the merchant';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
     const BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT                    = 'Extra details present in input';
@@ -1306,8 +1306,8 @@ class PublicErrorDescription
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';
 
-    const BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT                   = 'Stakeholder does not belong to merchant';
-    const BAD_REQUEST_INVALID_FILE_IDS_PROVIDED                                 = 'Invalid file ids provided';
+    const BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT                       = 'Stakeholder does not belong to merchant';
+    const BAD_REQUEST_INVALID_FILE_IDS_PROVIDED                                     = 'Invalid file ids provided';
 
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST                       = 'Must not be able to make live request when not activated';
     const BAD_REQUEST_SUBSCRIPTION_OFFER_METHOD_MISMATCH                            = 'Payment method does not match with offer payment method';
