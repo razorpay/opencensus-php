@@ -503,6 +503,23 @@ class AdminFetch
                 ],
             ],
 
+            Entity::CAPITAL_COLLECTIONS_CREDIT_REPAYMENT => [
+                'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
+                'transaction_id'   => [
+                    Fetch::LABEL  => 'transaction id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status'    => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'collected',
+                        'failed',
+                    ],
+                ],
+            ],
+
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
