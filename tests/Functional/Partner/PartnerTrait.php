@@ -422,4 +422,15 @@ trait PartnerTrait
 
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
     }
+
+    protected function allowAdminToAccessMerchant(string $merchantId)
+    {
+        $merchant = Merchant\Entity::find($merchantId);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        return $merchant;
+    }
 }

@@ -901,6 +901,7 @@ class PublicErrorDescription
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
+    const BAD_REQUEST_CLIENT_APPLICATION_NOT_MAPPED                             = 'The client is not mapped to the application';
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
     const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                    = 'Partner app could not be found';

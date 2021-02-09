@@ -14,6 +14,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -23,8 +24,8 @@ use Illuminate\Cache\Events\KeyWritten;
 class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthCache;
+    use PartnerTrait;
     use PaymentTrait;
-    use VirtualAccountTrait;
     use TestsStorkServiceRequests;
 
     public function setUp()
@@ -45,6 +46,68 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
+    }
+
+    public function testRefreshClientCredentials()
+    {
+        $currentClient = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $accessToken =  $this->generateOAuthAccessTokenForClient([], $currentClient);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->ba->adminProxyAuth();
+        $this->allowAdminToAccessMerchant('10000000000000');
+
+        // create new clients
+        $testData = $this->testData['testCreateClientsForApp'];
+        $testData['request']['url'] = '/oauth/applications/'. $currentClient->getApplicationId() .'/clients';
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertCount(2, $response['old_clients']);
+
+        $clientId = null;
+
+        // get new client
+        foreach ($response['clients'] as $client)
+        {
+            if (($client['environment'] === 'dev') and (in_array($client['id'], $response['old_clients']) === false))
+            {
+                $clientId = $client['id'];
+                break;
+            }
+        }
+
+        $this->assertNotNull($clientId);
+
+        $clientRepo = new Client\Repository;
+        $newClient = $clientRepo->findOrFailPublic($clientId);
+
+        $newAccessToken =  $this->generateOAuthAccessTokenForClient([], $newClient);
+
+        // check that both tokens still work
+        $this->ba->oauthBearerAuth($accessToken);
+        $testData = $this->testData['testBearerAuth'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->oauthBearerAuth($newAccessToken);
+        $testData = $this->testData['testBearerAuth'];
+        $this->runRequestResponseFlow($testData);
+
+        // delete client
+        $this->ba->adminProxyAuth();
+        $testData = $this->testData['testDeleteClient'];
+        $testData['request']['url'] = '/oauth/applications/'. $currentClient->getApplicationId() . '/clients/'. $currentClient->getId();
+        $response = $this->runRequestResponseFlow($testData);
+        $this->assertCount(3, $response['clients']);
+
+        // remove the cache for the access token
+        $this->flushCache();
+
+        // now using old token should give error
+        $this->ba->oauthBearerAuth($accessToken);
+        $testData = $this->testData['testBearerAuthDeletedClient'];
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testBearerAuthProdClient()
@@ -534,8 +597,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
-
         $this->startTest($testData);
     }
 
@@ -562,8 +623,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
 
         $this->startTest($testData);
     }
@@ -600,8 +659,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
 
         $this->startTest($testData);
     }

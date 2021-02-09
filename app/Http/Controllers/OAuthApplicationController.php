@@ -4,11 +4,13 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
 use Razorpay\OAuth\Application\Entity as App;
 use Razorpay\OAuth\Client\Environment as ClientEnv;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
 use RZP\Exception\LogicException;
@@ -84,6 +86,39 @@ class OAuthApplicationController extends Controller
         }
 
         return ApiResponse::json($data);
+    }
+
+    public function createClients(string $appId)
+    {
+        $app = (new Application\Repository)->findActiveApplicationByIdAndMerchantId($appId, $this->auth->getMerchantId());
+
+        $currentClients = $app->clients->getIds();
+
+        (new Client\Core)->createClientsForApplication($app);
+
+        $data = $app->fresh([Application\Entity::CLIENTS])->toArray();
+
+        $data['old_clients'] = $currentClients;
+
+        return $data;
+    }
+
+    public function deleteClient(string $appId, string $clientId)
+    {
+        $clientRepo = new Client\Repository;
+
+        $client = $clientRepo->findOrFailPublic($clientId);
+
+        if ($client->getApplicationId() !== $appId)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CLIENT_APPLICATION_NOT_MAPPED);
+        }
+
+        $clientRepo->deleteOrFail($client);
+
+        $app = (new Application\Repository)->findActiveApplicationByIdAndMerchantId($appId, $this->auth->getMerchantId());
+
+        return ApiResponse::json($app->toArray());
     }
 
     public function get(string $id)

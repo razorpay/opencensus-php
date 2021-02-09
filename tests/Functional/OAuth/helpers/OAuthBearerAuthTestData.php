@@ -24,6 +24,74 @@ return [
         ],
     ],
 
+    'testBearerAuthDeletedClient' => [
+        'request'  => [
+            'url'    => '/payments/pay_10000000000000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID
+                ]
+            ],
+            'status_code' => 401
+        ],
+    ],
+
+    'testCreateClientsForApp' => [
+        'request' => [
+            'url'    => '/oauth/applications/{id}/clients',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'client_details' => [
+                    'dev' => [
+                        'merchant_id' => '10000000000000',
+                    ],
+                    'prod' => [
+                        'merchant_id' => '10000000000000',
+                    ],
+                ],
+                'clients' => [
+                    ['merchant_id' => '10000000000000'],
+                    ['merchant_id' => '10000000000000'],
+                    ['merchant_id' => '10000000000000'],
+                    ['merchant_id' => '10000000000000'],
+                ],
+                'old_clients' => [],
+            ],
+        ],
+    ],
+
+    'testDeleteClient' => [
+        'request' => [
+            'url' => '/oauth/applications/{id}/clients/{clientId}',
+            'method' => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'client_details' => [
+                    'dev' => [
+                        'merchant_id' => '10000000000000',
+                    ],
+                    'prod' => [
+                        'merchant_id' => '10000000000000',
+                    ],
+                ],
+                'clients' => [
+                    ['merchant_id' => '10000000000000'],
+                    ['merchant_id' => '10000000000000'],
+                    ['merchant_id' => '10000000000000'],
+                ],
+            ],
+        ],
+    ],
+
     'testBearerAuthProdClient' => [
         'request'  => [
             'url'    => '/payments/pay_10000000000000',
@@ -352,7 +420,18 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
-            'content' => [],
+            'content' => [
+                'name'        => 'Test virtual account',
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+                'notes'       => [
+                    'a' => 'b',
+                ],
+            ],
         ],
         'response'  => [
             'content'     => [
@@ -369,7 +448,18 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
-            'content' => [],
+            'content' => [
+                'name'        => 'Test virtual account',
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+                'notes'       => [
+                    'a' => 'b',
+                ],
+            ],
         ],
         'response'  => [
             'content'     => [
@@ -386,7 +476,18 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
-            'content' => [],
+            'content' => [
+                'name'        => 'Test virtual account',
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+                'notes'       => [
+                    'a' => 'b',
+                ],
+            ],
         ],
         'response'  => [
             'content' => [

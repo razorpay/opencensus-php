@@ -18,13 +18,14 @@ use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\MerchantApplications\Entity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 
 class PartnerTest extends OAuthTestCase
 {
-    use OAuthTrait;
+    use PartnerTrait;
     use BatchTestTrait;
 
     const PARTNER                = 'partner';
@@ -1870,17 +1871,6 @@ class PartnerTest extends OAuthTestCase
         }
 
         return $merchantRequest;
-    }
-
-    protected function allowAdminToAccessMerchant(string $merchantId)
-    {
-        $merchant = Merchant\Entity::find($merchantId);
-
-        $admin = $this->ba->getAdmin();
-
-        $admin->merchants()->attach($merchant);
-
-        return $merchant;
     }
 
     protected function allowAdminToAccessPartnerMerchant()

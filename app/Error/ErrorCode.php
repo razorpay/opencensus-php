@@ -1583,6 +1583,7 @@ class ErrorCode
 
     // Partners error codes
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                           = 'BAD_REQUEST_OAUTH_APP_NOT_FOUND';
+    const BAD_REQUEST_CLIENT_APPLICATION_NOT_MAPPED                                 = 'BAD_REQUEST_CLIENT_APPLICATION_NOT_MAPPED';
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
     const BAD_REQUEST_INVALID_APPLICATION_ID                                        = 'BAD_REQUEST_INVALID_APPLICATION_ID';
