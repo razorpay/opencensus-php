@@ -21,12 +21,14 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Tests\Functional\Gateway\Upi\UpiCustomAmountTrait;
 
 class UpiIciciGatewayTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use UpiCustomAmountTrait;
 
     public function setUp()
     {
@@ -1518,5 +1520,52 @@ EOT;
         // Assert status_code in UPI Entity
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertSame('8000', $upiEntity['status_code']);
+    }
+
+    protected function setUpUpiCustomAmountTest($status, $amount)
+    {
+        // Technically Custom Amount is only on intent
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $order = $this->createOrder();
+
+        $payment = $this->getDefaultUpiIntentPaymentArray($order);
+
+        unset($payment['bank']);
+
+        $payment['upi']['flow'] = 'intent';
+        $payment['amount']      = $order['amount'];
+        $payment['order_id']    = $order['id'];
+
+        $this->mockServerContentFunction(function(& $content, $action = null) use ($status, $amount)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId']       = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA']         = 'user@icici';
+                $content['PayerAmount']     = number_format($amount / 100, 2, '.', '');
+                $content['TxnStatus']       = $status === 'authorized' ? 'SUCCESS' : 'FAILURE';
+                $content['ResponseCode']    = $status === 'authorized' ? '00' : 'U03';
+            }
+        });
+
+        return $this->doAuthPaymentViaAjaxRoute($payment);
+    }
+
+    protected function makeAsyncCallbackGatewayCall($upi, $payment, $success = true)
+    {
+        $content = $this->getMockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertSame($response['success'], $success, 'Callback assertion failed');
+    }
+
+    protected function tearDownUpiCustomAmountTest()
+    {
+        // Nothing Specific
     }
 }

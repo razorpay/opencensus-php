@@ -1358,10 +1358,10 @@ class Gateway extends Base\Gateway
 
         assertTrue($actualPaymentId === $gatewayPayment->getPaymentId());
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
-
-        $this->assertAmount($expectedAmount, $actualAmount);
+//        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+//        $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
+//
+//        $this->assertAmount($expectedAmount, $actualAmount);
 
         // We are saving the gateway entity even if txn was failed
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
@@ -1371,11 +1371,15 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackResponseStatus($content);
 
+        $amountAuthorized = $this->getIntegerFormattedAmount($content[Fields::PAYER_AMOUNT]);
+
         $response  = [
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa(),
                 Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
-            ]
+            ],
+            'currency'          => 'INR',
+            'amount_authorized' => $amountAuthorized,
         ];
 
         if ($this->isSecondRecurringPayment($input) === true)

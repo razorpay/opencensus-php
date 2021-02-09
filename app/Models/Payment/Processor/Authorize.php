@@ -8404,4 +8404,56 @@ trait Authorize
             $cardInput[Card\Entity::IS_CVV_OPTIONAL] = false;
         }
     }
+
+    protected function processGatewayAmountAuthorized(
+        Payment\Entity $payment,
+        string $currency,
+        int $amountAuthorized): bool
+    {
+        // Currency check is mandatory as it could lead to mismatch for international payments
+        if  ($payment->getCurrency() !== $currency)
+        {
+            return false;
+        }
+
+        $diff = ($amountAuthorized - $payment->getAmount());
+
+        if ($diff === 0)
+        {
+            return true;
+        }
+
+        $allowSurplus = (($diff > 0) and ($this->shouldAllowGatewayAmountSurplus($payment, $amountAuthorized)));
+        $allowDeficit = (($diff < 0) and ($this->shouldAllowGatewayAmountDeficit($payment, $amountAuthorized)));
+
+        if (($allowSurplus === true) or
+            ($allowDeficit === true))
+        {
+            (new Payment\PaymentMeta\Core)->addGatewayAmountInformation($payment, $amountAuthorized);
+
+            $payment->setAmount($amountAuthorized);
+
+            $this->processCurrencyConversions($payment);
+
+            $this->repo->saveOrFail($payment);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function shouldAllowGatewayAmountSurplus(Payment\Entity $payment): bool
+    {
+        $allowedMerchantsForSurplus = config()->get('app.amount_difference_allowed_authorized');
+
+        return in_array($payment->getMerchantId(), $allowedMerchantsForSurplus, true);
+    }
+
+    protected function shouldAllowGatewayAmountDeficit(Payment\Entity $payment): bool
+    {
+        $allowedMerchantsForDeficit = config()->get('app.amount_difference_allowed_authorized');
+
+        return in_array($payment->getMerchantId(), $allowedMerchantsForDeficit, true);
+    }
 }

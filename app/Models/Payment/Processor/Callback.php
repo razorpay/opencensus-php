@@ -374,6 +374,28 @@ trait Callback
 
                 $this->repo->saveOrFail($payment);
             }
+
+            // The gateways which allow amount difference in authorized will send
+            // amount_authorized field explicitly in response
+            if ((isset($data[Payment\Entity::AMOUNT_AUTHORIZED]) === true) and
+                (isset($data[Payment\Entity::CURRENCY]) === true))
+            {
+                $currency           = $data[Payment\Entity::CURRENCY];
+                $amountAuthorized   = $data[Payment\Entity::AMOUNT_AUTHORIZED];
+
+                if ($this->processGatewayAmountAuthorized($payment, $currency, $amountAuthorized) === false)
+                {
+                    // We are still throwing the same exception for amount mismatch cases which is being
+                    // thrown by the Base\Gateway, it will be caught later as BaseException
+                    throw new Exception\LogicException(
+                        'Amount tampering found.',
+                        ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+                        [
+                            'expected'  => $payment->getAmount(),
+                            'actual'    => $amountAuthorized,
+                        ]);
+                }
+            }
         }
         catch (Exception\BaseException $e)
         {
