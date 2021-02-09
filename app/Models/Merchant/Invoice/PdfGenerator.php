@@ -173,4 +173,9 @@ class PdfGenerator extends Base\Core
     {
         return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/' . $year . '/'. $month . '/' . $merchantId;
     }
+
+    public function getNameForMerchantPgRevisedInvoice(int $year, int $month, $merchantId)
+    {
+        return self::MERCHANT_INVOICE_PG_PDF_PREFIX . '/revised/' . $year . '/'. $month . '/' . $merchantId;
+    }
 }

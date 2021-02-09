@@ -191,6 +191,13 @@ class Service extends Base\Service
         {
             $name = (new PdfGenerator)->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
+            $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($this->merchant, $month, $year);
+
+            if($shouldGenerateRevisedPgInvoice === true)
+            {
+                $name = (new PdfGenerator())->getNameForMerchantPgRevisedInvoice($year, $month, $merchantId);
+            }
+
             $file = $this->repo
                          ->file_store
                          ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
@@ -203,15 +210,22 @@ class Service extends Base\Service
                                    ->merchant_invoice
                                    ->fetchInvoiceReportData($merchantId, $month, $year);
 
-            if ((empty($file) === false) and ($eInvoiceSuccess === true))
+            if (((empty($file) === false) and ($eInvoiceSuccess === true)) or ($shouldGenerateRevisedPgInvoice === true))
             {
+                $reason = 'merchant invoice file store entry is already present';
+
+                if($shouldGenerateRevisedPgInvoice === true)
+                {
+                    $reason = 'action not allowed as merchant is eligible for revised invoices';
+                }
+
                 $this->trace->info(
                     TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
                     [
                         'merchant_id' => $merchantId,
                         'year'        => $year,
                         'month'       => $month,
-                        'reason'      => 'merchant invoice file store entry is already present'
+                        'reason'      => $reason,
                     ]);
 
                 $result['failed_mids'][] = $merchantId;

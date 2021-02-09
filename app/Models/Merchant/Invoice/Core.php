@@ -593,17 +593,24 @@ class Core extends Base\Core
     {
         $name = (new PdfGenerator())->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
+        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+
+        $shouldGeneratePgEInvoice = (new PgEInvoice())->shouldGenerateEInvoice($this->merchant, $date->getTimestamp());
+
+        $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($this->merchant, $month, $year);
+
+        if($shouldGenerateRevisedPgInvoice === true)
+        {
+            $name = (new PdfGenerator())->getNameForMerchantPgRevisedInvoice($year, $month, $merchantId);
+        }
+
         $file = $this->repo
                      ->file_store
                      ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
 
         if (empty($file) === true)
         {
-            $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
-
-            $shouldGeneratePgEInvoice = (new PgEInvoice())->shouldGenerateEInvoice($this->merchant, $date->getTimestamp());
-
-            if($shouldGeneratePgEInvoice === true)
+            if(($shouldGeneratePgEInvoice === true) or ($shouldGenerateRevisedPgInvoice === true))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Razorpay was unable to generate an invoice either due to incorrect GSTIN and/or Address PIN or due to some technical error. Please try again in some time.');

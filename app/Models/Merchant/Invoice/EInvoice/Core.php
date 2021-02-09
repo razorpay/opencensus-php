@@ -306,6 +306,18 @@ class Core extends Base\Core
         return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
     }
 
+    public function shouldGenerateRevisedInvoice(Merchant\Entity $merchant, $month, $year) : bool
+    {
+        $merchantId = $this->repo->merchant_e_invoice->checkIfMerchantIsEligibleForRevisedInvoice($month, $year, Types::PG, $merchant->getId());
+
+        if(in_array($merchant->getId(), $merchantId) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isEinvoiceSuccess(string $merchantId, int $month, int $year, string $type) : bool
     {
         $generatedCount = 0;

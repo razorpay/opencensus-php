@@ -43,4 +43,23 @@ class Repository extends Base\Repository
             ->where(Entity::TYPE, '=', $type)
             ->first();
     }
+
+    //This is required for finding merchants which should be eligible for revised e-invoices for Jan 2021.
+    //Slack thread ref: https://razorpay.slack.com/archives/C659GARU3/p1612548900099900
+    public function checkIfMerchantIsEligibleForRevisedInvoice(int $month, int $year, string $type, string $merchantId)
+    {
+        $query = $this->newQuery()
+            ->select([$this->dbColumn(Entity::MERCHANT_ID)])
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::DOCUMENT_TYPE, '=', DocumentTypes::INV)
+            ->whereBetween(Entity::CREATED_AT, [1611513000, 1612549800])
+            ->where(Entity::STATUS, '=', Status::STATUS_GENERATED);
+
+        return $query->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
 }
