@@ -10,30 +10,35 @@ const appListBusinessBanking = [
     name: 'Current Accounts',
     link: 'https://razorpay.com/x/current-accounts/?ref=app-switcher',
     desc: 'Business Banking built for disruptors.',
+    showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/payout-link.svg',
     name: 'Payout Links',
     link: 'https://razorpay.com/x/payout-links/?ref=app-switcher',
     desc: 'Easy and instant payouts',
+    showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/vendor-payments.svg',
     name: 'Vendor Payments',
     link: 'https://www.razorpay.com/x/vendor-payments/?ref=app-switcher',
     desc: 'Automated Tax payments.',
+    showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/payouts.svg',
     name: 'Payouts',
     link: 'https://razorpay.com/x/payouts/?ref=app-switcher',
     desc: '24x7, Instant & Automated Payouts',
+    showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/opfin.svg',
     name: 'Opfin - Payroll',
     link: 'https://razorpay.com/payroll/?ref=app-switcher',
     desc: 'Automate and execute payroll',
+    showForUnregisteredBusiness: true,
   },
 ];
 
@@ -43,12 +48,14 @@ const appListRiskAndFraud = [
     name: 'Thirdwatch',
     link: 'https://razorpay.com/thirdwatch/?ref=app-switcher',
     desc: 'Fight fraud with Artificial Intelligence',
+    showForUnregisteredBusiness: true,
   },
   {
     icon: '/dist/css/assets/products/prepay-cod.svg',
     name: 'Prepay COD',
     link: 'https://razorpay.com/thirdwatch/prepay-cod/?ref=app-switcher',
     desc: 'Convert risky CoD orders to prepaid.',
+    showForUnregisteredBusiness: true,
     new: true,
   },
 ];
@@ -76,6 +83,10 @@ class AppSwitcher extends Component {
   };
 
   getItem = (app) => {
+    if (this.props.user.isUnregisteredBusiness && !app.showForUnregisteredBusiness) {
+      return null;
+    }
+
     return (
       <a
         href={app.link}

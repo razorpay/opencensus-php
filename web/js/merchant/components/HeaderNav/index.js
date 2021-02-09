@@ -139,7 +139,9 @@ export default class HeaderNav extends Component {
                   />
                 </li>
               </ShowWhen>
-              <ShowWhen additionalCondition={(user) => user.isAppSwitcherEnabled}>
+              <ShowWhen
+                additionalCondition={(user) => user.isAppSwitcherEnabled && user.isAccepted}
+              >
                 <li id="app-switcher">
                   <AppSwitcher analytics={analytics} {...commonProps} />
                 </li>
