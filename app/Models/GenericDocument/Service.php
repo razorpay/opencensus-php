@@ -109,6 +109,10 @@ class Service extends Base\Service
     {
         $fileStoreId = ResponseHelper::getDocumentId($documentId, Constants::DOCUMENT_ID_SIGN, Constants::FILE_ID_SIGN);
 
+        $validator = (new Validator);
+
+        $validator->validateInput('fetchDocument', $input);
+
         $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId, $this->merchant->getId());
 
         $fileData = $this->fetchFiles([$fileStoreId], $this->merchant->getId());

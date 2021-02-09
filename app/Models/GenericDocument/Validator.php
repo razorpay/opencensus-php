@@ -13,6 +13,11 @@ class Validator extends Base\Validator
         Constants::FILE    => 'required|file|max:5120',
     ];
 
+    //The expiry is in minutes. UFH accepts duration of singed url in minutes
+    protected static $fetchDocumentRules = [
+        Constants::EXPIRY => 'sometimes|integer|min:1|max:120'
+    ];
+
     protected static $kycMimeRules = [
         Constants::FILE    => 'mimes:pdf,jpeg,jpg,png'
     ];

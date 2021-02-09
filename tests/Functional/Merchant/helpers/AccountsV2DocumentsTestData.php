@@ -57,6 +57,47 @@ return [
         ]
     ],
 
+    'testDocumentDownloadInvalidExpiryUpperLimit' => [
+        'request'  => [
+            'url'    => '/v2/documents/{id}',
+            'method' => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The expiry may not be greater than 120.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testDocumentDownloadInvalidExpiryLowerLimit' => [
+        'request'  => [
+            'url'    => '/v2/documents/{id}',
+            'method' => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The expiry must be at least 1.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testInvalidProofTypeDocumentLink'    => [
         'request'   => [
             'url'     => '/v2/accounts/{accountId}/documents',

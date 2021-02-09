@@ -55,6 +55,18 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
         $this->assertFalse(empty($downloadResponse));
 
+        $testData = $this->testData['testDocumentDownloadInvalidExpiryUpperLimit'];
+
+        $testData['request']['url'] = '/v2/documents/' . $file_id. '?expiry=1000';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testDocumentDownloadInvalidExpiryLowerLimit'];
+
+        $testData['request']['url'] = '/v2/documents/' . $file_id. '?expiry=-1';
+
+        $this->runRequestResponseFlow($testData);
+
     }
 
     public function testValidationsForInvalidInput()
