@@ -333,6 +333,7 @@ class AdminFetch
                         'submerchant_type_update',
                         'banking_account_activation_comments',
                         'partner_submerchant_invite',
+                        'nach_debit_nach_citi',
                     ],
                 ],
             ],
