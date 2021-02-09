@@ -31,12 +31,18 @@ class Federal extends Base
                 if($item['payment']['cps_route'] !== 3)
                 {
                     $sum += ($item['refund']['amount'] / 100);
-
-                    return $sum;
                 }
+                return $sum;
             });
 
-            $count['refunds'] = count($data['refunds']);
+            $count['refunds'] = array_reduce($data['refunds'], function ($count, $item)
+            {
+                if($item['payment']['cps_route'] !== 3)
+                {
+                    $count += 1;
+                }
+                return $count;
+            });
 
             $refundsFile = $this->getFileData(FileStore\Type::FEDERAL_NETBANKING_REFUND);
         }
@@ -48,12 +54,18 @@ class Federal extends Base
                 if($item['payment']['cps_route'] !== 3)
                 {
                     $sum += ($item['payment']->getAmount() / 100);
-
-                    return $sum;
                 }
+                return $sum;
             });
 
-            $count['claims'] = count($data['claims']);
+            $count['claims'] = array_reduce($data['claims'], function ($count, $item) {
+
+                if($item['payment']['cps_route'] !== 3)
+                {
+                    $count += 1;
+                }
+                return $count;
+            });
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
