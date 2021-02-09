@@ -8,7 +8,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
 import RazorpayXAnnouncement from '../NotificationsDropdown/RazorpayXAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncement from '../NotificationsDropdown/components/OpfinAnnouncement';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import analyticsService from '@commander/services/analytics';
@@ -139,16 +138,6 @@ export default class WhatsNew extends Component {
     this.setState({ showRazorpayXAnnouncement: !this.state.showRazorpayXAnnouncement });
   };
 
-  showOpfinAnnouncement = (id) => {
-    const { closeModal, openModal } = this.props;
-
-    openModal({
-      component: <OpfinAnnouncement id={id} onClose={closeModal} />,
-      size: 'xlarge',
-      className: 'OpfinAnnouncement--Modal',
-    });
-  };
-
   showOpfinAnnouncementV2 = (id) => {
     const { closeModal, openModal } = this.props;
 
@@ -173,10 +162,6 @@ export default class WhatsNew extends Component {
     switch (id) {
       case 'announcement-projectNitro-cta1':
         this.toggleRazorpayXAnnouncement();
-        break;
-      case 'announcement-Nov20-Opfin-NitroV1-cta1':
-      case 'announcement-Nov20-Opfin-NitroV2-cta1':
-        this.showOpfinAnnouncement(id);
         break;
       case 'announcement-Nov20-Opfin-NitroV3-cta1':
         this.showOpfinAnnouncementV2(id);
@@ -353,10 +338,8 @@ export default class WhatsNew extends Component {
       'paymentButton_GTM',
       'IR_update_DC',
       'NOV20-RZP-FESTIVEOFFER',
-      'Nov20-Opfin-NitroV1',
       'NOV20-VP-C1',
       'NOV20-PG-BANKUPDATE',
-      'Nov20-Opfin-NitroV2',
       'DEC20-PayPal-GTM',
       'whats-new-upi-pl-jan2021',
       'whats-new-subs-btn-jan2021',

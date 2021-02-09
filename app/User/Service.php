@@ -1442,7 +1442,6 @@ class Service extends Base\Service
             'subscription_expiry',
             'caw_tpv',
             'show_rx_vp_announcement',
-            'rx_opfin_announcement',
             'whatsapp_notification_enablement',
             'rx_vp_inline_recommendation',
             'partner_app_store',

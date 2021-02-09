@@ -178,25 +178,6 @@ class Constants
                 'campaigns' => ['UNLOCKFEST'],
             ]
         ],
-        [
-            'title'       => 'Festive Special: Exclusive Offer For You',
-            'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
-            'icon'        => '/dist/css/assets/products/opfin.svg',
-            'id'          => 'Nov20-Opfin-NitroV1',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-Nov20-Opfin-NitroV1-cta1',
-                ],
-            ],
-            'start_ts'    => 1604925051,
-            'end_ts'      => 1617193851,
-            'filters'     => [
-                'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-1'],
-            ],
-        ],
         // [
         //     'title'       => 'Boost International Sales With PayPal',
         //     'description' => 'Get upto 20% higher international success rates as well at T+1 settlement with PayPal',
@@ -271,44 +252,6 @@ class Constants
             'filters'     => [
                 'activation_status' => ['activated'],
                 'role' => ['owner', 'admin'],
-            ],
-        ],
-        [
-            'title'       => 'Festive Special: Exclusive Offer For You',
-            'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
-            'icon'        => '/dist/css/assets/products/opfin.svg',
-            'id'          => 'Nov20-Opfin-NitroV2',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-Nov20-Opfin-NitroV2-cta1',
-                ],
-            ],
-            'start_ts'    => 1606707034,
-            'end_ts'      => 1617193851,
-            'filters'     => [
-                'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-2'],
-            ],
-        ],
-        [
-            'title'       => 'Festive Special: Exclusive Offer For You',
-            'description' => 'Get ₹2,00,000 of free credits & 3 months of Opfin’s Payroll software for free.',
-            'icon'        => '/dist/css/assets/products/opfin.svg',
-            'id'          => 'Nov20-Opfin-NitroV2',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-Nov20-Opfin-NitroV2-cta1',
-                ],
-            ],
-            'start_ts'    => 1606707034,
-            'end_ts'      => 1617193851,
-            'filters'     => [
-                'experiments_with_variant'  => ['rx_opfin_announcement' => 'cohort-3'],
             ],
         ],
         [
