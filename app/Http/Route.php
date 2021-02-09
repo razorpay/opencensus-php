@@ -806,6 +806,7 @@ class Route
         'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
         'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
         'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
+        'loc_cron'                                 => ['post',     'loc/cron/{path?}',                               'LOCController@handleCron'                                          ],
         'capital_cards_service'                    => ['any',      'capital_cards/service/{path?}',                  'CapitalCardsController@handleProxyRequests'                        ],
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
@@ -3035,6 +3036,8 @@ class Route
         'merchant_risk_alerts_details',
 
         'nach_batch_process',
+
+        'loc_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5894,6 +5897,7 @@ class Route
             'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
+            'loc_cron',
         ],
 
         'subscriptions' => [

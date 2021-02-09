@@ -45,6 +45,7 @@ class LOCController extends Controller
     const POSIDEX_CRN                            = 'POSIDEX_CRN';
     const BULK_UPDATE_WITHDRAWAL                 = 'BULK_UPDATE_WITHDRAWAL';
     const REPAYMENTS_SCHEDULE                    = 'REPAYMENTS_SCHEDULE';
+    const WITHDRAWAL_ENGAGEMENT_MAILER_CRON      = 'WITHDRAWAL_ENGAGEMENT_MAILER_CRON';
     const GET_AUTOMATED_LOC                      = 'GET_AUTOMATED_LOC';
     const SET_AUTOMATED_LOC                      = 'SET_AUTOMATED_LOC';
 
@@ -71,6 +72,10 @@ class LOCController extends Controller
         self::POSIDEX_ACCESS_TOKEN                   => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/GenerateIDFCAccessToken',
         self::POSIDEX_CRN                            => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/CreateIDFCCRN',
         self::REPAYMENTS_SCHEDULE                    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/GetRepaymentsSchedule',
+    ];
+
+    const CRON_URL_MAP = [
+        self::WITHDRAWAL_ENGAGEMENT_MAILER_CRON      => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/WithdrawalEngagementMail',
     ];
 
     const MERCHANT_ROUTES = [
@@ -199,6 +204,45 @@ class LOCController extends Controller
         ];
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        return $response;
+    }
+
+    // Method to handle CRON jobs to LOC service
+    protected function handleCron($path = null) {
+        $request = Request::instance();
+        $url     = $path;
+        $body    = $request->all();
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_CRON_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $isLocCronRoute = false;
+
+        foreach (self::CRON_URL_MAP as $cron => $urlCron) {
+            if ($urlCron === $path) {
+                $isLocCronRoute = true;
+                break;
+            }
+        }
+
+        if ($isLocCronRoute === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $headers = [
+            'X-Service-Name' => $this->ba->getInternalApp() ?? '',
+            'X-Auth-Type'   => 'internal'
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_CRON_RESPONSE, [
+            'request' => $url,
+            'response' => $response,
+        ]);
 
         return $response;
     }
