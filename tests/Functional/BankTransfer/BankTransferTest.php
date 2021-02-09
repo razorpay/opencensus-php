@@ -3687,10 +3687,11 @@ class BankTransferTest extends TestCase
                                                    'live');
 
         // Assertions on payment entity created
-        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
         $this->assertEquals($transaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
+        $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
@@ -3701,6 +3702,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
         $this->assertEquals('icici', $bankTransfer->getGateway());
         $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING', $bankTransfer->getUnexpectedReason());
 
         // Assertions on bank transfer entity created (Request Params)
         $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
@@ -3878,10 +3881,11 @@ class BankTransferTest extends TestCase
                                                    'live');
 
         // Assertions on payment entity created
-        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
         $this->assertEquals($transaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
+        $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
@@ -3892,6 +3896,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
         $this->assertEquals('icici', $bankTransfer->getGateway());
         $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING', $bankTransfer->getUnexpectedReason());
 
         // Assertions on bank transfer entity created (Request Params)
         $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
@@ -3986,10 +3992,11 @@ class BankTransferTest extends TestCase
                                                    'live');
 
         // Assertions on payment entity created
-        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
         $this->assertEquals($transaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
+        $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
@@ -4000,6 +4007,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
         $this->assertEquals('icici', $bankTransfer->getGateway());
         $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING', $bankTransfer->getUnexpectedReason());
 
         // Assertions on bank transfer entity created (Request Params)
         $this->assertEquals($expectedAmount, $bankTransfer->getAmount());

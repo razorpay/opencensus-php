@@ -48,6 +48,8 @@ class Processor extends VirtualAccount\Processor
 
     const RAZORX_RETRY_COUNT = 2;
 
+    const TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING = 'TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING';
+
     /**
      * Check if the UTR received has ever been encountered before for the same
      * account. If it has, this is a duplicate payment, being processed again.
@@ -722,6 +724,8 @@ class Processor extends VirtualAccount\Processor
 
                     $this->dissociateExpectedRelationsForBankTransfer($bankTransfer);
 
+                    $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
+
                     $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
 
                     $this->merchant = $this->virtualAccount->merchant;
@@ -750,6 +754,15 @@ class Processor extends VirtualAccount\Processor
         $bankTransfer->balance()->dissociate();
 
         $bankTransfer->load( 'merchant', 'virtualAccount', 'balance');
+    }
+
+    protected function setParamsToEnsurePaymentIsNotCaptured(Entity & $bankTransfer)
+    {
+        // This ensures payment is not captured in refundOrCapturePayment.
+        $bankTransfer->setExpected(false);
+
+        // This is set for recon purpose so that we can know why the payment was refunded.
+        $bankTransfer->setUnexpectedReason(self::TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING);
     }
 
     protected function associateExpectedRelationsForBankTransfer(Entity & $bankTransfer)
