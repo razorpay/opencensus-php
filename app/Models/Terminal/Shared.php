@@ -250,6 +250,7 @@ class Shared
         self::NETBANKING_IDBI_TERMINAL           => Gateway::NETBANKING_IDBI,
         self::NETBANKING_IOB_TERMINAL            => Gateway::NETBANKING_IOB,
         self::NETBANKING_FSB_TERMINAL            => Gateway::NETBANKING_FSB,
+        self::NETBANKING_AUSF_TERMINAL           => Gateway::NETBANKING_AUSF,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,

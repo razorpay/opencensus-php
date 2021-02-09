@@ -89,4 +89,21 @@ return [
         'Status of transaction'                 => 'Y',
         'bank ref no.'                          => '123456'
     ],
+
+    'testAusfSuccessRecon' => [
+        'TRANSACTION TYPE'              => 'PAYMENT',
+        'CHANNEL_REF_NO'                => 'PG-20210205195519793000000',
+        'PAYMENT_ID_EXT'                => '',
+        'MERCHANT_ID'                   => 'RAZORPAY',
+        'USERREFERENCENO'               => '\'GXvNgN82wtLvkD',
+        'HOST_REF_NO'                   => 'CBSFund1612535152270',
+        'EXTERNALREFERENCEID_EXT'       => '',
+        'PAYMENT_DATE'                  => '05-FEB-21 07.54.46.387000000 PM',
+        'PAYMENT_AMT'                   => '2',
+        'REFUND_AMOUNT'                 => '',
+        'DEBIT_ACCOUNT_NO'              => '\'1712220914442391',
+        'STATUS'                        => 'S',
+        'MERCHANT_ACCT_NO'              => '\'2121201131751367',
+        'MERCHANT_URL'                  => 'https://www.razorpay.com',
+    ],
 ];

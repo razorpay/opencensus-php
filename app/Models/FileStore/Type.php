@@ -91,6 +91,14 @@ class Type
     const IBK_NETBANKING_REFUND             = 'ibk_netbanking_refund';
     const IBK_NETBANKING_CLAIM              = 'ibk_netbanking_claim';
 
+    const AUBL_NETBANKING_CLAIM             = 'aubl_netbanking_claim';
+
+    const AUBL_NETBANKING_REFUND            = 'AUBL_NETBANKING_REFUND';
+
+
+    const AUBL_NETBANKING_COMBINED          = 'aubl_netbanking_combined';
+
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
@@ -329,6 +337,9 @@ class Type
             self::FIRST_DATA_PARES_FILE,
             self::BULK_DISPUTES_FILE,
             self::PAYOUT_SAMPLE,
+            self::AUBL_NETBANKING_CLAIM,
+            self::AUBL_NETBANKING_REFUND,
+            self::AUBL_NETBANKING_COMBINED,
         ],
 
         Constants\Entity::BATCH => [
@@ -478,6 +489,9 @@ class Type
         self::ISG_SUMMARY,
         self::FIRST_DATA_PARES_FILE,
         self::BULK_DISPUTES_FILE,
+        self::AUBL_NETBANKING_CLAIM,
+        self::AUBL_NETBANKING_REFUND,
+        self::AUBL_NETBANKING_COMBINED,
     ];
 
     /**

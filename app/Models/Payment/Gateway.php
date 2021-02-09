@@ -358,6 +358,7 @@ class Gateway
         self::NETBANKING_KOTAK,
         self::NETBANKING_SIB,
         self::NETBANKING_SCB,
+        self::NETBANKING_AUSF,
     ];
 
     /**
