@@ -394,6 +394,16 @@ class Entity
 
     const UFH_FILES                      = 'ufh.files';
 
+    // capital-collections
+    const CAPITAL_COLLECTIONS_COLLECTION_CONFIG    = 'capital_collections.collection_config';
+    const CAPITAL_COLLECTIONS_LEDGER_BALANCE       = 'capital_collections.ledger_balance';
+    const CAPITAL_COLLECTIONS_PRIORITIZATION       = 'capital_collections.prioritization';
+    const CAPITAL_COLLECTIONS_INSTALLMENT          = 'capital_collections.installment';
+    const CAPITAL_COLLECTIONS_CHARGE               = 'capital_collections.charge';
+    const CAPITAL_COLLECTIONS_CREDIT_REPAYMENT     = 'capital_collections.credit_repayment';
+    const CAPITAL_COLLECTIONS_REPAYMENT            = 'capital_collections.repayment';
+    const CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP    = 'capital_collections.repayment_breakup';
+
     const COMMISSION = 'commission';
     const COMMISSION_COMPONENT = 'commission_component';
 
@@ -946,6 +956,15 @@ class Entity
         self::NBPLUS_EMANDATE_DEBIT         => \RZP\Services\NbPlus\Emandate::class,
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,
+
+        self::CAPITAL_COLLECTIONS_COLLECTION_CONFIG => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_LEDGER_BALANCE    => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_PRIORITIZATION    => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_INSTALLMENT       => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_CHARGE            => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_CREDIT_REPAYMENT  => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_REPAYMENT         => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP => \RZP\Services\CapitalCollectionsClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

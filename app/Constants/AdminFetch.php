@@ -351,6 +351,158 @@ class AdminFetch
 
             Entity::NBPLUS_EMANDATE_DEBIT => [],
 
+            Entity::CAPITAL_COLLECTIONS_COLLECTION_CONFIG => [
+                'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
+                'credit_id'     => [
+                    Fetch::LABEL  => 'Credit Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'product_type'  => [
+                    Fetch::LABEL  => 'Product type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'loc',
+                        'cards',
+                        'loans',
+                    ],
+                ],
+                'product_entity_reference_id'   => [
+                    Fetch::LABEL  => 'Product entity reference id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'product_entity_type'   => [
+                    Fetch::LABEL  => 'Product entity type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'withdrawal',
+                        'disbursement',
+                        'statement',
+                    ],
+                ],
+                'status'    => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'completed',
+                        'archived',
+                    ],
+                ],
+            ],
+
+            Entity::CAPITAL_COLLECTIONS_LEDGER_BALANCE => [
+                'plan_id'   => [
+                    Fetch::LABEL  => 'plan id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::CAPITAL_COLLECTIONS_INSTALLMENT => [
+                'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
+
+                'plan_id'   => [
+                    Fetch::LABEL  => 'plan id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status'    => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'pending',
+                        'partially_paid',
+                        'paid',
+                        'overdue',
+                        'archived',
+                    ],
+                ],
+            ],
+
+            Entity::CAPITAL_COLLECTIONS_REPAYMENT => [
+                'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
+                'credit_id'     => [
+                    Fetch::LABEL  => 'Credit Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'product_type'  => [
+                    Fetch::LABEL  => 'Product type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'loc',
+                        'cards',
+                        'loans',
+                    ],
+                ],
+                'product_entity_reference_id'   => [
+                    Fetch::LABEL  => 'Product entity reference id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'product_entity_type'   => [
+                    Fetch::LABEL  => 'Product entity type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'withdrawal',
+                        'disbursement',
+                        'statement',
+                    ],
+                ],
+                'status'    => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'failed',
+                        'collected',
+                        'settled',
+                    ],
+                ],
+                'payment_mode' => [
+                    Fetch::LABEL  => 'payment mode',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'manual',
+                        'autocollection',
+                    ],
+                ],
+                'payment_reference_id' => [
+                    Fetch::LABEL  => 'payment reference id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'payment_reference_type' => [
+                    Fetch::LABEL  => 'payment reference type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'order',
+                        'credit_repayment',
+                        'payment_link',
+                        'manual_adjustment',
+                    ],
+                ],
+            ],
+
+            Entity::CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP => [
+                'plan_id'   => [
+                    Fetch::LABEL  => 'plan id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'repayment_id'   => [
+                    Fetch::LABEL  => 'repayment id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'breakup_entity_id'   => [
+                    Fetch::LABEL  => 'breakup entity id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'breakup_entity_type'    => [
+                    Fetch::LABEL  => 'breakup entity type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'installment',
+                        'charge',
+                    ],
+                ],
+            ],
+
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
