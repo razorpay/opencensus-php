@@ -143,7 +143,7 @@ local function get_rate_limit_args(redis, req_ctx, ngx)
             end
         end
     end
-    -- ngx.log(ngx.DEBUG, "settings for rate_limit_args : ", utility.dump(settings))
+    ngx.log(ngx.DEBUG, "settings for rate_limit_args : ", utility.dump(settings))
 
     local merchant_settings = settings[3] or {}
     local route_settings = ((next(settings[1]) ~= nil) and settings[1]) or settings[2]  -- Route specific Setting if present else default route setting

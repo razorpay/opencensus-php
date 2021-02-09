@@ -107,7 +107,7 @@ function M.get_details_by_key(redis, key, ngx)
         merchant.mid = res
     end
     merchant.mode = M.parse_mode_from_key(key)
-    -- ngx.log(ngx.DEBUG, "get_details_by_key mid :  ", merchant.mid)
+    ngx.log(ngx.DEBUG, "get_details_by_key mid :  ", merchant.mid)
     return merchant, nil
 end
 
@@ -119,7 +119,7 @@ function M.get_details_by_proxy_key(key, ngx)
     }
     merchant.mid    = string.sub(key, 10)
     merchant.mode   = M.parse_mode_from_key(key)
-    -- ngx.log(ngx.DEBUG, "get_details_by_proxy_key mid :  ", merchant.mid)
+    ngx.log(ngx.DEBUG, "get_details_by_proxy_key mid :  ", merchant.mid)
     return merchant, nil
 end
 
