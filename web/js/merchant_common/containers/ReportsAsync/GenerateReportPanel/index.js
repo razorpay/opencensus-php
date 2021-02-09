@@ -1,18 +1,17 @@
 import RTracking from 'react-tracking';
-import { connect } from 'react-redux';
+
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { isPresent } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import SelectAccount from 'common/ui/AccountsList';
-import { showNotification } from 'merchant_common/reducers/notifications';
+
 import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
 import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 
-@connect(null, { showNotification })
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
   static defaultProps = {
@@ -64,15 +63,6 @@ export default class GenerateReportPanel extends React.PureComponent {
   })
   onGenerateReport = () => {
     const { selectedConfig, selectedAccount = {} } = this.state;
-    const { month, year } = this.selectPeriod.getCustomConfigYear();
-
-    if (selectedConfig.name === 'Monthly Invoice' && month === 1 && year === 2021) {
-      return this.props.showNotification({
-        type: 'info',
-        message: 'Your invoice is currently in-process and will be available in 3-business days',
-      });
-    }
-
     if (selectedConfig.type === 'custom') {
       return this.generateCustomConfigReport();
     }
