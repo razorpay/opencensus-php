@@ -80,6 +80,18 @@ return [
         ],
     ],
 
+    'testAddPermissionsToRole' => [
+        'request' => [
+            'url' => '/roles/%s/add/permissions',
+            'method' => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteRole' => [
         'request' => [
             'url' => '/roles/%s',

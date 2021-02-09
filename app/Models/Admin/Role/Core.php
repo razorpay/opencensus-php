@@ -48,6 +48,22 @@ class Core extends Base\Core
         return $role;
     }
 
+    public function addPermissionsToRole($role, array $input)
+    {
+        if (isset($input[Entity::PERMISSIONS]) === true)
+        {
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
+
+            $this->repo->sync(
+                $role, Entity::PERMISSIONS, $input[Entity::PERMISSIONS], false);
+        }
+
+        $role = $this->repo->role->findOrFailPublicWithRelations(
+            $role->getId(), [Entity::PERMISSIONS]);
+
+        return $role;
+    }
+
     protected function syncPermissions($role, array $input)
     {
         if (isset($input[Entity::PERMISSIONS]) === true)

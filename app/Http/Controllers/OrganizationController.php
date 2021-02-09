@@ -196,6 +196,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putPermissionsToRole(string $roleId)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ROLE)->putPermissionsToRole($roleId, $input);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------

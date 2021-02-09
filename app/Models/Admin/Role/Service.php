@@ -80,4 +80,21 @@ class Service extends Base\Service
 
         return $role->toArrayPublic();
     }
+
+    public function putPermissionsToRole(string $roleId, array $input)
+    {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
+        $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
+
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+
+        $role = $this->core()->addPermissionsToRole($role, $input);
+
+        return $role->toArrayPublic();
+    }
 }

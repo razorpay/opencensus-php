@@ -145,6 +145,7 @@ class Name
     const VIEW_ROLE                           = 'view_role';
     const CREATE_ROLE                         = 'create_role';
     const EDIT_ROLE                           = 'edit_role';
+    const EDIT_ROLE_ADD_PERMISSIONS           = 'edit_role_add_permissions';
     const DELETE_ROLE                         = 'delete_role';
     const VIEW_ALL_GROUP                      = 'view_all_group';
     const VIEW_GROUP                          = 'view_group';

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -111,6 +112,78 @@ class RoleTest extends TestCase
 
         $this->assertEquals(count(array_intersect($savedPermissionIds, $expectedPermissionIds)),
                             count(array_intersect($expectedPermissionIds, $savedPermissionIds)));
+    }
+
+    public function testAddPermissionsToRole()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $oldPerms = array_slice($this->getPermissionsByIds('assignable'), 0, 4);
+
+        $unsignedOldPerms = $oldPerms;
+
+        $unsignedOldPerms = Permission\Entity::verifyIdAndStripSignMultiple($unsignedOldPerms);
+
+        $role->permissions()->sync($unsignedOldPerms);
+
+        // 2 new permissions and 2 already assigned to role
+        $newPerms = array_slice($this->getPermissionsByIds('assignable'), 2, 4);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $url = $request['url'];
+
+        $url = sprintf($url, $role->getPublicId());
+
+        $request['url'] = $url;
+
+        $request['content']['permissions'] = $newPerms;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_role_add_permissions']);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['id'], $role->getPublicId());
+
+        $this->assertEquals($result['name'], $role->name);
+
+        $responsePerms = $result['permissions'];
+
+        $func = function($p) {
+            return $p['id'];
+        };
+
+        $responsePermissionIds = array_map($func, $responsePerms);
+
+        $roleFromDb = (new Role\Core())->findRoleByOrgAndName($this->org, $role->name);
+
+        $savedPermissions = $roleFromDb->permissions->all();
+
+        $func = function($p) {
+            return $p->getPublicId();
+        };
+
+        $savedPermissionIds = array_map($func, $savedPermissions);
+
+        $expectedPermissionIds = array_unique(array_merge($oldPerms, $newPerms));
+
+        sort($savedPermissionIds);
+
+        sort($expectedPermissionIds);
+
+        sort($responsePermissionIds);
+
+        $this->assertEquals($expectedPermissionIds, $savedPermissionIds);
+
+        $this->assertEquals($expectedPermissionIds, $responsePermissionIds);
     }
 
     public function testGetRole()
