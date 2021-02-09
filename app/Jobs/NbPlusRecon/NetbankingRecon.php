@@ -14,6 +14,9 @@ use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 
 class NetbankingRecon extends Job
 {
+    // Deprecated
+    // we now compare and update within the nbplus service itself
+
     const MAX_JOB_ATTEMPTS = 2;
     const JOB_RELEASE_WAIT = 300;
 

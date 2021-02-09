@@ -276,6 +276,7 @@ class Service extends Base\Service
         );
     }
 
+    // Deprecated. We now compare and update within the nbplus service itself
     public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity, $entityAttributes, $reconParams)
     {
         $paymentId = $input['payment_id'];

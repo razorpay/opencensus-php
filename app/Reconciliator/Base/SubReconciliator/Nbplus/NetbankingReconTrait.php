@@ -2,10 +2,11 @@
 
 namespace RZP\Reconciliator\Base\SubReconciliator\NbPlus;
 
+use Queue;
+
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Method;
-use RZP\Jobs\NbPlusRecon\NetbankingRecon;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -30,27 +31,35 @@ trait NetbankingReconTrait
 
         $data = [
             'payment_id' => $this->payment->getId(),
-            'recon_file_data' => [
-                NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
-                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
-                NetbankingService::BANK_ACCOUNT_NUMBER    => $debitAccountNumber,
+            NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
+            NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
+            NetbankingService::BANK_ACCOUNT_NUMBER    => $debitAccountNumber,
+            NetbankingService::ADDITIONAL_DATA        => [
                 NetbankingService::CREDIT_ACCOUNT_NUMBER  => $creditAccountNumber,
-                NetbankingService::CUSTOMER_ID            => $customerId
-            ],
-            'attributes' => self::NETBANKING_ATTRIBUTES,
-            'entity'     => Method::NETBANKING,
-            'mode'       => $this->mode,
-            'gateway'    => $this->gateway,
-            'batch_id'   => $this->batchId,
+                NetbankingService::CUSTOMER_ID            => $customerId,
+            ]
         ];
 
-        NetbankingRecon::dispatch($data);
+        $this->dispatchToNbplusServiceQueue($data);
+    }
+
+    protected function dispatchToNbplusServiceQueue($data)
+    {
+        $pushData['entity_name'] = Method::NETBANKING;
+        $pushData['recon_data']  = $data;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
 
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'info_code'  => Base\InfoCode::RECON_NBPLUS_JOB_DISPATCH,
-                'payment_id' => $this->payment->getId(),
+                'info_code'  => Base\InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
+                'queue'      => $queueName,
+                'payment_id' => $data['payment_id'],
+                'batch_id'   => $this->batchId,
+                'gateway'    => $this->gateway
             ]
         );
     }
