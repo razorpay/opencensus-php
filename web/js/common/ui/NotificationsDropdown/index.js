@@ -289,6 +289,7 @@ export default class NotificationsDropdown extends Component {
       'Nov20-Opfin-NitroV4',
       'opfin-sso-check',
       'JAN21-PG-GTM1',
+      'JAN21-PG-GTM1-V2',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
