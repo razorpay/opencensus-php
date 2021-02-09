@@ -10087,6 +10087,33 @@ class PayoutTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    // Since this is a VA to VA payout and razorx returns control, we should fail this payout.
+    // But in this case, we have whitelisted the destination account number, hence the payout should go through.
+    public function testAllowVAtoVAPayoutsWhenSourceDestinationIsWhitelisted()
+    {
+        $fundAccountResponse = $this->createFundAccountOfYesbankVA();
+
+        $fundAccountId = $fundAccountResponse['id'];
+
+        $fundAccount = $this->getDbEntityById('fund_account', $fundAccountId);
+
+        $destinationBankAccountNumber = $fundAccount->account->getAccountNumber();
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS => [$destinationBankAccountNumber]
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest($testData);
+    }
+
     // Since this is a VA to VA payout but the razorx returns 'on' meaning we have allowed this merchant
     // to make VA to VA payouts, we shall allow this payout to go through
     public function testAllowVAtoVAPayoutsWithRazorXExperimentWithICICIDestination()

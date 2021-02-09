@@ -23,6 +23,7 @@ use RZP\Models\PayoutSource;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Notifications;
@@ -35,6 +36,7 @@ use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
@@ -1484,6 +1486,27 @@ class Base extends BaseCore
                                                                                             === $firstFourDigitsOfIfsc)
                 {
                     $blockVAToVAPayouts = true;
+                }
+
+                if ($blockVAToVAPayouts === true)
+                {
+                    // We are maintaining a list of destination bank accounts on redis that we shall allow
+                    // the merchant to create payouts to.
+                    $destinationAccountsToWhitelist = (new AdminService)->getConfigKey(
+                        [
+                            'key' => ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS
+                        ]);
+
+                    if (in_array($bankAccount->getAccountNumber(), $destinationAccountsToWhitelist, true) === true)
+                    {
+                        $blockVAToVAPayouts = false;
+
+                        $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_DESTINATION,
+                            [
+                                'merchant_id'       => $payout->getMerchantId(),
+                                'fund_account_id'   => $fundAccount->getId()
+                            ]);
+                    }
                 }
             }
         }
