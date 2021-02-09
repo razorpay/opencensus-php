@@ -149,24 +149,24 @@ class SubscriptionProxy
         // receive passport and should decide what to do with unidentified requests,
         // maybe including basis route kind.
         //
-        $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
-        if (($this->ignoreHostedPageUrl() === false) and
-            (empty($jwt) === false) and
-            ($this->reqCtx->passportAttrsMismatch === false))
-        {
-            $treatment = $this->razorx->getTreatment(
-                $this->ba->getMerchantId() ?? 'unknown',
-                RazorxTreatment::FORWARD_PASSPORT_TO_SUBSCRIPTIONS,
-                // Mode can be null for direct routes being proxy-ed to subscriptions.
-                // E.g. https://api.razorpay.com/v1/l/subscriptions/sub_DS3QlJB0u9c7CV
-                $this->ba->getMode() ?? Mode::LIVE
-            );
+        // $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
+        // if (($this->ignoreHostedPageUrl() === false) and
+        //     (empty($jwt) === false) and
+        //     ($this->reqCtx->passportAttrsMismatch === false))
+        // {
+        //     $treatment = $this->razorx->getTreatment(
+        //         $this->ba->getMerchantId() ?? 'unknown',
+        //         RazorxTreatment::FORWARD_PASSPORT_TO_SUBSCRIPTIONS,
+        //         // Mode can be null for direct routes being proxy-ed to subscriptions.
+        //         // E.g. https://api.razorpay.com/v1/l/subscriptions/sub_DS3QlJB0u9c7CV
+        //         $this->ba->getMode() ?? Mode::LIVE
+        //     );
 
-            if ($treatment === 'on')
-            {
-                $headers[Passport::PASSPORT_JWT_V1] = $jwt;
-            }
-        }
+        //     if ($treatment === 'on')
+        //     {
+        //         $headers[Passport::PASSPORT_JWT_V1] = $jwt;
+        //     }
+        // }
 
         return $headers;
     }
