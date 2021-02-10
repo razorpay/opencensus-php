@@ -1802,6 +1802,7 @@ class Validator extends Base\Validator
             Gateway::WALLET_PAYPAL,
             Gateway::PAYU,
             Gateway::CASHFREE,
+            Gateway::PAYTM,
         ];
 
         //Migs now supports purchase mode as well

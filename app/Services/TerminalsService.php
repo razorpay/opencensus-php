@@ -39,6 +39,7 @@ class TerminalsService
     const GATEWAY_ACQUIRER  = 'gateway_acquirer';
     const MERCHANT_ID       = 'merchant_id';
     const IDENTIFIERS       = 'identifiers';
+    const SECRETS           = 'secrets';
     const CURRENCY          = 'currency';
     const URL               = 'url';
     const CONTENT           = 'content';
@@ -281,6 +282,15 @@ class TerminalsService
         if (isset($otherInputs[self::GATEWAY_ACQUIRER]) === true)
         {
             $content[self::GATEWAY_ACQUIRER] = $otherInputs[self::GATEWAY_ACQUIRER];
+        }
+        // for paytm
+        if (isset($otherInputs[self::IDENTIFIERS]) === true)
+        {
+            $content[self::IDENTIFIERS] = $otherInputs[self::IDENTIFIERS];
+        }
+        if (isset($otherInputs[self::SECRETS]) === true)
+        {
+            $content[self::SECRETS] = $otherInputs[self::SECRETS];
         }
 
         $content = json_encode($content);

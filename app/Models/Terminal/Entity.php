@@ -36,6 +36,8 @@ class Entity extends Base\PublicEntity
     const USED                          = 'used';
     const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
+    const IDENTIFIERS                   = 'identifiers';
+    const SECRETS                       = 'secrets';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
     const GATEWAY_MERCHANT_ID2          = 'gateway_merchant_id2';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
@@ -288,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::TYPE,
         self::GATEWAY,
+        self::MODE,
     ];
 
     protected $defaults = [
@@ -1094,6 +1097,15 @@ class Entity extends Base\PublicEntity
             ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
         {
             $input[self::TYPE][Type::DIRECT_SETTLEMENT_WITH_REFUND] = '1';
+        }
+    }
+
+    protected function modifyMode(& $input)
+    {
+        if ((empty($input[self::GATEWAY]) === false) and
+            ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
+        {
+            $input[self::MODE] = Mode::PURCHASE;
         }
     }
 

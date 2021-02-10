@@ -29,6 +29,13 @@ class TerminalOnboardingTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testInitiateOnboardingProxyRouteForPaytm()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testInitiateOnboardingWithNoGatewayInInput()
     {
         $this->ba->proxyAuth();

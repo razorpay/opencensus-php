@@ -20,6 +20,29 @@ return [
         ],
     ],
 
+    'testInitiateOnboardingProxyRouteForPaytm' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/terminals/onboard',
+            'content' => [
+                'gateway' => 'paytm',
+                'identifiers' => [
+                    'gateway_merchant_id' => 'merchant_provided_paytm_key',
+                    'gateway_terminal_id' => 'industry_type_id',
+                    'gateway_access_code' => 'website'
+                ],
+                'secrets' => [
+                    'gateway_secure_secret' => 'merchant_provided_paytm_key'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testInitiateOnboardingWithNoGatewayInInput' => [
         'request' => [
             'method' => 'POST',

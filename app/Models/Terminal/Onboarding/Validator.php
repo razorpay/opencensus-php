@@ -9,6 +9,8 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 class Validator extends Base\Validator
 {
     protected static $onboardingInputRules = [
-        TerminalEntity::GATEWAY            => 'required|in:wallet_paypal',
+        TerminalEntity::GATEWAY            => 'required|in:wallet_paypal,paytm',
+        TerminalEntity::IDENTIFIERS        => 'sometimes',
+        TerminalEntity::SECRETS            => 'sometimes',
     ];
 }
