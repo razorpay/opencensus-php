@@ -18,6 +18,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
 import SettlementInfo from '../../../Settlements/components/SettlementInfo';
+import Definition from 'common/ui/Definition';
 
 @withRouter
 @connect(
@@ -37,6 +38,8 @@ import SettlementInfo from '../../../Settlements/components/SettlementInfo';
 )
 export default class PaymentDetailsContainer extends Component {
   render() {
+    const { refund } = this.props;
+
     return (
       <div class="content-wrapper content-sm txn-details">
         {this.props.isLoading ? (
@@ -79,6 +82,22 @@ export default class PaymentDetailsContainer extends Component {
                       />
                     )}
                   />
+
+                  {refund.fees && refund.tax && (
+                    <EntityDetailRow label="Total Fee">
+                      <Definition>
+                        <Amount value={refund.fees} />
+                        <span>
+                          Instant refund fee -{' '}
+                          <Amount value={refund.fees - refund.tax} currency={refund.currency} />
+                        </span>
+                        <span>
+                          GST - <Amount value={refund.tax} currency={'INR'} />
+                        </span>
+                      </Definition>
+                    </EntityDetailRow>
+                  )}
+
                   <EntityDetailRow
                     label="Refund Speed"
                     value={() => {
