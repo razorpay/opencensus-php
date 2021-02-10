@@ -488,10 +488,13 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_PURPOSE_VALIDATE_EXCPETION, [
-                Entity::PURPOSE         => $input[Entity::PURPOSE],
-                Entity::MERCHANT_ID     => $this->merchant->getPublicId()
-            ]);
+            $this->trace->warning(
+                TraceCode::PAYOUT_PURPOSE_VALIDATE_EXCPETION,
+                [
+                    Entity::PURPOSE         => $input[Entity::PURPOSE],
+                    Entity::MERCHANT_ID     => $this->merchant->getPublicId()
+                ]
+            );
 
             return array(self::IS_VALID_PURPOSE => false);
         }
