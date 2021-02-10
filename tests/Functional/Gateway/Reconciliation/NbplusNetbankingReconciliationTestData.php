@@ -80,7 +80,6 @@ return [
         'Journal_no'      => '012371800',
         'Paidstatus'      => 'Y',
     ],
-
     'testScbSuccessRecon' => [
         'Bank Code'                             => 'SCBL',
         'payment reference number'              => '',
@@ -89,7 +88,6 @@ return [
         'Status of transaction'                 => 'Y',
         'bank ref no.'                          => '123456'
     ],
-
     'testAusfSuccessRecon' => [
         'TRANSACTION TYPE'              => 'PAYMENT',
         'CHANNEL_REF_NO'                => 'PG-20210205195519793000000',
@@ -105,5 +103,32 @@ return [
         'STATUS'                        => 'S',
         'MERCHANT_ACCT_NO'              => '\'2121201131751367',
         'MERCHANT_URL'                  => 'https://www.razorpay.com',
+    ],
+    'testNsdlSuccessRecon' => [
+        'REC_ID'        => '',
+        'CHANNELID'     => '',
+        'APPID'         => '',
+        'PARTNERID'     => '',
+        'PGTXNID'       => 'PAYGATE16',
+        'MOBILENO'      => '',
+        'EMAILID'       => '',
+        'ACCOUNTNO'     => '',
+        'AMOUNT'        => '500',
+        'CURRENCY'      => 'INR',
+        'REMARKS'       => '',
+        'RESPONSEURL'   => '',
+        'REQBYTYPE'     => '',
+        'REQBYID'       => '',
+        'TXNDATE'       => '2020-12-29 15:39:54.0',
+        'PAYMODE'       => '',
+        'ADDINFO1'      => '',
+        'ADDINFO2'      => '',
+        'ADDINFO3'      => '',
+        'ADDINFO4'      => '',
+        'ADDINFO5'      => '',
+        'R_CRE_DT'      => '',
+        'STATUS'        => 'S',
+        'RESPONSEMSG'   => '',
+        'BANKREFNO'     => '1234',
     ],
 ];

@@ -130,6 +130,7 @@ class Netbanking
         IFSC::SYNB,   // due to bank merger, will be routed through CNRB direct integration
         IFSC::CORP,    // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
+        IFSC::NSPB,
     ];
 
     protected static $selfCorp = [
@@ -758,6 +759,11 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::AUBL,
+            ]
+        ],
+        Gateway::NETBANKING_NSDL => [
+            'retail' => [
+                IFSC::NSPB,
             ]
         ]
     ];
