@@ -22,6 +22,10 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
         return null;
     }
 
+    const PII_COLUMNS = [
+        ReconciliationFields::ACCOUNT_NUMBER,
+    ];
+
     public function getGatewayPayment($paymentId)
     {
         $status = [Constants::YES];

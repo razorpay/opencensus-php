@@ -12,6 +12,11 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     const BLACKLISTED_COLUMNS = [];
 
+    const PII_COLUMNS = [
+        ClaimFields::DEBIT_ACCOUNT,
+        ClaimFields::CREDIT_ACCOUNT,
+    ];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)

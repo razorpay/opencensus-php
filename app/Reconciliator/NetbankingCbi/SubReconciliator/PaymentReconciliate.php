@@ -13,6 +13,10 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 {
     const BLACKLISTED_COLUMNS = [];
 
+    const PII_COLUMNS = [
+        ReconFields::ACCOUNT_NUMBER,
+    ];
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconFields::PAYMENT_ID] ?? null;
