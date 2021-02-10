@@ -354,7 +354,7 @@ class Error extends Support\Fluent
             $this->setErrorDetailsFromCsv($code, $method);
         }
 
-        $this->setErrorParams($errorCodeJson, $code);
+        $this->setErrorParams($errorCodeJson, $code, $method);
     }
 
     protected function readDescFromCodeMapping($code)
@@ -364,7 +364,7 @@ class Error extends Support\Fluent
         return in_array($code, $readDescErrorsArray, true);
     }
 
-    protected function setErrorParams($errorCodeJson, $code)
+    protected function setErrorParams($errorCodeJson, $code, $method = '')
     {
         $readDescFromCodeMapping = $this->readDescFromCodeMapping($code);
 
@@ -388,6 +388,7 @@ class Error extends Support\Fluent
             {
                 $this->trace->info(TraceCode::ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH,
                     [
+                        'method' => $method,
                         'internal_error_code' => $code,
                         'central_repo_desc' => $errorCodeJson['error_description'],
                         'original_desc'     => $this->getDescription(),
