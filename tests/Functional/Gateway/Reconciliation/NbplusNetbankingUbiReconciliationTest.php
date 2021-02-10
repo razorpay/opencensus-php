@@ -127,7 +127,7 @@ class NbplusNetbankingUbiReconciliationTest extends NbPlusPaymentServiceNetbanki
 
     protected function generateReconFile($data)
     {
-        $fileData = implode('^', $data);
+        $fileData = implode('|', $data);
 
         $aes = new AES(AES::MODE_ECB);
 

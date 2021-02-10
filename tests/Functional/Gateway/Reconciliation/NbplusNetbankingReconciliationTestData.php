@@ -53,11 +53,11 @@ return [
         'bank ref no.'                          => '123456'
     ],
     'testUbiSuccessRecon' => [
-        'Trasanction Date (YYYY-MM-DD)'         => Carbon::today()->format("Y-m-d"),
-        'PRN                     '              => '123456',
+        'PRN'                                   => '123456',
+        'Amount'                                => '500.00',
+        'Trasanction Date (MM/DD/YY)'           => Carbon::today()->format("m/d/y"),
         'RazorPay(Hardcoded Value)'             => '',
         'Account Number'                        => '123456789',
-        'Amount'                                => '500.00',
     ],
     'testCbiSuccessRecon' => [
         'Bank Code'                             => 'CBIN',

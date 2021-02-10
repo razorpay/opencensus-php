@@ -8,18 +8,18 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const PAYMENT_DATE              = 'Trasanction Date (YYYY-MM-DD)';
+    const PAYMENT_DATE              = 'Trasanction Date (MM/DD/YY)';
     const BANK_REFERENCE_NUMBER     = 'PRN';
     const PAYMENT_ID                = 'RazorPay(Hardcoded Value)';
     const ACCOUNT_NUMBER            = 'Account Number';
     const AMOUNT                    = 'Amount';
 
     public static $columnHeaders = [
-        self::PAYMENT_DATE,
         self::BANK_REFERENCE_NUMBER,
+        self::AMOUNT,
+        self::PAYMENT_DATE,
         self::PAYMENT_ID,
         self::ACCOUNT_NUMBER,
-        self::AMOUNT,
     ];
 
     public function getColumnHeadersForType($type)
@@ -29,7 +29,7 @@ class Reconciliate extends Base\Reconciliate
 
     public function getDelimiter()
     {
-        return '^';
+        return '|';
     }
 
     protected function getTypeName($fileName)
@@ -51,6 +51,13 @@ class Reconciliate extends Base\Reconciliate
 
         $decryptedText = $aes->decrypt(base64_decode($encryptedText));
 
-        file_put_contents($filePath, $decryptedText);
+        if ($decryptedText !== false || $decryptedText !== "")
+        {
+            file_put_contents($filePath, $decryptedText);
+        }
+        else
+        {
+            file_put_contents($filePath, $encryptedText);
+        }
     }
 }
