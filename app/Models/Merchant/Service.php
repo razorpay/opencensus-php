@@ -225,6 +225,11 @@ class Service extends Base\Service
             $merchant, null,
             $data);
 
+        if ($isLinkedAccount === true)
+        {
+            $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
+        }
+
         return $output;
     }
 
@@ -250,6 +255,8 @@ class Service extends Base\Service
                 $linkedAccountArray
             );
         }
+
+        $this->app->hubspot->trackLinkedAccountCreation($linkedAccountArray['email'] ?? null);
 
         $linkedAccountId = $linkedAccountArray['id'];
 

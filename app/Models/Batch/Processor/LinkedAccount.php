@@ -38,16 +38,18 @@ class LinkedAccount extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function () use (& $entry)
+        $account = $this->repo->transactionOnLiveAndTest(function () use (& $entry)
         {
-            $this->createOrUpdateAccountForEntry($entry);
+            return $this->createOrUpdateAccountForEntry($entry);
         });
+
+        $this->app->hubspot->trackLinkedAccountCreation($account->getEmail());
     }
 
     /**
      * @param  array $entry
      *
-     * @return void
+     * @return Merchant\Entity|Merchant\Account\Entity
      */
     protected function createOrUpdateAccountForEntry(array & $entry)
     {
@@ -95,6 +97,8 @@ class LinkedAccount extends Base
         // Append account ID to output fields
         $entry[Header::STATUS]     = $status;
         $entry[Header::ACCOUNT_ID] = Merchant\Account\Entity::getSignedId($account->getId());
+
+        return $account;
     }
 
     protected function sendProcessedMail()

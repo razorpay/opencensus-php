@@ -69,6 +69,8 @@ class Core extends Merchant\Core
 
         });
 
+        $this->app->hubspot->trackLinkedAccountCreation($account->getEmail());
+
         $this->trace->info(
             TraceCode::ACCOUNT_CREATED,
             [

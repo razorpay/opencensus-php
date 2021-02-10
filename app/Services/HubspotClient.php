@@ -175,11 +175,26 @@ class HubspotClient
 
         $this->dispatchRequestJob($payloadData);
     }
-    
+
     public function trackHubspotEvent(string $merchantEmail,
                                       array $payload)
     {
         $payload['email'] = $merchantEmail;
+        $this->dispatchRequestJob($payload);
+    }
+
+    public function trackLinkedAccountCreation($email)
+    {
+        if ($email === null)
+        {
+            return;
+        }
+
+        $payload = [
+            'email'                 => $email,
+            'linked_account_flag'   => true,
+        ];
+
         $this->dispatchRequestJob($payload);
     }
 
