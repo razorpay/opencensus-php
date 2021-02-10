@@ -114,38 +114,59 @@ class Service extends Base\Service
 
     public function eventDowntimeStarted(Entity $downtime)
     {
-        // @see getMerchantsSubscribingToWebhookEvent method.
-        $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
-
-        foreach ($merchantIds as $merchantId)
-        {
-            $eventPayload = [
-                ApiEventSubscriber::MAIN        => $downtime,
-                ApiEventSubscriber::MERCHANT_ID => $merchantId,
-            ];
-
-            $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
-        }
-
         $this->emailDowntime(Constants::CREATED, $downtime);
+
+        try
+        {
+            // @see getMerchantsSubscribingToWebhookEvent method.
+            $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+
+            foreach ($merchantIds as $merchantId)
+            {
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN        => $downtime,
+                    ApiEventSubscriber::MERCHANT_ID => $merchantId,
+                ];
+
+                $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_DOWNTIME_CREATE_WEBHOOK_FAILED
+            );
+        }
     }
 
     public function eventDowntimeResolved(Entity $downtime)
     {
-        // @see getMerchantsSubscribingToWebhookEvent method.
-        $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
-
-        foreach ($merchantIds as $merchantId)
-        {
-            $eventPayload = [
-                ApiEventSubscriber::MAIN        => $downtime,
-                ApiEventSubscriber::MERCHANT_ID => $merchantId,
-            ];
-
-            $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
-        }
-
         $this->emailDowntime(Constants::RESOLVED, $downtime);
+
+        try {
+            // @see getMerchantsSubscribingToWebhookEvent method.
+            $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
+
+            foreach ($merchantIds as $merchantId)
+            {
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN        => $downtime,
+                    ApiEventSubscriber::MERCHANT_ID => $merchantId,
+                ];
+
+                $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_DOWNTIME_RESOLVE_WEBHOOK_FAILED
+            );
+        }
     }
 
     /**
