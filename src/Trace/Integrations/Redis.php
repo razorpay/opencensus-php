@@ -76,8 +76,8 @@ class Redis implements IntegrationInterface
             $query = Redis::formatArguments($arguments);
 
             // checks if spanlimit has reached and if yes flushes the closed spans
-            if (Redis::$tracer != null) {
-                Redis::$tracer->checkSpanLimit();
+            if (Tracer::$tracer != null) {
+                Tracer::$tracer->checkSpanLimit();
             }
 
             return ['attributes' => [
