@@ -787,6 +787,16 @@ class TransactionTest extends TestCase
         ], $txn);
     }
 
+    public function testCreateCreditRepaymentWithLowBalance()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->startTest();
+    }
+
     public function testCreateCapitalBalanceTransactionNegativeAmount()
     {
         $balance = $this->fixtures->create('balance', [

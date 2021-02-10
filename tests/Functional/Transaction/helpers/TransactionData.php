@@ -328,6 +328,32 @@ return [
         ],
     ],
 
+    'testCreateCreditRepaymentWithLowBalance' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => 1000000000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+            ],
+            'url'    => '/credit_repayments/transaction',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Insufficient available balance to create the transaction.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE,
+        ],
+    ],
+
     'testCreateCapitalBalanceTransactionNegativeAmount' => [
         'request' => [
             'content' => [
