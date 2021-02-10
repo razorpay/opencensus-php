@@ -753,51 +753,6 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminal->getSyncStatus());
     }
 
-    public function testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant()
-    {
-        //-- setup terminal + add merchant as submerchant to the terminal
-        $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', [
-            'used' => true,
-            'enabled' => '1',
-            'sync_status' => Terminal\SyncStatus::SYNC_FAILED
-        ]);
-
-        $this->razorxValue = 'control';
-
-        $tid = $terminal['id'];
-
-        $this->assignSubMerchant($tid, '10000000000000');
-
-        //-- try to update the terminal. in fetch response from terminals service, mock a mismatch in submerchants
-        // for the terminal
-
-
-        $url = '/terminals/' . $tid . '/toggle';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->razorxValue = 'migrate';
-
-        $this->app['config']->set('applications.terminals_service.sync', true);
-
-        $this->mockTerminalsServiceSendRequest(function() use ($tid) {
-
-            $data = $this->getTerminalToArrayPassword($tid);
-
-            $data['sub_merchants'] = ['10000000000001', '10000000000000']; // simulating a field mismatch that could be caused due to bug on terminals service
-
-            return $this->getDefaultTerminalServiceResponse($data);
-        }, 2);
-
-        $this->expectException(IntegrationException::class);
-
-        $this->startTest();
-
-        $this->assertTrue($terminal->isEnabled());
-
-    }
-
     public function testUpdateTerminalControlVariant()
     {
         $this->mockTerminalsServiceSendRequest(null, 0);
