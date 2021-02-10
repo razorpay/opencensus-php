@@ -107,6 +107,12 @@ class DetailView extends React.Component {
         }),
         {},
       ),
+      initialValues: {
+        [VENDORS]: '',
+        [NAME]: (state.session.user.user || {}).name,
+        [EMAIL]: (state.session.user.user || {}).email,
+        [PHONE]: (state.session.user.user || {}).contact_mobile,
+      },
     };
   },
   {
@@ -115,9 +121,6 @@ class DetailView extends React.Component {
 )
 @reduxForm({
   form: 'customerDetails',
-  initialValues: {
-    [VENDORS]: '',
-  },
 })
 class InfoForm extends React.Component {
   trackCTAClick = (status) => {
@@ -137,7 +140,6 @@ class InfoForm extends React.Component {
     return axios({
       method: 'post',
       baseURL:
-        // change the form id before deploying
         'https://api.hsforms.com/submissions/v3/integration/submit/5558946/e591bdcd-2304-458e-bc4c-72d3f41a75b8',
       headers: {
         'Content-Type': 'application/json',
@@ -190,7 +192,6 @@ class InfoForm extends React.Component {
                   component={InputField}
                   class="form-control"
                   autoFocus
-                  onBlur={this.props.onBlur}
                   required
                 />
               </div>

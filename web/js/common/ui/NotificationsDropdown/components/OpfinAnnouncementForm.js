@@ -52,6 +52,11 @@ const SubmissionSuccessfull = () => (
         }),
         {},
       ),
+      initialValues: {
+        [NAME]: (state.session.user.user || {}).name,
+        [EMAIL]: (state.session.user.user || {}).email,
+        [PHONE]: (state.session.user.user || {}).contact_mobile,
+      },
     };
   },
   {
@@ -84,9 +89,7 @@ class OpfinAnnouncementForm extends React.Component {
 
     return axios({
       method: 'post',
-      baseURL:
-        // change the form id before deploying
-        `https://api.hsforms.com/submissions/v3/integration/submit/${formMap[id].portalId}/${formMap[id].formId}`,
+      baseURL: `https://api.hsforms.com/submissions/v3/integration/submit/${formMap[id].portalId}/${formMap[id].formId}`,
       headers: {
         'Content-Type': 'application/json',
       },
