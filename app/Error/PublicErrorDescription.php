@@ -236,6 +236,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                         = 'Locked Balance update is not allowed.';
 
+    const BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE                             = 'Insufficient available balance to create the transaction.';
     const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                               = 'Insufficient available balance to make the transaction.';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
