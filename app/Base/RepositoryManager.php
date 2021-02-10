@@ -52,11 +52,12 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Attribute\Repository                $merchant_attribute
  * @property Models\BankingAccount\Repository                    $banking_account
  * @property Models\BankingAccount\Detail\Repository             $banking_account_detail
- * @property Models\BankingAccount\Activation\Detail\Repository $banking_account_activation_detail
+ * @property Models\BankingAccount\Activation\Detail\Repository  $banking_account_activation_detail
  * @property Models\BankingAccount\Activation\Comment\Repository $banking_account_comment
  * @property Models\Item\Repository                              $item
  * @property Models\PaymentLink\PaymentPageItem\Repository       $payment_page_item
  * @property Models\BankingAccountStatement\Repository           $banking_account_statement
+ * @property Models\BankingAccountStatement\Details\Repository   $banking_account_statement_details
  * @property Models\Admin\Role\Repository                        $role
  * @property Models\Admin\Permission\Repository                  $permission
  * @property Models\Partner\Commission\Invoice\Repository        $commission_invoice

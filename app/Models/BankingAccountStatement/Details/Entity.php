@@ -1,0 +1,120 @@
+<?php
+
+namespace RZP\Models\BankingAccountStatement\Details;
+
+use Carbon\Carbon;
+
+use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Constants\Entity as EntityConstants;
+
+class Entity extends Base\PublicEntity
+{
+    protected $entity = EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS;
+
+    protected $table = Table::BANKING_ACCOUNT_STATEMENT_DETAILS;
+
+    const ID                                        = 'id';
+    const MERCHANT_ID                               = 'merchant_id';
+    const CHANNEL                                   = 'channel';
+    const ACCOUNT_NUMBER                            = 'account_number';
+    const STATUS                                    = 'status';
+    const STATEMENT_CLOSING_BALANCE                 = 'statement_closing_balance';
+    const BALANCE_ID                                = 'balance_id';
+    const GATEWAY_BALANCE                           = 'gateway_balance';
+    const GATEWAY_BALANCE_CHANGE_AT                 = 'gateway_balance_change_at';
+    const STATEMENT_CLOSING_BALANCE_CHANGE_AT       = 'statement_closing_balance_change_at';
+
+    const ACCOUNT_NUMBER_LENGTH = 40;
+
+    protected $generateIdOnCreate = true;
+
+    protected static $sign = 'basd';
+
+    // generators
+    protected static $generators = [
+        self::ID,
+    ];
+
+    protected $fillable = [
+        self::ID,
+        self::CHANNEL,
+        self::BALANCE_ID,
+        self::MERCHANT_ID,
+        self::ACCOUNT_NUMBER,
+        self::STATUS,
+        self::STATEMENT_CLOSING_BALANCE,
+        self::GATEWAY_BALANCE,
+        self::GATEWAY_BALANCE_CHANGE_AT,
+        self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::ACCOUNT_NUMBER,
+        self::BALANCE_ID,
+        self::CHANNEL,
+        self::STATUS,
+        self::STATEMENT_CLOSING_BALANCE,
+        self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
+        self::GATEWAY_BALANCE,
+        self::GATEWAY_BALANCE_CHANGE_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT
+    ];
+
+    protected $defaults = [
+        self::STATUS                    => Status::ACTIVE
+    ];
+
+    // ============================= MUTATORS =============================
+
+    protected function setGatewayBalanceAttribute($gatewayBalance)
+    {
+        $this->attributes[self::GATEWAY_BALANCE] = $gatewayBalance;
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::GATEWAY_BALANCE_CHANGE_AT, $currentTime);
+    }
+
+    protected function setStatementClosingBalanceAttribute($statementClosingBalance)
+    {
+        $this->attributes[self::STATEMENT_CLOSING_BALANCE] = $statementClosingBalance;
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::STATEMENT_CLOSING_BALANCE_CHANGE_AT, $currentTime);
+    }
+
+    // ============================= END MUTATORS =============================
+
+    // ============================= GETTERS ===============================
+
+    public function getGatewayBalance()
+    {
+        return $this->getAttribute(self::GATEWAY_BALANCE);
+    }
+
+    // ============================= END GETTERS ===========================
+
+    // ============================= SETTERS ===========================
+
+    public function setGatewayBalance(int $gatewayBalance)
+    {
+        $this->setAttribute(self::GATEWAY_BALANCE, $gatewayBalance);
+    }
+
+    public function setStatementClosingBalance(int $statementClosingBalance)
+    {
+        $this->setAttribute(self::STATEMENT_CLOSING_BALANCE, $statementClosingBalance);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    // ============================= END SETTERS ===========================
+}

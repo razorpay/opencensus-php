@@ -810,4 +810,14 @@ return [
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
+    'testGatewayBalanceCreateInBASDetailsTable' => [
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+            ],
+        'response' => [
+            'content' => []
+        ]
+    ]
 ];

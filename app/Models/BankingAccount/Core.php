@@ -38,6 +38,7 @@ use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
+use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -1002,10 +1003,20 @@ class Core extends Base\Core
                     Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
                     Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
                 ]);
+
+            // Once gateway balance is fetched, this has to be updated in BAS Details table as well. Statement fetch will be initiated based on that table.
+            $basDetailInput = array(
+                BASDetails\Entity::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+                BASDetails\Entity::CHANNEL          => $bankingAccount->getChannel(),
+                BASDetails\Entity::MERCHANT_ID      => $bankingAccount->getMerchantId(),
+                BASDetails\Entity::BALANCE_ID       => $bankingAccount->getBalanceId(),
+                BASDetails\Entity::GATEWAY_BALANCE  => $bankingAccount->getGatewayBalance()
+                );
+
+            (new BASDetails\Core)->createOrUpdate($basDetailInput);
         }
         catch (\Throwable $exception)
         {
-
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [

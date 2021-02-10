@@ -187,6 +187,7 @@ class Entity
     const BANKING_ACCOUNT_STATE             = 'banking_account_state';
     const BANKING_ACCOUNT_DETAIL            = 'banking_account_detail';
     const BANKING_ACCOUNT_STATEMENT         = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATEMENT_DETAILS = 'banking_account_statement_details';
     const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_detail';
 
     // heimdall
@@ -644,6 +645,8 @@ class Entity
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
         self::LOW_BALANCE_CONFIG        => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
         self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
+
+        self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
 
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 

@@ -42,6 +42,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 
 
@@ -7875,5 +7876,175 @@ class RblBankingAccountStatementTest extends TestCase
         },
             BadRequestValidationFailureException::class,
             ErrorCode::BAD_REQUEST_CREDIT_BAS_ID_MISSING);
+    }
+
+    // whenever statement is fetched, BAS Details table is updated with statement closing balance and time of update.
+    // Since time of update will differ, assertion of exact epoch value is not done.
+    public function testRblStatementClosingBalanceCreateInBASDetails()
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
+
+        $this->assertNotNull($baBeforeTest);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNull($basDetail);
+
+        $this->testData[__FUNCTION__] =  $this->testData['testRblAccountStatementCase1'];
+
+        $this->startTest();
+
+        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNotNull($basDetail);
+
+        $detailsExpected = [
+            BasDetails\Entity::MERCHANT_ID               => $baBeforeTest[BasDetails\Entity::MERCHANT_ID],
+            BasDetails\Entity::BALANCE_ID                => $baBeforeTest[BasDetails\Entity::BALANCE_ID],
+            BasDetails\Entity::ACCOUNT_NUMBER            => $baBeforeTest[BasDetails\Entity::ACCOUNT_NUMBER],
+            BasDetails\Entity::CHANNEL                   => $baBeforeTest[BasDetails\Entity::CHANNEL],
+            BasDetails\Entity::STATUS                    => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE => 11355,
+        ];
+
+        $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
+
+        $this->assertNotNull($basDetail[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE]);
+
+        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
+    }
+
+    public function testRblStatementClosingBalanceUpdateInBASDetails()
+    {
+        $this->testRblStatementClosingBalanceCreateInBASDetails();
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txn = $mockedResponse['data' ]['PayGenRes']['Body']['transactionDetails'];
+
+        unset($txn[1]);
+
+        $txn[0]['txnId'] = '  S429264';
+        $txn[0]['txnBalance']['amountValue'] = '228.05';
+
+        $mockedResponse['data' ]['PayGenRes']['Body']['transactionDetails'] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
+
+        $this->assertNotNull($baBeforeTest);
+
+        $this->assertNotNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNotNull($basDetail);
+
+        $this->testData[__FUNCTION__] =  $this->testData['testRblAccountStatementCase1'];
+
+        $this->startTest();
+
+        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNotNull($basDetail);
+
+        $detailsExpected = [
+            BasDetails\Entity::MERCHANT_ID               => $baBeforeTest[BasDetails\Entity::MERCHANT_ID],
+            BasDetails\Entity::BALANCE_ID                => $baBeforeTest[BasDetails\Entity::BALANCE_ID],
+            BasDetails\Entity::ACCOUNT_NUMBER            => $baBeforeTest[BasDetails\Entity::ACCOUNT_NUMBER],
+            BasDetails\Entity::CHANNEL                   => $baBeforeTest[BasDetails\Entity::CHANNEL],
+            BasDetails\Entity::STATUS                    => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE => 22805,
+        ];
+
+        $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
+
+        $this->assertNotNull($basDetail[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE]);
+
+        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
+    }
+
+    // whenever balance is fetched, BAS Details table is updated with fetched gateway balance and time of update.
+    // Since time of update will depend on when this test is performed, assertion of exact epoch value is not done.
+    public function testGatewayBalanceCreateInBASDetailsTable()
+    {
+        /** @var BankingAccount\Entity $baBeforeTest */
+        $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
+
+        $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
+
+        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->assertNull($basDetail);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(100);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        /** @var BankingAccount\Entity $baAfterCronRuns */
+        $baAfterCronRuns = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
+
+        $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
+
+        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->assertNotNull($basDetail);
+
+        $detailsExpected = [
+            BankingAccount\Entity::MERCHANT_ID => $baBeforeTest[BankingAccount\Entity::MERCHANT_ID],
+            BankingAccount\Entity::BALANCE_ID => $baBeforeTest[BankingAccount\Entity::BALANCE_ID],
+            BankingAccount\Entity::ACCOUNT_NUMBER => $baBeforeTest[BankingAccount\Entity::ACCOUNT_NUMBER],
+            BankingAccount\Entity::CHANNEL => $baBeforeTest[BankingAccount\Entity::CHANNEL],
+            BankingAccount\Entity::STATUS => 'active',
+            BankingAccount\Entity::GATEWAY_BALANCE => 10000,
+        ];
+
+        $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
+
+        $this->assertNotNull($basDetail->toArray()['gateway_balance_change_at']);
+    }
+
+    public function testGatewayBalanceUpdateInBASDetailsTable()
+    {
+        $this->testGatewayBalanceCreateInBASDetailsTable();
+
+        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->assertNotNull($basDetail);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(5);
+
+        $this->testData[__FUNCTION__] = $this->testData['testGatewayBalanceCreateInBASDetailsTable'];
+        $this->startTest();
+
+        /** @var BankingAccount\Entity $baAfterCronRuns */
+        $baAfterCronRuns = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
+
+        $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
+
+        $basDetail = $this->getDbEntities('banking_account_statement_details');
+
+        $this->assertCount(1, $basDetail);
+
+        $this->assertEquals(500, $basDetail[0][BasDetails\Entity::GATEWAY_BALANCE]);
+
+        $this->assertNotNull($basDetail[0][BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
     }
 }

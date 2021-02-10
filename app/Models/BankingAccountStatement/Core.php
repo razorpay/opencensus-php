@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement;
 use Mail;
 use File;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
 use RZP\Constants;
@@ -24,8 +25,8 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Processor\Source;
+use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -330,6 +331,10 @@ class Core extends Base\Core
         $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
 
+        // This will be updated in BAS Details table as statement closing balance.
+        // initializing to null so that if $closingBalance is null BAS details table update process will no trigger.
+        $closingBalance = null;
+
         foreach ($bankTransactions as $bankTransaction)
         {
             $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
@@ -362,6 +367,8 @@ class Core extends Base\Core
             }
 
             $this->saveAccountStatement($bankTransaction, $merchant);
+
+            $closingBalance = $bankTransaction[Entity::BALANCE];
         }
 
         $processedCount = $bankTxnCount - $skippedCount;
@@ -375,6 +382,20 @@ class Core extends Base\Core
             ]);
 
         $this->checkAndTraceForStaleResponse($bankTxnCount, $processedCount, $accountNumber);
+
+        // This data will be required to create an entry in BAS Details table.
+        // Once statement is fetched, closing balance has to be updated in BAS Details table as well. Statement fetch will be initiated based on this table.
+        if ($closingBalance !== null)
+        {
+            $basDetailInput = [
+                BASDetails\Entity::MERCHANT_ID               => $merchant->getId(),
+                BASDetails\Entity::ACCOUNT_NUMBER            => $accountNumber,
+                BASDetails\Entity::BALANCE_ID                => $this->balance->getId(),
+                BASDetails\Entity::CHANNEL                   => $this->balance->getChannel(),
+                BASDetails\Entity::STATEMENT_CLOSING_BALANCE => $closingBalance
+            ];
+            (new BASDetails\Core)->createOrUpdate($basDetailInput);
+        }
     }
 
     protected function saveAccountStatement(array $bankTransaction, Merchant\Entity $merchant)
