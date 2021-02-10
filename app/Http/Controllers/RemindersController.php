@@ -66,7 +66,7 @@ class RemindersController extends Controller
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
-            '^reminders/next_run_at\/[[:alnum:]]{14}$',
+            '^reminders\/next_run_at\/[[:alnum:]]{14}$',
         ],
         self::DELETE => [
             '^configs\/[[:alnum:]]{14}$',
