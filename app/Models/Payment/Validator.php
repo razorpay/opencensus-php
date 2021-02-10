@@ -88,7 +88,7 @@ class Validator extends Base\Validator
         'receiver.type'                 => 'required_with:receiver|filled|string',
         'receiver.id'                   => 'required_with:receiver|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
-        'token'                         => 'sometimes',
+        'token'                         => 'sometimes|string',
         'save'                          => 'sometimes|in:0,1',
         'recurring'                     => 'sometimes|in:1,preferred,auto',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
