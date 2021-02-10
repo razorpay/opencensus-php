@@ -373,7 +373,12 @@ trait Capture
 
             $data = $this->getCaptureData($payment, $captureAmount, $currency);
 
-            $this->captureOnGateway($data, $autoCaptured);
+            $this->mutex->acquireAndRelease(
+                $this->payment->getId(),
+                function() use ($data, $autoCaptured)
+                {
+                    $this->captureOnGateway($data, $autoCaptured);
+                });
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
@@ -485,21 +490,39 @@ trait Capture
      */
     protected function captureOnGateway($data, $autoCaptured = false)
     {
-        $this->verifyOrderUnpaid($this->payment);
+        //mutex for order id to avoid multiple capture for same order at the same time.
+        if ($this->payment->hasOrder())
+        {
+            $this->mutex->acquireAndRelease(
+                $this->payment->getApiOrderId(),
+                function() use ($data, $autoCaptured)
+                {
+                    $this->verifyOrderUnpaid($this->payment);
 
-        $this->mutex->acquireAndRelease(
-            $this->payment->getId(),
-            function() use ($data, $autoCaptured)
-            {
-                $this->repo->reload($this->payment);
+                    $this->repo->reload($this->payment);
 
-                $this->callAndHandleCaptureOnGateway($data);
+                    $this->callAndHandleCaptureOnGateway($data);
 
-                // In case of a failure (marking the payment as failed),
-                // we won't record this capture since we throw the exception
-                // after marking the payment as failed.
-                $this->recordCapture($autoCaptured);
-            });
+                    // In case of a failure (marking the payment as failed),
+                    // we won't record this capture since we throw the exception
+                    // after marking the payment as failed.
+                    $this->recordCapture($autoCaptured);
+                }
+            );
+        }
+        else
+        {
+            $this->verifyOrderUnpaid($this->payment);
+
+            $this->repo->reload($this->payment);
+
+            $this->callAndHandleCaptureOnGateway($data);
+
+            // In case of a failure (marking the payment as failed),
+            // we won't record this capture since we throw the exception
+            // after marking the payment as failed.
+            $this->recordCapture($autoCaptured);
+        }
 
         $this->triggerPaymentCapturedEvents();
 
@@ -1006,12 +1029,14 @@ trait Capture
     {
         if ($payment->hasOrder())
         {
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            $this->repo->reload($order);
+            
             if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AMOUNT_CHECK) === true)
             {
                 return;
             }
-
-            $order = $this->repo->order->fetchForPayment($payment);
 
             if ($order->getStatus() === Order\Status::PAID)
             {
