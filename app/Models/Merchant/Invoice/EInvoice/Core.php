@@ -306,11 +306,11 @@ class Core extends Base\Core
         return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
     }
 
-    public function shouldGenerateRevisedInvoice(Merchant\Entity $merchant, $month, $year) : bool
+    public function shouldGenerateRevisedInvoice($merchantId, $month, $year) : bool
     {
-        $merchantId = $this->repo->merchant_e_invoice->checkIfMerchantIsEligibleForRevisedInvoice($month, $year, Types::PG, $merchant->getId());
+        $eligibleMerchantId = $this->repo->merchant_e_invoice->checkIfMerchantIsEligibleForRevisedInvoice($month, $year, Types::PG, $merchantId);
 
-        if(in_array($merchant->getId(), $merchantId) === true)
+        if(in_array($merchantId, $eligibleMerchantId) === true)
         {
             return true;
         }

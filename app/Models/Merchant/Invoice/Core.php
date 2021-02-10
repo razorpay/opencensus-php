@@ -597,7 +597,7 @@ class Core extends Base\Core
 
         $shouldGeneratePgEInvoice = (new PgEInvoice())->shouldGenerateEInvoice($this->merchant, $date->getTimestamp());
 
-        $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($this->merchant, $month, $year);
+        $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($this->merchant->getId(), $month, $year);
 
         if($shouldGenerateRevisedPgInvoice === true)
         {

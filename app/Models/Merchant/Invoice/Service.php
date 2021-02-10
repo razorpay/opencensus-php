@@ -191,7 +191,7 @@ class Service extends Base\Service
         {
             $name = (new PdfGenerator)->getNameForMerchantPgInvoice($year, $month, $merchantId);
 
-            $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($this->merchant, $month, $year);
+            $shouldGenerateRevisedPgInvoice = (new PgEInvoice())->shouldGenerateRevisedInvoice($merchantId, $month, $year);
 
             if($shouldGenerateRevisedPgInvoice === true)
             {
