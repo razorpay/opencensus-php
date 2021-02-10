@@ -42,16 +42,36 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
      */
     private $hasSpans = false;
 
+    private $exporter;
+
+    /**
+     * @var int
+     * Number of max spans that can be hold in a memory, if number goes beyond this value,
+     * tracer will export the closed spans till then.
+     */
+    private $spanBufferLimit = 100;
+
     /**
      * Create a new ExtensionTracer
      *
      * @param SpanContext|null $initialContext The starting span context.
+     * @param null $exporter.
+     * @param array $options
+     *      @type int span_buffer_limit, overrides the default span buffer limit
      */
-    public function __construct(SpanContext $initialContext = null)
+    public function __construct(SpanContext $initialContext = null, $exporter = null, $options = [])
     {
         if ($initialContext) {
             opencensus_trace_set_context($initialContext->traceId(), $initialContext->spanId());
         }
+
+        $this->exporter = $exporter;
+
+        // set span limit from options if present
+        if (isset($options['span_buffer_limit'])){
+            $this->spanBufferLimit = $options['span_buffer_limit'];
+        }
+
     }
 
     public function inSpan(array $spanOptions, callable $callable, array $arguments = [])
@@ -69,6 +89,9 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
 
     public function startSpan(array $spanOptions): Span
     {
+        // checks if spanlimit has reached and if yes flushes the closed spans
+        $this->checkSpanLimit();
+
         if (!array_key_exists('name', $spanOptions)) {
             $spanOptions['name'] = $this->generateSpanName();
         }
@@ -112,6 +135,41 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         return array_map(function ($span) use ($traceId) {
             return $this->mapSpan($span, $traceId);
         }, opencensus_trace_list());
+    }
+
+    /* This checks the numbet of spans in memory and if the count is more than the set limit, it exports all
+    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those spans use is over,
+    the open ones stop time along with other attributes might not have been set yet.*/
+    public function checkSpanLimit()
+    {
+        $count = opencensus_trace_count();
+
+        if ($count >= $this->spanBufferLimit) {
+
+            $closedSpans = [];
+            $spans = $this->spans();
+
+            foreach ($spans as $k) {
+                $endTime = $k->endTime();
+
+                if ($endTime->getTimestamp() != 0) {
+                    $closedSpans[] = $k;
+                }
+            }
+
+            $this->exportAndDeleteSpans($closedSpans);
+        }
+    }
+
+    // Exports all the span provided as argument and also remove from memory
+    public function exportAndDeleteSpans($closedSpans)
+    {
+        if ($this->exporter != null) {
+            $this->exporter->export($closedSpans);
+            foreach ($closedSpans as $span) {
+                opencensus_trace_remove_span($span->spanId());
+            }
+        }
     }
 
     public function addAttribute($attribute, $value, $options = [])

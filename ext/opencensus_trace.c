@@ -28,8 +28,9 @@
  */
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
-// global value for max number of spans in any trace
-static int SPAN_LIMIT = 100;
+
+// Global value to keep the current number of spans in memory
+static int SPAN_COUNT = 0;
 
 void opencensus_trace_ginit()
 {
@@ -131,25 +132,6 @@ static opencensus_trace_span_t *span_from_options(zval *options)
 }
 
 /**
- *   Find number of spans in current trace
- *
- *   Adapted from implementation of `opencensus_trace_list` function,
- *   which returns all the spans in current trace
-*/
-
-int num_spans_in_trace(){
-    opencensus_trace_span_t *trace_span;
-
-    int num_spans = 0;
-
-    ZEND_HASH_FOREACH_PTR(OPENCENSUS_G(spans), trace_span) {
-        num_spans++;
-    } ZEND_HASH_FOREACH_END();
-
-    return num_spans;
-}
-
-/**
  * Add a attribute to the current trace span
  *
  * @param string $key
@@ -180,6 +162,27 @@ PHP_FUNCTION(opencensus_trace_add_attribute)
     }
 
     RETURN_FALSE;
+}
+
+/**
+ * Removes a span corresponding to key/span_id from hashtable
+ * @param string $key
+ * @return bool
+ */
+PHP_FUNCTION(opencensus_trace_remove_span)
+{
+    zend_string *k;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &k) == FAILURE) {
+        RETURN_FALSE;
+    }
+
+    // deleting th span assosciated with the given span_id
+    // When inserting the sapn, we also pass the destructor function for span span_dtor, which gets called on zend_hash_del
+    if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
+        RETURN_FALSE
+    }
+
+    RETURN_TRUE;
 }
 
 /**
@@ -360,7 +363,6 @@ static zend_string *generate_span_id()
 static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_execute_data *execute_data, zend_string *span_id TSRMLS_DC)
 {
     opencensus_trace_span_t *span = opencensus_trace_span_alloc();
-
     zend_fetch_debug_backtrace(&span->stackTrace, 1, DEBUG_BACKTRACE_IGNORE_ARGS, 0);
 
     span->start = opencensus_now();
@@ -379,7 +381,7 @@ static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_e
 
     /* add the span to the list of spans */
     zend_hash_add_ptr(OPENCENSUS_G(spans), span->span_id, span);
-
+    SPAN_COUNT++;
     return span;
 }
 
@@ -487,6 +489,7 @@ void span_dtor(zval *zv)
     opencensus_trace_span_t *span = Z_PTR_P(zv);
     opencensus_trace_span_free(span);
     ZVAL_PTR_DTOR(zv);
+    SPAN_COUNT--;
 }
 
 /**
@@ -586,20 +589,6 @@ void opencensus_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
 
     /* Some functions have no names - just execute them */
     if (function_name == NULL) {
-        opencensus_original_zend_execute_ex(execute_data TSRMLS_CC);
-        return;
-    }
-
-    /*
-     *   Add span limit
-     *
-     *   if the number of spans have reached the limit,
-     *   execute the original function and return, without calling the
-     *   trace handler.
-    */
-    int num_spans = num_spans_in_trace();
-
-    if (num_spans >= SPAN_LIMIT){
         opencensus_original_zend_execute_ex(execute_data TSRMLS_CC);
         return;
     }
@@ -782,4 +771,15 @@ PHP_FUNCTION(opencensus_trace_list)
         opencensus_trace_span_to_zval(trace_span, &span);
         add_next_index_zval(return_value, &span TSRMLS_CC);
     } ZEND_HASH_FOREACH_END();
+}
+
+/**
+ * Return the count of trace spans that have been collected for this
+ * request
+ *
+ * @return long
+ */
+PHP_FUNCTION(opencensus_trace_count)
+{
+    RETURN_LONG(SPAN_COUNT)
 }

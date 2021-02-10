@@ -18,6 +18,7 @@
 namespace OpenCensus\Trace\Integrations;
 
 use OpenCensus\Trace\Span;
+use OpenCensus\Trace\Tracer;
 
 /**
  * This class handles instrumenting PDO requests using the opencensus extension.
@@ -70,6 +71,11 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         return [
             'attributes' => ['db.statement' => $query, 'span.kind' => Span::KIND_CLIENT],
             'kind' => Span::KIND_CLIENT
@@ -86,6 +92,11 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         $attributes = ['dsn' => $dsn, 'db.type' => 'sql', 'span.kind' => Span::KIND_CLIENT];
 
         return [ 'attributes' => $attributes,
@@ -106,6 +117,11 @@ class PDO implements IntegrationInterface
             refer following for SQL return codes
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
+
+        // checks if span limit has reached and if yes flushes the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
 
         $rowCount = $statement->rowCount();
         $errorCode = $statement->errorCode();
