@@ -1414,7 +1414,6 @@ class Service extends Base\Service
             'enable_payment_buttons',
             'pause_resume_enabled',
             'batch_scheduling_options',
-            'route_direct_transfers',
             'upi_caw',
             'rx_payout_links_inactive',
             'rx_payout_links_ms',

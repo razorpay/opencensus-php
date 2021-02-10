@@ -621,7 +621,7 @@ export default class User {
   }
 
   get isDirectTransferEnabled() {
-    return this.getExpStatus('route_direct_transfers');
+    return this.isFeatureEnabled('direct_transfer');
   }
 
   get isSubscriptionButtonEnabled() {
