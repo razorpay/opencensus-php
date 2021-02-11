@@ -523,7 +523,6 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::CITI_EMI_FILE,
-            self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
             self::SBI_EMI_OUTPUT_FILE,
@@ -561,7 +560,6 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
-            self::ICICI_EMI_FILE_SFTP,
             self::CITI_EMI_FILE,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
@@ -594,6 +592,8 @@ class Type
 
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
+            self::SCBL_EMI_FILE,
+            self::ICICI_EMI_FILE_SFTP,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

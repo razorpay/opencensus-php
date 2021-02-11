@@ -19,6 +19,7 @@ use RZP\Trace\TraceCode;
 use RZP\Encryption\Type;
 use RZP\Mail\Base\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class EmiFile extends Base\Core
@@ -228,9 +229,13 @@ class EmiFile extends Base\Core
 
             $fileInfo = [$fullFileName];
 
+            $bucketConfig = $this->getBucketConfig();
+
             $data =  [
-                Service::BEAM_PUSH_FILES   => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME => $jobName
+                Service::BEAM_PUSH_FILES         => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME       => $jobName,
+                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
             ];
 
             // In seconds
@@ -307,5 +312,14 @@ class EmiFile extends Base\Core
         }
 
         return $response;
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName($this->type, $this->env);
+
+        return $config[$bucketType];
     }
 }
