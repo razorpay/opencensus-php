@@ -48,3 +48,6 @@ storage/files/qrcodes/*
 
 #intellij
 api.iml
+
+#Central Repo Error Codes
+error_codes/
