@@ -102,7 +102,7 @@ export default class NotificationsDropdown extends Component {
     trackLoad(totalUnread);
     this.setState({ totalUnread });
 
-    if (totalUnread && window.rzpQ.merchantActions) {
+    if (totalUnread && window.rzpQ && window.rzpQ.merchantActions) {
       const tracking = this.props.tracking;
       tracking.trackEvent(
         window.rzpQ.merchantActions().success('display.notification.bubble', {
