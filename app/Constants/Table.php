@@ -150,6 +150,7 @@ class Table
     const PAYMENT_META              = 'payment_meta';
 
     const MERCHANT_AUTO_KYC_ESCALATIONS = 'merchant_auto_kyc_escalations';
+    const MERCHANT_AVG_ORDER_VALUE = 'merchant_avg_order_value';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

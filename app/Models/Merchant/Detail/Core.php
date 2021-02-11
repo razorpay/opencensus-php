@@ -67,6 +67,7 @@ use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Merchant\AvgOrderValue;
 
 class Core extends Base\Core
 {
@@ -1287,9 +1288,15 @@ class Core extends Base\Core
         // dual write promoter related fields to stakeholder entity
         (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
 
+
         if(isset($input['stakeholder']) === true)
         {
             (new Stakeholder\Core)->editStakeholder($merchantDetails->stakeholder, $input['stakeholder'], 'activation');
+        }
+
+        if (isset($input['merchant_avg_order_value']) === true)
+        {
+            (new AvgOrderValue\Core)->createOrEditAvgOrderValue($merchantDetails, $input['merchant_avg_order_value']);
         }
 
         $this->repo->saveOrFail($merchant);
@@ -1999,6 +2006,8 @@ class Core extends Base\Core
 
         $merchant = $merchantDetails->merchant;
 
+        $merchantDetails->load('avgOrderValue');
+
         if ($merchant->isLinkedAccount() === true)
         {
             $parentMerchant = $merchant->parent;
@@ -2033,6 +2042,7 @@ class Core extends Base\Core
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
         $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
         $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
+        $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel3) ? false : true;
         $response = $this->appendBankingSpecificDetails($response, $merchant);

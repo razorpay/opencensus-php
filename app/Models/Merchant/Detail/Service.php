@@ -1544,4 +1544,19 @@ class Service extends Base\Service
 
         Mail::queue($mail);
     }
+
+    public function getAovConfig()
+    {
+        $response = [];
+
+        foreach (Merchant\AvgOrderValue\Constants::AOV_RANGES as $range)
+        {
+            $response['config'][] = [
+                'min' => $range[0],
+                'max' => $range[1],
+            ];
+        }
+
+        return $response;
+    }
 }

@@ -442,6 +442,8 @@ class Entity
     // merchant auto kyc escalations
     const MERCHANT_AUTO_KYC_ESCALATIONS  = 'merchant_auto_kyc_escalations';
 
+    const MERCHANT_AVG_ORDER_VALUE = 'merchant_avg_order_value';
+
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
@@ -833,6 +835,7 @@ class Entity
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
+        self::MERCHANT_AVG_ORDER_VALUE  => \RZP\Models\Merchant\AvgOrderValue::class,
 
         self::REWARD            => \RZP\Models\Reward::class,
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,

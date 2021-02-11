@@ -49,7 +49,8 @@ class Validator extends Base\Validator
     const BULK_EDIT                                     = 'bulkEdit';
 
     protected static $createRules = [
-        Entity::STAKEHOLDER                     =>'sometimes|array|custom',
+        Entity::STAKEHOLDER                     => 'sometimes|array|custom',
+        Entity::MERCHANT_AVG_ORDER_VALUE        => 'sometimes|array|custom',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
@@ -129,7 +130,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::STAKEHOLDER                              =>'sometimes|array|custom',
+        Entity::STAKEHOLDER                              => 'sometimes|array|custom',
+        Entity::MERCHANT_AVG_ORDER_VALUE                 => 'sometimes|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
@@ -793,6 +795,11 @@ class Validator extends Base\Validator
         (new Merchant\Stakeholder\Validator)->validateInput("activation", $value);
     }
 
+    public function validateMerchantAvgOrderValue(string $attribute, $value)
+    {
+        (new Merchant\AvgOrderValue\Validator)->validateInput("create", $value);
+    }
+
     /**
      * @param string $attribute
      * @param        $value
@@ -1097,7 +1104,7 @@ class Validator extends Base\Validator
     public function validateBankAccountNumber($attribute, $bankAccountNumber)
     {
         $merchantDetails = $this->entity;
-        
+
         if($merchantDetails->merchant->isLinkedAccount() === true)
         {
             $ifscCode      = $merchantDetails->getBankBranchIfsc();

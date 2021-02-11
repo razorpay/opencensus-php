@@ -2015,4 +2015,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getAovConfig()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getAovConfig();
+
+        return ApiResponse::json($response);
+    }
 }

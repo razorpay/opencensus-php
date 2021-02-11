@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
  *
  * @property Merchant\Entity $merchant
  * @property Merchant\Stakeholder\Entity $stakeholder
+ * @property Merchant\AvgOrderValue\Entity $avgOrderValue
  *
  * @package RZP\Models\Merchant\Detail
  */
@@ -161,6 +162,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     // relation name
     const STAKEHOLDER    = 'stakeholder';
+    const MERCHANT_AVG_ORDER_VALUE    = 'merchant_avg_order_value';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -374,6 +376,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::ROLE,
         self::DEPARTMENT,
         self::STAKEHOLDER,
+        self::MERCHANT_AVG_ORDER_VALUE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
@@ -487,6 +490,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function stakeholder()
     {
         return $this->hasOne('RZP\Models\Merchant\Stakeholder\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
+    /**
+     * Every detail entity will have one avg_order_value entity to start with to store the aov details
+     *
+     * @return HasOne
+     */
+    public function avgOrderValue()
+    {
+        return $this->hasOne('RZP\Models\Merchant\AvgOrderValue\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
     public function reviewer()
