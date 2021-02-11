@@ -388,6 +388,8 @@ class Route
         'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',  'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
 
+        'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',       'TerminalController@proxyV2TerminalService'                         ],
+
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
@@ -4252,6 +4254,7 @@ class Route
 
         // instrument requests
         'get_internal_instrument_request_by_id',
+        'get_templates',
         'patch_internal_instrument_request_by_id',
         'bulk_copy_internal_instrument_request',
         'delete_internal_instrument_request_by_id',
@@ -5141,6 +5144,7 @@ class Route
 
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'get_templates'                               => '*',
         'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST,
