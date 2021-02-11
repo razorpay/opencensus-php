@@ -2273,8 +2273,8 @@ class Route
         'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
         'admin_tpv_edit'                          => ['patch',   'admin/tpv/edit',                                          'BankingAccountTpvController@adminEditTpv'                     ],
         'merchant_fetch_tpvs'                     => ['get',     'merchant/tpvs',                                           'BankingAccountTpvController@fetchMerchantTpvs'                ],
-        'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'        ],
-
+        'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'         ],
+        'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
     ];
 
     public static $public = [
@@ -4361,6 +4361,7 @@ class Route
         'admin_tpv_create',
         'admin_tpv_edit',
         'admin_fetch_tpvs',
+        'admin_merchants_tpvs_create',
     ];
 
     public static $routePermission = [
@@ -5218,6 +5219,7 @@ class Route
         'admin_tpv_create'                                    => Permission::CREATE_BANKING_ACCOUNT_TPV,
         'admin_tpv_edit'                                      => Permission::EDIT_BANKING_ACCOUNT_TPV,
         'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
+        'admin_merchants_tpvs_create'                         => Permission::CREATE_BANKING_ACCOUNT_TPV,
     ];
 
     public static $bankingRoutePermissions = [
@@ -6799,6 +6801,7 @@ class Route
         'admin_tpv_edit',
         'admin_fetch_tpvs',
         'merchant_fetch_tpvs',
+        'admin_merchants_tpvs_create',
     ];
 
     public static $routesWithV2Prefix = [

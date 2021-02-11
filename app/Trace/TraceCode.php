@@ -3748,6 +3748,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TPV_FAV_INFO                               = 'MERCHANT_TPV_FAV_INFO';
     const AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT            = 'AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT';
     const AUTO_APPROVED_TPV_CREATION_ERROR                    = 'AUTO_APPROVED_TPV_CREATION_ERROR';
+    const AUTO_APPROVED_TPV_MERCHANTS_BULK                    = 'AUTO_APPROVED_TPV_MERCHANTS_BULK';
+    const AUTO_APPROVE_TPV_MERCHANT_REQUEST                   = 'AUTO_APPROVE_TPV_MERCHANT_REQUEST';
+    const AUTO_APPROVE_TPV_MERCHANT_FAILURE                   = 'AUTO_APPROVE_TPV_MERCHANT_FAILURE';
 
     // Merchant Attribute
     const MERCHANT_ATTRIBUTE_EVENT                            = 'MERCHANT_ATTRIBUTE_EVENT';

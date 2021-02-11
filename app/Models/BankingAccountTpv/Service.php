@@ -39,4 +39,9 @@ class Service extends Base\Service
         return $this->core()->getMerchantTpvsWithFavDetails($input, $mid);
     }
 
+    public function manualAutoApproveTpv($input)
+    {
+        return $this->core()->manualAutoApproveTpv($input);
+    }
+
 }

@@ -1692,6 +1692,7 @@ class ErrorCode
     const BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS                                  = 'BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS';
     const BAD_REQUEST_DUPLICATE_TPV                                                 = 'BAD_REQUEST_DUPLICATE_TPV';
     const BAD_REQUEST_TPV_NOT_EXISTS                                                = 'BAD_REQUEST_TPV_NOT_EXISTS';
+    const BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS                              = 'BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS';
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';

@@ -2,8 +2,11 @@
 
 namespace RZP\Models\BankingAccountTpv;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
@@ -14,6 +17,16 @@ use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    const BANKING_ACCOUNT_TPV_CREATE = 'banking_account_tpv_create_';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function create(array $input)
     {
@@ -107,43 +120,123 @@ class Core extends Base\Core
     {
         try
         {
-            $bankAccount = (new BankAccount\Repository())->getBankAccountOnConnection($merchant, $mode);
+            $this->autoApproveTpvRequest($merchant, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::AUTO_APPROVED_TPV_CREATION_ERROR,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+    }
 
-            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-                                                                    $merchant->getId(),
-                                                                    Type::BANKING,
-                                                                    AccountType::SHARED,
-                                                                    $mode);
+    public function autoApproveTpvRequest(Merchant $merchant, string $mode = Mode::LIVE)
+    {
+        $bankAccount = (new BankAccount\Repository())->getBankAccountOnConnection($merchant, $mode);
 
-            $tpvInput = [
-                Entity::MERCHANT_ID          => $merchant->getMerchantId(),
-                Entity::BALANCE_ID           => $balance->getId(),
-                Entity::STATUS               => Status::APPROVED,
-                Entity::PAYER_NAME           => $bankAccount->getBeneficiaryName(),
-                Entity::PAYER_ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
-                Entity::PAYER_IFSC           => $bankAccount->getIfscCode(),
-            ];
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchant->getId(),
+            Type::BANKING,
+            AccountType::SHARED,
+            $mode);
 
-            $tpvExists = $this->repo->banking_account_tpv->fetchTpvOnMerchantBalanceAccountNumberIfsc($tpvInput);
+        $tpvInput = [
+            Entity::MERCHANT_ID          => $merchant->getMerchantId(),
+            Entity::BALANCE_ID           => $balance->getId(),
+            Entity::STATUS               => Status::APPROVED,
+            Entity::PAYER_NAME           => $bankAccount->getBeneficiaryName(),
+            Entity::PAYER_ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+            Entity::PAYER_IFSC           => $bankAccount->getIfscCode(),
+        ];
 
-            if (empty($tpvExists) === true)
+        $tpv = $this->repo->banking_account_tpv->fetchTpvOnMerchantBalanceAccountNumberIfsc($tpvInput);
+
+        if (empty($tpv) === true)
+        {
+            $tpv = $this->create($tpvInput);
+
+            $this->trace->info(TraceCode::AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT,
+                               [
+                                   'tpv'         => $tpv,
+                                   'merchant_id' => $merchant->getMerchantId(),
+                               ]);
+        }
+
+        return $tpv;
+    }
+
+    public function manualAutoApproveTpv(array $merchantIds)
+    {
+        $successCount = 0;
+        $failedCount  = 0;
+        $totalCount   = 0;
+
+        $tpvs                     = [];
+        $tpvSuccessFulMerchantIds = [];
+        $tpvFailedMerchantIds     = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
             {
-                $tpv = $this->create($tpvInput);
+                $totalCount++;
 
-                $this->trace->info(TraceCode::AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT,
-                                   [
-                                       'tpv'         => $tpv,
-                                       'merchant_id' => $merchant->getMerchantId(),
-                                   ]);
+                $this->trace->info(
+                    TraceCode::AUTO_APPROVE_TPV_MERCHANT_REQUEST,
+                    [
+                        'merchant_id' => $merchantId,
+                    ]);
+
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $mutexKey = self::BANKING_ACCOUNT_TPV_CREATE . $merchant->getId();
+
+                $tpv = $this->mutex->acquireAndRelease(
+                    $mutexKey,
+                    function() use ($merchant)
+                    {
+                        return $this->autoApproveTpvRequest($merchant);
+                    },
+                    60,
+                    ErrorCode::BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS);
+
+                array_push($tpvs, $tpv['id']);
+
+                array_push($tpvSuccessFulMerchantIds, $merchantId);
+
+                $successCount++;
+
+            }
+            catch(\Throwable $e)
+            {
+                $failedCount++;
+
+                array_push($tpvFailedMerchantIds, $merchantId);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::AUTO_APPROVE_TPV_MERCHANT_FAILURE,
+                    [
+                        'merchant_id' => $merchantId,
+                    ]);
             }
         }
-        catch (\Exception $e)
-        {
-            $trace['error'] = $e->getMessage();
 
-            $this->trace->error(
-                TraceCode::AUTO_APPROVED_TPV_CREATION_ERROR,
-                $trace);
-        }
+        $this->trace->info(TraceCode::AUTO_APPROVED_TPV_MERCHANTS_BULK, [
+            'data_fix_successful_' . Entity::MERCHANT_IDS => $tpvSuccessFulMerchantIds,
+            'data_fix_failed_' . Entity::MERCHANT_IDS     => $tpvFailedMerchantIds,
+            'tpv_ids'                                     => $tpvs,
+        ]);
+
+        return [
+            'total_count'   => $totalCount,
+            'failed_count'  => $failedCount,
+            'success_count' => $successCount,
+        ];
     }
 }

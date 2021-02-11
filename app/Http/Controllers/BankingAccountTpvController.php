@@ -44,4 +44,13 @@ class BankingAccountTpvController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function manualAutoApproveTpv()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->manualAutoApproveTpv($input);
+
+        return ApiResponse::json($data);
+    }
 }

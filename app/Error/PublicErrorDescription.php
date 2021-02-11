@@ -1321,5 +1321,6 @@ class PublicErrorDescription
     const BAD_REQUEST_REJECTED_TPV_WITHOUT_REMARKS                                  = 'Remarks should be provided for rejected status';
     const BAD_REQUEST_DUPLICATE_TPV                                                 = 'TPV already exists for the corresponding merchantId, balance and account number';
     const BAD_REQUEST_TPV_NOT_EXISTS                                                = 'No TPV found with the entered details';
+    const BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS                              = 'Request failed because another request is in progress with the same merchant id';
 
 }

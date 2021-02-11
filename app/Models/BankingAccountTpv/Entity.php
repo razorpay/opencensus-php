@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID                 = 'balance_id';
     const CREATED_BY                 = 'created_by';
     const MERCHANT_ID                = 'merchant_id';
+    const MERCHANT_IDS               = 'merchant_ids';
     const PAYER_ACCOUNT_NUMBER       = 'payer_account_number';
     const FUND_ACCOUNT_VALIDATION_ID = 'fund_account_validation_id';
     const BANK_NAME                  = 'bank_name';
