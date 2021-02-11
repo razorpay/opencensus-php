@@ -348,6 +348,7 @@ export default class WhatsNew extends Component {
       'whats-new-paypal-nocode-jan2021',
       'JAN21-PG-GTM1',
       'JAN21-PG-GTM1-V2',
+      'FEB21-INT-WEB',
     ];
     const hasUnread = !!this.state.totalUnread;
 

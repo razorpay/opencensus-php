@@ -337,7 +337,7 @@ class Constants
                 'experiments'         => ['whats-new-dec-2020'],
             ],
             'l2_content'  => [
-                'content'     => "<div class='title'> <img src='https://cdn.razorpay.com/static/assets/notifs/payment-button.svg' width='32px' /><p>Introducing Subscriptions on Payment Button</p></div><div><div>Razorpay was the first Indian player to launch Subscriptions for the domestic market. We want to do it again. We want to punch a bit higher this time. We are now the first Indian player to launch a no-code subscription button for the Indian market.</div><div class='paragraph'> <b>What is Subscriptions on Payment button?</b><p>Subscriptions on payment button lets one collect subscriptions or single payments by providing a convenient snippet of code that can be pasted on any webpage without any specific sort of integration requirement. Razorpay subscription button is a simple no-code tool that lets you collect subscription payments from your customers without having to integrate APIs on subscriptions. You can even collect payments as low as INR 10!</p></div><div> <b>How does it help your business?</b><p>Subscriptions help you in increasing the CTLV i.e your customer’s lifetime value. Your customers are more likely to pay you more over a period of time and it is not just the power of time but also related to the fact that a growing business has upsell and cross-sell  more offerings. You also maintain a longer relationship with your customers. You are here to stay and offer the same quality of services over and over - this helps building trust. A better relationship leads to better stickiness. In short a perfect recipe for loyalty.</p></div><div class='paragraph'> <b>What are the popular use-cases on subscriptions?</b><p>If you’re still wondering how this helps you, let's take a look at what some players in the market are using subscriptions for:</p></div><div><ol><li> <b>Gated content:</b> If you’re offering your own courses on a weekly or a monthly basis behind a paywall, copy and paste a few lines of code on your website to make it subscription ready. </li><li class='paragraph'> <b>Crowdfunding a passion project:</b> Your fans can now become customers. You fund your project yourself and plan a roadmap with ease.  </li><li> <b>Recurring product packs:</b> If you’re looking to start out on a D2C brand with novel content every week, we solve payments for you.  </li><li class='paragraph'> <b>Supporting a cause:</b> This is the best way to have a long term relationship with your patrons to collect smaller amounts over a longer period of time</li></ol></div></div>",
+                'content'     => "<div class='title'> <img src='https://cdn.razorpay.com/static/assets/notifs/payment-button.svg' width='32px' /><p>Introducing Subscriptions on Payment Button</p></div><div><div>Razorpay was the first Indian player to launch Subscriptions for the domestic market. We want to do it again. We want to punch a bit higher this time. We are now the first Indian player to launch a no-code subscription button for the Indian market.</div><div class='paragraph'> <b>What is Subscriptions on Payment button?</b><p>Subscriptions on payment button lets one collect subscriptions or single payments by providing a convenient snippet of code that can be pasted on any webpage without any specific sort of integration requirement. Razorpay subscription button is a simple no-code tool that lets you collect subscription payments from your customers without having to integrate APIs on subscriptions. You can even collect payments as low as INR 10!</p></div><div> <b>How does it help your business?</b><p>Subscriptions help you in increasing the CTLV i.e your customer’s lifetime value. Your customers are more likely to pay you more over a period of time and it is not just the power of time but also related to the fact that a growing business has upsell and cross-sell  more offerings. You also maintain a longer relationship with your customers. You are here to stay and offer the same quality of services over and over - this helps building trust. A better relationship leads to better stickiness. In short a perfect recipe for loyalty.</p></div><div class='paragraph'> <b>What are the popular use-cases on subscriptions?</b><p>If you’re still wondering how this helps you, let's take a look at what some players in the market are using subscriptions for:</p></div><div><ol><li> <b>Gated content:</b> If you’re offering your own courses on a weekly or a monthly basis behind a paywall, copy and paste a few lines of code on your website to make it subscription ready.</li><li class='paragraph'> <b>Crowdfunding a passion project:</b> Your fans can now become customers. You fund your project yourself and plan a roadmap with ease. </li><li> <b>Recurring product packs:</b> If you’re looking to start out on a D2C brand with novel content every week, we solve payments for you. </li><li class='paragraph'> <b>Supporting a cause:</b> This is the best way to have a long term relationship with your patrons to collect smaller amounts over a longer period of time</li></ol></div></div>",
                 'buttons'     => [
                     [
                         'type'  => 'button',
@@ -534,6 +534,32 @@ class Constants
                 'experiments_with_variant'  => ['shopify_gtm_notification_cohorts' => 'cohort-2'],
             ]
         ],
+        [
+            'title'       => '#UnlockGrowth with global market',
+            'description' => 'Grow your business with international payments! Join Anupam Pahuja, Harshil Mathur on 11th Feb, 2PM & win free credits worth ₹60k',
+            'start_ts'    => 1612946321,
+            'end_ts'      => 1613052000,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
+            'id'          => 'FEB21-INT-WEB',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Register for free',
+                    'url'   => 'https://share.hsforms.com/1Xw1xscaISRSPsoXNfK_D5g3b5b6',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn more',
+                    'url'   => 'https://lp.razorpay.com/links/unlocking-growth-from-global-markets',
+                ]
+            ],
+            'filters'       => [
+                'activated' => 1,
+                'business_type' => ['11', '2'],
+                'business_category' => ['ecommerce', 'education'],
+                'live_transaction_done' => 1,
+            ],
+        ], 
     ];
 
     public static function getNotifications(): array

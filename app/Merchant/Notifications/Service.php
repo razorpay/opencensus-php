@@ -194,6 +194,7 @@ class Service extends Base\Service
 
                     break;
 
+                case 'business_category':
                 case 'business_type':
 
                     if (isset($user[$key]) === false)
@@ -204,6 +205,19 @@ class Service extends Base\Service
                     $businessType = $user[$key];
 
                     $isUserEligible = in_array($businessType, $value, true);
+
+                    break;
+
+                case 'live_transaction_done':
+
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
+
+                    $liveTransactionDone = $user[$key];
+
+                    $isUserEligible = ($liveTransactionDone >= $value);
 
                     break;
 
