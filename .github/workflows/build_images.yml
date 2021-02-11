@@ -1,0 +1,46 @@
+on: [push]
+jobs:
+  cancel:
+    runs-on: [self-hosted]
+    name: Cancel Previous Runs
+    if: always()
+    steps:
+      - uses: styfle/cancel-workflow-action@d57d93c
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          workflow_id: "build_images.yml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+
+  build-web:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build Web Harbor
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@v2
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: razorpay/opencensus
+          tags: ${{ github.sha }}
+          dockerfile: ext/Dockerfile.rzp
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182,OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
+
