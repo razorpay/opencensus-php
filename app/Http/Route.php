@@ -6375,7 +6375,6 @@ class Route
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
-        'payments_downtime'                    => [Feature::EXPOSE_DOWNTIMES],
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
         'beta_account_fetch'                   => [Feature::MARKETPLACE],

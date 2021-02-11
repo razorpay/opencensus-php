@@ -1030,14 +1030,11 @@ class Checkout
     {
         try
         {
-            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
-            {
-                $downtimeData = (new Payment\Downtime\Service)->getMethodDowntimeDataForMerchant([]);
+            $downtimeData = (new Payment\Downtime\Service)->getMethodDowntimeDataForMerchant([]);
 
-                if (empty($downtimeData) === false)
-                {
-                    $data['payment_downtime'] = $downtimeData;
-                }
+            if (empty($downtimeData) === false)
+            {
+                $data['payment_downtime'] = $downtimeData;
             }
         }
         catch (\Throwable $ex)
