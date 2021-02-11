@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Contact;
 use RZP\Services\HubspotClient;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -48,6 +49,17 @@ class BankingAccountTest extends TestCase
         $this->app['redis']->sadd('rbl_pincode_set', $pincodeList);
 
         $this->ba->proxyAuth();
+    }
+
+    public function detachAdminPermission(string $permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permissionId = (new Permission\Repository)->retrieveIdsByNames([$permissionName])[0];
+
+        $role->permissions()->detach($permissionId);
     }
 
     protected function mockHubSpotClient($methodName)
@@ -2968,5 +2980,38 @@ class BankingAccountTest extends TestCase
 
         $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
         return $bankingAccount;
+    }
+
+    public function testUpdateWithoutAppropriatePermission(){
+        $this->detachAdminPermission(Permission\Name::VIEW_ACTIVATION_FORM);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(
+            'Access Denied');
+
+        $this->testUpdateBankingAccountDetails();
+    }
+
+    public function testCreateWithoutAppropriatePermission(){
+        $this->detachAdminPermission(Permission\Name::VIEW_ACTIVATION_FORM);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(
+            'Access Denied');
+
+        $this->testCreateBankingAccountAdmin();
+    }
+
+    public function testCommentCreateWithoutAppropriatePermission(){
+        $this->detachAdminPermission(Permission\Name::VIEW_ACTIVATION_FORM);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(
+            'Access Denied');
+
+        $this->testCreateBankingAccountActivationComment();
     }
 }

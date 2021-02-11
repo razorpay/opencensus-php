@@ -4991,7 +4991,7 @@ class Route
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
         'vault_token_renewal'                      => '*',
-        'banking_account_update'                   => '*', // Internal entity updates are behind permissions.
+        'banking_account_update'                   => Permission::VIEW_ACTIVATION_FORM, // Internal entity updates are behind stricter permissions.
         'banking_account_activate'                 => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,
@@ -5014,14 +5014,14 @@ class Route
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
-        . 'change_log'                             => '*',
-        'banking_account_activation_spocs'         => '*',
-        'banking_account_activation_detail_create' => '*',
-        'banking_account_activation_detail_update' => '*',
-        'banking_account_comments_create'          => '*', //TODO: change to the correct permission
-        'banking_account_activation_mis_download'  => '*',
-        'banking_account_comments_list'            => '*',
-        'banking_account_comment_edit'            => '*',
+        . 'change_log'                             => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_activation_spocs'         => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_activation_detail_create' => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_activation_detail_update' => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_comments_create'          => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_activation_mis_download'  => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_comments_list'            => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_comment_edit'             => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
@@ -5114,7 +5114,7 @@ class Route
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
-        'banking_account_create_admin'              => '*',
+        'banking_account_create_admin'              => Permission::VIEW_ACTIVATION_FORM,
         'fetch_payment_config_admin'                => '*',
         'delete_payment_config'                     => '*',
         'create_payment_config_admin'               => Permission::CREATE_PAYMENT_CONFIG,
