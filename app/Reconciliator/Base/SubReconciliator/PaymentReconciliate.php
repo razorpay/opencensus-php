@@ -82,7 +82,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::CRED,
         RequestProcessor\Base::NETBANKING_UBI,
         RequestProcessor\Base::NETBANKING_AUSF,
-        RequestProcessor\Base::NETBANKING_NSDL,
     ];
 
     /**

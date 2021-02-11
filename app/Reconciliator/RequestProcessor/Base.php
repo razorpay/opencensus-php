@@ -95,7 +95,6 @@ class Base extends Core
     const NETBANKING_DCB         = 'NetbankingDcb';
     const NETBANKING_UBI         = 'NetbankingUbi';
     const NETBANKING_AUSF        = 'NetbankingAusf';
-    const NETBANKING_NSDL        = 'NetbankingNsdl';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
@@ -185,7 +184,6 @@ class Base extends Core
         self::NETBANKING_DCB         => [''],
         self::NETBANKING_UBI         => [],
         self::NETBANKING_AUSF        => [],
-        self::NETBANKING_NSDL        => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -281,7 +279,6 @@ class Base extends Core
         Gateway::NETBANKING_DCB         => self::NETBANKING_DCB,
         Gateway::NETBANKING_UBI         => self::NETBANKING_UBI,
         Gateway::NETBANKING_AUSF        => self::NETBANKING_AUSF,
-        Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,
