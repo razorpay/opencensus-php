@@ -351,7 +351,7 @@ class AdminFetch
 
             Entity::NBPLUS_EMANDATE_DEBIT => [],
 
-            Entity::CAPITAL_COLLECTIONS_COLLECTION_CONFIG => [
+            Entity::CAPITAL_COLLECTIONS_PLAN => [
                 'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
                 'credit_id'     => [
                     Fetch::LABEL  => 'Credit Id',

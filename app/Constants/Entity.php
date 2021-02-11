@@ -396,7 +396,7 @@ class Entity
     const UFH_FILES                      = 'ufh.files';
 
     // capital-collections
-    const CAPITAL_COLLECTIONS_COLLECTION_CONFIG    = 'capital_collections.collection_config';
+    const CAPITAL_COLLECTIONS_PLAN                 = 'capital_collections.plan';
     const CAPITAL_COLLECTIONS_LEDGER_BALANCE       = 'capital_collections.ledger_balance';
     const CAPITAL_COLLECTIONS_PRIORITIZATION       = 'capital_collections.prioritization';
     const CAPITAL_COLLECTIONS_INSTALLMENT          = 'capital_collections.installment';
@@ -960,7 +960,7 @@ class Entity
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,
 
-        self::CAPITAL_COLLECTIONS_COLLECTION_CONFIG => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_PLAN              => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_LEDGER_BALANCE    => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_PRIORITIZATION    => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_INSTALLMENT       => \RZP\Services\CapitalCollectionsClient::class,
