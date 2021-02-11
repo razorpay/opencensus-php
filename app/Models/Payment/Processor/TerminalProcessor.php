@@ -206,7 +206,7 @@ class TerminalProcessor extends Base\Core
      *
      * @return Terminal\Entity
      */
-    public function getTerminalForUpiTransfer($merchantId = null, $gateway = null) : Terminal\Entity
+    public function getTerminalForUpiTransfer($merchantId = null, $gateway = null)
     {
         $merchantIds = array_filter([Account::SHARED_ACCOUNT, $merchantId]);
 

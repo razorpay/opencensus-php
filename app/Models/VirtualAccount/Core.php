@@ -318,17 +318,25 @@ class Core extends Base\Core
         {
             $receiverConfig = [];
 
-            if (($receiverType === Receiver::VPA) or
-                ($receiverType === Receiver::BANK_ACCOUNT))
+            try
             {
-                $this->validateReceiver($receiverType, $virtualAccount);
+                if (($receiverType === Receiver::VPA) or
+                    ($receiverType === Receiver::BANK_ACCOUNT))
+                {
+                    $this->validateReceiver($receiverType, $virtualAccount);
 
-                $func = 'get' . studly_case($receiverType) . 'Configs';
+                    $func = 'get' . studly_case($receiverType) . 'Configs';
 
-                $receiverConfig = $receiverHelper->$func($virtualAccount);
+                    $receiverConfig = $receiverHelper->$func($virtualAccount);
+                }
+
+                $vaConfig[$receiverType] = $receiverConfig;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
             }
 
-            $vaConfig[$receiverType] = $receiverConfig;
         }
 
         return $vaConfig;
