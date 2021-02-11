@@ -33,6 +33,8 @@ final class Constants
 
     const CHANNEL               = 'channel';
 
+    const BENEFICIARY_NAME      = 'beneficiary_name';
+
     const MAX_UPI_AMOUNT        = 100000;
 
     const MAX_IMPS_AMOUNT       = 20000000;

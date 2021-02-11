@@ -639,6 +639,21 @@ trait PayoutTrait
         $this->makeRequestAndGetContent($request);
     }
 
+
+    protected function getPayoutStatusAPI($payoutId)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payouts/'. $payoutId,
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     public function createSkipWorkflowForPayoutFeature()
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Constants;
@@ -34,12 +35,14 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use Razorpay\OAuth\Application\Repository as AppRepo;
+
 
 /**
  * @property Customer\Entity        $customer
@@ -107,6 +110,7 @@ class Entity extends Base\PublicEntity
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
     const META                                  = 'meta';
+    const REGISTERED_NAME                       = 'registered_name';
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
     const CANCELLATION_USER                     = 'cancellation_user';
 
@@ -426,6 +430,7 @@ class Entity extends Base\PublicEntity
         self::TRANSFERRED_AT,
         self::STATUS_CODE,
         self::META,
+        self::REGISTERED_NAME,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
     ];
@@ -472,6 +477,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN,
         self::SOURCE_DETAILS,
         self::META,
+        self::REGISTERED_NAME,
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
@@ -492,6 +498,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::MODE,
         self::REFERENCE_ID,
+        self::REGISTERED_NAME,
         self::NARRATION,
         self::BATCH_ID,
         self::FAILURE_REASON,
@@ -535,6 +542,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::SOURCE_DETAILS,
+        self::REGISTERED_NAME,
         self::META,
         self::REMARKS,
         self::CANCELLATION_USER_ID,
@@ -861,6 +869,11 @@ class Entity extends Base\PublicEntity
     public function getRemarks()
     {
         return $this->getAttribute(self::REMARKS);
+    }
+
+    public function getRegisteredName()
+    {
+        return $this->getAttribute(self::REGISTERED_NAME);
     }
 
     public function getUtr()
@@ -1243,6 +1256,11 @@ class Entity extends Base\PublicEntity
     public function setScheduledAt($scheduledAt)
     {
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
+    }
+
+    public function setRegisteredName(string $registeredName = null)
+    {
+        $this->setAttribute(self::REGISTERED_NAME, $registeredName);
     }
 
     /**
@@ -1755,6 +1773,26 @@ class Entity extends Base\PublicEntity
         $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
 
         $attributes[self::STATUS] = $externalStatus;
+    }
+
+    public function setPublicRegisteredNameAttribute(array & $attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $variant = $app->razorx->getTreatment($this->merchant->getId(),
+                                              RazorxTreatment::REGISTERED_NAME_IN_PAYOUTS_RESPONSE,
+                                              $mode);
+
+        if ($variant === "on")
+        {
+            $attributes[self::REGISTERED_NAME] = $this->getRegisteredName();
+        }
+        else
+        {
+            unset($attributes[self::REGISTERED_NAME]);
+        }
     }
 
     public function setPublicFailureReasonAttribute(array & $attributes)

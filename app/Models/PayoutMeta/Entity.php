@@ -99,7 +99,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::APPLICATION_ID, $applicationId);
     }
 
-
     // ============================= END SETTERS =============================
 
     // ============================= HELPERS =============================

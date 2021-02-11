@@ -457,6 +457,10 @@ class Core extends Base\Core
 
                 $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
+                $registeredName = $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null;
+
+                $payout->setRegisteredName($registeredName);
+
                 //
                 // For VPA type, we always set it to UPI only
                 // at build and we don't take the mode from FTA.

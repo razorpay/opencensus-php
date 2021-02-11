@@ -6155,6 +6155,9 @@ ALTER TABLE referrals
     DROP INDEX referrals_merchant_id_unique,
     ADD UNIQUE INDEX referrals_merchant_id_product_unique (merchant_id,product);
 
+ALTER TABLE payouts
+    ADD COLUMN registered_name varchar(255) CHARACTER SET uft8mb4 COLLATE utf8mb4_bin DEFAULT NULL;
+
 ALTER TABLE stakeholders
     ADD COLUMN aadhaar_verification_with_pan_status VARCHAR(30) DEFAULT NULL,
     ADD COLUMN bvs_probe_id VARCHAR(30) DEFAULT NULL;

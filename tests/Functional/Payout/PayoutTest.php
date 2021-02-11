@@ -10237,6 +10237,52 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testBeneficiaryNameInPayoutsResponse()
+    {
+        $this->mockRazorxTreatment('yesbank','off','off','off',
+            'off','on','on','off',
+            'on','on','off',
+            'on','on','off',
+            'control','control','on');
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $this->assertEquals('SUSANTA BHUYAN',$payout->getRegisteredName());
+
+        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+
+        $this->assertEquals('SUSANTA BHUYAN', $response['registered_name']);
+    }
+
+    public function testBeneficiaryNameNotPresentInPayoutsRespForNonWhitelistedMerchant()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $this->assertEquals('SUSANTA BHUYAN',$payout->getRegisteredName());
+
+        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+
+        $this->assertNotContains('registered_name', array_keys($response));
+    }
+
     public function testGetPrimaryBalance()
     {
         // this test should ideally be in MerchantTest. But since enabling X for merchant in tests is so hard,
