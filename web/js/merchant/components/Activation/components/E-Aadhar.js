@@ -3,10 +3,11 @@ import RTracking from 'react-tracking';
 import Input, { Description } from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { classList } from 'common/utils/rzp-utils';
 import CopyOtpInput from './OtpInput';
 
 const Error = ({ text }) => {
-  return <div class="e-aadhar-error">{text}</div>;
+  return <div className="e-aadhar__error">{text}</div>;
 };
 
 const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking }) => {
@@ -53,6 +54,14 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
         checked: target.value === '1',
       }),
     );
+  };
+
+  const handleBackAction = () => {
+    setCaptcha({});
+    setInputValue({});
+    setPin('');
+    document.getElementsByName('aadhar_number')[0].value = '';
+    trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_reset'));
   };
 
   const generateCaptcha = () => {
@@ -185,6 +194,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             setIsOtpGenerated(false);
             setCaptcha({});
             setPin('');
+            setOtp('');
           }
           if (res.data.error_code === 'NO_PROVIDER_ERROR') {
             mobileLinkedOnChange(false);
@@ -246,7 +256,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
       ) : (
         <div style={{ marginBottom: '45px' }}>
           {error !== 'NO_PROVIDER_ERROR' ? (
-            <>
+            <div className="e-aadhar">
               <Input
                 name="aadhar_number"
                 type="text"
@@ -286,7 +296,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       className={
                         inputValue.aadhar_number
                           ? inputValue.aadhar_number.length > 11 && error !== 'MOBILE_NOT_LINKED'
-                            ? 'e-aadhar-btn'
+                            ? 'e-aadhar__btn'
                             : ''
                           : ''
                       }
@@ -307,7 +317,17 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       <Error text="Something went wrong. Please try again" />
                     ) : null}
                     <Description
-                      className={`e-aadhar-desc ${!hasMobileLinked && 'Input--disabled'}`}
+                      className={classList(
+                        'e-aadhar__desc e-aadhar__otp-helptext',
+                        !hasMobileLinked && 'Input--disabled',
+                      )}
+                      text="OTP will be sent to mobile number linked to your Aadhar"
+                    />
+                    <Description
+                      className={classList(
+                        'e-aadhar__desc e-aadhar__consent',
+                        !hasMobileLinked && 'Input--disabled',
+                      )}
                       text={
                         <>
                           By verifying, you consent to share your Aadhar details with Razorpay for
@@ -325,23 +345,35 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       }
                     />
                   </div>
-                  <div className="Input-content e-aadhar-seprator" />
+                  <div className="Input-content e-aadhar__seprator" />
+                  <Input.Check
+                    onChange={handleMoblieLinkedOnChange}
+                    defaultValue={hasMobileLinked ? '0' : '1'}
+                    fieldLabel="My Aadhar is not linked with my mobile number"
+                    className="e-aadhar__not-linked-checkbox"
+                  />
+                  {!hasMobileLinked && (
+                    <Description
+                      className="Input-content e-aadhar__not-linked-text"
+                      text="You can continue without verification. However, your KYC review might take a little longer"
+                    />
+                  )}
                 </>
               )}
               {captcha.captcha_image &&
                 !isOtpGenerated &&
                 error !== 'INVALID_SESSION_ID' &&
                 error !== 'MOBILE_NOT_LINKED' && (
-                  <div className="captcha-container">
+                  <div className="captcha-screen">
                     <div className="Input-content">
                       <img
-                        src={`data:image/jpeg;base64, ${captcha.captcha_image}`}
+                        src={`data:image/jpeg;base64,${captcha.captcha_image}`}
                         alt="E-Aadhar captcha"
-                        className="e-aadhar-captcha-img"
+                        className="captcha-screen__captcha-img"
                       />
                       <img
                         src="/dist/css/assets/onboarding/resend.svg"
-                        className="e-aadhar-resend"
+                        className="captcha-screen__resend"
                         onClick={generateCaptcha}
                       />
                     </div>
@@ -362,7 +394,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                         trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_code'));
                       }}
                     />
-                    <div className="Input-content pin">
+                    <div className="Input-content captcha-screen__pin">
                       <CopyOtpInput
                         heading=""
                         autoFocus={false}
@@ -371,40 +403,30 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       />
                     </div>
                     <Description
-                      className="Input-content pin-desc"
+                      className="Input-content captcha-screen__pin-desc"
                       text="Create any 4 digit pin to secure your Aadhar details with us"
                     />
                     <div className="Input-content">
-                      <div className="e-aadhar-seprator" />
-                      <Button.Secondary
-                        type="button"
-                        className={inputValue.captcha && pin.length === 4 ? 'e-aadhar-btn' : ''}
-                        children="Send OTP"
-                        onClick={generateOTP}
-                        disabled={!inputValue.captcha || pin.length !== 4}
-                        style={{ boxShadow: 'none' }}
-                      />
+                      <div className="e-aadhar__seprator" />
+                      <div className="captcha-screen__btn-container">
+                        <div className="btn__back" onClick={handleBackAction}>
+                          Back
+                        </div>
+                        <Button.Secondary
+                          type="button"
+                          className={inputValue.captcha && pin.length === 4 ? 'e-aadhar__btn' : ''}
+                          children="Send OTP"
+                          onClick={generateOTP}
+                          disabled={!inputValue.captcha || pin.length !== 4}
+                          style={{ boxShadow: 'none' }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
-              {!isOtpGenerated && (
-                <>
-                  <Input.Check
-                    onChange={handleMoblieLinkedOnChange}
-                    defaultValue={hasMobileLinked ? '0' : '1'}
-                    fieldLabel="My Aadhar is not linked with my mobile number"
-                  />
-                  {!hasMobileLinked && (
-                    <Description
-                      className="Input-content e-aadhar-desc"
-                      text="You can continue without submitting e - aadhar. KYC review might take a little longer"
-                    />
-                  )}
-                </>
-              )}
               {isOtpGenerated && !isValidOtp && error !== 'INVALID_SESSION_ID' && (
-                <div className="otp-container">
-                  <div className="Input-content otp">
+                <div className="otp-screen">
+                  <div className="Input-content otp-screen__otp">
                     <CopyOtpInput
                       heading="OTP has been sent to the number linked with Aadhar"
                       onComplete={updateOtpValue}
@@ -412,13 +434,14 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       wrong={wrongOtp}
                     />
                     {wrongOtp && <Error text="Invalid OTP. Try again" />}
-                    <p class="m-t m-b">
+                    <p className="m-t m-b resend-otp">
                       Didn’t receive an OTP?{' '}
                       <AsyncBtn.Transparent
                         pendingState="Sending OTP..."
                         onClick={() => {
                           generateCaptcha();
                           setPin('');
+                          setOtp('');
                         }}
                         class="m-l"
                         showLoader={false}
@@ -429,10 +452,10 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                   </div>
 
                   <div className="Input-content">
-                    <div className="e-aadhar-seprator" />
+                    <div className="e-aadhar__seprator" />
                     <Button.Secondary
                       type="button"
-                      className={otp.length === 6 && 'e-aadhar-btn'}
+                      className={otp.length === 6 ? 'e-aadhar__btn' : ''}
                       children="Submit"
                       onClick={verifyOTP}
                       disabled={otp.length !== 6}
@@ -441,11 +464,11 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                   </div>
                 </div>
               )}
-            </>
+            </div>
           ) : (
             <div className="Input Input--small Input--vTop is-mature">
               <div className="Input-label">Aadhar Verification</div>
-              <div className="Input-desc Input-content e-aadhar-provider-error">
+              <div className="Input-content e-aadhar-provider-error">
                 The Aadhar database doesn’t seem to be working at the moment. You can proceed
                 without Aadhar verification
               </div>

@@ -108,7 +108,11 @@ export class OtpInput extends Component {
         onFocus={() => !this.props.autoFocus && this.setState({ isFocused: true })}
         onBlur={() => !this.props.autoFocus && this.setState({ isFocused: false })}
       >
-        {heading !== undefined ? <div>{heading}</div> : <strong class="">Enter the code</strong>}
+        {heading !== undefined ? (
+          <div className="otp-heading">{heading}</div>
+        ) : (
+          <strong class="">Enter the code</strong>
+        )}
         {wrong && <span class="pull-right wrong-msg">Wrong OTP</span>}
         <div class="otp-input">
           {opt.map((i) => {

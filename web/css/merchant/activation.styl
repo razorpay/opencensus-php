@@ -224,6 +224,10 @@ $side-width = 240px
         
         .bullet-list--right
           width: 60%
+
+    .e-aadhar__desc
+      max-width: 330px;
+      font-size: 12px
     
     .Input-error
       max-width: 260px
@@ -715,73 +719,86 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   line-height: 17px;
   color: rgba(22, 47, 86, 0.38);
 
-.e-aadhar-seprator
-  height: 1px;
-  border-top: 1px solid rgba(22, 47, 86, 0.05);
-  max-width: 310px;
-  margin: 12px 0;
+.e-aadhar
+  &__seprator
+    height: 1px;
+    border-top: 1px solid #162f560d;
+    max-width: 310px;
+    margin: 10px 0;
 
-.e-aadhar-btn
-  color: #497fd6 !important;
-  border: 1px solid #528ff0 !important;
-  background-color: rgba(11, 112, 231, 0.05) !important;
-  box-shadow: none !important;
+  .Button.Button--secondary.e-aadhar__btn
+    color: #497fd6;
+    border: 1px solid #528ff0;
+    background-color: #0b70e70d;
+  
+  &__error
+    color: #d12d2d;
+    max-width: 300px;
+    font-size: 13px;
+    margin: 6px 0;
 
-.e-aadhar-error
-  color: rgba(209, 45, 45, 1);
-  max-width: 300px;
-  font-size: 13px;
-  margin: 6px 0;
+  .Input-desc.e-aadhar__consent
+    color: #162f5661;
+
+  &__otp-helptext
+    font-weight: 700;
+
+  &__not-linked-text
+    max-width: 310px;
+    padding-left: 25px; 
+  
+  .Input--checkbox.e-aadhar__not-linked-checkbox
+    margin: 0 0 4px;
+
+  .captcha-screen
+    margin-top: 16px;
+
+    &__captcha-img
+      height: 32px;
+      width: 93px;
+      pointer-events: none;
+
+    &__resend
+      display: inline-block;
+      margin-left: 20px;
+      cursor: pointer; 
+
+    &__pin
+      max-width: 145px;
+      margin-top: 24px;
+
+    &__pin-desc
+      max-width: 270px;
+
+    .Input
+      margin-top: 8px;
+    
+    &__btn-container
+      display: flex;
+      align-items: center;
+      .btn__back
+        color: #2B83EA;
+        margin-right: 16px;
+        cursor: pointer;
+
+  .otp-screen
+    margin-top: 24px;
+    &__otp
+      max-width: 260px;
+      .wrong-msg
+        display: none;
+      .resend-otp
+        font-size: 13px;
+        color: #838383;
+
 
 .e-aadhar-success-text
   color: rgba(31, 137, 14, 0.54);
   font-size: 13px;
   margin-bottom: 45px;
 
-.e-aadhar-desc
-  max-width: 320px !important;
-  font-size: 12px !important; 
-  color: rgba(22, 47, 86, 0.38) !important;
-
-
-.e-aadhar-resend
-  display: inline-block;
-  margin-left: 20px;
-  cursor: pointer; 
-
-.captcha-container
-  margin-top: 20px;
-  .pin
-    max-width: 145px;
-    margin-top: 24px;
-  .pin-desc
-    max-width: 260px;
-
 .e-aadhar-provider-error
-  color: rgba(22, 47, 86, 0.87) !important;
-  max-width: 320px;
-
-.otp-container
-  margin-top: 24px;
-  .otp
-    max-width: 260px;
-
-.e-aadhar-captcha-img
-  height: 50px;
-  width: 160px;
-  pointer-events: none;
-
-.activation-policy
-  width: 275px;
-  margin: 20px 24px 24px;
-  .policy-header
-    color: rgba(22, 47, 86, 0.87);
-    font-size: 18px
-    margin-bottom: 16px;
-    font-weight: 700;
-  .policy-sub-text
-    color: rgba(22, 47, 86, 0.74);
-    font-size: 14px;
-    line-height: 18px;
-    :first-child
-      margin-bottom: 8px;
+  color: rgba(22, 47, 86, 0.87);
+  max-width: 330px;
+  margin: 6px 0;
+  font-size: 12px;
