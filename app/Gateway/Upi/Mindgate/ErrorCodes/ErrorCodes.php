@@ -21,7 +21,7 @@ class ErrorCodes extends Base\ErrorCodes\Upi\ErrorCodes
     {
         if ($action === Base\Action::CALLBACK)
         {
-            self::$errorCodeMap = array_merge(
+            self::$errorCodeMap = array_replace(
                 self::$errorCodeMap,
                 [
                     'NA'  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,

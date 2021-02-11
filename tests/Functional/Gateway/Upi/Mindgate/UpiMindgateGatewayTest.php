@@ -620,6 +620,34 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertSame('ZA', $upiEntity['status_code']);
     }
 
+    public function testCollectNumericRespCode()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'numericrespcode@hdfcbank';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertArraySelectiveEquals(['success' => true], $response);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals(ErrorCode::GATEWAY_ERROR_BANK_OFFLINE, $payment['internal_error_code']);
+    }
+
     public function testCollectRejectedFailureUnknownRespCode()
     {
         $payment = $this->getDefaultUpiPaymentArray();
