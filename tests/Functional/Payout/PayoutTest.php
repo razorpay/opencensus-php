@@ -10236,4 +10236,16 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testGetPrimaryBalance()
+    {
+        // this test should ideally be in MerchantTest. But since enabling X for merchant in tests is so hard,
+        // keeping it here.
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
 }

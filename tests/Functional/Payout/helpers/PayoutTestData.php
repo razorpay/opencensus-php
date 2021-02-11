@@ -11664,4 +11664,18 @@ return [
             ],
         ],
     ],
+
+    'testGetPrimaryBalance' => [
+        'request'  => [
+            'url'    => '/primary_balance',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'balance'   => 1000000,
+                'type'      => 'primary',
+            ],
+        ],
+    ],
 ];

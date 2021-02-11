@@ -112,7 +112,7 @@ jobs:
           repository: razorpay/api
           tags: checkout-${{ github.sha }}
           dockerfile: Dockerfile.checkout
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
   build-openresty:
     runs-on: [self-hosted]
     needs: [cancel]

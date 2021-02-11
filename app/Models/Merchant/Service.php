@@ -710,6 +710,12 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function getPrimaryBalance()
+    {
+        return $this->repo->balance->getMerchantBalanceByType($this->merchant->getId(),
+                Merchant\Balance\Type::PRIMARY)->toArrayPublic();
+    }
+
     public function fetchBalance($merchantId = null)
     {
         if ($merchantId === null)

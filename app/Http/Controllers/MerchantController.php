@@ -501,6 +501,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPrimaryBalance()
+    {
+        $data = $this->service()->getPrimaryBalance();
+
+        return ApiResponse::json($data);
+    }
+
     public function getBalance(string $merchantId)
     {
         $data = $this->service()->fetchBalance($merchantId);

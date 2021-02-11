@@ -344,7 +344,8 @@ class Route
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
-        'internal_balance_fetch'                   => ['get',      'balances/{id}',                                  'MerchantController@getBalance'                                     ],
+        'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
+        'internal_balance_fetch_by_merchant_id'    => ['get',      'balances/{id}',                                  'MerchantController@getBalance'                                     ],
         'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceById'                                ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
@@ -2690,7 +2691,7 @@ class Route
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
         'settlement_ondemand_process',
-        'internal_balance_fetch',
+        'internal_balance_fetch_by_merchant_id',
         'merchant_balance_create',
         'internal_balance_fetch_by_id',
         'credit_repayment_transaction_create',
@@ -3140,6 +3141,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_primary_balance_fetch',
         'virtual_account_expiry_setting_upsert',
         'virtual_account_expiry_setting_get',
         'fetch_product_details_for_order',
@@ -4383,7 +4385,7 @@ class Route
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
-        'internal_balance_fetch'                   => Permission::CAPITAL_DEVELOPER,
+        'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,
         'credit_repayment_transaction_create'      => Permission::CAPITAL_DEVELOPER,
         'capital_transaction_create'               => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_id'             => Permission::CAPITAL_DEVELOPER,
@@ -5238,6 +5240,7 @@ class Route
         'accounting_payouts_sync_status'               => Permission::ACCOUNTING_PAYOUTS_SYNC,
         'accounting_payouts_sync'                      => Permission::ACCOUNTING_PAYOUTS_SYNC,
         'accounting_payouts_waitlist'                  => Permission::ACCOUNTING_PAYOUTS_WAITLIST,
+        'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
         'capital_cards_admin'                          => '*',
@@ -6021,7 +6024,7 @@ class Route
 
         'capital_collections_client' => [
             'merchant_balance_create',
-            'internal_balance_fetch',
+            'internal_balance_fetch_by_merchant_id',
             'credit_repayment_transaction_create',
             'capital_transaction_create',
             'internal_balance_fetch_by_id',
