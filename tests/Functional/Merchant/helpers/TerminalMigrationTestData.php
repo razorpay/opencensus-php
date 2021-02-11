@@ -563,6 +563,23 @@ return [
         ],
     ],
 
+    'testTerminalServiceProxyFetchGatewayCredential' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/credentials',
+            'content' => [
+                'gateway' => 'paytm',
+                'merchant_ids'  => ['1000000000000m'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_ids' => ["10000000000000"],
+                "gateway" => "paytm"
+            ],
+        ],
+    ],
+
     'testTerminalServiceProxyCreateTerminalSubmerchant' => [
         'request' => [
             'method'  => 'POST',

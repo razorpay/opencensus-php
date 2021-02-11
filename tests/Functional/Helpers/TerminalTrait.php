@@ -163,6 +163,21 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getProxyFetchGatewayCredentialTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["merchant_ids" => ['10000000000000'], "gateway" => "paytm"];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+
     protected function getProxyCreateTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
     {
 

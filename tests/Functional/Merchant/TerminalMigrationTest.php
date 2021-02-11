@@ -2155,6 +2155,17 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalServiceProxyFetchGatewayCredential()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getProxyFetchGatewayCredentialTerminalServiceResponse();
+        }, 1);
+
+        $this->startTest();
+    }
+
 
     public function testTerminalServiceProxyCreateTerminalSubmerchant()
     {

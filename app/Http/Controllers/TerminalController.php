@@ -205,6 +205,32 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchTerminalsCredentials()
+    {
+        $input = Request::all();
+
+        $path = Request::path();
+
+        $path = str_replace("v1","v2", $path);
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_INSTRUMENT_STATUS,
+            [
+                'merchant_id'          => $merchant->getId(),
+            ]);
+
+        $input['merchant_ids']=[$merchant->getId()];
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            $path);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateTerminalsBulk()
     {
         $input = Request::all();

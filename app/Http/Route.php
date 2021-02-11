@@ -387,6 +387,7 @@ class Route
         'terminals_proxy_create_gateway_credential'=> ['post',     'terminals/proxy/gateway_credentials',            'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',  'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
+        'terminals_proxy_fetch_terminals_credentials'=> ['post',   'terminals/credentials',                          'TerminalController@fetchTerminalsCredentials'                      ],
 
         'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',       'TerminalController@proxyV2TerminalService'                         ],
 
@@ -2658,6 +2659,7 @@ class Route
         'merchant_instrument_request_update_by_id',
         'merchant_instrument_request_get_by_merchant_id',
         'merchant_instrument_status_get_by_merchant_id',
+        'terminals_proxy_fetch_terminals_credentials',
 
         // payment page routes required for plugin
         'payment_page_get',
