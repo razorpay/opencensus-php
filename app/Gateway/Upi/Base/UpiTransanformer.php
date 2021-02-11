@@ -5,7 +5,7 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Exception\BaseException;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 
-class UpiTransanformer
+abstract class UpiTransanformer
 {
     /**
      * @var Gateway
@@ -13,7 +13,7 @@ class UpiTransanformer
     protected $context;
 
     /**
-     * @var array
+     * @var Response
      */
     protected $response;
 
@@ -37,6 +37,8 @@ class UpiTransanformer
      */
     protected $item;
 
+    abstract protected function getResponseArray(): array;
+
     public function __construct(Gateway $context, Anomalies $anomalies)
     {
         $this->context = $context;
@@ -44,7 +46,7 @@ class UpiTransanformer
         $this->anomalies = $anomalies;
     }
 
-    public function from(array $input, array $response, Entity $upi = null, BaseException $exception = null)
+    public function from(array $input, Response $response, Entity $upi = null, BaseException $exception = null)
     {
         $this->response     = $response;
         $this->upi          = $upi;
@@ -72,7 +74,9 @@ class UpiTransanformer
 
     protected function response(string $key, bool $strict = true)
     {
-        $value = array_get($this->response, $key);
+        $array = $this->getResponseArray();
+
+        $value = array_get($array, $key);
 
         if ((empty($value) === true) and ($strict === true))
         {

@@ -61,6 +61,11 @@ class UpiMandateTransformer extends UpiTransanformer
             ]);
     }
 
+    protected function getResponseArray(): array
+    {
+        return $this->response->getMandate();
+    }
+
     protected function processResponseForAuthenticate()
     {
         if ($this->context->getAction() === Action::AUTHENTICATE)

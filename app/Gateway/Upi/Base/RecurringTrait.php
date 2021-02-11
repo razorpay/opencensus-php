@@ -201,8 +201,6 @@ trait RecurringTrait
 
         $response = $gateway->mandateCreate($input);
 
-        $this->updateRecurringEntityWithGatewayResponse($upi, $response['data']);
-
         if ($response['success'] !==  true)
         {
             $exception = new GatewayErrorException(
@@ -229,8 +227,6 @@ trait RecurringTrait
 
         $attributes = array_only($response['data'], (new Entity)->getFillable());
 
-        $this->updateRecurringEntityWithGatewayResponse($upi, $attributes, false);
-
         if ($response['success'] !==  true)
         {
             $exception = new GatewayErrorException(
@@ -254,10 +250,6 @@ trait RecurringTrait
         $gateway = $this->getMozartGatewayWithModeSet();
 
         $response = $gateway->preDebit($input);
-
-        $attributes = array_only($response['data'], (new Entity)->getFillable());
-
-        $this->updateRecurringEntityWithGatewayResponse($upi, $attributes, false);
 
         if ($response['success'] !==  true)
         {
@@ -288,8 +280,6 @@ trait RecurringTrait
         $gateway = $this->getMozartGatewayWithModeSet();
 
         $response = $gateway->upiRecurringCallback($input);
-
-        $this->updateRecurringEntityWithGatewayResponse($upi, $response['data']);
 
         if ($response['success'] !==  true)
         {
@@ -447,11 +437,15 @@ trait RecurringTrait
 
     protected function getResponseForAutoRecurring(
         array $input,
-        array $response,
+        array $data,
         Entity $upi,
         BaseException $exception = null)
     {
         $anomalies = new Anomalies($this);
+
+        $response = new Response($data);
+
+        $this->updateRecurringEntityWithGatewayResponse($upi, $response);
 
         $mandateTransformer = (new UpiMandateTransformer($this, $anomalies));
         $mandate = $mandateTransformer->from($input, $response, $upi, $exception)->transform();
@@ -490,16 +484,16 @@ trait RecurringTrait
             'action'        => $upi->getAction(),
             'mandate_id'    => $upi->getMerchantReference(),
             'mode'          => $input[Entity::UPI][UpiMetadata\Entity::MODE],
-            'response'      => $response,
+            'response'      => $response->toArrayTrace(),
             'processed'     => $processed,
         ]);
 
         return $processed;
     }
 
-    protected function updateRecurringEntityWithGatewayResponse(Entity $upi, array $data)
+    protected function updateRecurringEntityWithGatewayResponse(Entity $upi, Response $response)
     {
-        $attributes = array_only($data, $upi->getFillable());
+        $attributes = array_only($response->getUpi(), $upi->getFillable());
 
         // First pull the gateway data from update call
         $new = array_pull($attributes, Entity::GATEWAY_DATA);
@@ -555,11 +549,13 @@ trait RecurringTrait
 
         $anomalies = new Anomalies($this);
 
+        $responseData = new Response($response['data']);
+
         $mandateTransformer = (new UpiMandateTransformer($this, $anomalies));
-        $mandate = $mandateTransformer->from($input, $response['data'], $upiEntity)->transform();
+        $mandate = $mandateTransformer->from($input, $responseData, $upiEntity)->transform();
 
         $metadataTransformer = (new UpiMetadataTransformer($this, $anomalies));
-        $metadata = $metadataTransformer->from($input, $response['data'], $upiEntity)->transform();
+        $metadata = $metadataTransformer->from($input, $responseData, $upiEntity)->transform();
 
         $processed = [
             // Data which is needed for mandate

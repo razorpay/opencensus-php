@@ -53,6 +53,11 @@ class UpiMetadataTransformer extends UpiTransanformer
         return $this->item;
     }
 
+    protected function getResponseArray(): array
+    {
+        return $this->response->getUpi();
+    }
+
     protected function processResponseForAuthenticate()
     {
         if ($this->context->getAction() === Action::AUTHENTICATE)
