@@ -71,8 +71,12 @@ class PDO implements IntegrationInterface
     public static function handleQuery($pdo, $query)
     {
         return [
-            'attributes' => ['db.statement' => $query, 'span.kind' => Span::KIND_CLIENT],
-            'kind' => Span::KIND_CLIENT
+            'attributes' => [
+                'db.statement' => $query,
+                'span.kind' => Span::KIND_CLIENT
+            ],
+            'kind' => Span::KIND_CLIENT,
+            'sameProcessAsParentSpan' => false
         ];
     }
 
@@ -86,10 +90,48 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        $attributes = ['dsn' => $dsn, 'db.type' => 'sql', 'span.kind' => Span::KIND_CLIENT];
+        // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
+        // example $dsn: mysql:host=localhost;dbname=testdb
 
-        return [ 'attributes' => $attributes,
+        $db_system = '';
+        $connection_params = [];
+        $attributes = [];
+
+        $dbtype_connection = explode(":", $dsn);
+        if (count($dbtype_connection) >= 2){
+            $db_system = $dbtype_connection[0];
+            $connection = $dbtype_connection[1];
+            foreach (explode(";", $connection) as $kv){
+                $params = explode("=", $kv);
+                $connection_params[$params[0]] = $params[1];
+            }
+        }
+
+        if ($db_system){
+            $attributes['db.system'] = $db_system;
+        }
+        if (array_key_exists('dbname', $connection_params)){
+            $attributes['db.name'] = $connection_params['dbname'];
+        }
+        if (array_key_exists('port', $connection_params)){
+            $attributes['net.peer.port'] =  $connection_params['port'];
+        }
+        if (array_key_exists('host', $connection_params)){
+            $attributes['net.peer.name'] =  $connection_params['host'];
+        }
+
+        $attributes += [
+                        'dsn' => $dsn,
+                        'db.type' => 'sql',
+                        'db.connection_string' => $dsn,
+                        'span.kind' => Span::KIND_CLIENT
+                    ];
+
+        return [
+            'attributes' => $attributes,
             'kind' => Span::KIND_CLIENT,
+            'sameProcessAsParentSpan' => false,
+            'name' => 'PDO connect'
         ];
     }
 
@@ -153,15 +195,61 @@ class PDO implements IntegrationInterface
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
 
+        $query = $statement->queryString;
+        $operation = PDO::getOperationName($query);
+        $tableName = PDO::getTableName($query, $operation);
+
         $tags = [
-            'db.statement' => $statement->queryString,
+            'db.statement' => $query,
             'db.row_count' => $rowCount,
+            'db.operation' => $operation,
+            'db.table' => $tableName,
+            'db.sql.table' => $tableName,
             'span.kind' => Span::KIND_CLIENT
         ];
 
         return [
             'attributes' => $tags + $errorTags,
-            'kind' => Span::KIND_CLIENT
+            'kind' => Span::KIND_CLIENT,
+            'sameProcessAsParentSpan' => false,
+            'name' => sprintf("PDO %s %s", $operation, $tableName)
         ];
+    }
+
+    public static function getOperationName($query){
+        // select/insert/update/delete
+
+        // some queries are enclosed in (). trim them before figuring out operation.
+        $operation = explode(" ", trim($query, "( "))[0];
+        return $operation;
+    }
+
+    public static function getTableName($query, $operation){
+        $tableName = "";
+        $operation = strtolower($operation);
+        $query = strtolower(trim($query));
+        $query_parts = explode(" ", $query);
+
+        if (($operation === 'select') or ($operation === 'delete')){
+            // select <...> from <tablename> where ...
+            // delete from <table_name> where ...
+            $from_index = array_search('from', $query_parts);
+            if (($from_index) and ($from_index+1 < count($query_parts))){
+                $tableName = $query_parts[$from_index+1];
+            }
+        }
+        else if (strtolower($operation) === 'update'){
+            // update <table_name> set ... where ...
+            $tableName = $query_parts[1];
+        }
+        else if (strtolower($operation) === 'insert'){
+            // insert into <tablename> ...
+            $into_index = array_search('into', $query_parts);
+            if (($into_index) and ($into_index+1 < count($query_parts))){
+                $tableName = $query_parts[$into_index+1];
+            }
+        }
+
+        return trim($tableName, " \n\r\t\v\0`");
     }
 }

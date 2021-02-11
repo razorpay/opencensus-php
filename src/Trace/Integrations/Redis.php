@@ -52,15 +52,22 @@ class Redis implements IntegrationInterface
         }
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
-              return [
-                    'attributes' => [
-                        'peer.hostname' => $params['host'],
-                        'peer.port' => $params['port'],
-                        'db.type' => 'redis',
-                        'span.kind' => Span::KIND_CLIENT
-                    ],
-                    'kind' => Span::KIND_CLIENT
-                ];
+            $connection_str = sprintf("%s:%s", $params[0]['host'], $params[0]['port']);
+            return [
+                'attributes' => [
+                    'peer.hostname' => $params[0]['host'],
+                    'peer.port' => $params[0]['port'],
+                    'net.peer.name' => $params[0]['host'],
+                    'db.type' => 'redis',
+                    'db.system' => 'redis',
+                    'db.connection_string' =>  $connection_str,
+                    'redis.connection' => $connection_str,
+                    'span.kind' => Span::KIND_CLIENT
+                ],
+                'kind' => Span::KIND_CLIENT,
+                'name' => 'Predis connect',
+                'sameProcessAsParentSpan' => false
+            ];
         });
 
         // covers all basic commands
@@ -68,14 +75,21 @@ class Redis implements IntegrationInterface
             $arguments = $command->getArguments();
             array_unshift($arguments, $command->getId());
             $query = Redis::formatArguments($arguments);
+
             return ['attributes' => [
+                        'db.type' => 'redis',
+                        'db.system' => 'redis',
+                        'db.statement' => $query,
+                        'db.operation' => $command->getId(),
                         'command' => $command->getId(),
                         'service.name' => 'redis',
                         'redis.raw_command' => $query,
                         'redis.args_length' => count($arguments),
                         'span.kind' => Span::KIND_CLIENT
                     ],
-                    'kind' => Span::KIND_CLIENT
+                    'kind' => Span::KIND_CLIENT,
+                    'name' => 'Predis ' . $command->getId(),
+                    'sameProcessAsParentSpan' => false
                 ];
         });
     }
