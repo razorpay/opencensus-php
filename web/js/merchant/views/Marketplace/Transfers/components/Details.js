@@ -18,6 +18,7 @@ import { connect } from 'react-redux';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from './Fee';
 import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
+import TransferSource from './TransferSource';
 
 let initialState = {
   onHold: 'false',
@@ -362,7 +363,7 @@ export default class TransferDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/payments/${transfer.source}`}>{transfer.source}</Link>
+                      <TransferSource source={transfer.source} />
                     </div>
                   )}
                 />

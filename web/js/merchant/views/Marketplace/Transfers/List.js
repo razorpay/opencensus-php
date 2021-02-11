@@ -15,16 +15,11 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import TransfersListFilter from 'merchant/views/Marketplace/Transfers/components/TransfersListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
-
-const baseUrl = {
-  pay: '/payments/',
-  order: '/orders/',
-  acc: '/route/accounts/',
-};
+import TransferSource from './components/TransferSource';
 
 const source = {
   title: 'Source',
-  value: (item) => sourceId(item, baseUrl),
+  value: (item) => <TransferSource source={item.source} />,
 };
 
 @connect(
