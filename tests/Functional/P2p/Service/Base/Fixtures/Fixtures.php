@@ -19,6 +19,7 @@ use RZP\Tests\P2p\Service\Base\Constants;
  * @property P2p\Vpa\Handle\Entity $handle
  * @property P2p\BankAccount\Entity $bank_account
  * @property P2p\Vpa\Entity $vpa
+ * @property P2p\Client\Entity $client
  */
 class Fixtures extends Constants
 {
@@ -168,6 +169,16 @@ class Fixtures extends Constants
     public function vpa(string $deviceSetId): P2p\Vpa\Entity
     {
         return $this->deviceSet($deviceSetId)->vpa;
+    }
+
+    /**
+     * @param string
+     * @return P2p\Client\Entity
+     * @throws RuntimeException
+     */
+    public function client(string $deviceSetId): P2p\Client\Entity
+    {
+        return $this->deviceSet($deviceSetId)->client;
     }
 
     /**

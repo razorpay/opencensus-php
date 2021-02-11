@@ -21,6 +21,7 @@ use RZP\Tests\P2p\Service\Base\Traits;
  * @property P2p\Vpa\Handle\Entity $handle
  * @property P2p\BankAccount\Entity $bank_account
  * @property P2p\Vpa\Entity $vpa
+ * @property P2p\Client\Entity $client
  *
  * Class DeviceSet
  * @package Tests\Concerns
@@ -71,6 +72,10 @@ class DeviceSet
                 $this->bank_account = $this->getDbBankAccountById($this->set['bank_account']);
                 break;
 
+            case 'client':
+                $this->client = $this->device->client($this->handle);
+                break;
+
             case 'vpa':
                 $this->vpa = $this->getDbVpaById($this->set['vpa']);
                 break;
@@ -108,6 +113,10 @@ class DeviceSet
 
             case 'vpa':
                 $this->vpa = $value;
+                break;
+
+            case 'client':
+                $this->client = $value;
                 break;
 
             default:

@@ -53,7 +53,7 @@ class P2pReminderListener extends P2pListener
                 'callback_url'      => $callbackUrl,
             ], $merchantId);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $this->app['trace']->traceException($e);
         }

@@ -435,6 +435,7 @@ class P2pSeeder extends Seeder
             'gateway_data'                        => [
                 'merchantId'          => env('P2P_UPI_AXIS_MERCHANT_ID'),
                 'merchantChannelId'   => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
+                'mcc'                 => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
             ],
             'config'                         => [
                 Client\Config::MAX_VPA          => 5,
@@ -453,6 +454,7 @@ class P2pSeeder extends Seeder
             'gateway_data'        => [
                 'merchantId'        => 'TEST_CRED' ,
                 'merchantChannelId' => 'TEST_CHANNEL_CRED',
+                'mcc'               => '1200',
             ],
             'config'                         => [
                 Client\Config::MAX_VPA          => 3,

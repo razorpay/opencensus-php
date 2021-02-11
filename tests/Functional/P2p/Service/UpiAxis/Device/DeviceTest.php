@@ -129,11 +129,23 @@ class DeviceTest extends TestCase
     {
         $helper = $this->getDeviceHelper();
 
+        // Adding this here to test , we fetching MCC from gatewayData
+        $client = $this->fixtures->client;
+
+        $gatewayData = $client->getGatewayData()->put('mcc', '1720')->toArray();
+
+        $client->setGatewayData($gatewayData)->save();
+
         $initiate = $helper->initiateGetToken([
             Fields::SDK => [
                 Fields::SIM_ID  => '0',
             ]
         ]);
+
+        $this->assertArraySubset([
+                Fields::MCC    => '1720',
+                Fields::SIM_ID => '0',
+        ], $initiate['request']['content']);
 
         $helper->withSchemaValidated();
 
