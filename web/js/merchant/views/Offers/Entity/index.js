@@ -258,6 +258,13 @@ export default class OffersDetails extends React.Component {
                       value={emiDurationString(offer.emi_durations)}
                     />
                   )}
+
+                  {this.isSubscriptionOffer && (
+                    <>
+                      <EntityDetailRow label="Redemption Type" value={offer.redemption_type} />
+                      <EntityDetailRow label="Number of Cycles" value={offer.no_of_cycles} />
+                    </>
+                  )}
                 </div>
               </div>
             </div>

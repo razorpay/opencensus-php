@@ -123,6 +123,20 @@ export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS_OPTIONS = [
   { label: 'UPI', name: PAYMENT_METHODS.UPI },
 ];
 
+export const SUBSCRIPTION_OFFERS_PAYMENT_NETWORKS_OPTIONS = [
+  { label: '--Select Network--', name: '' },
+  { label: 'Visa', name: 'VISA' },
+  { label: 'MasterCard', name: 'MC' },
+  { label: 'American Express', name: 'AMEX' },
+];
+
+export const SUBSCRIPTION_OFFERS_PAYMENT_DC_ISSUERS_OPTIONS = [
+  { label: '--Select Issuers--', name: '' },
+  { label: 'ICICI Bank', name: 'ICIC' },
+  { label: 'Kotak Mahindra Bank', name: 'KKBK' },
+  { label: 'Citi Bank', name: 'CITI' },
+];
+
 export const PaymentIssuersOptions = [
   { label: '--Select Issuers--', name: '' },
   { label: 'HDFC Bank', name: 'HDFC' },
@@ -171,6 +185,11 @@ export const DISCOUNT_TYPES = {
   FLAT: 'flat',
   PERCENT: 'percent',
   NO_COST_EMI: 'no_cost_emi',
+};
+
+export const CARD_TYPES = {
+  CREDIT: 'credit',
+  DEBIT: 'debit',
 };
 
 export const APPLICABLE_ON_OPTIONS = [

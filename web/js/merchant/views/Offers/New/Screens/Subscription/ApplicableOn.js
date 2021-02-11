@@ -3,11 +3,13 @@ import {
   SUBSCRIPTION_OFFERS_PAYMENT_METHODS,
   SUBSCRIPTION_OFFERS_PAYMENT_METHODS_OPTIONS,
   PaymentIssuersOptions,
-  PaymentNetworksOptions,
+  SUBSCRIPTION_OFFERS_PAYMENT_DC_ISSUERS_OPTIONS,
+  SUBSCRIPTION_OFFERS_PAYMENT_NETWORKS_OPTIONS,
   WalletIssuersOptions,
   MAX_DISCOUNT,
   CREDIT_CARDS_OPTIONS,
   CREDIT_DEBIT_CARDS_OPTIONS,
+  CARD_TYPES
 } from 'merchant/views/Offers/constants';
 
 export default class ApplicableOn extends React.Component {
@@ -27,6 +29,8 @@ export default class ApplicableOn extends React.Component {
     const PaymentMethodTypeOptions = this.currentSelectedPaymentMethod.isEMI
       ? CREDIT_CARDS_OPTIONS
       : CREDIT_DEBIT_CARDS_OPTIONS;
+
+    const isDebitCard = formData.payment_method_type === CARD_TYPES.DEBIT;
 
     return (
       <React.Fragment>
@@ -68,7 +72,7 @@ export default class ApplicableOn extends React.Component {
               placeholder="Select Bank"
               defaultValue={formData.issuer}
               disabled={props.isFormLocked}
-              options={PaymentIssuersOptions}
+              options={ isDebitCard ? SUBSCRIPTION_OFFERS_PAYMENT_DC_ISSUERS_OPTIONS : PaymentIssuersOptions}
             />
 
             <Input.Select
@@ -77,7 +81,7 @@ export default class ApplicableOn extends React.Component {
               placeholder="Select network"
               defaultValue={formData.payment_network}
               disabled={props.isFormLocked}
-              options={PaymentNetworksOptions}
+              options={SUBSCRIPTION_OFFERS_PAYMENT_NETWORKS_OPTIONS}
             />
 
             <Input
