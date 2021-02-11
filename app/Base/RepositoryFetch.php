@@ -124,9 +124,7 @@ trait RepositoryFetch
      *
      * @param array       $params
      * @param string|null $merchantId
-     *
-     * @param bool        $useSlave
-     * @param bool        $useMasterEsReplica
+     * @param string|null $connectionType
      * @return PublicCollection
      * @throws BadRequestValidationFailureException
      * @throws InvalidArgumentException
@@ -802,10 +800,10 @@ trait RepositoryFetch
      */
     public function findOrFailByPublicIdWithParams(
         string $id,
-        array $params,
-        bool $useMasterEsReplica = false) : PublicEntity
+        array  $params,
+        string $connectionType = null) : PublicEntity
     {
-        $query = $this->getQueryForFindWithParams($params, $useMasterEsReplica);
+        $query = $this->getQueryForFindWithParams($params, $connectionType);
 
         $entity = $query->findOrFailPublic($id);
 
@@ -825,12 +823,12 @@ trait RepositoryFetch
      * Build query for find by id routes. In such routes expand[] or deleted
      * (for now) can be sent conditionally.
      *
-     * @param array $params
-     * @param bool $useMasterEsReplica
+     * @param array       $params
+     * @param string|null $connectionType
      *
      * @return BuilderEx
      */
-    protected function getQueryForFindWithParams(array $params, bool $useMasterEsReplica = false): BuilderEx
+    protected function getQueryForFindWithParams(array $params, string $connectionType = null): BuilderEx
     {
         if ($this->hasEntityFetch() === true)
         {
@@ -847,18 +845,10 @@ trait RepositoryFetch
 
         $query = $this->newQuery()->with($expands);
 
-        $routeThroughMasterReplica = false;
-
-        if($useMasterEsReplica === true)
-        {
-            $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
-        }
-
-        if (($useMasterEsReplica === true) and
-            ($routeThroughMasterReplica === true) and
+        if ((is_null($connectionType) === false) and
             ($this->app['env'] !== Environment::TESTING))
         {
-            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())->with($expands);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType))->with($expands);
         }
 
         $this->buildQueryWithParams($query, $params);

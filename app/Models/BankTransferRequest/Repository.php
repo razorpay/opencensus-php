@@ -21,11 +21,11 @@ class Repository extends Base\Repository
 
     public function findOrFailByPublicIdWithParams(
         string $id,
-        array $params,
-        bool $useMasterEsReplica = false
+        array  $params,
+        string $connectionType = null
     ) : Base\PublicEntity
     {
-        $bankTransferRequest = parent::findOrFailByPublicIdWithParams($id, $params, $useMasterEsReplica);
+        $bankTransferRequest = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
 
         if ($this->app['basicauth']->isAdminAuth() === false)
         {

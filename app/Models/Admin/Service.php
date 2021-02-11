@@ -108,7 +108,7 @@ class Service extends Base\Service
             return $retEntity;
         }
 
-        $entity = $this->fetchEntityByNameAndId($entity, $id, $input,true);
+        $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
 
         return $entity->toArrayAdmin();
     }
@@ -157,8 +157,8 @@ class Service extends Base\Service
     protected function fetchEntityByNameAndId(
         string $entity,
         string $id,
-        array $input = [],
-        bool $useMasterEsReplica = false): Base\PublicEntity
+        array  $input = [],
+        string $connectionType = null): Base\PublicEntity
     {
         $this->traceActiveDbConnections();
 
@@ -173,7 +173,7 @@ class Service extends Base\Service
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }
 
-        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input, $useMasterEsReplica);
+        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input, $connectionType);
 
         $this->traceActiveDbConnections();
 

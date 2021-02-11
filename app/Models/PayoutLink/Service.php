@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use Illuminate\Support\Facades\Mail;
+use RZP\Base\ConnectionType;
 use RZP\Models\User\Core as UserCore;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\PayoutLink\FailedInternal;
@@ -651,7 +652,7 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
-            $entity = $this->entityRepo->findOrFailByPublicIdWithParams($id, $input, true);
+            $entity = $this->entityRepo->findOrFailByPublicIdWithParams($id, $input, ConnectionType::REPLICA);
 
             return $entity->toArrayAdmin();
         }

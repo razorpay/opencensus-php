@@ -22,11 +22,11 @@ class Repository extends Base\Repository
 
     public function findOrFailByPublicIdWithParams(
         string $id,
-        array $params,
-        bool $useMasterEsReplica = false
+        array  $params,
+        string $connectionType = null
     ) : Base\PublicEntity
     {
-        $upiTransferRequest = parent::findOrFailByPublicIdWithParams($id, $params, $useMasterEsReplica);
+        $upiTransferRequest = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
 
         if ($this->app['basicauth']->isAdminAuth() === false)
         {
