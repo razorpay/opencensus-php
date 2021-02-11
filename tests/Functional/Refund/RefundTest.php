@@ -6332,4 +6332,45 @@ class RefundTest extends TestCase
         $response = $this->runRequestResponseFlow($this->testData['scroogeRetryViaCustomFundTransfersBatch']);
         $this->assertEquals($expectedOutput, $response);
     }
+
+    public function testUpdateStatusToReversedFailure()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+        $this->fixtures->edit('payment', $payment['id'], ['currency' => 'USD']);
+
+        $this->mockServerContentFunction(function (&$content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $refund = $this->refundPayment($payment['id'], 3459);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNotEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($reversal);
+        $this->assertEquals(3459, $payment['amount_refunded']);
+    }
 }

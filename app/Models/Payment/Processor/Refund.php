@@ -1034,7 +1034,7 @@ trait Refund
                     'gateway'    => $refund->getGateway()
                 ]);
 
-            return null;
+            throw $ex;
         }
 
         return $reversal;
@@ -2539,7 +2539,7 @@ trait Refund
     protected function checkForDuplicateReceipt(Payment\Entity $payment, array $input = [])
     {
         $receiptFromInput = $input[RefundEntity::RECEIPT] ?? null;
-        $receiptFromTable = (empty($receiptFromInput) === false) ? (Payment\Refund\Entity::whereRaw('receipt = ? and merchant_id = ?', 
+        $receiptFromTable = (empty($receiptFromInput) === false) ? (Payment\Refund\Entity::whereRaw('receipt = ? and merchant_id = ?',
                                             [$receiptFromInput, $this->merchant->getId()])->exists()) : false;
 
         if ((empty($receiptFromInput) === false) and ($receiptFromTable === true))
