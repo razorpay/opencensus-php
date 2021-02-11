@@ -26,7 +26,8 @@ class MerchantRiskClient
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
     const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
-    const GET_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
+    const GET_IMPERSONATION_PATH   = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
+    const ALERT_SERVICE_PATH       = "/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/Create";
 
     /**
      * @var Requests_Session
@@ -300,19 +301,38 @@ class MerchantRiskClient
             );
         }
 
-        $this->validateRiskFactorResponse($response);
+        return $response;
     }
 
-    protected function validateRiskFactorResponse(array $response)
+    public function createAlertRequest(array $requestPayload)
     {
-        $riskFactorFields = (array_key_exists('fields', $response) === true) ? $response['fields'] : [];
+        $this->init();
 
-        foreach ($riskFactorFields as $riskFactorField)
+        $response = [];
+        try
         {
-            if ($riskFactorField['score'] > 60)
-            {
-                // Call merchant alert service with necessary details once it is live
-            }
+            $this->trace->info(TraceCode::DOWNSTREAM_ALERT_SERVICE_REQUEST,
+                [
+                    'payload' => $requestPayload,
+                    'service' => 'merchants-alerts'
+                ]);
+
+            $response = $this->requestAndGetParsedBody(self::ALERT_SERVICE_PATH, $requestPayload);
+
         }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::DOWNSTREAM_ALERT_SERVICE_REQUEST_FAILED,
+                [
+                    'payload' => $requestPayload,
+                    'service' => 'merchants-alerts',
+                    'path'    => self::ALERT_SERVICE_PATH,
+                ]
+            );
+        }
+
+        return $response;
     }
 }

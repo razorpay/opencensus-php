@@ -103,25 +103,7 @@ class Core extends Base\Core
 
         $this->trackPaymentPageCreatedEvent($paymentLink, $input);
 
-        try
-        {
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::APPS_RISK_CHECK,
-                $this->mode
-            );
-
-            if ($variant === 'on')
-            {
-                $riskCheckInput = $this->getRiskCheckInput($paymentLink);
-
-                $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, null, null, ['payment_page_id' => $paymentLink->getId()]);
-        }
+        $this->doDedupeAndRiskActions($paymentLink, $merchant);
 
         return $paymentLink;
     }
@@ -1580,6 +1562,38 @@ class Core extends Base\Core
         ];
     }
 
+    protected function doDedupeAndRiskActions(Entity $paymentLink, Merchant\Entity $merchant)
+    {
+        try
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::APPS_RISK_CHECK,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $riskCheckInput = $this->getRiskCheckInput($paymentLink);
+
+                $riskCheckOutput = $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
+
+                $alertInput = $this->validateRiskFactorResponseAndGetAlertInput($riskCheckOutput, $paymentLink);
+
+                if (empty($alertInput) === true)
+                {
+                    return;
+                }
+
+                $this->merchantRiskService->createAlertRequest($alertInput);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, null, ['payment_page_id' => $paymentLink->getId()]);
+        }
+    }
+
     protected function getRiskCheckInput(Entity $paymentLink)
     {
         $riskInput = [
@@ -1587,19 +1601,19 @@ class Core extends Base\Core
             'entity_id'     => $paymentLink->getMerchantId(),
             'fields'        => [
                 [
-                    'field'      => 'description',
+                    'key'        => 'description',
                     'value'      => $paymentLink->getDescription(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'description',
                 ],
                 [
-                    'field'      => 'title',
+                    'key'        => 'title',
                     'value'      => $paymentLink->getTitle(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'title',
                 ],
                 [
-                    'field'      => 'terms',
+                    'key'        => 'terms',
                     'value'      => $paymentLink->getTerms(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'terms',
@@ -1608,5 +1622,71 @@ class Core extends Base\Core
         ];
 
         return $riskInput;
+    }
+
+    protected function validateRiskFactorResponseAndGetAlertInput(array $response, Entity $paymentLink)
+    {
+        $riskFactorFields = (array_key_exists('fields', $response) === true) ? $response['fields'] : [];
+
+        $dataFields = [];
+
+        foreach ($riskFactorFields as $riskFactorField)
+        {
+            if ($riskFactorField['score'] > 650)
+            {
+                $matchedField = $riskFactorField['config_key'];
+
+                switch ($matchedField)
+                {
+                    case Entity::DESCRIPTION:
+
+                        $dataFields[Entity::DESCRIPTION] = $paymentLink->getDescription();
+
+                        break;
+
+                    case Entity::TITLE:
+
+                        $dataFields[Entity::TITLE] = $paymentLink->getTitle();
+
+                        break;
+
+                    case Entity::TERMS:
+
+                        $dataFields[Entity::TERMS] = $paymentLink->getTerms();
+
+                        break;
+                }
+            }
+        }
+
+        if (empty($dataFields) === true)
+        {
+            return [];
+        }
+
+        $isManaged = false;
+
+        if (isset($response['is_managed']) === true)
+        {
+            $isManaged = $response['is_managed'];
+        }
+
+        return $this->getAlertServiceInput($paymentLink, $dataFields, $isManaged);
+    }
+
+    protected function getAlertServiceInput(Entity $paymentLink, array $dataFields, bool $isManaged)
+    {
+        $dataFields['merchant_type'] = $isManaged === true ? 'managed' : 'unmanaged';
+
+        return [
+            'merchant_id'     => $paymentLink->merchant->getMerchantId(),
+            'entity_type'     => 'payment_page',
+            'entity_id'       => $paymentLink->getId(),
+            'category'        => 'high_risk_keywords',
+            'source'          => 'pp_service',
+            'data'            => $dataFields,
+            'event_timestamp' => $paymentLink->getCreatedAt(),
+            'event_type'      => 'create',
+        ];
     }
 }
