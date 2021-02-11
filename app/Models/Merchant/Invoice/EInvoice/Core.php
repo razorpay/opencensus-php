@@ -375,4 +375,10 @@ class Core extends Base\Core
     {
         return $this->repo->merchant_e_invoice->getInvoiceNumber($merchantId, $month, $year, $type);
     }
+
+    public function getLatestGeneratedEInvoiceData(string $merchantId, int $month, int $year, string $type, string $documentType)
+    {
+        return $this->repo->merchant_e_invoice->fetchLatestGeneratedEInvoiceFromMonthAndType($merchantId, $month, $year,
+            $type, $documentType);
+    }
 }

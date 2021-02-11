@@ -62,4 +62,19 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
+
+    public function fetchLatestGeneratedEInvoiceFromMonthAndType(string $merchantId, int $month, int $year,
+                                                            string $type, string $documentType)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::STATUS, '=', Status::STATUS_GENERATED)
+            ->where(Entity::DOCUMENT_TYPE, '=', $documentType)
+            ->orderBy(Entity::UPDATED_AT, 'DESC');
+
+        return $query->first();
+    }
 }

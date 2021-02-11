@@ -17,6 +17,34 @@ return [
             'tax'    => 90,
         ],
     ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItem' => [
+        'rx_transactions' => [
+            'amount' => 0,
+            'tax'    => 0,
+        ],
+    ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForNegativeAmountLineItem' => [
+        'rx_transactions' => [
+            'amount' => -500,
+            'tax'    => -90,
+        ],
+    ],
+    'testBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem' => [
+        'rx_transactions' => [
+            [
+                'month'  => 8,
+                'year'   => 2021,
+                'amount' => 900,
+                'tax'    => 162,
+            ],
+            [
+                'month'  => 8,
+                'year'   => 2021,
+                'amount' => -900,
+                'tax'    => -162,
+            ],
+        ],
+    ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYear'  => [
         'rx_transactions' => [
             [

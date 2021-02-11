@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 
+use Mockery;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use Respect\Validation\Rules\In;
@@ -18,13 +19,28 @@ class MerchantBankingInvoiceTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
+    protected $eInvoiceClientMock;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantBankingInvoiceTestData.php';
 
         parent::setUp();
 
+        $this->setUpEInvoiceClientMock();
+
         $this->ba->publicAuth();
+    }
+
+    public function setUpEInvoiceClientMock()
+    {
+        $this->app['rzp.mode']= 'test';
+
+        $this->eInvoiceClientMock = Mockery::mock('RZP\Services\EInvoice', [$this->app])->makePartial();
+
+        $this->eInvoiceClientMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['einvoice_client'] = $this->eInvoiceClientMock;
     }
 
     protected function createDataForBankingInvoiceEntityCreateForGivenMonthYear()
@@ -46,9 +62,12 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->fixtures->create(
             'merchant_detail',
             [
-                'merchant_id'               => '10000000000000',
-                'gstin'                     => '29kjsngjk213922',
-                'business_registered_pin'   => '123456',
+                'merchant_id'                   => '10000000000000',
+                'gstin'                         => '29kjsngjk213922',
+                'business_registered_pin'       => '123456',
+                'business_registered_address'   => 'abc street',
+                'business_registered_city'      => 'abcdef',
+                'business_name'                 => 'abcd'
             ]);
 
         $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
@@ -243,6 +262,31 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function setupEInvoiceClientResponse()
+    {
+        $this->eInvoiceClientMock
+            ->shouldReceive('getEInvoice')
+            ->times(1)
+            ->andReturnUsing(function () {
+                return [
+                    'status'            => '200',
+                    'body'   => [
+                        'results' => [
+                            'message'   => [
+                                'Status'        => 'generated',
+                                'Irn'           => 'randomirn',
+                                'SignedInvoice' => 'randominvoice',
+                                'SignedQRCode'  => 'randomcode',
+                                'QRCodeUrl'     => 'randomurl',
+                                'EinvoicePdf'   => 'randompdf',
+                            ],
+                            'status'    => 'Success',
+                        ],
+                    ],
+                ];
+            });
+    }
+
     public function testBankingInvoiceEntityCreateWithEInvoice()
     {
         $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
@@ -250,6 +294,95 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->setupEInvoiceClientResponse();
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'][0];
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::BALANCE_ID => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['rx_transactions']['balance_id'] = $balanceId;
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertEquals('10000000000000', $eInvoiceEntities['merchant_id']);
+        $this->assertEquals(7, $eInvoiceEntities['month']);
+        $this->assertEquals(2021, $eInvoiceEntities['year']);
+        $this->assertEquals('BANKING', $eInvoiceEntities['type']);
+        $this->assertEquals('generated', $eInvoiceEntities['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntities['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntities['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntities['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntities['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntities['gsp_e_invoice_pdf']);
+
+
+        Carbon::setTestNow();
+    }
+
+    protected function createDataForBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItemForGivenMonthYear()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 100000,
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => '29kjsngjk213922',
+                'business_registered_pin'   => '123456',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        return $x['id'];
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItem()
+    {
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItemForGivenMonthYear();
 
         $this->ba->appAuth();
 
@@ -286,9 +419,234 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
 
-        $this->assertEquals('10000000000000', $eInvoiceEntities[0]['merchant_id']);
-        $this->assertEquals(7, $eInvoiceEntities[0]['month']);
-        $this->assertEquals(2021, $eInvoiceEntities[0]['year']);
+        $this->assertEmpty($eInvoiceEntities);
+
+        Carbon::setTestNow();
+    }
+
+    protected function createDataForBankingInvoiceEntityCreateWithEInvoiceForNegativeAmountLineItemForGivenMonthYear()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 100000,
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => '29kjsngjk213922',
+                'business_registered_pin'   => '123456',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'           =>      'icici',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $oldDateTime = Carbon::create(2021, 8, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $w = $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $y['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $x['id'],
+                'amount'        => 1000000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        return $x['id'];
+    }
+
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceForNegativeAmountLineItem()
+    {
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateWithEInvoiceForNegativeAmountLineItemForGivenMonthYear();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month +1, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'];
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::BALANCE_ID => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['rx_transactions']['balance_id'] = $balanceId;
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertEmpty($eInvoiceEntities);
+
+        Carbon::setTestNow();
+    }
+
+    protected function createDataForBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
+
+        $y = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 100000000,
+            ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => '29kjsngjk213922',
+                'business_registered_pin'   => '123456',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $w = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $oldDateTime = Carbon::create(2021, 8, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $w['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $x['id'],
+                'amount'        => 1000000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+
+        return [ $x['id'] , $y['id'] ];
+    }
+
+    public function testBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem()
+    {
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month +1, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        $eInvoiceEntities = $eInvoiceEntities['items'];
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]][] = [
+                Invoice\Entity::MONTH      => $e[Invoice\Entity::MONTH],
+                Invoice\Entity::YEAR       => $e[Invoice\Entity::YEAR],
+                Invoice\Entity::BALANCE_ID => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+
+        $data['rx_transactions'][0]['balance_id'] = $balanceId[1];
+
+        $data['rx_transactions'][1]['balance_id'] = $balanceId[0];
+
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertEmpty($eInvoiceEntities);
 
         Carbon::setTestNow();
     }

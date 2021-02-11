@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Merchant\Invoice\EInvoice;
 
-use Carbon\Carbon;
-use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
+
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Pricing\Calculator as PricingCalculator;
@@ -77,7 +76,28 @@ class XEInvoice extends Core
             Constants::TOTAL_CGST_VALUE => $totalCgstValue,
         ];
 
+        foreach ($valueDetails as $type => $value)
+        {
+            $valueDetails[$type] = $this->getAmountInRupees($value);
+        }
+
+        foreach ($items as $index => $values)
+        {
+            $items[$index][Constants::UNIT_PRICE]       = $this->getAmountInRupees($values[Constants::UNIT_PRICE]);
+            $items[$index][Constants::TOTAL_AMOUNT]     = $this->getAmountInRupees($values[Constants::TOTAL_AMOUNT]);
+            $items[$index][Constants::ASSESSABLE_VALUE] = $this->getAmountInRupees($values[Constants::ASSESSABLE_VALUE]);
+            $items[$index][Constants::IGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::IGST_AMOUNT]);
+            $items[$index][Constants::SGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::SGST_AMOUNT]);
+            $items[$index][Constants::CGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::CGST_AMOUNT]);
+            $items[$index][Constants::TOTAL_ITEM_VALUE] = $this->getAmountInRupees($values[Constants::TOTAL_ITEM_VALUE]);
+        }
+
         return [$items, $valueDetails];
+    }
+
+    public function getAmountInRupees($amount)
+    {
+        return number_format((abs($amount) /100), '2', '.', '');
     }
 
     public function shouldIgnoreLineItem($item) : bool
@@ -104,42 +124,32 @@ class XEInvoice extends Core
     {
         $eInvoiceData = [];
 
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
-        $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
+        $eInvoiceEntity = $this->getLatestGeneratedEInvoiceData($merchantId, $month, $year, $type, DocumentTypes::INV);
 
-        $shouldGenerateXEInvoice = $this->shouldGenerateEInvoice($merchant, $date->getTimestamp());
-        if($shouldGenerateXEInvoice === true)
+        if (isset($eInvoiceEntity) === true)
         {
-            [$count, $entityMap] = $this->getEInvoiceData($merchantId, $month, $year, $type);
-
-            foreach ($entityMap as $documentType => $eInvoice)
-            {
-                $gspError = $eInvoice->getGspError();
-
-                if((isset($gspError) === true) and ($this->shouldGenerateB2C($gspError) === true))
-                {
-                    $this->trace->info(TraceCode::EINOVICE_FALLBACK_TO_B2C,
-                        [
-                            'merchant_id'   => $merchantId,
-                            'month'         => $month,
-                            'year'          => $year,
-                            'type'          => $type,
-                            'document_type' => $documentType,
-                            'error_message' => $gspError,
-                        ]);
-
-                    $eInvoiceData = [];
-
-                    break;
-                }
-                $eInvoiceData = [
-                    self::IRN             => $eInvoice->getGspIrn(),
-                    self::SIGNED_QR_CODE  => $eInvoice->getGspSignedQrCode(),
-                    self::QR_CODE_URL     => $eInvoice->getGspQRCodeUrl(),
-                ];
-            }
+            $eInvoiceData = [
+                self::IRN             => $eInvoiceEntity->getGspIrn(),
+                self::SIGNED_QR_CODE  => $eInvoiceEntity->getGspSignedQrCode(),
+                self::QR_CODE_URL     => $eInvoiceEntity->getGspQRCodeUrl(),
+            ];
         }
 
         return $eInvoiceData;
+    }
+
+    public function shouldGenerateEInvoice(Merchant\Entity $merchant, $fromTimestamp) : bool
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $gstin = $merchantDetails->getGstin();
+        $pinCode = $merchantDetails->getBusinessRegisteredPin();
+
+        if((empty($gstin) === true) or (empty($pinCode) === true))
+        {
+            return false;
+        }
+
+        return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
     }
 }

@@ -7,7 +7,6 @@
 
     <title>RazorpayX - Tax Invoice</title>
 
-    <link href="https://fonts.googleapis.com/css?family=Muli:400,600,700&display=swap" rel="stylesheet">
     <style>
         html,
         body {
@@ -18,7 +17,8 @@
         }
 
         body {
-            font-family: 'Muli', sans-serif;
+            font-family: sans-serif;
+            font-weight: normal;
             font-size: 17px;
             color: rgba(0, 0, 0, 0.6);
             min-height: 980px;

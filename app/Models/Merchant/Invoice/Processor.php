@@ -221,7 +221,7 @@ class Processor extends Base\Core
                     ]);
             }
         }
-        else if (($balance->isTypeBanking() === true) and ($this->hasNonZeroTaxAmount($invoiceBreakup) === true))
+        else if (($balance->isTypeBanking() === true) and ($this->checkInvalidLineItems($invoiceBreakup) === true))
         {
             try
             {
@@ -267,19 +267,30 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function hasNonZeroTaxAmount($invoiceBreakup) : bool
+    protected function checkInvalidLineItems($invoiceBreakup) : bool
     {
+        //if multiple line items and any one of them is negative then E invoice generation will fail
+        $hasPositiveLineItem = false;
+        $hasNegativeLineItem = false;
         foreach ($invoiceBreakup as $index => $entity)
         {
-            $tax = abs($entity->getTax());
+            $tax = $entity->getTax();
 
-            if($tax >= 0)
+            if($tax > 0)
             {
-                return true;
+                $hasPositiveLineItem = true;
+            }
+            else if($tax < 0)
+            {
+                $hasNegativeLineItem = true;
             }
         }
+        if($hasPositiveLineItem and $hasNegativeLineItem) {
+            $this->trace->info(TraceCode::EINVOICE_MANUAL_INVOICE_REQUIRED_FOR_X, $invoiceBreakup);
+            return false;
+        }
 
-        return false;
+        return $hasPositiveLineItem;
     }
 
     protected function calculateFeesForPrimaryBalance($balanceId, array & $details)
