@@ -39,8 +39,8 @@ jobs:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/opencensus
+          repository: razorpay/opencensus-php
           tags: ${{ github.sha }}
           dockerfile: ext/Dockerfile.rzp
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182,OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
 
