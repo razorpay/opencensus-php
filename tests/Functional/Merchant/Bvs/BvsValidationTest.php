@@ -35,8 +35,8 @@ class BvsValidationTest extends TestCase
                                                  array $expectedValues = [])
     {
         $this->assertNotNull($bvsValidation->getValidationId());
-        $this->assertNull($bvsValidation->getErrorCode());
-        $this->assertNull($bvsValidation->getErrorDescription());
+        $this->assertEmpty($bvsValidation->getErrorCode());
+        $this->assertEmpty($bvsValidation->getErrorDescription());
         $this->bvsValidation($bvsValidation, $expectedValues);
     }
 
@@ -169,6 +169,7 @@ class BvsValidationTest extends TestCase
                                                          [
                                                              'owner_id'      => $mid,
                                                              'artefact_type' => 'aadhaar',
+                                                             'validation_unit' => 'proof'
                                                          ]);
 
         $this->fixtures->create('merchant_document',

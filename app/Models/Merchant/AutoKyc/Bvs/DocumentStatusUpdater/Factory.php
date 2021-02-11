@@ -3,12 +3,15 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
+
 
 class Factory
 {
@@ -60,6 +63,9 @@ class Factory
                 return $this->getStatusUpdaterForBankAccount($merchant, $validation);
 
             case Constant::AADHAAR :
+
+                return $this->getStatusUpdaterForAadhaar($merchant, $validation);
+
             case Constant::VOTERS_ID:
             case Constant::PASSPORT:
 
@@ -81,6 +87,30 @@ class Factory
                     [ValidationEntity::ARTEFACT_TYPE => $artefactType]);
 
         }
+    }
+
+    /**
+     * @param MerchantEntity   $merchant
+     * @param ValidationEntity $validation
+     *
+     * @return StatusUpdater
+     */
+    public function getStatusUpdaterForAadhaar(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        $artefactType = $validation->getArtefactType();
+        $validationId = $validation->getValidationId();
+
+        if ($validation->getValidationUnit() === Constants::IDENTIFIER)
+        {
+            return new DefaultStatusUpdater(
+                $merchant,
+                StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
+                $artefactType,
+                $validationId,
+                E::STAKEHOLDER);
+        }
+
+        return new POA($merchant, $artefactType, $validationId);
     }
 
     /**

@@ -34,6 +34,7 @@ class Constant
     const FULL_NAME         = 'full_name';
     const PROOF_INDEX       = 'proof_index';
     const LLPIN             = 'llpin';
+    const PROBE_ID          = 'probe_id';
 
     const BANK_ACCOUNT         = 'bank_account';
     const ACCOUNT_NUMBER       = 'account_number';
@@ -54,7 +55,7 @@ class Constant
     const SHOP_ESTABLISHMENT_AUTH    = 'shop_establishment_auth';
     const BANK_ACCOUNT_REG           = 'bank_account_reg';
     const BANK_ACCOUNT_UNREG         = 'bank_account_unreg';
-
+    const AADHAAR_WITH_PAN           = 'aadhaar_with_pan';
     //
     // Response fields
     //
@@ -98,10 +99,9 @@ class Constant
 
     const RAZORX_EXPERIMENT = 'razorx_experiment';
 
-    const CUSTOM_CALLBACK_HANDLER = 'custom_callback_handler';
-
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
 
+    const CUSTOM_CALLBACK_HANDLER = 'custom_callback_handler';
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         Type::AADHAR_FRONT                => [

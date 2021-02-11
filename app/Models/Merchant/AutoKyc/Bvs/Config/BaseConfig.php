@@ -12,6 +12,13 @@ class BaseConfig implements BvsConfig
 
     protected $rule_v2 = [];
 
+    protected $input;
+
+    public function __construct(array $input = [])
+    {
+        $this->input = $input;
+    }
+
     /**
      *
      * @return array

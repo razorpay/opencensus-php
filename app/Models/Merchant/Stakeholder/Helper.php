@@ -22,7 +22,8 @@ class Helper
             Entity::NOTES                  => Entity::NOTES,
             Entity::AADHAAR_LINKED         => Entity::AADHAAR_LINKED,
             Entity::AADHAAR_ESIGN_STATUS   => Entity::AADHAAR_ESIGN_STATUS,
-            Entity::AADHAAR_PIN            => Entity::AADHAAR_PIN
+            Entity::AADHAAR_PIN            => Entity::AADHAAR_PIN,
+            Entity::BVS_PROBE_ID           => Entity::BVS_PROBE_ID,
         ];
 
         self::addKeyMapFromInput($keyMap, $input, $stakeholderInput);

@@ -185,6 +185,8 @@ final class RazorxTreatment
     // experiment to enable esign aadhar functionality
     const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
 
+    const AADHAAR_WITH_PAN_VERIFICATION = 'aadhaar_with_pan_verification';
+
     // experiment to enable dedupe functionality
     const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
 

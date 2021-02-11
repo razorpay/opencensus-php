@@ -63,6 +63,7 @@ use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -335,6 +336,56 @@ class Core extends Base\Core
         return "NCR_".$maker->getName();
     }
 
+    protected function verifyAadhaarWithPanIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $businessType = $merchantDetails->getBusinessType();
+
+        // If aadhaar esign is not required then, aadhar with pan is also not required
+        if(BusinessType::isAadhaarEsignVerificationRequired($businessType) === false)
+        {
+            return;
+        }
+
+        $stakeholder = $merchantDetails->stakeholder;
+
+        if(empty($stakeholder) === true)
+        {
+            return;
+        }
+
+        if(empty($stakeholder->getBvsProbeId()) === true)
+        {
+            return;
+        }
+
+        // If already verified then skip it
+        if($stakeholder->getAadhaarVerificationWithPanStatus() === 'verified')
+        {
+            return;
+        }
+
+        $isAadharWithPanVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchantDetails->getMerchantId(),
+            RazorxTreatment::AADHAAR_WITH_PAN_VERIFICATION);
+
+        if($isAadharWithPanVerificationEnabled === false)
+        {
+            return;
+        }
+
+        $payload = [
+            Constant::ARTEFACT_TYPE   => Constant::AADHAAR,
+            Constant::CONFIG_NAME     => Constant::AADHAAR_WITH_PAN,
+            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::PROBE_ID        => $stakeholder->getBvsProbeId(),
+            Constant::DETAILS         => [
+                Constant::NAME => $merchantDetails->getPromoterPanName(),
+            ],
+        ];
+
+        $bvsValidation = (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), $payload);
+    }
+
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
     {
         $this->repo->assertTransactionActive();
@@ -360,6 +411,8 @@ class Core extends Base\Core
         $this->markSubmittedAndLock($merchantDetails);
 
         $this->updateActivationSource($merchant, $originProduct);
+
+        $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
@@ -2294,7 +2347,8 @@ class Core extends Base\Core
                 case BusinessType::NOT_YET_REGISTERED:
                 case BusinessType::INDIVIDUAL:
                     return Status::UNDER_REVIEW;
-
+                    
+                case BusinessType::PROPRIETORSHIP:
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
                 case BusinessType::LLP:
@@ -3845,11 +3899,12 @@ class Core extends Base\Core
         return $redis->get($key);
     }
 
-    public function processEsignAadhaarVerification(string $merchantId, string $pin, string $fileUrl)
+    public function processEsignAadhaarVerification(string $merchantId, string $pin, string $fileUrl, string $probeId)
     {
         $stakeholderInput = [
             Stakeholder\Entity::AADHAAR_ESIGN_STATUS  => 'verified',
-            Stakeholder\Entity::AADHAAR_PIN           => $pin
+            Stakeholder\Entity::AADHAAR_PIN           => $pin,
+            Stakeholder\Entity::BVS_PROBE_ID          => $probeId
         ];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

@@ -41,7 +41,7 @@ class DefaultProcessor implements Processor
 
         $configClass = $this->getConfigClass($configName);
 
-        $this->bvsRuleConfig = new $configClass();
+        $this->bvsRuleConfig = new $configClass($this->input);
 
     }
 

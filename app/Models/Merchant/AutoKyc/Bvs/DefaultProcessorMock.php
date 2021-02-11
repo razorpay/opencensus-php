@@ -43,12 +43,10 @@ class DefaultProcessorMock extends DefaultProcessor
 
                 $error = new Error();
 
-                $error->setCode("BAD_REQUEST_VALIDATION_ERROR");
+                $validationResponse->setErrorCode("BAD_REQUEST_VALIDATION_ERROR");
 
-                $error->setDescription("merchant type is not supported");
-
-                $validationResponse->setError($error);
-
+                $validationResponse->setErrorDescription("merchant type is not supported");
+                
                 break;
 
             default:

@@ -17,6 +17,10 @@ class Fields extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated string required_fields = 1;</code>
      */
     private $required_fields;
+    /**
+     * Generated from protobuf field <code>string probe_id = 2;</code>
+     */
+    protected $probe_id = '';
 
     /**
      * Constructor.
@@ -25,6 +29,7 @@ class Fields extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string[]|\Google\Protobuf\Internal\RepeatedField $required_fields
+     *     @type string $probe_id
      * }
      */
     public function __construct($data = NULL) {
@@ -50,6 +55,28 @@ class Fields extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->required_fields = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string probe_id = 2;</code>
+     * @return string
+     */
+    public function getProbeId()
+    {
+        return $this->probe_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string probe_id = 2;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setProbeId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->probe_id = $var;
 
         return $this;
     }

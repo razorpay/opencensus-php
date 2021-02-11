@@ -42,11 +42,11 @@ class ValidationBaseResponse implements Response
             Entity::VALIDATION_STATUS => $this->response->getStatus(),
         ];
 
-        if ($this->response->getError() !== null)
+        if ($this->response->getErrorCode() !== null)
         {
             $errorData    = [
-                Entity::ERROR_CODE        => $this->response->getError()->getCode(),
-                Entity::ERROR_DESCRIPTION => $this->response->getError()->getDescription()
+                Entity::ERROR_CODE        => $this->response->getErrorCode(),
+                Entity::ERROR_DESCRIPTION => $this->response->getErrorDescription()
             ];
             $responseData = array_merge($responseData, $errorData);
         }

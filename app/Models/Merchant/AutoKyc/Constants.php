@@ -39,31 +39,36 @@ class Constants
         'in' => [POIStatus::VERIFIED]
     ];
 
+    const AADHAAR_WITH_PAN_CONDITION = [
+        'entity'    => E::STAKEHOLDER,
+        'in' => [POIStatus::VERIFIED]
+    ];
+
     const AUTO_KYC_VERIFICATION_CONDITIONS = [
         BusinessType::NOT_YET_REGISTERED => [
             Operator::AND   =>  [
                 Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::BANK_DETAILS_CONDITION,
                 SEntity::AADHAAR_ESIGN_STATUS            => self::ESIGN_AADHAAR_CONDITION,
+                SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS => self::AADHAAR_WITH_PAN_CONDITION,
             ]
         ],
 
         BusinessType::INDIVIDUAL => [
             Operator::AND   =>  [
                 Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::BANK_DETAILS_CONDITION,
                 SEntity::AADHAAR_ESIGN_STATUS            => self::ESIGN_AADHAAR_CONDITION,
+                SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS => self::AADHAAR_WITH_PAN_CONDITION,
             ]
         ],
 
         BusinessType::PROPRIETORSHIP => [
             Operator::AND   => [
                 Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::BANK_DETAILS_CONDITION,
                 SEntity::AADHAAR_ESIGN_STATUS            => self::ESIGN_AADHAAR_CONDITION,
+                SEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS => self::AADHAAR_WITH_PAN_CONDITION,
                 Operator::OR  => [
                     Entity::GSTIN_VERIFICATION_STATUS               => self::GSTIN_CONDITION,
                     Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => self::SHOP_ESTABLISHMENT_CONDITION,

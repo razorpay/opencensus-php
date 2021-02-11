@@ -6154,3 +6154,7 @@ ALTER TABLE referrals
     ADD COLUMN product varchar(255) NOT NULL DEFAULT 'primary',
     DROP INDEX referrals_merchant_id_unique,
     ADD UNIQUE INDEX referrals_merchant_id_product_unique (merchant_id,product);
+
+ALTER TABLE stakeholders
+    ADD COLUMN aadhaar_verification_with_pan_status VARCHAR(30) DEFAULT NULL,
+    ADD COLUMN bvs_probe_id VARCHAR(30) DEFAULT NULL;

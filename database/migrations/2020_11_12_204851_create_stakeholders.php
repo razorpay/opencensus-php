@@ -36,6 +36,8 @@ class CreateStakeholders extends Migration
             $table->string(Entity::AADHAAR_ESIGN_STATUS)->nullable();
             $table->string(Entity::AADHAAR_PIN)->nullable();
             $table->boolean(Entity::AADHAAR_LINKED)->default(1);
+            $table->string(Entity::BVS_PROBE_ID)->nullable();
+            $table->string(Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS)->nullable();
 
             $table->integer(Entity::CREATED_AT);
 

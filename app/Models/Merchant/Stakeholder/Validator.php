@@ -27,7 +27,9 @@ class Validator extends Base\Validator
         Entity::POI_STATUS                => 'sometimes|string|nullable',
         Entity::POA_STATUS                => 'sometimes|string|nullable',
         Entity::AADHAAR_ESIGN_STATUS      => 'sometimes|string|nullable',
+        Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS      => 'sometimes|string|nullable',
         Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
+        Entity::BVS_PROBE_ID              => 'sometimes|string|nullable',
     ];
 
     protected static $editRules = [
@@ -41,7 +43,9 @@ class Validator extends Base\Validator
         Entity::POI_IDENTIFICATION_NUMBER => 'sometimes|string',
         Entity::NOTES                     => 'sometimes|notes',
         Entity::AADHAAR_ESIGN_STATUS      => 'sometimes|string|nullable',
+        Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS      => 'sometimes|string|nullable',
         Entity::AADHAAR_PIN               => 'sometimes|string|nullable',
+        Entity::BVS_PROBE_ID              => 'sometimes|string|nullable',
     ];
 
     protected static $createStakeholderRules = [

@@ -48,7 +48,7 @@ class BvsProxyPostProcessors extends PostProcessor
             $merchantId = $this->ba->getMerchant()->getId();
 
             (new DetailCore)->processEsignAadhaarVerification(
-                $merchantId, $payload['file_password'], $response['file_url']);
+                $merchantId, $payload['file_password'], $response['file_url'], $response['probe_id']);
         }
 
         unset($response['file_url']);

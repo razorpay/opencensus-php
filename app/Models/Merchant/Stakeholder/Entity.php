@@ -38,8 +38,10 @@ class Entity extends Base\PublicEntity
     const PAN_DOC_STATUS            = 'pan_doc_status';
     const POA_STATUS                = 'poa_status';
     const AADHAAR_ESIGN_STATUS      = 'aadhaar_esign_status';
+    const AADHAAR_VERIFICATION_WITH_PAN_STATUS   = 'aadhaar_verification_with_pan_status';
     const AADHAAR_PIN               = 'aadhaar_pin';
     const AADHAAR_LINKED            = 'aadhaar_linked';
+    const BVS_PROBE_ID              = 'bvs_probe_id';
 
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
@@ -65,8 +67,10 @@ class Entity extends Base\PublicEntity
         self::PAN_DOC_STATUS,
         self::POA_STATUS,
         self::AADHAAR_ESIGN_STATUS,
+        self::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
         self::AADHAAR_PIN,
-        self::AADHAAR_LINKED
+        self::AADHAAR_LINKED,
+        self::BVS_PROBE_ID
     ];
 
     protected $public = [
@@ -85,8 +89,10 @@ class Entity extends Base\PublicEntity
         self::PAN_DOC_STATUS,
         self::POA_STATUS,
         self::AADHAAR_ESIGN_STATUS,
+        self::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
         self::AADHAAR_PIN,
-        self::AADHAAR_LINKED
+        self::AADHAAR_LINKED,
+        self::BVS_PROBE_ID
     ];
 
     protected $casts = [
@@ -153,6 +159,16 @@ class Entity extends Base\PublicEntity
     public function getAadhaarEsignStatus()
     {
         return $this->getAttribute(self::AADHAAR_ESIGN_STATUS);
+    }
+
+    public function getAadhaarVerificationWithPanStatus()
+    {
+        return $this->getAttribute(self::AADHAAR_VERIFICATION_WITH_PAN_STATUS);
+    }
+
+    public function getBvsProbeId()
+    {
+        return $this->getAttribute(self::BVS_PROBE_ID);
     }
 
     public function getName()
