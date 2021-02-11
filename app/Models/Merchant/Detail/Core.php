@@ -3551,6 +3551,11 @@ class Core extends Base\Core
 
     private function getIsMerchantImpersonated(Merchant\Entity $merchant) : bool
     {
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
         $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::DEDUPE_FUNCTIONALITY);
 
@@ -3569,6 +3574,11 @@ class Core extends Base\Core
 
     private function calculateIsMerchantImpersonated(Merchant\Entity $merchant) : bool
     {
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
         $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::DEDUPE_FUNCTIONALITY);
 
