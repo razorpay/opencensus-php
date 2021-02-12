@@ -3198,6 +3198,7 @@ class Gateway
             self::NETBANKING_JKB,
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
+            self::PAYTM,
             self::PAYU,
             self::NETBANKING_IDFC,
             self::NETBANKING_OBC,
