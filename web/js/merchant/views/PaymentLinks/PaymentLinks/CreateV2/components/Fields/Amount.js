@@ -1,21 +1,8 @@
 import Input from 'common/new-ui/Input';
+import { validateAmount } from 'common/utils/validators';
+
 import track from '../../track';
 import { FORM_CLASS_NAME } from '../FormWizard';
-
-const callTrackers = (props) => {
-  return () => {
-    track.lj.fields.amount({
-      modified: props.isIntentDuplicate,
-    });
-
-    const invalidAmountField = document.querySelector(
-      `.${FORM_CLASS_NAME} .amount .Input.Input--required.is-invalid`,
-    );
-    if (invalidAmountField) {
-      track.lj.form.fail({ response: 'Please fill out this field' });
-    }
-  };
-};
 
 const Amount = (props) => {
   return (
@@ -40,11 +27,31 @@ const Amount = (props) => {
           name="amount"
           placeholder="0.00"
           defaultValue={props.defaultAmount}
+          validator={amountValidator}
           onBlur={callTrackers(props)}
         />
       </div>
     </Input.Group>
   );
 };
+
+function amountValidator(value) {
+  return validateAmount(value);
+}
+
+function callTrackers(props) {
+  return () => {
+    track.lj.fields.amount({
+      modified: props.isIntentDuplicate,
+    });
+
+    const invalidAmountField = document.querySelector(
+      `.${FORM_CLASS_NAME} .amount .Input.Input--required.is-invalid`,
+    );
+    if (invalidAmountField) {
+      track.lj.form.fail({ response: 'Please fill out this field' });
+    }
+  };
+}
 
 export default Amount;
