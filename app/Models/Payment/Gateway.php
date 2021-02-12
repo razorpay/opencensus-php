@@ -3173,7 +3173,7 @@ class Gateway
     public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway)
     {
         $gatewayToNbPlusOnMerchantLevel = [
-            self::NETBANKING_FEDERAL,
+
         ];
 
         return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
