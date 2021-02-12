@@ -39,6 +39,9 @@ class CreateBvsValidationTable extends Migration
             $table->char(Entity::ERROR_DESCRIPTION, 255)
                   ->nullable();
 
+            $table->json(Entity::RULE_EXECUTION_LIST)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

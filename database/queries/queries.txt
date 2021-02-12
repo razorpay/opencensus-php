@@ -6161,3 +6161,6 @@ ALTER TABLE payouts
 ALTER TABLE stakeholders
     ADD COLUMN aadhaar_verification_with_pan_status VARCHAR(30) DEFAULT NULL,
     ADD COLUMN bvs_probe_id VARCHAR(30) DEFAULT NULL;
+
+ALTER TABLE bvs_validation
+    ADD COLUMN rule_execution_list JSON DEFAULT NULL;

@@ -4461,9 +4461,11 @@ class Core extends Base\Core
      */
     public function isRazorxExperimentEnable(string $merchantId, string $experimentName): bool
     {
+        $mode = $this->mode ?? Mode::LIVE;
+
         $variant = $this->app->razorx->getTreatment($merchantId,
                                                     $experimentName,
-                                                    $this->mode);
+                                                    $mode);
 
         return ($variant === Constants::RAZORX_EXPERIMENT_ON);
     }

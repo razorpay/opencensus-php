@@ -6,8 +6,11 @@ use APP;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 
 class Factory
@@ -67,6 +70,22 @@ class Factory
             $artefactType);
 
         if (empty($validation) === true)
+        {
+            return new DefaultClarificationReasonComposer();
+        }
+
+        $isNeedClarificationNotMatchedEnabled = (new MerchantCore())->isRazorxExperimentEnable(
+            $this->merchantDetails->getId(),
+            RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED);
+
+        if ($validation->getErrorCode() === Constants::RULE_EXECUTION_FAILED and
+            $isNeedClarificationNotMatchedEnabled === true)
+        {
+            return new NotMatchedReasonComposer($validation, $needsClarificationMetaData);
+        }
+
+        // remove this once razorx experiment is ramped to 100.
+        if ($validation->getErrorCode() === Constants::RULE_EXECUTION_FAILED)
         {
             return new DefaultClarificationReasonComposer();
         }

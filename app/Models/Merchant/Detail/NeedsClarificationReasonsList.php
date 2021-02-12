@@ -40,6 +40,16 @@ class NeedsClarificationReasonsList
     const CIN_DATA_UNAVAILABLE                      = 'cin_data_unavailable';
     const LLPIN_DATA_UNAVAILABLE                    = 'llpin_data_unavailable';
 
+    //Not Used please use these fields if required in future.
+    const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED       = 'shop_establishment_data_not_matched';
+    const GSTIN_DATA_NOT_MATCHED                    = 'gstin_not_matched';
+    const CIN_DATA_NOT_MATCHED                      = 'cin_data_not_matched';
+    const LLPIN_DATA_NOT_MATCHED                    = 'llpin_data_not_matched';
+
+    //SignatoryName & CompanyName Not Matched.
+    const SIGNATORY_NAME_NOT_MATCHED                = 'signatory_name_not_matched';
+    const COMPANY_NAME_NOT_MATCHED                  = 'company_name_not_matched';
+
     //board resolution documents clarification reasons
     const AUTHORIZED_SIGNATORY_MISMATCH                           = 'authorized_signatory_mismatch';
     const PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT = 'provide_authorized_signatory_signed_and_sealed_document';
@@ -120,7 +130,19 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'The PAN & Address Proof submitted is not of the authorized signatory as per the Board Resolution Authorisation',],
         self::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT => [
             NeedsClarificationMetaData::DESCRIPTION => 'The PAN & Address Proof submitted is not of the authorized signatory as per the Board Resolution Authorisation',],
-    ];
+        self::GSTIN_DATA_NOT_MATCHED                                  => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Gstin Signatory Name not matched with please submit correct details.',],
+        self::CIN_DATA_NOT_MATCHED                                    => [
+            NeedsClarificationMetaData::DESCRIPTION => 'CIN Signatory Name not matched with please submit correct details.',],
+        self::LLPIN_DATA_NOT_MATCHED                                  => [
+            NeedsClarificationMetaData::DESCRIPTION => 'LLPIN Signatory Name not matched with please submit correct details.',],
+        self::SHOP_ESTABLISHMENT_DATA_NOT_MATCHED                     => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Shops Establishment Signatory Name not matched with please submit correct details.',],
+        self::SIGNATORY_NAME_NOT_MATCHED                              => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered PAN Name doesn\'t match company incorporation records, please enter correct Authorised Signatory PAN Name.',],
+        self::COMPANY_NAME_NOT_MATCHED                                => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered Business Name doesn\'t match company incorporation records, please enter correct Business Name.',],
+        ];
 
 
     /**

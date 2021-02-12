@@ -6,15 +6,16 @@ use RZP\Models\Base\PublicEntity;
 
 class Entity extends PublicEntity
 {
-    const VALIDATION_ID     = 'validation_id';
-    const ARTEFACT_TYPE     = 'artefact_type';
-    const PLATFORM          = 'platform';
-    const OWNER_TYPE        = 'owner_type';
-    const OWNER_ID          = 'owner_id';
-    const VALIDATION_STATUS = 'validation_status';
-    const VALIDATION_UNIT   = 'validation_unit';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
+    const VALIDATION_ID         = 'validation_id';
+    const ARTEFACT_TYPE         = 'artefact_type';
+    const PLATFORM              = 'platform';
+    const OWNER_TYPE            = 'owner_type';
+    const OWNER_ID              = 'owner_id';
+    const VALIDATION_STATUS     = 'validation_status';
+    const VALIDATION_UNIT       = 'validation_unit';
+    const ERROR_CODE            = 'error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const RULE_EXECUTION_LIST   = 'rule_execution_list';
 
     protected $primaryKey = self::VALIDATION_ID;
 
@@ -30,6 +31,7 @@ class Entity extends PublicEntity
         self::VALIDATION_UNIT,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::RULE_EXECUTION_LIST,
     ];
 
     protected $public = [
@@ -41,8 +43,13 @@ class Entity extends PublicEntity
         self::VALIDATION_STATUS,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::RULE_EXECUTION_LIST,
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $casts = [
+        self::RULE_EXECUTION_LIST       => 'array',
     ];
 
     public function getValidationId(): string
@@ -98,5 +105,10 @@ class Entity extends PublicEntity
     public function getErrorDescription()
     {
         return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
+    public function getRuleExecutionList()
+    {
+        return $this->getAttribute(self::RULE_EXECUTION_LIST);
     }
 }

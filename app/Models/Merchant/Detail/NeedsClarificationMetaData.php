@@ -93,8 +93,9 @@ class NeedsClarificationMetaData
             Constants::FIELD_NAME                          => Entity::GSTIN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
             Constants::REASON_MAPPING                      => [
-                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_GSTIN_NUMBER,
-                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::GSTIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_GSTIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::GSTIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::GSTIN_DATA_NOT_MATCHED,
             ],
         ],
         Constants::CIN_IDENTIFER       => [
@@ -103,8 +104,9 @@ class NeedsClarificationMetaData
             Constants::FIELD_NAME                          => Entity::COMPANY_CIN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
             Constants::REASON_MAPPING                      => [
-                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_CIN_NUMBER,
-                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::CIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_CIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::CIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::CIN_DATA_NOT_MATCHED,
             ],
         ],
         Constants::LLPIN_IDENTIFIER    => [
@@ -113,8 +115,10 @@ class NeedsClarificationMetaData
             Constants::FIELD_NAME                          => Entity::COMPANY_CIN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
             Constants::REASON_MAPPING                      => [
-                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_LLPIN_NUMBER,
-                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::LLPIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_LLPIN_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::LLPIN_DATA_UNAVAILABLE,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::LLPIN_DATA_NOT_MATCHED,
+
             ],],
         Constants::BANK_ACCOUNT_NUMBER => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V1,
@@ -128,8 +132,9 @@ class NeedsClarificationMetaData
             Constants::FIELD_NAME                          => Entity::SHOP_ESTABLISHMENT_NUMBER,
             Constants::FIELD_TYPE                          => Constants::TEXT,
             Constants::REASON_MAPPING                      => [
-                BvsValidationConstant::INPUT_DATA_ISSUE => ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
-                BvsValidationConstant::DATA_UNAVAILABLE => ReasonList::SHOP_ESTABLISHMENT_DATA_UNAVAILABLE,
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
+                BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::SHOP_ESTABLISHMENT_DATA_UNAVAILABLE,
+                BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::SHOP_ESTABLISHMENT_DATA_NOT_MATCHED,
             ],
         ]
     ];

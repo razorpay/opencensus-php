@@ -25,4 +25,7 @@ class Constants
     const CIN_IDENTIFER                 = 'cin_identifier';
     const LLPIN_IDENTIFIER              = 'llpin_identifier';
     const SHOP_ESTABLISHMENT_IDENTIFIER = 'shop_establishment_identifier';
+
+    const IS_SIGNATORY_NAME_MATCHED     = 'isSignatoryNameMatched';
+    const IS_COMPANY_NAME_MATCHED       = 'isCompanyNameMatched';
 }

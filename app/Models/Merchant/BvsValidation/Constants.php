@@ -18,10 +18,11 @@ class Constants
     //
     // message keys Kafka consumer
     //
-    const VALIDATION_ID     = 'validation_id';
-    const STATUS            = 'status';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
+    const VALIDATION_ID         = 'validation_id';
+    const STATUS                = 'status';
+    const ERROR_CODE            = 'error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const RULE_EXECUTION_LIST   = 'rule_execution_list';
 
     const BVS_KYC_VERIFICATION_RESULT       = 'bvs_kyc_verification_result';
     const MATCH                             = 'match';
@@ -56,8 +57,9 @@ class Constants
     const INITIATED         = 'initiated';
 
     // error codes
-    const INPUT_DATA_ISSUE = 'INPUT_DATA_ISSUE';
-    const DATA_UNAVAILABLE = 'DATA_UNAVAILABLE';
+    const INPUT_DATA_ISSUE      = 'INPUT_DATA_ISSUE';
+    const DATA_UNAVAILABLE      = 'DATA_UNAVAILABLE';
+    const RULE_EXECUTION_FAILED = 'RULE_EXECUTION_FAILED';
 
     const ERROR_MAPPING = [
         self::FAILED            => [

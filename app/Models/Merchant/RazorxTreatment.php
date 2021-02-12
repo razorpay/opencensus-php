@@ -220,4 +220,6 @@ final class RazorxTreatment
 
     // Disable tpv flow in fund loading for business banking merchants (Razorpay X) if required.
     const DISABLE_TPV_FLOW_FOR_BANKING_ACCOUNT_FUND_LOADING = 'disable_tpv_flow_for_banking_account_fund_loading';
+
+    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED  = 'system_based_needs_clarification_not_matched';
 }

@@ -117,10 +117,11 @@ class Core extends Base\Core
     public function getValidationObject(array $payload): array
     {
         return [
-            Entity::VALIDATION_ID     => $payload[Constants::VALIDATION_ID],
-            Entity::VALIDATION_STATUS => $payload[Constants::STATUS],
-            Entity::ERROR_CODE        => $payload[Constants::ERROR_CODE] ?? null,
-            Entity::ERROR_DESCRIPTION => $payload[Constants::ERROR_DESCRIPTION] ?? null,
+            Entity::VALIDATION_ID           => $payload[Constants::VALIDATION_ID],
+            Entity::VALIDATION_STATUS       => $payload[Constants::STATUS],
+            Entity::ERROR_CODE              => $payload[Constants::ERROR_CODE] ?? null,
+            Entity::ERROR_DESCRIPTION       => $payload[Constants::ERROR_DESCRIPTION] ?? null,
+            Entity::RULE_EXECUTION_LIST     => $payload[Constants::RULE_EXECUTION_LIST] ?? []
         ];
     }
 
