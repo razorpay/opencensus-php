@@ -24,10 +24,9 @@ jobs:
     needs: [cancel]
     continue-on-error: false
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v2
-
-      - name: Build and push
+      - name: Push To Harbor
         uses: docker/build-push-action@v1
         with:
           registry: c.rzp.io
