@@ -278,7 +278,7 @@
       }
     }
 
-    function openIntentUrl(intentUrl) {
+    function openIntentUrl(intentUrl, payment_id) {
       if (window.CheckoutBridge) {
         CheckoutBridge.callNativeIntent(intentUrl);
       } else if (iosBridge) {
@@ -286,6 +286,7 @@
           action: 'callNativeIntent',
           body: {
             intent_url: intentUrl,
+            payment_id: payment_id
           }
         });
       }
@@ -399,13 +400,14 @@
 
     if (isIntentFlow) {
       var intent_url = data.data.intent_url;
+      var payment_id = data.payment_id;
 
       function initUpiActivity() {
         try {
-          openIntentUrl(intent_url);
+          openIntentUrl(intent_url, payment_id);
           $('spinner').className = 'hide';
           $('retry-btn').className = 'hide';
-          $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
+          $('message-txt').innerHTML = iosBridge ? "Please accept the request from Razorpay's VPA on your UPI app" : '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
             if (!Object.keys(resp).length ||
                 /txnId=(undefined|null|)(&|$)/i.test(resp.response) ||
