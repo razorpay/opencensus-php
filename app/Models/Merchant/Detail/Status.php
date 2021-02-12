@@ -18,7 +18,7 @@ class Status
      * Allowed next activation statuses mapping
      */
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING = [
-        self::INSTANTLY_ACTIVATED => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::INSTANTLY_ACTIVATED => [self::UNDER_REVIEW, self::ACTIVATED, self::ACTIVATED_MCC_PENDING],
         self::UNDER_REVIEW        => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED, self::ACTIVATED_MCC_PENDING],
         self::NEEDS_CLARIFICATION => [self::UNDER_REVIEW],
         self::REJECTED            => [self::UNDER_REVIEW],

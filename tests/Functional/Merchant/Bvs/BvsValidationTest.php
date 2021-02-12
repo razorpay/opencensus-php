@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Queue;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\UpdateMerchantContext;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -159,6 +161,8 @@ class BvsValidationTest extends TestCase
 
     public function testUpdateBvsValidationStatusPoa()
     {
+        $this->enableRazorXTreatmentForBvsValidation();
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $mid = $merchantDetail->getId();
@@ -266,6 +270,8 @@ class BvsValidationTest extends TestCase
 
     public function testUpdateBvsValidationStatusBankDetails()
     {
+        $this->enableRazorXTreatmentForBvsValidation();
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $mid = $merchantDetail->getId();
@@ -359,6 +365,27 @@ class BvsValidationTest extends TestCase
                 $possibleScenario['merchantDetailsData']
             );
         }
+    }
+
+    protected function enableRazorXTreatmentForBvsValidation()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
     }
 
     public function updateBvsValidationStatusAndCheckMerchantDetailsPoa($capturedBvsValidation,

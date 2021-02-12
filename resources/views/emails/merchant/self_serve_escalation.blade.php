@@ -38,6 +38,12 @@
             >
                 Workflow URL
             </th>
+            <th
+                class="fix"
+                style="border:1px solid black;border-collapse:collapse;padding:10px;width:60%; text-align: left;" width="70%"
+            >
+                Business Type
+            </th>
         </tr>
         </thead>
         <tbody>
@@ -53,6 +59,9 @@
                             @if(empty($merchant['workflowUrl']) === false)
                             <a href="{{$merchant['workflowUrl']}}">Workflow</a>
                             @endif
+                        </td>
+                        <td style="border:1px solid black;border-collapse:collapse;padding:15px;" width="30%" valign="top">
+                            {{{$merchant['businessType']}}}
                         </td>
                     </tr>
             @endforeach

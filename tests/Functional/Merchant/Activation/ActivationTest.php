@@ -12,6 +12,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Card\Network;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\MerchantRiskClient;
@@ -64,6 +65,29 @@ class ActivationTest extends OAuthTestCase
         parent::setUp();
 
         $this->fixtures->create('org:hdfc_org');
+
+        $this->enableRazorXTreatmentForActivation();
+    }
+
+    protected function enableRazorXTreatmentForActivation()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
     }
 
     public function testMerchantActivationCategoriesResponseForAdminAuth()

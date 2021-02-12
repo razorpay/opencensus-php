@@ -204,6 +204,9 @@ final class RazorxTreatment
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
 
+    // experiment to enable self serving of auto kyc unregistered merchants
+    const UNREG_SELF_SERVE_AUTO_KYC = 'unreg_self_serve_auto_kyc';
+
     // some merchants require more attempts to fetch their whole statement. hence special attempt limit should be enabled for them.
     const BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT = 'banking_account_statement_special_attempt_limit';
 

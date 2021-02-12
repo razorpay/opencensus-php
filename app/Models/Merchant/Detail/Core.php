@@ -2356,8 +2356,8 @@ class Core extends Base\Core
             {
                 case BusinessType::NOT_YET_REGISTERED:
                 case BusinessType::INDIVIDUAL:
-                    return Status::UNDER_REVIEW;
-                    
+                    return $this->getApplicableActivationStatusForUnregisteredMerchant($merchantDetails);
+
                 case BusinessType::PROPRIETORSHIP:
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
@@ -2375,6 +2375,7 @@ class Core extends Base\Core
             Status::ACTIVATED,
             Status::REJECTED
         ];
+
         $currentActivationStatus = $merchantDetails->getActivationStatus();
 
         $currentActivationFlow = $merchantDetails->getActivationFlow();
@@ -2389,11 +2390,38 @@ class Core extends Base\Core
         $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
 
         if ($isWhitelisted === true and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false)
         {
             $isSelfServeEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
                 $merchantDetails->getMerchantId(),
                 RazorxTreatment::SELF_SERVE_AUTO_KYC
+            );
+
+            if ($isSelfServeEnabled) {
+                return Status::ACTIVATED_MCC_PENDING;
+            }
+        }
+
+        return Status::UNDER_REVIEW;
+    }
+
+    private function getApplicableActivationStatusForUnregisteredMerchant($merchantDetails)
+    {
+        $excludeActivationStatusList = [
+            Status::NEEDS_CLARIFICATION,
+            Status::ACTIVATED,
+            Status::REJECTED
+        ];
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+        $isImpersonated = $this->getIsMerchantImpersonated($merchantDetails->merchant);
+
+        if ($isImpersonated === false and
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false)
+        {
+            $isSelfServeEnabled = $this->mcore->isRazorxExperimentEnable(
+                $merchantDetails->getMerchantId(),
+                RazorxTreatment::UNREG_SELF_SERVE_AUTO_KYC
             );
 
             if ($isSelfServeEnabled) {
@@ -2413,7 +2441,7 @@ class Core extends Base\Core
             return false;
         }
 
-        if(isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
+        if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
         {
             return false;
         }

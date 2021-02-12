@@ -78,6 +78,7 @@ class Email extends BaseEscalationType
             'merchantId'    => $merchantId,
             'activationStatus' => $merchant->merchantDetail->getActivationStatus(),
             'workflowUrl'   => $url,
+            'businessType' => $merchant->merchantDetail->getBusinessType()
         ];
     }
 

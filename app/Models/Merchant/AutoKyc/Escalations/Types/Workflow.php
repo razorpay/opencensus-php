@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -36,10 +37,17 @@ class Workflow extends BaseEscalationType
     {
         $input = [DetailEntity::ACTIVATION_STATUS => Status::ACTIVATED];
 
+        $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH;
+
+        if ($merchant->merchantDetail->isUnregisteredBusiness())
+        {
+            $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED;
+        }
+
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.
         $this->app['workflow']
-            ->setPermission(Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH)
+            ->setPermission($permissionName)
             ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
             ->setController(DetailConstants::ACTIVATION_CONTROLLER)
             ->setWorkflowMaker($merchant)
