@@ -3,6 +3,18 @@ import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 
 function getKycActivationSubmitBody(args) {
+  if (
+    (args.isActivated && args.isWhitelistFlow) ||
+    (args.isUnregisteredBusiness && args.isActivated)
+  ) {
+    return (
+      <div>
+        We will reach out on your contact email for further clarifications if needed. The review
+        process usually takes 1-2 working days <strong>after your first transaction</strong>. Your
+        settlements will be enabled post KYC is reviewed and approved.
+      </div>
+    );
+  }
   return (
     <div>
       <div>KYC review process usually takes 8-10 working days. </div>
@@ -92,6 +104,7 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType, activationD
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
     onGoToDashboard: onGoToDashboard,
+    isActivated: user.isActivated,
     activationDuration: activationDuration,
   };
 
