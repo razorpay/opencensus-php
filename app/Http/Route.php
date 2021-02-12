@@ -4415,7 +4415,7 @@ class Route
         'offline_verification_service_delete'      => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'd2c_create_csv_report'                    => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
-        'payout_update_pull_payout_status'         => '*',
+        'payout_update_pull_payout_status'         => Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => '*',

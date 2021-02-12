@@ -1270,6 +1270,29 @@ class AdminTest extends TestCase
         $plMock->shouldHaveReceived('adminActions');
     }
 
+    public function testPayoutLinkPullStatusRouteReachesServiceWithPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'payout_link_admin_auth_execute'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
+    public function testPayoutLinkPullStatusRouteFailsWithoutPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'some_other_permission'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
+
     public function testPayoutLinkAdminRouteFailsWithoutPermission()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
