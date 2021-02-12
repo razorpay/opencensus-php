@@ -32,13 +32,14 @@ jobs:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: ${{ github.repository }}
       - name: Push To Harbor
         uses: docker/build-push-action@v1
         with:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/opencensus-php
+          repository: ${{ github.repository }}
           tags: ${{ github.sha }}
           dockerfile: ./ext/Dockerfile.rzp
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
