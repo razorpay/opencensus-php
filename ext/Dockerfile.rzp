@@ -1,4 +1,4 @@
-FROM c.rzp.io/razorpay/onggi:php-7.2-apache-api
+FROM razorpay/onggi:php-7.2-apache-api
 COPY . /app
 
 RUN cd /app && phpize && ./configure --enable-opencensus && make && make test && make install
