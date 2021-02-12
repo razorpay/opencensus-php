@@ -117,7 +117,7 @@ class PaperNachCiti extends Debit\Base
                         $amount = $amount + $data[Headings::AMOUNT];
                     }
 
-                    $date = Carbon::now(Timezone::IST)->format('dmY');
+                    $date = $this->getDate();
 
                     $summaryRow = [
                         0 => [
@@ -275,7 +275,7 @@ class PaperNachCiti extends Debit\Base
 
     protected function getFileToWriteNameWithoutExt(array $data)
     {
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = $this->getDate();
 
          if (isset($data['utilityCode']) === true)
          {
@@ -320,7 +320,7 @@ class PaperNachCiti extends Debit\Base
         $length         = FieldsLength::USER_NUMBER;
         $utilityCode  = $this->getPaddedValue($key, $length, ' ', STR_PAD_RIGHT);
 
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = $this->getDate();
 
         $row = [
             Headings::ACH_TRANSACTION_CODE              => Fields::ACH_TRANSACTION_CODE_HEADING,
@@ -642,5 +642,10 @@ class PaperNachCiti extends Debit\Base
         }
 
         return true;
+    }
+
+    protected function getDate()
+    {
+        return Carbon::now(Timezone::IST)->format('dmY');
     }
 }

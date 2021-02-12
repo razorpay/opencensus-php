@@ -246,7 +246,7 @@ class NachCitiGatewayTest extends NachGatewayTest
         $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
 
         // since date and amount is fixed for this test header is a constant
-        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0000050000000000000030000011022020                       NACH00000000013149000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0000050000000000000030000012022020                       NACH00000000013149000000000000000000CITI000PIGW000018003                          000000001                                                           ';
 
         $this->assertEquals($expectedHeader, $fileContent[0]);
 

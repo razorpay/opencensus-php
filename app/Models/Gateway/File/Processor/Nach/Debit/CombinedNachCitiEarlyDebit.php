@@ -79,7 +79,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
 
     protected function getFileToWriteNameWithoutExt(array $data)
     {
-        $date = Carbon::now(Timezone::IST)->addDay()->format('dmY');
+        $date = $this->getDate();
 
         $fileName = strtr($data['fileName'], ['{$date}' => $date, '{$serial}' => $data['serialNumber']]);
 
@@ -94,5 +94,10 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         }
 
         return $fileName;
+    }
+
+    protected function getDate()
+    {
+        return Carbon::now(Timezone::IST)->addDay()->format('dmY');
     }
 }
