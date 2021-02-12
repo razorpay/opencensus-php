@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import DetailRow from 'merchant/components/DetailRow';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 
 const BankAccountDetails = ({
   bankAccount,
@@ -25,11 +25,19 @@ const BankAccountDetails = ({
     }
   }, [bankAccountSectionRef, location]);
 
+  const isSettlementOnHold =
+    (settlement_amount.no_settlement && settlement_amount.no_settlement.on_hold) || false;
+  const showRequestChange =
+    !isSettlementOnHold &&
+    isBankAccountChangeAllowed !== null &&
+    !user.blockBankAccountUpdate() &&
+    user.activation_status === 'activated';
+
   return (
     <div class="panel panel-default" ref={bankAccountSectionRef}>
       <div class="panel-heading">
         Bank Account
-        {settlement_amount.no_settlement && settlement_amount.no_settlement.on_hold && (
+        {isSettlementOnHold && (
           <span class="pull-right" style={{ color: 'gray' }}>
             Request Change
             <small class="help-content">
@@ -42,10 +50,7 @@ const BankAccountDetails = ({
             </small>
           </span>
         )}
-        {((settlement_amount.no_settlement && !settlement_amount.no_settlement.on_hold) ||
-          !settlement_amount.no_settlement) &&
-          isBankAccountChangeAllowed !== null &&
-          !user.blockBankAccountUpdate() &&
+        {showRequestChange &&
           (isBankAccountChangeAllowed ? (
             <a class="pull-right" onClick={onChangeBankAccountDetails}>
               Request Change
