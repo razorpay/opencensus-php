@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Merchant\Validator as MerchantValidator;
 use RZP\Models\Batch\Processor\Util\PartnersCommonUtil as PartnersCommonUtil;
 
 class PartnerSubmerchantInvite extends Base
@@ -16,5 +17,13 @@ class PartnerSubmerchantInvite extends Base
     public function shouldSendToBatchService(): bool
     {
         return true;
+    }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        $product = $input['config']['product'] ?? null;
+
+        // validate the product passed in the input params
+        (new MerchantValidator())->validateMerchantProduct($product);
     }
 }
