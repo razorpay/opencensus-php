@@ -32,6 +32,6 @@ jobs:
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
           repository: razorpay/opencensus-php
           tags: ${{ github.sha }}
-          dockerfile: ./ext/Dockerfile.rzp
+          dockerfile: ext/Dockerfile.rzp
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
 
