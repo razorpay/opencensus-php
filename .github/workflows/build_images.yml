@@ -30,14 +30,14 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          username: ${{ secrets.PUBLIC_DOCKER_USERNAME }}
+          password: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
       - name: Push To Harbor
         uses: docker/build-push-action@v1
         with:
           registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          username: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
+          password: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
           repository: ${{ github.repository }}
           tags: ${{ github.sha }}
           dockerfile: ./ext/Dockerfile.rzp
