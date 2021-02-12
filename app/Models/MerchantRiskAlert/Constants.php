@@ -6,6 +6,10 @@ class Constants
 {
     const MERCHANT_FOH_KEY          = 'merchant_foh';
     const MERCHANT_FOH_WORKFLOW_KEY = 'merchant_foh_workflow_open';
+    const MERCHANT_CREATED_AT       = 'merchant_created_at';
+    const MERCHANT_MIN_AOV          = 'merchant_min_aov';
+    const MERCHANT_MAX_AOV          = 'merchant_max_aov';
+    const MERCHANT_HAS_AOV          = 'merchant_has_aov';
 
     const ACTION_MANUAL_FOH      = 'manual';
     const ACTION_AUTO_FOH        = 'auto';

@@ -86,10 +86,24 @@ class Service extends Base\Service
         $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
             $merchant->getId(), Constants::MERCHANT_DETAIL_KEY, Permission\Name::MERCHANT_RISK_ALERT_FOH);
 
-        return [
+        $details = [
             Constants::MERCHANT_FOH_KEY          => $merchant->isFundsOnHold(),
             Constants::MERCHANT_FOH_WORKFLOW_KEY => $workflowActions->isNotEmpty() === true,
+            Constants::MERCHANT_CREATED_AT       => $merchant->getCreatedAt(),
+            Constants::MERCHANT_HAS_AOV          => false,
         ];
+
+        $merchantAov = $merchant->merchantDetail->avgOrderValue;
+
+        // Getting the current aov value (there could be skews, but given the current experiment phase shouldnt matter)
+        if (is_null($merchantAov) === false)
+        {
+            $details[Constants::MERCHANT_HAS_AOV] = true;
+            $details[Constants::MERCHANT_MIN_AOV] = $merchantAov->getMinAov();
+            $details[Constants::MERCHANT_MAX_AOV] = $merchantAov->getMaxAov();
+        }
+
+        return $details;
     }
 
     private function handleManualFOH(Merchant\Entity $merchant, array $input)
