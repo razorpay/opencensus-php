@@ -270,6 +270,39 @@ class Stork
     }
 
     /**
+     * # What?
+     * Calls replayEventById() and if failure queues it for which worker exists in
+     * this service itself. The worker again just calls processEvent() for each
+     * queued messages.
+     *
+     * # Why?
+     * We are doing this to avoid event drops with network issues and/or
+     * timeouts between api<>stork communication. Note that there exists retry
+     * for http call and this is eventual fallback.
+     *
+     * Worker exists for now in api service itself to save development time and
+     * devops ask. Ideally there should be a shared queue and stork itself
+     * should drain that queue.
+     *
+     * @param  Event\Entity $event
+     * @return void
+     */
+    public function replayEventByIdSafe(string $eventId)
+    {
+        try
+        {
+            $this->replayEventById($eventId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
+
+            // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
+            //WebhookEvent::dispatch($this->mode, $eventId, $this->product);
+        }
+    }
+
+    /**
      * Calls rzp.stork.webhook.v1.WebhookAPI/ProcessEvent endpoint of stork service.
      * Also see processEventSafe().
      *
@@ -306,6 +339,27 @@ class Stork
         $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
             $processEventReq,
+            self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+        );
+    }
+
+    /**
+     * Calls rzp.stork.webhook.v1.WebhookAPI/ReplayWebhookByEventId endpoint of stork service.
+     * Also see processEventSafe().
+     *
+     * @param  Event\Entity $event
+     * @return void
+     * @throws \RZP\Exception\ServerErrorException
+     * @throws \Throwable
+     */
+    public function replayEventById(string $eventId)
+    {
+        $replayEventReq = [
+            'event_id' => $eventId
+        ];
+        $this->service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ReplayWebhookByEventId',
+            $replayEventReq,
             self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
         );
     }

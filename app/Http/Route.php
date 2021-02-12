@@ -492,6 +492,7 @@ class Route
         'webhook_send_email'                       => ['post',     'webhooks-email/{emailType}',                     'WebhookV2Controller@sendEmail'                                     ],
         'admin_webhook_email_stork_recon'          => ['post',     'admin/webhooks/email/recon',                     'WebhookV2Controller@webhookEmailStorkRecon'                        ],
         'admin_process_webhook_events_csv'         => ['post',     'admin/webhooks/process_events_csv',              'WebhookV2Controller@processWebhookEventsFromCsv'                   ],
+        'admin_process_webhook_events_by_ids'      => ['post',     'admin/webhooks/process_events_by_ids',           'WebhookV2Controller@processWebhookEventsByIds'                     ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -4252,6 +4253,7 @@ class Route
         'admin_webhook_email_stork_recon',
 
         'admin_process_webhook_events_csv',
+        'admin_process_webhook_events_by_ids',
 
         // instrument requests
         'get_internal_instrument_request_by_id',
@@ -4564,6 +4566,7 @@ class Route
         'admin_post_stork'                         => Permission::STORK_WRITE_OPERATION,
         'admin_webhook_email_stork_recon'          => Permission::STORK_WRITE_OPERATION,
         'admin_process_webhook_events_csv'         => Permission::STORK_SUPPORT_OPERATION,
+        'admin_process_webhook_events_by_ids'      => Permission::STORK_SUPPORT_OPERATION,
         'invitation_fetch'                         => '*',
         'pricing_create_plan'                      => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,

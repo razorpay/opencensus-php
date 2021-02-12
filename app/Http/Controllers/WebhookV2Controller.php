@@ -83,6 +83,17 @@ class WebhookV2Controller extends Controller
     }
 
     /**
+     * @see WebhookV2\Service's processWebhookEventsByIds method.
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function processWebhookEventsByIds()
+    {
+        (new Service)->processWebhookEventsByIds($this->input);
+
+        return ApiResponse::json([]);
+    }
+
+    /**
      * @deprecated This should be removed. Subscriptions service, who is only
      * user for this route, should integrate with stork for dispatching webhook
      * events.
