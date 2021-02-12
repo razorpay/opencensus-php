@@ -36,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v1
         with:
           registry: c.rzp.io
-          username: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
+          username: ${{ secrets.PUBLIC_DOCKER_USERNAME }}
           password: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
           repository: ${{ github.repository }}
           tags: ${{ github.sha }}
