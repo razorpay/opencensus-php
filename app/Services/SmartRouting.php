@@ -15,6 +15,8 @@ class SmartRouting
     const REQUEST_TIMEOUT           = 1.5;
     const REQUEST_TIMEOUT_ASYNC     = 0.1;
 
+    const REQUEST_TIMEOUT_AUTHN     = 0.5;
+
     const MAX_RETRY_COUNT           = 1;
 
     const SUCCESS                   = 'success';
@@ -52,7 +54,7 @@ class SmartRouting
     ];
 
     const SEND_PAYMNENT_AUTHN = [
-        'url'       =>  "/route_authn",
+        'url'       =>  "/route_authn/api",
         'method'    =>  "POST",
     ];
 
@@ -72,6 +74,11 @@ class SmartRouting
     public function sendPaymentData($data)
     {
         return $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, null,self::REQUEST_TIMEOUT);
+    }
+
+    public function sendAuthNPaymentData($data)
+    {
+        return $this->sendRequest(self::SEND_PAYMNENT_AUTHN, $data, null, null,self::REQUEST_TIMEOUT_AUTHN);
     }
 
     public function createGatewayRule($data)

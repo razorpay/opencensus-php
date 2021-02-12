@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -21,6 +22,8 @@ use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 class TerminalProcessor extends Base\Core
 {
     protected $payment;
+
+    const PAYMENT_HIT_ROUTING_SERVICE_AUTHENTICATION = 'payments_hit_routing_service_authentication';
 
     /**
      * Get list of terminals for the payment from the Terminal Selection.
@@ -91,7 +94,59 @@ class TerminalProcessor extends Base\Core
 
         $paymentAuthSelect = new Terminal\AuthSelector($input);
 
-        $terminal = $paymentAuthSelect->select();
+        $terminal = [];
+
+        $variant = $this->app->razorx->getTreatment($payment->getId(), self::PAYMENT_HIT_ROUTING_SERVICE_AUTHENTICATION, $this->mode);
+
+        if ((strtolower($variant) === 'on') and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::AUTH_SELECTION_VIA_SMART_ROUTING,
+                    ['payment_id' => $payment->getId()]
+                );
+
+                $input = [
+                    'payment'  => $this->payment,
+                    'merchant' => $this->payment->merchant,
+                ];
+
+                $options = $this->getTerminalSelectionOptions();
+
+                $terminalSelector = new Terminal\Selector($input, $options);
+
+                $terminalAuthZ = $this->payment->terminal->toArray();
+
+                $terminalsAuthZ = [$terminalAuthZ];
+
+                $terminal = $terminalSelector->selectAuthenticationTerminal($terminalsAuthZ);
+
+                $this->trace->info(
+                    TraceCode::AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'terminal'   => $terminal,
+                        ]
+                );
+            }
+            catch (\Exception $e)
+            {
+                $terminal = $paymentAuthSelect->select();
+
+                $this->trace->error(
+                    TraceCode::SMART_ROUTING_AUTHN_REQUEST_FAILED,
+                    [
+                        'message' => 'Failed to send authentication data to smart routing',
+                        'payment_id' => $payment->getId(),
+                    ]
+                );
+            }
+        }
+        else {
+            $terminal = $paymentAuthSelect->select();
+        }
 
         $this->trace->info(
                 TraceCode::AUTH_SELECTION_FINAL_TERMINAL,

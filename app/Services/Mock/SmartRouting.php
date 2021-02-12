@@ -12,6 +12,11 @@ class SmartRouting extends BaseSmartRouting
         return null;
     }
 
+    public function sendAuthNPaymentData($data)
+    {
+        return null;
+    }
+
     public function createGatewayRule($data)
     {
         return [
