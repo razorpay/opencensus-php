@@ -247,31 +247,4 @@ return [
         'txntype'           => 'REFUND',
         'entity'            => 'paytm',
     ],
-
-    'testVerifyForCapturedPayment' => [
-        'request' => [
-            'url' => '/payments/verify/captured/paytm',
-            'content' => [
-                'gateway' => 'paytm',
-                'count'   => 5,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'total_payments'     =>  1,
-                'not_applicable'     =>  0,
-                'locked_count'       =>  0,
-                'attempted_payments' =>  1,
-                'must_attempt'       =>  1,
-                'authorized'         =>  0,
-                'success'            =>  1,
-                'timeout'            =>  0,
-                'error'              =>  0,
-                'unknown'            =>  0,
-                'request_error'      =>  0,
-
-            ],
-            'status_code' => 200,
-        ]
-    ],
 ];

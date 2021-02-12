@@ -201,11 +201,6 @@ class Validator extends Base\Validator
         'payment_ids.*'              => 'required|public_id',
     ];
 
-    protected static $paytmVerifyRules = [
-        'gateway'                    => 'required|in:paytm',
-        'count'                      => 'required|int',
-    ];
-
     protected static $bulkUpdateRefundAtRules = [
         'payments'                   => 'required|sequential_array',
         'payments.*.id'              => 'required|public_id',

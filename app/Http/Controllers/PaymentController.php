@@ -582,14 +582,4 @@ class PaymentController extends Controller
 
         return ApiResponse::json($pm);
     }
-
-    // temp verify for paytm payments
-    public function postVerifyPaymentsPaytm()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->postVerifyPaytmPayments($input);
-
-        return ApiResponse::json($data);
-    }
 }

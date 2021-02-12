@@ -617,19 +617,6 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getPaymentsToVerifyForPaytmGateway(string $gateway, $status, int $count)
-    {
-        $query = $this->newQuery()
-                      ->where(Payment\Entity::STATUS, '=', $status)
-                      ->where(Payment\Entity::GATEWAY, '=', $gateway)
-                      ->whereNull(Payment\Entity::VERIFIED)
-                      ->where(Payment\Entity::LATE_AUTHORIZED, '=', false)
-                      ->take($count)
-                      ->get();
-
-        return $query;
-    }
-
     /**
      * Return Payments object(s) which should be verified
      *

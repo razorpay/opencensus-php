@@ -1686,7 +1686,6 @@ class Gateway
         self::BAJAJ,
         self::AMEX,
         self::ISG,
-        self::PAYTM,
     ];
 
     // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
