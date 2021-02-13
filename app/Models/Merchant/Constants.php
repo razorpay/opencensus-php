@@ -309,6 +309,14 @@ final class Constants
     const INSTRUMENT_STATUS_UPDATE_MERCHANT_MAIL = "instrument_status_update_merchant_mail";
 
     const MERCHANT_RISK_CONFIG = [
+        Detail\Entity::BUSINESS_MODEL => [
+            'lists' => [
+                self::BLACKLIST,
+                self::BRAND_LIST,
+                self::HIGH_RISK_LIST
+            ],
+            'config_key' => 'business_model'
+        ],
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
                 self::BLACKLIST,
@@ -517,6 +525,33 @@ final class Constants
             'keysToCheck' => [
                 Detail\Entity::BUSINESS_DBA => [
                     'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::BLACKLIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
