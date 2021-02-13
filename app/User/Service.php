@@ -1450,6 +1450,7 @@ class Service extends Base\Service
             'rx_opfin_announcement_v2',
             'whats-new-dec-2020',
             'esign_aadhar_functionality',
+            'aov_functionality',
             'rx_opfin_sso_announcement',
             'AnnouncementIconJan2021',
             'TicketSystemSupport',

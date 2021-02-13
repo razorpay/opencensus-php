@@ -187,28 +187,6 @@ const businessModel = [
       },
     },
     {
-      label: 'Business Model',
-      name: 'business_model',
-      info:
-        "Business model description should be at least 50 characters. Please select others only if you can't find your category and sub-category, as this will delay your account activation by a few days.",
-      _cmp: Input.Textarea,
-      validator: (val) => {
-        if (val && val.length < 50) {
-          return 'Please enter business model description with at least 50 characters.';
-        }
-      },
-      _when: (activation) => {
-        let { state, props } = activation;
-
-        let businessCategory =
-          state.dirty.business_category != null
-            ? state.dirty.business_category
-            : props.data.business_category;
-
-        return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
-      },
-    },
-    {
       label: 'Sub Category',
       name: 'business_subcategory',
       _cmp: Input.Select,
@@ -251,7 +229,71 @@ const businessModel = [
         return false;
       },
     },
+    {
+      label: 'Business Description',
+      name: 'business_model',
+      _cmp: Input.Textarea,
+      _autoRenderImpure: true,
+      description:
+        'Please give a brief description of the nature of your business. Please include examples of products you sell, the business category you operate under, your customers and the channels you primarily use to conduct your business(Website, offline retail etc).',
+      placeholder: 'Minimum 200 characters',
+      descriptionClass: 'Input--business-description',
+      showCharacterLength: (val) => {
+        if (val && val.length) {
+          return val.length;
+        }
+      },
+      _when: (activation) => {
+        let { state, props } = activation;
+
+        let businessCategory =
+          state.dirty.business_category != null
+            ? state.dirty.business_category
+            : props.data.business_category;
+
+        if (
+          businessCategory === 'others' &&
+          (isSourceRX() || !activation.props.user.isBDAndAovEnabled)
+        ) {
+          // If businessCategory is selected to others, then Business Model is to be filled in case of RX.
+          return true;
+        }
+
+        return !isSourceRX() && activation.props.user.isBDAndAovEnabled;
+      },
+    },
   ],
+  {
+    label: 'Average Order Value',
+    _cmp: Input.Select,
+    name: 'merchant_avg_order_value',
+    extraChildren: (
+      <div className="Input--aov-heading">
+        Any payment recieved by my business would usually lie in range
+      </div>
+    ),
+    _autoRenderImpure: true,
+    options: [],
+    _optionsFn: (activation) => {
+      if (activation.props.aovRange.config) {
+        return ['--Select--'].concat(
+          activation.props.aovRange.config.map((item) => {
+            if (item.max === 0) {
+              return {
+                name: 'More than 1,00,000₹',
+                label: 'More than 1,00,000₹',
+              };
+            }
+            return {
+              name: `${item.min}-${item.max}₹`,
+              label: `${item.min}-${item.max}₹`,
+            };
+          }),
+        );
+      }
+    },
+    _when: (activation) => !isSourceRX() && activation.props.user.isBDAndAovEnabled,
+  },
   [
     {
       label: 'Website/App URL',

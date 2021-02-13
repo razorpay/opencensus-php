@@ -82,6 +82,8 @@ export function separateDomProps(props) {
     propagatedError,
     setRef,
     extraChildren,
+    showCharacterLength,
+    descriptionClass,
     ...rest
   } = props;
 
@@ -109,6 +111,8 @@ export function separateDomProps(props) {
     propagatedError,
     setRef,
     extraChildren,
+    showCharacterLength,
+    descriptionClass,
     props: rest,
   };
 }
@@ -183,11 +187,16 @@ export class Error extends React.Component {
  *  - {String/Fn, optional} `description` - Description can be a string or pure function. Fn. helps to change description on basis of value selected
  * */
 export default class Field extends React.Component {
-  state = {
-    mature: this.props.mature,
-    focus: false,
-    error: '',
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      mature: props.mature,
+      focus: false,
+      error: '',
+      character_length:
+        props.tag === 'textarea' && props.defaultValue ? props.defaultValue.length : 0,
+    };
+  }
 
   requiredError = 'Please fill out this field';
   patternError = 'Please enter valid value';
@@ -261,6 +270,7 @@ export default class Field extends React.Component {
 
   change = (e) => {
     this.valid();
+    this.props.showCharacterLength && this.setCharacterLength();
     this.props.onChange && this.props.onChange(e);
 
     if (!this.state.mature || !this.state.touched) {
@@ -290,6 +300,21 @@ export default class Field extends React.Component {
     this.setState({ error });
     // if(this.state.touched){
     // }
+  }
+
+  setCharacterLength() {
+    const { showCharacterLength } = this.props;
+
+    let value = this.el.value;
+    if (showCharacterLength) {
+      const character_length = showCharacterLength(value);
+
+      if (character_length) {
+        this.setState({ character_length });
+      } else {
+        this.setState({ character_length: 0 });
+      }
+    }
   }
 
   setRef = (el) => {
@@ -389,10 +414,13 @@ export default class Field extends React.Component {
             {allProps.addonAfter && (
               <span class="Input-addons Input-addons--after">{allProps.addonAfter}</span>
             )}
+            {allProps.showCharacterLength && this.state.character_length && (
+              <span className="character-length">{this.state.character_length}</span>
+            )}
             <Info text={infoEle} />
           </div>
           <Error text={this.state.error || this.props.propagatedError} />
-          <Description text={descriptionEle} />
+          <Description className={allProps.descriptionClass} text={descriptionEle} />
         </div>
       </div>
     );

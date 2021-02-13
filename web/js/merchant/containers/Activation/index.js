@@ -17,7 +17,7 @@ const SOURCE_RAZORPAY_X = 'x';
 
 @withRouter
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
-@connect(state => ({
+@connect((state) => ({
   user: state.session.user,
   session: state.session,
   current_tab_name: state.activationWizard.current_tab_name,
@@ -32,6 +32,7 @@ export default class ActivationContainer extends Component {
       data: null,
       categories: null,
       additionalModalClass: null,
+      aovRange: null,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -47,7 +48,7 @@ export default class ActivationContainer extends Component {
         {
           name: 'notifyWindowResize',
           hasReply: true,
-          callback: reply => {
+          callback: (reply) => {
             this.handleUIUpdate = () => {
               const body = document.body;
               reply(body.clientWidth, body.clientHeight);
@@ -57,7 +58,7 @@ export default class ActivationContainer extends Component {
         {
           name: 'notifyUnmount',
           hasReply: true,
-          callback: reply => {
+          callback: (reply) => {
             this.handleUnmount = reply;
           },
         },
@@ -92,18 +93,14 @@ export default class ActivationContainer extends Component {
       this.rpc = window.RZP.rpcServer(
         window.RZP.appHost,
         (isL1Submitted ? kycActivationMethods : iaActivationMethods).concat(
-          commonActivationMethods
+          commonActivationMethods,
         ),
-        'activation'
+        'activation',
       );
     }
 
     const query = QueryString.parse(props.location.search);
-    this.isSourceRX = !!(
-      query &&
-      query.merchant &&
-      query.merchant === SOURCE_RAZORPAY_X
-    );
+    this.isSourceRX = !!(query && query.merchant && query.merchant === SOURCE_RAZORPAY_X);
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -124,20 +121,23 @@ export default class ActivationContainer extends Component {
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
-    ]).then(([data, categories]) => {
+      merchantFetch('merchant/aov-config'),
+    ]).then(([data, categories, aov_list]) => {
       data = data.data;
       categories = categories && categories.data;
+      aov_list = aov_list.data;
 
       this.setState({
         data,
         categories,
+        aovRange: aov_list,
       });
 
       return [data, categories];
     });
   }
 
-  updateActivationData = activationData => {
+  updateActivationData = (activationData) => {
     this.setState({
       data: activationData,
     });
@@ -147,7 +147,7 @@ export default class ActivationContainer extends Component {
     this.setState({ data });
   }
 
-  handleCloseActivationForm = e => {
+  handleCloseActivationForm = (e) => {
     const isL1Submitted = this.props.user.instantActivation.isL1Submitted;
     let eventName = 'act.form_fill';
     if (isL1Submitted) {
@@ -156,13 +156,11 @@ export default class ActivationContainer extends Component {
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().dropped(eventName, {
         clickSource: this.props.current_tab_name,
-      })
+      }),
     );
 
     this.sendEventsForSubMerchantView(
-      window.rzpQ
-        .routeActions()
-        .dropped('route.linked_account.activate_account')
+      window.rzpQ.routeActions().dropped('route.linked_account.activate_account'),
     );
   };
 
@@ -172,9 +170,7 @@ export default class ActivationContainer extends Component {
 
   componentDidMount() {
     this.sendEventsForSubMerchantView(
-      window.rzpQ
-        .routeActions()
-        .interaction('route.linked_account.activate_account.started')
+      window.rzpQ.routeActions().interaction('route.linked_account.activate_account.started'),
     );
   }
 
@@ -186,7 +182,7 @@ export default class ActivationContainer extends Component {
     this.handleUnmount && this.handleUnmount();
   }
 
-  sendEventsForSubMerchantView = event => {
+  sendEventsForSubMerchantView = (event) => {
     if (!this.IS_SUB_MERCHANT_VIEW || !event) return;
 
     this.props.tracking.trackEvent(event);
@@ -195,17 +191,9 @@ export default class ActivationContainer extends Component {
   get shouldShowL1Modal() {
     const { user, accountId } = this.props;
     const { instantActivation, showInstantActivation } = user;
-    const {
-      isL1Submitted,
-      isWhitelistFlow,
-      isBlacklistFlow,
-      isGraylistFlow,
-    } = instantActivation;
+    const { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 
-    const showL1Modal =
-      !accountId &&
-      showInstantActivation &&
-      (!isL1Submitted || isBlacklistFlow);
+    const showL1Modal = !accountId && showInstantActivation && (!isL1Submitted || isBlacklistFlow);
 
     if (this.isSourceRX) {
       // if Source RX return whatever is computed value of showL1Modal - Since Unreg is not supported there
@@ -217,7 +205,7 @@ export default class ActivationContainer extends Component {
   }
 
   render() {
-    const { data, categories, additionalModalClass } = this.state;
+    const { data, categories, additionalModalClass, aovRange } = this.state;
     const { user } = this.props;
     const commonProps = {
       accountId: this.props.accountId,
@@ -227,6 +215,7 @@ export default class ActivationContainer extends Component {
       categories,
       handleUIUpdate: this.handleUIUpdate,
       rpc: this.rpc,
+      aovRange,
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
@@ -242,19 +231,11 @@ export default class ActivationContainer extends Component {
 
       content = (
         <div className="spinner-container">
-          <div
-            className={classList(
-              'spin-btn large page-center visible',
-              isModal && 'gray'
-            )}
-          />
+          <div className={classList('spin-btn large page-center visible', isModal && 'gray')} />
         </div>
       );
     } else if (showL1Modal) {
-      modalClasses = modalClasses.concat([
-        'Activation--wizard',
-        'Activation--wizard--Instant',
-      ]);
+      modalClasses = modalClasses.concat(['Activation--wizard', 'Activation--wizard--Instant']);
       content = (
         <InstantActivation
           {...commonProps}
@@ -290,9 +271,7 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div
-        className={`ActivationContainer${showL1Modal ? ' instant' : ' kyc'}`}
-      >
+      <div className={`ActivationContainer${showL1Modal ? ' instant' : ' kyc'}`}>
         {content || spinner}
       </div>
     );

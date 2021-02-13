@@ -473,7 +473,7 @@ export default class ActivationContainer extends React.Component {
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories } = this.props;
+    let { data, categories, aovRange } = this.props;
     let content, spinner, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
@@ -515,6 +515,7 @@ export default class ActivationContainer extends React.Component {
           rxCaCheckboxSelect={this.state.rxCaCheckboxSelect}
           handleRxCaCheckboxChange={this.handleRxCaCheckboxChange}
           fetchBusinessCategory={this.fetchBusinessCategory}
+          aovRange={aovRange}
         />
       );
     }

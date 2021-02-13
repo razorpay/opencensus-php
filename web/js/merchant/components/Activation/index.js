@@ -169,6 +169,7 @@ export default class ActivationWizard extends React.Component {
     business_proof_type: 'gst_certificate',
     commentlist: {},
     bank_proof: 'cancelled_cheque',
+    selected_aov: '',
   };
 
   constructor(props) {
@@ -203,6 +204,16 @@ export default class ActivationWizard extends React.Component {
   }
   prepareTabs(props) {
     const { tracking } = props;
+
+    if (props.data.merchant_avg_order_value) {
+      const aovValue = props.data.merchant_avg_order_value;
+      if (aovValue.max_aov === 0) {
+        this.state.selected_aov = 'More than 1,00,000₹';
+      } else {
+        this.state.selected_aov = `${aovValue.min_aov}-${aovValue.max_aov}₹`;
+      }
+    }
+
     if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
@@ -1436,10 +1447,32 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
+    if (fieldName === 'merchant_avg_order_value') {
+      if (fieldValue === 'More than 1,00,000₹') {
+        sideEffectFieldsToUpdate.merchant_avg_order_value = {
+          min_aov: 100000,
+          max_aov: 0,
+        };
+        this.setState({ selected_aov: 'More than 1,00,000₹' });
+      } else {
+        const value = fieldValue.split('-');
+        const min = value[0];
+        const max = value[1].split('₹')[0];
+        sideEffectFieldsToUpdate.merchant_avg_order_value = {
+          min_aov: min,
+          max_aov: max,
+        };
+        this.setState({ selected_aov: `${min}-${max}₹` });
+      }
+    }
+
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
-      sideEffectFieldsToUpdate.business_model = ''; // Reset Business Model as well.
+      if (activationUtils.isSourceRX() || !this.props.user.isBDAndAovEnabled) {
+        sideEffectFieldsToUpdate.business_model = '';
+      }
+      // Reset Business Model as well.
       const singleSubcategory = this.getSingleSubcategory(fieldValue);
       if (singleSubcategory) {
         sideEffectFieldsToUpdate.business_subcategory = singleSubcategory.value;
@@ -1449,9 +1482,11 @@ export default class ActivationWizard extends React.Component {
       }
       let el = document.querySelector('.form-container [name=business_subcategory]');
       el && (el.value = '');
-      // Update Business Model in view
-      el = document.querySelector('.form-container [name=business_model]');
-      el && (el.value = '');
+      if (activationUtils.isSourceRX() || !this.props.user.isBDAndAovEnabled) {
+        // Update Business Model in view
+        el = document.querySelector('.form-container [name=business_model]');
+        el && (el.value = '');
+      }
     }
 
     if (fieldName === 'business_subcategory') {
@@ -2050,6 +2085,10 @@ function ActivationField(field) {
   if (_optionsFn) {
     if (field.name === 'business_subcategory') {
       rest.options = field._optionsFn(this, this.props.categories);
+    }
+    if (field.name === 'merchant_avg_order_value') {
+      rest.options = field._optionsFn(this);
+      rest.defaultValue = this.state.selected_aov;
     }
   }
 

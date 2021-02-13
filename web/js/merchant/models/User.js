@@ -661,6 +661,10 @@ export default class User {
     return this.getExpStatus('esign_aadhar_functionality');
   }
 
+  get isBDAndAovEnabled() {
+    return this.getExpStatus('aov_functionality');
+  }
+
   get isWebhooksStatsEnabled() {
     // currently this experiment is not added in User/Service.php
     return this.getExpStatus('webhook_stats');
