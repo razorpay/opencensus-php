@@ -91,7 +91,14 @@ export default class ActivationCard extends Component {
       // } else {
       if (needsClarification) {
         status = possibleStatuses.blocked;
-        content = 'Check your email ID to complete clarification of KYC';
+        content = (
+          <span>
+            Your KYC details require further clarification. Please update required details{' '}
+            <Link to="/activation" className="btn-link">
+              here
+            </Link>
+          </span>
+        );
       } else if (isRejected) {
         status = possibleStatuses.blocked;
         content = 'Your KYC form has been rejected.';
