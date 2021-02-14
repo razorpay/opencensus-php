@@ -881,6 +881,10 @@ class Validator extends Base\Validator
 
     protected static $netbankingAusfEditTerminalRules = [
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
 
     protected static $netbankingCubEditTerminalRules = [
