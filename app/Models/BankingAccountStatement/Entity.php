@@ -314,6 +314,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     public function isTypeCredit()
     {
         return ($this->getType() === Type::CREDIT);

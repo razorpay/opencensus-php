@@ -435,13 +435,18 @@ class Core extends Base\Core
 
             $basEntity->merchant()->associate($merchant);
 
+            $startTime = microtime(true);
+
             list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION,
                 [
-                    'source_entity'     => $sourceEntity->toArray(),
-                    'bas_id'            => $basEntity->getId(),
-                    'account_no'        => $basEntity->getAccountNumber()
+                    'source_entity'         => $sourceEntity->toArray(),
+                    'bas_id'                => $basEntity->getId(),
+                    'account_no'            => $basEntity->getAccountNumber(),
+                    'entity_linking_time'   => (microtime(true) - $startTime) * 1000,
+                    'entity_id'             => $sourceEntity->getId(),
+                    'entity_type'           => $basEntity->getEntityType(),
                 ]);
 
             $basEntity->source()->associate($sourceEntity);
@@ -548,7 +553,6 @@ class Core extends Base\Core
                    ]);
 
         $this->validateBalance($basEntity, $sourceEntity);
-
 
         return [$sourceEntity, $isSourceAlreadyCreated];
     }
@@ -793,16 +797,19 @@ class Core extends Base\Core
 
         $balance = $this->getBalance($basEntity);
 
+        $startTime = microtime(true);
+
         $reversals = $this->repo
                          ->reversal
                          ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
         $this->trace->info(TraceCode::BAS_REVERSALS_FETCHED_VIA_UTR,
                            [
-                               'utr'          => $utr,
-                               'reversal_ids' => $reversals->getQueueableIds(),
-                               'bas_id'       => $basEntity->getId(),
-                               'account_no'   => $basEntity->getAccountNumber(),
+                               'utr'                                    => $utr,
+                               'reversal_ids'                           => $reversals->getQueueableIds(),
+                               'bas_id'                                 => $basEntity->getId(),
+                               'account_no'                             => $basEntity->getAccountNumber(),
+                               'reversals_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
                            ]);
 
         foreach ($reversals as $key => $reversal)
@@ -898,14 +905,17 @@ class Core extends Base\Core
 
         if (empty($utr) === false)
         {
+            $startTime = microtime(true);
+
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_CREDIT_MAPPING,
                                [
-                                   'utr'        => $utr,
-                                   'payout_ids' => $payouts->getQueueableIds(),
-                                   'bas_id'     => $basEntity->getId(),
-                                   'account_no' => $basEntity->getAccountNumber(),
+                                   'utr'                                   => $utr,
+                                   'payout_ids'                            => $payouts->getQueueableIds(),
+                                   'bas_id'                                => $basEntity->getId(),
+                                   'account_no'                            => $basEntity->getAccountNumber(),
+                                   'payouts_fetched_via_utr_mapping_time'  => (microtime(true) - $startTime) * 1000
                                ]);
 
             if ($basEntity->getType() === Type::CREDIT)
@@ -955,6 +965,7 @@ class Core extends Base\Core
                 $basEntity->getPostedDate(), Timezone::IST)
                                               ->subHours(4)
                                               ->getTimestamp();
+            $startTime = microtime(true);
 
             // we are checking both linked and unlinked payouts because debit row might have already been
             // processed.
@@ -964,15 +975,16 @@ class Core extends Base\Core
                 $bankTimeBeforePostedDate,
                 $basEntity->getAmount(),
                 $balance->getId());
-        }
 
-        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
-                           [
-                               'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds(),
-                               'bas_id'     => $basEntity->getId(),
-                               'account_no' => $basEntity->getAccountNumber(),
-                           ]);
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
+                [
+                    'cms_ref_no' => $bankTxnId,
+                    'payout_ids' => $payouts->getQueueableIds(),
+                    'bas_id'     => $basEntity->getId(),
+                    'account_no' => $basEntity->getAccountNumber(),
+                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime ) * 1000,
+                ]);
+        }
 
         if ($payouts->count() === 1)
         {
@@ -1007,6 +1019,8 @@ class Core extends Base\Core
             return null;
         }
 
+        $startTime = microtime(true);
+
         // we are checking both linked and unlinked payouts because debit row might have already been
         // processed.
         $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumber(
@@ -1020,6 +1034,7 @@ class Core extends Base\Core
                                'payout_ids' => $payouts->getQueueableIds(),
                                'bas_id'     => $basEntity->getId(),
                                'account_no' => $basEntity->getAccountNumber(),
+                               'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime ) * 1000,
                            ]);
 
         if ($payouts->count() === 1)
@@ -1061,6 +1076,8 @@ class Core extends Base\Core
         // Thread: https://razorpay.slack.com/archives/C01CX0EC34M/p1611572847006900
         if ((empty($utr) === false) and ($basEntity->getType() === Type::CREDIT))
         {
+            $startTime = microtime(true);
+
             /** @var Base\Collection $payouts */
             $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
 
@@ -1069,6 +1086,7 @@ class Core extends Base\Core
                 'payout_ids' => $payouts->getQueueableIds(),
                 'bas_id'     => $basEntity->getId(),
                 'account_no' => $basEntity->getAccountNumber(),
+                'payouts_fetched_via_return_utr_mapping_time' => (microtime(true) - $startTime ) * 1000,
             ];
 
             if($payouts->count() === 1)
@@ -1149,14 +1167,17 @@ class Core extends Base\Core
 
         if (empty($utr) === false)
         {
+            $startTime = microtime(true);
+
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_DEBIT_MAPPING,
                                [
-                                   'utr'        => $utr,
-                                   'payout_ids' => $payouts->getQueueableIds(),
-                                   'bas_id'     => $basEntity->getId(),
-                                   'account_no' => $basEntity->getAccountNumber(),
+                                   'utr'                        => $utr,
+                                   'payout_ids'                 => $payouts->getQueueableIds(),
+                                   'bas_id'                     => $basEntity->getId(),
+                                   'account_no'                 => $basEntity->getAccountNumber(),
+                                   'payouts_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
                                ]);
 
             foreach ($payouts as $key => $payout)
@@ -1235,6 +1256,7 @@ class Core extends Base\Core
                                                         $basEntity->getPostedDate(), Timezone::IST)
                                                         ->subHours(4)
                                                         ->getTimestamp();
+            $startTime = microtime(true);
 
             // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
             // record with payout.
@@ -1247,10 +1269,11 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
                                [
-                                   'cms_ref_no' => $bankTxnId,
-                                   'payout_ids' => $payouts->getQueueableIds(),
-                                   'bas_id'     => $basEntity->getId(),
-                                   'account_no' => $basEntity->getAccountNumber(),
+                                   'cms_ref_no'                            => $bankTxnId,
+                                   'payout_ids'                            => $payouts->getQueueableIds(),
+                                   'bas_id'                                => $basEntity->getId(),
+                                   'account_no'                            => $basEntity->getAccountNumber(),
+                                   'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
                                ]);
         }
 
@@ -1287,6 +1310,8 @@ class Core extends Base\Core
             return null;
         }
 
+        $startTime = microtime(true);
+
         // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
         // record with payout.
         $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumber(
@@ -1296,10 +1321,11 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING,
                            [
-                               'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds(),
-                               'bas_id'     => $basEntity->getId(),
-                               'account_no' => $basEntity->getAccountNumber(),
+                               'cms_ref_no'                                => $bankTxnId,
+                               'payout_ids'                                => $payouts->getQueueableIds(),
+                               'bas_id'                                    => $basEntity->getId(),
+                               'account_no'                                => $basEntity->getAccountNumber(),
+                               'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000
                            ]);
 
         if ($payouts->count() > 1)
