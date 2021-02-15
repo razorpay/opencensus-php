@@ -416,7 +416,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
-        $user = $this->getInternalUsernameOrEmail();
+        $user = $this->getAdminUsername();
 
         $message = "$scheduleType schedule $scheduleName($scheduleId) assigned to $merchantId for method(s) $method by $user";
 

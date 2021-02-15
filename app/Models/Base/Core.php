@@ -119,6 +119,20 @@ class Core
     }
 
     /**
+     * Returns only Admin's username
+     * This method is primary used to get an identifier for user to construct a
+     * slack message.
+     *
+     * Done for security purpose - https://razorpay.slack.com/archives/C3UAR8DQE/p1613118589167900
+     */
+    public function getAdminUsername(): string
+    {
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+        return $dashboardInfo['admin_username'] ?? Merchant\Constants::DASHBOARD_INTERNAL;
+    }
+
+    /**
      * Execute a callable within a transaction.
      *
      * @param callable $callback
