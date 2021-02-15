@@ -274,6 +274,7 @@ class UpiHdfcReconTest extends TestCase
                 'error_code'            => 'BAD_REQUEST_ERROR',
                 'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
                 'error_description'     => 'Payment was not completed on time.',
+                'authorized_at'         => null,
             ]);
 
         $payment = $this->getDbLastEntityToArray('payment');
@@ -289,6 +290,8 @@ class UpiHdfcReconTest extends TestCase
         $this->reconcile($uploadedFile, 'UpiHdfc', ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('paytessy@hdfc', $updatedPayment['vpa']);
 
         $this->assertEquals('authorized', $updatedPayment['status']);
     }

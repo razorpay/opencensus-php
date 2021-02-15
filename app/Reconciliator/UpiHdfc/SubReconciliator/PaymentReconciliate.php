@@ -416,6 +416,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return [
             Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
+            'acquirer' => [
+                Payment\Entity::VPA         => $row[self::PAYER_VPA],
+            ]
         ];
     }
 }
