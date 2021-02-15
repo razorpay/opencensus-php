@@ -800,40 +800,8 @@ class FundTransfer extends Base
             $this->FTACore->updateFTA($this->fta, 0);
         }
 
-        $mode = $this->fta->getMode();
+        return [true, 'All merchants allowed'];
 
-        $merchantID = $this->fta->getMerchantId();
-
-        $variant = $this->razorx->getTreatment(
-                $merchantID,
-                RazorxTreatment::ALLOWED_MERCHANTS,
-                $this->mode);
-
-        $this->trace->info(TraceCode::FTS_DEBUG_RAZORX_HM,
-            [
-                'variant' => $variant,
-            ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return [true, 'Razorx allowed merchant'];
-        }
-
-        $allowedModes = Mode::get24x7FtsTransferModes();
-
-        if (in_array($mode, $allowedModes, true) === true)
-        {
-            return [true, 'Allowed modes check passed'];
-        }
-
-        $isHoliday = $this->isHolidayForSource();
-
-        if ($isHoliday === true)
-        {
-            return [false, 'Holiday for source'];
-        }
-
-        return $this->isNeftRtgsSupportedTimings($mode);
     }
 
     public function addInitiateAtIfRequired()
