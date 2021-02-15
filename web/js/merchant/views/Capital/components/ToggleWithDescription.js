@@ -1,5 +1,17 @@
 import React from 'react';
 
+const DescriptionWrapper = ({ description, meta, selected }) => {
+  if (selected && meta) return meta;
+
+  return <p class="toggle-description">{description}</p>;
+};
+
+const HintWrapper = ({ hint }) => {
+  if (hint && typeof hint === 'string') return <span class="text-faded">&nbsp;{hint}</span>;
+
+  return hint || null;
+};
+
 const ToggleWithDescription = ({
   title,
   description,
@@ -13,6 +25,7 @@ const ToggleWithDescription = ({
   loading = false,
   showRadioInput = true,
   radioPosition = 'right',
+  meta,
 }) => {
   return (
     <div
@@ -33,11 +46,13 @@ const ToggleWithDescription = ({
             <input type="radio" className="radio-pointer" name={name} checked={selected} />
           )}
           {typeof title === 'string' ? (
-            <p className={radioPosition === 'left' ? 'm-l' : ''}>{title}</p>
+            <p className={`${selected ? 'selected' : ''} ${radioPosition === 'left' ? 'm-l' : ''}`}>
+              {title}
+            </p>
           ) : (
             title
           )}
-          {hint && <span class="text-faded">&nbsp;{hint}</span>}
+          <HintWrapper hint={hint} />
         </div>
         {(() => {
           if (!showRadioInput || radioPosition !== 'right') return null;
@@ -56,7 +71,7 @@ const ToggleWithDescription = ({
           }
         })()}
       </div>
-      <p class="toggle-description">{description}</p>
+      <DescriptionWrapper description={description} meta={meta} selected={selected} />
     </div>
   );
 };

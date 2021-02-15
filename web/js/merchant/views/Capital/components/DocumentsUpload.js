@@ -88,6 +88,7 @@ class DocumentsUpload extends React.Component {
                         key={uploadOption}
                         title={uploadModesMeta[uploadOption].title}
                         description={uploadModesMeta[uploadOption].description}
+                        meta={uploadModesMeta[uploadOption].meta}
                         hint={uploadModesMeta[uploadOption].hint}
                         selected={uploadOption === selectedUploadModes[document.id]}
                         onClick={() => handleUploadModeChange(document, uploadOption)}
@@ -95,6 +96,7 @@ class DocumentsUpload extends React.Component {
                         style={{ marginBottom: 12 }}
                         loading={uploadModesMeta[uploadOption].loading}
                         showRadioInput={uploadModesMeta[uploadOption].showRadioInput}
+                        radioPosition="left"
                       />
                     ))}
                   </div>

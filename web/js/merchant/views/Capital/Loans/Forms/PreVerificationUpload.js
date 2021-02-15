@@ -1,5 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import moment from 'moment';
+
 import DocumentsUpload from '../../components/DocumentsUpload';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
@@ -14,6 +16,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FormSectionLoadingSkeleton from '../../components/FormSectionLoadingSkeleton';
+import { NetbankingMeta, NativeUploadMeta, NetbankingHint } from './PerVerificationComponents';
 import { APPLICATION_STATES, CAPITAL_PRODUCT_NAME_CODE_MAP, HOTJAR_TRIGGERS } from '../constants';
 import { withRouter } from 'react-router-dom';
 import { isPreceedingState, postToUrl } from '../../utils';
@@ -58,12 +61,14 @@ class PreVerificationUpload extends Component {
         title: 'Upload from this Device',
         description: "Drag or upload last 6 month's statement till today",
         disabled: false,
+        meta: <NativeUploadMeta />,
       },
       perfios: {
         title: 'Use Netbanking',
         disabled: false,
-        hint: '(Recommended)',
+        hint: <NetbankingHint />,
         description: 'We will be redirecting you to Netbanking',
+        meta: <NetbankingMeta />,
       },
     };
 
@@ -105,12 +110,14 @@ class PreVerificationUpload extends Component {
       uploadModesMeta: {
         ...prevState.uploadModesMeta,
         perfios: {
+          ...prevState.uploadModesMeta.perfios,
           title: 'Processing Bank Statement',
           disabled: false,
           description: 'Please wait till we process your bank statement',
           loading: true,
         },
         native_upload: {
+          ...prevState.uploadModesMeta.native_upload,
           title: 'Upload from this Device',
           description: "Drag or upload last 6 month's statement till today",
           disabled: true,
@@ -158,6 +165,7 @@ class PreVerificationUpload extends Component {
       uploadModesMeta: {
         ...prevState.uploadModesMeta,
         perfios: {
+          ...prevState.uploadModesMeta.perfios,
           title: 'Use Netbanking',
           disabled: true,
           description: 'Previous upload failed',
@@ -536,16 +544,19 @@ class PreVerificationUpload extends Component {
         ...prevState.uploadModesMeta,
         perfios: this.getConfiguration().ui.product.allowPerfios
           ? {
+              ...prevState.uploadModesMeta.perfios,
               title: 'Use Netbanking',
               disabled: false,
-              hint: '(Recommended)',
+              hint: <NetbankingHint />,
               description: 'We will be redirecting you to Netbanking',
             }
           : {
+              ...prevState.uploadModesMeta.perfios,
               title: 'Use Netbanking',
               disabled: true,
               hint: '',
               description: 'Currently Unserviceable',
+              meta: '',
             },
       },
     }));
