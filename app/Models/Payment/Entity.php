@@ -236,6 +236,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 86400 * 180;  // 180 Days
     const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
+    const MCC_MARKDOWN_PERCENTAGE           = 1;
 
     // payment services
     const API                               = 0;
@@ -261,6 +262,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const APP_PRESENT                       = 'app_present';
 
     const DCC                               = 'dcc';
+    const MCC                               = 'mcc';
+    const DCC_MARKUP_AMOUNT                 = 'dcc_markup_amount';
+    const FOREX_RATE_RECEIVED               = 'forex_rate_received';
+    const FOREX_RATE_APPLIED                = 'forex_rate_applied';
 
     const FILE        = 'file';
     const SIGNED_FORM = 'signed_form';
@@ -525,6 +530,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DETAILED_REASON,
         self::PROVIDER,
         self::DCC,
+        self::MCC,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2708,6 +2714,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $baseAmount / $paymentAmount;
     }
 
+    public function getMccCurrencyConversionRateApplied()
+    {
+        $baseAmount = $this->getBaseAmount();
+
+        $paymentAmount = $this->getAmount();
+
+        $rate = $baseAmount / $paymentAmount;
+
+        return number_format($rate, 6, '.', ',');
+    }
+
+    public function getMccCurrencyConversionRateReceived()
+    {
+        $mccMarkup = (1-(self::MCC_MARKDOWN_PERCENTAGE/100));
+
+        $rate = $this->getMccCurrencyConversionRateApplied()/ $mccMarkup;
+
+        return number_format($rate, 6, '.', ',');
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method
@@ -3019,6 +3045,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $array[PaymentMeta\Entity::DCC_OFFERED] = ($paymentMetaEntity != null) ? $paymentMetaEntity->isDccOffered() : null;
 
             $array[PaymentMeta\Entity::DCC_MARK_UP_PERCENT] = ($paymentMetaEntity != null) ? $paymentMetaEntity->getDccMarkUpPercent() : null;
+
+            $array[self::DCC_MARKUP_AMOUNT] = ($this->isDcc() === true) ?
+                $this->getCurrencyConversionFee($this->getAmount(), $paymentMetaEntity->getForexRate(), $paymentMetaEntity->getDccMarkUpPercent()) : null;
+        }
+    }
+
+    public function setPublicMCCAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === true)
+        {
+                $array[self::MCC] = $this->getConvertCurrency() === true;
+
+                $array[self::FOREX_RATE_RECEIVED] = ($this->getConvertCurrency() === true) ? $this->getMccCurrencyConversionRateReceived() : null;
+
+                $array[self::FOREX_RATE_APPLIED] = ($this->getConvertCurrency() === true) ? $this->getMccCurrencyConversionRateApplied() : null;
         }
     }
 
@@ -4295,6 +4338,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return (($paymentMetaEntity->getGatewayCurrency() !== $this->getCurrency()) or
             ($paymentMetaEntity->getGatewayAmount() !== $this->getAmount()));
+    }
+
+    public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent)
+    {
+        $fee = (($baseAmount * $rate * $markUpPercent) / 100);
+
+        return (int) ceil($fee);
     }
 
     public function getCurrentPaymentStatus()

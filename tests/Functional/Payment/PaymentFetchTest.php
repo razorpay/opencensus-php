@@ -98,6 +98,19 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminAuthPaymentFetchWithDefaultMccFields()
+    {
+        $this->ba->adminAuth();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testFetchRuleVPAFilterForAdminAuth()
     {
         $this->ba->adminAuth();

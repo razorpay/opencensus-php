@@ -122,11 +122,16 @@ class Entity extends Base\PublicEntity
 
     public function getConfig()
     {
-        $this->getAttribute(Entity::CONFIG);
+        return $this->getAttribute(Entity::CONFIG);
+    }
+
+    public function getFormattedConfig()
+    {
+        return json_decode($this->getConfig(), true);
     }
 
     public function getType()
     {
-        $this->getAttribute(Entity::TYPE);
+        return $this->getAttribute(Entity::TYPE);
     }
 }

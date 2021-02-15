@@ -234,6 +234,57 @@ return [
         ],
     ],
 
+    'testGetMerchantDefaultDccMarkup' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'name'  => 'Tester 2',
+                'email' => 'liveandtest@localhost.com',
+                'activated' => false,
+                'activated_at' => null,
+                'methods' => [
+                    'merchant_id' => '1X4hRFHFx4UiXt',
+                    'paytm' => false,
+                    'disabled_banks' => [],
+                ],
+                'receipt_email_trigger_event' => 'authorized',
+            ],
+        ],
+    ],
+
+    'testGetMerchantDccMarkup' => [
+        'request' => [
+            'url' => '/merchants/10000000000000',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'                        => '10000000000000',
+                'entity'                    => 'merchant',
+                'dcc_markup_percentage'     => 2,
+            ],
+        ],
+    ],
+
+    'testGetMerchantDccMarkupWithMultipleConfigs' => [
+        'request' => [
+            'url' => '/merchants/10000000000000',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'                        => '10000000000000',
+                'entity'                    => 'merchant',
+                'dcc_markup_percentage'     => 2.13,
+            ],
+        ],
+    ],
+
     'testGetMerchantUsers' => [
         'request' => [
             'url' => '/merchants/1X4hRFHFx4UiXt/users',

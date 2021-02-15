@@ -800,6 +800,20 @@ class Merchant extends Base
                       ->delete();
     }
 
+    public function addDccPaymentConfig($dccMarkupPercent, string $id = '10000000000000')
+    {
+        $attributes = [
+            'merchant_id'   => $id,
+            'type'          => 'dcc',
+            'name'          => 'dcc',
+            'is_default'    => '0',
+            'config'     => '{
+                "dcc_markup_percentage": '.$dccMarkupPercent.'
+            }'
+        ];
+        $this->fixtures->create('config', $attributes);
+    }
+
     public function editAutoRefundDelay($delay, $id = '10000000000000')
     {
         return $this->edit($id, ['auto_refund_delay' => $delay]);

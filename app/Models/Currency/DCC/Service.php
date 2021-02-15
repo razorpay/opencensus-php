@@ -4,6 +4,7 @@ namespace RZP\Models\Currency\DCC;
 
 use RZP\Models\Base;
 use RZP\Models\Currency;
+use RZP\Models\Payment\Entity;
 
 class Service extends Base\Service
 {
@@ -79,15 +80,19 @@ class Service extends Base\Service
         return $key;
     }
 
-    private function getDCCMarkUpPercentage($rates, $requestedCurrency)
+    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $markupPercent)
     {
         if ($requestedCurrency === Currency\Currency::INR)
         {
             return 0;
         }
 
-        return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) === true ?
-            $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
+        /*Commented as markUpPercent is fetched from merchant level as of now.
+          Can be saved in redis later on to fetch the rates at the time of checkout*/
+       // return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) === true ?
+         //   $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
+
+        return $markupPercent;
     }
 
     // Round current time to nearest hour.
@@ -103,20 +108,13 @@ class Service extends Base\Service
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
     }
 
-    public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent)
-    {
-        $fee = (($baseAmount * $rate * $markUpPercent) / 100);
-
-        return (int) ceil($fee);
-    }
-
     /*
      * - Capture current time, round it off to nearest interval
      * - Store currencyRequestId and round off time in redis
      * - Get or Update rates for the round off time
      * - convert currency to all supported currencies
      */
-    public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId)
+    public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent)
     {
         $roundedTime = $this->getCurrentRoundedTime();
 
@@ -131,14 +129,14 @@ class Service extends Base\Service
         {
             if(isset($rates[$currency]) === true)
             {
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $merchantMarkupPercent);
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
                 $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent);
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
-                    $this->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
+                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
             }
             else
             {
@@ -149,7 +147,7 @@ class Service extends Base\Service
         return $supportedCurrencies;
     }
 
-    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId)
+    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent)
     {
         $requestedCurrencyData = [];
 
@@ -163,7 +161,7 @@ class Service extends Base\Service
             {
                 $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $merchantMarkUpPercent);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 

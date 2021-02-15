@@ -38,8 +38,8 @@ class CreatePaymentMetaTable extends Migration
 
             $table->tinyInteger(PaymentMeta::DCC_OFFERED)
                 ->default(0);
-
-            $table->integer(PaymentMeta::DCC_MARK_UP_PERCENT)
+            
+            $table->decimal(PaymentMeta::DCC_MARK_UP_PERCENT, 5, 2)
                 ->nullable();
 
             $table->string(PaymentMeta::ACTION)

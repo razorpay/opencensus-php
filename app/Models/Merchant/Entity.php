@@ -39,20 +39,21 @@ use RZP\Models\User;
 use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
-
+use RZP\Models\Payment\Config as PaymentConfig;
 /**
- * @property Org\Entity         $org
- * @property Detail\Entity      $merchantDetail
- * @property Methods\Entity     $methods
- * @property BankAccount\Entity $bankAccount
- * @property Balance\Entity     $bankingBalance
- * @property Balance\Entity     $sharedBankingBalance
- * @property Balance\Entity     $directBankingBalances
- * @property Balance\Entity     $primaryBalance
- * @property Balance\Entity     $reservePrimaryBalance
- * @property Balance\Entity     $reserveBankingBalance
- * @property Base\Collection    $activeBankingAccounts
- * @property Balance\Entity     $commissionBalance
+ * @property Org\Entity             $org
+ * @property Detail\Entity          $merchantDetail
+ * @property Methods\Entity         $methods
+ * @property BankAccount\Entity     $bankAccount
+ * @property Balance\Entity         $bankingBalance
+ * @property Balance\Entity         $sharedBankingBalance
+ * @property Balance\Entity         $directBankingBalances
+ * @property Balance\Entity         $primaryBalance
+ * @property Balance\Entity         $reservePrimaryBalance
+ * @property Balance\Entity         $reserveBankingBalance
+ * @property Base\Collection        $activeBankingAccounts
+ * @property Balance\Entity         $commissionBalance
+ * @property PaymentConfig\Entity   $dccPaymentConfig
  */
 class Entity extends Base\PublicEntity
 {
@@ -252,6 +253,8 @@ class Entity extends Base\PublicEntity
     const PROMOTION                 = 'promotion';
     const CREDIT_BALANCE            = 'credit_balance';
     const BULK_PAYOUTS_USER_TYPE    = 'bulk_payouts_user_type';
+    const DCC                       = 'dcc';
+    const DCC_MARKUP_PERCENTAGE     = 'dcc_markup_percentage';
 
     const ALLOW_REVERSALS           = 'allow_reversals';
 
@@ -419,6 +422,7 @@ class Entity extends Base\PublicEntity
         self::EXTERNAL_ID,
         self::PRODUCT_INTERNATIONAL,
         self::SIGNUP_SOURCE,
+        self::DCC_MARKUP_PERCENTAGE,
      ];
 
     protected $defaults = [
@@ -467,6 +471,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::LOGO_URL,
+        self::DCC,
     ];
 
     protected $casts = [
@@ -525,6 +530,7 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
+    const DCC_MARKUP_PERCENTAGE_DEFAULT               = 5;
 
     public function refresh()
     {
@@ -1312,6 +1318,19 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
     }
 
+    public function dccPaymentConfig()
+    {
+        return $this->hasMany(PaymentConfig\Entity::class, PaymentConfig\Entity::MERCHANT_ID, Entity::ID)
+                     ->where(PaymentConfig\Entity::TYPE,PaymentConfig\Type::DCC);
+    }
+
+    public function firstDccPaymentConfig()
+    {
+        return $this->dccPaymentConfig()
+                     ->orderBy(PaymentConfig\Entity::CREATED_AT, 'desc')
+                     ->first();
+    }
+
     public function commissions()
     {
         return $this->hasMany(Commission\Entity::class, Commission\Entity::PARTNER_ID, Entity::ID);
@@ -2021,6 +2040,29 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
+    }
+
+    public function setPublicDCCAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === true)
+        {
+            $array[self::DCC_MARKUP_PERCENTAGE] = $this->getDccMarkupPercentage();
+        }
+    }
+
+    public function getDccMarkupPercentage()
+    {
+        $dccPaymentConfigEntity = $this->firstDccPaymentConfig();
+
+        if($dccPaymentConfigEntity === null ) {
+            return self::DCC_MARKUP_PERCENTAGE_DEFAULT;
+        }
+
+        $data = $dccPaymentConfigEntity->getFormattedConfig();
+
+        return $data[self::DCC_MARKUP_PERCENTAGE];
     }
 
     public function setDefaultMethodsBasedOnCategory()

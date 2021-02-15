@@ -264,6 +264,43 @@ class MerchantTest extends TestCase
         $this->assertCount(39, $methods['disabled_banks']);
     }
 
+    public function testGetMerchantDefaultDccMarkup()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+        $result = $this->startTest();
+
+        $this->assertNotNull($result['dcc_markup_percentage']);
+        $this->assertEquals(5, $result['dcc_markup_percentage']);
+    }
+
+    public function testGetMerchantDccMarkup()
+    {
+        $this->fixtures->create('config', ['type' => 'dcc', 'is_default' => false,
+            'config'     => '{
+                "dcc_markup_percentage": 2
+                }']);
+
+        $this->ba->adminAuth();
+        $this->startTest();
+    }
+
+    public function testGetMerchantDccMarkupWithMultipleConfigs()
+    {
+        $this->fixtures->create('config');
+
+        $this->fixtures->create('config', ['type' => 'locale', 'is_default' => '1', 'config' => '{"language_code" : "hi"}']);
+
+        $this->fixtures->create('config', ['type' => 'dcc',
+            'config'     => '{
+                "dcc_markup_percentage": 2.13
+                }']);
+
+        $this->ba->adminAuth();
+        $this->startTest();
+    }
+
     public function testSetDefaultUnclaimedGroupIdForCreateMerchant()
     {
         $this->createMerchant();

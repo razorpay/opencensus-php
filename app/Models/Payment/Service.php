@@ -1511,7 +1511,7 @@ class Service extends Base\Service
             if (($this->isDccEnabledIIN($iinEntity) === true) and
                 ($currency === Currency\Currency::INR))
             {
-                $dccInfo = $this->getDCCInfo($amount, $currency);
+                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
 
@@ -1532,13 +1532,13 @@ class Service extends Base\Service
         return false;
     }
 
-    private function getDCCInfo($baseAmount, $baseCurrency)
+    private function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
     {
         $dccInfo = [];
 
         $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent);
 
         $dccInfo['currency_request_id'] = $currencyRequestId;
 

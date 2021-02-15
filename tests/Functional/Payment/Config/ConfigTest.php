@@ -20,6 +20,13 @@ class ConfigTest extends TestCase
         $this->ba->proxyAuth();
     }
 
+    public function testFetchDccConfig()
+    {
+        $this->testCreateConfigFieldForDccConfig();
+
+        return $this->startTest();
+    }
+
     public function testCreateCheckoutConfig()
     {
         return $this->startTest();
@@ -56,6 +63,38 @@ class ConfigTest extends TestCase
         $this->assertEquals(false, $firstConfig->is_default);
 
         $this->assertEquals(true, $secondConfig['is_default']);
+    }
+
+    public function testCreateConfigFieldForDccConfig()
+    {
+        return $this->startTest();
+    }
+
+    public function testErrorCreateConfigFieldForDccConfig()
+    {
+        $this->testCreateConfigFieldForDccConfig();
+
+        $this->startTest();
+    }
+
+    public function testCreateWrongConfigForDccConfig()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDecimalValueForDccConfig()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDecimalPrecisionMoreThan2DccConfig()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateBlankValueForDccConfig()
+    {
+        $this->startTest();
     }
 
     public function testUpdateDefaultFieldForCheckoutConfig()
@@ -174,6 +213,17 @@ class ConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateForDccConfig()
+    {
+        $config = $this->testCreateConfigFieldForDccConfig();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/config';
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $config['id'];
+
+        $this->startTest();
+    }
+
     public function testCreateCheckoutConfigBulk()
     {
         $this->ba->adminAuth();
@@ -202,10 +252,22 @@ class ConfigTest extends TestCase
         $this->startTest();
     }
 
-
     public function testDeleteLocaleConfig()
     {
         $config = $this->fixtures->create('config');
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
+    }
+
+    public function testDeleteDccConfig()
+    {
+        $this->testCreateConfigFieldForDccConfig();
 
         $this->ba->adminAuth();
 

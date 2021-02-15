@@ -483,7 +483,7 @@ class Notify
             $gatewayAmount = $paymentMeta->getGatewayAmount();
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();
 
-            $fee =  (new Dcc\Service())->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
+            $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent());
             $feeAsPerCurrency = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $fee);
             $data['payment']['currency_conversion_fee'] = $feeAsPerCurrency;
 

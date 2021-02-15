@@ -45,6 +45,8 @@ class Validator extends Base\Validator
 
     const LANGUAGE_CODE      = 'language_code';
 
+    const DCC_MARKUP_PERCENTAGE = 'dcc_markup_percentage';
+
     const SUPPORTED_LANGUAGE_CODE = [
         'hi',
         'en',
@@ -91,6 +93,10 @@ class Validator extends Base\Validator
     // will add a locale class once we have more number of language code to support
     protected static $localeConfigRules= [
         self::LANGUAGE_CODE    => 'required|string|custom',
+    ];
+
+    protected static $dccConfigRules = [
+        self::DCC_MARKUP_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
 
     protected static $editValidators = [
@@ -188,6 +194,11 @@ class Validator extends Base\Validator
         if ($input['type'] === Type::LOCALE)
         {
             $this->validateInput('locale_config', $input['config']);
+        }
+
+        if ($input['type'] === Type::DCC)
+        {
+            $this->validateInput('dcc_config', $input['config']);
         }
 
         if (($input['type'] === Type::LATE_AUTH) and

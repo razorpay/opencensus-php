@@ -75,7 +75,23 @@ return [
                 'dcc_mark_up_percent' => null,
                 'gateway_amount'      => 1000000,
                 'gateway_currency'    => 'INR',
-                'dcc_offered'         => null
+                'dcc_offered'         => null,
+                'dcc_markup_amount'   => null,
+            ],
+        ],
+    ],
+
+    'testAdminAuthPaymentFetchWithDefaultMccFields' => [
+        'request' => [
+            'url'     => '/admin/payment/',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'payment',
+                'mcc'                 => false,
+                'forex_rate_received' => null,
+                'forex_rate_applied'  => null,
             ],
         ],
     ],

@@ -3068,7 +3068,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId);
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage());
 
             if (empty($requestedCurrencyData) === true)
             {

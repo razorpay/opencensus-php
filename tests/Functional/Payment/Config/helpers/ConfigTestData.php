@@ -225,6 +225,40 @@ return  [
         ],
     ],
 
+    'testCreateLateAuthConfig' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'type'       => 'late_auth',
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+            ]
+        ],
+    ],
+
     'testUpdateConfigFieldForLateAuthConfig' => [
         'request' => [
             'content' => [
@@ -252,6 +286,223 @@ return  [
                         "refund_speed"=> "normal"
                     ]
                 ],
+            ]
+        ],
+    ],
+
+    'testFetchDccConfig' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/payment/config/dcc',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                 'items' => [
+                    [
+                        'entity' => 'config',
+                        'name' => 'dcc',
+                        'is_default' => false,
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateConfigFieldForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_percentage"    => 5,
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'dcc',
+                'config'     => [
+                    "dcc_markup_percentage"    => 5,
+                ],
+            ]
+        ],
+    ],
+
+    'testErrorCreateConfigFieldForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_percentage"    => 5,
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Dcc Config is already present for the provided merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DCC_CONFIG_PRESENT,
+        ],
+    ],
+
+    'testCreateWrongConfigForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_amount"    => 5,
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'dcc_markup_amount is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testCreateDecimalValueForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_percentage"    => 9.99,
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'dcc',
+                'config'     => [
+                    "dcc_markup_percentage"    => 9.99,
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateDecimalPrecisionMoreThan2DccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_percentage"    => 5.234,
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dcc markup percentage format is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testCreateBlankValueForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'          => 'dcc',
+                'name'          => 'dcc',
+                'is_default'    => '0',
+                'config'     => [
+                    "dcc_markup_percentage"    => '',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dcc markup percentage field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateForDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'      => 'dcc',
+                    'config'     => [
+                        "dcc_markup_percentage"    => 2,
+                    ],
+            ],
+            'method'    => 'PATCH',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'dcc',
+                'config'     => [
+                    "dcc_markup_percentage"    => 2,
+                ],
+            ]
+        ],
+    ],
+
+    'testDeleteDccConfig' => [
+        'request' => [
+            'content' => [
+                'type'         => 'dcc',
+                'merchant_ids' => ['10000000000000'],
+            ],
+            'method'    => 'DELETE',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 1,
+                'failures' => [],
             ]
         ],
     ],
