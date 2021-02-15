@@ -16,6 +16,7 @@ use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Mail\Payout\AutoRejectedPayout;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -32,6 +33,7 @@ class ScheduledPayoutTest extends TestCase
     use PaymentTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
 
     private $checkerRoleUser;
@@ -1282,12 +1284,19 @@ class ScheduledPayoutTest extends TestCase
                 }
 
                 return new \Requests_Response();
-            })->times(3);
+            });
 
         $payout = $this->testScheduledPayoutProcessingLowBalance();
 
         $this->app->events->fire('api.payout.failed', [$payout]);
 
         $this->validateStorkWebhookFireEvent('payout.failed', $payoutFailedEventData, $payloadFailed);
+    }
+
+    public function testCreateScheduledPayoutAndCheckCorrectWebhooksFired()
+    {
+        $this->dontExpectWebhookEvent('payout.initiated');
+
+        $this->testCreateScheduledPayout();
     }
 }

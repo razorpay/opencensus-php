@@ -4638,6 +4638,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEventWithContents('payout.pending', $eventTestDataKey);
 
+        $this->dontExpectWebhookEvent('payout.initiated');
+
         $workflow = $this->setupWorkflowForLiveMode();
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -8197,7 +8199,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockRazorxTreatment('yesbank',
                                             'on',
-                                            'off',
+                                            'on',
                                             'off',
                                             'off',
                                             'on',
@@ -10294,4 +10296,38 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testCreateQueuedPayoutAndCheckCorrectWebhooksFired()
+    {
+        $this->dontExpectWebhookEvent('payout.initiated');
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateQueuedPayout'];
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutForRequestSubmittedAndCheckCorrectWebhooksFired()
+    {
+        $this->dontExpectWebhookEvent('payout.initiated');
+
+        $this->testCreatePayoutForRequestSubmitted();
+    }
+
+    public function testBulkPayoutWithThrottlingAndCheckCorrectWebhooksFired()
+    {
+        $payoutInitiatedEventData = $this->testData['testFiringOfWebhookOnInitiatedPayoutEventData'];
+
+        // Only 2 payout.initiated webhooks should be fired for only 2 payouts that go to pending state.
+        $this->expectWebhookEventWithContents('payout.initiated', $payoutInitiatedEventData);
+        $this->expectWebhookEventWithContents('payout.initiated', $payoutInitiatedEventData);
+
+        // For other 2 payouts that go to batch submitted state, payout.initiated should not be fired.
+        $this->dontExpectWebhookEvent('payout.initiated');
+        $this->dontExpectWebhookEvent('payout.initiated');
+
+        $this->testBulkPayoutWithThrottling();
+    }
+
 }

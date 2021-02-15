@@ -195,7 +195,6 @@ class Status
         self::FAILED,
         self::SCHEDULED,
         self::REJECTED,
-        self::FAILED,
         self::CREATE_REQUEST_SUBMITTED,
     ];
 
