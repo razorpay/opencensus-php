@@ -517,4 +517,54 @@ return [
             ],
         ],
     ],
+
+    'testCreateAuthLinkForPaperMandateWithMergedBank' => [
+        'request'  => [
+            'content' => [
+                'amount'          => 0,
+                'currency'        => 'INR',
+                'method'          => 'nach',
+                'receipt'         => 'rcptid #1',
+                'payment_capture' => 1,
+                'customer_id'     => 'cust_100000customer',
+                'token'           =>
+                    [
+                        'auth_type'            => 'physical',
+                        'first_payment_amount' => '5000',
+                        'max_amount'           => '500000',
+                        'expire_at'            => '2047483647',
+                        'nach'                 => [
+                            'create_form'     => true,
+                            'form_reference1' => 'ttt',
+                            'form_reference2' => 'qqq',
+                        ],
+                        'bank_account'         =>
+                            [
+                                'account_number'     => '1111111111111',
+                                'ifsc_code'          => 'ALLA0212522',
+                                'beneficiary_name'   => 'Gaurav Kumar lllllllllllllllllllllllllllllllllllll',
+                                'beneficiary_email'  => 'gaurav.kumarwq11111111111111@example.com',
+                                'beneficiary_mobile' => '9483159238'
+                            ]
+                    ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 0,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid #1',
+                'token'    => [
+                    'auth_type'    => 'physical',
+                    'method'       => 'nach',
+                    'bank_account' => [
+                        'ifsc'      => 'IDIB000C080',
+                        'bank_name' => 'Indian Bank',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

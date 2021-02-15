@@ -32,6 +32,16 @@ use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 
 class Core extends Base\Core
 {
+    const MAPPED_IFSC = [
+        'ORBC' => 'PUNB0244200',
+        'CORP' => 'UBIN0550451',
+        'BKDN' => 'BARB0SERBOM',
+        'UTBI' => 'PUNB0244200',
+        'ALLA' => 'IDIB000C080',
+        'ANDB' => 'UBIN0550451',
+        'SYNB' => 'CNRB0RTGS01',
+    ];
+
     public function create(array $input, Merchant\Entity $merchant, Customer\Entity $customer): Entity
     {
         $this->trace->info(
@@ -286,6 +296,8 @@ class Core extends Base\Core
     {
         $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
 
+        $this->handleBankMerger($subrInput);
+
         if (isset($input[Order\Entity::CURRENCY]) === true and
             isset($subrInput[Entity::CURRENCY]) === false)
         {
@@ -359,6 +371,24 @@ class Core extends Base\Core
         }
 
         return $subscriptionRegistration;
+    }
+
+    protected function handleBankMerger(array & $subrInput)
+    {
+        if (array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput))
+        {
+            array_walk($subrInput[Constants\Entity::BANK_ACCOUNT], function (&$value, $key) {
+                if ($key === BankAccount\Entity::IFSC_CODE)
+                {
+                    $firstFourOfIFSC = substr($value, 0, 4);
+
+                    if (array_key_exists($firstFourOfIFSC, self::MAPPED_IFSC) === true)
+                    {
+                        $value = self::MAPPED_IFSC[$firstFourOfIFSC];
+                    }
+                }
+            });
+        }
     }
 
     protected function getPaperMandateInput(array & $paperMandateInput, array & $subrInput)

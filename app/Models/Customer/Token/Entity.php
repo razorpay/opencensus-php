@@ -111,6 +111,9 @@ class Entity extends Base\PublicEntity
         'CORP' => 'UBIN0550451',
         'BKDN' => 'BARB0SERBOM',
         'UTBI' => 'PUNB0244200',
+        'ALLA' => 'IDIB000C080',
+        'ANDB' => 'UBIN0550451',
+        'SYNB' => 'CNRB0RTGS01',
     ];
 
     const DCC_ENABLED           = 'dcc_enabled';
