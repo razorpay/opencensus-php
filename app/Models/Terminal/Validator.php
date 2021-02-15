@@ -349,10 +349,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $fulcrumTerminalRules = [
+        Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
         Entity::GATEWAY                    => 'required|in:fulcrum',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
-        Entity::MODE                       => 'sometimes|integer|in:3',
+        Entity::MODE                       => 'sometimes|integer|in:1', // default value for fulcrum terminal mode is auth_capture(1)
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CARD                       => 'sometimes|boolean|in:1',
@@ -531,7 +532,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
-        Entity::MODE                       => 'sometimes|in:3',
+        Entity::MODE                       => 'sometimes|in:1,2', // mode can be edited to auth_capture(1) or purchase(2)
     ];
 
     protected static $payuEditTerminalRules = [
@@ -1714,8 +1715,8 @@ class Validator extends Base\Validator
     {
         Payment\Gateway::validateGateway($input['gateway']);
 
-        // Don't unset for paysecure gateway, req is initiated from Terminals Service via merchants/{id}/terminals/internal route
-        if ($input['gateway'] != Payment\Gateway::PAYSECURE)
+        // Don't unset for paysecure and fulcrum gateway, req is initiated from Terminals Service via merchants/{id}/terminals/internal route
+        if (in_array($input['gateway'], [Payment\Gateway::PAYSECURE, Payment\Gateway::FULCRUM]) === false)
         {
             unset(
                 $input[Entity::TPV],
@@ -1800,6 +1801,7 @@ class Validator extends Base\Validator
             Gateway::AMEX,
             Gateway::WALLET_OPENWALLET,
             Gateway::CARDLESS_EMI,
+            Gateway::FULCRUM,
         ];
 
         $PurchaseOnlyGateway = [

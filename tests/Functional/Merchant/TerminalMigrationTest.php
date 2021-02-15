@@ -302,6 +302,7 @@ class TerminalMigrationTest extends TestCase
         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
 
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+        $this->assertEquals(1, $terminalEntity->getMode());
 
         $afterCount = Db::table('terminals')->count();
 

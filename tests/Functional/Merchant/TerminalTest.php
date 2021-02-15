@@ -730,6 +730,35 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['gateway_acquirer'], 'random');
     }
 
+    public function testEditFulcrumTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'fulcrum',
+            'mode'                      => 1,
+            'international'             => 1,
+            'gateway_merchant_id'       => '10000000000000d',
+            'gateway_terminal_id'       => '1000000d',
+            'gateway_terminal_password' => 'random',
+            'mode'                      => 1,
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+            'card'                      => '1',
+        ];
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = ['mode' => 2];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['mode'], 2);
+    }
+
     public function testCreatePaytmCardTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
