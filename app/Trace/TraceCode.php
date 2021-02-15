@@ -4078,6 +4078,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED = 'TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
 
+    const APPS_RISK_CHECK_QUEUE                                 = 'APPS_RISK_CHECK_QUEUE_QUEUE';
+    const APPS_RISK_CHECK_QUEUE_INITIATED                       = 'APPS_RISK_CHECK_QUEUE_INITIATED';
+    const APPS_RISK_CHECK_QUEUE_COMPLETED                       = 'APPS_RISK_CHECK_QUEUE_COMPLETED';
+    const APPS_RISK_CHECK_SQS_PUSH_INIT                         = 'APPS_RISK_CHECK_SQS_PUSH_INIT';
+    const APPS_RISK_CHECK_SQS_PUSH_FAILED                       = 'APPS_RISK_CHECK_SQS_PUSH_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -11,6 +11,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\AppsRiskCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
@@ -19,6 +20,7 @@ use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\VirtualAccountProducts;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -81,6 +83,8 @@ class Core extends Base\Core
 
             throw $e;
         }
+
+        $this->dispatchForRiskCheck($input[Entity::RECEIVERS], $virtualAccount);
 
         (new Metric)->pushCreateSuccessMetrics($input);
 
@@ -712,6 +716,8 @@ class Core extends Base\Core
             return $virtualAccount;
         });
 
+        $this->dispatchForRiskCheck($input, $virtualAccount);
+
         return $virtualAccount;
     }
 
@@ -784,6 +790,67 @@ class Core extends Base\Core
             $this->repo->deleteOrFail($virtualAccountTpv->entity);
 
             (new VirtualAccountTpv\Core())->deactivate($virtualAccountTpv);
+        }
+    }
+
+    protected function dispatchForRiskCheck(array $input, $virtualAccount)
+    {
+        $merchant = $virtualAccount->merchant;
+        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
+                                                     RazorxTreatment::APPS_RISK_CHECK,
+                                                     $this->mode);
+        if (($variant !== 'on') or
+            ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true))
+        {
+            return;
+        }
+
+        $fields = [];
+
+        foreach ($input[Entity::TYPES] as $receiverType)
+        {
+            $options = $input[$receiverType] ?? [];
+
+            if ((empty($options) === true) or
+                (isset($options[Entity::DESCRIPTOR]) === false))
+            {
+                continue;
+            }
+
+            $field = [
+                'key'        => Entity::DESCRIPTOR,
+                'value'      => $options[Entity::DESCRIPTOR],
+                'list'       => 'high_risk_list',
+                'config_key' => Entity::DESCRIPTOR,
+            ];
+
+            array_push($fields, $field);
+        }
+
+        if (empty($fields) === true)
+        {
+            return;
+        }
+
+        $request = [
+            'client_type' => 'smart_collect',
+            'entity_id'   => $virtualAccount->getId(),
+            'fields'      => $fields,
+        ];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::APPS_RISK_CHECK_SQS_PUSH_INIT,
+                $request);
+
+            AppsRiskCheck::dispatch($this->mode, $request);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->critical(
+                TraceCode::APPS_RISK_CHECK_SQS_PUSH_FAILED,
+                $request);
         }
     }
 }

@@ -2,9 +2,7 @@
 
 namespace RZP\Jobs;
 
-use App;
-
-use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Services\MerchantRiskClient;
 
 class AppsRiskCheck extends Job
@@ -24,10 +22,24 @@ class AppsRiskCheck extends Job
     {
         parent::handle();
 
+        $this->trace->info(
+            TraceCode::APPS_RISK_CHECK_QUEUE_INITIATED,
+            [
+                'params' => $this->params,
+            ]
+        );
+
         $response = (new MerchantRiskClient())->getMerchantRiskScores($this->params['client_type'],
                                                                       $this->params['entity_id'],
                                                                       $this->params['fields']);
         $this->validateRiskFactorResponse($response);
+
+        $this->trace->info(
+            TraceCode::APPS_RISK_CHECK_QUEUE_COMPLETED,
+            [
+                'Response' => $response,
+            ]
+        );
     }
 
     protected function validateRiskFactorResponse(array $response)

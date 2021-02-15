@@ -347,9 +347,9 @@ return [
         'live'      => env('AWS_PG_EINVOICE_LIVE_QUEUE'),
     ],
 
-    'app_risk_check' => [
-        'test'       => env('AWS_APP_RISK_CHECK_TEST_QUEUE'),
-        'live'       => env('AWS_APP_RISK_CHECK_LIVE_QUEUE'),
+    'apps_risk_check' => [
+        'test'       => env('AWS_APPS_RISK_CHECK_TEST_QUEUE'),
+        'live'       => env('AWS_APPS_RISK_CHECK_LIVE_QUEUE'),
     ],
     /*
     |--------------------------------------------------------------------------
