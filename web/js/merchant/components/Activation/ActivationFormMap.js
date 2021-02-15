@@ -253,13 +253,13 @@ const businessModel = [
 
         if (
           businessCategory === 'others' &&
-          (isSourceRX() || !activation.props.user.isBDAndAovEnabled)
+          (isSourceRX() || !props.user.isBDAndAovEnabled || !props.user.isOrgRZP)
         ) {
           // If businessCategory is selected to others, then Business Model is to be filled in case of RX.
           return true;
         }
 
-        return !isSourceRX() && activation.props.user.isBDAndAovEnabled;
+        return !isSourceRX() && props.user.isBDAndAovEnabled && props.user.isOrgRZP;
       },
     },
   ],
@@ -292,7 +292,8 @@ const businessModel = [
         );
       }
     },
-    _when: (activation) => !isSourceRX() && activation.props.user.isBDAndAovEnabled,
+    _when: (activation) =>
+      !isSourceRX() && activation.props.user.isBDAndAovEnabled && activation.props.user.isOrgRZP,
   },
   [
     {

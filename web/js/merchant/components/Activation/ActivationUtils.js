@@ -358,7 +358,8 @@ function canShowEAadharComponent(activation) {
 
   if (
     E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
-    activation.props.user.isEsignAadharEnabled
+    activation.props.user.isEsignAadharEnabled &&
+    activation.props.user.isOrgRZP
   ) {
     return true;
   }

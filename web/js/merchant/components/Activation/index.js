@@ -1469,10 +1469,7 @@ export default class ActivationWizard extends React.Component {
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
-      if (activationUtils.isSourceRX() || !this.props.user.isBDAndAovEnabled) {
-        sideEffectFieldsToUpdate.business_model = '';
-      }
-      // Reset Business Model as well.
+
       const singleSubcategory = this.getSingleSubcategory(fieldValue);
       if (singleSubcategory) {
         sideEffectFieldsToUpdate.business_subcategory = singleSubcategory.value;
@@ -1482,7 +1479,13 @@ export default class ActivationWizard extends React.Component {
       }
       let el = document.querySelector('.form-container [name=business_subcategory]');
       el && (el.value = '');
-      if (activationUtils.isSourceRX() || !this.props.user.isBDAndAovEnabled) {
+      // Reset Business Model as well.
+      if (
+        activationUtils.isSourceRX() ||
+        !this.props.user.isBDAndAovEnabled ||
+        !this.props.user.isOrgRZP
+      ) {
+        sideEffectFieldsToUpdate.business_model = '';
         // Update Business Model in view
         el = document.querySelector('.form-container [name=business_model]');
         el && (el.value = '');
