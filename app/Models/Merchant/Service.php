@@ -225,6 +225,10 @@ class Service extends Base\Service
             $merchant, null,
             $data);
 
+        $this->trace->info(TraceCode::PARTNERSHIP_SUBMERCHANT_SIGNUP, [
+            'data' => $data
+        ]);
+
         if ($isLinkedAccount === true)
         {
             $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
