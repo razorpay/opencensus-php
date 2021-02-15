@@ -518,7 +518,7 @@ class EnachRblGatewayTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNotNull($response['items'][0]['sent_at']);
+        $this->assertNotNull($response['items'][0]['file_generated_at']);
 
         $file = $this->getDbLastEntityToArray('file_store');
 

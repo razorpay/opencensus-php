@@ -2,22 +2,27 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Register;
 
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Exception\GatewayFileException;
-use RZP\Exception\LogicException;
-use RZP\Exception\RuntimeException;
-use RZP\Models\Gateway\File\Status;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Gateway\File\Processor\EMandate\Base;
-use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
-use RZP\Gateway\Netbanking\Hdfc\Fields;
-use RZP\Models\FileStore\Utility;
+use Mail;
 use ZipArchive;
 use Carbon\Carbon;
+
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
+use RZP\Models\FileStore\Utility;
+use RZP\Models\Gateway\File\Status;
+use RZP\Exception\RuntimeException;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayFileException;
+use RZP\Mail\Base\Constants as MailConstants;
+use RZP\Services\Beam\Service as BeamService;
+use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
+use RZP\Models\Gateway\File\Processor\EMandate\Base;
 
 class EnachRbl extends Base
 {
@@ -35,6 +40,10 @@ class EnachRbl extends Base
     ];
 
     const NUM_SECS_IN_ONE_DAY = 86400;
+    /**
+     * @var array
+     */
+    protected $fileStore;
 
     public function fetchEntities(): PublicCollection
     {
@@ -84,6 +93,8 @@ class EnachRbl extends Base
 
         try
         {
+            $fileStoreIds = [];
+
             $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getZipFileToWriteName(false);
@@ -107,6 +118,10 @@ class EnachRbl extends Base
                             ->save()
                             ->getFileInstance();
 
+            $fileStoreIds[] = $file->getId();
+
+            $this->fileStore = $fileStoreIds;
+
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
@@ -123,6 +138,64 @@ class EnachRbl extends Base
                     'id' => $this->gatewayFile->getId(),
                 ]);
         }
+    }
+
+    public function sendFile($data)
+    {
+        $fileInfo = [];
+
+        $files = $this->gatewayFile
+                      ->files()
+                      ->whereIn(FileStore\Entity::ID, $this->fileStore)
+                      ->get();
+
+        foreach ($files as $file)
+        {
+            $fullFileName = $file->getName() . '.' . $file->getExtension();
+
+            $fileInfo[] = $fullFileName;
+        }
+
+        $data = [
+            BeamService::BEAM_PUSH_FILES   => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_ENACH_FILE_JOB_NAME
+        ];
+
+        // In seconds
+        $timelines = [];
+
+        $mailInfo = [
+            'fileInfo' => $fileInfo,
+            'channel' => 'nach',
+            'filetype' => FileStore\Type::RBL_ENACH_REGISTER,
+            'subject' => 'Enach RBL Register File Beam Send failure',
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+        ];
+
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new BadRequestException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->fileStore,
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'gateway'       => 'enach_rbl',
+                ]
+            );
+        }
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+
+        $mailable = new EMandateMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
     }
 
     protected function formatDataForFile($payments)
@@ -228,5 +301,24 @@ class EnachRbl extends Base
         }
 
         return $dirPath;
+    }
+
+    protected function formatDataForMail($files)
+    {
+        $mailData = [
+            'files' => [],
+        ];
+
+        foreach ($files as $file)
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+            $mailData['files'][] = [
+                'signed_url' => $signedUrl,
+                'file_name'  => $file->getLocation(),
+            ];
+        }
+
+        return $mailData;
     }
 }
