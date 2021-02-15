@@ -159,14 +159,14 @@ export default class PaymentButtonsList extends ListContainer {
             status,
             getActions(this.openGetCodeModal),
           ]}
-          count={this.state.count}
-          skip={this.state.skip}
           paginate={(params, type) => {
             track.lj.trackPaginate(params, type);
 
             this.paginate(params, type);
           }}
           {...this.props}
+          count={this.state.count}
+          skip={this.state.skip}
           EmptyComponent={EmptyComponent}
           onErrorCloseClick={() => {
             track.lj.trackErrorCloseClick(this.state.status.message);
