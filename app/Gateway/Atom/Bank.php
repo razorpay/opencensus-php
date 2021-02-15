@@ -13,7 +13,7 @@ class Bank
     // We are using the same bank code as SBIN
     protected static $map = [
         IFSC::ABNA         => 1050,     // Royal Bank Of Scotland
-        IFSC::ALLA         => 1056,     // Allahabad Bank
+        IFSC::ALLA         => 1026,     // Allahabad Bank -> changed to Indian Bank
         IFSC::ANDB         => 1058,     // Andhra bank
         IFSC::BKID         => 1012,     // Bank of India Retail
         IFSC::CBIN         => 1028,     // Central Bank of India

@@ -181,11 +181,11 @@ class RefundTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures('disable_card_refunds');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ALLA');
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
 
         $this->doAuthAndCapturePayment($payment);
 

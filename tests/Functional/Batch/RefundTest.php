@@ -208,11 +208,11 @@ class RefundTest extends TestCase
 
         $this->capturePayment($entries[0]['Payment Id'], 50000);
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ALLA');
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
 
         $this->doAuthAndCapturePayment($payment);
 

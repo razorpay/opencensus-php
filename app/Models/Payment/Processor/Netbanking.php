@@ -80,7 +80,8 @@ class Netbanking
         self::KKBK_C => 'Kotak Mahindra Bank - Corporate Banking',
         IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
-        IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)'
+        IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)',
+        IFSC::ALLA   => 'Indian Bank (Erstwhile Allahabad Bank)',
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
@@ -103,7 +104,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::INDB,
         IFSC::CSBK,
-        IFSC::ALLA,
+        IFSC::ALLA,     // due to bank merger, will be routed through IDIB direct integration
         IFSC::CNRB,
         IFSC::CIUB,
         IFSC::IDIB,
@@ -150,7 +151,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::CSBK,
-        IFSC::ALLA,
+//        IFSC::ALLA,     // due to bank merger, will be routed through Atom IDIB tpv integration
         IFSC::IDFB,
         IFSC::SIBL,
         IFSC::YESB,
@@ -359,6 +360,7 @@ class Netbanking
                 self::PUNB_R,
             ],
             'tpv' => [
+                IFSC::ALLA,
                 IFSC::BKID,
                 IFSC::CIUB,
                 IFSC::DCBL,
@@ -659,6 +661,7 @@ class Netbanking
         Gateway::NETBANKING_IBK => [
             'retail' => [
                 IFSC::IDIB,
+                IFSC::ALLA,
             ],
             'tpv' => [
                 IFSC::IDIB

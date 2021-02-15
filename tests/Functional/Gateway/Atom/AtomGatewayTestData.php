@@ -140,6 +140,13 @@ return [
         'status'          => 'Ok',
     ],
 
+    'testPaymentNetbankingEntityForAllahabad' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank_name'       => 'ALLA',
+        'status'          => 'Ok',
+    ],
+
     'testPaymentRefund' => [
         'action'                     => 'refund',
         'error_code'                 => '00',
@@ -147,4 +154,27 @@ return [
         'entity'                     => 'atom',
         'gateway_result_description' => 'Full Refund initiated successfully',
     ],
+
+    'testAllahabadTpvMigrationPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'ALLA',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
 ];

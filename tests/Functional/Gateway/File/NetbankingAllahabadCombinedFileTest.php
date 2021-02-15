@@ -20,6 +20,8 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped("Bank merged with Indian bank");
+
         Carbon::setTestNow();
 
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingAllahabadCombinedFileTestData.php';

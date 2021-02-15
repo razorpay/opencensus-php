@@ -454,7 +454,7 @@ class AtomGatewayTest extends TestCase
                             <REFUNDPROCESSDATE></REFUNDPROCESSDATE>
                             <REMARKS></REMARKS>
                             <MEREFUNDREF>randomrfnd2</MEREFUNDREF>
-                        </REFUND>		
+                        </REFUND>
                     </DETAILS>
                 </REFUNDSTATUS> ';
             }
@@ -634,5 +634,47 @@ class AtomGatewayTest extends TestCase
                 unset($content[$field]);
             }
         });
+    }
+
+    public function testAllahabadTpvMigrationPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['bank'] = 'ALLA';
+        $this->payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['bank_txn'] = '99999999';
+            $content['bank_name'] = 'ALLA';
+        });
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('atom', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntityForAllahabad'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 }

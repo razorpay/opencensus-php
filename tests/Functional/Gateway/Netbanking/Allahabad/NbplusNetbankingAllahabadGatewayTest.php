@@ -16,6 +16,8 @@ class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceNetbankin
 {
     public function setUp()
     {
+        $this->markTestSkipped("Bank merged with Indian bank");
+
         $this->testDataFilePath = __DIR__ . '/NetbankingAllahabadGatewayTestData.php';
 
         parent::setUp();

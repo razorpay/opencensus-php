@@ -25,6 +25,8 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped("Bank merged with Indian bank");
+
         $this->testDataFilePath = __DIR__.'/NetbankingAllahabadGatewayTestData.php';
 
         parent::setUp();

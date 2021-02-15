@@ -2095,7 +2095,7 @@ class Gateway
         IFSC::IDIB         => Gateway::NETBANKING_IBK,
         IFSC::IBKL         => Gateway::NETBANKING_IDBI,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
-        IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::ALLA         => Gateway::NETBANKING_IBK,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::SBIN         => Gateway::NETBANKING_SBI,
