@@ -2183,11 +2183,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->merchant->isFeatureEnabled(Feature\Constants::VISA_SAFE_CLICK) === true));
     }
 
-    public function isCVVOptional()
-    {
-        return ($this->isVisaSafeClickPayment() === true);
-    }
-
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
