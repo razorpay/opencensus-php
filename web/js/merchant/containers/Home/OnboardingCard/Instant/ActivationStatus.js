@@ -62,6 +62,38 @@ export default class ActivationCard extends Component {
 
     let { status, content, title } = initialState;
 
+    const KYCPending = () => {
+      return (
+        <div>
+          Give us a few KYC details to start transacting
+          <div>
+            <Link
+              to="/activation"
+              className="btn btn-primary"
+              onClick={(e) => {
+                track.activateAccount();
+                this.props.tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.form_fill', {
+                    clickSource: 'Dashboard_CTA',
+                  }),
+                );
+                analyticsService.track({
+                  objectName: 'SignUp',
+                  actionName: 'Activate Account_Progress Bar CTA Clicked',
+                  screen: 'home page',
+                  properties: {
+                    ...getCommonSegmentProperties(),
+                  },
+                });
+              }}
+            >
+              Activate Account
+            </Link>
+          </div>
+        </div>
+      );
+    };
+
     if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
@@ -189,37 +221,12 @@ export default class ActivationCard extends Component {
               </div>
             </div>
           );
+        } else {
+          status = possibleStatuses.active;
+          content = KYCPending();
         }
       } else {
-        content = (
-          <div>
-            Give us a few KYC details to start transacting
-            <div>
-              <Link
-                to="/activation"
-                className="btn btn-primary"
-                onClick={(e) => {
-                  track.activateAccount();
-                  this.props.tracking.trackEvent(
-                    window.rzpQ.onbr().initiated('act.form_fill', {
-                      clickSource: 'Dashboard_CTA',
-                    }),
-                  );
-                  analyticsService.track({
-                    objectName: 'SignUp',
-                    actionName: 'Activate Account_Progress Bar CTA Clicked',
-                    screen: 'home page',
-                    properties: {
-                      ...getCommonSegmentProperties(),
-                    },
-                  });
-                }}
-              >
-                Activate Account
-              </Link>
-            </div>
-          </div>
-        );
+        content = KYCPending();
       }
     }
 
