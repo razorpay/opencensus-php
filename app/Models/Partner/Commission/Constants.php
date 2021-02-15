@@ -8,8 +8,7 @@ use RZP\Models\Merchant;
 class Constants
 {
     const PAYMENT = 'payment';
-
-    const PAYOUT  = 'payout';
+    const PAYOUT =  'payout';
 
     const COMMISSION_BREAK_UP_PREFIX = 'commission_';
 
@@ -62,6 +61,7 @@ class Constants
      */
     public static $sourceEntities = [
         self::PAYMENT,
+        self::PAYOUT,
     ];
 
     /**

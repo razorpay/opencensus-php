@@ -48,7 +48,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates partner commission entities from a captured payment
+     * Creates partner commission entities from a captured payment 
      *
      * @param Payment\Entity $payment
      *
@@ -57,7 +57,34 @@ class Core extends Base\Core
      */
     public function createFromCapturedPayment(Payment\Entity $payment): array
     {
-        $calculator = new Calculator($payment);
+        return $this->createCommission($payment);
+    }
+
+    /**
+     * Creates partner commission entities from a payout
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return array
+     * @throws Exception\LogicException
+     */
+    public function createFromPayout(Payout\Entity $payout) : array
+    {
+        return $this->createCommission($payout);
+    }
+
+    /**
+     * Creates partner commission entities from any
+     * Entity which implements CommissionSourceInterface
+     *
+     * @param CommissionSourceInterface $sourceEntity
+     *
+     * @return array
+     * @throws Exception\LogicException
+     */
+    protected function createCommission(CommissionSourceInterface  $sourceEntity)
+    {
+        $calculator = new Calculator($sourceEntity);
 
         if ($calculator->shouldCreateCommission() === false)
         {
