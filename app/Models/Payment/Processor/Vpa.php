@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentsUpi;
@@ -46,34 +47,10 @@ trait Vpa
             return $existing;
         }
 
-        $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
+        $tracable = [];
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-                                                    'validate_vpa_routing_v2',
-                                                    Mode::LIVE);
-
-        $tracable = [
-            'code'          => TraceCode::VALIDATE_VPA_REQUEST,
-            'variant'       => $variant,
-            'vpa'           => mask_vpa($input['vpa']),
-            'success'       => false,
-        ];
-
-        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
-        {
-            $terminalIds = ['AK6NMmzbL6FPe4', '9Q8w9weX9D1T27', '6KTOhwf4XBOMns'];
-        }
-
-        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
-        {
-            $terminalIds = ['6KTOhwf4XBOMns', '9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4'];
-        }
-
-        $terminals = $this->repo->terminal->findManyEnabledByIds($terminalIds);
-
-        $terminals = $terminals->sortBy(function ($terminal) use ($terminalIds) {
-                    return array_search($terminal->getId(), $terminalIds);
-        });
+        // Retrieve terminals for validate VPA.
+        $terminals = $this->getTerminalsForValidateVpa($input[Payment\Entity::VPA], $tracable);
 
         $count = count($terminals);
 
@@ -171,5 +148,100 @@ trait Vpa
             'success'           => true,
             'customer_name'     => $vpa->getName(),
         ];
+    }
+
+    /**
+     * Return terminals to perform VPA validation.
+     * @param string $vpa
+     * @param $tracable
+     * @return mixed
+     */
+    protected function getTerminalsForValidateVpa(string $vpa, & $tracable)
+    {
+        // Get terminals stored in env
+        $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            'validate_vpa_routing_v2',
+            Mode::LIVE);
+
+        $tracable = [
+            'code'          => TraceCode::VALIDATE_VPA_REQUEST,
+            'variant'       => $variant,
+            'vpa'           => mask_vpa($vpa),
+            'success'       => false,
+        ];
+
+        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
+        {
+            $terminalIds = ['6KTOhwf4XBOMns', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', 'AK6NMmzbL6FPe4'];
+        }
+
+        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
+        {
+            $terminalIds = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
+        }
+
+        $terminals = $this->filterTerminalsForValidateVpa($terminalIds);
+
+        return $terminals;
+    }
+
+    /**
+     *  1. Retrieves enabled terminals from database.
+     *  2. Filters enabled terminals to return only one mindgate terminal along with other gateway terminals.
+     *  3. Sorts the enabled terminal in the required order.
+     * @param array $terminalIds
+     * @return mixed
+     */
+    protected function filterTerminalsForValidateVpa(array $terminalIds)
+    {
+        // get enabled terminals from the terminal Ids.
+        $terminals = (new Terminal\Repository)->findManyEnabledByIds($terminalIds);
+
+        $this->filterMindgateTerminalsForValidateVpa($terminals);
+
+        // Sort the terminals as per required order.
+        $terminals = $terminals->sortBy(function ($terminal) use ($terminalIds) {
+            return array_search($terminal->getId(), $terminalIds);
+        });
+
+        return $terminals;
+    }
+
+    /**
+     * Mindgate terminals are merchant terminals and not shared, we decided to distribute the traffic among
+     * 3 merchant terminal so that single merchant using mindgate terminal should not get affected.
+     * 1. Filters the terminal to include only one mindgate terminal along with other gateway terminal.
+     * @param $terminals
+     */
+    protected function filterMindgateTerminalsForValidateVpa(&$terminals)
+    {
+        // get all the enabled mindgate terminals
+        $mindgateEnabledTerminals = $terminals->filter(function ($terminal) {
+            return ($terminal->getGateway() === Payment\Gateway::UPI_MINDGATE);
+        });
+
+        // if there are is more than 1 mindgate terminals to choose from.
+        if (count($mindgateEnabledTerminals) > 1)
+        {
+            // Randomly choose an enabled mindgate terminal.
+            $selectedTerminal = $mindgateEnabledTerminals->random();
+
+            // Filter enabled terminals to only include one mindgate terminal (which is randomly chosen in the above step)
+            // along with other gateway terminals.
+            $terminals = $terminals->filter(function ($terminal) use ($mindgateEnabledTerminals, $selectedTerminal){
+
+                // Check if the terminal is mindgate terminal and
+                // don't choose if it is not the randomly selected terminal
+                if (($terminal->getGateway() === Payment\Gateway::UPI_MINDGATE) and
+                    ($terminal !== $selectedTerminal))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
     }
 }

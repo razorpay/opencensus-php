@@ -13,7 +13,7 @@ class GatewayConfigTest extends TestCase
         $test = Gateway::getTerminalsForValidateVpaForMode('test');
 
         // Picked from the Gateway::$upiValidateVpaTerminals
-        $this->assertSame(['9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4', '6KTOhwf4XBOMns'], $live);
+        $this->assertSame(['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'], $live);
 
         // Set from .env.default
         $this->assertSame(['1000SharpTrmnl', '100UPIMindgate', '100UPIMgateSbi', '100UPIICICITml'], $test);
@@ -25,11 +25,11 @@ class GatewayConfigTest extends TestCase
 
         // Live Environment
         $message = 'LiveEmptyString';
-        $expected = ['9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4', '6KTOhwf4XBOMns'];
+        $expected = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
         $cases[$message] = ['live', '', $expected];
 
         $message = 'LiveNull';
-        $expected = ['9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4', '6KTOhwf4XBOMns'];
+        $expected = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
         $cases[$message] = ['live', null, $expected];
 
         $message = 'LiveSingleValue';
@@ -41,11 +41,11 @@ class GatewayConfigTest extends TestCase
         $cases[$message] = ['live', 'SampleTid00001, SampleTid00002', $expected];
 
         $message = 'LiveSingleIncorrectIdValue';
-        $expected = ['9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4', '6KTOhwf4XBOMns'];
+        $expected = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
         $cases[$message] = ['live', 'SampleTid', $expected];
 
         $message = 'LiveOneIncorrectIdValue';
-        $expected = ['9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4', '6KTOhwf4XBOMns'];
+        $expected = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
         $cases[$message] = ['live', 'SampleTid00001, SampleTid', $expected];
 
         // Test Environment
