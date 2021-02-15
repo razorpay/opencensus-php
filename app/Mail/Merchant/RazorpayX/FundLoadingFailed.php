@@ -15,7 +15,7 @@ class FundLoadingFailed extends Mailable
 
     const URL = "https://razorpay.com/docs/razorpayx/announcements/source-account-validation";
 
-    const SUBJECT = 'Fund loading failed on your RazorpayX account number <%s>';
+    const SUBJECT = 'Fund loading of %s to your RazorpayX account number %s has been rejected';
 
     protected $bankTransferId = null;
 
@@ -85,7 +85,11 @@ class FundLoadingFailed extends Mailable
     {
         $bankTransfer = $this->getBankTransfer();
 
-        $subject = sprintf(self::SUBJECT, $bankTransfer->getPayeeAccount());
+        $formattedAmount = $bankTransfer->getFormattedAmountsAsPerCurrency('INR', $bankTransfer->getAmount());
+
+        $maskedAccountNumber = mask_except_last4($bankTransfer->getPayeeAccount());
+
+        $subject = sprintf(self::SUBJECT, $formattedAmount, $maskedAccountNumber);
 
         $this->subject($subject);
 
@@ -99,8 +103,8 @@ class FundLoadingFailed extends Mailable
         $formattedAmount = $bankTransfer->getFormattedAmountsAsPerCurrency('INR', $bankTransfer->getAmount());
 
         $data = [
-            'payer_account_number'  => $bankTransfer->getPayerAccount(),
-            'payee_account_number'  => $bankTransfer->getPayeeAccount(),
+            'payer_account_number'  => mask_except_last4($bankTransfer->getPayerAccount()),
+            'payee_account_number'  => mask_except_last4($bankTransfer->getPayeeAccount()),
             'utr'                   => $bankTransfer->getUtr(),
             'payer_ifsc'            => $bankTransfer->getPayerIfsc(),
             'amount'                => $formattedAmount,

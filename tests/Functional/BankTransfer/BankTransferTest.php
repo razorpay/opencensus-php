@@ -3722,11 +3722,11 @@ class BankTransferTest extends TestCase
 
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
-            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
-            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
@@ -3916,11 +3916,11 @@ class BankTransferTest extends TestCase
 
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
-            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
-            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
@@ -4027,11 +4027,11 @@ class BankTransferTest extends TestCase
 
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
-            $this->assertEquals('9876543210123456789', $viewData['payer_account_number']);
-            $this->assertEquals('2224440041626905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = "Fund loading failed on your RazorpayX account number <2224440041626905>";
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
