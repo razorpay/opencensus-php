@@ -41,6 +41,13 @@ class Service extends Base\Service
         return $downtimes->toArrayPublic();
     }
 
+    public function getPaymentDowntimeByID(array $input, string $id): array
+    {
+        $downtimes = $this->getRepository()->findOrFailPublic($id);
+
+        return $downtimes->toArrayPublic();
+    }
+
     public function triggerDowntimes(array $input, string $status): array
     {
         $this->increaseAllowedSystemLimits();

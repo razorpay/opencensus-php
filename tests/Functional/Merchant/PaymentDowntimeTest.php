@@ -9,6 +9,7 @@ use Requests_Response;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DowntimeTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -483,6 +484,63 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime['method'], 'card');
         $this->assertEquals($downtime['status'], 'started');
+    }
+
+    public function testPaymentDowntimeGetByID()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'upi',
+                'source'      => 'BANK',
+                'vpa_handle'  => 'oksbi',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->ba->privateAuth();
+
+        $id = trim($downtime['id'],"down_");
+
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method' => 'GET',
+            'url' => '/payments/downtimes/' . $id
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals($paymentDowntime['method'], 'upi');
+        $this->assertEquals($paymentDowntime['status'], 'started');
+    }
+
+    public function testPaymentDowntimeGetByInvalidId()
+    {
+        $this->ba->privateAuth();
+
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method' => 'GET',
+            'url' => '/payments/downtimes/DummyID'
+        ];
+
+        try {;
+            $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testGatewayDowntimeIndividualCardAllGateway()

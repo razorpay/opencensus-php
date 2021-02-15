@@ -18,6 +18,22 @@ class DowntimeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMethodDowntimeDataByID($id)
+    {
+        $input = Request::all();
+
+        try
+        {
+            $data = $this->service(E::PAYMENT_DOWNTIME)->getPaymentDowntimeByID($input, $id);
+        }
+        catch (BadRequestException $e)
+        {
+            return ApiResponse::json(['Status' => 'Failure Invalid ID'], 400);
+        }
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Used via a cron job to grab applicable payment.downtimes and move them:
      * - scheduled -> started
