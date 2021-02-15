@@ -27,16 +27,24 @@ class migration extends Job
      */
     protected $merchantId;
 
+    /**
+     * @var string
+     * uses the field to decide whether to migrate merchant on payout or fts
+     */
+    protected $via;
+
 
     /**
      * @param string $mode
      * @param string $merchantId
+     * @param string $via
      */
-    public function __construct(string $mode, string $merchantId)
+    public function __construct(string $mode, string $merchantId, string $via)
     {
         parent::__construct($mode);
 
         $this->merchantId    = $merchantId;
+        $this->via           = $via;
     }
 
     /**
@@ -60,7 +68,8 @@ class migration extends Job
             $this->trace->info(
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_BEGIN,
                 [
-                    'merchant_id' => $this->merchantId
+                    'merchant_id' => $this->merchantId,
+                    'via'         => $this->via,
                 ]);
 
             $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId);
@@ -71,7 +80,7 @@ class migration extends Job
                 {
                     try
                     {
-                        (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, Mode::LIVE);
+                        (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::LIVE);
                     }
                     catch(\Throwable $e)
                     {
@@ -83,12 +92,13 @@ class migration extends Job
                                 'merchant_id' => $this->merchantId,
                                 'step'        => 'bank account migration',
                                 'mode'        => 'live',
+                                'via'         => $this->via,
                             ]);
                     }
 
                     try
                     {
-                        (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, Mode::TEST);
+                        (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::TEST);
                     }
                     catch(\Throwable $e)
                     {
@@ -100,6 +110,7 @@ class migration extends Job
                                 'merchant_id' => $this->merchantId,
                                 'step'        => 'bank account migration',
                                 'mode'        => 'test',
+                                'via'         => $this->via,
                             ]);
                     }
 

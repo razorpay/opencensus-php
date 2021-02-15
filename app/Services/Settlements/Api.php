@@ -74,19 +74,20 @@ class Api extends Base
     /**
      *
      * @param $input
+     * @param $via
      * @param $mode
      * @return array|null
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function migrateBankAccount($input, $mode)
+    public function migrateBankAccount($input, $via, $mode)
     {
         if ($input->getType() !== Type::MERCHANT)
         {
             return null;
         }
 
-        $req = $this->getBankAccountCreateRequestForSettlementService($input);
+        $req = $this->getBankAccountCreateRequestForSettlementService($input, $via);
 
         return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $req, self::SERVICE_API, $mode);
     }

@@ -931,7 +931,7 @@ class Core extends Base\Core
             {
                 if ((new BucketModel\Core)->shouldProcessViaNewService($merchantId) === true)
                 {
-                    migration::dispatch($this->mode, $merchantId);
+                    migration::dispatch($this->mode, $merchantId, $input['via']);
                 }
                 else
                 {

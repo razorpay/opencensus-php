@@ -539,7 +539,7 @@ class Core extends Base\Core
         return (new Bucket\Core)->shouldProcessViaNewService($merchantId);
     }
 
-    public function MigrateBankAccountsToSettlementService($merchantId, $mode)
+    public function MigrateBankAccountsToSettlementService($merchantId, $via , $mode)
     {
         $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
 
@@ -552,18 +552,20 @@ class Core extends Base\Core
                 [
                     'merchant_id' => $merchant->getId(),
                     'mode'        => $mode,
+                    'via'         => $via,
                 ]);
 
             return;
         }
 
-        app('settlements_api')->migrateBankAccount($ba, $mode);
+        app('settlements_api')->migrateBankAccount($ba, $via, $mode);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,
             [
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
+                'via'         => $via,
             ]);
     }
 

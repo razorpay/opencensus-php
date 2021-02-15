@@ -259,9 +259,10 @@ class Base
     /**
      * this method returns the bank account request
      * @param $ba
+     * @param $via
      * @return array
      */
-    public function getBankAccountCreateRequestForSettlementService($ba)
+    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'fts')
     {
         return [
             'merchant_id'         => $ba->getMerchantId(),
@@ -275,7 +276,10 @@ class Base
             'beneficiary_country' => $ba->getBeneficiaryCountry(),
             'beneficiary_email'   => $ba->getBeneficiaryEmail(),
             'beneficiary_mobile'  => $ba->getBeneficiaryMobile(),
-            'accepted_currency'   => Currency::INR
+            'accepted_currency'   => Currency::INR,
+            'extra_info'          => [
+                'via' => $via
+            ],
         ];
     }
 }
