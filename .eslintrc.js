@@ -12,6 +12,8 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'react/react-in-jsx-scope': 'off',
     'import/no-unresolved': 'off',
+    'import/order': 'off',
+    'react/display-name': 'off',
   },
   overrides: [
     {

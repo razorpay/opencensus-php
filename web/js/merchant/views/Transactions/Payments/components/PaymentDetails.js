@@ -1,18 +1,15 @@
 import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
-import Banner from 'common/ui/Banner';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
-import { titleCase } from 'common/utils/rzp-utils';
 import Definition from 'common/ui/Definition';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { refundId, amount, createdAt } from 'common/ui/item/pair';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
 import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
-import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers.js';
+import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers';
 import PaymentDisputes from './PaymentDisputes';
 import PaymentReceipt from './PaymentReceipt';
 import PaymentPageDetails from './PaymentPageDetails';
@@ -21,12 +18,12 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import React, { useEffect, useState, useLayoutEffect } from 'react';
+import React, { useEffect } from 'react';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default (props) => {
-  let {
+  const {
     payment,
     card,
     bankTransfer, //virtual account details
@@ -40,10 +37,11 @@ export default (props) => {
     onUpdateReferenceId = () => {},
     isRoleAllowedEdit,
     viewSettlementOverview,
-    config,
     user,
-    merchantManualAction,
+    settlement_amount,
   } = props;
+  const isSettlementOnHold =
+    (settlement_amount.data.no_settlement && settlement_amount.data.no_settlement.on_hold) || false;
 
   useEffect(() => {
     if (payment.id) {
@@ -205,8 +203,8 @@ export default (props) => {
                   <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    user.isUxRevampPhase2Enabled && payment.transaction
+                  additionalCondition={() =>
+                    user.isUxRevampPhase2Enabled && payment.transaction && !isSettlementOnHold
                   }
                 >
                   <EntityDetailRow label="Settlement Details">
@@ -241,7 +239,7 @@ export default (props) => {
                     </span>
                   </Definition>
                 </EntityDetailRow>
-                <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+                <ShowWhen additionalCondition={() => user.isProjectNitroEnabled}>
                   <AnnouncementBar
                     fromWhere="transactions"
                     url="https://lp.razorpay.com/razorpayxca-pymnts2"

@@ -13,6 +13,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 
 import RefundModal from 'merchant/views/Transactions/Payments/components/RefundModal';
 
+import { fetchSettlementAmount } from 'merchant/reducers/home';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 
@@ -27,9 +28,11 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
       ...state.payment,
       user: state.session.user,
       config: state.config.config,
+      settlement_amount: state.home.settlement_amount,
     };
   },
   {
+    fetchSettlementAmount,
     expandSlider,
     compactSlider,
     ...ModalActions,
@@ -111,6 +114,7 @@ export default class PaymentDetailsContainer extends Component {
   componentWillMount() {
     this.fetchData(this.props.id);
     this.checkSecView(this.props);
+    this.props.fetchSettlementAmount();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -373,6 +377,7 @@ export default class PaymentDetailsContainer extends Component {
           config={config}
           user={this.props.user}
           merchantManualAction={merchantManualAction}
+          settlement_amount={this.props.settlement_amount}
         />
 
         <ShowWhen
