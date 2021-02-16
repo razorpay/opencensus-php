@@ -40,7 +40,7 @@ class Payout extends Base
         return [
             'id'              => $payout->getId(),
             'entity'          => $payout->getEntity(),
-            'func_account_id' => $payout->getFundAccountId(),
+            'fund_account_id' => $payout->getFundAccountId(),
             'amount'          => $payout->getAmount(),
             'currency'        => $payout->getCurrency(),
             'notes'           => $payout->getNotes(),
