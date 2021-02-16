@@ -16,6 +16,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Partner\Commission\Invoice;
 use RZP\Models\Partner\Commission\Component;
 use RZP\Models\BankingAccountStatement as BAS;
@@ -3176,6 +3177,36 @@ class AdminFetch
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
+
+            Entity::MERCHANT_E_INVOICE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'month' => [
+                    Fetch::LABEL  => 'Month',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'year' => [
+                    Fetch::LABEL  => 'Year',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'type' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        EInvoice\Types::BANKING,
+                        EInvoice\Types::PG,
+                    ],
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        EInvoice\Status::STATUS_CREATED,
+                        EInvoice\Status::STATUS_FAILED,
+                        EInvoice\Status::STATUS_GENERATED,
+                        EInvoice\Status::STATUS_INITIATED,
+                    ]
+                ]
+            ]
         ];
 
         //

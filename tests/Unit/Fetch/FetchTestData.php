@@ -655,4 +655,5 @@ return [
 
     E::REQUEST_LOG => [],
 
+    E::MERCHANT_E_INVOICE => [],
 ];
