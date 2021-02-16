@@ -17,6 +17,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -105,16 +106,6 @@ class Entity extends Base\PublicEntity
      * In case he does not, we add 10 years to the current time.
      */
     const DEFAULT_EXPIRY_YEARS  = 10;
-
-    const MAPPED_IFSC = [
-        'ORBC' => 'PUNB0244200',
-        'CORP' => 'UBIN0550451',
-        'BKDN' => 'BARB0SERBOM',
-        'UTBI' => 'PUNB0244200',
-        'ALLA' => 'IDIB000C080',
-        'ANDB' => 'UBIN0550451',
-        'SYNB' => 'CNRB0RTGS01',
-    ];
 
     const DCC_ENABLED           = 'dcc_enabled';
 
@@ -823,9 +814,11 @@ class Entity extends Base\PublicEntity
 
             $firstFourOfIFSC = substr($arr['ifsc'], 0, 4);
 
-            if (array_key_exists($firstFourOfIFSC, self::MAPPED_IFSC) === true)
+            $mergedBanks = SubscriptionRegistrationConstants::getMergedBanksPaperNach();
+
+            if (array_key_exists($firstFourOfIFSC, $mergedBanks) === true)
             {
-                $arr['ifsc'] = self::MAPPED_IFSC[$firstFourOfIFSC];
+                $arr['ifsc'] = $mergedBanks[$firstFourOfIFSC];
             }
 
             return $arr;
