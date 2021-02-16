@@ -227,6 +227,20 @@ const predefinedReasons = {
       },
     },
   },
+  promoter_pan_name: {
+    reasons: {
+      signatory_name_not_matched: {
+        description: 'Entered PAN Name doesn\'t match company incorporation records, please enter correct Authorised Signatory PAN Name',
+      },
+    },
+  },
+  business_name: {
+    reasons: {
+      company_name_not_matched: {
+        description: 'Entered Business Name doesn\'t match company incorporation records, please enter correct Business Name.',
+      },
+    },
+  },
   company_pan_name: {
     reasons: {
       update_director_pan: {
