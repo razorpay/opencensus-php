@@ -1,4 +1,4 @@
-FROM php:7.3
+FROM php:7.2
 
 RUN apt update
 RUN apt install -y \
@@ -24,6 +24,5 @@ RUN apt install -y \
 
 COPY ext /ext
 RUN cd /ext && phpize && ./configure --enable-opencensus && make install && docker-php-ext-enable opencensus
-
 
 ENTRYPOINT ["bash"]
