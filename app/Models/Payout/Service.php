@@ -140,7 +140,13 @@ class Service extends Base\Service
     public function isAllowedInternalApp(): bool
     {
         return $this->auth->isPayoutLinkApp() or
-               $this->auth->isVendorPaymentApp();
+               $this->auth->isVendorPaymentApp() or
+               $this->auth->isSettlementsApp();
+    }
+
+    public function isSettlementsApp(): bool
+    {
+        return $this->auth->isSettlementsApp();
     }
 
     public function approveFundAccountPayout(string $id, array $input): array

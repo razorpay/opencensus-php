@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Payout;
 
-use App;
 use Carbon\Carbon;
 
+use App;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;

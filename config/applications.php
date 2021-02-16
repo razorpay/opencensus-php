@@ -424,6 +424,16 @@ return [
                 'secret'    => env('SETTLEMENTS_API_TEST_SECRET'),
             ],
         ],
+        'payout' =>[
+            'live' => [
+                'key'       => env('SETTLEMENTS_PAYOUT_LIVE_KEY'),
+                'secret'    => env('SETTLEMENTS_PAYOUT_LIVE_SECRET'),
+            ],
+            'test' => [
+                'key'       => env('SETTLEMENTS_PAYOUT_TEST_KEY'),
+                'secret'    => env('SETTLEMENTS_PAYOUT_TEST_SECRET'),
+            ],
+        ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 
@@ -648,6 +658,12 @@ return [
         'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
         'secret'                 => env('APP_PAYOUT_LINKS_INTERNAL_SECRET'),
         'micro_service_endpoint' => env('PAYOUT_LINKS_MICRO_SERVICE_URL', 'http://localhost:8000')
+    ],
+
+    'settlements' => [
+        'url'    => env('SETTLEMENTS_SERVICE_URL'),
+        'secret' => env('SETTLEMENTS_SERVICE_INTERNAL_APP_SECRET'), // the secret used by the Settlements service
+        // to call apis under internal auth
     ],
 
     'vajra' => [

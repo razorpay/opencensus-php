@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const PAYOUT_LINK     = 'payout_links';
     const VENDOR_PAYMENTS = 'vendor_payments';
     const TAX_PAYMENTS    = 'tax_payments';
+    const SETTLEMENTS     = 'settlements';
 
     // Relations
     const PAYOUT = 'payout';
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::PAYOUT_LINK,
         self::VENDOR_PAYMENTS,
         self::TAX_PAYMENTS,
+        self::SETTLEMENTS,
     ];
 
     protected $fillable   = [

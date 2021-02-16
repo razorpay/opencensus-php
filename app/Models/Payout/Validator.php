@@ -28,6 +28,7 @@ use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 
 class Validator extends Base\Validator
 {
+
     const MAX_PURPOSES_ALLOWED = 100;
 
     /**
@@ -105,6 +106,11 @@ class Validator extends Base\Validator
         Entity::SKIP_WORKFLOW                        => 'filled|boolean',
         Entity::FUND_ACCOUNT                         => 'required|filled|array|custom',
         Entity::FUND_ACCOUNT . "." . Entity::CONTACT => 'required|filled|array',
+        Entity::ORIGIN                                             => 'sometimes|filled',
+        Entity::SOURCE_DETAILS                                     => 'sometimes|filled|array',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1'
     ];
 
     /**
@@ -154,6 +160,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $beforeCreateFundAccountPayoutValidators = [
+        'origin',
+        'source_details',
+    ];
+
+    protected static $fundAccountPayoutCompositeValidators = [
         'origin',
         'source_details',
     ];
@@ -825,6 +836,13 @@ class Validator extends Base\Validator
 
     protected function validateIfFieldShouldBeSentWithCompositeApi(array $input, string $fieldName, $fieldValue)
     {
+        // In settlements service, all payouts will be made via composite API,
+        // so we'll allow composite API for settlements app
+        if ((new Service)->isSettlementsApp() === true)
+        {
+            return;
+        }
+
         if (isset($input[Entity::FUND_ACCOUNT]) === true)
         {
             throw new Exception\BadRequestValidationFailureException(

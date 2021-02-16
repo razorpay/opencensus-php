@@ -8816,6 +8816,23 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testSourceCreationInCaseOfCompositePayoutCreatedBySettlements()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
     public function testPayoutSetStatusQueuePushSkippedWhenSourceDetailsAbsent()
     {
         $this->app->instance('rzp.mode', "live");
@@ -8841,6 +8858,30 @@ class PayoutTest extends OAuthTestCase
                                 ]);
 
         $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
+    public function testPayoutSetStatusQueuePushForSettlementsPayout()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created'
+        ]);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+            [
+                'payout_id'   => $payout->getId(),
+                'source_id'   => 'vdpm_1',
+                'source_type' => 'settlements',
+                'priority'    => 1
+            ]);
+
+        $payout->setStatus(Status::PROCESSING);
 
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }

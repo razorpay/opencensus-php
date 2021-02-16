@@ -1464,6 +1464,11 @@ class BasicAuth
         return $this->internalApp;
     }
 
+    public function isSettlementsApp()
+    {
+        return $this->internalApp === 'settlements_service';
+    }
+
     public function isVendorPaymentApp()
     {
         return $this->internalApp === 'vendor_payments';
@@ -1484,6 +1489,7 @@ class BasicAuth
         return (($this->isDashboardApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
+                ($this->isSettlementsApp() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
     }

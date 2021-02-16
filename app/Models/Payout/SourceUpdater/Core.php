@@ -104,8 +104,9 @@ class Core
 
         $trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_PROCESSING,
                      [
-                         'payout_id'              => $payout->getPublicId(),
-                         'previous_payout_status' => $previousPayoutStatus
+                         'payout_id'               => $payout->getPublicId(),
+                         'previous_payout_status'  => $previousPayoutStatus,
+                         'current_status'          => $payout->getStatus()
                      ]);
 
         if ($payout->getStatus() !== $previousPayoutStatus)

@@ -52,6 +52,7 @@ class Base
 
     const SERVICE_DASHBOARD     = 'dashboard';
     const SERVICE_REMINDER      = 'reminder';
+    const SERVICE_PAYOUT        = 'payout';
     const SERVICE_API           = 'api';
 
     /**

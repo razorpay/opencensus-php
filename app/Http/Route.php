@@ -6229,6 +6229,8 @@ class Route
             'setl_status_update',
             'setl_transactions_verify',
             'setl_get_transaction_details',
+            'payout_create_internal',
+            'payout_fetch_by_id_internal',
         ],
 
         'terminals_service' => [

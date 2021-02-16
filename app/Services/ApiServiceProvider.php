@@ -432,6 +432,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerFTSChannelNotification();
 
+        $this->registerSettlementsPayout();
+
         $this->registerErrorMappingService();
 
         $this->registerMerchantRiskAlertClient();
@@ -1138,6 +1140,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('settlements_reminder', function($app)
         {
             return new Settlements\Reminder($app);
+        });
+    }
+
+    protected function registerSettlementsPayout()
+    {
+        $this->app->singleton('settlements_payout', function($app)
+        {
+            return new Settlements\Payout($app);
         });
     }
 
