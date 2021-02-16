@@ -13,6 +13,10 @@ class WorkflowService extends \RZP\Services\WorkflowService
 
     private function mockedResponse(string $path, array $payload)
     {
+        $this->trace->histogram(
+            self::WORKFLOW_SERVICE_REQUEST_MILLISECONDS,
+            100);
+
         // Just for tests!
         $pathArr = explode('/', $path);
 

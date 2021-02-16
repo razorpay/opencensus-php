@@ -1733,6 +1733,18 @@ class PayoutTest extends OAuthTestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
+        $mock = $this->createMetricsMock();
+
+        $mock->method('histogram')
+             ->will($this->returnCallback(function (string $metric, int $times, array $dimensions = []) {
+                 if ($metric === WorkflowService::WORKFLOW_SERVICE_REQUEST_MILLISECONDS)
+                 {
+                     $this->assertEquals(100, $times);
+                     $this->assertEquals([], $dimensions);
+                 }
+                 return true;
+             }));
+
         $this->fixtures->on('live')->create(
             'workflow_config',
             [

@@ -105,8 +105,7 @@ class WorkflowService
 
                 $this->trace->histogram(
                     self::WORKFLOW_SERVICE_REQUEST_MILLISECONDS,
-                    millitime() - $startAt,
-                    $this->ba->getRequestMetricDimensions());
+                    millitime() - $startAt);
             }
             catch (Throwable $e)
             {
@@ -117,7 +116,7 @@ class WorkflowService
 
                 if ($maxAttempts > 0)
                 {
-                    $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_RETRY, $this->ba->getRequestMetricDimensions());
+                    $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_RETRY);
                 }
 
                 $exception = $e;
@@ -144,7 +143,7 @@ class WorkflowService
                 TraceCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
                 $responseInfo);
 
-            $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_FAILURE, $this->ba->getRequestMetricDimensions());
+            $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_FAILURE);
 
             throw new ServerErrorException(
                 "Failed to complete request",
@@ -153,7 +152,7 @@ class WorkflowService
                 $exception);
         }
 
-        $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS, $this->ba->getRequestMetricDimensions());
+        $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS);
 
         $this->trace->info(TraceCode::WORKFLOW_SERVICE_RESPONSE_DETAILS, [
             'status'    => $res->status_code,
