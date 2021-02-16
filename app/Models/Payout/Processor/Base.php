@@ -1466,7 +1466,7 @@ class Base extends BaseCore
             {
                 $bankAccount = $fundAccount->account;
 
-                $firstFourDigitsOfIfsc = substr($bankAccount->getIfscCode(), 0, 4);
+                $ifscCode = $bankAccount->getIfscCode();
 
                 $firstFourDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 4);
 
@@ -1475,7 +1475,7 @@ class Base extends BaseCore
                 // we block the payout
 
                 if ((FundAccount\Entity::VA_TO_VA_BLOCKING_MAPPING[$firstFourDigitsOfAccountNumber] ?? '')
-                                                                                            === $firstFourDigitsOfIfsc)
+                                                                                            === $ifscCode)
                 {
                     $blockVAToVAPayouts = true;
                 }
@@ -1483,7 +1483,7 @@ class Base extends BaseCore
                 $firstSixDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 6);
 
                 if ((FundAccount\Entity::VA_TO_VA_BLOCKING_MAPPING[$firstSixDigitsOfAccountNumber] ?? '')
-                                                                                            === $firstFourDigitsOfIfsc)
+                                                                                            === $ifscCode)
                 {
                     $blockVAToVAPayouts = true;
                 }

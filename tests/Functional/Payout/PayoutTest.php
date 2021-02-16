@@ -10012,7 +10012,7 @@ class PayoutTest extends OAuthTestCase
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000001contact',
                 'bank_account' => [
-                    'ifsc'           => 'YESB0000104',
+                    'ifsc'           => 'YESB0CMSNOC',
                     'name'           => 'Mehul Kaushik',
                     'account_number' => '7878780111000',
                 ],
@@ -10031,7 +10031,7 @@ class PayoutTest extends OAuthTestCase
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000001contact',
                 'bank_account' => [
-                    'ifsc'           => 'RATN0000104',
+                    'ifsc'           => 'RATN0VAAPIS',
                     'name'           => 'Mehul Kaushik',
                     'account_number' => '2223780111000',
                 ],

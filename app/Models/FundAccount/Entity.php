@@ -11,6 +11,7 @@ use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount\Provider;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -63,16 +64,16 @@ class Entity extends Base\PublicEntity
     const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';
 
     const VA_TO_VA_BLOCKING_MAPPING = [
-        '222333'    => 'YESB',
-        '787878'    => 'YESB',
-        '456456'    => 'YESB',
-        '2233'      => 'ICIC',
-        '2244'      => 'ICIC',
-        '5656'      => 'ICIC',
-        '3434'      => 'ICIC',
-        '2224'      => 'RATN',
-        '2223'      => 'RATN',
-        '567890'    => 'RATN',
+        '222333'    => Provider::IFSC[Provider::YESBANK],
+        '787878'    => Provider::IFSC[Provider::YESBANK],
+        '456456'    => Provider::IFSC[Provider::YESBANK],
+        '2233'      => Provider::IFSC[Provider::ICICI],
+        '2244'      => Provider::IFSC[Provider::ICICI],
+        '5656'      => Provider::IFSC[Provider::ICICI],
+        '3434'      => Provider::IFSC[Provider::ICICI],
+        '2224'      => Provider::IFSC[Provider::RBL],
+        '2223'      => Provider::IFSC[Provider::RBL],
+        '567890'    => Provider::IFSC[Provider::RBL],
     ];
 
     protected $generateIdOnCreate = true;
