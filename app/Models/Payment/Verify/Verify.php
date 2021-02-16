@@ -1561,6 +1561,25 @@ class Verify extends Base\Core
         }
         else
         {
+            // PaymentVerificationException was only been thrown when there was a status mismatch
+            // Thus till now there were only two possibilities, one where apiSuccess=true and
+            // gatewaySuccess=false is already handled and will result in LogicException.
+            // Second case where apiSuccess=false and gatewaySuccess=true will require payment to be authorized.
+            // Now with new changes, some gateways will throw PaymentVerificationException when
+            // apiSuccess=false, gatewaySuccess=true and amountMismatch=true.
+            // Thus, we need to check for amountMismatch before authorizing payment.
+            if (($verify->amountMismatch === true) and
+                (($this->shouldAuthorizeOnAmountMismatch($payment, $e) === false)))
+            {
+                // If amountMismatch is not allowed, we can throw the generic runtime exception
+                throw new Exception\RuntimeException(
+                    'Payment amount verification failed.',
+                    [
+                        'payment_id' => $payment->getId(),
+                        'gateway'    => $payment->getGateway(),
+                    ]);
+            }
+
             try
             {
                 // Attempt to authorize payments whose verification failed
@@ -1892,5 +1911,21 @@ class Verify extends Base\Core
         }
 
         return false;
+    }
+
+    protected function shouldAuthorizeOnAmountMismatch(
+        Payment\Entity $payment,
+        Exception\PaymentVerificationException $e): bool
+    {
+        $verify = $e->getVerifyObject();
+
+        // If gateway has not explicitly set the currency and amountAuthorized,
+        // we will not authorize the payment
+        if ((is_string($verify->currency) or is_integer($verify->amountAuthorized)) === false)
+        {
+            return false;
+        }
+
+        return $payment->shouldAllowGatewayAmountMismatch($verify->currency, $verify->amountAuthorized);
     }
 }

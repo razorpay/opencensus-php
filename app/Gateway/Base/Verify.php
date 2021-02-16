@@ -45,6 +45,10 @@ class Verify
 
     public $match;
 
+    public $currency;
+
+    public $amountAuthorized;
+
     public function __construct($gateway, array $input)
     {
         $this->input = $input;
@@ -70,6 +74,12 @@ class Verify
     public function setApiAndGatewaySuccess($apiSuccess, $gatewaySuccess)
     {
         ;
+    }
+
+    public function setCurrencyAndAmountAuthorized(string $currency, int $amountAuthorized)
+    {
+        $this->currency         = $currency;
+        $this->amountAuthorized = $amountAuthorized;
     }
 
     public function getDataToTrace()

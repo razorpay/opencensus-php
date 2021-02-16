@@ -4370,5 +4370,43 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return $currentPaymentStatus;
     }
+
+    /**
+     * Checks for currency and amount authorized at gateway and if amount is different it will
+     * check difference is allowed for this given payment.
+     * @param string $currency
+     * @param int $amountAuthorized
+     * @return bool
+     */
+    public function shouldAllowGatewayAmountMismatch(string $currency, int $amountAuthorized): bool
+    {
+        // Currency check is mandatory as it could lead to mismatch for international payments
+        if  ($this->getCurrency() !== $currency)
+        {
+            return false;
+        }
+
+        $diff = ($amountAuthorized - $this->getAmount());
+
+        //It will not allow amount difference, if there is no difference at all
+        $allowSurplus = (($diff > 0) and ($this->shouldAllowGatewayAmountSurplus($amountAuthorized)));
+        $allowDeficit = (($diff < 0) and ($this->shouldAllowGatewayAmountDeficit($amountAuthorized)));
+
+        return ($allowSurplus or $allowDeficit);
+    }
+
+    public function shouldAllowGatewayAmountSurplus(int $amountAuthorized): bool
+    {
+        $allowedMerchantsForSurplus = config()->get('app.amount_difference_allowed_authorized');
+
+        return in_array($this->getMerchantId(), $allowedMerchantsForSurplus, true);
+    }
+
+    public function shouldAllowGatewayAmountDeficit(int $amountAuthorized): bool
+    {
+        $allowedMerchantsForDeficit = config()->get('app.amount_difference_allowed_authorized');
+
+        return in_array($this->getMerchantId(), $allowedMerchantsForDeficit, true);
+    }
 }
 

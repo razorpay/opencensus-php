@@ -1080,13 +1080,7 @@ class Gateway
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
-            throw new Exception\RuntimeException(
-                'Payment amount verification failed.',
-                [
-                    'payment_id' => $this->input['payment']['id'],
-                    'gateway'    => $this->gateway
-                ]
-            );
+            throw $this->getAmountMismatchExceptionInVerify($verify);
         }
 
         if (($verify->match === false) and
@@ -1098,6 +1092,21 @@ class Gateway
         }
 
         return $verify->getDataToTrace();
+    }
+
+    /**
+     *
+     * @param Verify $verify
+     * @return Exception\RuntimeException
+     */
+    protected function getAmountMismatchExceptionInVerify(Verify $verify)
+    {
+        return new Exception\RuntimeException(
+            'Payment amount verification failed.',
+            [
+                'payment_id' => $this->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]);
     }
 
     public function preProcessServerCallback($input): array

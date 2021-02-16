@@ -3006,6 +3006,27 @@ trait Authorize
                 ['payment_id' => $payment->getId()]);
         }
 
+        // The gateways which allow amount difference in authorized will send
+        // amount_authorized field explicitly in response
+        if ((isset($response[Payment\Entity::AMOUNT_AUTHORIZED]) === true) and
+            (isset($response[Payment\Entity::CURRENCY]) === true))
+        {
+            $currency           = $response[Payment\Entity::CURRENCY];
+            $amountAuthorized   = $response[Payment\Entity::AMOUNT_AUTHORIZED];
+
+            if ($this->processGatewayAmountAuthorized($payment, $currency, $amountAuthorized) === false)
+            {
+                // We are still throwing the same exception for amount mismatch cases which is being
+                // thrown by the Base\Gateway, it will be caught later as BaseException
+                throw new Exception\RuntimeException(
+                    'Payment amount verification failed.',
+                    [
+                        'payment_id' => $payment->getId(),
+                        'gateway'    => $payment->getGateway(),
+                    ]);
+            }
+        }
+
         $payment->setVerified(true);
 
         // handle the special caes when timeout cron marks a payment as failed
@@ -8395,12 +8416,6 @@ trait Authorize
         string $currency,
         int $amountAuthorized): bool
     {
-        // Currency check is mandatory as it could lead to mismatch for international payments
-        if  ($payment->getCurrency() !== $currency)
-        {
-            return false;
-        }
-
         $diff = ($amountAuthorized - $payment->getAmount());
 
         if ($diff === 0)
@@ -8408,11 +8423,7 @@ trait Authorize
             return true;
         }
 
-        $allowSurplus = (($diff > 0) and ($this->shouldAllowGatewayAmountSurplus($payment, $amountAuthorized)));
-        $allowDeficit = (($diff < 0) and ($this->shouldAllowGatewayAmountDeficit($payment, $amountAuthorized)));
-
-        if (($allowSurplus === true) or
-            ($allowDeficit === true))
+        if ($payment->shouldAllowGatewayAmountMismatch($currency, $amountAuthorized) === true)
         {
             (new Payment\PaymentMeta\Core)->addGatewayAmountInformation($payment, $amountAuthorized);
 
@@ -8426,19 +8437,5 @@ trait Authorize
         }
 
         return false;
-    }
-
-    protected function shouldAllowGatewayAmountSurplus(Payment\Entity $payment): bool
-    {
-        $allowedMerchantsForSurplus = config()->get('app.amount_difference_allowed_authorized');
-
-        return in_array($payment->getMerchantId(), $allowedMerchantsForSurplus, true);
-    }
-
-    protected function shouldAllowGatewayAmountDeficit(Payment\Entity $payment): bool
-    {
-        $allowedMerchantsForDeficit = config()->get('app.amount_difference_allowed_authorized');
-
-        return in_array($payment->getMerchantId(), $allowedMerchantsForDeficit, true);
     }
 }

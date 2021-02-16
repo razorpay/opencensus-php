@@ -209,4 +209,268 @@ trait UpiCustomAmountTrait
 
         $this->tearDownUpiCustomAmountTest();
     }
+
+    public function testAmountDeficitOnSuccessfulWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::AUTHORIZED, 49000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        config()->set('app.amount_difference_allowed_authorized', [$payment->getMerchantId()]);
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 1,
+            'success'       => 0,
+            'error'         => 0,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 49000,
+            'base_amount'       => 49000,
+            'status'            => 'authorized',
+            'verified'          => 0,
+            'vpa'               => 'user@icici',
+            'late_authorized'   => true,
+        ], $payment->toArray(), true);
+
+        $this->assertArraySubset([
+            'gateway_amount'            => 49000,
+            'mismatch_amount'           => 1000,
+            'mismatch_amount_reason'    => 'credit_deficit',
+        ], $payment->paymentMeta->toArray(), true);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
+
+    public function testAmountSurplusOnSuccessfulWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::AUTHORIZED, 51000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        config()->set('app.amount_difference_allowed_authorized', [$payment->getMerchantId()]);
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 1,
+            'success'       => 0,
+            'error'         => 0,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 51000,
+            'base_amount'       => 51000,
+            'status'            => 'authorized',
+            'verified'          => 0,
+            'vpa'               => 'user@icici',
+            'late_authorized'   => true,
+        ], $payment->toArray(), true);
+
+        $this->assertArraySubset([
+            'gateway_amount'            => 51000,
+            'mismatch_amount'           => 1000,
+            'mismatch_amount_reason'    => 'credit_surplus',
+        ], $payment->paymentMeta->toArray(), true);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
+
+    public function testAmountDeficitOnFailureWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::FAILED, 49000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        config()->set('app.amount_difference_allowed_authorized', [$payment->getMerchantId()]);
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 0,
+            'success'       => 1,
+            'error'         => 0,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 50000,
+            'base_amount'       => 50000,
+            'status'            => 'created',
+            'verified'          => 1,
+            'late_authorized'   => null,
+        ], $payment->toArray(), true);
+
+        $this->assertNull($payment->paymentMeta);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
+
+    public function testAmountSurplusOnFailureWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::FAILED, 51000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        config()->set('app.amount_difference_allowed_authorized', [$payment->getMerchantId()]);
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 0,
+            'success'       => 1,
+            'error'         => 0,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 50000,
+            'base_amount'       => 50000,
+            'status'            => 'created',
+            'verified'          => 1,
+            'late_authorized'   => null,
+        ], $payment->toArray(), true);
+
+        $this->assertNull($payment->paymentMeta);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
+
+    public function testAmountDeficitExceptionOnSuccessfulWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::AUTHORIZED, 49000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 0,
+            'success'       => 0,
+            'error'         => 1,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 50000,
+            'base_amount'       => 50000,
+            'status'            => 'created',
+            'verified'          => 0,
+            'late_authorized'   => null,
+        ], $payment->toArray(), true);
+
+        $this->assertNull($payment->paymentMeta);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
+
+    public function testAmountSurplusExceptionOnSuccessfulWithVerify()
+    {
+        $this->setUpUpiCustomAmountTest(Payment\Status::AUTHORIZED, 51000);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            'amount'        => 50000,
+            'base_amount'   => 50000,
+            'status'        => 'created',
+        ], $payment->toArray(), true);
+
+        $payment->setVerifyAt(now()->getTimestamp());
+        $payment->save();
+
+        $upi = $this->getDbLastUpi();
+
+        $response = $this->verifyAllPayments($payment->getPublicId());
+
+        $this->assertArraySubset([
+            'authorized'    => 0,
+            'success'       => 0,
+            'error'         => 1,
+            'unknown'       => 0,
+        ], $response);
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'amount'            => 50000,
+            'base_amount'       => 50000,
+            'status'            => 'created',
+            'verified'          => 0,
+            'late_authorized'   => null,
+        ], $payment->toArray(), true);
+
+        $this->assertNull($payment->paymentMeta);
+
+        $this->tearDownUpiCustomAmountTest();
+    }
 }

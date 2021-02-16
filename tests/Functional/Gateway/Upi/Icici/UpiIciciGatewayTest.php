@@ -18,6 +18,7 @@ use RZP\Exception\AssertionException;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -1070,7 +1071,7 @@ EOT;
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
         $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(PaymentVerificationException::class);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -1542,6 +1543,14 @@ EOT;
             if ($action === 'authorize')
             {
                 $content['refId']       = 'ICICIRefId';
+            }
+            else if ($action === 'verify')
+            {
+                $content['Amount']          = number_format($amount / 100, 2, '.', '');
+                $content['status']          = $status === 'authorized' ? 'SUCCESS' : 'FAILURE';
+                $content['response']        = $status === 'authorized' ? '00' : 'U03';
+                $content['payerVA']         = 'user@icici';
+                $content['OriginalBankRRN'] = '101010101010';
             }
             else
             {

@@ -110,7 +110,26 @@ trait AuthorizeFailed
                 return $this->extractUpiRecurringMandateAndPaymentProperties($gatewayPayment, $verify);
             }
 
-            return $this->extractPaymentsProperties($gatewayPayment);
+            $response = $this->extractPaymentsProperties($gatewayPayment);
+
+            if ($verify->amountMismatch === true)
+            {
+                if ((is_string($verify->currency) === true) and
+                    (is_integer($verify->amountAuthorized) === true))
+                {
+                    $response[Entity::CURRENCY]             = $verify->currency;
+                    $response[Entity::AMOUNT_AUTHORIZED]    = $verify->amountAuthorized;
+                }
+                else
+                {
+                    throw new Exception\LogicException(
+                        'For gateways with amountMismatch, currency and amountAuthorized are mandatory',
+                        null,
+                        ['payment' => $verify->input['payment']]);
+                }
+            }
+
+            return $response;
         }
 
         throw new Exception\LogicException(

@@ -935,6 +935,23 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    protected function getAmountMismatchExceptionInVerify(Verify $verify)
+    {
+        // If gateway success is not false we can throw the generic runtime exception
+        if ($verify->gatewaySuccess === false)
+        {
+            return parent::getAmountMismatchExceptionInVerify($verify);
+        }
+
+        $amountAuthorized = $this->getIntegerFormattedAmount($verify->verifyResponseContent[Fields::VERIFY_AMOUNT]);
+
+        $verify->setCurrencyAndAmountAuthorized('INR', $amountAuthorized);
+
+        return new Exception\PaymentVerificationException(
+            $verify->getDataToTrace(),
+            $verify);
+    }
+
     /**
      * We need to implement alreadyRefunded
      * @see https://github.com/razorpay/api/issues/6984
