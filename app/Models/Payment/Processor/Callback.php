@@ -55,6 +55,9 @@ trait Callback
      */
     private function coreCallback($id, $hash, array $gatewayInput)
     {
+        // Axis migs started sending us card number in callback. This is a quickfix to
+        // ignore the card number right before the callback is processed.
+        unset($gatewayInput['realPan']);
         LocaleCore::setLocale($gatewayInput, $this->merchant->getId());
 
         $gatewayInputLog = $gatewayInput;
