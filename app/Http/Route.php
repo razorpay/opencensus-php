@@ -6377,6 +6377,7 @@ class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_configs'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_add_receivers'        => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_create_for_banking'   => [Feature::VIRTUAL_ACCOUNTS_BANKING],
         'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
