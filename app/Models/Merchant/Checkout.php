@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Constants\Mode;
 use RZP\Models\Locale\Core as Locale;
 use Session;
 use Razorpay\Trace\Logger as Trace;
@@ -82,6 +83,8 @@ class Checkout
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
+
+        $data['activated'] = $merchant->getActivated();
 
         $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
@@ -707,6 +710,14 @@ class Checkout
         if (empty($optionalInputConfig) === false)
         {
             $data['optional'] = $optionalInputConfig;
+        }
+
+        $data['blocked'] = false;
+
+        if (($mode === Mode::LIVE) and
+            ($merchant->isLive() === false))
+        {
+            $data['blocked'] = true;
         }
 
         return $data;

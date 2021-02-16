@@ -654,6 +654,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATED_AT);
     }
 
+    public function getActivated()
+    {
+        return $this->getAttribute(self::ACTIVATED);
+    }
+
     public function getLegalEntityId()
     {
         return $this->getAttribute(self::LEGAL_ENTITY_ID);
