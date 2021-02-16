@@ -18,9 +18,9 @@ class CardPSController extends Controller
 
         $repo = new $repoName;
 
-        $data = $repo->findOrFailPublic($id);
+        $data[$entity] = $repo->findOrFailPublic($id)->toArrayAdmin();
 
-        return ApiResponse::json($data->toArrayAdmin());
+        return ApiResponse::json($data);
     }
 
     public function BackfillRouteProxy($entity, $column)

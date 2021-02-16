@@ -11,7 +11,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'   => 'order',
+                'order' => [
+                    'entity'   => 'order',
+                ],
             ],
         ],
     ],
@@ -42,7 +44,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'   => 'merchant',
+                'merchant' => [
+                    'entity'   => 'merchant',
+                ],
             ],
         ],
     ],
@@ -54,7 +58,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'   => 'feature',
+                'feature' => [
+                    'entity'   => 'feature',
+                ],
             ],
         ],
     ],
@@ -66,7 +72,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'   => 'token',
+                'token' => [
+                    'entity'   => 'token',
+                ],
             ],
         ],
     ],
@@ -78,10 +86,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => '411111',
-                "category"  => "CLASSIC",
-                "network"   => "Visa",
-
+                'iin' => [
+                    'iin'       => '411111',
+                    "category"  => "CLASSIC",
+                    "network"   => "Visa",
+                ],
             ],
         ],
     ],

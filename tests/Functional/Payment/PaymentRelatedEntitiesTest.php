@@ -28,7 +28,7 @@ class PaymentRelatedEntitiesTest extends TestCase
 
         $data = $this->startTest();
 
-        $this->assertEquals('order_'.$order['id'], $data['id']);
+        $this->assertEquals('order_'.$order['id'], $data['order']['id']);
     }
 
     public function testFetchOrdersEntityInvalidId()
@@ -46,7 +46,7 @@ class PaymentRelatedEntitiesTest extends TestCase
 
         $data = $this->startTest();
 
-        $this->assertEquals($merchant['id'], $data['id']);
+        $this->assertEquals($merchant['id'], $data['merchant']['id']);
     }
 
     public function testFetchTokenEntity()
@@ -57,7 +57,7 @@ class PaymentRelatedEntitiesTest extends TestCase
 
         $data = $this->startTest();
 
-        $this->assertEquals('token_'.$token['id'], $data['id']);
+        $this->assertEquals('token_'.$token['id'], $data['token']['id']);
     }
 
     public function testFetchFeaturesEntity()
@@ -71,7 +71,7 @@ class PaymentRelatedEntitiesTest extends TestCase
 
         $data = $this->startTest();
 
-        $this->assertEquals($feature['id'], $data['id']);
+        $this->assertEquals($feature['id'], $data['feature']['id']);
     }
 
     public function testFetchIinsEntity()
