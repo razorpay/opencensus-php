@@ -339,6 +339,11 @@ class Core extends Base\Core
 
     protected function verifyAadhaarWithPanIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails)
     {
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return;
+        }
+
         $businessType = $merchantDetails->getBusinessType();
 
         // If aadhaar esign is not required then, aadhar with pan is also not required
@@ -2370,6 +2375,11 @@ class Core extends Base\Core
 
     private function getApplicableActivationStatusForRegisteredMerchant($merchantDetails)
     {
+        if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return Status::UNDER_REVIEW;
+        }
+
         $excludeActivationStatusList = [
             Status::NEEDS_CLARIFICATION,
             Status::ACTIVATED,
@@ -2407,6 +2417,11 @@ class Core extends Base\Core
 
     private function getApplicableActivationStatusForUnregisteredMerchant($merchantDetails)
     {
+        if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return Status::UNDER_REVIEW;
+        }
+
         $excludeActivationStatusList = [
             Status::NEEDS_CLARIFICATION,
             Status::ACTIVATED,
@@ -2465,11 +2480,9 @@ class Core extends Base\Core
 
     private function verifyStakeHolderCondition(Entity $merchantDetails, string $key, array $in)
     {
-        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchantDetails->getMerchantId(),
-            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+        $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
 
-        if($isAadhaarEsignEnabled === true and empty($merchantDetails->stakeholder) === false)
+        if($isAadhaarEsignRequired and empty($merchantDetails->stakeholder) === false)
         {
             return in_array($merchantDetails->stakeholder->getAttribute($key), $in, true);
         }
@@ -2928,6 +2941,11 @@ class Core extends Base\Core
 
     private function isAadhaarEsignVerificationRequired(Entity $merchantDetails)
     {
+        if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
         $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
             RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
 

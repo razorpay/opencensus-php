@@ -128,7 +128,7 @@ class BusinessType
     ];
 
     protected static $validAadhaarEsignBusinessTypes = [
-        self::UNREGISTERED,
+        self::NOT_YET_REGISTERED,
         self::INDIVIDUAL,
         self::PROPRIETORSHIP,
         self::PARTNERSHIP
