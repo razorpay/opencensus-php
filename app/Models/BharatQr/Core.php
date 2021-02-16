@@ -39,6 +39,7 @@ class Core extends Base\Core
         );
 
         $bharatQr = null;
+        $errorMessage = null;
 
         try
         {
@@ -72,13 +73,24 @@ class Core extends Base\Core
         {
             $this->alertException($ex, $input);
 
-            $valid = false;
+            $errorMessage = $ex->getMessage();
+
+            switch ($errorMessage)
+            {
+                case TraceCode::BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION:
+                    $valid = true;
+                    break;
+
+                default:
+                    $valid = false;
+            }
         }
         finally
         {
             $isExpected = $bharatQr === null ? null : $bharatQr->isExpected();
 
-            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BHARAT_QR, $isExpected, $valid, $terminal->getGateway());
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BHARAT_QR, $isExpected, $valid,
+                                                              $terminal->getGateway(), $errorMessage);
         }
 
         return $valid;

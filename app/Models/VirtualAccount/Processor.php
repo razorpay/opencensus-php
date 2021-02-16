@@ -96,6 +96,9 @@ abstract class Processor extends Base\Core
                 case Constants\Entity::UPI_TRANSFER:
                     throw new LogicException(TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION);
 
+                case Constants\Entity::BHARAT_QR:
+                    throw new LogicException(TraceCode::BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION);
+
                 default:
                     return null;
             }
