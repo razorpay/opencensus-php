@@ -2281,6 +2281,7 @@ class ReconciliationFileTest extends TestCase
         $facade['merchant_response_sent_time']     = $facade['Transaction Date'];
         $facade['Reference Tran Id']               = $gatewayRefund[CardFssEntity::REF];
         $facade['Transaction Type']                = 'Random';
+        $facade['Merchant Track Id']               .='1';
 
         return $facade;
     }
@@ -4544,6 +4545,7 @@ class ReconciliationFileTest extends TestCase
         {
             // Payment id
             $facade['PRCHS_ MERCHANT_TXNNO']    = $entity['payment_id'];
+            $facade['MERCHANT_TXNNO']          .= '1';
         }
 
         return $facade;
@@ -4562,6 +4564,12 @@ class ReconciliationFileTest extends TestCase
         $facade['merchanttrackid']   = "''". $entityId;
 
         $facade['transactiontype']   =  $transactionType;
+
+        if ($transactionType === 'Refund')
+        {
+            // refund id
+            $facade['merchanttrackid']    .='1';
+        }
 
         return $facade;
     }

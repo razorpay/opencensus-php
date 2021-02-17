@@ -29,8 +29,19 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         {
             $this->evaluateRowProcessedStatus($row);
         }
+        
+        if (empty($refundId) === false)
+        {
+            $refundId = trim(str_replace("'", '', $refundId));
+            
+            // Sometimes we get digits appended in refund ID
+            // so take first 14 chars only.
+            //
+            return substr($refundId, 0, 14);
+        }
 
-        return $refundId;
+        return null;
+
     }
 
     protected function getPaymentId(array $row)

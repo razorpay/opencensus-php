@@ -18,7 +18,17 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $refundId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;
 
-        return trim(str_replace("'", '', $refundId));
+        if (empty($refundId) === false)
+        {
+            $refundId = trim(str_replace("'", '', $refundId));
+            
+            // Sometimes we get digits appended in refund ID
+            // so take first 14 chars only.
+            //
+            return substr($refundId, 0, 14);
+        }
+
+        return null;
     }
 
     protected function getPaymentId(array $row)
