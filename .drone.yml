@@ -58,7 +58,7 @@ pipeline:
   # This is not a deployment
   upload-javascript-to-s3:
     image: razorpay/containers:drone-s3-cache
-    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    endpoint: https://rzp-drone-cache.s3-ap-south-1.amazonaws.com
     path: "/rzp/dashboard/javascript/${DRONE_COMMIT_SHA}.tar"
     secrets:
       - aws_region
@@ -93,7 +93,7 @@ pipeline:
     restore: true
     mount:
       - public
-    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    endpoint: https://rzp-drone-cache.s3-ap-south-1.amazonaws.com
     path: "/rzp/dashboard/javascript/${DRONE_COMMIT_SHA}.tar"
     secrets:
       - aws_access_key_id
