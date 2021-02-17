@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\AvgOrderValue;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
@@ -17,6 +18,8 @@ use RZP\Models\Merchant\Detail;
  */
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const MIN_AOV               = 'min_aov';
