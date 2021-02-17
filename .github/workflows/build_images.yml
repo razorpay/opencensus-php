@@ -258,7 +258,7 @@ jobs:
         SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
         SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
         SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb
+      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
     - name: Sending build failed notification to tech_builds (Slack)
       if: github.ref != 'refs/heads/master' && needs.workflow_status.result != 'success'
       env:
@@ -268,7 +268,7 @@ jobs:
         SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
         SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
         SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb
+      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
     - name: Sending build failed notification to tech_backend (Slack)
       if: github.ref == 'refs/heads/master' && needs.workflow_status.result != 'success'
       env:
@@ -278,7 +278,7 @@ jobs:
         SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
         SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
         SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb
+      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
   trigger_regression_suite:
     runs-on: [self-hosted]
     name: Regression Suite
