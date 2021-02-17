@@ -33,7 +33,7 @@ run_bvt_suite_when_approved() {
     --header "Authorization: Bearer ${GIT_TOKEN}")
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
-  PIPELINE_ID="5fb496f3-1e92-4974-a09c-2d64d99ae1e5"
+  PIPELINE_ID="21d5eec8-367e-4de7-bd39-bd614b9c5ddd"
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   echo "Status Code for fetching spinnaker cookie $statusCode"
   if [ "$statusCode" = 200 ]; then
