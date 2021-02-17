@@ -61,7 +61,6 @@ class Constants
      */
     public static $sourceEntities = [
         self::PAYMENT,
-        self::PAYOUT,
     ];
 
     /**
