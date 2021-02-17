@@ -108,7 +108,7 @@ class Core extends Base\Core
                 $kycClarificationReason[DetailEntity::CLARIFICATION_REASONS] ?? [];
 
             $kycClarificationReason[DetailEntity::CLARIFICATION_REASONS] =
-                array_merge_recursive($currentClarificationReason,
+                array_merge($currentClarificationReason,
                                       $clarificationReason);
         }
 

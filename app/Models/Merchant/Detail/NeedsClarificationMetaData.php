@@ -23,6 +23,8 @@ class NeedsClarificationMetaData
         Entity::CONTACT_MOBILE                  => [ReasonList::INVALID_CONTACT_NUMBER],
         Entity::BUSINESS_TYPE                   => [ReasonList::IS_COMPANY_REG],
         Entity::BUSINESS_WEBSITE                => [ReasonList::WEBSITE_NOT_LIVE],
+        Entity::BUSINESS_NAME                   => [ReasonList::COMPANY_NAME_NOT_MATCHED],
+        Entity::PROMOTER_PAN_NAME               => [ReasonList::SIGNATORY_NAME_NOT_MATCHED],
         Entity::GSTIN                           => [ReasonList::INVALID_GSTIN_NUMBER,
                                                     ReasonList::GSTIN_DATA_UNAVAILABLE],
         Entity::SHOP_ESTABLISHMENT_NUMBER       => [ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
