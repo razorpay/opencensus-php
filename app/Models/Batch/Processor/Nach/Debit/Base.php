@@ -43,6 +43,7 @@ class Base extends BaseProcessor
                 Trace::ERROR,
                 TraceCode::NACH_DEBIT_RESPONSE_ERROR,
                 [
+                    'gateway' => $this->gateway,
                     'content' => $content,
                     'mode'    => $this->mode,
                 ]
@@ -251,7 +252,15 @@ class Base extends BaseProcessor
             catch (BaseException $e)
             {
                 // RZP Exceptions have public error code & description which can be exposed in the output file
-                $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NACH_DEBIT_RESPONSE_ERROR,
+                    [
+                        'gateway' => $this->gateway,
+                        'content' => $entryTracePayload,
+                    ]
+                );
 
                 $error = $e->getError();
 
@@ -265,7 +274,15 @@ class Base extends BaseProcessor
             catch (\Throwable $e)
             {
                 // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::NACH_DEBIT_RESPONSE_ERROR,
+                    [
+                        'gateway' => $this->gateway,
+                        'content' => $entryTracePayload,
+                    ]
+                );
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;

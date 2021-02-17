@@ -64,6 +64,11 @@ class EnachNpciNetbanking extends Base
         return Netbanking\DebitFileStatus::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE], $content);
     }
 
+    protected function isRejected(array $content): bool
+    {
+        return Netbanking\DebitFileStatus::isDebitRejected($content[self::GATEWAY_RESPONSE_CODE], $content);
+    }
+
     protected function getApiErrorCode(array $content): string
     {
         return NetBanking\ErrorCodes\FileBasedErrorCodes::getDebitPublicErrorCode($content);

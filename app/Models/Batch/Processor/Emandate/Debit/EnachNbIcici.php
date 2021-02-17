@@ -12,7 +12,7 @@ use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\Status;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\ErrorCodes as ErrorCode;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as Headings;
 
-
+// Deprecated. CombinedNachIcici is now used for debits of both paper nach and e-mandate in a single file
 class EnachNbIcici extends Base
 {
     protected $gateway = Gateway::ENACH_NPCI_NETBANKING;
@@ -180,17 +180,5 @@ class EnachNbIcici extends Base
     protected function getFormattedGatewayAmount($content)
     {
         return number_format($content[self::AMOUNT] / 100, 2, '.', '');
-    }
-
-    protected function updatePayment(PaymentEntity $payment, array $content)
-    {
-        if ($this->isAuthorized($content) === true)
-        {
-            $this->processAuthorizedPayment($payment);
-        }
-        else if ($this->isRejected($content) === true)
-        {
-            $this->processFailedPayment($payment, $content);
-        }
     }
 }

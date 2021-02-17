@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -26,9 +27,26 @@ class Base extends BaseProcessor
     {
         $content = $this->getDataFromRow($entry);
 
-        $this->updatePaymentEntities($content);
+        try
+        {
+            $this->updatePaymentEntities($content);
 
-        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::EMANDATE_DEBIT_RESPONSE_ERROR,
+                [
+                    'gateway' => $this->gateway,
+                    'content' => $content,
+                ]
+            );
+
+            throw $ex;
+        }
     }
 
     protected function updatePaymentEntities(array $content)
@@ -112,6 +130,8 @@ class Base extends BaseProcessor
 
     protected function updatePayment(Payment\Entity $payment, array $content)
     {
+        // Possible status from gateway:
+        // 1.Success, 2.Failure, 3.Pending
         if ($this->isAuthorized($content) === true)
         {
             // handle already processed
@@ -124,7 +144,7 @@ class Base extends BaseProcessor
                 $this->processAuthorizedPayment($payment);
             }
         }
-        else
+        else if ($this->isRejected($content) === true)
         {
             // We do not check for already processed here, since we can update the error code of the payment
             $this->processFailedPayment($payment, $content);
@@ -189,6 +209,12 @@ class Base extends BaseProcessor
         return $this->repo
                     ->netbanking
                     ->findByPaymentIdAndActionOrFail($paymentId, GatewayAction::AUTHORIZE);
+    }
+
+    // Should be overridden in child class to handle pending status if applicable
+    protected function isRejected(array $content): bool
+    {
+        return ($this->isAuthorized($content) === false);
     }
 
     protected function increaseAllowedSystemLimits()

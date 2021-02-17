@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Error\PublicErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -46,51 +47,68 @@ abstract class Base extends BaseProcessor
         // 'remark'           : Corresponds to Token\Entity::RECURRING_FAILURE_REASON
         // 'gateway_token'    : Corresponds to Token\Entity::GATEWAY_TOKEN
         //
-        $parsedData = $this->getDataFromRow($entry);
 
-        $payment = $this->fetchPaymentEntity($parsedData);
-
-        if ($this->shouldUpdateBatchOutputWithPaymentId() === true)
+        try
         {
-            $entry[Batch\Header::PAYMENT_ID] = $payment->getId();
+            $parsedData = $this->getDataFromRow($entry);
+
+            $payment = $this->fetchPaymentEntity($parsedData);
+
+            if ($this->shouldUpdateBatchOutputWithPaymentId() === true)
+            {
+                $entry[Batch\Header::PAYMENT_ID] = $payment->getId();
+            }
+
+            list($payment, $authorizeSuccess) = $this->forceAuthorizeIfApplicable($payment, $parsedData);
+
+            if ($authorizeSuccess === false)
+            {
+                $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                    [
+                        'trace_code' => TraceCode::EMANDATE_RECON_ROW_FAILED,
+                        'message'  => 'payment force authorize failed',
+                        'payment_id' => $payment->getId(),
+                    ]);
+
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE]        = PublicErrorCode::SERVER_ERROR;
+                $entry[Batch\Header::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
+
+                return;
+            }
+
+            $gatewayPayment = $this->getGatewayPayment($payment);
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $oldRecurringStatus = $token->getRecurringStatus();
+
+            $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
+
+            $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $parsedData)
+            {
+                $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $parsedData);
+
+                $this->updateTokenEntity($token, $parsedData, $payment);
+            });
+
+            $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
+
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
         }
-
-        list($payment, $authorizeSuccess) = $this->forceAuthorizeIfApplicable($payment, $parsedData);
-
-        if ($authorizeSuccess === false)
+        catch (\Throwable $ex)
         {
-            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::EMANDATE_REGISTER_RESPONSE_ERROR,
                 [
-                    'trace_code' => TraceCode::EMANDATE_RECON_ROW_FAILED,
-                    'message'  => 'payment force authorize failed',
-                    'payment_id' => $payment->getId(),
-                ]);
+                    'gateway' => static::GATEWAY
+                ]
+            );
 
-            $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
-            $entry[Batch\Header::ERROR_CODE]        = PublicErrorCode::SERVER_ERROR;
-            $entry[Batch\Header::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
-
-            return;
+            throw $ex;
         }
-
-        $gatewayPayment = $this->getGatewayPayment($payment);
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $oldRecurringStatus = $token->getRecurringStatus();
-
-        $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
-
-        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $parsedData)
-        {
-            $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $parsedData);
-
-            $this->updateTokenEntity($token, $parsedData, $payment);
-        });
-
-        $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
-
-        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     abstract protected function getDataFromRow(array $entry): array;

@@ -63,6 +63,11 @@ class EnachRbl extends Base
         return Rbl\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE], $content);
     }
 
+    protected function isRejected(array $content): bool
+    {
+        return Rbl\Status::isDebitRejected($content[self::GATEWAY_RESPONSE_CODE], $content);
+    }
+
     protected function getApiErrorCode(array $content): string
     {
         return Rbl\ErrorCodes::getDebitPublicErrorCode($content);

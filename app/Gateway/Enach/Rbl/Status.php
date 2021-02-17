@@ -51,6 +51,15 @@ class Status
         return ($status === self::DEBIT_SUCCESS);
     }
 
+    public static function isDebitRejected($status, $content)
+    {
+        $status = strtolower($status);
+
+        self::throwInvalidResponseErrorIfCodeNotMapped($status, self::$debitStatuses, $content);
+
+        return ($status === self::DEBIT_REJECT);
+    }
+
     protected static function throwInvalidResponseErrorIfCodeNotMapped($status, array $mapping, array $content)
     {
         if (in_array($status, $mapping, true) === false)

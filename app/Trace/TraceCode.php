@@ -755,11 +755,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_RECON_FAILED                           = 'EMANDATE_DEBIT_RECON_FAILED';
     const EMANDATE_DEBIT_RECON_ROW                              = 'EMANDATE_DEBIT_RECON_ROW';
     const EMANDATE_DEBIT_RESPONSE                               = 'EMANDATE_DEBIT_RESPONSE';
+    const EMANDATE_DEBIT_RESPONSE_ERROR                         = 'EMANDATE_DEBIT_RESPONSE_ERROR';
     const EMANDATE_FUNCTION_NOT_IMPLEMENTED                     = 'EMANDATE_FUNCTION_NOT_IMPLEMENTED';
     const EMANDATE_RECON_ROW_FAILED                             = 'EMANDATE_RECON_ROW_FAILED';
 
     const EMANDATE_REGISTER_REQUEST                             = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                         = 'EMANDATE_REGISTER_REQUEST_ROW';
+    const EMANDATE_REGISTER_RESPONSE_ERROR                      = 'EMANDATE_REGISTER_RESPONSE_ERROR';
 
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
     const NACH_MANUAL_SUBMIT_FAILED                             = 'NACH_MANUAL_SUBMIT_FAILED';

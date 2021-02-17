@@ -9,10 +9,13 @@ class DebitFileStatus
 {
     const ACCEPTED = 'accepted';
     const REJECTED = 'rejected';
+    const PENDING  = 'pending';
+
 
     const DEBIT_STATUS = [
         self::ACCEPTED,
-        self::REJECTED
+        self::REJECTED,
+        self::PENDING,
     ];
 
     public static function isDebitSuccess($status, $content)
@@ -22,6 +25,15 @@ class DebitFileStatus
         self::throwInvalidResponseErrorIfCodeNotMapped($status, self::DEBIT_STATUS, $content);
 
         return ($status === self::ACCEPTED);
+    }
+
+    public static function isDebitRejected($status, $content)
+    {
+        $status = strtolower($status);
+
+        self::throwInvalidResponseErrorIfCodeNotMapped($status, self::DEBIT_STATUS, $content);
+
+        return ($status === self::REJECTED);
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($status, array $mapping, array $content)

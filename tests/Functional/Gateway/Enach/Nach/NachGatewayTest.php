@@ -602,9 +602,9 @@ class NachGatewayTest extends TestCase
 
     public function testGatewayFailureRegistrationResponseFile()
     {
-        $payment = $this->createDummyRegisterToken();
+        $paymentResponse = $this->createDummyRegisterToken();
 
-        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Rejected', 'No such account');
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($paymentResponse, 'Rejected', 'No such account');
 
         $url = '/admin/batches';
 
@@ -615,7 +615,7 @@ class NachGatewayTest extends TestCase
         $this->assertEquals('nach', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
-        $payment = $this->getEntityById('payment', $payment['id'], true);
+        $payment = $this->getEntityById('payment', $paymentResponse['id'], true);
 
         $this->assertEquals('failed', $payment['status']);
         $this->assertStringStartsWith("BAD_REQUEST_", $payment['internal_error_code']);
@@ -626,6 +626,18 @@ class NachGatewayTest extends TestCase
         $this->assertNull($token['gateway_token']);
         $this->assertEquals('rejected', $token['recurring_status']);
         $this->assertEquals('No such account', $token['recurring_details']['failure_reason']);
+
+        $batchEntity = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals(1, $batchEntity['success_count']);
+
+        // already processed test
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($paymentResponse, 'Rejected', 'No such account');
+        $batch     = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $batchEntity = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals(1, $batchEntity['success_count']);
     }
 
     public function testGatewayFailureRegistrationResponseFileInitialReject()

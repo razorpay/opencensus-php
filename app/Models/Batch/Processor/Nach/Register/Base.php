@@ -83,7 +83,10 @@ abstract class Base extends BaseProcessor
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
-                TraceCode::NACH_REGISTER_RESPONSE_ERROR
+                TraceCode::NACH_REGISTER_RESPONSE_ERROR,
+                [
+                    'gateway' => $this->gateway
+                ]
             );
 
             throw $ex;
@@ -132,6 +135,13 @@ abstract class Base extends BaseProcessor
 
     protected function processFailedPayment(Payment\Entity $payment, array $content)
     {
+        if ($payment->isFailed() === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_STATUS_FAILED, ['payment_id' => $payment->getId()]);
+
+            return;
+        }
+
         $merchant = $payment->merchant;
 
         $processor = new Processor($merchant);
