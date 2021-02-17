@@ -23,4 +23,5 @@ RUN apt install -y \
     docker-php-ext-install pcntl pdo_mysql pdo_pgsql
 
 COPY ext /ext
-RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+
+RUN cd /ext && phpize && ./configure --enable-opencensus && make install  && docker-php-ext-enable opencensus
