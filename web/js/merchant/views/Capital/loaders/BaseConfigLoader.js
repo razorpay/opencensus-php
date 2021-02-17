@@ -11,8 +11,10 @@ export default class BaseConfigLoader {
     const sideNavigationStateGroups = this.getSideNavigationStateGroups();
 
     const stateTransitionMap = {};
+    
+    // TODO: remove Object.entries over state groups and do not rely on order
     const stateGroups = Object.entries(sideNavigationStateGroups);
-    stateGroups.forEach(([groupLabel, stateGroup], stateGroupIndex) => {
+    stateGroups.forEach(([groupLabel, stateGroup]) => {
       const steps = Object.entries(stateGroup.steps);
       steps.forEach((step, stepIndex) => {
         const [_, subSteps] = step;
@@ -27,7 +29,7 @@ export default class BaseConfigLoader {
             stepNavigation.next = steps[stepIndex + 1][0];
           } else {
             const nextStateGroup = stateGroups.find(
-              ([_, stateGrp]) => stateGrp.index === stateGroupIndex + 1,
+              ([_, stateGrp]) => stateGrp.index === stateGroup.index + 1,
             );
             if (nextStateGroup) {
               stepNavigation.next = Object.entries(nextStateGroup[1].steps)[0][0];
@@ -41,7 +43,7 @@ export default class BaseConfigLoader {
             if (stepIndex === 0) {
               // previous step's last substep
               const previousStateGroup = stateGroups.find(
-                ([_, stateGrp]) => stateGrp.index === stateGroupIndex - 1,
+                ([_, stateGrp]) => stateGrp.index === stateGroup.index - 1,
               );
               stepNavigation.back = Object.entries(previousStateGroup[1].steps)[
                 Object.entries(previousStateGroup[1].steps).length - 1
