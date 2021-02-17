@@ -25,7 +25,9 @@ const RepayAmount = ({
   const isCustomRepayType = repayType === REPAY_AMOUNT_TYPES.CUSTOM;
 
   const [customAmountError, setCustomAmountError] = useState('');
-  const [tempCustomAmount, setTempCustomAmount] = useState(customAmount);
+  const [tempCustomAmount, setTempCustomAmount] = useState(
+    customAmount ? Math.round(customAmount / 100) : null,
+  );
   const [isCustomAmountActive, setIsCustomAmountActive] = useState(false);
 
   const handleCancelClick = () => {
@@ -84,8 +86,8 @@ const RepayAmount = ({
 
   const handleCustomAmountDoneClick = () => {
     setIsCustomAmountActive(false);
-    setCustomAmount(tempCustomAmount);
-    setRepayAmount(tempCustomAmount);
+    setCustomAmount(Math.round(100 * tempCustomAmount));
+    setRepayAmount(Math.round(100 * tempCustomAmount));
     if (!isCustomRepayType) setRepayType(REPAY_AMOUNT_TYPES.CUSTOM);
   };
 
