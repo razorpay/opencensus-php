@@ -1,4 +1,4 @@
-FROM razorpay/onggi:php-7.2-apache-api
+FROM razorpay/onggi:php-base
 
 COPY ext /ext
 
