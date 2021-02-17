@@ -44,7 +44,8 @@ class Core extends Base\Core
                            Base\PublicEntity $source = null,
                            bool $createDuplicate = false,
                            string $batchId = null,
-                           bool $allowRZPFeesFundAccountCreation = false): Entity
+                           bool $allowRZPFeesFundAccountCreation = false,
+                           bool $isFav = false): Entity
     {
         $traceRequest = $this->unsetSensitiveCardDetails($input);
 
@@ -97,7 +98,11 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
-        if (($source instanceof Contact\Entity) and
+        //We are enabling duplicate check on source null only for fav here which is defined by the flag isFav
+
+        if (((($source === null) and
+            ($isFav === true)) or
+            ($source instanceof Contact\Entity)) and
             ($createDuplicate === false))
         {
             $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,

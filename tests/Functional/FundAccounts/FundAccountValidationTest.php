@@ -150,6 +150,29 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('default', $txn['credit_type']);
     }
 
+    public function testDedupLogicForFundAccountWhenValidateWithFundAccountEntity()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->createValidationWithFundAccountEntity();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $fundAccountId1 = $fav['fund_account_id'];
+
+        $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['status' => 'created']);
+
+        $this->ba->privateAuth();
+
+        $this->createValidationWithFundAccountEntity();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $fundAccountId2 = $fav['fund_account_id'];
+
+        $this->assertEquals($fundAccountId1, $fundAccountId2);
+    }
+
     public function testCreateValidationWithFundAccountEntityFromAdmin()
     {
         $this->enableRazorXTreatmentForRazorX();

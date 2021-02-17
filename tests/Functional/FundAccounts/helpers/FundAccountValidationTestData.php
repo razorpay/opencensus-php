@@ -132,6 +132,50 @@ return [
         ],
     ],
 
+    'testDedupLogicForFundAccountWhenValidateWithFundAccountEntity' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'account_number' => '123456789',
+                        'name'           => 'Rohit Keshwani',
+                        'ifsc'           => 'SBIN0010411',
+                        'bank_name'      => 'State Bank of India',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
     'testCreateValidationWithWrongFundAccountId' => [
         'request' => [
             'url'     => '/fund_accounts/validations',

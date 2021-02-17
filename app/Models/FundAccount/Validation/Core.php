@@ -99,7 +99,13 @@ class Core extends Base\Core
                 return $this->fundAccountCore->findByPublicIdAndMerchant($input['fund_account']['id'], $merchant);
             }
 
-            return $this->fundAccountCore->create($input['fund_account'], $merchant);
+            return $this->fundAccountCore->create($input['fund_account'],
+                                                  $merchant,
+                                                  null,
+                                                  false,
+                                                  null,
+                                                  false,
+                                                  true);
         }
         catch (Exception\BaseException $e)
         {

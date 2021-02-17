@@ -79,8 +79,10 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    //Enabling duplicate check on contact null only in case of favs
+
     public function fetchFundAccountOfTypeBankAccountForContact(Merchant\Entity $merchant,
-                                                                Contact\Entity $contact,
+                                                                Contact\Entity $contact = null,
                                                                 array $input)
     {
         $bankAccount = $input[Type::BANK_ACCOUNT];
@@ -107,11 +109,15 @@ class Repository extends Base\Repository
 
         $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
 
+        $contactId = ($contact === null) ? null : $contact->getId();
+
+        $bankAccountSourceType = ($contact === null) ? null : E::CONTACT;
+
         return $this->newQuery()
                     ->select($allFundAccountAttributes)
                     ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
-                    ->where($faSourceIdColumn, '=', $contact->getId())
-                    ->where($bankAccountTypeColumn, '=', E::CONTACT)
+                    ->where($faSourceIdColumn, '=', $contactId)
+                    ->where($bankAccountTypeColumn, '=', $bankAccountSourceType)
                     ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
             // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
                     ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
@@ -121,7 +127,7 @@ class Repository extends Base\Repository
     }
 
     public function fetchFundAccountOfTypeVpaForContact(Merchant\Entity $merchant,
-                                                        Contact\Entity $contact,
+                                                        Contact\Entity $contact = null,
                                                         array $input)
     {
         $vpa = $input[Type::VPA];
@@ -148,11 +154,15 @@ class Repository extends Base\Repository
 
         list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpa[Vpa\Entity::ADDRESS]);
 
+        $contactId = ($contact === null) ? null : $contact->getId();
+
+        $bankAccountSourceType = ($contact === null) ? null : E::CONTACT;
+
         return $this->newQuery()
                     ->select($allFundAccountAttributes)
                     ->join($vpaTable, $faAccountIdColumn, '=', $vpaIdColumn)
-                    ->where($faSourceIdColumn, '=', $contact->getId())
-                    ->where($vpaTypeColumn, '=', E::CONTACT)
+                    ->where($faSourceIdColumn, '=', $contactId)
+                    ->where($vpaTypeColumn, '=', $bankAccountSourceType)
                     ->where($vpaUsernameColumn, $username)
                     ->where($vpaHandleColumn, $handle)
                     ->where($vpaMerchantIdColumn, '=', $merchant->getId())
