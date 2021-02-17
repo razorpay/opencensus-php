@@ -2299,7 +2299,7 @@ class Gateway
      */
     public static $minAmountForMethodAndGateway = [
         Payment\Method::PAYLATER => [
-            PayLater::HDFC => '200000'
+            PayLater::HDFC => '100000'
         ]
     ];
 
