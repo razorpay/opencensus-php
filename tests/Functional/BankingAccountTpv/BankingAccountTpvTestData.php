@@ -197,4 +197,17 @@ return [
         ],
     ],
 
+    'testManualAutoApproveTpvFail' => [
+        'request'  => [
+            'url'     => '/admin/merchants/tpv_bulk_create',
+            'method'  => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
 ];

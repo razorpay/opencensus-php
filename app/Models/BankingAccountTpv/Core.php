@@ -138,35 +138,38 @@ class Core extends Base\Core
     {
         $bankAccount = (new BankAccount\Repository())->getBankAccountOnConnection($merchant, $mode);
 
-        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-            $merchant->getId(),
-            Type::BANKING,
-            AccountType::SHARED,
-            $mode);
-
-        $tpvInput = [
-            Entity::MERCHANT_ID          => $merchant->getMerchantId(),
-            Entity::BALANCE_ID           => $balance->getId(),
-            Entity::STATUS               => Status::APPROVED,
-            Entity::PAYER_NAME           => $bankAccount->getBeneficiaryName(),
-            Entity::PAYER_ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
-            Entity::PAYER_IFSC           => $bankAccount->getIfscCode(),
-        ];
-
-        $tpv = $this->repo->banking_account_tpv->fetchTpvOnMerchantBalanceAccountNumberIfsc($tpvInput);
-
-        if (empty($tpv) === true)
+        if ($bankAccount !== null)
         {
-            $tpv = $this->create($tpvInput);
+            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                $merchant->getId(),
+                Type::BANKING,
+                AccountType::SHARED,
+                $mode);
 
-            $this->trace->info(TraceCode::AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT,
-                               [
-                                   'tpv'         => $tpv,
-                                   'merchant_id' => $merchant->getMerchantId(),
-                               ]);
+            $tpvInput = [
+                Entity::MERCHANT_ID             => $merchant->getMerchantId(),
+                Entity::BALANCE_ID              => $balance->getId(),
+                Entity::STATUS                  => Status::APPROVED,
+                Entity::PAYER_NAME              => $bankAccount->getBeneficiaryName(),
+                Entity::PAYER_ACCOUNT_NUMBER    => $bankAccount->getAccountNumber(),
+                Entity::PAYER_IFSC              => $bankAccount->getIfscCode(),
+            ];
+
+            $tpv = $this->repo->banking_account_tpv->fetchTpvOnMerchantBalanceAccountNumberIfsc($tpvInput);
+
+            if (empty($tpv) === true)
+            {
+                $tpv = $this->create($tpvInput);
+
+                $this->trace->info(TraceCode::AUTO_APPROVED_TPV_FOR_ACTIVATED_MERCHANT,
+                    [
+                        'tpv'           => $tpv,
+                        'merchant_id'   => $merchant->getMerchantId(),
+                    ]);
+            }
+
+            return $tpv;
         }
-
-        return $tpv;
     }
 
     public function manualAutoApproveTpv(array $merchantIds)
