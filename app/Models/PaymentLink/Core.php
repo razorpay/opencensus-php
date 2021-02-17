@@ -492,6 +492,8 @@ class Core extends Base\Core
         {
             $this->trace->traceException($e);
         }
+
+        $this->doPostPaymentRiskActions($paymentLink, $payment);
     }
 
     public function createOrder(Entity $paymentLink, array $input)
@@ -1562,6 +1564,21 @@ class Core extends Base\Core
         ];
     }
 
+    protected function doPostPaymentRiskActions(Entity $paymentLink, Payment\Entity $payment)
+    {
+        try
+        {
+            $riskAovInput = $this->getAovRiskCallInput($paymentLink, $payment);
+
+            $this->merchantRiskService->createAlertRequest($riskAovInput);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, null, ['payment_page_id' => $paymentLink->getId()]);
+        }
+    }
+
     protected function doDedupeAndRiskActions(Entity $paymentLink, Merchant\Entity $merchant)
     {
         try
@@ -1687,6 +1704,23 @@ class Core extends Base\Core
             'data'            => $dataFields,
             'event_timestamp' => $paymentLink->getCreatedAt(),
             'event_type'      => 'create',
+        ];
+    }
+
+    protected function getAovRiskCallInput(Entity $paymentLink, Payment\Entity $payment)
+    {
+        return [
+            'merchant_id'     => $paymentLink->merchant->getMerchantId(),
+            'entity_type'     => 'payment_page',
+            'entity_id'       => $paymentLink->getId(),
+            'category'        => 'transaction',
+            'source'          => 'pp_service',
+            'data'            => [
+                'payment_created_at' => (string) $payment->getCreatedAt(),
+                'base_amount'        => (string) $payment->getAmount(),
+            ],
+            'event_timestamp' => (string) $payment->getCapturedAt(),
+            'event_type'      => 'captured',
         ];
     }
 }
