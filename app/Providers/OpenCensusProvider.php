@@ -20,7 +20,6 @@ use OpenCensus\Trace\Integrations\Redis;
 use OpenCensus\Trace\Integrations\Curl;
 use OpenCensus\Trace\Propagator\JaegerPropagator;
 
-
 class OpenCensusProvider extends ServiceProvider
 {
     public function boot()
@@ -58,12 +57,14 @@ class OpenCensusProvider extends ServiceProvider
 
             $serviceName = Tracing::getServiceName($this->app);
 
-            $jaegerOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
-                             'port' =>  $this->app['config']->get('applications.jaeger.port')];
+            $jaegerExporterOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
+                             'port' =>  $this->app['config']->get('applications.jaeger.port'),
+                             'prefixServiceNameMap' => ['PDO' => 'api_mysql', 'Predis' => 'api_redis']
+                            ];
 
-            Tracer::start(new JaegerExporter($serviceName, $jaegerOptions), $tracerOptions);
+            $exporter = new JaegerExporter($serviceName, $jaegerExporterOptions);
+            Tracer::start($exporter, $tracerOptions);
         });
-
     }
 
     private function getSpanOptions($route)

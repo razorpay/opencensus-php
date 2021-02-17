@@ -62,7 +62,7 @@
         "razorpay/laravel-excel": "dev-master",
         "razorpay/edge-passport-php": "dev-master",
         "opencensus/opencensus":"0.7.5",
-        "opencensus/opencensus-exporter-jaeger": "^0.1.1",
+        "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
         "wyndow/fuzzywuzzy": "^0.6.0",
         "guzzlehttp/psr7": "^1.6",
         "http-interop/http-factory-guzzle": "^1.0",
@@ -117,6 +117,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/opencensus-php.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/opencensus-php-exporter-jaeger.git"
         }
     ],
     "require-dev": {

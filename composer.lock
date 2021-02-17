@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "700d9e80441721102d7bf8c36e61179c",
+    "content-hash": "35f00323e4219eed309dcfb7e7b65a6b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -693,16 +693,6 @@
                 "stream",
                 "stream_filter_append",
                 "stream_filter_register"
-            ],
-            "funding": [
-                {
-                    "url": "https://clue.engineering/support",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/clue",
-                    "type": "github"
-                }
             ],
             "time": "2019-04-09T12:31:48+00:00"
         },
@@ -1659,7 +1649,6 @@
                 "shasum": ""
             },
             "require": {
-                "ext-gmp": "*",
                 "php": ">=7.0.0"
             },
             "require-dev": {
@@ -3906,7 +3895,6 @@
                 "shasum": ""
             },
             "require": {
-                "ext-gmp": "*",
                 "fgrosse/phpasn1": "v2.0.x",
                 "php": ">=7.0"
             },
@@ -4085,7 +4073,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4757,20 +4745,20 @@
                 "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-02-02T15:44:09+00:00"
+            "time": "2021-02-04T06:23:39+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
-            "version": "v0.1.1",
+            "version": "v0.1.2-alpha",
             "source": {
                 "type": "git",
-                "url": "https://github.com/census-ecosystem/opencensus-php-exporter-jaeger.git",
-                "reference": "29480c3e77a4e7a1359cd9e66e32da7446d18bb6"
+                "url": "https://github.com/razorpay/opencensus-php-exporter-jaeger.git",
+                "reference": "1115dff294bf357e620d9e6978a04c087d40ec30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/census-ecosystem/opencensus-php-exporter-jaeger/zipball/29480c3e77a4e7a1359cd9e66e32da7446d18bb6",
-                "reference": "29480c3e77a4e7a1359cd9e66e32da7446d18bb6",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php-exporter-jaeger/zipball/1115dff294bf357e620d9e6978a04c087d40ec30",
+                "reference": "1115dff294bf357e620d9e6978a04c087d40ec30",
                 "shasum": ""
             },
             "require": {
@@ -4790,7 +4778,11 @@
                     "OpenCensus\\Trace\\Exporter\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "post-dependencies-solving": [
+                    "OpenCensus\\Trace\\Exporter\\Installer::checkPhpExtDependency"
+                ]
+            },
             "license": [
                 "Apache-2.0"
             ],
@@ -4801,7 +4793,10 @@
                 }
             ],
             "description": "OpenCensus Jaeger Exporter for PHP",
-            "time": "2018-11-26T18:31:31+00:00"
+            "support": {
+                "source": "https://github.com/razorpay/opencensus-php-exporter-jaeger/tree/v0.1.2-alpha"
+            },
+            "time": "2021-02-11T09:41:39+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -5867,16 +5862,6 @@
                 "predis",
                 "redis"
             ],
-            "funding": [
-                {
-                    "url": "https://www.paypal.me/tillkruss",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/tillkruss",
-                    "type": "github"
-                }
-            ],
             "time": "2016-06-16T16:22:20+00:00"
         },
         {
@@ -6509,17 +6494,17 @@
             ],
             "authors": [
                 {
-                    "name": "Ben Ramsey",
-                    "email": "ben@benramsey.com",
-                    "homepage": "https://benramsey.com"
-                },
-                {
                     "name": "Marijn Huizendveld",
                     "email": "marijn.huizendveld@gmail.com"
                 },
                 {
                     "name": "Thibaud Fabre",
                     "email": "thibaud@aztech.io"
+                },
+                {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
                 }
             ],
             "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -6775,7 +6760,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2020-04-04T18:44:38+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -11548,6 +11533,7 @@
         "razorpay/hodor": 20,
         "razorpay/laravel-excel": 20,
         "razorpay/edge-passport-php": 20,
+        "opencensus/opencensus-exporter-jaeger": 15,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
