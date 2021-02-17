@@ -277,11 +277,15 @@ class FormSectionRenderer extends Component {
           applicant_id: businessDetails.data.applicant_ids[0],
         });
       }
-      await this.props.fetchD2cReport({
-        application_id: meta.data.application.id,
-        applicant_id: businessDetails.data.applicant_ids[0],
-        merchant_id: businessDetails.data.business.reference_id,
-      });
+      try {
+        await this.props.fetchD2cReport({
+          application_id: meta.data.application.id,
+          applicant_id: businessDetails.data.applicant_ids[0],
+          merchant_id: businessDetails.data.business.reference_id,
+        });
+      } catch (err) {
+        console.log('Bureau Report Failed');
+      }
     }
 
     if (state === APPLICATION_STATES.CREDIT_OFFER_GENERATED) {
