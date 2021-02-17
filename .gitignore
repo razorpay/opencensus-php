@@ -36,7 +36,9 @@ tmp/
 /web/node_modules
 /web/js/dump.rdb
 /web/build
-/web/.env
+
+# E2E
+/web/screenshots
 
 # typescript dist 
 /web/dist

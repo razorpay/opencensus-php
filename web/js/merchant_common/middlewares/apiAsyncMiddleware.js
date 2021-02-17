@@ -1,7 +1,7 @@
 // kinda `redux-promise` catered to our needs.
 
 export default ({ dispatch, getState }) => {
-  return next => action => {
+  return (next) => (action) => {
     // Handles thunk like functionality-1
     if (typeof action === 'function') {
       return action(dispatch, getState);
@@ -21,21 +21,21 @@ export default ({ dispatch, getState }) => {
 
     const actionPromise = payload;
     actionPromise
-      .then(response =>
+      .then((response) =>
         next({
           type: `${type}::SUCCESS`,
           payload: response,
           ...rest,
-        })
+        }),
       )
-      .catch(error => {
+      .catch((error) => {
         next({
           type: `${type}::ERROR`,
           payload: error,
           error: true,
           ...rest,
         });
-        throw error;
+        // throw error;
       });
 
     return actionPromise;

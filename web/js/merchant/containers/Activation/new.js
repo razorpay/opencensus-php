@@ -229,7 +229,7 @@ export default class ActivationContainer extends React.Component {
           message: err.errors,
         });
 
-        throw err;
+        // throw err;
       });
   };
 

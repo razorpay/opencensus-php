@@ -11,22 +11,22 @@ export default class ErrorBoundary extends Component {
       Sentry.forceLoad();
     }
   }
-  componentDidCatch(error, info) {
-    let eventId = null;
-    if (window.Sentry) {
-      Sentry.withScope(scope => {
-        scope.setExtras(info);
-        eventId = Sentry.captureException(error);
-      });
-    } else if (window.Raven) {
-      console.log(error, info);
-      Raven.captureException(error, { extra: info });
-    } else {
-      console.error(error, info);
-    }
+  // componentDidCatch(error, info) {
+  //   let eventId = null;
+  //   if (window.Sentry) {
+  //     Sentry.withScope(scope => {
+  //       scope.setExtras(info);
+  //       eventId = Sentry.captureException(error);
+  //     });
+  //   } else if (window.Raven) {
+  //     console.log(error, info);
+  //     Raven.captureException(error, { extra: info });
+  //   } else {
+  //     console.error(error, info);
+  //   }
 
-    this.setState({ error, info, eventId });
-  }
+  //   this.setState({ error, info, eventId });
+  // }
 
   componentWillReceiveProps() {
     if (this.props.resetOnProps) {

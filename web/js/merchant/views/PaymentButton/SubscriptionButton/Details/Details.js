@@ -281,7 +281,7 @@ export default class subscriptionButtonEntity extends React.Component {
                     <i class="i i-chevron-down" />
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
-                        <PopoverBody>Configure post payment message from options here.</PopoverBody>
+                        <PopoverBody>Configure post paymentmessage from options here.</PopoverBody>
                       </Popover>
                     )}
                   </DropdownTrigger>

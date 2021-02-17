@@ -19,7 +19,9 @@
     "serve:signup": "nodemon signup.js --watch public/js/merchant/",
     "build": "node signup.js; cd web && npm run production:build",
     "test": "node test.js; cd web && npm run test",
-    "test:jest": "cd web && npm run test:jest"
+    "test:jest": "cd web && npm run test:jest",
+    "build:e2e": "cd web && npm run e2e:build",
+    "test:e2e": "cd web && npm run test:e2e"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.9.1",

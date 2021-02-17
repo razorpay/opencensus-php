@@ -100,9 +100,6 @@ module.exports = {
   // An enum that specifies notification mode. Requires { notify: true }
   // notifyMode: "failure-change",
 
-  // A preset that is used as a base for Jest's configuration
-  // preset: undefined,
-
   // Run tests from one or more projects
   // projects: undefined,
 
@@ -138,9 +135,6 @@ module.exports = {
 
   // The test environment that will be used for testing
   // testEnvironment: "jest-environment-jsdom",
-
-  // Options that will be passed to the testEnvironment
-  // testEnvironmentOptions: {},
 
   // Adds a location field to test results
   // testLocationInResults: false,
