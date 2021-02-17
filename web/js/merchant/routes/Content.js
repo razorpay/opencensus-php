@@ -212,7 +212,7 @@ export default class Content extends Component {
           chat: false,
           call: false,
         });
-      } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
+      } else if (window?.rzpTicketSystem?.$el?.classList?.contains('open')) {
         window.rzpTicketSystem.closeModal();
       }
     }
