@@ -60,4 +60,9 @@ class Hdfc extends Base
 
         return Netbanking\Hdfc\ErrorCode::getApiErrorCode($errorDescription);
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Headings::ACCOUNT_NO]);
+    }
 }

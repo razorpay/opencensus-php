@@ -72,4 +72,9 @@ class EnachRbl extends Base
     {
         return Rbl\ErrorCodes::getDebitPublicErrorCode($content);
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Headings::BENEFICIARYACNO]);
+    }
 }

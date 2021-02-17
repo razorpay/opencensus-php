@@ -72,4 +72,9 @@ class NachCiti extends Base
     {
         return RegisterErrorCodes::getRegisterPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::CITI_NACH_REGISTER_CUSTOMER_ACCOUNT_NUMBER]);
+    }
 }

@@ -66,4 +66,10 @@ class Hdfc extends Base
                     ->netbanking
                     ->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
     }
+
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::HDFC_EM_REGISTER_ACCOUNT_NUMBER]);
+    }
 }

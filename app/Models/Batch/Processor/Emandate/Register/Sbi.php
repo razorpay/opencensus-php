@@ -155,4 +155,10 @@ class Sbi extends Base
                 ]);
         }
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::SBI_EM_REGISTER_DEBIT_ACCOUNT_NUMBER]);
+        unset($payloadEntry[Batch\Header::SBI_EM_REGISTER_CUSTOMER_ACCOUNT_NUMBER]);
+    }
 }

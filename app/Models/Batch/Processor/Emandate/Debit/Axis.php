@@ -82,4 +82,9 @@ class Axis extends Base
 
         return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Headings::HEADING_DEBIT_ACCOUNT]);
+    }
 }

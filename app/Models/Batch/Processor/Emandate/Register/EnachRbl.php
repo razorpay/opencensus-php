@@ -103,4 +103,10 @@ class EnachRbl extends Base
 
         return $rows;
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::ENACH_REGISTER_ACNO]);
+        unset($payloadEntry[Batch\Header::ENACH_REGISTER_NODAL_ACNO]);
+    }
 }

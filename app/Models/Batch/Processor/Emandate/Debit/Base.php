@@ -35,6 +35,8 @@ class Base extends BaseProcessor
         }
         catch (\Throwable $ex)
         {
+            unset($content[self::ACCOUNT_NUMBER]);
+
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,

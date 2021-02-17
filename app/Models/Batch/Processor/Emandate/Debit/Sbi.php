@@ -90,4 +90,9 @@ class Sbi extends Base
 
         return $payment;
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER]);
+    }
 }
