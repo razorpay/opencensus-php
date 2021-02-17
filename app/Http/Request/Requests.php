@@ -127,6 +127,9 @@ class Requests
             $span->addAttribute('error', 'true');
             throw $e;
         }
+        finally{
+            $scope->close();
+        }
 
         if (!is_null($response))
         {
@@ -139,7 +142,6 @@ class Requests
             }
         }
 
-        $scope->close();
         return $response;
     }
 
