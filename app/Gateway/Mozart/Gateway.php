@@ -1550,6 +1550,18 @@ class Gateway extends Base\Gateway
 
         $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
 
+        // Use access code from terminal only when it is a UPI ICICI Recurring
+        if (($gateway === Payment\Gateway::UPI_ICICI ) and
+            ($this->isUpiRecurringPayment($input['payment']) === true))
+        {
+            $accessCode = trim($input['terminal']['gateway_access_code'] ?? null);
+
+            if ($accessCode === 'v2') {
+                $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
+
+                return $url;
+            }
+        }
 
         $isBajajFinserv = $this->isBajajFinservGateway($input);
 
