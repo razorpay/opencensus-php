@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Mockery;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
-use Respect\Validation\Rules\In;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1741,8 +1741,6 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceDownloadFromAdminDashboard()
     {
-        $this->markTestSkipped();
-
         $this->setupBankingInvoice();
 
         $this->ba->adminAuth();
@@ -2050,5 +2048,34 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->assertEquals($entities['items'][0]['balance_id'], $balanceId);
 
         $this->assertEquals($entities['items'][1]['balance_id'], '10000000000000');
+    }
+
+    public function detachAdminPermission(string $permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permissionId = (new Permission\Repository)->retrieveIdsByNames([$permissionName])[0];
+
+        $role->permissions()->detach($permissionId);
+    }
+
+
+    public function testFetchMerchantInvoiceWithoutPermissionFromAdminDashboard()
+    {
+        $this->setupBankingInvoice();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->detachAdminPermission(Permission\Name::VIEW_MERCHANT_REPORT);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
     }
 }

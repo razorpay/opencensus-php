@@ -292,6 +292,34 @@ return [
         ],
     ],
 
+    'testFetchMerchantInvoiceWithoutPermissionFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => false,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
+        ]
+    ],
+
     'testBankingInvoiceWithFailedPayoutsInGivenMonthAndYear' => [
         'rx_transactions' => [
             'amount' => 1509,

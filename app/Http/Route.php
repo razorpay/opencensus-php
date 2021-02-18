@@ -5071,8 +5071,7 @@ class Route
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
 
-        'reports_monthly_banking_invoice'           => '*',
-        'reports_monthly_banking_invoice_admin'     => '*',
+        'reports_monthly_banking_invoice_admin'     => Permission::VIEW_MERCHANT_REPORT,
 
         'setl_holidays'                             => '*',
 
