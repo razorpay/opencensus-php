@@ -4,6 +4,7 @@ namespace RZP\Mail\User;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\User\Entity;
 
 class ContactMobileUpdated extends Mailable
 {
@@ -58,5 +59,21 @@ class ContactMobileUpdated extends Mailable
     $this->view('emails.mjml.merchant.user.contact_mobile_updated');
 
     return $this;
+  }
+
+  protected function getParamsForStork(): array
+  {
+      return [
+          'template_name'      => 'merchant.user.contact_mobile_updated',
+          'template_namespace' => 'payments_account',
+          'params'             => [
+              'user_contact_mobile' => $this->data['user'][Entity::CONTACT_MOBILE],
+              'user_email'          => $this->data['user'][Entity::EMAIL] ?? '',
+              'user_updated_on'     => $this->data['user']['updated_on'],
+              'user_updated_at'     => $this->data['user'][Entity::UPDATED_AT],
+              'merchant_id'         => $this->data['merchant'][Entity::ID],
+              'merchant_name'       => $this->data['merchant'][Entity::NAME],
+          ]
+      ];
   }
 }

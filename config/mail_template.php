@@ -15,4 +15,7 @@ return [
         'emails.user.otp_email_verify',
     ],
 
+    'stork_whitelist' => [
+        'emails.mjml.merchant.user.contact_mobile_updated',
+    ],
 ];

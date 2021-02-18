@@ -78,6 +78,22 @@ class Mailable extends BaseMailable
                     ->addHeaders();
     }
 
+    protected function shouldSendEmailViaStork(): bool
+    {
+        // 1. check if email template is to be sent via stork
+        if (in_array($this->view, config('mail_template.stork_whitelist'), true) === false)
+        {
+            return false;
+        }
+
+        // 2. check if razorx experiment is turned on
+        $app  = App::getFacadeRoot();
+        $id   = $app['request']->getTaskId() ?? '';
+        $exp  =  Merchant\RazorxTreatment::API_SELECT_EMAILS_VIA_STORK;
+        $mode = $this->mode ?? Mode::LIVE;
+        return (strtolower(app('razorx')->getTreatment($id, $exp, $mode)) === 'on');
+    }
+
     public function send(MailerContract $mailer)
     {
         $app = App::getFacadeRoot();
@@ -89,6 +105,7 @@ class Mailable extends BaseMailable
             return;
         }
 
+        $msgID = '';
         $eventProperties = [];
         $eventProperties['merchant_id']   = $this->mid ?? '';
 
@@ -117,20 +134,41 @@ class Mailable extends BaseMailable
 
             $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, ['email' => $toEmailHash]);
 
-            $msg = null;
-            $mailer->send($this->buildView(), $this->buildViewData(), function ($message) use (&$msg) {
-                $msg = $message;
-                $this->buildFrom($message)
-                     ->buildRecipients($message)
-                     ->buildSubject($message)
-                     ->buildAttachments($message)
-                     ->runCallbacks($message);
-            });
-
-            $msgID = '';
-            if ((empty($msg) === false) && (empty($msg->getHeaders()) === false) && (empty($msg->getHeaders()->get(self::MESSAGE_ID_TAG)) === false))
+            // if email is to be sent via stork
+            if ($this->shouldSendEmailViaStork() === true)
             {
-                $msgID = $msg->getHeaders()->get(self::MESSAGE_ID_TAG)->getValue() ?? '';
+                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK);
+                $eventProperties['email_driver'] = 'stork';
+                // we can override any base param by adding the param in `getParamsForStork()`
+                $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
+
+                try {
+                    $res = (new Stork($this->mode, $this->originProduct))->sendEmail($paramsPayload);
+                } catch (\Throwable $e) {}
+
+                $msgID = $res['message_id'] ?? '';
+                if ($msgID === '')
+                {
+                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_FAILED);
+                }
+            }
+
+            if (empty($msgID) === true)
+            {
+                $msg = null;
+                $mailer->send($this->buildView(), $this->buildViewData(), function ($message) use (&$msg) {
+                    $msg = $message;
+                    $this->buildFrom($message)
+                        ->buildRecipients($message)
+                        ->buildSubject($message)
+                        ->buildAttachments($message)
+                        ->runCallbacks($message);
+                });
+
+                if ((empty($msg) === false) && (empty($msg->getHeaders()) === false) && (empty($msg->getHeaders()->get(self::MESSAGE_ID_TAG)) === false))
+                {
+                    $msgID = $msg->getHeaders()->get(self::MESSAGE_ID_TAG)->getValue() ?? '';
+                }
             }
 
             $eventProperties['message_id'] = $msgID;
@@ -631,5 +669,31 @@ class Mailable extends BaseMailable
         }
 
         return $res;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        return [];
+    }
+
+    protected function getBaseParamsForStork(): array
+    {
+        $app = App::getFacadeRoot();
+        $orgId = $app['basicauth']->getOrgId() ?? '';
+
+        return [
+            'owner_id'           => $this->mid,
+            'owner_type'         => 'merchant',
+            'org_id'             => $orgId,
+            'template_name'      => $this->view,
+            'template_namespace' => '',
+            'context'            => json_decode ('{}'),
+            'from'               => $this->from[0] ?? [],
+            'to'                 => $this->to ?? [],
+            'cc'                 => $this->cc ?? [],
+            'bcc'                => $this->bcc ?? [],
+            'reply_to'           => $this->replyTo ?? [],
+            'subject'            => $this->subject ?? '',
+        ];
     }
 }

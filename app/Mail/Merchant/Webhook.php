@@ -167,4 +167,16 @@ class Webhook extends Mailable
 
         $mailData['field_description'] = (studly_case($entityType) . " " . "Id");
     }
+
+    protected function getParamsForStork(): array
+    {
+        return [
+            'params' => [
+                'url' => $this->webhook['url'],
+                'date'=> date('d-M-Y H:m:s T'),
+                'mode'=> $this->options['mode'],
+                'subject' => $this->getSubject(),
+                ]
+        ];
+    }
 }
