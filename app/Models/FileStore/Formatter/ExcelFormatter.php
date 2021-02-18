@@ -3,6 +3,8 @@
 namespace RZP\Models\FileStore\Formatter;
 
 use Excel;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 
 class ExcelFormatter
 {
@@ -19,35 +21,39 @@ class ExcelFormatter
      */
     public static function createExcelObject(
         $data,
-        $name,
+        $dir,
+        $filename,
+        $extension,
         $columnFormat = [],
         $headers = true,
         $sheetName = 'Sheet 1')
     {
-        $excel = Excel::create(
-            $name,
-            function ($excel) use ($data, $columnFormat, $headers, $sheetName)
-            {
-                $excel->sheet(
-                    $sheetName,
-                    function ($sheet) use ($data, $columnFormat, $headers)
-                    {
-                        // If a columnFormat variable is specified.
-                        // Use it.
-                        if (empty($columnFormat) === false)
-                        {
-                            $sheet->setColumnFormat($columnFormat);
-                        }
+        $path = $dir . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
-                        $sheet->fromArray($data, null, 'A1', true, $headers);
-                    }
-                );
-            }
-        );
+        (new ExcelExport)->setSheets(function() use ($data, $sheetName, $columnFormat, $headers) {
+                $sheetsInfo = [];
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data))
+                                                ->setTitle($sheetName)
+                                                ->setColumnFormat($columnFormat)
+                                                ->generateAutoHeading($headers)
+                                                ->setStyle(function($sheet) {
+                                                    $sheet->getParent()
+                                                         ->getDefaultStyle()
+                                                         ->getFont()
+                                                         ->setName('Ubuntu Mono')
+                                                         ->setSize(14);
+                                                });
 
-        $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
+                return $sheetsInfo;
+            })->store($path, 'local_storage');
 
-        return $excel;
+        return [
+            'full'  => $path,
+            'path'  => $dir,
+            'file'  => $filename . '.' . $extension,
+            'title' => $filename,
+            'ext'   => $extension
+        ];
     }
 
     /**
@@ -62,11 +68,11 @@ class ExcelFormatter
      *
      * @return array containg full file path of excel file stored
      */
-    public static function writeToExcelFile($content, $name, $columnFormat, $headers, $extension, $path, $sheetName)
+    public static function writeToExcelFile($content, $name, $columnFormat, $headers, $extension, $dir, $sheetName)
     {
-        $excel = self::createExcelObject($content, $name, $columnFormat, $headers, $sheetName);
+        $fileMetadata = self::createExcelObject($content, $dir, $name, $extension, $columnFormat, $headers, $sheetName);
 
-        $fileMetadata = $excel->store($extension, $path, true);
+        // $fileMetadata = $excel->store($extension, $path, true);
 
         return $fileMetadata;
     }

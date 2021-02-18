@@ -63,6 +63,7 @@ class Service extends Base\Service
         {
             case FileStore\Format::XLSX:
             case FileStore\Format::XLS:
+                // Dispute service expects headers as the first array
                 $data = $this->parseExcelSheets($filePath, 0);
                 break;
 

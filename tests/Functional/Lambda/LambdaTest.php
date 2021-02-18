@@ -7,6 +7,8 @@ use Config;
 use ZipArchive;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -203,21 +205,18 @@ class LambdaTest extends TestCase
 
     protected function getExcelString($name, $sheets)
     {
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
-                foreach ($sheets as $sheetName => $data)
-                {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
-                }
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+            $sheetsInfo = [];
+            foreach ($sheets as $sheetName => $data)
+            {
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
             }
-        );
 
-        return $excel->string('xlsx');
+            return $sheetsInfo;
+        });
+
+        $data = $excel->raw('Xlsx');
+
+        return $data;
     }
 }

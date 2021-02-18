@@ -53,7 +53,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPaymentDate($row)
     {
-        $date = \PHPExcel_Style_NumberFormat::toFormattedString($row[ReconFields::DATE],'DD-MM-YYYY');
+        $date = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($row[ReconFields::DATE],'DD-MM-YYYY');
 
         return  $date;
     }

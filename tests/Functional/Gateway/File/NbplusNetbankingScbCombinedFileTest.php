@@ -6,10 +6,11 @@ use Mail;
 use Excel;
 
 use Carbon\Carbon;
-use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use Illuminate\Http\UploadedFile;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
@@ -168,8 +169,8 @@ class NbplusNetbankingScbCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
     protected function checkRefundsFile($refundfilePath, $payment1,$payment2, $refund1, $refund2)
     {
+        $refundSheet = (new ExcelImport)->toArray($refundfilePath)[0];
 
-        $refundSheet = Excel::load($refundfilePath)->all()->toArray();
 
         $refundsFileLine1 = $refundSheet[0];
         $refundsFileLine2 = $refundSheet[1];
@@ -192,8 +193,8 @@ class NbplusNetbankingScbCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
     protected function checkClaimsFile($claimsfilePath, $payment1,$payment2, $payment3)
     {
+        $claimsSheet = (new ExcelImport)->toArray($claimsfilePath)[0];
 
-        $claimsSheet = Excel::load($claimsfilePath)->all()->toArray();
 
         $claimsFileLine1 = $claimsSheet[0];
         $claimsFileLine2 = $claimsSheet[1];

@@ -11,6 +11,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
@@ -245,7 +246,7 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $this->assertTrue(file_exists($filePath));
 
-        $refundsFileContents = Excel::load($filePath)->all()->toArray();
+        $refundsFileContents = (new ExcelImport)->toArray($filePath)[0];
 
         $refundAmounts = [500, 500, 100];
 
