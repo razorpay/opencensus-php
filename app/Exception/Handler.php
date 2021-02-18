@@ -30,6 +30,7 @@ class Handler extends ExceptionHandler
         ThrottleException::class,
         EarlyWorkflowResponse::class,
         \Razorpay\OAuth\Exception\BadRequestException::class,
+        TwirpException::class,
     ];
 
     public function __construct(Container $container)
