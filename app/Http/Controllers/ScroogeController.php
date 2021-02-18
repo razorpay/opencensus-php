@@ -151,6 +151,13 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function retryRefundsWithAppend()
+    {
+        $response = $this->app['scrooge']->retryRefundsWithAppend($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function retryRefundsViaSourceFundTransfers()
     {
         $response = $this->app['scrooge']->retryRefundsViaSourceFundTransfers($this->input);

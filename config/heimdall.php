@@ -300,6 +300,10 @@ return [
                 'description' => 'Retry scrooge refunds without verify',
                 'assignable'  => true,
             ],
+            Permission::RETRY_REFUNDS_WITH_APPENDED_ID      => [
+                'description' => 'Retry scrooge refunds after appending to the refund ID',
+                'assignable'  => true,
+            ],
             Permission::GENERATE_REFUND_EXCEL               => [
                 'assignable'  => true,
             ],

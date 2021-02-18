@@ -306,6 +306,7 @@ class Name
     const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
     const CAPITAL_DEVELOPER                   = 'capital_developer';
+    const RETRY_REFUNDS_WITH_APPENDED_ID      = 'retry_refunds_with_appended_id';
 
     // Permission to create auto-kyc soft limit breached workflow
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';

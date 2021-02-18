@@ -63,6 +63,7 @@ class Scrooge
         'retry_without_verify'               => 'retry/without_verify',
         'retry_source_fund_transfers'        => 'retry/source_fund_transfers',
         'retry_custom_fund_transfers'        => 'retry/custom_fund_transfers',
+        'retry_with_attempt_appended_id'     => 'retry/with_attempt_appended_id',
     ];
 
     // Headers
@@ -446,6 +447,18 @@ class Scrooge
     {
         return $this->sendRequest(
             self::RefundsBaseURL . '/' . self::URLS['retry_without_verify'],
+            Requests::POST,
+            $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function retryRefundsWithAppend(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['retry_with_attempt_appended_id'],
             Requests::POST,
             $input);
     }

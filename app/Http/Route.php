@@ -1519,7 +1519,7 @@ class Route
         'scrooge_refunds_retry_source_fund_transfers' => ['post',     'scrooge/refunds/retry/source_fund_transfers',        'ScroogeController@retryRefundsViaSourceFundTransfers'       ],
         'scrooge_refunds_retry_custom_fund_transfers' => ['post',     'scrooge/refunds/retry/custom_fund_transfers',        'ScroogeController@retryRefundsViaCustomFundTransfers'       ],
         'scrooge_refunds_retry_custom_fund_transfers_batch' => ['post',     'scrooge/refunds/retry/custom_fund_transfers/batch',        'RefundController@retryRefundsViaCustomFundTransfersBatch'       ],
-
+        'scrooge_refunds_retry_with_attempt_appended_id' => ['post',     'scrooge/refunds/retry/with_attempt_appended_id',                  'ScroogeController@retryRefundsWithAppend'                   ],
         // Scrooge - Instant Refunds Mode Config related routes
         'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                                 'ScroogeController@refreshFtaModes'                           ],
         'scrooge_set_instant_refund_mode_config'     => ['post',     'scrooge/instant_refunds_mode',                              'ScroogeController@setInstantRefundsMode'                     ],
@@ -4013,6 +4013,7 @@ class Route
 
         'scrooge_refunds_retry_with_verify',
         'scrooge_refunds_retry_without_verify',
+        'scrooge_refunds_retry_with_attempt_appended_id',
         'scrooge_refunds_retry_source_fund_transfers',
         'scrooge_refunds_retry_custom_fund_transfers',
 
@@ -4780,6 +4781,7 @@ class Route
         'scrooge_refunds_retry_with_verify'           => Permission::RETRY_REFUND_FAILED,
         'scrooge_refunds_retry_without_verify'        => Permission::RETRY_REFUNDS_WITHOUT_VERIFY,
         'scrooge_refunds_retry_source_fund_transfers' => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
+        'scrooge_refunds_retry_with_attempt_appended_id'=> Permission::RETRY_REFUNDS_WITH_APPENDED_ID,
         'scrooge_refunds_retry_custom_fund_transfers' => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
 
         'schedule_fetch'                           => '*',
