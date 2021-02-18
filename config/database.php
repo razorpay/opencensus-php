@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'default' => 'mysql',
+    'default' => 'sqlite',
 
     /*
     |--------------------------------------------------------------------------
@@ -46,13 +46,10 @@ return [
 
     'connections' => [
 
-        'mysql' => [
-            'driver'    => 'mysql',
+        'sqlite' => [
+            'driver'    => 'sqlite',
             'host'      => env('DB_MYSQL_HOST'),
-            'database'  => env('DB_MYSQL_DATABASE'),
-            'port'      => env('DB_MYSQL_PORT', 3306),
-            'username'  => env('DB_MYSQL_USERNAME'),
-            'password'  => env('DB_MYSQL_PASSWORD'),
+            'database'  => database_path('database.sqlite'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',

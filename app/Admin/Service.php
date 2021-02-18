@@ -1369,32 +1369,6 @@ class Service extends Base\Service
     }
 
     /**
-     * This function returns the database connection status
-     *
-     * @return array $response
-     */
-    protected function getDBConnectionStatus()
-    {
-        $response = [
-            'statusMessage' => 'ok',
-            'statusCode'    => 200
-        ];
-
-        try
-        {
-            $DBConnection = DB::connection('mysql')->getPdo();
-        }
-        catch (Exception $e)
-        {
-            $response['statusMessage'] = 'DB Connection Error';
-
-            $response['statusCode'] = $e->getCode();
-        }
-
-        return $response;
-    }
-
-    /**
      * This function returns the redis connection status
      *
      * @return array $response
@@ -1484,24 +1458,19 @@ class Service extends Base\Service
     {
         $statusCode = 200;
 
-        // Check Database Connection
-        $databaseStatus = $this->getDBConnectionStatus();
-
         // Check Redis Connection
         $redisStatus = $this->getRedisConnectionStatus();
 
         // Check API Connection
         $apiStatus = $this->getAPIConnectionStatus();
 
-        if ($databaseStatus['statusCode'] !== 200 or
-            $redisStatus['statusCode'] !== 200 or
+        if ($redisStatus['statusCode'] !== 200 or
             $apiStatus['statusCode'] !== 200)
         {
             $statusCode = 500;
         }
 
         $response = [
-            'db'    => $databaseStatus['statusMessage'],
             'redis' => $redisStatus['statusMessage'],
             'api'   => $apiStatus['statusMessage']
         ];

@@ -8,10 +8,6 @@ alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/
 echo "$(date) Copy dashboard vhost"
 cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
 
-echo "$(date) DB Migrate"
-echo "$(date) Seeding live db"
-php artisan migrate --seed
-
 echo "setting max_input_vars to 2000"
 sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php7/php.ini
 

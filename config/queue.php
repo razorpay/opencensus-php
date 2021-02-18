@@ -63,7 +63,7 @@ return [
     */
 
     'failed' => [
-        'database' => 'mysql', 'table' => 'failed_jobs',
+        'database' => 'sqlite', 'table' => 'failed_jobs',
     ],
 
 ];
