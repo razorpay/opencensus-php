@@ -118,6 +118,8 @@ class Type
 
     const ADJUSTMENT            = 'adjustment';
 
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_config';
+
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
     const ECOLLECT_RBL          = 'ecollect_rbl';
@@ -178,6 +180,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
@@ -271,6 +274,7 @@ class Type
         self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CREDIT,
     ];
 
@@ -359,6 +363,7 @@ class Type
         self::NACH_MIGRATION,
         self::MPAN,
         self::ADJUSTMENT,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
@@ -381,6 +386,7 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::PAYMENT_LINK_V2,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,

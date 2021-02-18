@@ -293,6 +293,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE     => 'sometimes|numeric',
     ];
 
+    protected static $settlementOndemandFeatureConfigCreateRules = [
+        Entity::TYPE         => 'required|in:settlement_ondemand_feature_config',
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID      => 'required_without:file',
+        Entity::NAME         => 'filled|string|max:255',
+        Entity::SCHEDULE     => 'sometimes|numeric',
+    ];
+
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
@@ -521,6 +529,15 @@ class Validator extends Base\Validator
         Header::CAMPAIGN                            => 'required|string|max:255',
         Header::PRODUCT                             => 'required|string|in:banking',
         Header::TYPE                                => 'required|string',
+    ];
+
+    protected static $settlementOndemandFeatureConfigTypeRowRules = [
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID                 => 'required|string|size:14',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT            => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT     => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT             => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                 => 'required|in:yes,no'
     ];
 
     protected static $terminalNetbankingHdfcRules = [
@@ -1423,6 +1440,13 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateSettlementOndemandFeatureConfigEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('settlementOndemandFeatureConfigTypeRow', $entry);
+        });
+    }
     private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
     {
         $validBalanceTypes = [
