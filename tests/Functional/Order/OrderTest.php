@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
@@ -283,6 +284,83 @@ class OrderTest extends TestCase
         $bankCodeFromIfsc = strtoupper(substr($bankAccountRequest['ifsc'], 0, 4));
         $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
         $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
+    }
+
+    //Creating few UPI specific tests, as other TPV tests are of method netbanking.
+    public function testCreateUpiTPVOrderOldRequestFormat()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $orderResponse = $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $this->assertEquals($order->getMethod(), 'upi');
+
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+
+        $orderRequest = $testData['request']['content'];
+
+        // Account number and payer name will be updated in both the places
+        // until on gateways we start using account number from bank accounts.
+        $this->assertEquals($bankAccount->getAccountNumber(),$orderRequest['account_number']);
+        $this->assertContains($orderRequest['bank'], $bankAccount->getIfscCode());
+
+        $this->assertEquals($order->getAccountNumber(),$orderRequest['account_number']);
+        $this->assertEquals($order->getBank(), $orderRequest['bank']);
+
+        return $orderResponse;
+    }
+
+
+    public function testCreateUpiTPVOrderNewRequestFormat()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $this->assertEquals($order->getMethod(), 'upi');
+
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+
+        $bankAccountRequest = $testData['request']['content']['bank_account'];
+
+        // Account number and payer name will be updated in both the places
+        // until on gateways we start using account number from bank accounts.
+        $this->assertEquals($bankAccount->getAccountNumber(),$bankAccountRequest['account_number']);
+        $this->assertEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc']);
+        $this->assertEquals($bankAccount->getBeneficiaryName(), $bankAccountRequest['name']);
+
+        $this->assertEquals($order->getAccountNumber(),$bankAccountRequest['account_number']);
+        $bankCodeFromIfsc = strtoupper(substr($bankAccountRequest['ifsc'], 0, 4));
+        $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
+        $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
+    }
+
+    public function testCreateUpiTPVOrderNewRequestOldIfsc()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+        $order =  $this->getDbLastEntity('order');
+
+        $bankAccountRequest = $testData['request']['content']['bank_account'];
+
+        //Ifsc from request and that in bank account entity should NOT match
+        $this->assertNotEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc']);
+
+        //Bank account entity should have ifsc equal to one fetched from mapping.
+        $this->assertEquals($bankAccount->getIfscCode(), BankAccount\OldNewIfscMapping::getNewIfsc($bankAccountRequest['ifsc']));
+
+        //Order->getBank equal to first 4 chars of bankAccount entity's ifsc
+        $bankCodeFromIfsc = strtoupper(substr($bankAccount->getIfscCode(), 0, 4));
+        $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
+        $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
+
     }
 
     public function testCreateTPVOrderEmptyMethod()

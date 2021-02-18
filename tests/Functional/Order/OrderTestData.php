@@ -434,6 +434,78 @@ return [
         ],
     ],
 
+    'testCreateUpiTPVOrderOldRequestFormat' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'account_number' => '040304030403040',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateUpiTPVOrderNewRequestFormat' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank_account'   => [
+                    'account_number'    => '040304030403040',
+                    'ifsc'              => 'UTIB0003098',
+                    'name'              => 'ThisIsAwesome',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateUpiTPVOrderNewRequestOldIfsc' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank_account'   => [
+                    'account_number'    => '040304030403040',
+                    'ifsc'              => 'CORP0003538',
+                    'name'              => 'ThisIsAwesome',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testCreateTPVOrderEmptyMethod' => [
         'request' => [
             'content' => [

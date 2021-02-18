@@ -146,6 +146,59 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
+    public function testIntentTpvPaymentWithOldIfscCode()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData['testIntentTpvPaymentWithOldIfscCode']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount']   = $order['amount'];
+        $payment['bank']     = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order = $this->getLastEntity('order', true);
+
+        //olf ifsc : CORP0001471, new ifsc : UBIN0914711
+        $this->assertEquals('UBIN', $order['bank']);
+        $this->assertEquals($payment['bank'], $order['bank']);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
     public function testIntentTpvPaymentWithBankAsNull()
     {
         $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');

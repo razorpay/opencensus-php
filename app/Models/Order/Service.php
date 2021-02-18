@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
@@ -202,6 +203,8 @@ class Service extends Base\Service
             );
         }
 
+        $this->updateIfscMappingIfApplicable($input);
+
         (new BankAccount\Validator())->validateIfscCode($input[Entity::BANK_ACCOUNT], $this->mode);
 
         // Get Bank Code from IFSC here.
@@ -385,5 +388,41 @@ class Service extends Base\Service
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
         return (new Core)->fetchProductDetailsForOrder($order, $this->merchant);
+    }
+
+    /**
+     * Due to mergers, bank IFSC codes get updated. Merchants tend to send the old IFSC code in request
+     * due to which payments fail. The long term and ideal solution is to educate merchant to send
+     * correct IFSC code. As part of short term solution, we are keeping the mapping in the codebase.
+     * @param  array $input
+     */
+
+    public function updateIfscMappingIfApplicable(array & $input)
+    {
+        $method = isset($input['method']) ? $input['method'] : null;
+
+        //Currently enabling this change only for UPI.
+        if (in_array(array_get($input, 'method'), ['upi'], true) === false )
+        {
+            return;
+        }
+
+        if (isset($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC]) === true)
+        {
+            $oldIfsc = $input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC];
+
+            if (array_key_exists($oldIfsc, BankAccount\OldNewIfscMapping::$oldToNewIfscMapping) === true)
+            {
+                $newIfsc =  BankAccount\OldNewIfscMapping::getNewIfsc($oldIfsc);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
+                    'old_ifsc' => $oldIfsc,
+                    'new_ifsc' => $newIfsc,
+                ]);
+
+                $input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC] = $newIfsc;
+            }
+
+        }
     }
 }
