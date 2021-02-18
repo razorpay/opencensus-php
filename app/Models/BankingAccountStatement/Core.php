@@ -439,16 +439,6 @@ class Core extends Base\Core
 
             list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION,
-                [
-                    'source_entity'         => $sourceEntity->toArray(),
-                    'bas_id'                => $basEntity->getId(),
-                    'account_no'            => $basEntity->getAccountNumber(),
-                    'entity_linking_time'   => (microtime(true) - $startTime) * 1000,
-                    'entity_id'             => $sourceEntity->getId(),
-                    'entity_type'           => $basEntity->getEntityType(),
-                ]);
-
             $basEntity->source()->associate($sourceEntity);
 
             $basEntity->transaction()->associate($sourceEntity->transaction);
@@ -458,6 +448,16 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SAVE, $basEntity->toArray());
 
             $this->repo->saveOrFail($basEntity);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION,
+                [
+                    'source_entity'         => $sourceEntity->toArray(),
+                    'bas_id'                => $basEntity->getId(),
+                    'account_no'            => $basEntity->getAccountNumber(),
+                    'entity_linking_time'   => (microtime(true) - $startTime) * 1000,
+                    'entity_id'             => $sourceEntity->getId(),
+                    'entity_type'           => $basEntity->getEntityType(),
+                ]);
 
             return [$sourceEntity, $isSourceAlreadyCreated];
         });
