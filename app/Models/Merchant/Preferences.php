@@ -141,6 +141,9 @@ class Preferences
     const MID_STASHFIN              = 'Ao42qLIgNsuREt';
     const MID_VOCATIONAL_EDU        = 'F5NF8QNN7XAJ2w';
     const MID_BSE                   = 'FlaHVYQCGKbK2t';
+    const MID_EDELWEISS_ECL         = 'FfaKyVTNaPTBXf';
+    const MID_EDELWEISS_EHFL        = 'Fg1qjtRFHMvHSy';
+    const MID_EDELWEISS_ERFL        = 'Fg2AWmybDBvRBM';
 
     const MID_CLIX_CAPITAL            = 'AxEq4Z2U8Gd8vH';
     const MID_CLIX_CAPITAL_SERVICES   = 'Bkeuzp5jlMNhzD';

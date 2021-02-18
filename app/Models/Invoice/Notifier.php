@@ -959,6 +959,23 @@ class Notifier extends Base\Core
             'amount'        => $this->invoice->getAmount() / 100,
         ];
 
+        $subscriptionRegistration = $this->invoice->entity;
+
+        if ($subscriptionRegistration->isMethodCard() === true)
+        {
+            $template = 'sms.custom_invoice.subr_card';
+        }
+
+        if ($subscriptionRegistration->isMethodEmandate() === true)
+        {
+            $template = 'sms.custom_invoice.subr_emandate';
+        }
+
+        if ($subscriptionRegistration->isMethodNach() === true)
+        {
+            $template = 'sms.custom_invoice.subr_emandate';
+        }
+
         $invoiceLink = $this->invoice->getShortUrl();
 
         $notes = $this->invoice->getNotes();
@@ -1104,6 +1121,13 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_EDELWEISS_ECL:
+            case Preferences::MID_EDELWEISS_EHFL:
+            case Preferences::MID_EDELWEISS_ERFL:
+                $sender = 'EDELHS';
+
+                break;
+
             case Preferences::MID_ADITYA_BIRLA_HEALTH:
 
                 $sender = 'ABCPRO';
@@ -1115,35 +1139,6 @@ class Notifier extends Base\Core
                 ];
 
                 break;
-
-            default:
-
-                $subscriptionRegistration = $this->invoice->entity;
-
-                if ($subscriptionRegistration->isMethodCard() === true)
-                {
-                    $template = 'sms.custom_invoice.subr_card';
-                }
-
-                if ($subscriptionRegistration->isMethodEmandate() === true)
-                {
-                    $template = 'sms.custom_invoice.subr_emandate';
-                }
-
-                if ($subscriptionRegistration->isMethodNach() === true)
-                {
-                    $template = 'sms.custom_invoice.subr_emandate';
-                }
-
-                $merchantName = $merchant->getBillingLabel();
-
-                $merchantName = substr($merchantName, 0, 30);
-
-                $params   = [
-                    'merchant_name' => $merchantName,
-                    'invoice_link'  => $this->invoice->getShortUrl(),
-                    'amount'        => $this->invoice->getAmount() / 100,
-                ];
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
