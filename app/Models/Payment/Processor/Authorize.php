@@ -66,6 +66,7 @@ use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\CardPaymentService;
 use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Payment\RecurringType;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
@@ -6479,7 +6480,7 @@ trait Authorize
     {
         $this->setRzpVaultForPayment($cardInput, $vault, $merchant, $input);
 
-        $this->setIsCVVOptionalFlagIfApplicable($cardInput);
+        $this->setIsCVVOptionalFlagIfApplicable($cardInput, $input);
 
         $cardCore = new Card\Core;
 
@@ -8399,9 +8400,14 @@ trait Authorize
         }
     }
 
-    protected function setIsCVVOptionalFlagIfApplicable(array &$cardInput)
+    protected function setIsCVVOptionalFlagIfApplicable(array &$cardInput, $input)
     {
         if ($this->payment->isVisaSafeClickStepUpPayment() === true)
+        {
+            $cardInput[Card\Entity::IS_CVV_OPTIONAL] = true;
+        }
+        else if ((isset($input['recurring']) === true) and
+            ($input['recurring'] === RecurringType::AUTO))
         {
             $cardInput[Card\Entity::IS_CVV_OPTIONAL] = true;
         }

@@ -378,6 +378,8 @@ class PaymentCreateTest extends TestCase
     {
         $paymentArray = $this->getDefaultPaymentArray();
 
+        $paymentArray['card']['cvv'] = null;
+
         $paymentArray['recurring'] = "auto";
 
         $this->fixtures->merchant->addFeatures(['s2s', Feature\Constants::RECURRING_AUTO]);
@@ -3790,7 +3792,7 @@ class PaymentCreateTest extends TestCase
         $this->ba->privateAuth();
 
         $paymentArray = $this->getDefaultPaymentArray();
-        
+
         $paymentArray['card']['number'] = '555555555555558';
 
         $this->fixtures->iin->create([
