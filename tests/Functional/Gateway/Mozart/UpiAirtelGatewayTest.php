@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use Carbon\Carbon;
+
+use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart;
 use RZP\Models\Merchant\Account;
@@ -413,5 +415,42 @@ class UpiAirtelGatewayTest extends TestCase
         {
             $this->assertEquals($matchLeft, $matchRight);
         }
+    }
+
+    public function testVerifyPaymentAmountMismatch()
+    {
+        $payment = $this->testPayment();
+        $paymentId = $payment['id'];
+
+        // Original payment amount is 500.00. Mocking amount mismatch
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['data']['amount'] = 11111;
+            }
+        }, 'mozart');
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentId)
+            {
+                $this->verifyPayment($paymentId);
+            },
+            RuntimeException::class,
+            'Payment amount verification failed.'
+        );
+    }
+
+    public function testVerifyLateAuthWithCorrectAmount()
+    {
+        $payment = $this->testPayment();
+        $paymentId = $payment['id'];
+
+        $this->verifyPayment($paymentId);
+        // Fetch the last payment
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should be captured
+        $this->assertEquals('captured', $payment['status']);
     }
 }

@@ -39,6 +39,11 @@ class Gateway extends Base\Gateway
         'data'      => Entity::RAW,
     ];
 
+    // Mozart Gateways for which amount needs to be checked
+    protected $gatewaysForAmountCheck = [
+        Payment\Gateway::UPI_AIRTEL => true
+    ];
+
     public function checkAccount(array $input)
     {
         $this->action($input, Action::CHECKACCOUNT);
@@ -1380,6 +1385,19 @@ class Gateway extends Base\Gateway
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $gateway =  $input['payment']['gateway'];
+
+        // Check Payment Amount with Gateway Amount if the gateway is in the checklist map
+        if ((isset($this->gatewaysForAmountCheck[$gateway]) === true) and
+            (isset($content['data']['amount']) === true) and
+            ($verify->gatewaySuccess === true))
+        {
+            $gatewayAmount = (int) $content['data']['amount'];
+            $paymentEntityAmount = (int) $input['payment']['amount'];
+
+            $verify->amountMismatch = ($gatewayAmount !== $paymentEntityAmount);
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
