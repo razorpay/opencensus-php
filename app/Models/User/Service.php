@@ -1212,7 +1212,7 @@ class Service extends Base\Service
 
         if (empty($contact) === true)
         {
-            throw new Exception\BadRequestException('User does not have a mobile number associated with the account');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND);
         }
 
         return app('stork_service')->optOutForWhatsapp($this->mode, $contact, $input['source']);
@@ -1228,7 +1228,7 @@ class Service extends Base\Service
 
         if(empty($contact) === true)
         {
-            throw new Exception\BadRequestException('User does not have a mobile number associated with the account');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND);
         }
 
         return app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, $input['source']);
