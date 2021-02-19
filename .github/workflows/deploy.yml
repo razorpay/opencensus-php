@@ -1,0 +1,81 @@
+name: Run Unit Coverage
+on: deployment
+jobs:
+  Smart-collect:
+    runs-on: [self-hosted]
+    if: github.event.deployment.environment == 'smartcollectUT'
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Smart Collect Test Suite
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@v2
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: smart collect test suite
+        run: ci-assets/unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          GIT_COMMIT_ID: ${{ github.sha }}
+          SONAR_PROJECT_ID: API_SMARTCOLLECT_UT
+          TEST_SUITE_NAME: "Smart Collect Test Suite"
+          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  workflow_status:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    name: Update Status Check
+    needs: [
+        Smart-collect
+    ]
+    if: always()
+    steps:
+      - name: Success
+        run: |
+          echo 'Status check has passed!'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "github/deploy" , "description" : "github/deploy", "target_url" : "https://github.com/razorpay/api" }' \
+          https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
+          exit 0

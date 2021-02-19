@@ -182,6 +182,13 @@
           <directory>./tests/Functional/Gateway/Cybersource/</directory>
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
       </testsuite>
+      <testsuite name="Smart Collect Test Suite">
+          <directory>./tests/Functional/VirtualAccount</directory>
+          <directory>./tests/Functional/VirtualVpaPrefix</directory>
+          <directory>./tests/Functional/UpiTransfer</directory>
+          <directory>./tests/Functional/BankTransfer</directory>
+          <directory>./tests/Functional/BharatQrPayment</directory>
+      </testsuite>
   </testsuites>
   <listeners>
     <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
