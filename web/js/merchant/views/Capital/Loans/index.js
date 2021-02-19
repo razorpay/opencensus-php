@@ -383,7 +383,13 @@ class LoanApplicationOverview extends React.Component {
           <div className="loan-application-overview-header flex">
             <div className="loan-meta-wrapper">
               <h4>
-                <strong>Your Loan Application</strong>
+                <strong>
+                  Your{' '}
+                  {isCashAdvanceProduct(loanApplicationDetails.meta.product)
+                    ? 'Cash Advance'
+                    : 'Loan'}
+                  Application
+                </strong>
               </h4>
               <p className="text--secondary">
                 Application ID: {loanApplicationDetails.meta.data.application.id}

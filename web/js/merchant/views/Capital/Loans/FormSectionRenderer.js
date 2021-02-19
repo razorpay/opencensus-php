@@ -94,10 +94,6 @@ const stateFormMap = {
   [APPLICATION_STATES.CREDIT_DISBURSED]: DisbursalEntity,
 };
 
-const getTitleInformation = (info) => {
-  return <Banner {...info} isFormHeader={true} />;
-};
-
 @connect(
   (state) => ({
     user: state.session.user,
@@ -175,6 +171,26 @@ class FormSectionRenderer extends Component {
     this.props.fetchDocumentGroups(this.props.user.business_type == 1);
     this.props.fetchProducts();
   }
+
+  getTitleInformation = (info) => {
+    const { meta } = this.props.loanApplicationDetails;
+    const isCashAdvance = isCashAdvanceProduct(meta.product);
+    let bannerProps = info;
+
+    if (isCashAdvance) {
+      const keys = Object.keys(info);
+
+      keys.forEach((key) => {
+        if (typeof bannerProps[key] === 'string') {
+          bannerProps[key] = bannerProps[key]
+            .replace('loan', 'cash advance')
+            .replace('Loan', 'Cash Advance');
+        }
+      });
+    }
+
+    return <Banner {...bannerProps} isFormHeader={true} />;
+  };
 
   fetchStateDetails = async (state) => {
     this.setState({
@@ -467,9 +483,11 @@ class FormSectionRenderer extends Component {
     switch (activeState) {
       case 'BUSINESS_INFO_PENDING':
         if (isPreceedingState(meta.data.application.status, APPLICATION_STATES.CONTRACT_PENDING)) {
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING']);
         } else {
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING_LOCKED']);
+          return this.getTitleInformation(
+            APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING_LOCKED'],
+          );
         }
       case 'PROMOTER_INFO_PENDING':
         if (
@@ -478,9 +496,11 @@ class FormSectionRenderer extends Component {
             APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
           )
         ) {
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING']);
         } else {
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING_LOCKED']);
+          return this.getTitleInformation(
+            APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING_LOCKED'],
+          );
         }
       case APPLICATION_STATES.CREDIT_PULL_PENDING:
         const { bureau_report_details } = this.props.loanApplicationDetails;
@@ -490,73 +510,75 @@ class FormSectionRenderer extends Component {
         if (bureau_report_details.data.bureau_report) {
           const { score, ntc_score } = bureau_report_details.data.bureau_report;
           if (!!ntc_score && !score) {
-            return getTitleInformation(
+            return this.getTitleInformation(
               APPLICATION_STATE_TITLE_MAP['CREDIT_PULL_COMPLETED_WITH_NTC'],
             );
           }
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_PULL_COMPLETED']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_PULL_COMPLETED']);
         }
-        return getTitleInformation(APPLICATION_STATE_TITLE_MAP['MOBILE_VERIFICATION_PENDING']);
+        return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['MOBILE_VERIFICATION_PENDING']);
       case APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS:
       case APPLICATION_STATES.SCORE_GENERATION_PENDING:
       case APPLICATION_STATES.CREDIT_OFFER_PENDING:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.SCORE_GENERATION_PENDING],
         );
       case APPLICATION_STATES.CREDIT_OFFER_GENERATED:
         const { accepted_offer_details } = this.props.loanApplicationDetails;
         if (!(accepted_offer_details.data && accepted_offer_details.data.credit_offer_id)) {
-          return getTitleInformation(
+          return this.getTitleInformation(
             APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CREDIT_OFFER_GENERATED],
           );
         } else {
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_OFFER_ACCEPTED']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_OFFER_ACCEPTED']);
         }
       case APPLICATION_STATES.CONTRACT_PENDING:
         const { agreement_details } = this.props.loanApplicationDetails;
         if (agreement_details.data && agreement_details.data.signers) {
           if (agreement_details.data.sign_status === 'SIGNED') {
-            return getTitleInformation(APPLICATION_STATE_TITLE_MAP['CONTRACT_SIGNED']);
+            return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CONTRACT_SIGNED']);
           } else {
-            return getTitleInformation(
+            return this.getTitleInformation(
               APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CONTRACT_PENDING],
             );
           }
         } else {
           //invitation not yet generated
-          return getTitleInformation(APPLICATION_STATE_TITLE_MAP['CONTRACT_GENERATION_PENDING']);
+          return this.getTitleInformation(
+            APPLICATION_STATE_TITLE_MAP['CONTRACT_GENERATION_PENDING'],
+          );
         }
       case APPLICATION_STATES.NACH_CREATION_PENDING:
       case APPLICATION_STATES.NACH_UPLOAD_PENDING:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.NACH_UPLOAD_PENDING],
         );
       case APPLICATION_STATES.SLOT_SELECTION_PENDING:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.SLOT_SELECTION_PENDING],
         );
       case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED],
         );
       case APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING],
         );
       case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED],
         );
       case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW],
         );
       case APPLICATION_STATES.RZP_APPROVED:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[`${meta.product}_${APPLICATION_STATES.RZP_APPROVED}`],
         );
       case APPLICATION_STATES.CREDIT_DISBURSED:
-        return getTitleInformation(
+        return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CREDIT_DISBURSED],
         );
     }
@@ -765,6 +787,7 @@ class FormSectionRenderer extends Component {
               loanApplicationDetails={this.props.loanApplicationDetails}
               ref={this.bannerMessageContainer}
               changeActiveState={this.changeActiveState}
+              isCashAdvanceProduct={isCashAdvanceProduct(meta.product)}
             />
             <div className="application-form-container" ref={(node) => (this.formContainer = node)}>
               <div className="loan-application-form-section">

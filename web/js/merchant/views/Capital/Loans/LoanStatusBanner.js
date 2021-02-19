@@ -3,7 +3,7 @@ import Banner from '../components/Banner';
 import Button from 'common/new-ui/Button';
 import { APPLICATION_STATES } from './constants';
 
-const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
+const getStateBanner = (loanApplicationDetails, ref, changeActiveState, isCashAdvanceProduct) => {
   const activeState = loanApplicationDetails.context.activeState;
 
   const pseudoState = loanApplicationDetails.context.pseudoState;
@@ -32,7 +32,9 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
           return (
             <Banner
               title="Congratulations"
-              description="Based on your credit history, you are eligible for a loan."
+              description={`Based on your credit history, you are eligible for ${
+                isCashAdvanceProduct ? 'Cash Advance' : 'a loan'
+              }.`}
               type="success"
             />
           );
@@ -40,7 +42,9 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
           return (
             <Banner
               title="Sorry!"
-              description="Based on your credit history, you are not eligible for loan. Please apply later."
+              description={`Based on your credit history, you are not eligible for ${
+                isCashAdvanceProduct ? 'Cash Advance' : 'a loan'
+              }. Please apply later.`}
               type="error"
             />
           );
@@ -60,7 +64,7 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
             description={
               <span>
                 We couldn't find any credit records on your name. But, you may still be eligible for
-                a loan. &nbsp;
+                {isCashAdvanceProduct ? ' Cash Advance' : ' a loan'}. &nbsp;
                 <Button.Transparent
                   class="no-margin"
                   onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
@@ -79,7 +83,8 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
           title="Congratulations"
           description={
             <span>
-              Based on your credit history, you are eligible for a loan. &nbsp;
+              Based on your credit history, you are eligible for{' '}
+              {isCashAdvanceProduct ? 'Cash Advance' : 'a loan'}. &nbsp;
               <Button.Transparent
                 class="no-margin"
                 onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
@@ -110,7 +115,11 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
         return (
           <Banner
             title="Congratulations"
-            description="Your loan application has been successfully approved. Kindly accept the loan offer so that we can quickly disburse the funds to your account."
+            description={`Your ${
+              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+            } application has been successfully approved. Kindly accept the ${
+              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+            } offer so that we can quickly disburse the funds to your account.`}
             type="success"
           />
         );
@@ -121,8 +130,10 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
       if (!(agreement_details.data && agreement_details.data.signers)) {
         return (
           <Banner
-            title="Loan Offer Accepted!"
-            description="Thank you for accepting the loan offer, Only couple of more steps to get the funds disbursed to your account."
+            title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'} Offer Accepted!`}
+            description="Thank you for accepting the ${
+              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+            } offer, Only couple of more steps to get the funds disbursed to your account."
             type="success"
           />
         );
@@ -141,8 +152,12 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
       } else {
         return (
           <Banner
-            title="Loan application is completed!"
-            description="Your loan application has been completed successfully. You are now few steps away from getting your loan amount disbursed."
+            title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'} application is completed!`}
+            description={`Your ${
+              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+            } application has been completed successfully. You are now few steps away from getting your ${
+              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+            } amount disbursed.`}
             type="success"
           />
         );
@@ -161,7 +176,12 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
 };
 
 const LoanStatusBanner = (props) => {
-  return getStateBanner(props.loanApplicationDetails, props.ref, props.changeActiveState);
+  return getStateBanner(
+    props.loanApplicationDetails,
+    props.ref,
+    props.changeActiveState,
+    props.isCashAdvanceProduct,
+  );
 };
 
 export default LoanStatusBanner;
