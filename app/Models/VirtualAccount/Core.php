@@ -84,7 +84,7 @@ class Core extends Base\Core
             throw $e;
         }
 
-        $this->dispatchForRiskCheck($input[Entity::RECEIVERS], $virtualAccount);
+        $this->dispatchForRiskCheck($virtualAccount);
 
         (new Metric)->pushCreateSuccessMetrics($input);
 
@@ -716,7 +716,7 @@ class Core extends Base\Core
             return $virtualAccount;
         });
 
-        $this->dispatchForRiskCheck($input, $virtualAccount);
+        $this->dispatchForRiskCheck($virtualAccount, $input[Entity::TYPES]);
 
         return $virtualAccount;
     }
@@ -793,33 +793,43 @@ class Core extends Base\Core
         }
     }
 
-    protected function dispatchForRiskCheck(array $input, $virtualAccount)
+    protected function dispatchForRiskCheck($virtualAccount, array $receiverTypes = [])
     {
-        $merchant = $virtualAccount->merchant;
-        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
-                                                     RazorxTreatment::APPS_RISK_CHECK,
-                                                     $this->mode);
-        if (($variant !== 'on') or
-            ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true))
+        if ($this->shouldDispatchToQueueForRiskCheck($virtualAccount->merchant) === false)
         {
             return;
         }
 
         $fields = [];
 
-        foreach ($input[Entity::TYPES] as $receiverType)
+        foreach ($virtualAccount['receivers'] as $receiver)
         {
-            $options = $input[$receiverType] ?? [];
+            $value        = null;
+            $receiverType = $receiver['entity'];
+            switch ($receiverType)
+            {
+                case Receiver::VPA:
 
-            if ((empty($options) === true) or
-                (isset($options[Entity::DESCRIPTOR]) === false))
+                    $value = explode('.', $receiver['username'])[1];
+                    break;
+                case Receiver::BANK_ACCOUNT:
+
+                    $value = $receiver['account_number'];
+                    break;
+                default:
+                    break;
+            }
+
+            if (($value === null) or
+                ((empty($receiverTypes) == false) and
+                 (in_array($receiverType, $receiverTypes, true) === false)))
             {
                 continue;
             }
 
             $field = [
                 'key'        => Entity::DESCRIPTOR,
-                'value'      => $options[Entity::DESCRIPTOR],
+                'value'      => $value,
                 'list'       => 'high_risk_list',
                 'config_key' => Entity::DESCRIPTOR,
             ];
@@ -827,11 +837,28 @@ class Core extends Base\Core
             array_push($fields, $field);
         }
 
-        if (empty($fields) === true)
+        if (empty($fields) === false)
         {
-            return;
+            $this->dispatchToQueueForRiskCheck($virtualAccount, $fields);
+        }
+    }
+
+    protected function shouldDispatchToQueueForRiskCheck($merchant)
+    {
+        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
+                                                     RazorxTreatment::APPS_RISK_CHECK_CREATE_VA,
+                                                     $this->mode);
+        if (($variant !== 'on') or
+            ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true))
+        {
+            return false;
         }
 
+        return true;
+    }
+
+    protected function dispatchToQueueForRiskCheck($virtualAccount, array $fields)
+    {
         $request = [
             'client_type' => 'smart_collect',
             'entity_id'   => $virtualAccount->getId(),

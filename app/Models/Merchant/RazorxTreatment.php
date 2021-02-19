@@ -216,6 +216,8 @@ final class RazorxTreatment
 
     const APPS_RISK_CHECK = 'apps_risk_check';
 
+    const APPS_RISK_CHECK_CREATE_VA = 'apps_risk_check_create_va';
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     // Disable tpv flow in fund loading for business banking merchants (Razorpay X) if required.

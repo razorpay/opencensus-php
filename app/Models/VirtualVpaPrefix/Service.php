@@ -94,8 +94,6 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 
-        $this->dispatchPrefixForRiskCheck($virtualVpaPrefix);
-
         return [
             'prefix'    => $virtualVpaPrefix->getPrefix(),
         ];
@@ -104,52 +102,5 @@ class Service extends Base\Service
     protected function convertPrefixToLower(& $input) : void
     {
         $input[Entity::PREFIX] = strtolower($input[Entity::PREFIX]);
-    }
-
-    protected function dispatchPrefixForRiskCheck($virtualVpaPrefix)
-    {
-        if (($this->isRazorxEnabledForRiskCheck() === false) or
-            ($this->merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true))
-        {
-            return true;
-        }
-
-        $request = [
-            'client_type' => 'smart_collect',
-            'entity_id'   => $virtualVpaPrefix->getId(),
-            'fields'      => [
-                [
-                    'key'        => Entity::PREFIX,
-                    'value'      => $virtualVpaPrefix->getPrefix(),
-                    'list'       => 'high_risk_list',
-                    'config_key' => Entity::PREFIX,
-                ],
-            ]
-        ];
-
-        try
-        {
-            $this->trace->info(
-                TraceCode::APPS_RISK_CHECK_SQS_PUSH_INIT,
-                $request);
-
-            AppsRiskCheck::dispatch($this->mode, $request);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->critical(
-                TraceCode::APPS_RISK_CHECK_SQS_PUSH_FAILED,
-                $request);
-        }
-    }
-
-    public function isRazorxEnabledForRiskCheck()
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::APPS_RISK_CHECK,
-            $this->mode);
-
-        return ($variant === 'on');
     }
 }
