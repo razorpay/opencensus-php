@@ -225,7 +225,7 @@ class Repository extends Base\Repository
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
-                $path = "v1/terminals/" . $id;
+                $path = "v1/terminals/" . $id ."?with_trashed=true" ;
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
