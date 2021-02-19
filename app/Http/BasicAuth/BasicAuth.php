@@ -1489,6 +1489,7 @@ class BasicAuth
         return (($this->isDashboardApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
+                ($this->isCapitalLOCApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
@@ -1545,6 +1546,11 @@ class BasicAuth
     public function isCapitalCardsApp(): bool
     {
         return ($this->getInternalApp() === 'capital_cards_client');
+    }
+
+    public function isCapitalLOCApp(): bool
+    {
+        return ($this->getInternalApp() === 'loc');
     }
 
     public function isPaymentLinkServiceApp(): bool

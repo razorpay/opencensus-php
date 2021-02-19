@@ -6035,6 +6035,7 @@ class Route
 
         'loc'  => [
             'loc_mail',
+            'user_fetch',
         ],
 
         'leegality' => [
