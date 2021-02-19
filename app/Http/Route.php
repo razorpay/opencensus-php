@@ -3041,6 +3041,9 @@ class Route
         'merchant_risk_alerts_foh_workflow',
         'merchant_risk_alerts_details',
 
+        // Mandate HQ
+        'get_issuer_from_iin',
+
         'nach_batch_process',
 
         'loc_cron',
@@ -3600,9 +3603,6 @@ class Route
         'delete_merchant_notification_config',
         'disable_merchant_notification_config',
         'enable_merchant_notification_config',
-
-        // mandate HQ
-        'get_issuer_from_iin',
 
         'app_merchant_mapping_get',
         'merchant_tag_map_create',
