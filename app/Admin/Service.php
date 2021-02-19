@@ -51,6 +51,9 @@ class Service extends Base\Service
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
 
+    const CACHE_KEY_ORG_DATA = 'org_data_';
+    const CACHE_TTL_ORG_DATA = 60 * 6; // 6 hours
+
     // This is the Admin\Logger trait
     use Logger;
 
@@ -1200,6 +1203,13 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
+        $orgDataFromCache = $this->getOrgDataFromCache($domain);
+
+        if ($orgDataFromCache !== null)
+        {
+            return [null, $orgDataFromCache];
+        }
+
         $request = new ApiRequestAny();
 
         list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
@@ -1214,12 +1224,16 @@ class Service extends Base\Service
 
     protected function setOrgInCache($org)
     {
-        $cacheKey = $org['hostname'];
+        $cacheKey = $domain = $org['hostname'];
+
+        $orgDataCacheKey = $this->getOrgDataCacheKey($domain);
 
         if ($this->cache->has($cacheKey) === false)
         {
             $this->cache->put($cacheKey, $org['id'], 10);
         }
+
+        $this->cache->put($orgDataCacheKey, $org, self::CACHE_TTL_ORG_DATA);
     }
 
     public function getAdminData($admin)
@@ -1492,5 +1506,17 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    protected function getOrgDataFromCache($domain)
+    {
+        $cacheKey = $this->getOrgDataCacheKey($domain);
+
+        return $this->cache->get($cacheKey);
+    }
+
+    protected function getOrgDataCacheKey($domain)
+    {
+        return self::CACHE_KEY_ORG_DATA . $domain;
     }
 }
