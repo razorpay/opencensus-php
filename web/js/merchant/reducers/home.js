@@ -12,6 +12,7 @@ const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const SETTLEMENT_AMOUNT_FETCH = 'SETTLEMENT_AMOUNT_FETCH';
 const BALANCE_CONFIG_FETCH = 'BALANCE_CONFIG_FETCH';
+const ONDEMAND_RESTRICTIONS_FETCH = 'ONDEMAND_RESTRICTIONS_FETCH';
 
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
@@ -56,6 +57,11 @@ let initialState = {
     error: null,
   },
   merchantBalanceConfigs: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  ondemand_restrictions: {
     loading: true,
     data: {},
     error: null,
@@ -208,6 +214,13 @@ export const fetchSettlementAmount = () => {
   };
 };
 
+export const fetchOndemandRestrictions = () => {
+  return {
+    type: ONDEMAND_RESTRICTIONS_FETCH,
+    payload: merchantFetch('settlements/ondemand/feature/validate'),
+  };
+};
+
 export const fetchBalanceConfig = () => {
   return {
     type: BALANCE_CONFIG_FETCH,
@@ -333,6 +346,22 @@ export default function (state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.merchantBalanceConfigs.data,
+      });
+
+    case `${ONDEMAND_RESTRICTIONS_FETCH}::SUCCESS`:
+      return merge(state, {
+        ondemand_restrictions: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${ONDEMAND_RESTRICTIONS_FETCH}::ERROR`:
+      return set(state, 'ondemand_restrictions', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.ondemand_restrictions.data,
       });
 
     case `SHOW_IA_SUCCESS`:

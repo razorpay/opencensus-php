@@ -13,7 +13,11 @@ import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import { getKeysSeparatedByPipe, handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  handleNegativeBalanceLimit,
+  getFormattedAmountNew,
+} from 'common/utils/rzp-utils';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -28,6 +32,7 @@ import {
   fetchCurrentBalance,
   fetchSettlementAmount,
   fetchBalanceConfig,
+  fetchOndemandRestrictions,
 } from 'merchant/reducers/home';
 import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
@@ -61,12 +66,41 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
     fetchSettlementAmount,
     fetchHolidayList,
     fetchBalanceConfig,
+    fetchOndemandRestrictions,
   },
 )
 export default class SettlementsListContainer extends ListContainer {
   state = {
     openAutoModal: false,
   };
+
+  get settlementRestricted() {
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+  }
+
+  get settleNowRestrictionMsg() {
+    if (!this.settlementRestricted) return;
+    const {
+      attempts_left,
+      settlable_amount,
+      max_amount_limit,
+      settlements_count_limit,
+    } = this.props.ondemand_restrictions.data;
+
+    if (!attempts_left && !settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else if (!attempts_left) {
+      return `You've already settled your maximum allowed limit of ${settlements_count_limit} times for the day.`;
+    } else if (!settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else return;
+  }
 
   componentWillReceiveProps(nextProps) {
     if (
@@ -119,7 +153,14 @@ export default class SettlementsListContainer extends ListContainer {
     this.popupIfSettle();
     this.props.fetchSettlementAmount();
     this.props.fetchHolidayList();
+    this.fetchRestrictionsIfAny();
   }
+
+  fetchRestrictionsIfAny = () => {
+    if (this.settlementRestricted) {
+      this.props.fetchOndemandRestrictions();
+    }
+  };
 
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
@@ -190,10 +231,16 @@ export default class SettlementsListContainer extends ListContainer {
 
   showOndemandSettlementForm = (e) => {
     trackOndemand.trackSettleNow('Settlements');
-    const balance = this.props.current_balance.data.balance;
-    this.props.openModal({
+    const { current_balance, ondemand_restrictions, openModal } = this.props;
+    const balance = current_balance.data.balance;
+    const settlableAmount =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.settlable_amount;
+    openModal({
       component: (
         <OndemandModal
+          settlableAmount={settlableAmount}
           currentBalance={balance}
           fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
           showOndemandSettlementForm={this.showOndemandSettlementForm}
@@ -219,7 +266,30 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, items, error, current_balance, user, mode } = this.props;
+    const {
+      loading,
+      items,
+      error,
+      current_balance,
+      user,
+      mode,
+      ondemand_restrictions,
+    } = this.props;
+
+    const attemptsLeft =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.attempts_left;
+    const isOndemandRestrictionsLoading =
+      this.settlementRestricted && ondemand_restrictions && ondemand_restrictions.loading;
+    const settlableAmount =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.settlable_amount;
+    const isSettleNowRestricted =
+      this.settlementRestricted &&
+      (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
+
     const { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
     let currentBalanceClassName = 'amount-current-balance';
@@ -281,6 +351,7 @@ export default class SettlementsListContainer extends ListContainer {
                   </div>
                 }
                 {this.props.user.isOndemandSettlementEnabled &&
+                  !this.settlementRestricted &&
                   this.props.user.isAllowedView('early_settlement') && (
                     <div class="box-left-pad10-inline">
                       <ScheduledBanner
@@ -372,13 +443,24 @@ export default class SettlementsListContainer extends ListContainer {
                     this.props.user.isAllowedView('early_settlement') && (
                       <div class="box-left-pad10-inline">
                         <Button.Primary
-                          class="settle-btn"
+                          class="settle-btn settle-now--list"
                           onClick={this.showOndemandSettlementForm}
-                          disabled={current_balance.loading || balance < 100}
+                          disabled={
+                            isSettleNowRestricted || current_balance.loading || balance < 100
+                          }
                         >
                           <i class="i i-early-settlement settle-now-early" />
                           Settle Now
                         </Button.Primary>
+                        {this.settleNowRestrictionMsg && (
+                          <Popover
+                            align="top"
+                            parentQuerySelector={`.settle-btn .settle-now--list`}
+                            theme="dark"
+                          >
+                            <PopoverBody>{this.settleNowRestrictionMsg}</PopoverBody>
+                          </Popover>
+                        )}
                       </div>
                     )}
                   <br />

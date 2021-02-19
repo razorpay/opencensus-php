@@ -5,8 +5,16 @@ import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
-const CurrentBalance = ({ balance, showOndemandSettlementForm, updatedAt, isBalanceLoading }) => {
+const CurrentBalance = ({
+  balance,
+  showOndemandSettlementForm,
+  updatedAt,
+  isBalanceLoading,
+  isSettleNowRestricted,
+  settleNowRestrictionMsg,
+}) => {
   const handleSettleNowClick = (e) => {
     trackIS.clickCTASettleNow();
     showOndemandSettlementForm(e);
@@ -28,14 +36,25 @@ const CurrentBalance = ({ balance, showOndemandSettlementForm, updatedAt, isBala
         <div className="current-balance--amount">
           {isBalanceLoading ? <PlaceholderLoader /> : <Amount value={balance} currency="INR" />}
         </div>
-        <Button.Primary
-          className="current-balance--settle-btn"
-          onClick={handleSettleNowClick}
-          disabled={isBalanceLoading || balance < 100}
-        >
-          <i className="i i-early-settlement settle-now-early" />
-          Settle Now
-        </Button.Primary>
+        <div>
+          <Button.Primary
+            className="current-balance--settle-btn settle-now"
+            onClick={handleSettleNowClick}
+            disabled={isSettleNowRestricted || isBalanceLoading || balance < 100}
+          >
+            <i className="i i-early-settlement settle-now-early" />
+            Settle Now
+          </Button.Primary>
+          {settleNowRestrictionMsg && (
+            <Popover
+              align="top"
+              parentQuerySelector={`.current-balance--settle-btn .settle-now`}
+              theme="dark"
+            >
+              <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+            </Popover>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -46,6 +65,7 @@ CurrentBalance.propTypes = {
   showOndemandSettlementForm: PropTypes.func,
   updatedAt: PropTypes.number,
   isBalanceLoading: PropTypes.bool,
+  isSettleNowRestricted: PropTypes.bool,
 };
 
 export default CurrentBalance;

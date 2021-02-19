@@ -163,7 +163,7 @@
     box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
     border-radius: 2px;
     background-color: #fff;
-
+    
     .schedule-desc-container {
       display: inline-block;
       width: 64%;
@@ -285,11 +285,25 @@
     }
   }
 
+  .overflow-box {
+    .InputGroup {
+      .input-tooltip {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+      }
+    }
+  }
+
+  .input-tooltip-custom:before, .input-tooltip-custom:after {
+    display: block;
+  }
+
   p {
     display: inline;
   }
 
-  .after-deduction {
+  .after-deduction, .limit-warning {
     font-size: 12px;
     padding-right: 4px;
   }
@@ -479,6 +493,10 @@
     margin: 8px 0px 16px;
     padding: 0px 8px;
     color: #f05050;
+
+    .limit-warning {
+      color: #7B8199;
+    }
   }
 
   .is-mature .is-invalid .Input-error, .is-mature.is-invalid .Input-error {

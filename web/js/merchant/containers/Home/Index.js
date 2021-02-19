@@ -14,6 +14,7 @@ import {
 import LocalStorageService from 'common/utils/localStorage';
 import { getCookie } from '../../../common/utils/cookies';
 import debounce from 'common/utils/debounce';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { activationDuration } from 'merchant/helpers/data';
@@ -22,6 +23,9 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
+import { fetchOndemandRestrictions } from 'merchant/reducers/home';
+import { fetchLateAuthConfig } from 'merchant/reducers/config';
+
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
@@ -31,7 +35,6 @@ import PANVerificationStatusModal from 'merchant/components/Home/PANVerification
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
 import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
-import { fetchLateAuthConfig } from 'merchant/reducers/config';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
@@ -87,6 +90,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
+      ondemand_restrictions: state.home.ondemand_restrictions,
       merchantBalanceConfigs: state.home.merchantBalanceConfigs,
       showInstantActivationSuccess: state.home.instantActivations.showInstantActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
@@ -110,6 +114,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchVirtualAccounts,
     fetchLateAuthConfig,
     fetchSupportDetail,
+    fetchOndemandRestrictions,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -267,6 +272,41 @@ export default class HomeContainer extends Component {
     this.onResize = debounce(this.onResize.bind(this), 500);
     this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(this);
     this.onHideDiwaliPromotion = this.onHideDiwaliPromotion.bind(this);
+    this.fetchRestrictionsIfAny = this.fetchRestrictionsIfAny.bind(this);
+  }
+
+  get settlementRestricted() {
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+  }
+
+  get settleNowRestrictionMsg() {
+    if (!this.settlementRestricted) return;
+    const {
+      attempts_left,
+      settlable_amount,
+      max_amount_limit,
+      settlements_count_limit,
+    } = this.props.ondemand_restrictions.data;
+
+    if (!attempts_left && !settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else if (!attempts_left) {
+      return `You've already settled your maximum allowed limit of ${settlements_count_limit} times for the day.`;
+    } else if (!settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else return;
+  }
+
+  fetchRestrictionsIfAny() {
+    if (this.settlementRestricted) {
+      this.props.fetchOndemandRestrictions();
+    }
   }
 
   onInstantActivationSuccess(url) {
@@ -516,6 +556,7 @@ export default class HomeContainer extends Component {
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
+    this.fetchRestrictionsIfAny();
     this.props.fetchBalanceConfig();
     this.props.fetchLateAuthConfig();
     this.setScrollAmountToStickHeader();
@@ -723,6 +764,7 @@ export default class HomeContainer extends Component {
       lateAuthConfig,
       support_detail,
       kycStatusActivationDuration,
+      ondemand_restrictions,
     } = this.props;
 
     const { activation_flow } = user;
@@ -750,6 +792,7 @@ export default class HomeContainer extends Component {
       onExtraContentMount,
       setScrollAmountToStickHeader,
       openSupportDetailModal,
+      settleNowRestrictionMsg,
     } = this;
 
     const roleToShowSupportDetailForm =
@@ -771,6 +814,8 @@ export default class HomeContainer extends Component {
     const commonProps = {
       mode,
       current_balance,
+      ondemand_restrictions: this.settlementRestricted && ondemand_restrictions,
+      settleNowRestrictionMsg,
       tabsMeta,
       isAdmin,
       analyticsFetch,

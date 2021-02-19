@@ -17,6 +17,10 @@ export default class ScheduledBanner extends Component {
     super(props);
   }
 
+  get settlementRestricted() {
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+  }
+
   openAutomatic = () => {
     this.props.openModal({
       component: (
@@ -52,7 +56,11 @@ export default class ScheduledBanner extends Component {
       <div>
         <i class="i i-early-settlement scheduled-enable" />
         Get your settlements on the same day, automatically.
-        <Button.Transparent className="enable-now-btn" onClick={this.openAutomatic}>
+        <Button.Transparent
+          className="enable-now-btn"
+          onClick={this.openAutomatic}
+          disabled={this.settlementRestricted}
+        >
           Enable Now
         </Button.Transparent>
       </div>

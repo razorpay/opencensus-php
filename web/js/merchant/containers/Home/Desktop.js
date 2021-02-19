@@ -114,12 +114,15 @@ class AnalyticsDesktop extends Component {
   };
 
   showOndemandSettlementForm() {
+    const { current_balance, ondemand_restrictions, openModal } = this.props;
     trackSettleNow();
-    const balance = this.props.current_balance.data.balance;
-    this.props.openModal({
+    const balance = current_balance.data.balance;
+    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    openModal({
       component: (
         <OndemandModal
           currentBalance={balance}
+          settlableAmount={settlableAmount}
           eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
           fromWhere="Home"
         />
@@ -255,6 +258,8 @@ class AnalyticsDesktop extends Component {
       isValueFilled,
       roleToShowSupportDetailForm,
       openSupportDetailModal,
+      ondemand_restrictions,
+      settleNowRestrictionMsg,
     } = this.props;
 
     const {
@@ -266,6 +271,12 @@ class AnalyticsDesktop extends Component {
 
     const nextSettlement = !settlement_amount.data.next_settlement_time;
     const { no_settlement } = settlement_amount.data;
+
+    const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
+    const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
+    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    const isSettleNowRestricted =
+      ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
 
     let balance = current_balance.data.balance;
     let negativeBalanceClassName = '';
@@ -556,13 +567,28 @@ class AnalyticsDesktop extends Component {
               <GroupItem>
                 {this.props.user.isOndemandSettlementEnabled &&
                 this.props.user.isAllowedView('early_settlement') ? (
-                  <Button.Primary
-                    class="settle-btn btn-outline"
-                    onClick={this.showOndemandSettlementForm}
-                    disabled={current_balance.loading || current_balance.data.balance < 100}
-                  >
-                    Settle Now
-                  </Button.Primary>
+                  <div>
+                    <Button.Primary
+                      class="settle-btn settle-now--desktop"
+                      onClick={this.showOndemandSettlementForm}
+                      disabled={
+                        isSettleNowRestricted ||
+                        current_balance.loading ||
+                        current_balance.data.balance < 100
+                      }
+                    >
+                      Settle Now
+                    </Button.Primary>
+                    {settleNowRestrictionMsg && (
+                      <Popover
+                        align="top"
+                        parentQuerySelector={`.settle-btn .settle-now--desktop`}
+                        theme="dark"
+                      >
+                        <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+                      </Popover>
+                    )}
+                  </div>
                 ) : (
                   <Link className="pull-right" to="/settlements">
                     <span className="text-no-wrap" onClick={trackSettlementsClick}>

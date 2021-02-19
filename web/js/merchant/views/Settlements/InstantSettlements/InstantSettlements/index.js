@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
+import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import { fetchHolidayList } from 'merchant/reducers/settlements/details';
 import { fetchInstantSettlements as fetchAll } from 'merchant/reducers/collection';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -23,6 +23,7 @@ import InstantSettlementListFilter from 'merchant/views/Settlements/InstantSettl
 import trackIS, {
   EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
 } from 'merchant/views/Settlements/InstantSettlements/ga';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -38,16 +39,53 @@ import trackIS, {
     ...ModalActions,
     fetchCurrentBalance,
     fetchHolidayList,
+    fetchOndemandRestrictions,
   },
 )
 class InstantSettlements extends ListContainer {
   state = {
     count: 25,
   };
+
+  get settlementRestricted() {
+    return this.props.user.isFeatureEnabled('es_on_demand_restricted');
+  }
+
+  get settleNowRestrictionMsg() {
+    if (!this.settlementRestricted) return;
+    const {
+      attempts_left,
+      settlable_amount,
+      max_amount_limit,
+      settlements_count_limit,
+    } = this.props.ondemand_restrictions.data;
+
+    if (!attempts_left && !settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else if (!attempts_left) {
+      return `You've already settled your maximum allowed limit of ${settlements_count_limit} times for the day.`;
+    } else if (!settlable_amount) {
+      return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
+        max_amount_limit,
+        true,
+      )} for the day.`;
+    } else return;
+  }
+
   componentDidMount() {
     this.props.fetchCurrentBalance();
     this.props.fetchHolidayList();
+    this.fetchRestrictionsIfAny();
   }
+
+  fetchRestrictionsIfAny = () => {
+    if (this.settlementRestricted) {
+      this.props.fetchOndemandRestrictions();
+    }
+  };
 
   onSearchAnalytics() {
     trackIS.clickCTAISSearch();
@@ -58,11 +96,17 @@ class InstantSettlements extends ListContainer {
   }
 
   showOndemandSettlementForm = (e) => {
-    const balance = this.props.current_balance.data.balance || 0;
-    this.props.openModal({
+    const { current_balance, ondemand_restrictions, openModal } = this.props;
+    const balance = current_balance.data.balance || 0;
+    const settlableAmount =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.settlable_amount;
+    openModal({
       component: (
         <OndemandModal
           currentBalance={balance}
+          settlableAmount={settlableAmount}
           fromWhere="Instant Settlements"
           showOndemandSettlementForm={this.showOndemandSettlementForm}
           eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
@@ -95,11 +139,26 @@ class InstantSettlements extends ListContainer {
       loading,
       items,
       error,
+      ondemand_restrictions,
       location: { search },
     } = this.props;
     const { count } = this.state;
     const balance = current_balance.data.balance || 0;
     const updatedAt = current_balance.data.updated_at;
+
+    const attemptsLeft =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.attempts_left;
+    const isOndemandRestrictionsLoading =
+      this.settlementRestricted && ondemand_restrictions && ondemand_restrictions.loading;
+    const settlableAmount =
+      this.settlementRestricted &&
+      ondemand_restrictions &&
+      ondemand_restrictions.data.settlable_amount;
+    const isSettleNowRestricted =
+      this.settlementRestricted &&
+      (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
 
     let renderSettlementView = (
       <EmptySettleNow showOndemandSettlementForm={this.showOndemandSettlementForm} />
@@ -146,6 +205,8 @@ class InstantSettlements extends ListContainer {
             updatedAt={updatedAt}
             balance={balance}
             isBalanceLoading={current_balance.loading}
+            isSettleNowRestricted={isSettleNowRestricted}
+            settleNowRestrictionMsg={this.settleNowRestrictionMsg}
           />
           <SettlementMessage
             user={user}
@@ -174,15 +235,17 @@ class InstantSettlements extends ListContainer {
                     View Settlement Cycle
                   </div>
                 }
-                {user.isOndemandSettlementEnabled && user.isAllowedView('early_settlement') && (
-                  <div className="box-left-pad10-inline">
-                    <ScheduledBanner
-                      openAutoModal={false}
-                      fromWhere="Instant Settlements"
-                      eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
-                    />
-                  </div>
-                )}
+                {user.isOndemandSettlementEnabled &&
+                  !this.settlementRestricted &&
+                  user.isAllowedView('early_settlement') && (
+                    <div className="box-left-pad10-inline">
+                      <ScheduledBanner
+                        openAutoModal={false}
+                        fromWhere="Instant Settlements"
+                        eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
+                      />
+                    </div>
+                  )}
               </div>
             </HeaderAction>
             {renderSettlementFilterView}

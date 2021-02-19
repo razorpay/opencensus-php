@@ -6,7 +6,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
 import { trackOndemand, EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from '../../ga';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
+import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
 import Alert from 'common/ui/Forms/Alert';
 import { AmountTooltip } from 'common/ui/Amount';
@@ -16,10 +16,13 @@ import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import LocalStorageService from 'common/utils/localStorage';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,
   fetchCurrentBalance,
+  fetchOndemandRestrictions,
 })
 export default class OndemandModal extends Component {
   constructor(props) {
@@ -28,7 +31,9 @@ export default class OndemandModal extends Component {
     this.state = {
       isSaving: false,
       isSaved: false,
-      amount: props.currentBalance ? parseInt(props.currentBalance / 100) : 0,
+      amount: props.currentBalance
+        ? parseInt(props.settlableAmount / 100) || parseInt(props.currentBalance / 100)
+        : 0,
       validAmount: true,
       closeClicked: false,
       errors: [],
@@ -43,6 +48,11 @@ export default class OndemandModal extends Component {
       instantFeePercent: 0,
       tax: 0,
       instantFee: 0,
+    };
+
+    this.inputTooltipRef = null;
+    this.setInputTooltipRef = (el) => {
+      this.inputTooltipRef = el;
     };
 
     this.updateFeeDebounced = debounce(this.updateFee, 300);
@@ -159,24 +169,19 @@ export default class OndemandModal extends Component {
           <div class="p-b-5">
             <p>Total Amount</p>
             <span class="float-right currency">
-              <Amount value={amount * 100} currency={'INR'} />
+              <Amount
+                value={amount * 100}
+                currency={'INR'}
+                parentQuerySelector=".onmdemand-modal"
+              />
             </span>
           </div>
           <div class="p-b-5">
             <p>Instant Fees ({instantFeePercent / 100}%) </p>
-            <i class="i i-help" />
-            <Popover align="right" theme="dark" parentQuerySelector=".onmdemand-modal">
-              <PopoverBody>
-                <div style={{ textAlign: 'left' }}>
-                  The maximum amount is calculated after the deduction of instant settlement fee and
-                  taxes.
-                </div>
-              </PopoverBody>
-            </Popover>
             <span class="float-right currency">
               {' '}
               <p>-</p>
-              <Amount value={instantFee} currency="INR" />
+              <Amount value={instantFee} currency="INR" parentQuerySelector=".onmdemand-modal" />
             </span>
           </div>
           <span>
@@ -184,14 +189,18 @@ export default class OndemandModal extends Component {
             <span class="float-right currency">
               {' '}
               <p>-</p>
-              <Amount value={tax} currency="INR" />
+              <Amount value={tax} currency="INR" parentQuerySelector=".onmdemand-modal" />
             </span>
           </span>
         </div>
         <div class={breakupShow ? 'dropdown-active' : 'dropdown-closed'}>
           <p class="amount-to-settle">Amount to be settled</p>
           <span class="float-right currency">
-            <Amount value={amount * 100 - instantFee - tax} currency={'INR'} />
+            <Amount
+              value={amount * 100 - instantFee - tax}
+              currency={'INR'}
+              parentQuerySelector=".onmdemand-modal"
+            />
           </span>
         </div>
       </div>
@@ -227,6 +236,7 @@ export default class OndemandModal extends Component {
             instantFee: response.data.items[0].amount,
           });
           this.props.fetchCurrentBalance();
+          this.props.fetchOndemandRestrictions();
         })
         .catch((response) => {
           this.setState({
@@ -244,11 +254,23 @@ export default class OndemandModal extends Component {
       eventLabel: `${this.props.fromWhere} | Settle Now`,
     });
     this.updateFee();
+    this.showInputTooltip();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.escFunction);
   }
+
+  showInputTooltip = () => {
+    if (!LocalStorageService.getItem('es-ondemand-input-tooltip')) {
+      this.inputTooltipRef.classList.add('input-tooltip-custom');
+      LocalStorageService.setItem('es-ondemand-input-tooltip', true);
+    }
+  };
+
+  hideInputTooltip = () => {
+    this.inputTooltipRef.classList.remove('input-tooltip-custom');
+  };
 
   escFunction = (event) => {
     if (event.keyCode === 27) {
@@ -289,6 +311,7 @@ export default class OndemandModal extends Component {
               instantFee: response.data.items[0].amount,
             });
             this.props.fetchCurrentBalance();
+            this.props.fetchOndemandRestrictions();
           })
           .catch((response) => {
             this.setState({
@@ -331,6 +354,7 @@ export default class OndemandModal extends Component {
           isSaved: true,
         });
         this.props.fetchCurrentBalance();
+        this.props.fetchOndemandRestrictions();
       })
       .catch((response) => {
         this.setState({
@@ -365,13 +389,37 @@ export default class OndemandModal extends Component {
           validAmount: false,
         });
       }
+      if (this.props.settlableAmount > 0 && val * 100 > this.props.settlableAmount) {
+        trackOndemand.trackAmounTooHigh(this.props.fromWhere);
+        this.setState({
+          errors: [
+            <>
+              <span>Max amount that can be settled is </span>
+              <Amount
+                parentQuerySelector=".onmdemand-modal"
+                value={this.props.settlableAmount}
+                currency="INR"
+              />
+              <span className="limit-warning">
+                We shall increase and remove the limit based on the usage.
+              </span>
+            </>,
+          ],
+          validAmount: false,
+        });
+        return true;
+      }
       if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
         this.setState({
           errors: [
             <>
               <span>Max amount that can be settled is </span>
-              <Amount value={this.props.currentBalance} currency="INR" />
+              <Amount
+                parentQuerySelector=".onmdemand-modal"
+                value={this.props.currentBalance}
+                currency="INR"
+              />
             </>,
           ],
           validAmount: false,
@@ -441,6 +489,7 @@ export default class OndemandModal extends Component {
 
   renderPreTransaction = () => {
     const { isLoadingBreakup, validAmount, errors, isSaving, amount, instantFee, tax } = this.state;
+    const { settlableAmount, currentBalance } = this.props;
     return (
       <div class="onmdemand-modal">
         <ModalHeader
@@ -462,7 +511,8 @@ export default class OndemandModal extends Component {
                 label="Amount to settle now"
                 required={false}
                 addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
-                autoFocus={true}
+                autoFocus={false}
+                onFocus={this.hideInputTooltip}
                 name="amount"
                 class="Input Input--Amount"
                 disabled={isSaving}
@@ -472,6 +522,18 @@ export default class OndemandModal extends Component {
                   this.handleChange(e);
                 }}
               />
+              <span
+                data-tooltip={`To help you get started, you can immediately settle up to ${getFormattedAmountNew(
+                  settlableAmount || currentBalance,
+                  true,
+                  'INR',
+                )}. Keep using Razorpay to increase and remove your limit`}
+                data-tooltip-position="top"
+                className="input-tooltip"
+                ref={this.setInputTooltipRef}
+              >
+                <i className="i i-info-outline" />
+              </span>
             </div>
             <div>
               {isLoadingBreakup && validAmount && <div class="loader" />}
@@ -515,14 +577,7 @@ export default class OndemandModal extends Component {
           <div class="overflow-box">
             {this.breakup()}
             <div class="help-block">
-              The settlement has been initiated and should be reflect on your bank account in some
-              time.
-              <i class="i i-info-circle" />
-              <Popover align="right" theme="dark" parentQuerySelector=".onmdemand-modal">
-                <PopoverBody>
-                  Working hours are 9am - 6pm everyday except on Bank Holidays
-                </PopoverBody>
-              </Popover>
+              The settlement has been initiated and should soon reflect in your bank account.
             </div>
             <Button.Primary class="close-btn" onClick={() => this.handleCloseModal('Close Button')}>
               Close

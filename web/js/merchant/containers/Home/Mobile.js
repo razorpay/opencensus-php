@@ -7,6 +7,7 @@ import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -43,12 +44,15 @@ class AnalyticsMobile extends Component {
   }
 
   showOndemandSettlementForm() {
+    const { current_balance, ondemand_restrictions, openModal } = this.props;
     trackSettleNow();
-    let balance = this.props.current_balance.data.balance;
-    this.props.openModal({
+    const balance = current_balance.data.balance;
+    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    openModal({
       component: (
         <OndemandModal
           currentBalance={balance}
+          settlableAmount={settlableAmount}
           eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
           fromWhere="Home"
         />
@@ -62,6 +66,7 @@ class AnalyticsMobile extends Component {
     const {
       config,
       current_balance,
+      ondemand_restrictions,
       onExtraContentMount,
       isAdmin,
       onFetchPayments,
@@ -90,11 +95,18 @@ class AnalyticsMobile extends Component {
       recentActivityTitle,
       trafficSectionTitle,
       windowWidth,
+      settleNowRestrictionMsg,
     } = this.props;
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
     const query = QueryString.parse(window.location.search);
+
+    const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
+    const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
+    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    const isSettleNowRestricted =
+      ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
 
     return (
       <div className="home-analytics-mobile">
@@ -139,13 +151,28 @@ class AnalyticsMobile extends Component {
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled &&
               this.props.user.isAllowedView('early_settlement') ? (
-                <Button.Secondary
-                  class="settle-btn"
-                  onClick={this.showOndemandSettlementForm}
-                  disabled={current_balance.loading || current_balance.data.balance < 100}
-                >
-                  Settle Now
-                </Button.Secondary>
+                <div>
+                  <Button.Secondary
+                    class="settle-btn settle-now--mobile"
+                    onClick={this.showOndemandSettlementForm}
+                    disabled={
+                      isSettleNowRestricted ||
+                      current_balance.loading ||
+                      current_balance.data.balance < 100
+                    }
+                  >
+                    Settle Now
+                  </Button.Secondary>
+                  {settleNowRestrictionMsg && (
+                    <Popover
+                      align="top"
+                      parentQuerySelector={`.settle-btn .settle-now--mobile`}
+                      theme="dark"
+                    >
+                      <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+                    </Popover>
+                  )}
+                </div>
               ) : (
                 <Link className="pull-right" to="/settlements">
                   <span className="text-no-wrap" onClick={trackSettlementsClick}>

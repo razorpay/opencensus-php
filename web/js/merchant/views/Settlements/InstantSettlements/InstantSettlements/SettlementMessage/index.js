@@ -13,8 +13,10 @@ const SettlementMessageContainer = ({ user, holidayList, openModal, balance }) =
   const upcomingBankHoliday = checkDateIsUpcomingBankHoliday(date, holidayList);
   const isBankingDay = !isWeekend && !upcomingBankHoliday;
 
+  const settlementRestricted = user.isFeatureEnabled('es_on_demand_restricted');
+
   function getPayoutMessageData() {
-    if (!user.isAutomaticSettlementEnabled) {
+    if (!user.isAutomaticSettlementEnabled && !settlementRestricted) {
       return messageFactory.getEnableScheduledSettlements();
     } else if (isBankingDay && balance < 100) {
       return messageFactory.getSettlementWillBeSkipped();

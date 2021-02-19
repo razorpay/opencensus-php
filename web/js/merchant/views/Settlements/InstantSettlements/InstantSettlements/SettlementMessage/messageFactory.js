@@ -39,13 +39,12 @@ const messageFactory = {
     heading: 'Get money settled on a bank holiday ',
     description: (
       <>
-        Today
-        {<Time value={moment(date, 'DD/MM/YYYY').unix()} format="MMMM Do" />}
-        is a bank holiday({description}). Get money settled to your bank account now with Ondemand
+        Today {<Time value={moment(date, 'DD/MM/YYYY').unix()} format="MMMM Do" />} is a bank
+        holiday({description}). Get money settled to your bank account now with Ondemand
         Settlements.
       </>
     ),
-    src: 'message-bubble',
+    image: 'calendar',
   }),
 };
 
