@@ -7,6 +7,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\Traits\NotesTrait;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Class Entity
  *
@@ -18,6 +20,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+    use SoftDeletes;
 
     protected $entity = 'stakeholder';
 
