@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
@@ -145,7 +144,7 @@ class NetbankingIdbiCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
     {
         $this->assertTrue(file_exists($refundFileData['url']));
 
-        $refundsFileContents = (new ExcelImport)->toArray($refundFileData['url'])[0];
+        $refundsFileContents = Excel::load($refundFileData['url'])->all()->toArray();
 
         $this->assertCount(2, $refundsFileContents);
 

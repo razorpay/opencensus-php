@@ -9,7 +9,6 @@ use Excel;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -123,7 +122,7 @@ class NbplusNetbankingIciciRefundFileTest extends NbPlusPaymentServiceNetbanking
 
             $this->assertNotEmpty($mail->attachments);
 
-            $sheet = (new ExcelImport)->toArray($mail->attachments[0]['file'])[0];
+            $sheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
 
             $this->assertCount(10, $sheet[0]);
             $this->assertEquals($sheet[0]['refund_amount'], 500);
@@ -213,7 +212,7 @@ class NbplusNetbankingIciciRefundFileTest extends NbPlusPaymentServiceNetbanking
 
                 $this->assertNotEmpty($mail->attachments);
 
-                $sheet = (new ExcelImport)->toArray($mail->attachments[0]['file'])[0];
+                $sheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
 
                 $this->assertCount(10, $sheet[0]);
                 $this->assertEquals($sheet[0]['refund_amount'], 500);

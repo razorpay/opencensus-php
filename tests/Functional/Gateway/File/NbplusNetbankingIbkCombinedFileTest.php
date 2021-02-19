@@ -11,7 +11,6 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingIbkCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
@@ -139,7 +138,7 @@ class NbplusNetbankingIbkCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
     protected function checkRefundsFile(array $refundFileData, $payment1, $payment2, $fullRefund, $partialRefund)
     {
-        $refundsFileContents = (new ExcelImport)->toArray($refundFileData['url'])[0];
+        $refundsFileContents = Excel::load($refundFileData['url'])->all()->toArray();
 
         $this->assertCount(2, $refundsFileContents);
 
@@ -166,7 +165,7 @@ class NbplusNetbankingIbkCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
     protected function checkClaimFile(array $claimData, $payment1, $payment2)
     {
-        $claimFileContents = (new ExcelImport)->toArray($claimData['url'])[0];
+        $claimFileContents = Excel::load($claimData['url'])->all()->toArray();
 
         $this->assertCount(1, $claimFileContents);
 

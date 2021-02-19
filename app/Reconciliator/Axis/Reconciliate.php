@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Axis;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate

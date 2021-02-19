@@ -8,9 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\PublicEntity;
-use RZP\Excel\Export as ExcelExport;
 use RZP\Reconciliator\RequestProcessor\Base;
-use RZP\Excel\ExportSheet as ExcelSheetExport;
 
 trait ReconTrait
 {
@@ -147,19 +145,24 @@ trait ReconTrait
 
     protected function getExcelString($name, $sheets)
     {
-        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
-            $sheetsInfo = [];
-            foreach ($sheets as $sheetName => $data)
+        $excel = Excel::create(
+            $name,
+            function ($excel) use ($sheets)
             {
-                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function ($sheet) use ($data)
+                        {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
             }
+        );
 
-            return $sheetsInfo;
-        });
-
-        $data = $excel->raw('Xlsx');
-
-        return $data;
+        return $excel->string('xlsx');
     }
 
     protected function createFile($content, string $type = FileStore\Type::MOCK_RECONCILIATION_FILE, string $store = FileStore\Store::S3)

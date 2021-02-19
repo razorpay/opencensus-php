@@ -15,8 +15,6 @@ use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payout\Entity;
-use RZP\Excel\PayoutExportSheet;
-use RZP\Excel\Export as ExcelExport;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Base
@@ -81,9 +79,10 @@ class Base
                 return [$name, $this->createTxtFile($fullName, $txt, $dir)];
 
             case FileStore\Format::XLSX:
-                $fileMetadata = $this->createExcelObject($entries, $dir, $name, $ext, []);
+                $fileMeta = $this->createExcelObject($entries, $name, [])
+                                 ->store($ext, $dir, true);
 
-                return [$name, $fileMetadata['full']];
+                return [$name, $fileMeta['full']];
 
             default:
                 throw new LogicException("Extension not handled: {$ext}");
@@ -122,7 +121,7 @@ class Base
         return [];
     }
 
-    public function createExcelObject($data, $dir, $name, $extension, $columnFormat = [], $sheetNames = ['Sheet 1'])
+    public function createExcelObject($data, $name, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
         // The extra space in the end is being added so that the number doesn't get converted to scientific notation
         foreach ($data as &$rows)
@@ -138,25 +137,126 @@ class Base
 
         $sheetNames = (is_array($sheetNames) === false) ? [$sheetNames] : $sheetNames;
 
-        // todo: Update custom export for this
-        $path = $dir . DIRECTORY_SEPARATOR . $name . '.' . $extension;
-
-        $excel = (new ExcelExport)->setSheets(function() use ($sheetNames, $data, $columnFormat) {
-            $sheetsInfo = [];
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetNames)
+        {
             foreach ($sheetNames as $sheetName)
             {
-                $sheetsInfo[$sheetName] = (new PayoutExportSheet(($data[$sheetName] ?? $data)))->setTitle($sheetName)->setColumnFormat($columnFormat);
+                $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat, $sheetName)
+                {
+                    $sheet->setFontSize(14);
+                    $sheet->setFontFamily('Ubuntu Mono');
+
+                    // If a columnFormat variable is specified.
+                    // Use it.
+                    if (empty($columnFormat) === false)
+                    {
+                        $sheet->setColumnFormat($columnFormat);
+                    }
+
+                    $sheet->fromArray(($data[$sheetName] ?? $data), null, 'A1', true, true);
+
+                    $sheet->prependRowExplicit(1, self::EXCEL_HEADERS_FOR_PAYOUT_FILE);
+
+                    // merge header cells
+                    $sheet->mergeCells('A1:E1');
+                    $sheet->mergeCells('F1:L1');
+                    $sheet->mergeCells('M1:T1');
+
+                    $sheet->getStyle('A1:E1')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_HAIR,
+                            ),
+                        ),
+                        'alignment' => array(
+                            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'D9EAD3')
+                        )
+                    ));
+
+                    $sheet->getStyle('A2:E2')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            ),
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'D9EAD3')
+                        )
+                    ));
+
+                    $sheet->getStyle('F1:L1')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            ),
+                        ),
+                        'alignment' => array(
+                            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FFF2CC')
+                        ),
+                        'font' => array(
+                            'color' => array('rgb' => '0000EE')
+                        ),
+                    ));
+
+                    $sheet->getStyle('F2:L2')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            ),
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FFF2CC')
+                        )
+                    ));
+
+                    $sheet->getStyle('M1:T1')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            ),
+                        ),
+                        'alignment' => array(
+                            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FCE5CD')
+                        )
+                    ));
+
+                    $sheet->getStyle('M2:T2')->applyFromArray(array(
+                        'borders' => array(
+                            'allborders' => array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            ),
+                        ),
+                        'fill' => array(
+                            'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FCE5CD')
+                        )
+                    ));
+
+                    $sheet->getCell('F1')->getHyperlink()->setUrl("https://razorpay.com/docs/razorpayx/bulk-payouts/");
+
+                    $sheet->getStyle('F1')->getFont()->setUnderline(PHPExcel_Style_Font::UNDERLINE_SINGLE);
+
+                    $sheet->freezePane('A3');
+                });
             }
+        });
 
-            return $sheetsInfo;
-        })->store($path, 'local_storage');
+        $this->excel = $excel;
 
-        return [
-            'full'  => $path,
-            'path'  => $dir,
-            'file'  => $name . '.' . $extension,
-            'title' => $name,
-            'ext'   => $extension
-        ];
+        return $excel;
     }
 }

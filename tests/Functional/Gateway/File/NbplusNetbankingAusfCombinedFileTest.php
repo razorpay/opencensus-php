@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
+use Excel;
 use Carbon\Carbon;
 
 use RZP\Constants\Entity;
@@ -10,7 +11,6 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
@@ -141,7 +141,7 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
     protected function checkRefundsFile($refundsFileLocation, $payment1, $payment2, $fullRefund, $partialRefund)
     {
-        $refundsFileContents = (new ExcelImport)->toArray($refundsFileLocation)[0];
+        $refundsFileContents = Excel::load($refundsFileLocation)->all()->toArray();
 
         $this->assertCount(2, $refundsFileContents);
 
@@ -166,7 +166,7 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
     protected function checkClaimFile(array $claimData, $payment1, $payment2)
     {
-        $claimFileContents = (new ExcelImport)->toArray($claimData['url'])[0];
+        $claimFileContents = Excel::load($claimData['url'])->all()->toArray();
 
         $this->assertCount(2, $claimFileContents);
 

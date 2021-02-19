@@ -18,15 +18,12 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Excel\Export as ExcelExport;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
-use RZP\Excel\ExportSheet as ExcelSheetExport;
-
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1389,17 +1386,22 @@ class EnachRblGatewayTest extends TestCase
 
     protected function getExcelString($name, $sheets)
     {
-        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
-            $sheetsInfo = [];
-            foreach ($sheets as $sheetName => $data)
-            {
-                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
+        $excel = Excel::create(
+            $name,
+            function($excel) use ($sheets) {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function($sheet) use ($data) {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
             }
+        );
 
-            return $sheetsInfo;
-        });
-
-        return $excel->raw('Xlsx');
+        return $excel->string('xlsx');
     }
 
     protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)

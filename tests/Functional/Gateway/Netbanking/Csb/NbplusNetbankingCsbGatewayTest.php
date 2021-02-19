@@ -4,9 +4,9 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Excel;
+
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Transaction\Statement\Entity;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
@@ -77,7 +77,7 @@ class NbplusNetbankingCsbGatewayTest extends NbPlusPaymentServiceNetbankingTest
 
         $this->assertTrue(file_exists($filePath));
 
-        $refundsFileContents = (new ExcelImport)->toArray($filePath)[0];
+        $refundsFileContents = Excel::load($filePath)->all()->toArray();
 
         $refundAmounts = [500, 5];
 

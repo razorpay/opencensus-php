@@ -49,10 +49,8 @@ class FileStoreTest extends TestCase
             'public_key'  => $publicKey,
         ];
 
-        $content = [['heading1'], ['test content']];
-
         $file = $this->creator->extension($extension)
-                     ->content($content)
+                     ->content($this->content)
                      ->name($this->fileName)
                      ->store($this->store)
                      ->type($this->type)
@@ -76,10 +74,8 @@ class FileStoreTest extends TestCase
 
         $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');
 
-        $content = [['heading1'], ['test content']];
-
         $file = $this->creator->extension($extension)
-                     ->content($content)
+                     ->content($this->content)
                      ->name($this->fileName)
                      ->store($this->store)
                      ->type($this->type)

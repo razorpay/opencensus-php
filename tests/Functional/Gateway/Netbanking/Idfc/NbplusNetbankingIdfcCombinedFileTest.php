@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Models\Transaction\Statement\Entity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
@@ -147,7 +146,7 @@ class NbplusNetbankingIdfcCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         $this->assertTrue(file_exists($filePath));
 
-        $refundsFileContents = (new ExcelImport)->toArray($filePath)[0];
+        $refundsFileContents = Excel::load($filePath)->all()->toArray();
 
         $refundAmounts = [500, 5];
 

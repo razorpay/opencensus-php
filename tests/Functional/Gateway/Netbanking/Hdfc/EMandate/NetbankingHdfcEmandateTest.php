@@ -5,8 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\Emandate;
 use Mail;
 use Excel;
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
-use RZP\Excel\ChunkImport;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
@@ -1109,13 +1109,11 @@ class NetbankingHdfcEmandateTest extends TestCase
     {
         $allSheetsContent = [];
 
-        (new ChunkImport())
-            ->setSheets(0)
-            ->setChunk(self::ROW_CHUNK_SIZE, function ($results) use (& $allSheetsContent)
+        Excel::filter('chunk')->selectSheetsByIndex(0)->load($filePath)->chunk(
+            self::ROW_CHUNK_SIZE,
+            function ($results) use (& $allSheetsContent)
             {
-                // We get a collection consisting of collections
-                // in results now, so using all() to get it's items.
-                foreach ($results->all() as $row)
+                foreach ($results as $row)
                 {
                     // Currently, since it returns an array of rows, there's no
                     // way to get the sheet names. And we cannot let it return
@@ -1123,8 +1121,9 @@ class NetbankingHdfcEmandateTest extends TestCase
                     // cell collection (rows) and not on a row collection (sheets)
                     $allSheetsContent[] = $row->all();
                 }
-           })
-           ->import($filePath);
+            },
+            false
+        );
 
         return $allSheetsContent;
     }

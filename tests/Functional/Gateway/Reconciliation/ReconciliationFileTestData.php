@@ -484,7 +484,7 @@ return [
             'fee_amount'            => 0.00,
             'credit_debit'          => 'C',
             'cardcountry'           => 'IN',
-            'arn'                   => '74110757361008597807228',
+            'arn'                   => 74110757361008597807228,
             'response_code'         => '00',
             'purchaseid'            => '0Abcdefghi111',
             'issettled'             => 'S',

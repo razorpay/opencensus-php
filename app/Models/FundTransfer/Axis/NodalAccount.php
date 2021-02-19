@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
+use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
 use RZP\Encryption\Type;
@@ -213,7 +214,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
-        $excelDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(strtotime($this->date));
+        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
 
         $transactionValues = [
             $mode,
