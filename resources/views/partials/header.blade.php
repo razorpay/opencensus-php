@@ -172,25 +172,28 @@
                     break;
                 }
                 case 'create_contact': {
-                    _hsq.push(['identify', {
-                        email: data.data.email,
-                        signup_start: true
-                    }]);
-
-                    _hsq.push(['trackEvent', {
-                        id: 'CREATING_CONTACT'
-                    }]);
-
-                    setTimeout(function() {
+                    if(data.data){
                         _hsq.push(['identify', {
                             email: data.data.email,
-                            signup_start: true
+                            signup_start: true,
+                            ...data.data
                         }]);
 
                         _hsq.push(['trackEvent', {
-                            id: 'SIGNUP_START'
+                            id: 'CREATING_CONTACT'
                         }]);
-                    }, 5000);
+
+                        setTimeout(function() {
+                            _hsq.push(['identify', {
+                                email: data.data.email,
+                                signup_start: true
+                            }]);
+
+                            _hsq.push(['trackEvent', {
+                                id: 'SIGNUP_START'
+                            }]);
+                        }, 5000);
+                    }
 
                     break;
                 }
