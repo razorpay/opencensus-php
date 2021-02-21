@@ -172,12 +172,13 @@ class Entity
     const APPLICATION_MERCHANT_TAG               = 'application_merchant_tag';
 
     //ondemand
-    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';
-    const SETTLEMENT_ONDEMAND               = 'settlement.ondemand';
-    const SETTLEMENT_ONDEMAND_PAYOUT        = 'settlement.ondemand_payout';
-    const SETTLEMENT_ONDEMAND_BULK          = 'settlement.ondemand.bulk';
-    const SETTLEMENT_ONDEMAND_TRANSFER      = 'settlement.ondemand.transfer';
-    const SETTLEMENT_ONDEMAND_ATTEMPT       = 'settlement.ondemand.attempt';
+    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT   = 'settlement.ondemand_fund_account';
+    const SETTLEMENT_ONDEMAND                = 'settlement.ondemand';
+    const SETTLEMENT_ONDEMAND_PAYOUT         = 'settlement.ondemand_payout';
+    const SETTLEMENT_ONDEMAND_BULK           = 'settlement.ondemand.bulk';
+    const SETTLEMENT_ONDEMAND_TRANSFER       = 'settlement.ondemand.transfer';
+    const SETTLEMENT_ONDEMAND_ATTEMPT        = 'settlement.ondemand.attempt';
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement.ondemand.feature_config';
 
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';
     const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
@@ -653,12 +654,13 @@ class Entity
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 
         //ondemand
-        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
-        self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
-        self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
-        self::SETTLEMENT_ONDEMAND_BULK          => \RZP\Models\Settlement\Ondemand\Bulk::class,
-        self::SETTLEMENT_ONDEMAND_TRANSFER      => \RZP\Models\Settlement\Ondemand\Transfer::class,
-        self::SETTLEMENT_ONDEMAND_ATTEMPT       => \RZP\Models\Settlement\Ondemand\Attempt::class,
+        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT   => \RZP\Models\Settlement\OndemandFundAccount::class,
+        self::SETTLEMENT_ONDEMAND                => \RZP\Models\Settlement\Ondemand::class,
+        self::SETTLEMENT_ONDEMAND_PAYOUT         => \RZP\Models\Settlement\OndemandPayout::class,
+        self::SETTLEMENT_ONDEMAND_BULK           => \RZP\Models\Settlement\Ondemand\Bulk::class,
+        self::SETTLEMENT_ONDEMAND_TRANSFER       => \RZP\Models\Settlement\Ondemand\Transfer::class,
+        self::SETTLEMENT_ONDEMAND_ATTEMPT        => \RZP\Models\Settlement\Ondemand\Attempt::class,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => \RZP\Models\Settlement\Ondemand\FeatureConfig::class,
 
         self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
 
@@ -912,12 +914,14 @@ class Entity
         self::BANKING_ACCOUNT_STATE  => \RZP\Models\BankingAccount\State::class,
         self::PROMOTION_EVENT        => \RZP\Models\Promotion\Event::class,
 
-        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
-        self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
-        self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
-        self::SETTLEMENT_ONDEMAND_BULK          => \RZP\Models\Settlement\Ondemand\Bulk::class,
-        self::SETTLEMENT_ONDEMAND_TRANSFER      => \RZP\Models\Settlement\Ondemand\Transfer::class,
-        self::SETTLEMENT_ONDEMAND_ATTEMPT       => \RZP\Models\Settlement\Ondemand\Attempt::class,
+
+        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT   => \RZP\Models\Settlement\OndemandFundAccount::class,
+        self::SETTLEMENT_ONDEMAND                => \RZP\Models\Settlement\Ondemand::class,
+        self::SETTLEMENT_ONDEMAND_PAYOUT         => \RZP\Models\Settlement\OndemandPayout::class,
+        self::SETTLEMENT_ONDEMAND_BULK           => \RZP\Models\Settlement\Ondemand\Bulk::class,
+        self::SETTLEMENT_ONDEMAND_TRANSFER       => \RZP\Models\Settlement\Ondemand\Transfer::class,
+        self::SETTLEMENT_ONDEMAND_ATTEMPT        => \RZP\Models\Settlement\Ondemand\Attempt::class,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => \RZP\Models\Settlement\Ondemand\FeatureConfig::class,
 
         self::MERCHANT_E_INVOICE                => \RZP\Models\Merchant\Invoice\EInvoice::class,
     ];

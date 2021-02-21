@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -25,5 +26,31 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $settlementOndemandId)
                     ->merchantId($merchantId)
                     ->first();
+    }
+
+    public function findSettlementsCountTodayByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::CREATED_AT,'>=', Carbon::today()->getTimeStamp())
+                    ->where(function ($query) {
+                       $query->where(Entity::STATUS, '=', Status::INITIATED)
+                             ->orWhere(Entity::STATUS, '=', Status::PARTIALLY_PROCESSED)
+                             ->orWhere(Entity::STATUS, '=', Status::PROCESSED);
+                    })
+                     ->count();
+    }
+
+    public function findAmountSettledTodayByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::CREATED_AT,'>=', Carbon::today()->getTimeStamp())
+                    ->where(function ($query) {
+                        $query->where(Entity::STATUS, '=', Status::INITIATED)
+                              ->orWhere(Entity::STATUS, '=', Status::PARTIALLY_PROCESSED)
+                              ->orWhere(Entity::STATUS, '=', Status::PROCESSED);
+                    })
+                    ->sum(Entity::AMOUNT);
     }
 }

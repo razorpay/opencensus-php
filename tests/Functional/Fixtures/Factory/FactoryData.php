@@ -1581,6 +1581,29 @@ final class FactoryData
             'settlement_ondemand_transfer_id' => $faker->uniqueid,
         ]);
 
+        $factory(\RZP\Models\Settlement\Ondemand\FeatureConfig\Entity::class,[
+            'id'                              => $faker->uniqueid,
+        ]);
+
+        $factory(\RZP\Models\Settlement\Ondemand\Entity::class,[
+            'id'                              => $faker->uniqueid,
+            'merchant_id'                     => '10000000000000',
+            'amount'                          => 250,
+            'total_amount_settled'            => 250,
+            'total_fees'                      => 1,
+            'total_tax'                       => 0,
+            'total_amount_reversed'           => 0,
+            'total_amount_pending'            => 0,
+            'max_balance'                     => 0,
+            'currency'                        => 'INR',
+            'status'                          => 'processed',
+            'transaction_id'                  => $faker->uniqueid,
+            'transaction_type'                => 'transaction',
+            'created_at'                      => $faker->timestamp,
+            'updated_at'                      => $faker->timestamp,
+            'deleted_at'                      => null,
+        ]);
+
         $factory(\RZP\Models\Reward\Entity::class, [
             'id'             => $faker->uniqueid,
             'advertiser_id'  => '100000Razorpay',

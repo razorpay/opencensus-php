@@ -30,27 +30,16 @@ class Core extends Base\Core
 {
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null)
     {
-        if (isset($input['settle_full_balance']) === true && boolval($input['settle_full_balance']) === true)
+
+        if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
         {
-            $amount = $merchant->primaryBalance->getBalance();
-
-            $input[Entity::AMOUNT] = $amount;
-
-        }
-        else
-        {
-            $amount = $input[Entity::AMOUNT];
-
-            if ($amount > $merchant->primaryBalance->getBalance())
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
-                    null,
-                    [
-                        'amount'  => $amount,
-                        'balance' => $merchant->primaryBalance->getBalance(),
-                    ]);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
+                null,
+                [
+                    'amount'  => $input[Entity::AMOUNT],
+                    'balance' => $merchant->primaryBalance->getBalance(),
+                ]);
         }
 
         $this->checkMerchantFundsOnHold();
@@ -131,11 +120,11 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function getFeesSplit($input, $merchant , $user)
+    public function getFeesSplit($input, $merchant, $user)
     {
-        return $this->repo->beginTransactionAndRollback(function () use ($input, $merchant , $user)
+        return $this->repo->beginTransactionAndRollback(function () use ($input, $merchant, $user)
         {
-            [$settlementOndemand, $settlementOndemandPayouts] = $this->createSettlementOndemand($input, $merchant , $user);
+            [$settlementOndemand, $settlementOndemandPayouts] = $this->createSettlementOndemand($input, $merchant, $user);
 
             [$fees, $tax, $feesSplit] = (new Pricing\Fee)->calculateMerchantFees($settlementOndemandPayouts[0]);
 
@@ -256,7 +245,50 @@ class Core extends Base\Core
         }
     }
 
-    public function addDefaultOndemandPricingIfNotPresent($merchantId)
+    public function getOndemandPricingByFeature($merchant, $pricingFeature)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        return $this->repo->pricing
+                          ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                                                                               Product::PRIMARY,
+                                                                               $pricingFeature,
+                                                                               Payout\Method::FUND_TRANSFER);
+    }
+
+    public function updateOndemandPricingPercent($merchant, $percentRate)
+    {
+        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant,
+                                                           PricingFeature::SETTLEMENT_ONDEMAND);
+        if(empty($settlementOndemandPricing) === false)
+        {
+            $pricingArray = $settlementOndemandPricing->get()->toArray();
+
+            $pricingArray[0][Pricing\Entity::PERCENT_RATE] = $percentRate;
+
+            $pricingArray[0]['idempotency_key'] ='random';
+
+            $pricingArray[0][Pricing\Entity::MERCHANT_ID] = $merchant->getId();
+
+            $pricingArray[0]['update'] = true;
+
+            (new Pricing\Service)->postAddBulkPricingRules($pricingArray);
+        }
+    }
+
+    public function getSettlementAmount($input, $merchant)
+    {
+        if (isset($input['settle_full_balance']) === true && boolval($input['settle_full_balance']) === true)
+        {
+            return $merchant->primaryBalance->getBalance();
+        }
+        else
+        {
+            return $input[Entity::AMOUNT];
+        }
+    }
+
+    public function addDefaultOndemandPricingIfNotPresent($merchantId, $percentRate = 25)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
@@ -264,24 +296,15 @@ class Core extends Base\Core
         {
             $pricingPlanId = $merchant->getPricingPlanId();
 
-            $settlementOndemandPricing = $this->repo->pricing
-                                        ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
-                                                                                            Product::PRIMARY,
-                                                                                            PricingFeature::SETTLEMENT_ONDEMAND,
-                                                                                            Payout\Method::FUND_TRANSFER);
+            $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant,
+                                                               PricingFeature::SETTLEMENT_ONDEMAND);
 
-            $onDemandPayoutPricing = $this->repo->pricing
-                                        ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
-                                                                                            Product::PRIMARY,
-                                                                                            PricingFeature::PAYOUT,
-                                                                                            Payout\Method::FUND_TRANSFER);
-
-            if($settlementOndemandPricing->count() < 1 or $onDemandPayoutPricing->count() < 1)
+            if($settlementOndemandPricing->count() < 1)
             {
                 $this->repo->transactionOnLiveAndTest(function () use($merchant,
                                                                       $pricingPlanId,
                                                                       $settlementOndemandPricing,
-                                                                      $onDemandPayoutPricing)
+                                                                      $percentRate)
                 {
                     // Replicates plan for this merchant if it was shared
                     if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
@@ -294,48 +317,25 @@ class Core extends Base\Core
                         $pricingPlanId = $newPlan->getId();
                     }
 
-                    if($settlementOndemandPricing->count() < 1)
-                    {
-                        $settlementOndemandPricingRule = [
-                            Pricing\Entity::PRODUCT             => Product::PRIMARY,
-                            Pricing\Entity::FEATURE             => PricingFeature::SETTLEMENT_ONDEMAND,
-                            Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
-                            Pricing\Entity::PERCENT_RATE        => 25,
-                            Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
-                            Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
-                            Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
-                            Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
+
+                    $settlementOndemandPricingRule = [
+                        Pricing\Entity::PRODUCT             => Product::PRIMARY,
+                        Pricing\Entity::FEATURE             => PricingFeature::SETTLEMENT_ONDEMAND,
+                        Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
+                        Pricing\Entity::PERCENT_RATE        => $percentRate,
+                        Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
+                        Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
+                        Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
+                        Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
                         ];
 
-                        $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule);
+                    $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule);
 
-                        $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
-                            'merchant_id'   => $merchant->getId(),
-                            'pricing_type'  => 'settlement_ondemand',
-                        ]);
+                    $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
+                        'merchant_id'   => $merchant->getId(),
+                        'pricing_type'  => 'settlement_ondemand',
+                    ]);
 
-                    }
-
-                    if($onDemandPayoutPricing->count() < 1)
-                    {
-                        $onDemandPayoutPricingRule = [
-                            Pricing\Entity::PRODUCT             => Product::PRIMARY,
-                            Pricing\Entity::FEATURE             => PricingFeature::PAYOUT,
-                            Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
-                            Pricing\Entity::PERCENT_RATE        => 25,
-                            Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
-                            Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
-                            Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
-                            Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
-                        ];
-
-                        $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $onDemandPayoutPricingRule);
-
-                        $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
-                            'merchant_id'   => $merchant->getId(),
-                            'pricing_type'  => 'payout_fund_transfer',
-                        ]);
-                    }
                 });
             }
         }

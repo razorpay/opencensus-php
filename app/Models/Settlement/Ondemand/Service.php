@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
@@ -38,6 +39,10 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEES_INPUT, $input);
 
+        $amount = $this->core()->getSettlementAmount($input, $this->merchant);
+
+        $input[Entity::AMOUNT] = $amount;
+
         $finalFeesSplit= $this->core()->getFeesSplit($input, $this->merchant, $this->user);
 
         return $finalFeesSplit;
@@ -52,99 +57,117 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
-            'merchant_id'   => $this->merchant->getId(),
-            'user_id'       => isset($this->user) ? ($this->user->getId()) : null,
-            'input'         => $input,
-        ]);
-
-        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
-
-        $this->validateIfOndemandMerchant();
-
-        [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->repo->transaction(function() use ($input)
+        return $this->app['api.mutex']->acquireAndRelease(
+        'settlement_ondemand'.$this->merchant->getId(),
+        function() use ($input)
         {
-            return $this->core()->createSettlementOndemand($input, $this->merchant , $this->user);
-        });
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
+                'merchant_id'   => $this->merchant->getId(),
+                'user_id'       => isset($this->user) ? ($this->user->getId()) : null,
+                'input'         => $input,
+            ]);
 
-        if($this->mode === 'live')
-        {
-            $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+            (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
 
-            $adjInput = [
-                Adjustment\Entity::MERCHANT_ID  => $ondemandXMerchantId,
-                Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
-                Adjustment\Entity::DESCRIPTION  => 'adding funds to Ondemand-X merchant for OndemandID - ' .
-                                                    $settlementOndemand->getId(),
-                Adjustment\Entity::CURRENCY     => 'INR',
-                Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-            ];
+            $this->validateIfOndemandMerchant();
 
-            (new Adjustment\Service)->addAdjustment($adjInput);
-        }
+            $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
-        if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
-        {
-            $merchantAdjInput = [
-                Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
-                Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
-                Adjustment\Entity::DESCRIPTION  => 'ondemand settlement for OndemandID - ' .
-                                                    $settlementOndemand->getId(),
-                Adjustment\Entity::CURRENCY     => 'INR',
-                Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-            ];
+            $input[Entity::AMOUNT] = $amount;
 
-            $settlementOndemand->setStatus(Status::INITIATED);
-
-            $this->repo->transaction(function () use ($merchantAdjInput, $settlementOndemandPayouts, $settlementOndemand)
+            //If es_on_demand_restricted feature is enabled for the merchant
+            //additional checks will be done based on config values
+            if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
             {
-                $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
+                $this->configCheck($amount);
+            }
 
-                (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
-
-                foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
-                {
-                    $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
-                }
+            [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->repo->transaction(function() use ($input, $amount)
+            {
+                return $this->core()->createSettlementOndemand($input, $this->merchant, $this->user);
             });
 
-            if((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
+            if($this->mode === 'live')
             {
-                (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+                $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+
+                $adjInput = [
+                    Adjustment\Entity::MERCHANT_ID  => $ondemandXMerchantId,
+                    Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                    Adjustment\Entity::DESCRIPTION  => 'adding funds to Ondemand-X merchant for OndemandID - ' .
+                        $settlementOndemand->getId(),
+                    Adjustment\Entity::CURRENCY     => 'INR',
+                    Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+                ];
+
+                (new Adjustment\Service)->addAdjustment($adjInput);
+            }
+
+            if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
+            {
+                $merchantAdjInput = [
+                    Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
+                    Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                    Adjustment\Entity::DESCRIPTION  => 'ondemand settlement for OndemandID - ' .
+                        $settlementOndemand->getId(),
+                    Adjustment\Entity::CURRENCY     => 'INR',
+                    Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+                ];
+
+                $settlementOndemand->setStatus(Status::INITIATED);
+
+                $this->repo->transaction(function () use ($merchantAdjInput, $settlementOndemandPayouts, $settlementOndemand)
+                {
+                    $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
+
+                    (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
+
+                    foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+                    {
+                        $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
+                    }
+                });
+
+                if((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
+                {
+                    (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+                }
+                else
+                {
+                    (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
+                }
             }
             else
             {
-                (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
-            }
-        }
-        else
-        {
-            CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
-                $settlementOndemand->getMerchantId());
+                CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
+                    $settlementOndemand->getMerchantId());
 
-            $settlementOndemand->setStatus(Status::INITIATED);
+                $settlementOndemand->setStatus(Status::INITIATED);
 
-            $this->repo->saveOrFail($settlementOndemand);
+                $this->repo->saveOrFail($settlementOndemand);
 
-            $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
+                $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
 
-            if ($mockRazorpayX === true)
-            {
-                foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+                if ($mockRazorpayX === true)
                 {
-                    MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                    foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+                    {
+                        MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                    }
                 }
             }
-        }
 
-        if (isset($input['expand']) === true && boolval($input['expand']) === true)
-        {
-            return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
-        }
-        else
-        {
-            return $this->getResponse($settlementOndemand);
-        }
+            if (isset($input['expand']) === true && boolval($input['expand']) === true)
+            {
+                return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
+            }
+            else
+            {
+                return $this->getResponse($settlementOndemand);
+            }
+
+        });
+
     }
 
     public function createSettlementOndemandReversal($settlementOndemandId, $merchantId, $reversalReason)
@@ -275,5 +298,42 @@ class Service extends Base\Service
     public function addDefaultOndemandPricingIfNotPresent($merchantId)
     {
         $this->core()->addDefaultOndemandPricingIfNotPresent($merchantId);
+    }
+
+    public function configCheck($amount)
+    {
+        $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
+
+        $attemptsLeftToday = (new FeatureConfig\Service)->getAttemptsLeft($featureConfig);
+
+        if($attemptsLeftToday === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXCEEDED ,
+                null,
+                [
+                    'merchantId'                         => $this->merchant->getId(),
+                    'settlement_ondemand_feature_config' => $featureConfig,
+                    'attempts_left_today'                => $attemptsLeftToday
+                ],
+                'No more attempts left for today');
+        }
+
+        [$settlableAmount, $amountLeftForToday] = (new FeatureConfig\Service)->getAllowedSettlementAmount($featureConfig);
+
+        //Checks if the requested amount is greater than the maximum allowed amount that can be settled
+        if($amount > $settlableAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+                null,
+                [
+                    'merchantId'                         => $this->merchant->getId(),
+                    'settlement_ondemand_feature_config' => $featureConfig,
+                    'settlable_amount'                   => $settlableAmount,
+
+                ],
+            'Maximum amount that can be settled(in paisa) is '.$settlableAmount);
+        }
     }
 }

@@ -103,4 +103,25 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    //enables 'es_on_demand' feature in bulk if feature not present for merchants
+    //adds ondemand pricing rule if not present, else updates it
+    //creates entry in settlement_ondemand_feature_configs if not present, else updates it
+    public function enableFeature()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG)->enableFeature($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function validateWithFeatureConfig()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG)->validateWithFeatureConfig();
+
+        return ApiResponse::json($data);
+    }
 }

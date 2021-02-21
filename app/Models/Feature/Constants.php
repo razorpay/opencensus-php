@@ -101,6 +101,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_ON_DEMAND_X_SETTLEMENT       = 'es_on_demand_x_settlement';
+    const ES_ON_DEMAND_RESTRICTED         = 'es_on_demand_restricted';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
@@ -693,6 +694,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_ON_DEMAND_X_SETTLEMENT       => true,
+        self::ES_ON_DEMAND_RESTRICTED         => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
@@ -934,6 +936,11 @@ class Constants
         self::ES_ON_DEMAND_X_SETTLEMENT => [
             'feature'       => self::ES_ON_DEMAND_X_SETTLEMENT,
             'display_name'  => 'Es Ondemand X Settlement',
+            'documentation' => '',
+        ],
+        self::ES_ON_DEMAND_RESTRICTED => [
+            'feature'       => self::ES_ON_DEMAND_RESTRICTED,
+            'display_name'  => 'Es Ondemand Restricted',
             'documentation' => '',
         ],
         self::ES_AUTOMATIC              => [

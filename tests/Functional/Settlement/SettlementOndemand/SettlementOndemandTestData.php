@@ -603,7 +603,7 @@ return [
                 'settle_full_balance'   => false,
                 'currency'              => 'INR',
                 'status'                => 'initiated',
-                'description'             => 'Demo Narration - optional',
+                'description'           => 'Demo Narration - optional',
 //                'created_at'            => 1582036200,
             ]
         ]
@@ -822,4 +822,316 @@ return [
             ]
         ]
     ],
+
+    'testOndemandFeatureValidationSuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature/validate',
+            'method'  => 'get',
+            'content' => [
+                ],
+            ],
+        'response' => [
+            'content' => [
+                'settlable_amount'        => 5000,
+                'attempts_left'           => 2,
+                'settlements_count_limit' => 2,
+                'max_amount_limit'        => 7500
+            ]
+        ]
+    ],
+
+    'testOndemandFeatureValidationNoAttemptLeftFailure' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature/validate',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'settlable_amount'        => 5000,
+                'attempts_left'           => 0,
+                'settlements_count_limit' => 2,
+                'max_amount_limit'        => 7500
+            ]
+        ]
+    ],
+
+    'testOndemandFeatureValidationDailyAmountExceededFailure' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature/validate',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'settlable_amount'         => 0,
+                'attempts_left'            => 0,
+                'settlements_count_limit'  => 3,
+                'max_amount_limit'         => 7500
+            ]
+        ]
+    ],
+
+    'testEnableEsOnDemandFullAccessFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+               [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+               ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testEnableEsOnDemandRestrictedAccessFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testUpdateFeatureConfigFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '100DemoAccount',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_100DemoAccount'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100DemoAccount'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testEnableEsOnDemandRestrictedAccessFromBatchRouteFailure' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => false,
+                        'idempotency_key'   => 'batch_10000000000001',
+                        'error'             => [
+                            'description' => 'Failed to create pricing rule',
+                            'code'        => 'SERVER_ERROR_PRICING_RULE_CREATION_FAILURE'
+                        ]
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testOndemandCreationWithLimitExceededError' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 6000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No more attempts left for today',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOndemandCreationWithAmountExceededError' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 10000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Maximum amount that can be settled(in paisa) is 200',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOndemandCreationWithNoError' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 4000,
+                'description' => 'Demo Narration - optional',
+                'notes'     => [
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'settlement.ondemand',
+                'amount_requested'      => 4000,
+                'fees'                  => 94,
+                'tax'                   => 14,
+                'amount_pending'        => 3906,
+                'amount_settled'        => 0,
+                'amount_reversed'       => 0,
+                'currency'              => 'INR',
+                'status'                => 'initiated',
+            ]
+        ]
+    ]
+
 ];

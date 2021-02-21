@@ -284,10 +284,11 @@ class Table
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'bank_accounts';
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
 
-    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT = 'settlement_ondemand_fund_accounts';
-    const SETTLEMENT_ONDEMAND_TRANSFER     = 'settlement_ondemand_transfer';
-    const SETTLEMENT_ONDEMAND_BULK         = 'settlement_ondemand_bulk';
-    const SETTLEMENT_ONDEMAND_ATTEMPT      = 'settlement_ondemand_attempts';
+    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT   = 'settlement_ondemand_fund_accounts';
+    const SETTLEMENT_ONDEMAND_TRANSFER       = 'settlement_ondemand_transfer';
+    const SETTLEMENT_ONDEMAND_BULK           = 'settlement_ondemand_bulk';
+    const SETTLEMENT_ONDEMAND_ATTEMPT        = 'settlement_ondemand_attempts';
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_configs';
 
     const CREDITNOTE           = 'creditnote';
 
@@ -343,22 +344,23 @@ class Table
     const SURVEY_TRACKER    = 'survey_tracker';
 
     protected static $entityToTableMap = [
-        Entity::AXIS_MIGS                        => self::MIGS,
-        Entity::AXIS_GENIUS                      => self::MIGS,
-        Entity::AMEX                             => self::MIGS,
-        Entity::WALLET_FREECHARGE                => self::WALLET,
-        Entity::WALLET_OLAMONEY                  => self::WALLET,
-        Entity::WALLET_AIRTELMONEY               => self::WALLET,
-        Entity::WALLET_PAYUMONEY                 => self::WALLET,
-        Entity::MPI_BLADE                        => self::BLADE,
-        Entity::MPI_ENSTAGE                      => self::BLADE,
-        Entity::PAYMENT_DOWNTIME                 => self::PAYMENT_DOWNTIME,
-        Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT,
-        Entity::SETTLEMENT_ONDEMAND              => self::SETTLEMENT_ONDEMAND,
-        Entity::SETTLEMENT_ONDEMAND_PAYOUT       => self::SETTLEMENT_ONDEMAND_PAYOUT,
-        Entity::SETTLEMENT_ONDEMAND_BULK         => self::SETTLEMENT_ONDEMAND_BULK,
-        Entity::SETTLEMENT_ONDEMAND_TRANSFER     => self::SETTLEMENT_ONDEMAND_TRANSFER,
-        Entity::SETTLEMENT_ONDEMAND_ATTEMPT      => self::SETTLEMENT_ONDEMAND_ATTEMPT,
+        Entity::AXIS_MIGS                          => self::MIGS,
+        Entity::AXIS_GENIUS                        => self::MIGS,
+        Entity::AMEX                               => self::MIGS,
+        Entity::WALLET_FREECHARGE                  => self::WALLET,
+        Entity::WALLET_OLAMONEY                    => self::WALLET,
+        Entity::WALLET_AIRTELMONEY                 => self::WALLET,
+        Entity::WALLET_PAYUMONEY                   => self::WALLET,
+        Entity::MPI_BLADE                          => self::BLADE,
+        Entity::MPI_ENSTAGE                        => self::BLADE,
+        Entity::PAYMENT_DOWNTIME                   => self::PAYMENT_DOWNTIME,
+        Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT   => self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT,
+        Entity::SETTLEMENT_ONDEMAND                => self::SETTLEMENT_ONDEMAND,
+        Entity::SETTLEMENT_ONDEMAND_PAYOUT         => self::SETTLEMENT_ONDEMAND_PAYOUT,
+        Entity::SETTLEMENT_ONDEMAND_BULK           => self::SETTLEMENT_ONDEMAND_BULK,
+        Entity::SETTLEMENT_ONDEMAND_TRANSFER       => self::SETTLEMENT_ONDEMAND_TRANSFER,
+        Entity::SETTLEMENT_ONDEMAND_ATTEMPT        => self::SETTLEMENT_ONDEMAND_ATTEMPT,
+        Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
     ];
 
     public static function getTableNameForEntity(string $entity)

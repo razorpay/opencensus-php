@@ -655,6 +655,11 @@ return [
                         'display_name' => 'Es Ondemand X Settlement'
                     ],
                     [
+                        'feature'       => 'es_on_demand_restricted',
+                        'value'         => false,
+                        'display_name'  => 'Es Ondemand Restricted'
+                    ],
+                    [
                         'feature'      => 'es_automatic',
                         'value'        => true,
                         'display_name' => 'Es Automatic'
@@ -747,6 +752,11 @@ return [
                         'feature'      => 'es_on_demand_x_settlement',
                         'value'        => false,
                         'display_name' => 'Es Ondemand X Settlement'
+                    ],
+                    [
+                        'feature'       => 'es_on_demand_restricted',
+                        'value'         => false,
+                        'display_name'  => 'Es Ondemand Restricted'
                     ],
                     [
                         'feature'      => 'es_automatic',
@@ -1025,6 +1035,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_on_demand_x_settlement',
+                    'es_on_demand_restricted',
                     'es_automatic',
                     'headless_disable',
                     'first_data_s2s_flow',
