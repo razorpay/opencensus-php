@@ -90,12 +90,23 @@ class UpiSbi extends Base
 
             $referenceNo = $row['gateway']['gateway_data']['addInfo2'] ?? '';
 
+            $paymentId = $row['payment']['id'];
+
+            // if it is an unexpected payment, map the merchant_reference to the paymentid.
+            // This the paymentid generated at the banks end and will be used for refunding.
+
+            if ((isset($row['gateway']['merchant_reference']) === true) and
+                (empty($row['gateway']['merchant_reference']) === false ))
+            {
+                $paymentId = $row['gateway']['merchant_reference'];
+            }
+
             $formattedData[] = [
                 $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
                 $txnRefNo      => trim($referenceNo, '"'),
                 $custRefNo     => trim($row['gateway']['npci_reference_id'], '"'),
-                $orderNo       => trim($row['payment']['id'], '"'),
+                $orderNo       => trim($paymentId, '"'),
                 $refAmt        => trim($row['refund']['amount'] / 100, '"'),
                 $refRemark     => trim('Refund for ' . $row['payment']['id'], '"'),
             ];

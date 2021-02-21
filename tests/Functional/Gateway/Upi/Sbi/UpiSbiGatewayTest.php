@@ -705,8 +705,20 @@ class UpiSbiGatewayTest extends TestCase
 
         // Create 3 payments
         $payments[] = $this->createCapturedPayment();
+
+        $upiEntityOld = $this->getDbLastEntity('upi');
+
         $payments[] = $this->createCapturedPayment();
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], [Upi::MERCHANT_REFERENCE => '']);
+
         $payments[] = $this->createCapturedPayment();
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], [Upi::MERCHANT_REFERENCE => 'HDFc9935b57bb584fa493a265fb8723fdbb']);
 
         // Refund 2 fully and the other one partially
         $refundAmount = [50000, 50000, 10000];
@@ -761,6 +773,54 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('file_store', $file['entity']);
         $this->assertEquals('SBI0000000000232_' . $time .'.csv', $file['location']);
         $this->assertEquals('SBI0000000000232_' . $time, $file['name']);
+
+        $refundFileRows = Excel::load('storage/files/filestore/'.$file['location'])->all()->toArray();
+
+        $paymentId = str_replace('pay_', '',$payments[0][Payment\Entity::ID]);
+
+        $paymentId1 = str_replace('pay_', '',$payments[1][Payment\Entity::ID]);
+
+        $refundId = str_replace('rfnd_', "",$refunds[0]['id']);
+
+        $refundId1 = str_replace('rfnd_', "",$refunds[1]['id']);
+
+        $refundId2 = str_replace('rfnd_', "",$refunds[2]['id']);
+
+        $expectedRefundFileForNullMR = [
+            'pg_merchant_id' => "SBI0000000000119",
+            'refund_req_no' => $refundId,
+            'trans_ref_no' => 7971807546.0,
+            'customer_ref_no' => 123456789012.0,
+            'order_no' => $paymentId,
+            'refund_req_amt' => 500.0,
+            'refund_remark' =>  "Refund for ".$paymentId
+        ];
+
+        $this->assertNull($upiEntityOld[Upi::MERCHANT_REFERENCE]);
+
+        $expectedRefundFileForEmptyMR = [
+            'pg_merchant_id' => "SBI0000000000119",
+            'refund_req_no' => $refundId1,
+            'trans_ref_no' => 7971807546.0,
+            'customer_ref_no' => 123456789012.0,
+            'order_no' => $paymentId1,
+            'refund_req_amt' => 500.0,
+            'refund_remark' =>  "Refund for ".$paymentId1
+        ];
+
+        $expectedRefundFileContentForMR = [
+            'pg_merchant_id' => "SBI0000000000119",
+            'refund_req_no' => $refundId2,
+            'trans_ref_no' => 7971807546.0,
+            'customer_ref_no' => 123456789012.0,
+            'order_no' => 'HDFc9935b57bb584fa493a265fb8723fdbb',
+            'refund_req_amt' => 100.0,
+            'refund_remark' =>  "Refund for ".$upiEntity->getPaymentId()
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRefundFileForNullMR, $refundFileRows[0]);
+        $this->assertArraySelectiveEquals($expectedRefundFileForEmptyMR, $refundFileRows[1]);
+        $this->assertArraySelectiveEquals($expectedRefundFileContentForMR, $refundFileRows[2]);
 
         Mail::assertQueued(RefundFileMail::class);
     }
