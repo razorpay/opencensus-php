@@ -387,6 +387,67 @@ return [
         ],
     ],
 
+    'testCreateCapitalBalanceTransactionNegativeAmountWithNegativeBalance' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => -250000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+                'type'          => 'repayment_breakup',
+                'balance_id'    => '',
+            ],
+            'url'    => '/capital_balances/transaction',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                // 'id'            => 'txn_G1T4sGEJmwIj4w',
+                'entity'        => 'transaction',
+                'entity_id'     => 'G1SRTbSC6fQOHo',
+                'type'          => 'repayment_breakup',
+                'debit'         => 250000,
+                'credit'        => 0,
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'fee'           => 0,
+                'tax'           => 0,
+                'settled'       => false,
+                // 'created_at'    => 1605448528,
+                // 'settled_at'    => 1605448528,
+                // 'posted_at'     => 1605448528,
+            ],
+        ],
+    ],
+
+    'testCreateCapitalBalanceTransactionNegativeAmountWithNegativeBalanceOnInterest' => [
+        'request' => [
+            'content' => [
+                'id'            => 'G1SRTbSC6fQOHo',
+                'amount'        => -250000,
+                'currency'      => 'INR',
+                'merchant_id'   => '10000000000000',
+                'type'          => 'repayment_breakup',
+                'balance_id'    => '',
+            ],
+            'url'    => '/capital_balances/transaction',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE,
+        ],
+    ],
+
     'testCreateCapitalBalanceTransactionPositiveAmount' => [
         'request' => [
             'content' => [

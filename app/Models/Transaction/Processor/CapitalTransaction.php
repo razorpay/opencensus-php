@@ -3,9 +3,10 @@
 namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
-use RZP\Models\Currency;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance\Type;
+use RZP\Exception\BadRequestException;
 
 class CapitalTransaction extends Base
 {
@@ -46,10 +47,42 @@ class CapitalTransaction extends Base
     {
     }
 
+    public function updateBalances(int $negativeLimit = 0)
+    {
+        $this->validateMerchantBalance();
+
+        // if the balance update has already been validated,
+        // then for whatever case the balance is going to be negative,
+        // there is no limit to that. hence PHP_INT_MIN
+        parent::updateBalances(PHP_INT_MIN);
+    }
+
     public function setMerchantBalanceLockForUpdate()
     {
         $this->merchantBalance = $this->txn->source->balance;
 
         $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
+    }
+
+    private function validateMerchantBalance()
+    {
+        if ($this->merchantBalance->getType() === Type::PRINCIPAL)
+        {
+            // principal balance can go negative.
+            return ;
+        }
+
+        // for interest & charge, balance can never go negative.
+        if ($this->merchantBalance->getBalance() < $this->debit)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE,
+                null,
+                [
+                    'debit_amount'  => $this->debit,
+                    'balance_amount'=> $this->merchantBalance->getBalance(),
+                    'balance_type'  => $this->merchantBalance->getType(),
+                ]);
+        }
     }
 }

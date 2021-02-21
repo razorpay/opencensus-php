@@ -851,6 +851,78 @@ class TransactionTest extends TestCase
         ], $txn);
     }
 
+    public function testCreateCapitalBalanceTransactionNegativeAmountWithNegativeBalance()
+    {
+        $balance = $this->fixtures->create('balance', [
+            Entity::MERCHANT_ID => '10000000000000',
+            Entity::TYPE        => Type::PRINCIPAL,
+            Entity::BALANCE     => 100000,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance['id'];
+
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $response = $this->startTest();
+
+        // make 2nd request with same input.
+        $response2 = $this->startTest();
+
+        // response of previous api request & 2nd should match. (id, created_at etc)
+        $this->assertArraySelectiveEquals($response, $response2);
+
+        $this->assertNotNull($response['id']);
+        $this->assertNotNull($response['created_at']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertArraySelectiveEquals([
+            'entity_id'         => 'G1SRTbSC6fQOHo',
+            'type'              => 'repayment_breakup',
+            'merchant_id'       => '10000000000000',
+            'amount'            => 250000,
+            'fee'               => 0,
+            'mdr'               => 0,
+            'tax'               => 0,
+            'debit'             => 250000,
+            'credit'            => 0,
+            'currency'          => 'INR',
+            'balance'           => -150000,
+            'channel'           => 'axis',
+            'fee_bearer'        => 'na',
+            'fee_model'         => 'na',
+            'credit_type'       => 'default',
+            'on_hold'           => false,
+            'settled'           => false,
+            'settlement_id'     => null,
+            'reconciled_type'   => 'na',
+            'balance_id'        => $balance['id'],
+            'balance_updated'   => null,
+            'entity'            => 'transaction',
+        ], $txn);
+    }
+
+    public function testCreateCapitalBalanceTransactionNegativeAmountWithNegativeBalanceOnInterest()
+    {
+        $balance = $this->fixtures->create('balance', [
+            Entity::MERCHANT_ID => '10000000000000',
+            Entity::TYPE        => Type::INTEREST,
+            Entity::BALANCE     => 100000,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance['id'];
+
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->startTest();
+    }
+
     public function testCreateCapitalBalanceTransactionPositiveAmount()
     {
         $balance = $this->fixtures->create('balance', [
