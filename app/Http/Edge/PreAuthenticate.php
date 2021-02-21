@@ -5,6 +5,7 @@ namespace RZP\Http\Edge;
 use Throwable;
 use Razorpay\Trace\Logger;
 use Illuminate\Http\Request;
+use Razorpay\Edge\Passport\Kid;
 use Razorpay\Edge\Passport\Passport;
 
 use RZP\Trace\TraceCode;
@@ -68,7 +69,8 @@ final class PreAuthenticate
 
             try
             {
-                $this->reqCtx->passport = Passport::fromToken($jwt, $this->passportCfg['public_key']);
+                Passport::init(new Kid('edgev1', $this->passportCfg['public_key']));
+                $this->reqCtx->passport = Passport::fromToken($jwt);
             }
             catch (Throwable $e)
             {
