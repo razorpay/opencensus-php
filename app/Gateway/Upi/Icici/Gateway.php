@@ -1633,15 +1633,15 @@ class Gateway extends Base\Gateway
             'access_code' => $accessCode,
         ];
 
-        // If the access code is set to v2
-        if ($accessCode === self::GATEWAY_API_VERSION_2)
-        {
-            return self::GATEWAY_API_VERSION_2;
-        }
-        // Else if the access code if empty
-        else if(empty($accessCode) === true)
+        // If the access code is set to v1
+        if ($accessCode === self::GATEWAY_API_VERSION_1)
         {
             return self::GATEWAY_API_VERSION_1;
+        }
+        // Else if the access code if empty or v2
+        else if((empty($accessCode) === true) or ($accessCode === self::GATEWAY_API_VERSION_2))
+        {
+            return self::GATEWAY_API_VERSION_2;
         }
 
         // Else go to razorx variant
