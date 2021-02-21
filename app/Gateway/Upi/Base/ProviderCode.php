@@ -35,6 +35,7 @@ class ProviderCode
     const AXISBANK           = 'axisbank';
     const AXISGO             = 'axisgo';
     const AXISB              = 'axisb';
+    CONST AXL                = 'axl';
     const BANDHAN            = 'bandhan';
     const BARODAMPAY         = 'barodampay';
     const BARODAPAY          = 'barodapay';
@@ -69,6 +70,7 @@ class ProviderCode
     const HDFCBANK           = 'hdfcbank';
     const HDFCBANKJD         = 'hdfcbankjd';
     const HSBC               = 'hsbc';
+    const IBL                = 'ibl';
     const ICICI              = 'icici';
     const ICICIPAY           = 'icicipay';
     const ICICIBANK          = 'icicibank';
@@ -179,6 +181,7 @@ class ProviderCode
         self::AXISBANK           => IFSC::UTIB,
         self::AXISGO             => IFSC::UTIB,
         self::AXISB              => IFSC::UTIB,
+        self::AXL                => IFSC::UTIB,
         self::BANDHAN            => IFSC::BDBL,
         self::BARODAMPAY         => IFSC::BARB,
         self::BARODAPAY          => IFSC::BARB,
@@ -213,6 +216,7 @@ class ProviderCode
         self::HDFCBANK           => IFSC::HDFC,
         self::HDFCBANKJD         => IFSC::HDFC,
         self::HSBC               => IFSC::HSBC,
+        self::IBL                => IFSC::ICIC,
         self::ICICI              => IFSC::ICIC,
         self::ICICIBANK          => IFSC::ICIC,
         self::ICICIPAY           => IFSC::ICIC,
