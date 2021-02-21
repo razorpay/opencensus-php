@@ -67,9 +67,9 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        // (new PreAuthenticate)->handle($request);
-
         $startAt = millitime();
+
+        (new PreAuthenticate)->handle($request);
 
         $route = $this->router->currentRouteName();
 
@@ -99,7 +99,7 @@ class Authenticate
         // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
         // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
         $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false));
-        // (new PostAuthenticate)->handle($authenticated, $request);
+        (new PostAuthenticate)->handle($authenticated, $request);
 
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);

@@ -55,6 +55,8 @@ final class PreAuthenticate
      */
     public function handle(Request $request)
     {
+        $funcStartedAt = millitime();
+
         //
         // If jwt exists resolves passport and puts in request.ctx.v2.
         // In case of any parsing failures context will not have passport set
@@ -78,5 +80,7 @@ final class PreAuthenticate
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::PASSPORT_JWT_PARSE_FAILED, compact('jwt'));
             }
         }
+
+        $this->trace->histogram(Metric::MIDDLEWARE_PREAUTH_DURATION_MS, millitime() - $funcStartedAt);
     }
 }

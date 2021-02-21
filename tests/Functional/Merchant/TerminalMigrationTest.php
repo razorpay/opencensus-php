@@ -205,7 +205,7 @@ class TerminalMigrationTest extends TestCase
 
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
@@ -262,7 +262,7 @@ class TerminalMigrationTest extends TestCase
 
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
@@ -1731,7 +1731,7 @@ class TerminalMigrationTest extends TestCase
 
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
@@ -1786,7 +1786,7 @@ class TerminalMigrationTest extends TestCase
 
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
@@ -1883,7 +1883,7 @@ class TerminalMigrationTest extends TestCase
         ];
 
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
@@ -1956,11 +1956,11 @@ class TerminalMigrationTest extends TestCase
             'terminal_id' => $terminal['id'],
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
 
-        $mock->expects($this->at(2))
+        $mock->expects($this->at(4))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
 
@@ -2026,11 +2026,11 @@ class TerminalMigrationTest extends TestCase
             'terminal_id' => 'term_'.$terminal['id'],
         ];
 
-        $mock->expects($this->at(1))
+        $mock->expects($this->at(3))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
 
-        $mock->expects($this->at(2))
+        $mock->expects($this->at(4))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
 
