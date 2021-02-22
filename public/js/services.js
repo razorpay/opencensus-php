@@ -1149,11 +1149,11 @@ angular
       var utm = null;
       var gclid = null;
       var browser_details = {};
-      if (typeof window.razorpayAnalytics !== 'undefined') {
-        utm = razorpayAnalytics.utils.getLandingParams();
-        gclid = razorpayAnalytics.utils.getCookie('gclid');
-        if (typeof razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
-          browser_details = razorpayAnalytics.utils.getBrowserDetails();
+      if (typeof window.analytics !== 'undefined') {
+        utm = analytics.utils.getLandingParams();
+        gclid = analytics.utils.getCookie('gclid');
+        if (typeof analytics.utils.getBrowserDetails !== 'undefined') {
+          browser_details = analytics.utils.getBrowserDetails();
         }
       }
       var commonProperties = {

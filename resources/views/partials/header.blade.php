@@ -45,7 +45,7 @@
         }
 
         function emptyRzpAQ_fbq () {
-            if (typeof razorpayAnalytics === 'undefined' || !_rzpAQ_fbq.length) return;
+            if (typeof analytics === 'undefined' || !_rzpAQ_fbq.length) return;
 
             var q = [].concat(_rzpAQ_fbq);
             _rzpAQ_fbq = [];
@@ -67,7 +67,7 @@
 
         function checkAnalytics(data) {
            // If analytics is undefined, push to _rzpAQ_fbq
-            if (typeof razorpayAnalytics === 'undefined') {
+            if (typeof analytics === 'undefined') {
                 _rzpAQ_fbq.push(data);
                 return false;
             }
@@ -101,41 +101,41 @@
                 }
                 case 'facebook': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('fb', data.event, data.value);
+                    analytics.track('fb', data.event, data.value);
 
                     break;
                 }
                 case 'bing': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('bing', data.event);
+                    analytics.track('bing', data.event);
 
                     break;
                 }
                 case 'twitter': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('twitter', '', data.value);
+                    analytics.track('twitter', '', data.value);
 
                     break;
                 }
                 case eventTypes.twitterAgency : {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track(eventTypes.twitterAgency, '', data.value);
+                    analytics.track(eventTypes.twitterAgency, '', data.value);
 
                     break;
                 }
                 case 'quora': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('quora', data.event, data.value);
+                    analytics.track('quora', data.event, data.value);
                     break;
                 }
                 case 'reddit': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('reddit', data.event);
+                    analytics.track('reddit', data.event);
                     break;
                 }
                 case 'linkedIn': {
                     if (!checkAnalytics(data)) return;
-                    razorpayAnalytics.track('linkedin', '', data.value);
+                    analytics.track('linkedin', '', data.value);
 
                     break;
                 }
