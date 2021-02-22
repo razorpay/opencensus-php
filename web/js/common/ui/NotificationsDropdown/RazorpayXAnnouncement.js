@@ -11,6 +11,8 @@ import InputField from 'common/ui/Forms/InputField';
 import RTracking from 'react-tracking';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCookie } from '../../utils/cookies';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { updateUser } from 'merchant_common/reducers/user';
 
 const NAME = 'full_name';
 const PHONE = 'phone';
@@ -98,23 +100,22 @@ class DetailView extends React.Component {
 }
 
 @connect(
-  (state) => {
-    return {
-      ...fields.reduce(
-        (acc, element) => ({
-          ...acc,
-          [element]: selector(state, element),
-        }),
-        {},
-      ),
-      initialValues: {
-        [VENDORS]: '',
-        [NAME]: (state.session.user.user || {}).name,
-        [EMAIL]: (state.session.user.user || {}).email,
-        [PHONE]: (state.session.user.user || {}).contact_mobile,
-      },
-    };
-  },
+  (state) => ({
+    user: state.session.user,
+    ...fields.reduce(
+      (acc, element) => ({
+        ...acc,
+        [element]: selector(state, element),
+      }),
+      {},
+    ),
+    initialValues: {
+      [VENDORS]: '',
+      [NAME]: (state.session.user.user || {}).name,
+      [EMAIL]: (state.session.user.user || {}).email,
+      [PHONE]: (state.session.user.user || {}).contact_mobile,
+    },
+  }),
   {
     showNotification,
   },
@@ -132,6 +133,19 @@ class InfoForm extends React.Component {
         status,
       }),
     );
+  };
+
+  saveSubmissionSuccessInUser = () => {
+    const _settings = this.props.user.user.settings;
+    _settings['clicked_ca_apply_request_done'] = '1';
+    merchantFetch({
+      url: 'users',
+      mode: 'live',
+      method: 'patch',
+      data: { settings: _settings },
+    }).then(() => {
+      updateUser({ settings: _settings });
+    });
   };
 
   save = (formData) => {
@@ -163,6 +177,7 @@ class InfoForm extends React.Component {
           hidePrevious: true,
         });
         onSubmissionSuccess();
+        this.saveSubmissionSuccessInUser();
         this.trackCTAClick('success');
       })
       .catch((err) => {
