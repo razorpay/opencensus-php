@@ -641,12 +641,15 @@ class Processor extends VirtualAccount\Processor
             $merchantId = $this->virtualAccount->getMerchantId();
 
             // This provides a granular or global support to disable fund loading for merchants.
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::DISABLE_TPV_FLOW_FOR_BANKING_ACCOUNT_FUND_LOADING,
-                $this->mode,
-                self::RAZORX_RETRY_COUNT
-            );
+            //$variant = $this->app->razorx->getTreatment(
+            //    $merchantId,
+            //    Merchant\RazorxTreatment::DISABLE_TPV_FLOW_FOR_BANKING_ACCOUNT_FUND_LOADING,
+            //    $this->mode,
+            //    self::RAZORX_RETRY_COUNT
+            //);
+
+            // This is a hotfix, will be modified properly.
+            $variant = 'on';
 
             // This provides a granular approach to disable tpv for some specific merchants.
             $disableTpvFeature = $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
