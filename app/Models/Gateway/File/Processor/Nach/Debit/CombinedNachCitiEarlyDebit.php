@@ -20,7 +20,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
     const FILE_NAME         = 'citi/nach/ACH-DR-CITI-CITI999999-{$date}-MUT00010{$serial}-INP';
 
     protected $userName    = 'CTRAZORMFS';
-    protected $productType = 'MUT';
+    protected $productType = '10 ';
 
     public function __construct()
     {

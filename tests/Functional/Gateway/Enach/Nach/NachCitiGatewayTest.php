@@ -263,7 +263,7 @@ class NachCitiGatewayTest extends NachGatewayTest
             'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
             'User Number' => 'NACH00000000013149',
             'Transaction Reference' => 'TESTMERCHA' . $response['razorpay_payment_id'],
-            'Product Type' => 'MUT',
+            'Product Type' => '10',
             'UMRN' => 'UTIB6000000005844847'
         ];
 
