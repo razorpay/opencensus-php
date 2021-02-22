@@ -1452,7 +1452,48 @@ class MerchantTest extends TestCase
 
         $merchant = (new Merchant\Repository)->findOrFail($content['id']);
 
-        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner()->getEmail());
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner('primary')->getEmail());
+
+        $this->assertNull($merchant->primaryOwner('banking'));
+    }
+
+    public function testEditMerchantEmailWhenOwnerExistsOnBothPgAndX()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $content = $this->createMerchant();
+
+        $user = $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => $content['id'],
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner('primary')->getEmail());
+
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner('banking')->getEmail());
     }
 
     public function testEditMerchantEmailUserExists()
@@ -1485,6 +1526,61 @@ class MerchantTest extends TestCase
         $merchant = (new Merchant\Repository)->findOrFail($content['id']);
 
         $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner()->getEmail());
+
+        $this->assertNull($merchant->primaryOwner('banking'));
+    }
+
+    public function testEditMerchantEmailUserExistsAndOwnerExistsOnBothPgAndX()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $content = $this->createMerchant();
+
+        $user = $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => $content['id'],
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ]);
+
+        $existingUser = $this->fixtures->user->create(['email' => 'newemail@razorpay.com']);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner()->getEmail());
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner('banking')->getEmail());
+
+        $merchantUsers = DB::connection('test')->table('merchant_users')
+                                               ->where('merchant_id', $content['id'])
+                                               ->where('user_id', $user['id'])
+                                               ->pluck('role', 'product')
+                                               ->toArray();
+
+        $this->assertEquals(2, count($merchantUsers));
+
+        $this->assertEquals('manager', $merchantUsers['primary']);
+
+        $this->assertEquals('finance_l1', $merchantUsers['banking']);
     }
 
     public function testEditMerchantWhitelistedIpsLive()

@@ -42,6 +42,7 @@ use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
@@ -1493,20 +1494,23 @@ class Core extends Base\Core
      */
     public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail, string $product)
     {
-        $merchantUsersCount = $merchant->users()->count();
+        $merchantUsersCount = $merchant->users()->where(Entity::PRODUCT, $product)->count();
 
         if ($merchantUsersCount === 0)
         {
             return false;
         }
 
-        $teamUser = $merchant->users()->where('email', $newEmail)->first();
+        $teamUser = $merchant->users()
+                             ->where(Entity::EMAIL, $newEmail)
+                             ->where(Entity::PRODUCT, $product)
+                             ->first();
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);
 
         $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
 
-        $oldOwner = $merchant->primaryOwner();
+        $oldOwner = $merchant->primaryOwner($product);
 
         $traceData = [
             'team_user' => empty($teamUser) ? null : $teamUser->getEmail(),
@@ -1519,21 +1523,24 @@ class Core extends Base\Core
 
         if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
         {
-            // Assign Manager role to the old owner.
-            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager', $product);
+            // Assign Manager role to the old owner on PG.
+            // Assign Finance L1 role to the old owner on X.
+            $oldOwnerNewRole = $product === Product::PRIMARY ? Role::MANAGER : BankingRole::FINANCE_L1;
+
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), $oldOwnerNewRole, $product);
         }
 
         if (empty($teamUser) === false)
         {
             // Assign Owner role to the team user.
-            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner', $product);
+            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), ROLE::OWNER, $product);
         }
         elseif (empty($existingUser) === false)
         {
             // Assign owner to existing user.
             $userMerchantMappingInputData = [
                 'action'      => 'attach',
-                'role'        => 'owner',
+                'role'        => ROLE::OWNER,
                 'merchant_id' => $merchant->getId(),
                 'product'     => $product,
             ];

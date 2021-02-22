@@ -579,9 +579,11 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $product = $this->auth->getRequestOriginProduct();
+        // handle user management on PG
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::PRIMARY);
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
+        // handle user management on X
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::BANKING);
 
         return $merchant->toArrayPublic();
     }
