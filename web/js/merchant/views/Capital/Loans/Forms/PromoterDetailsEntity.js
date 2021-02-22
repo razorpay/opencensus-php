@@ -11,7 +11,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Datetime from 'react-datetime';
 import { states } from 'merchant/helpers/data';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { isPreceedingState } from '../../utils';
+import { isPreceedingState, validateMobileNumber } from '../../utils';
 import { APPLICATION_STATES, GENDER_MAP } from '../constants';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { Modal, ModalMask } from '../../../../../common/new-ui/Modal';
@@ -114,10 +114,8 @@ class PromoterDetailsEntity extends Component {
 
   isValidForm = () => {
     const mandatoryFields = [
-      'date_of_birth',
       'first_name',
       'second_name',
-      'contact_number',
       'contact_email',
       'applicantPan',
       'gender',
@@ -129,9 +127,13 @@ class PromoterDetailsEntity extends Component {
       ...formData,
       applicantPan,
     };
-    return (
-      mandatoryFields.every((field) => !!data[field]) && this.isValidDate(data['date_of_birth'])
+
+    const isDateValid = data['date_of_birth'] && this.isValidDate(data['date_of_birth']);
+    const isPhoneValid = !!(
+      data['contact_number'] && validateMobileNumber(data['contact_number']) === ''
     );
+
+    return mandatoryFields.every((field) => !!data[field]) && isDateValid && isPhoneValid;
   };
 
   isPANLinkedWithPG = () => this.props.session.user.promoter_pan === this.state.applicantPan;
@@ -504,6 +506,7 @@ class PromoterDetailsEntity extends Component {
                 name="contact_number"
                 disabled={!canModify}
                 defaultValue={initialValues['contact_number']}
+                validator={validateMobileNumber}
                 required
               />
               <Input

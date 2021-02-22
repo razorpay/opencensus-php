@@ -1,3 +1,4 @@
+import { isMobile } from 'common/utils/validators';
 import {
   APPLICATION_STATE_SEQUENCE,
   CAPITAL_PRODUCT_CODES,
@@ -87,4 +88,17 @@ export const loadCheckoutScript = () => {
     script.onerror = reject;
     document.head.appendChild(script);
   });
+};
+
+export const validateMobileNumber = (input) => {
+  const isValidMobile = isMobile(input);
+  const isLengthValid = input.length === 10;
+  const isFirstCharValid = Number(input.charAt(0)) >= 6;
+  const isValid = !!(isValidMobile && isLengthValid && isFirstCharValid);
+
+  if (isValid) {
+    return '';
+  }
+
+  return 'Please enter valid mobile number';
 };

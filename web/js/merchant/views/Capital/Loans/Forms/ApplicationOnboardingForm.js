@@ -4,7 +4,7 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { connect } from 'react-redux';
-import { isMobile, isValidPinCode, pinCode } from 'common/utils/validators';
+import { isValidPinCode, pinCode } from 'common/utils/validators';
 import { AsyncBtn } from 'common/new-ui/Button';
 import {
   saveApplicantDetails,
@@ -13,6 +13,7 @@ import {
   getBusinessByMerchantId,
   fetchApplicantDetails,
 } from 'merchant/reducers/capital';
+import { validateMobileNumber } from '../../utils/index';
 import { BUSINESS_TYPES, GENDER_OPTIONS } from '../constants';
 
 const personalInfoSelector = (user) => ({
@@ -26,14 +27,6 @@ const personalInfoSelector = (user) => ({
   state: user.business_registered_state,
   gender: GENDER_OPTIONS[0].name,
 });
-
-const validateMobileNumber = (input) => {
-  if (!isMobile(input)) {
-    return 'Please enter valid mobile number';
-  } else {
-    return '';
-  }
-};
 
 const validatePinCode = (input) => {
   if (!isValidPinCode(input)) {
@@ -145,7 +138,7 @@ class ApplicationOnboardingForm extends Component {
       mandatoryFields.every((field) => !!formData[field]) &&
       this.isValidDate(formData['date_of_birth']) &&
       isValidPinCode(formData.pincode) &&
-      isMobile(formData.contact_number)
+      !validateMobileNumber(formData.contact_number)
     );
   };
 
