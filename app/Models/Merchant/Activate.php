@@ -348,6 +348,10 @@ class Activate extends Base\Core
         $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
 
         (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
+
+        $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), [
+            'settlement_enabled' => true
+        ]);
     }
 
     /**
