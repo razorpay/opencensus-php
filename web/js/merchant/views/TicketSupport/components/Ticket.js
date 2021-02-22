@@ -1,12 +1,8 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
 import { Fragment } from 'react';
-import Spinner from 'common/ui/Spinner';
-import { tickets, statuses, conversations } from './data.js';
-import { getEscalationType, getResponseArrivalType } from '../utils';
-import { titleCase } from 'common/utils/rzp-utils.js';
-import TicketStatus from './TicketStatus.js';
-import Attachment from './Attachment.js';
+import TicketStatus from './TicketStatus';
+import Attachment from './Attachment';
+import Banner from './Banner';
 
 @connect((state) => {
   return {
@@ -25,6 +21,8 @@ export default class Ticket extends React.Component {
   }
 
   componentDidMount() {
+    const { ticket } = this.props;
+
     window.rzpAnalytics({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'ticket details fetched | Status: Success',
@@ -35,61 +33,6 @@ export default class Ticket extends React.Component {
   showDetails = () => {
     this.setState({ detailsVisible: true });
   };
-
-  openGrievanceFlow = () => {
-    const { ticket } = this.props;
-
-    rzpTicketSystem.openModal('#grievance-new', {
-      ticketID: ticket.id,
-    });
-  };
-
-  renderEscalationBanner() {
-    const { ticket } = this.props;
-    const ESCALATION_TYPE = getEscalationType(ticket);
-    const RESPONSE_ARRIVAL_TYPE = getResponseArrivalType(ticket);
-    const expectedResponseBy = moment(ticket.fr_due_by).format('HH:mm, DD MMM');
-
-    if (
-      ESCALATION_TYPE !== 'escalated' &&
-      ESCALATION_TYPE !== 'able-to-escalate' &&
-      RESPONSE_ARRIVAL_TYPE !== 'within-expected-time'
-    ) {
-      return;
-    }
-
-    if (ESCALATION_TYPE === 'able-to-escalate') {
-      return (
-        <div className="row escalate-banner">
-          <div className="col-xs-2"></div>
-          <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-            <div className="message-escalation">
-              <i class="i i-forward ticket-escalated-icon" />
-              <span>Have any issues with this query? </span>
-              <a className="link" onClick={this.openGrievanceFlow}>
-                Raise Concern
-              </a>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (
-      ESCALATION_TYPE === 'escalated' ||
-      RESPONSE_ARRIVAL_TYPE === 'within-expected-time'
-    ) {
-      return (
-        <div className="row escalate-banner escalation-warning">
-          <div className="col-xs-2"></div>
-          <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-            <i class="i i-forward ticket-escalated-icon" />
-            <span className="message-escalation">
-              Response expected before: {expectedResponseBy}
-            </span>
-          </div>
-        </div>
-      );
-    }
-  }
 
   render() {
     const { ticket, user } = this.props;
@@ -160,7 +103,7 @@ export default class Ticket extends React.Component {
                 )}
               </div>
             </div>
-            {user.isNewGrievanceFlowEnabled && this.renderEscalationBanner()}
+            {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />}
           </div>
         </div>
       </Fragment>

@@ -1,10 +1,9 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
 import { Fragment } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { statuses, MAX_PAGE_SIZE } from './data.js';
-import { titleCase } from 'common/utils/rzp-utils.js';
 import Field from 'common/new-ui/Input/index.js';
-import { merchantFetch } from 'merchant/utils/ajax.js';
 import * as axios from 'axios';
 import { fetchSupportTickets } from 'merchant/reducers/config.js';
 import Spinner from 'common/ui/Spinner';
@@ -73,6 +72,15 @@ export default class Tickets extends React.Component {
           eventCategory: 'Ticket Dashboard',
           eventAction: 'support tickets fetched',
           eventLabel: `Tickets | Status:Success`,
+        });
+
+        analyticsService.track({
+          objectName: 'show all tickets',
+          actionName: 'rendered',
+          screen: 'support tickets',
+          properties: {
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
         this.setState({ loading: false });
       });

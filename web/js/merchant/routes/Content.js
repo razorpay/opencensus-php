@@ -2,6 +2,9 @@ import React, { Component, Suspense } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'common/ui/Slider';
 import { ModalMask } from 'common/new-ui/Modal';
@@ -216,6 +219,20 @@ export default class Content extends Component {
       } else if (window?.rzpTicketSystem?.$el?.classList?.contains('open')) {
         window.rzpTicketSystem.closeModal();
       }
+    }
+  };
+
+  listenTrackEvents = () => {
+    if (window.rzpTicketSystem) {
+      window.rzpTicketSystem.addEventListener('track-event', function (data) {
+        analyticsService.track({
+          ...data.event,
+          properties: {
+            ...data.properties,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      });
     }
   };
 
@@ -518,6 +535,10 @@ export default class Content extends Component {
   componentWillMount() {
     this.setBaseLocation(this.props.location);
     this.toggleRasieTicketModal(this.props);
+  }
+
+  componentDidMount() {
+    this.listenTrackEvents();
   }
 
   componentWillReceiveProps(nextProps) {

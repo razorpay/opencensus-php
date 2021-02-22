@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
 import { Fragment } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import FileUpload from 'merchant/components/File/Upload';
-
-import { MAX_SIZE_LIMIT } from './data';
+import { MAX_SIZE_LIMIT, statuses } from './data';
 
 @connect(
   (state) => {
@@ -38,13 +39,26 @@ export default class Reply extends React.Component {
     });
   };
 
-  track(action, label) {
+  track = (action, label) => {
+    const { ticket } = this.props;
+
     window.rzpAnalytics({
       eventCategory: 'Ticket Dashboard',
       eventAction: action,
       eventLabel: label,
     });
-  }
+
+    analyticsService.track({
+      objectName: 'ticket reply',
+      actionName: 'clicked',
+      screen: 'support tickets',
+      properties: {
+        ticketId: ticket.ticket_id,
+        status: statuses[ticket.status] ? statuses[ticket.status].name : ticket.status,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
 
   reply = () => {
     this.track('send reply clicked', 'Tickets');

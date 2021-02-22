@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION, MIN_TIME_TO_REFRESH } from './data.js';
 import { getExpiryTime, getEscalationType } from '../utils';
 import Ticket from './Ticket';
@@ -79,10 +81,24 @@ export default class Conversations extends React.Component {
     });
   }
 
+  trackRenderTicket = () => {
+    const ticket = this.state.ticket;
+    analyticsService.track({
+      objectName: 'show ticket details',
+      actionName: 'rendered',
+      screen: 'support tickets',
+      properties: {
+        ticketId: ticket ? ticket.ticket_id : 'NA',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
   loadTicketDetails() {
     return merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
       .then((e) => {
         this.setState({ ticket: e.data, loadingTicket: false });
+        this.trackRenderTicket();
       })
       .catch((e) => {
         this.track('conversation loading failed', 'Conversation | Status: Failed');
