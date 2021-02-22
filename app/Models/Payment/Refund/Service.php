@@ -26,6 +26,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
+use RZP\Models\FundTransfer\Attempt as FTA;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payment\Service as PaymentService;
@@ -1845,21 +1846,26 @@ class Service extends Base\Service
     {
         $refund->getValidator()->validateScroogeEditRefund($input);
 
+        $refundData = [
+            'refund_id'     => $refund->getId(),
+            'event'         => $event,
+            'gateway_keys'  => [
+                Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
+                Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
+            ],
+            Entity::PROCESSED_SOURCE    => $input[Entity::MODE] ?? '',
+            RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
+        ];
+
+        if (empty($input[FTA\Entity::BANK_RESPONSE_CODE]) === false)
+        {
+            $refundData[FTA\Entity::BANK_RESPONSE_CODE] = $input[FTA\Entity::BANK_RESPONSE_CODE];
+        }
+
         $data = [
             'refunds' => [
-                [
-                    'refund_id'     => $refund->getId(),
-                    'event'         => $event,
-                    'gateway_keys'  =>
-                    [
-                        Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
-                        Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
-                    ],
-                    Entity::PROCESSED_SOURCE    => $input[Entity::MODE] ?? '',
-                    RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
-                ]
+                $refundData
             ],
-
             'mode' => $this->mode,
         ];
 

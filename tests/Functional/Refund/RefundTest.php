@@ -2721,6 +2721,42 @@ class RefundTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
+        $scroogeResponse = [
+            'mode'                                 => 'IMPS',
+            'gateway_refund_support'               => true,
+            'instant_refund_support'               => true,
+            'payment_age_limit_for_gateway_refund' => null
+        ];
+
+        $scroogeInput = [];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['bulkUpdateRefundStatus','fetchRefundCreateData'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('bulkUpdateRefundStatus')
+                           ->will($this->returnCallback(
+                               function (array $input, bool $throwExceptionOnFailure = false) use (&$scroogeInput)
+                               {
+                                   $scroogeInput = $input;
+
+                                   return json_decode('{
+                                                   "success_count": 1,
+                                                   "failure_count": 1,
+                                                   "errors": [{
+                                                        "refund_id": "abc1234d",
+                                                        "code": "INVALID_STATE",
+                                                        "description": "State transition invalid"
+                                                     }]
+                                                   }', true);
+                               }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+                           ->willReturn($scroogeResponse);
+
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
         $refund = $this->refundPayment(
@@ -2751,6 +2787,9 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('failed', $fta['status']);
+
+        // Asserting that Scrooge is being sent the fta bank_response_code during fta -> scrooge refund update call
+        $this->assertEquals('ns:E403', $scroogeInput['refunds'][0]['bank_response_code']);
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 

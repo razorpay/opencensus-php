@@ -10,7 +10,6 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Reconciliator\Base\InfoCode;
 
@@ -102,9 +101,10 @@ class Core extends Base\Core
                 {
                     // Not sending reference1 in cases of failure
                     $data = [
-                        Entity::STATUS        => Status::FAILED,
-                        Entity::REFERENCE2    => $refund->getReference2(),
-                        Constants::FTA_UPDATE => true,
+                        Entity::STATUS                     => Status::FAILED,
+                        Entity::REFERENCE2                 => $refund->getReference2(),
+                        Constants::FTA_UPDATE              => true,
+                        Attempt\Entity::BANK_RESPONSE_CODE => $ftaData[Attempt\Entity::BANK_RESPONSE_CODE],
                     ];
 
                     $event = Refund\ScroogeEvents::FILE_INIT_EVENT;

@@ -569,19 +569,20 @@ class Core extends Base\Core
         $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode, $fta->getBankResponseCode());
 
         $ftaData = [
-            'bank_account_id'   => $fta->getBankAccountId(),
-            'vpa_id'            => $fta->getVpaId(),
-            'merchant_id'       => $fta->getMerchantId(),
-            'fta_id'            => $fta->getId(),
-            'source_id'         => $fta->source->getId(),
-            'beneficiary_name'  => null,
-            'utr'               => $fta->getUtr(),
-            'mode'              => $fta->getMode(),
-            'remarks'           => $fta->getRemarks(),
-            'fta_status'        => $fta->getStatus(),
-            'bank_status_code'  => $bankStatusCode,
-            'internal_error'    => $isInternalError,
-            'failure_reason'    => $publicErrorMessage,
+            'bank_account_id'    => $fta->getBankAccountId(),
+            'vpa_id'             => $fta->getVpaId(),
+            'merchant_id'        => $fta->getMerchantId(),
+            'fta_id'             => $fta->getId(),
+            'source_id'          => $fta->source->getId(),
+            'beneficiary_name'   => null,
+            'utr'                => $fta->getUtr(),
+            'mode'               => $fta->getMode(),
+            'remarks'            => $fta->getRemarks(),
+            'fta_status'         => $fta->getStatus(),
+            'bank_status_code'   => $bankStatusCode,
+            'bank_response_code' => $fta->getBankResponseCode(),
+            'internal_error'     => $isInternalError,
+            'failure_reason'     => $publicErrorMessage,
         ];
 
         $this->postFtaRecon($fta->source, $ftaData);
