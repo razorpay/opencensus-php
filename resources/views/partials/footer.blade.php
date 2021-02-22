@@ -73,7 +73,7 @@
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
 
-    if (window.analytics) {
+    if (window.razorpayAnalytics) {
         let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit']
          if(window.loadHubspot){
             trackers.push('hubspot');
@@ -83,7 +83,7 @@
            trackers.push('twitterAgency');
          }
 
-        analytics.init(
+        razorpayAnalytics.init(
           trackers,
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
@@ -97,8 +97,8 @@
         );
 
          // Init old key as well
-        if(analytics.createQ){
-          window.rzpQ = analytics.createQ({ pollFreq:500 });
+        if(razorpayAnalytics.createQ){
+          window.rzpQ = razorpayAnalytics.createQ({ pollFreq:500 });
         }
 
         window.rzpQ.defineEventModifiers({
@@ -274,20 +274,20 @@
         ga('old.set', 'page', path);
 
         window.addEventListener('load', function() {
-            analytics.track('ga', 'pageview');
-            analytics.track('reddit', 'PageVisit');
-            analytics.track('quora', 'ViewContent');
-            analytics.track('bing', {action: 'pageLoad', path: path});
+            razorpayAnalytics.track('ga', 'pageview');
+            razorpayAnalytics.track('reddit', 'PageVisit');
+            razorpayAnalytics.track('quora', 'ViewContent');
+            razorpayAnalytics.track('bing', {action: 'pageLoad', path: path});
         });
 
         try {
-          var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
+          var pendingAction = JSON.parse(razorpayAnalytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {
-            analytics.track('fb', 'CompleteRegistration');
-            analytics.utils.deleteCookie('pendingAction');
+            razorpayAnalytics.track('fb', 'CompleteRegistration');
+            razorpayAnalytics.utils.deleteCookie('pendingAction');
           }
 
-          var rzpUTM = JSON.parse(analytics.utils.getCookie('rzp_utm'));
+          var rzpUTM = JSON.parse(razorpayAnalytics.utils.getCookie('rzp_utm'));
           var techSignUp = JSON.parse(localStorage.getItem('track-tech-signup'));
           if (rzpUTM && !techSignUp) {
             var urlTokens =  rzpUTM.website ? rzpUTM.website.split('/') : [];
