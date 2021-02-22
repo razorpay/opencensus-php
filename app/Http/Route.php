@@ -363,6 +363,8 @@ class Route
         'merchant_update_fraud_type'               => ['post',     'merchant/update_fraud_type',                     'MerchantController@updateMerchantFraudType'                        ],
         'methods_update_merchants'                 => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'gratis_postpaid_transactions'             => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
+        'internal_fetch_config_by_id'              => ['get',      'internal/config/{id}',                           'ConfigController@internalFetchConfigById'                          ],
+        'internal_fetch_configs'                   => ['get',      'internal/config',                                'ConfigController@internalFetchConfigs'                             ],
         'terminal_delete'                          => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
         'terminal_edit'                            => ['put',      'terminals/{id}',                                 'TerminalController@putTerminal'                                    ],
         'terminal_edit_internal'                   => ['put',      'terminals/{id}/internal',                        'TerminalController@putTerminal'                                    ],
@@ -2937,6 +2939,8 @@ class Route
 
         'internal_merchant_fetch',
         'internal_merchants_fetch',
+        'internal_fetch_config_by_id',
+        'internal_fetch_configs',
         'internal_merchant_checkout_preferences',
         'internal_merchant_auto_disabled_methods',
         'terminal_edit_internal',
@@ -6273,6 +6277,8 @@ class Route
         ],
 
         'pg_router' => [
+            'internal_fetch_config_by_id',
+            'internal_fetch_configs',
             'api_entity_fetch'
         ],
 

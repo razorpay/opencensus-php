@@ -277,4 +277,28 @@ class ConfigTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testConfigInternalById()
+    {
+        $this->ba->appAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $config->getId();
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $config->getPublicId();
+
+        $this->startTest();
+        $this->assertEquals($config->getPublicId(), $this->testData[__FUNCTION__]['response']['content']['id']);
+    }
+
+    public function testConfigInternalList()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('config', ['type' => 'late_auth']);
+
+        $this->fixtures->create('config', ['type' => 'locale']);
+
+        $this->startTest();
+    }
 }

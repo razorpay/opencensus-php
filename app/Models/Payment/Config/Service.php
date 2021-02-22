@@ -30,6 +30,20 @@ class Service extends Base\Service
         return $configs->toArrayPublic();
     }
 
+    public function internalFetchById($id)
+    {
+        $config = $this->repo->config->fetchByIdAndNotDeleted($id);
+
+        return $config->toArrayPublic();
+    }
+
+    public function fetchMultiple($input)
+    {
+        $configs =  $this->repo->config->fetchMultipleByParam($input);
+
+        return $configs->toArrayPublic();
+    }
+
     /**
      * @param array           $input
      *

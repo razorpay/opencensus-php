@@ -26,6 +26,22 @@ class ConfigController extends Controller
         return ApiResponse::json($configs);
     }
 
+    public function internalFetchConfigById(string $id)
+    {
+        $configs = $this->service()->internalFetchById($id);
+
+        return ApiResponse::json($configs);
+    }
+
+    public function internalFetchConfigs()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updatePaymentConfig()
     {
         $input = Request::all();

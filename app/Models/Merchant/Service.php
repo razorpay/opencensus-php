@@ -3311,6 +3311,7 @@ class Service extends Base\Service
         $data[self::SUPPORT_DETAILS] = $supportInformation;
 
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
+        $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
 
         return $data;
     }

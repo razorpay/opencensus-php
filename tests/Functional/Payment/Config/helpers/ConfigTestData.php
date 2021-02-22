@@ -683,4 +683,30 @@ return  [
             ]
         ],
     ],
+
+    'testConfigInternalById' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/internal/config/',
+        ],
+        'response'      =>  [
+            'content' => [
+                'id' => '',
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
+    'testConfigInternalList' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/internal/config?type=locale',
+        ],
+        'response'      =>  [
+            'content'   => [
+                'count' => 1,
+            ],
+            'status_code'   =>  200
+        ]
+    ]
 ];

@@ -57,4 +57,22 @@ class Repository extends Base\Repository
              ->where(Entity::TYPE, $type)
              ->update([Entity::IS_DELETED => true]);
     }
+
+    public function fetchMultipleByParam($input){
+        $query =  $this->newQuery()->where(Entity::IS_DELETED, false);
+
+        $this->buildQueryWithParams($query, $input);
+
+        $this->addQueryOrder($query);
+
+        $configs = $query->get();
+
+        return $configs;
+    }
+
+    public function fetchByIdAndNotDeleted($id){
+        $query = $this->newQuery()->where(Entity::IS_DELETED, false);
+
+        return $query->findOrFailPublic($id);
+    }
 }
