@@ -67,6 +67,7 @@ export default {
   ],
   addons: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
   virtual_accounts: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
+  qr_codes: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
   customers: [OWNER, ADMIN, MANAGER],
   reports: [OWNER, ADMIN, MANAGER, RBL_SUPERVISOR, AGENT],
   api_keys: [OWNER, ADMIN],

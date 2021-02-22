@@ -1,6 +1,7 @@
 import RTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
+import FeatureCard from 'merchant/components/Feature';
 
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 export default class OnBoardingFeatures extends React.PureComponent {
@@ -66,16 +67,6 @@ export default class OnBoardingFeatures extends React.PureComponent {
     );
   }
 }
-
-const FeatureCard = ({ icon, title, desc }) => (
-  <div class="Feature">
-    <img class="Feature-icon" src={icon} />
-
-    <div class="Feature-title">{title}</div>
-
-    <p class="Feature-desc">{desc}</p>
-  </div>
-);
 
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
 class FeatureLink extends React.PureComponent {

@@ -636,6 +636,10 @@ export default class User {
     return this.getExpStatus('caw_tpv');
   }
 
+  get isQRCodeEnabled() {
+    return this.getExpStatus('qr_code');
+  }
+
   get isPaymentLinkCreationV2Enabled() {
     return this.isPaymentlinksV2Enabled;
   }

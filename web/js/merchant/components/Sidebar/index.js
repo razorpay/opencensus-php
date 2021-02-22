@@ -29,6 +29,7 @@ const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|co
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
 const BASE_ROUTES = {
+  qrCodes: '/qr_codes',
   transactions: '/payments',
   account: '/profile',
   settings: '/config',

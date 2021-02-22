@@ -46,6 +46,7 @@ const InvoicesNew = lazy(() =>
 const Subscriptions = lazy(() =>
   import(/* webpackChunkName: "Subscriptions" */ 'merchant/views/Subscriptions'),
 );
+const QRCodes = lazy(() => import(/* webpackChunkName: "QRCodes" */ 'merchant/views/QRCodes'));
 const Customers = lazy(() =>
   import(/* webpackChunkName: "Customers" */ 'merchant/views/Customers/List'),
 );
@@ -380,6 +381,12 @@ export default class Content extends Component {
               user.isChargeAtWillEnabled &&
               user.isRegistrationLinkTokenAndPaymentsEnabled
             }
+          />
+
+          <ShowWhenRoute
+            path="/qr_codes"
+            component={QRCodes}
+            additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodeEnabled}
           />
 
           <ShowWhenRoute

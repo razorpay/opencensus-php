@@ -134,6 +134,7 @@ export default class MainNavLink extends Component {
       isMobileResolution,
       toggleMobileMenu,
       isSettlementEnabled,
+      isComingSoon,
       ...linkProps
     } = this.props;
 
@@ -147,9 +148,11 @@ export default class MainNavLink extends Component {
       tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
     } else if (isSettlementEnabled) {
       tag = <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />;
+    } else if (isComingSoon) {
+      tag = <span class="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
     }
-    //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {
+      //show infinite spin loader if there are some pending items in that section of the app
       loader = <span class="spin-loader pull-right  hidden-xs" />;
     }
 

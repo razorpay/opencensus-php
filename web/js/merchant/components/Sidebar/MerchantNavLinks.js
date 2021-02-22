@@ -80,6 +80,16 @@ export default function MerchantNavLinks(props) {
         additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
       />
+
+      <MainNavLink
+        label="QR codes"
+        type="product"
+        icon="i i-qr-code text-warm"
+        additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodeEnabled}
+        to={routes.qrCodes}
+        isComingSoon
+      />
+
       <MainNavLink
         label="Smart Collect"
         type="product"

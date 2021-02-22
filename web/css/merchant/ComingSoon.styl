@@ -1,0 +1,151 @@
+.ComingSoon
+  background: #fff
+  height: 771px
+  max-height: 771px
+  box-shadow: 0px 4px 15px rgba(11, 112, 231, 0.05)
+  display: flex
+  align-items: center
+
+  > div
+    width: 50%
+    height: 100%
+
+  @media (max-width: 768px)
+    height: 100%
+    .ComingSoon--Landing
+      display: none
+    .ComingSoon--ProductInfo
+      width: 100%
+      padding: 32px
+
+.ComingSoon--Banner
+  .request-success
+    background: rgba(39, 233, 8, 0.1)
+    border: 1px solid rgba(31, 137, 14, 0.54)
+    border-radius: 4px
+    margin-top: 56px
+    padding: 16px
+    display: flex
+    align-items: center
+    strong
+      color: #1F890E
+
+    img
+      width: 48px
+      margin-right: 16px
+
+    .Button
+      min-width: 177px
+      max-width: 201px
+      height: 40px
+      background: linear-gradient(100.11deg, #2A2A77 2.2%, #5C5CF7 103%)
+
+  .request
+    display: flex
+    align-items: center
+    justify-content: space-between
+    box-shadow:2px 4px 15px rgba(0, 0, 0, 0.1)
+    border-radius: 3px
+    color: rgba(22, 47, 86, 0.87)
+    padding: 24px
+    position: relative
+    overflow: hidden
+
+    &:after
+    &:before
+      content: ''
+      background: rgba(224, 228, 249, 0.24)
+      position: absolute
+      z-index: 1
+      min-width: 100%
+      min-height: 100%
+
+    &:before
+      left: 0
+      transform: rotateZ(353deg)
+      transform-origin: bottom left
+
+    &:after
+      right: 0
+      transform: rotateZ(1deg)
+      transform-origin: bottom right
+      width: 101%
+
+    .Button
+      margin-right: 0
+
+    strong, .Button
+      z-index: 2
+
+.ComingSoon--Landing
+  display: flex
+  align-items: center
+  justify-content: center
+  overflow: hidden
+  z-index: 2
+  position: relative
+  background: #F4F7FF
+
+  &:before
+    content: ''
+    position: absolute
+    right: 0
+    top: -132px
+    border-radius: 1px
+    z-index: -1
+    width: 180%
+    height: 816px
+    min-width: 400px
+    max-width: 490px
+    color: #40c1bb
+    background: linear-gradient(45deg, #62e3c9, #05c098 50%)
+    box-shadow: 1px 1px 0 #009688, 2px 2px 0 #009688, 3px 3px 0 #009688, 4px 4px 0 #009688
+    transform-origin: 0 130px
+    transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
+
+
+.ComingSoon--ProductInfo
+  padding: 96px 32px 32px 56px
+  position: relative
+
+  .title
+    font-weight: 800
+    font-size: 30px
+    line-height: 36px
+    color: #0D2366
+    position: relative
+    display: inline-block
+    .coming-soon-badge
+      position: absolute
+      top: 0
+
+  .description
+    font-size: 16px
+    line-height: 24px
+    margin-top: 16px
+    color: #0D2366
+
+  .features-list
+    margin-top: 56px
+
+    .Feature
+      display: flex
+      align-items: center
+      margin-bottom: 56px
+
+      img
+        margin-right: 24px
+
+      .Feature-title
+        color: rgba(13, 35, 102, 0.9)
+
+      .Feature-desc
+        color: rgba(13, 35, 102, 0.7)
+
+  .learn-more
+    position absolute
+    bottom: 32px
+    .btn
+      padding-left: 4px
+      border: none
+
