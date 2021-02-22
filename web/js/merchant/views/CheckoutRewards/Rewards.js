@@ -108,7 +108,7 @@ export default class Rewards extends Component {
       screen: 'Checkout Rewards',
       properties: {
         location: 'rewards',
-        rewardId: id,
+        rewardId: id.replace('reward_', ''), // id value looks like "reward_kjJBDkjbmN"
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
