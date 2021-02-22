@@ -83,7 +83,7 @@ class InstrumentRequestController extends BaseController
             [],
             \Requests::GET,
             'v2/internal_instrument_request?' . $query,
-            [],
+            ['timeout' => 1],
             $this->getAdminHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
