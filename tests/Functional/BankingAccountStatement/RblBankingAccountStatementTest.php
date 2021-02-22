@@ -4,14 +4,12 @@ namespace RZP\Tests\Functional\BankingAccountStatement;
 
 use Mail;
 use Queue;
-use Redis;
 use Mockery;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
@@ -34,7 +32,6 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
-use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -44,7 +41,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
-
 
 class RblBankingAccountStatementTest extends TestCase
 {
@@ -3255,7 +3251,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+        $this->fixtures->edit('banking_account', 'xba00000000001', [
             'balance_last_fetched_at' => 1578044039
         ]);
 
@@ -3294,7 +3290,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+        $this->fixtures->edit('banking_account', 'xba00000000001', [
             'balance_last_fetched_at' => 1578044039
         ]);
 
@@ -3361,7 +3357,7 @@ class RblBankingAccountStatementTest extends TestCase
         // Need to edit here as balance creation and update occur in test within the same second.
         $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+        $this->fixtures->edit('banking_account', 'xba00000000001', [
             'balance_last_fetched_at' => 1578044039
         ]);
 
@@ -4516,7 +4512,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $currentTime = time();
 
-        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+        $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
     }
 
     public function testStatementGenerationWithInvalidChannel()
@@ -4525,7 +4521,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $currentTime = time();
 
-        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+        $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
     }
 
     public function testStatementGenerationWithInvalidFormat()
@@ -4534,7 +4530,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $currentTime = time();
 
-        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+        $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
     }
 
     /**
@@ -5571,7 +5567,7 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         // create another unlinked reversal that already exists with same utr
-        $reversal = $this->fixtures->reversal->createReversalWithoutTransaction($attributes);
+        $this->fixtures->reversal->createReversalWithoutTransaction($attributes);
 
         // Fetch account statement from RBL second time
         $mockedResponse = $this->getRblTxnCreation();
@@ -5840,7 +5836,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -6006,7 +6001,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -6168,7 +6162,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -6334,7 +6327,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -6508,7 +6500,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -7229,7 +7220,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -7497,7 +7487,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
@@ -7839,7 +7828,6 @@ class RblBankingAccountStatementTest extends TestCase
         $basEntries      = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
         $transactions    = $this->getDbEntities('transaction');
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-        $reversal        = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
         $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);

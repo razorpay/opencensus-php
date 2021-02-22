@@ -2013,6 +2013,7 @@ class ReconciliationFileTest extends TestCase
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
         $this->assertNotNull($updatedTransaction['reconciled_type']);
+        $this->assertEquals($updatedTransaction['gateway_service_tax'],200);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

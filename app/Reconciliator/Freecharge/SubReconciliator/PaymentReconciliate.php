@@ -15,11 +15,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID      = 'order_id';
     const COLUMN_SERVICE_TAX     = ['service_tax', 'gstservice_tax'];
-    const COLUMN_SB_CESS         = 'swachh_bharat_cess';
-    const COLUMN_KK_CESS         = 'krishi_kalyan_cess';
     const COLUMN_FEE             = 'net_deduction';
     const COLUMN_PAYMENT_AMOUNT  = 'total_transaction_amount';
     const COLUMN_SETTLED_AT      = 'settlement_date';
+    const COLUMN_IGST            = 'igst';
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
@@ -34,49 +33,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        $serviceTax = null;
+        $igstFee = $row[self::COLUMN_IGST] ?? null;
 
-        //
-        // In new MIS files, we are getting GST with
-        // column name GST/Service Tax
-        //
-        $serviceTaxColumn = array_first(self::COLUMN_SERVICE_TAX, function ($cst) use ($row)
-        {
-            return (isset($row[$cst]) === true);
-        });
-
-        if ($serviceTaxColumn === null)
-        {
-            $this->reportMissingColumn($row, self::COLUMN_SERVICE_TAX[0]);
-
-            return null;
-        }
-
-        $serviceTax = $row[$serviceTaxColumn];
-
-        // Convert service tax into basic unit of currency (ex: paise)
-        $serviceTax = Base\SubReconciliator\Helper::getIntegerFormattedAmount($serviceTax);
-
-        $sbCess = $this->getSbCess($row);
-        $kkCess = $this->getKkCess($row);
-
-        $serviceTax += $sbCess + $kkCess;
-
-        return $serviceTax;
-    }
-
-    protected function getSbCess(array $row)
-    {
-        $sbCess = $row[self::COLUMN_SB_CESS] ?? null;
-
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($sbCess);
-    }
-
-    protected function getKkCess(array $row)
-    {
-        $kkCess = $row[self::COLUMN_KK_CESS] ?? null;
-
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($kkCess);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($igstFee);
     }
 
     protected function getGatewayFee($row)

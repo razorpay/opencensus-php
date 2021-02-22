@@ -8,15 +8,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
-use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Upi\Icici\Mock;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
-use RZP\Exception\AssertionException;
-use RZP\Exception\ServerErrorException;
-use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
