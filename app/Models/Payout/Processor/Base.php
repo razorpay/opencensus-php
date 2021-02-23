@@ -163,6 +163,11 @@ class Base extends BaseCore
 
             if ($payout->isStatusScheduled() === true)
             {
+                if (empty($sourceDetails) === false)
+                {
+                    $this->processSourceDetails($sourceDetails, $payout);
+                }
+
                 return $payout;
             }
 

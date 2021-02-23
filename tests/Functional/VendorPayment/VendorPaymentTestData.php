@@ -315,6 +315,61 @@ return [
             ],
         ],
     ],
+    'testCreateScheduledPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'scheduled_at'    => 123,
+                'source_details'  => [
+                    '0' => [
+                        'source_id'   => '123',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 1
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'scheduled_at'    => 123,
+                'source_details'  => [
+                    '0' => [
+                        'source_id'   => '123',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 1
+                    ]
+                ],
+            ],
+        ],
+    ],
     'testVendorPaymentGenericEmailRouteCallsServiceMethod' => [
         'request'  => [
             'method'  => 'POST',

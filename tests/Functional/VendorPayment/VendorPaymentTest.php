@@ -4,6 +4,9 @@ namespace RZP\Tests\Functional\VendorPayment;
 
 use App;
 use Mockery;
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Service;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Feature\Constants;
@@ -108,6 +111,25 @@ class VendorPaymentTest extends TestCase
 
         $this->assertEquals($payout1['id'], $payout2['id']);
 
+    }
+
+    public function testCreateScheduledPayout()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $testData = $this->testData['testCreateScheduledPayout'];
+
+        $testData['request']['content']['scheduled_at'] = $scheduledAtTime;
+
+        $testData['response']['content']['scheduled_at'] = $scheduledAtStartOfHour;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
     }
 
     public function testVendorPaymentBulkCancel()
