@@ -78,6 +78,7 @@ class ProviderCode
     const IDBIBANK           = 'idbibank';
     const IDFC               = 'idfc';
     const IDFCBANK           = 'idfcbank';
+    const IDFCFIRST          = 'idfcfirst';
     const IDFCNETC           = 'idfcnetc';
     const IDFCFIRSTBANK      = 'idfcfirstbank';
     const IKWIK              = 'ikwik';
@@ -224,6 +225,7 @@ class ProviderCode
         self::IDBIBANK           => IFSC::IBKL,
         self::IDFC               => IFSC::IDFB,
         self::IDFCBANK           => IFSC::IDFB,
+        self::IDFCFIRST          => IFSC::IDFB,
         self::IDFCFIRSTBANK      => IFSC::IDFB,
         self::IDFCNETC           => IFSC::IDFB,
         self::IKWIK              => IFSC::HDFC,
