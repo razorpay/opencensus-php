@@ -19,6 +19,7 @@ const International = ({
     maxPaymentAmount,
     isTogglerVisible,
     internationalEnabled,
+    currentStatusOnHeader,
     isRequestAccessAllowed,
     isInternationalBlackList,
     isAnyProductIntlApproved,
@@ -77,6 +78,9 @@ const International = ({
           >
             Request
           </button>
+        )}
+        {currentStatusOnHeader && (
+          <InternationalStatusLabel status={statusMap[currentStatusOnHeader]} />
         )}
       </div>
 
