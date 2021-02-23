@@ -101,13 +101,22 @@ class UpiSbi extends Base
                 $paymentId = $row['gateway']['merchant_reference'];
             }
 
+            $gatewayAmt = $row['refund']['gateway_amount'];
+
+            // skipping this row if gatewayAmount is 0
+            // as we are marking such refund as processed
+            if ($gatewayAmt === 0)
+            {
+                continue;
+            }
+
             $formattedData[] = [
                 $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
                 $txnRefNo      => trim($referenceNo, '"'),
                 $custRefNo     => trim($row['gateway']['npci_reference_id'], '"'),
                 $orderNo       => trim($paymentId, '"'),
-                $refAmt        => trim($row['refund']['amount'] / 100, '"'),
+                $refAmt        => empty($gatewayAmt) ? trim($row['refund']['amount'] / 100, '"') : ($gatewayAmt / 100),
                 $refRemark     => trim('Refund for ' . $row['payment']['id'], '"'),
             ];
         }

@@ -4340,6 +4340,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($paymentMetaEntity->getGatewayAmount() !== $this->getAmount()));
     }
 
+    public function isReconAmountMismatched()
+    {
+        $paymentMetaEntity = $this->paymentMeta;
+
+        if ($paymentMetaEntity === null)
+        {
+            return false;
+        }
+
+        if (($paymentMetaEntity->getMismatchAmount() === null) or
+            ($paymentMetaEntity->getMismatchAmountReason() === null))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isUpiAndAmountMismatched()
+    {
+        return (($this->isReconAmountMismatched() === true) and
+                ($this->getMethod() === Method::UPI) and
+                ($this->paymentMeta->getGatewayAmount() > 0));
+    }
+
     public function getCurrencyConversionFee($baseAmount, $rate, $markUpPercent)
     {
         $fee = (($baseAmount * $rate * $markUpPercent) / 100);

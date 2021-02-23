@@ -2655,15 +2655,17 @@ trait PaymentTrait
         foreach ($refundEntities as $refundEntity)
         {
             $scroogeResponse['body']['data'][] = [
-                'id'          => $refundEntity['id'],
-                'amount'      => $refundEntity['amount'],
-                'base_amount' => $refundEntity['base_amount'],
-                'payment_id'  => $refundEntity['payment_id'],
-                'bank'        => $refundEntity->payment['bank'],
-                'gateway'     => $refundEntity['gateway'],
-                'currency'    => $refundEntity['currency'],
-                'method'      => $refundEntity->payment['method'],
-                'created_at'  => $refundEntity['created_at'],
+                'id'                => $refundEntity['id'],
+                'amount'            => $refundEntity['amount'],
+                'base_amount'       => $refundEntity['base_amount'],
+                'payment_id'        => $refundEntity['payment_id'],
+                'bank'              => $refundEntity->payment['bank'],
+                'gateway'           => $refundEntity['gateway'],
+                'currency'          => $refundEntity['currency'],
+                'gateway_amount'    => $refundEntity['gateway_amount'],
+                'gateway_currency'  => $refundEntity['gateway_currency'],
+                'method'            => $refundEntity->payment['method'],
+                'created_at'        => $refundEntity['created_at'],
             ];
         }
 

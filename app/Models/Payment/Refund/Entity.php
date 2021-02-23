@@ -7,6 +7,7 @@ use ApiResponse;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -21,6 +22,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Payment\PaymentMeta\MismatchAmountReason;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 /**
@@ -849,7 +851,52 @@ class Entity extends Base\PublicEntity
             $gatewayAmount = (int) floor($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
         }
 
+        if ($this->payment->isUpiAndAmountMismatched() === true)
+        {
+            $gatewayAmount = $this->getGatewayAmountForAmountMismatch($this, $this->payment);
+        }
+
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
+    }
+
+    /**
+     * Get gateway amount for amount mismatched payment
+     * @param Entity $refund
+     * @param Payment\Entity $payment
+     * @return mixed
+     */
+    public function getGatewayAmountForAmountMismatch(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    {
+        $gatewayAmount = null;
+
+        $paymentMeta = $payment->paymentMeta;
+
+        $mismatchAmount = $paymentMeta->getMismatchAmount();
+
+        $mismatchReason = $paymentMeta->getMismatchAmountReason();
+
+        $refund_amount = $refund->getAmount();
+
+        $balance = $payment->getAmountUnrefunded();
+
+        $gatewayAmount =  $refund_amount;
+
+        if ($mismatchReason === MismatchAmountReason::CREDIT_DEFICIT)
+        {
+            if ($balance === $refund_amount)
+            {
+                $gatewayAmount =  $refund_amount - $mismatchAmount;
+            }
+        }
+        else
+        {
+            if ($balance === $refund_amount)
+            {
+                $gatewayAmount =  $refund_amount + $mismatchAmount;
+            }
+        }
+
+        return $gatewayAmount;
     }
 
     private function setGatewayCurrency()
@@ -859,6 +906,12 @@ class Entity extends Base\PublicEntity
         if ($this->payment->isDCC() === true)
         {
             $gatewayCurrency =  $this->payment->paymentMeta->getGatewayCurrency();
+        }
+
+        if ($this->payment->isUpiAndAmountMismatched() === true)
+        {
+            //as these are UPI payments the currency is always INR
+            $gatewayCurrency =  'INR';
         }
 
         $this->setAttribute(self::GATEWAY_CURRENCY, $gatewayCurrency);

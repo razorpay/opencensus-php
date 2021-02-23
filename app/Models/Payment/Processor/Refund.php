@@ -30,6 +30,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\FundTransfer;
 use RZP\Models\Card\IIN\IIN;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Payment\Method;
 use RZP\Jobs\ScroogeRefundRetry;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
@@ -2405,6 +2406,11 @@ trait Refund
             $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
         }
 
+        if ($payment->isUpiAndAmountMismatched() === true )
+        {
+            $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
+        }
+
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
 
         //
@@ -2454,15 +2460,16 @@ trait Refund
         $isBatch = (($this->ba->isBatchFlow() === true) or ($this->ba->isBatchApp() === true));
 
         $metaData = [
-            Constants::INITIATOR_EMAIL_ID      => $initiatorEmailId,
-            Constants::IS_CRON                 => $this->ba->isCron(),
-            Constants::IS_DASHBOARD_APP        => $this->ba->isDashboardApp(),
-            Constants::ROUTE_NAME              => $this->route->getCurrentRouteName(),
-            Constants::IS_BATCH                => $isBatch,
-            Constants::CREATOR_ID              => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
-            Constants::CREATOR_TYPE            => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
-            Constants::IS_PAYMENT_CAPTURED     => (empty($payment->getCapturedAt()) === false),
-            Constants::IS_ADMIN_AUTH           => $this->ba->isAdminAuth()
+            Constants::INITIATOR_EMAIL_ID           => $initiatorEmailId,
+            Constants::IS_CRON                      => $this->ba->isCron(),
+            Constants::IS_DASHBOARD_APP             => $this->ba->isDashboardApp(),
+            Constants::ROUTE_NAME                   => $this->route->getCurrentRouteName(),
+            Constants::IS_BATCH                     => $isBatch,
+            Constants::CREATOR_ID                   => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
+            Constants::CREATOR_TYPE                 => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
+            Constants::IS_PAYMENT_CAPTURED          => (empty($payment->getCapturedAt()) === false),
+            Constants::IS_ADMIN_AUTH                => $this->ba->isAdminAuth(),
+            Constants::IS_PAYMENT_AMOUNT_MISMATCH   => $payment->isUpiAndAmountMismatched()
         ];
 
         if (empty($input[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)

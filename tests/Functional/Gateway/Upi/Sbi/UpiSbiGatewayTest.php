@@ -18,9 +18,11 @@ use RZP\Models\Payment\Refund;
 use RZP\Gateway\Upi\Base\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Models\Payment\PaymentMeta;
 use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
@@ -877,6 +879,126 @@ class UpiSbiGatewayTest extends TestCase
 
         return $payment;
     }
+
+    public function testMultipleRefundsWithAmountMismatch()
+    {
+        Mail::fake();
+
+        $payment1 = $this->createCapturedPayment();
+
+        $paymentId = PublicEntity::stripDefaultSign($payment1['id']);
+
+        //case - amount deficit
+        $input = [
+            'payment_id'                => $paymentId,
+            'gateway_amount'            => 49900,
+            'mismatch_amount'           => 100,
+            'mismatch_amount_reason'    => 'credit_deficit',
+        ];
+
+        $this->createPaymentMetaEntity($input);
+
+        //full refund case
+        $this->refundPayment($payment1['id'], 50000);
+
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
+        $gatewayAmount = $refundEntity1->getGatewayAmount();
+
+        $gatewayCurrency = $refundEntity1->getGatewayCurrency();
+
+        $this->assertEquals(49900, $gatewayAmount);
+
+        $this->assertEquals('INR', $gatewayCurrency);
+
+        //amount mismatch case - amount surplus
+        $payment2 = $this->createCapturedPayment();
+
+        $paymentId2 = PublicEntity::stripDefaultSign($payment2['id']);
+
+        $input = [
+            'payment_id'                => $paymentId2,
+            'gateway_amount'            => 50050,
+            'mismatch_amount'           => 50,
+            'mismatch_amount_reason'    => 'credit_surplus',
+        ];
+
+        //payment2 for handling amount mismatch surplus case
+        $this->createPaymentMetaEntity($input);
+
+        //partial refund case
+        $this->refundPayment($payment2['id'], 25000);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        $this->refundPayment($payment2['id'], 25000);
+
+        //we are going to use last refund as we handle amount mismatch in last refund
+        $refundEntity3 = $this->getDbLastEntity('refund');
+
+        $gatewayAmount3 = $refundEntity3->getGatewayAmount();
+
+        $gatewayCurrency3 = $refundEntity3->getGatewayCurrency();
+
+        $this->assertEquals(25050, $gatewayAmount3);
+
+        $this->assertEquals('INR', $gatewayCurrency3);
+
+        //handling edge case
+        $payment4 = $this->createCapturedPayment();
+
+        $paymentId4 = PublicEntity::stripDefaultSign($payment4['id']);
+
+        //amount mismatch case - amount deficit case
+        $input = [
+            'payment_id'                => $paymentId4,
+            'gateway_amount'            => 49900,
+            'mismatch_amount'           => 100,
+            'mismatch_amount_reason'    => 'credit_deficit',
+        ];
+
+        $this->createPaymentMetaEntity($input);
+
+        //partial refund case
+        $this->refundPayment($payment4['id'], 49900);
+
+        $refundEntity4 = $this->getDbLastEntity('refund');
+
+        $this->refundPayment($payment4['id'], 100);
+
+        //we are going to use last refund as we handle amount mismatch in last refund
+        $refundEntity5 = $this->getDbLastEntity('refund');
+
+        $refundEntity5Array = $refundEntity5->toArray();
+
+        $this->assertEquals(0, $refundEntity5Array['gateway_amount']);
+
+        $status = $refundEntity5->getStatus();
+
+        //0 rupees refund is marked as processed now
+        $this->assertEquals('processed', $status);
+
+        $refundEntities = [$refundEntity1, $refundEntity2, $refundEntity3, $refundEntity4, $refundEntity5];
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundEntities);
+
+        $data = $this->generateRefundsExcelForSbiUpi();
+
+        $content = $data['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertQueued(RefundFileMail::class);
+    }
+
+    private function createPaymentMetaEntity($input)
+    {
+        (new PaymentMeta\Core)->create($input);
+    }
+
 
     public function testUnexpectedPaymentSuccess()
     {
