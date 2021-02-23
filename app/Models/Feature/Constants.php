@@ -536,6 +536,11 @@ class Constants
      */
     const ORG_CUSTOM_BRANDING = 'org_custom_branding';
 
+    /*
+     * Enables admin dashboard session logout at org level
+     */
+    const LOGOUT_ADMIN_INACTIVITY = 'logout_admin_inactivity';
+
     /**
      * Marks the seller eligible for automated loc as per https://jira.corp.razorpay.com/browse/CAP-519
      */
@@ -833,6 +838,7 @@ class Constants
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
+        self::LOGOUT_ADMIN_INACTIVITY         => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::TRANSFER_FAILED_WEBHOOK         => true,
         self::P2P_UPI                         => true,
