@@ -4,7 +4,36 @@ run_bvt_suite_when_approved() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
   commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
   skipRoast=${SKIP_ROAST}
+  statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \
+    --header "Authorization: Bearer ${GIT_TOKEN}")
+  cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
+  SPINNAKER_HEADER="Cookie: SESSION=$cookies"
+  PIPELINE_ID="21d5eec8-367e-4de7-bd39-bd614b9c5ddd"
+  # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
+  echo "Status Code for fetching spinnaker cookie $statusCode"
   if [ "$skipRoast" = "true" ]; then
+    if [ "$statusCode" = 200 ]; then
+      spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
+        -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .trigger.parameters.api_commit_id,pr_number: .trigger.parameters.pr_number}]')
+      pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
+      for p in $pipelines; do
+      pipeline="$(echo "$p" | base64 -d)"
+      pId=$(echo "$pipeline" | jq --raw-output '.id')
+      pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
+      pPRNumber=$(echo "$pipeline" | jq --raw-output '.pr_number')
+      pStatus=$(echo "$pipeline" | jq --raw-output '.status')
+      if [ "$pPRNumber" = "$PRNumber" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
+        spinnakerCancelRequestStatusCode=$(curl -o -s -w "%{http_code}" --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
+          -H "${SPINNAKER_HEADER}")
+        echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
+        if [ "$spinnakerCancelRequestStatusCode" = 200 ]; then
+          echo "Pipeline cancellation succeeded"
+        else
+          echo "Pipeline cancellation failed"
+        fi
+      fi
+    done
+    fi
     echo "Triggering skip regression webhook for bvt execution for :" + "$commitId"
     curl -X POST \
       -u github-actions:"$SPINNAKER_PASSWORD" \
@@ -29,13 +58,6 @@ run_bvt_suite_when_approved() {
     echo "PR is not in Approved State Not Triggering Webhook"
     exit 0
   fi
-  statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \
-    --header "Authorization: Bearer ${GIT_TOKEN}")
-  cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
-  SPINNAKER_HEADER="Cookie: SESSION=$cookies"
-  PIPELINE_ID="21d5eec8-367e-4de7-bd39-bd614b9c5ddd"
-  # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
-  echo "Status Code for fetching spinnaker cookie $statusCode"
   if [ "$statusCode" = 200 ]; then
     spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
       -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .trigger.parameters.api_commit_id,pr_number: .trigger.parameters.pr_number}]')
