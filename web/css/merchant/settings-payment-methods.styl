@@ -2,14 +2,18 @@
   .mr-25
     margin-right: 25px
   .ml-5
-    margin-left: 5px  
+    margin-left: 5px
+  .spacer-20
+    height: 20px
+  .spacer-10
+    height: 10px
   .panel-heading
     padding: 15px 20px 15px 0px
     .title
       font-size: 18px
       font-weight: 600
   .methods-view
-    height: 490px
+    height: 491px
     display: flex
     border: 1px solid #E6E7E8
     border-bottom: none
@@ -116,6 +120,40 @@
       li:first-child
         border-top: 1px solid #E6E7E8
 
+      .international-leaf-item
+        height: auto
+        display: block
+        padding: 20px
+        &:hover
+          background: unset
+        &.alert-info
+          background: #FBF8E3
+          p
+            font-weight: bold
+        .toggler-btn
+          display: inline-flex
+          align-items: center
+          float: right
+          button
+            &::after
+              background: #5e90e9
+            &.checked::after
+              background: #fff
+          b
+            padding-left: 5px
+        .detail
+          padding-left: 0
+        .product-info
+          display: block
+          border-radius: 4px
+          padding: 20px 10px
+          background: rgba(232, 235, 239, 0.32)
+          .product-title
+            display: flex
+            justify-content: space-between
+            .status-label
+              text-transform: uppercase
+              padding: 5px 12px
       li
         width: 420px
         background: transparent
@@ -149,6 +187,31 @@
             display: flex
             align-items: center
             justify-content: space-between
+        + .paypal-leaf-item
+          display: block
+          height: auto
+          padding: 20px
+          &:hover
+            background: unset
+          .icon
+            margin: 0
+          .detail
+            padding: 0
+          .desc
+            width: 240px
+            font-size: 12px
+            line-height: 16px
+            color: rgba(22, 47, 86, 0.54)
+          .status-pill
+            font-size: 12px
+          .paypal-info
+            display: block
+            background: #F2F4FE
+            border-left: 8px solid #2B83EA
+            padding: 16px 12px
+            font-size: 12px
+            line-height: 17px
+            color: #7B8199
 
       li.action-required-list-item
         height: auto

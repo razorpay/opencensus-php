@@ -123,10 +123,14 @@ export const offerStatusMap = {
 
 export const internationalStatusMap = {
   request_rejected: 'label-danger-light',
+  rejected: 'label-danger-light',
   disabled: 'label-muted',
   access_requested: 'label-primary-light',
+  in_review: 'label-primary-light',
+  under_review: 'label-primary-light',
   enabled: 'label-success-light',
   approved: 'label-success-light',
+  activated: 'label-success-light',
   no_website_added: 'label-warning',
 };
 

@@ -717,6 +717,35 @@ let initialState = {
         },
       ],
     },
+    {
+      name: 'International Payments',
+      description: 'Cards, Paypal',
+      slug: 'international',
+      icon: 'international',
+      actionItems: {},
+      leafList: [
+        {
+          header: 'International Payments',
+          docLink: 'https://razorpay.com/accept-international-payments/',
+          list: [
+            {
+              name: 'International Cards',
+              description: 'On Payment Gateway, Pages, Links and Invoices',
+              status: 'Request',
+              slug: 'internationalcards',
+              icon: '',
+            },
+            {
+              name: 'Paypal',
+              description: 'Accept International Payments using PayPal on Razorpay Checkout',
+              status: 'Request',
+              slug: 'paypal',
+              icon: 'paypal',
+            },
+          ],
+        },
+      ],
+    },
   ],
   intermediateInstrument: null,
   leafInstrument: null,

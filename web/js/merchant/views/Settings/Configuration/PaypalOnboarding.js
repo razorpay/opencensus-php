@@ -14,7 +14,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
   },
   { getOnboardingStatus, onboardTerminal, showNotification },
 )
-export default class PaypalOnboarding extends Component {
+export default class PaypalOnboardingButton extends Component {
   constructor(props) {
     super(props);
   }
@@ -104,92 +104,68 @@ export default class PaypalOnboarding extends Component {
     let showStatus = ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
     return (
       <React.Fragment>
-        <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
-          <div class="heading">
-            <li class="title">PayPal </li>
-            <a
-              class={`highlight ${showStatus ? 'know-more' : ''} know-more-link`}
-              target="_blank"
-              style={{ borderColor: '#EBEFF0' }}
-              href="https://razorpay.com/docs/payment-methods/paypal"
-            >
-              Know more
-              <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-            </a>
-            {showStatus ? (
-              <span
-                style={{ marginLeft: '20px', float: 'right' }}
-                class={`status-pill status-pill-${(() => {
-                  if (status === 'activated') {
-                    return 'success';
-                  }
-                  if (status === 'rejected') {
-                    return 'danger';
-                  }
-                  if (status === 'pending' || status === 'created') {
-                    return 'warning';
-                  }
-                })()}`}
-              >
-                <span class="status-text">{status == 'created' ? 'pending' : status}</span>{' '}
-                <span>
-                  <i class="i i-info-circle" />
-                  <Popover theme="dark" align="bottom">
-                    <PopoverBody>
-                      <div>
-                        {(() => {
-                          if (status === 'activated') {
-                            return 'PayPal has been activated as a payment method.';
-                          }
-                          if (status === 'rejected') {
-                            return 'Your account is rejected by PayPal.';
-                          }
-                          if (status === 'pending') {
-                            return 'Your account is pending for approval by PayPal.';
-                          }
-                          if (status === 'created') {
-                            return 'Initiate Paypal approval for your account by verifiying your email.';
-                          }
-                        })()}
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </span>{' '}
-              </span>
-            ) : null}
-            {status === 'requested' || this.props.terminals.length === 0 ? (
-              <button
-                disabled={this.state.loading}
-                onClick={this.verifyAccount}
-                class="btn btn-primary paypal-onboard-button"
-              >
-                {' '}
-                <img
-                  class="paypal-onboard-img"
-                  src="https://cdn.razorpay.com/static/assets/paypal.svg"
-                />
-                {this.state.loading ? 'Processing..' : 'Link Account'}
-              </button>
-            ) : null}
-          </div>
-
-          <div class="body">
-            <div class="description">
-              Accept international payments using PayPal on Razorpay Checkout.
-            </div>
-
-            <div className="alert alert-info">
-              <h4>International Payments Only</h4>
-              <p>
-                Currently, you can only accept payments in international currencies using PayPal.
-              </p>
-              <p>
-                You <i>CANNOT</i> accept payments in <span class="inr">INR</span> using PayPal.
-              </p>
-            </div>
-          </div>
-        </div>
+        {showStatus ? (
+          <span
+            style={{ marginLeft: '20px', float: 'right' }}
+            class={`status-pill status-pill-${(() => {
+              if (status === 'activated') {
+                return 'success';
+              }
+              if (status === 'rejected') {
+                return 'danger';
+              }
+              if (status === 'pending' || status === 'created') {
+                return 'warning';
+              }
+            })()}`}
+          >
+            <span class="status-text">{status == 'created' ? 'pending' : status}</span>{' '}
+            <span>
+              <i class="i i-info-circle" />
+              <Popover theme="dark" align="bottom">
+                <PopoverBody>
+                  <div>
+                    {(() => {
+                      if (status === 'activated') {
+                        return 'PayPal has been activated as a payment method.';
+                      }
+                      if (status === 'rejected') {
+                        return 'Your account is rejected by PayPal.';
+                      }
+                      if (status === 'pending') {
+                        return 'Your account is pending for approval by PayPal.';
+                      }
+                      if (status === 'created') {
+                        return 'Initiate Paypal approval for your account by verifiying your email.';
+                      }
+                    })()}
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </span>{' '}
+          </span>
+        ) : null}
+        {status === 'requested' || this.props.terminals.length === 0 ? (
+          <button
+            disabled={this.state.loading}
+            onClick={this.verifyAccount}
+            class="btn btn-primary paypal-onboard-button"
+          >
+            {' '}
+            {this.props.showLogo && (
+              <img
+                class="paypal-onboard-img"
+                src="https://cdn.razorpay.com/static/assets/paypal.svg"
+              />
+            )}
+            {this.state.loading ? 'Processing..' : 'Link Account'}
+          </button>
+        ) : null}
       </React.Fragment>
     );
   }
 }
+
+PaypalOnboardingButton.defaultProps = {
+  showLogo: true,
+};

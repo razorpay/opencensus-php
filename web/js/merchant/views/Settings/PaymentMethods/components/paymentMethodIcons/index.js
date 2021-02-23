@@ -4,6 +4,7 @@ import netbanking from './netbanking';
 import upi from './upi';
 import wallet from './wallet';
 import paylater from './paylater';
+import international from './international';
 
 function getIconFn(iconName) {
   switch (iconName) {
@@ -23,6 +24,8 @@ function getIconFn(iconName) {
       return wallet;
     case 'paylater':
       return paylater;
+    case 'international':
+      return international;
   }
 }
 

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import LeafListItem from './LeafListItem';
+import Paypal from './Paypal';
+import International from './International';
 
 const LeafList = ({ instrument, intermediateInstrument }) => {
   const [filter, setFilter] = useState('active');
@@ -41,7 +43,11 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       }
     } else {
       return list.map((leafItem) => {
-        return <LeafListItem key={leafItem.name} instrument={leafItem} />;
+        if (leafItem.slug === 'internationalcards') return <International />;
+        else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
+        else {
+          return <LeafListItem key={leafItem.name} instrument={leafItem} />;
+        }
       });
     }
   }

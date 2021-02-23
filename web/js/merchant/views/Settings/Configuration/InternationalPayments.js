@@ -1,10 +1,17 @@
-import React from 'react';
-import InternationalConfig from './InternationalConfig';
-import PaypalOnboarding from './PaypalOnboarding';
+import React, { useRef, useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
+import InternationalCards from './InternationalCards';
+import PaypalOnboardingButton from './PaypalOnboarding';
 
 const InternationalPayments = ({ mode, user, config }) => {
+  const internationalSection = useRef(null);
+  useEffect(() => {
+    if (internationalSection.current && location.hash === '#request-international') {
+      internationalSection.current.scrollIntoView();
+    }
+  }, []);
   return (
-    <div class="panel panel-default international-payments">
+    <div ref={internationalSection} class="panel panel-default international-payments">
       <div class="panel-heading">
         <span class="title">International Payments</span>
         <a
@@ -21,10 +28,10 @@ const InternationalPayments = ({ mode, user, config }) => {
       </div>
       <div class="panel-body">
         <ol>
-          {mode === 'live' && <InternationalConfig />}
+          {mode === 'live' && <InternationalCards />}
 
           {user.isActivated && mode === 'live' && config.fee_bearer !== 'customer' && (
-            <PaypalOnboarding />
+            <PaypalWrapper />
           )}
         </ol>
       </div>
@@ -32,4 +39,36 @@ const InternationalPayments = ({ mode, user, config }) => {
   );
 };
 
-export default InternationalPayments;
+const PaypalWrapper = () => (
+  <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
+    <div class="heading">
+      <li class="title">PayPal </li>
+      <a
+        class="highlight know-more-link"
+        target="_blank"
+        href="https://razorpay.com/docs/payment-methods/paypal"
+      >
+        Know more
+        <i class="i i-external-link" />
+      </a>
+
+      <PaypalOnboardingButton />
+    </div>
+
+    <div class="body">
+      <div class="description">
+        Accept international payments using PayPal on Razorpay Checkout.
+      </div>
+
+      <div className="alert alert-info">
+        <h4>International Payments Only</h4>
+        <p>Currently, you can only accept payments in international currencies using PayPal.</p>
+        <p>
+          You <i>CANNOT</i> accept payments in <span class="inr">INR</span> using PayPal.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+export default withRouter(InternationalPayments);

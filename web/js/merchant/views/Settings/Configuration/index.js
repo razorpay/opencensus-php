@@ -162,6 +162,20 @@ export default class CongfigurationContainer extends Component {
       user,
       configState: { config, loading },
     } = this.props;
+
+    let showInternationalPaymentsCard = false;
+    if (mode === 'live') {
+      if (user.activated_at < 1614105000) {
+        // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
+        showInternationalPaymentsCard = true;
+      } else if (user.internationalActivationFlow.isWhitelistFlow) {
+        if (!user.isAccepted) {
+          // Show international payments card only if merchant's IAF is whitelisted and L1 activated
+          showInternationalPaymentsCard = true;
+        }
+      }
+    }
+
     return (
       <div class="content-wrapper content-sm" id="settings-content">
         {loading ? (
@@ -175,7 +189,9 @@ export default class CongfigurationContainer extends Component {
             <PaymentSettings />
             <DefaultRefundSpeed />
 
-            {mode === 'live' && <InternationalPayments user={user} mode={mode} config={config} />}
+            {showInternationalPaymentsCard && (
+              <InternationalPayments user={user} mode={mode} config={config} />
+            )}
 
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
             {user.contact_mobile && <SmsNotification />}

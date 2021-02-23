@@ -30,6 +30,8 @@ function getIconFn(iconName) {
       return 'mpesa';
     case 'olamoney':
       return 'olamoney';
+    case 'paypal':
+      return 'paypal';
     case 'paytm':
       return 'paytm';
     case 'payumoney':
