@@ -311,7 +311,12 @@ export default class User {
   }
 
   get isProjectNitroEnabled() {
-    return this.getExpStatus('project_nitro') || this.getExpStatus('project_nitro_1');
+    return (
+      this.getExpStatus('project_nitro') ||
+      this.getExpStatus('project_nitro_1') ||
+      this.getExpStatus('project_nitro_feb_2021') ||
+      this.getExpStatus('project_nitro_feb_2021_1')
+    );
   }
 
   get isChargeAtWillEnabled() {
