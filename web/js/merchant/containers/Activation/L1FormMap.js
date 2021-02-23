@@ -56,10 +56,9 @@ export default [
     {
       label: 'Business Model',
       name: 'business_model',
-      info:
-        'Please give a brief explanation of your business model and future plans',
+      info: 'Please give a brief explanation of your business model and future plans',
       _cmp: Input.Textarea,
-      _when: activation => {
+      _when: (activation) => {
         let { state, props } = activation;
 
         let businessCategory =
@@ -75,30 +74,29 @@ export default [
       name: 'business_subcategory',
       _cmp: Input.Select,
       options: [],
-      _optionsFn: function(activation, categories) {
+      _optionsFn: function (activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
         const userSelection =
-          activation.state.dirty.business_category ||
-          activation.props.data.business_category;
+          activation.state.dirty.business_category || activation.props.data.business_category;
 
         if (userSelection && categories[userSelection]) {
           const subCategories = categories[userSelection].subcategories;
 
           this.options = ['--Select--'].concat(
-            Object.keys(subCategories).map(c => {
+            Object.keys(subCategories).map((c) => {
               const label = subCategories[c];
 
               return {
                 name: c,
                 label: typeof label === 'string' ? label : label.description,
               };
-            })
+            }),
           );
         }
 
         return this.options;
       },
-      _when: activation => {
+      _when: (activation) => {
         let { state, props } = activation;
         let hasBusinessCategory = false;
 
@@ -123,10 +121,8 @@ export default [
     className: 'Input--capitalize Input--vTop',
     validator: validatePersonalPAN,
     _when: excludeFor_Indiv,
-    checkValidityFromAPI: activation => {
-      if (
-        activation.props.data.poi_verification_status === 'incorrect_details'
-      ) {
+    checkValidityFromAPI: (activation) => {
+      if (activation.props.data.poi_verification_status === 'incorrect_details') {
         return 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
       }
     },
@@ -135,7 +131,7 @@ export default [
     label: 'PAN Owner’s Name',
     name: 'promoter_pan_name',
     placeholder: 'Name as per PAN',
-    info: function() {
+    info: function () {
       return !this.props.user.isRegAutoKYCEnabled
         ? ''
         : 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
@@ -151,11 +147,10 @@ export default [
       name: 'business_type',
       _cmp: Input.Select,
       options: BUSINESS_TYPE_OPTIONS,
-      description: activation => {
+      description: (activation) => {
         // Changing description of self
         const currentBusinessType =
-          activation.state.dirty.business_type ||
-          activation.props.data.business_type;
+          activation.state.dirty.business_type || activation.props.data.business_type;
 
         // if user has selected individual business type
         if (currentBusinessType && !activation.props.accountId) {
@@ -181,14 +176,13 @@ export default [
       _name: 'has_url',
       className: 'Input--vTop Input--Website',
       options: [
-        'Website/App',
+        'on my website/app',
         {
-          label: 'We do not have either',
+          label: 'without website/app',
           description: (
             <ul class="Input-desc-list">
               <li>
-                You can accept payments by sending out Payment Links and
-                Invoices from Dashboard.
+                You can accept payments by sending out Payment Links and Invoices from Dashboard.
               </li>
               <li>You will not get access to live APIs.</li>
               <li>You can upgrade anytime later by adding your website/app.</li>
@@ -202,13 +196,13 @@ export default [
       name: 'business_website',
       placeholder: 'Enter URL',
       type: 'url',
-      validator: value => {
+      validator: (value) => {
         if (!isUrlLenient(value)) {
           return 'Please enter a valid url';
         }
       },
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-      _when: activation => activation.state.has_url === '0',
+      _when: (activation) => activation.state.has_url === '0',
     },
   ],
 ];
@@ -218,7 +212,5 @@ function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return (
-    [INDIVIDUAL, NOT_REGISTERED].indexOf(Number(currentBusinessType)) === -1
-  );
+  return [INDIVIDUAL, NOT_REGISTERED].indexOf(Number(currentBusinessType)) === -1;
 }

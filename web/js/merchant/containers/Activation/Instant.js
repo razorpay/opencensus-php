@@ -11,22 +11,14 @@ import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  autoPrefixUrls,
-  addPrefixToObjectKeys,
-  prevent,
-  classList,
-} from 'common/utils/rzp-utils';
+import { autoPrefixUrls, addPrefixToObjectKeys, prevent, classList } from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
-import {
-  showInstantActivationSuccessModal,
-  showKYCDetailsModal,
-} from 'merchant/reducers/home';
+import { showInstantActivationSuccessModal, showKYCDetailsModal } from 'merchant/reducers/home';
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackTnCClick } from './ga_new';
@@ -77,7 +69,7 @@ const BUSINESS_CATEGORY_FIELD = 1;
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
 @connect(
-  state => ({
+  (state) => ({
     session: state.session,
     user: state.session.user,
   }),
@@ -86,7 +78,7 @@ const BUSINESS_CATEGORY_FIELD = 1;
     updateSession,
     showInstantActivationSuccessModal,
     showKYCDetailsModal,
-  }
+  },
 )
 export default class ActivationWizard extends React.Component {
   state = {
@@ -94,12 +86,10 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-      (this.props.data.business_operation_pin ===
-      this.props.data.business_registered_pin
+      (this.props.data.business_operation_pin === this.props.data.business_registered_pin
         ? '1'
         : '0'), // '1' => checkbox ticked
-    has_url:
-      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_url: this.props.data && this.props.data.business_website === '' ? '0' : '1', // '0' => 0th radio button, value exists
   };
 
   constructor(props) {
@@ -109,12 +99,12 @@ export default class ActivationWizard extends React.Component {
     if (props.rpc) {
       const { submitForm, notifyFormValidity, notifyWindowResize } = props.rpc;
 
-      submitForm(reply => {
+      submitForm((reply) => {
         this.onActivationSuccess = reply;
         this.submitForm();
       });
 
-      notifyFormValidity(reply => {
+      notifyFormValidity((reply) => {
         this.onFormValidityChange = reply;
       });
     }
@@ -125,10 +115,10 @@ export default class ActivationWizard extends React.Component {
 
     // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
     FORM_TABS[BUSINESS_CATEGORY_FIELD][0].options = ['--Select--'].concat(
-      Object.keys(props.categories).map(c => ({
+      Object.keys(props.categories).map((c) => ({
         name: c,
         label: props.categories[c].description,
-      }))
+      })),
     );
 
     defaultFieldProps.call(this, FORM_TABS); // Set the default props for all tab content views
@@ -141,8 +131,7 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    const fieldVal =
-      name in currentDirty ? currentDirty[name] : this.props.data[name];
+    const fieldVal = name in currentDirty ? currentDirty[name] : this.props.data[name];
 
     reqData[name] = fieldVal;
 
@@ -157,11 +146,9 @@ export default class ActivationWizard extends React.Component {
     const currentDirty = this.state.dirty;
     const reqData = {};
 
-    FORM_TABS.forEach(field => {
+    FORM_TABS.forEach((field) => {
       if (Array.isArray(field)) {
-        return field.forEach(field =>
-          this.populateReqData(field, reqData, currentDirty)
-        );
+        return field.forEach((field) => this.populateReqData(field, reqData, currentDirty));
       }
 
       return this.populateReqData(field, reqData, currentDirty);
@@ -224,12 +211,12 @@ export default class ActivationWizard extends React.Component {
   @RTracking((props, state) => {
     const { tracking } = props;
     const fields = trackDiffInFormFields(props.data, state.dirty);
-    return fields.forEach(field =>
+    return fields.forEach((field) =>
       tracking.trackEvent(
         window.rzpQ.onbr().initiated('act.provide_act_details', {
           ...field,
-        })
-      )
+        }),
+      ),
     );
   })
   submitForm = () => {
@@ -242,7 +229,7 @@ export default class ActivationWizard extends React.Component {
       data,
       accountId: this.props.accountId,
     })
-      .then(response => {
+      .then((response) => {
         this.props.updateActivationData(response.data);
         this.setState({
           dirty: {
@@ -264,11 +251,7 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         const user = this.user;
-        const {
-          isWhitelistFlow,
-          isBlacklistFlow,
-          isGraylistFlow,
-        } = user.instantActivation;
+        const { isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = user.instantActivation;
 
         if (isWhitelistFlow) {
           this.props.showInstantActivationSuccessModal();
@@ -281,14 +264,14 @@ export default class ActivationWizard extends React.Component {
         this.props.sendEventsForSubMerchantView(
           window.rzpQ
             .routeActions()
-            .success('route.linked_account.activate_account.business_details')
+            .success('route.linked_account.activate_account.business_details'),
         );
 
         if (!has_pan_error) {
           return this.props.history.replace('/');
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
             type: 'error',
@@ -318,9 +301,7 @@ export default class ActivationWizard extends React.Component {
     if (stateName === 'has_url') {
       if (fieldValue === '1') {
         this.prevBusinessWebsiteVal =
-          'business_website' in dirty
-            ? dirty.business_website
-            : this.props.data.business_website;
+          'business_website' in dirty ? dirty.business_website : this.props.data.business_website;
         sideEffectFieldsToUpdate.business_website = '';
       } else {
         sideEffectFieldsToUpdate.business_website = this.prevBusinessWebsiteVal;
@@ -334,9 +315,7 @@ export default class ActivationWizard extends React.Component {
       sideEffectFieldsToUpdate.business_model = ''; // Reset Business Model as well.
 
       // Update Business Subcategory in view
-      let el = document.querySelector(
-        '.form-container [name=business_subcategory]'
-      );
+      let el = document.querySelector('.form-container [name=business_subcategory]');
       el && (el.value = '');
 
       // Update Business Model in view
@@ -401,13 +380,11 @@ export default class ActivationWizard extends React.Component {
         if (field[0].compressed) {
           return (
             <Collapsible
-              title={collapsibleOpen => (
+              title={(collapsibleOpen) => (
                 <span
                   className="text-primary"
                   onClick={() => {
-                    tracking.trackEvent(
-                      window.rzpQ.onbr().initiated('act.view_signup_fields')
-                    );
+                    tracking.trackEvent(window.rzpQ.onbr().initiated('act.view_signup_fields'));
                   }}
                 >
                   {collapsibleOpen ? 'Hide' : 'Show'} previously filled details
@@ -416,16 +393,12 @@ export default class ActivationWizard extends React.Component {
               childrenPosition="top"
               class="CollapsibleFields"
             >
-              <Input.Group key={i}>
-                {field.slice(1).map(ActivationField, this)}
-              </Input.Group>
+              <Input.Group key={i}>{field.slice(1).map(ActivationField, this)}</Input.Group>
             </Collapsible>
           );
         }
 
-        return (
-          <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
-        );
+        return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
       }
 
       return ActivationField.call(this, field);
@@ -433,9 +406,7 @@ export default class ActivationWizard extends React.Component {
 
     return (
       <div className="Activation--wizard Wizard">
-        <main
-          className={classList('form-container', isFormLocked && 'main--full')}
-        >
+        <main className={classList('form-container', isFormLocked && 'main--full')}>
           <main-title class="main-title">Activate your account</main-title>
           <main-subtitle>
             <p>Enable live transactions by filling in a few more details</p>
@@ -467,10 +438,10 @@ export default class ActivationWizard extends React.Component {
 
     const isValid =
       data !== void 0 &&
-      FORM_TABS.every(c =>
+      FORM_TABS.every((c) =>
         Array.isArray(c)
-          ? c.every(d => isFieldValid(d, this, data))
-          : isFieldValid(c, this, data)
+          ? c.every((d) => isFieldValid(d, this, data))
+          : isFieldValid(c, this, data),
       );
 
     if (this.onFormValidityChange) {
@@ -594,11 +565,7 @@ function renderTnCLink() {
       <small>
         By submitting this form you agree to our{' '}
         {/* only merchants of our can see the TnC link rest will only see label */}
-        <ShowWhen
-          additionalCondition={user =>
-            user.isOrgAllowedFunctionality('external_links')
-          }
-        >
+        <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
           <a
             className="text-primary"
             target="_blank"
@@ -608,11 +575,7 @@ function renderTnCLink() {
             Terms and Conditions
           </a>
         </ShowWhen>
-        <ShowWhen
-          additionalCondition={user =>
-            !user.isOrgAllowedFunctionality('external_links')
-          }
-        >
+        <ShowWhen additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}>
           Terms and Conditions
         </ShowWhen>
       </small>

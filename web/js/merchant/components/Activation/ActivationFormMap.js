@@ -297,24 +297,27 @@ const businessModel = [
   },
   [
     {
-      label: 'Website/App URL',
+      label: 'How do you wish to accept payments',
       _cmp: Input.Radio,
       _name: 'has_url',
       className: 'Input--vTop Input--Website',
       options: [
-        'Website/App',
         {
-          label: 'We do not have either',
+          label: 'Without website/app',
           description: (
             <ul class="Input-desc-list">
               <li>
-                You can accept payments by sending out Payment Links and Invoices from Dashboard.
+                Receive payments from your customers in under 5 minutes using Razorpay’s Payment
+                Links & Payment Pages
               </li>
-              <li style={{ fontWeight: 'bold' }}>You will not get access to live APIs.</li>
-              <li>You can upgrade anytime later by adding your website/app.</li>
+              <li>
+                You can submit your website/app URL later via the merchant dashboard, if you wish to
+                generate api keys and integrate our payment gateway.
+              </li>
             </ul>
           ),
         },
+        'On my website/app',
       ],
       // _disabledWhen: (activation) =>
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
@@ -332,7 +335,7 @@ const businessModel = [
       },
       description: (
         <React.Fragment>
-          The entered App/Website should contain:
+          We need to verify your website/app to provide you the live API keys. It should contain:
           <div className="bullet-list-container">
             <ul className="bullet-list bullet-list--left">
               <li class="shallow"> About Us</li>
@@ -369,7 +372,7 @@ const businessModel = [
         </React.Fragment>
       ),
       info: 'Payments will be enabled for the website/App after KYC approval.',
-      _when: (activation) => activation.state.has_url === '0',
+      _when: (activation) => activation.state.has_url === '1',
       // _disabledWhen: (activation) =>
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
