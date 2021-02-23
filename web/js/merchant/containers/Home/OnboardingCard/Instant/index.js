@@ -10,7 +10,6 @@ import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
 import RxCard from './RxCard';
 import RTracking from 'react-tracking';
-import FAQ from './RxCa/Faq';
 import { hasNeoCouponCode } from './RxCa/data';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
@@ -173,11 +172,17 @@ export default class OnboardingCardInstant extends Component {
         isHardLimitReached,
         merchant,
       };
-    const showCaFlow = isActivated && hasNeoCouponCode(campaigns);
+    const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
+    const hasAppliedCa = this.props.user.user.settings['clicked_ca_apply_request_done'];
+    const showNitroRXCAFlow = isActivated && user.isProjectNitroEnabled && hasAppliedCa;
+
     return (
       <div className="onboarding-card-instant">
-        {showCaFlow ? (
-          <CaInfoContainer updateCAstatus={this.updateCAstatus} />
+        {showJuggernautCaFlow || showNitroRXCAFlow ? (
+          <CaInfoContainer
+            updateCAstatus={this.updateCAstatus}
+            showNitroRXCAFlow={showNitroRXCAFlow}
+          />
         ) : (
           <div className="onboarding-card-instant-content" ref={(node) => (this.content = node)}>
             <div className={`onboarding-steps active-step-${activeStep}`}>

@@ -18,6 +18,7 @@ const CaInfo = (props) => {
   const [isloading, setLoading] = React.useState(true);
   const hasAppliedCa = props.user.user.settings['clicked_ca_apply_request_done'];
   const hideTimeline = !!props.user.user.settings['clicked_close_ca_timeline_banner'];
+  const { showNitroRXCAFlow } = props;
   if (hideTimeline) {
     return null;
   }
@@ -48,25 +49,27 @@ const CaInfo = (props) => {
   };
 
   const sendViewEvent = (status) => {
-    props.tracking.trackEvent(
-      window.rzpQ.merchantActions().viewed('dashboard.neopricing_tracker', {
-        status: status ? analyticsStatusMap[status] : 'application_pending',
-      }),
-    );
+    !showNitroRXCAFlow &&
+      props.tracking.trackEvent(
+        window.rzpQ.merchantActions().viewed('dashboard.neopricing_tracker', {
+          status: status ? analyticsStatusMap[status] : 'application_pending',
+        }),
+      );
     props.updateCAstatus(status);
   };
 
   const GoToCaDocs = () => {
     window.open('https://razorpay.com/docs/razorpayx/current-account/', '_blank');
-    props.tracking.trackEvent(
-      window.rzpQ.merchantActions().clicked('dashboard.neopricing_tracker', {
-        clicked_on: 'view_documents',
-        status:
-          caAccount && caAccount.status
-            ? analyticsStatusMap[caAccount.status]
-            : analyticsStatusMap['created'],
-      }),
-    );
+    !showNitroRXCAFlow &&
+      props.tracking.trackEvent(
+        window.rzpQ.merchantActions().clicked('dashboard.neopricing_tracker', {
+          clicked_on: 'view_documents',
+          status:
+            caAccount && caAccount.status
+              ? analyticsStatusMap[caAccount.status]
+              : analyticsStatusMap['created'],
+        }),
+      );
   };
 
   const handleAnnouncementClose = () => {
@@ -152,8 +155,9 @@ const CaInfo = (props) => {
   ) {
     return null;
   } else if (
-    (!hasAppliedCa && getTimeDiff(activatedAt, 91) < 0) ||
-    (caStatus !== currentAccountStatuses.activated && getTimeDiff(activatedAt, 91) < 0)
+    ((!hasAppliedCa && getTimeDiff(activatedAt, 91) < 0) ||
+      (caStatus !== currentAccountStatuses.activated && getTimeDiff(activatedAt, 91) < 0)) &&
+    !showNitroRXCAFlow
   ) {
     return (
       <AnnouncementBanner
@@ -168,7 +172,7 @@ const CaInfo = (props) => {
     );
   }
 
-  const getStatusView = getCaState(caStatus, GoToCaDocs);
+  const getStatusView = getCaState(caStatus, GoToCaDocs, showNitroRXCAFlow);
   const { pillType, pillText, content, headState, title, viewType } = getStatusView;
 
   return (
@@ -192,6 +196,9 @@ const CaInfo = (props) => {
               headState={headState}
               caStatus={caStatus}
               activatedAt={activatedAt}
+              pillType={pillType}
+              pillText={pillText}
+              showNitroRXCAFlow={showNitroRXCAFlow}
             />
             <hr className="separator" />
             <Secondary
@@ -200,10 +207,11 @@ const CaInfo = (props) => {
               pillType={pillType}
               pillText={pillText}
               content={content}
+              showNitroRXCAFlow={showNitroRXCAFlow}
             />
           </div>
           <div className="faq-container">
-            <FAQ caStatus={caStatus} />
+            <FAQ caStatus={caStatus} showNitroRXCAFlow={showNitroRXCAFlow} />
           </div>
         </div>
       )}

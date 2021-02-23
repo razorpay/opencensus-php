@@ -114,6 +114,16 @@
     .status
       width: 400px
       margin-left: 40px;
+
+      a.btn
+        font-size: 13px
+        padding: 6px 20px
+        margin-top: 26px;
+
+        &.btn-primary--invert
+          background-color: #fff
+          color: #3b80ee
+          border-color: #3b80ee
   
   .benefits-list
     display: flex;
@@ -139,6 +149,15 @@
     top: 277px;
     right: 0px;
     width: 186px;
+  
+  .img-bg-extended
+    position: relative;
+    float: right;
+    margin-top: -110px;
+    margin-right: -24px;
+
+    @media (max-width: 1024px)
+      display: none; 
 
   .highlight-info.success
     background: rgba(0, 157, 68, 0.09);
@@ -220,8 +239,19 @@
       margin-top: 4px;
 
   .right
+    .ca-pill
+      background: rgba(57, 135, 240, 0.09);
+      border: 1px solid rgba(57, 135, 240, 0.35);
+      border-radius: 24px; 
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 21px;
+      color: #1558D9;
+      margin-left: auto;
+      height: 35px;         
+      padding: 5px 24px;
+
     margin-left: auto
-    margin-top: 9px
 
     .Button--primary
       margin-left: 8px

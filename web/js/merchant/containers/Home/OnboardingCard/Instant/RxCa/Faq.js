@@ -4,11 +4,15 @@ import Accordion, {
   AccordionItemTitle,
   AccordionItemContent,
 } from 'common/ui/Accordion';
-import { FAQ_DATA } from './data';
+import { FAQ_DATA_NEO } from './data';
+import { FAQ_DATA_NITRO } from './data';
 import { analyticsStatusMap } from './Cards/data';
 import RTracking from 'react-tracking';
 
 const Faq = (props) => {
+  const { showNitroRXCAFlow } = props;
+  const FAQ_DATA = showNitroRXCAFlow ? FAQ_DATA_NITRO : FAQ_DATA_NEO;
+
   const handleClick = () => {
     window.open('https://razorpay.com/links/neo-plan-terms-conditions', '_blank');
     props.tracking.trackEvent(
@@ -23,11 +27,13 @@ const Faq = (props) => {
     <div className="rx-faq">
       <div className="faq-title-container">
         <div className="faq-title">FAQ</div>
-        <div className="t-n-c">
-          <a onClick={handleClick}>
-            Terms and conditions <i class="i i-external-link" />
-          </a>
-        </div>
+        {!showNitroRXCAFlow ? (
+          <div className="t-n-c">
+            <a onClick={handleClick}>
+              Terms and conditions <i class="i i-external-link" />
+            </a>
+          </div>
+        ) : null}
       </div>
       <hr />
       <Accordion>

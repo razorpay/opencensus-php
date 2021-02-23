@@ -22,6 +22,9 @@ const Primary = ({
   hasAppliedCa,
   caStatus,
   activatedAt,
+  pillType,
+  pillText,
+  showNitroRXCAFlow,
 }) => {
   // activation time diff applyforCA is difference between kyc approved and current date.
   const activationTimeDiff = {
@@ -107,22 +110,34 @@ const Primary = ({
   return (
     <div className="ca-primary-card">
       <div className="left">
-        <div className="head">Open Your RazorpayX Current Account</div>
-        {getTimeLine(hasAppliedCa, caStatus, activatedAt)}
+        {showNitroRXCAFlow ? (
+          <div className="head">Track your account application status</div>
+        ) : (
+          <>
+            <div className="head">Open Your RazorpayX Current Account</div>
+            {getTimeLine(hasAppliedCa, caStatus, activatedAt)}
+          </>
+        )}
       </div>
       <div className="right">
-        {caAccount && caAccount.status === currentAccountStatuses.activated && (
-          <Button.Primary iconAfter="external-link" onClick={goToXdashboard}>
-            Explore Account
-          </Button.Primary>
-        )}
-        {hasAppliedCa && headState && <div className="headstate">{headState}</div>}
-        {!hasAppliedCa && getTimelineStatus('applyForCA')}
-        {hasAppliedCa && getTimelineStatus('documentSubmission')}
-        {!hasAppliedCa && (
-          <Button.Primary onClick={openCaApplyModal}>
-            {activationTimeDiff.applyForCA <= 0 ? 'Request Extension' : 'Apply Now'}
-          </Button.Primary>
+        {showNitroRXCAFlow ? (
+          <div className={`ca-pill ${pillType}`}>{pillText}</div>
+        ) : (
+          <>
+            {caAccount && caAccount.status === currentAccountStatuses.activated && (
+              <Button.Primary iconAfter="external-link" onClick={goToXdashboard}>
+                Explore Account
+              </Button.Primary>
+            )}
+            {hasAppliedCa && headState && <div className="headstate">{headState}</div>}
+            {!hasAppliedCa && getTimelineStatus('applyForCA')}
+            {hasAppliedCa && getTimelineStatus('documentSubmission')}
+            {!hasAppliedCa && (
+              <Button.Primary onClick={openCaApplyModal}>
+                {activationTimeDiff.applyForCA <= 0 ? 'Request Extension' : 'Apply Now'}
+              </Button.Primary>
+            )}
+          </>
         )}
       </div>
     </div>

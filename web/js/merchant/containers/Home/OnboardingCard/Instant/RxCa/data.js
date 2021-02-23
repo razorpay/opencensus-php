@@ -3,7 +3,7 @@
 import { currentAccountStatuses } from './Cards/data';
 import Button from 'common/new-ui/Button';
 
-export const FAQ_DATA = [
+export const FAQ_DATA_NEO = [
   {
     ques: 'What happens to my existing settlement account on Razorpay?',
     ans:
@@ -34,19 +34,46 @@ export const FAQ_DATA = [
   },
 ];
 
+export const FAQ_DATA_NITRO = [
+  {
+    ques: 'What is RazorpayX?',
+    ans:
+      'A smart current account that empowers you to manage your entire banking, right from money movement to accounting in one place',
+  },
+  {
+    ques: 'How does this Current Account compare to my bank?',
+    ans:
+      'Your RazorpayX Current Account not only comes with all standard banking features like cheque book, debit card, and account statements plus great tech capabilities like insightful financial reports, instant payouts, approvals workflow, API banking, and more.',
+  },
+  {
+    ques: 'What kind of banking features are available with RazorpayX?',
+    ans:
+      'In addition to standard banking features like cheque book, unlimited deposits and withdrawals, account statements, also get access to our custom features like maker-checker, queued and scheduled payouts, bulk payouts, vendor invoice management, instant tax payments and more.',
+  },
+];
+
 const validCoupons = ['NEORZP'];
 
 export const hasNeoCouponCode = (coupons) => {
   return validCoupons.some((validCoupon) => coupons.includes(validCoupon));
 };
 
-export const getCaState = (caAccountStatus, GoToCaDocs) => {
+export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
   let pillType,
     pillText,
     content,
     headState = '',
     viewType = '',
     title = '';
+  let viewDocumentsBTN = showNitroRXCAFlow ? (
+    <a className="btn btn-primary--invert" onClick={GoToCaDocs}>
+      View Documents
+    </a>
+  ) : (
+    <Button.Transparent className="view-doc" onClick={GoToCaDocs}>
+      View Documents
+    </Button.Transparent>
+  );
   if (!caAccountStatus || caAccountStatus === currentAccountStatuses.created) {
     pillType = 'default';
     pillText = 'Request Received';
@@ -57,9 +84,7 @@ export const getCaState = (caAccountStatus, GoToCaDocs) => {
           Our executive will contact you soon. You can get the application documents ready as per
           your business category.
         </span>{' '}
-        <Button.Transparent className="view-doc" onClick={GoToCaDocs}>
-          View Documents
-        </Button.Transparent>
+        {viewDocumentsBTN}
       </>
     );
   } else if (caAccountStatus === currentAccountStatuses.picked) {
@@ -72,9 +97,7 @@ export const getCaState = (caAccountStatus, GoToCaDocs) => {
           RazorpayX has started the application process. You can get the application documents ready
           as per your business category.
         </span>{' '}
-        <Button.Transparent className="view-doc" onClick={GoToCaDocs}>
-          View Documents
-        </Button.Transparent>
+        {viewDocumentsBTN}
       </>
     );
   } else if (caAccountStatus === currentAccountStatuses.processed) {
@@ -109,7 +132,7 @@ export const getCaState = (caAccountStatus, GoToCaDocs) => {
     title = 'Current account request cancelled';
     content = (
       <>
-        Your current account application has been cancelled. You have been reverted back to classinc
+        Your current account application has been cancelled. You have been reverted back to classic
         pricing with 2% transaction fees{' '}
       </>
     );
