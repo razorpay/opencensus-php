@@ -121,11 +121,11 @@ export default class ActivationContainer extends Component {
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
-      merchantFetch('merchant/aov-config'),
+      !this.isSourceRX && merchantFetch('merchant/aov-config'),
     ]).then(([data, categories, aov_list]) => {
       data = data.data;
       categories = categories && categories.data;
-      aov_list = aov_list.data;
+      aov_list = aov_list && aov_list.data;
 
       this.setState({
         data,
