@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 
@@ -759,18 +760,36 @@ class Selector extends Base\Core
 
             $chargeAccountMerchantData = (empty($this->input['charge_account_merchant']) === false) ? $this->getMerchantData($this->input['charge_account_merchant']) : null;
 
-            $data = [
-                'payment'                   => $paymentData,
-                'merchant'                  => $merchantData,
-                'terminals'                 => array_values($allTerminals),
-                'filtered_terminals'        => array_values($sortedTerminals),
-                'gateway_downtime'          => $downtimes,
-                'mode'                      => $this->mode,
-                'failed_terminals'          => array_values($failedTerminalIds),
-                'gateway_tokens'            => $this->input['gateway_tokens'],
-                'chance'                    => $this->options->getChance(),
-                'charge_account_merchant'   => $chargeAccountMerchantData,
-            ];
+            $merchantId = $payment->getMerchantId();
+
+            $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT",  $this->mode);
+
+             if ($variantFlag === 'on' and ($merchant->isFeatureEnabled(Features::RAAS) === false))
+             {
+                 $data = [
+                     'payment'                   => $paymentData,
+                     'merchant'                  => $merchantData,
+                     'gateway_downtime'          => $downtimes,
+                     'mode'                      => $this->mode,
+                     'failed_terminals'          => array_values($failedTerminalIds),
+                     'gateway_tokens'            => $this->input['gateway_tokens'],
+                     'charge_account_merchant'   => $chargeAccountMerchantData,
+                 ];
+             }
+            else {
+                $data = [
+                    'payment' => $paymentData,
+                    'merchant' => $merchantData,
+                    'terminals' => array_values($allTerminals),
+                    'filtered_terminals' => array_values($sortedTerminals),
+                    'gateway_downtime' => $downtimes,
+                    'mode' => $this->mode,
+                    'failed_terminals' => array_values($failedTerminalIds),
+                    'gateway_tokens' => $this->input['gateway_tokens'],
+                    'chance' => $this->options->getChance(),
+                    'charge_account_merchant' => $chargeAccountMerchantData,
+                ];
+            }
 
             $tracePayment = $data['payment'];
 
@@ -789,8 +808,6 @@ class Selector extends Base\Core
                     'payment'             => $tracePayment,
                     'mode'                => $this->mode,
                     'merchant'            => $data['merchant'],
-                    'terminal_count'      => count($data['terminals']),
-                    'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
                 ]);
