@@ -95,7 +95,7 @@ class AdminTest extends TestCase
             $testData = [
                 'user' => [
                     'email'    => $email,
-                    'password' => 'random!12#'
+                    'password' => 'Random!12#'
                 ]
             ];
 
@@ -152,7 +152,7 @@ class AdminTest extends TestCase
         // to check the password
         $adminCreated = $this->repo->findByEmail('xyz@razorpay.com');
 
-        $isSame = Hash::check("random!12#", $adminCreated->getPassword());
+        $isSame = Hash::check("Random!12#", $adminCreated->getPassword());
 
         $this->assertEquals(true,$isSame);
     }

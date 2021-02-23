@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
     const MAX_PASSWORD_RETAIN               = 'max_password_retain';
     const INACTIVITY_LOCK                   = 'inactivity_lock';
     const PASSWORD_EXPIRY                   = 'password_expiry';
+    const SPECIAL_CHARACTERS                = 'special_characters';
+    const UPPER_LOWER_CASE                  = 'upper_lower_case';
 
     // Not used by the Entity but by the Validator
     const LOCKED_ACCOUNT                    = 'locked_account';

@@ -22,7 +22,9 @@ class Validator extends Base\Validator
         Entity::MIN_LENGTH,
         Entity::MAX_LENGTH,
         Entity::MAX_PASSWORD_RETAIN,
-        Entity::STRONG_PASSWORD
+        Entity::STRONG_PASSWORD,
+        Entity::SPECIAL_CHARACTERS,
+        Entity::UPPER_LOWER_CASE,
     ];
 
     protected $beforeLoginPolicyRules = [

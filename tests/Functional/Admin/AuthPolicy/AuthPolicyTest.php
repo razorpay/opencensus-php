@@ -77,6 +77,42 @@ class AuthPolicyTest extends TestCase
         $this->startTest();
     }
 
+    public function testSpecialCharactersInPassword()
+    {
+
+        $testData = $this->testData['testWeakPassword'];
+
+        $password = "Rzp93Random879";
+
+        $testData['request']['content']['password'] = $password;
+
+        $testData['request']['content']['password_confirmation'] = $password;
+
+        $testData['response']['content']['error']['description'] = 'Password must have special characters';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testUpperLowerCaseInPassword()
+    {
+
+        $testData = $this->testData['testWeakPassword'];
+
+        $password = "rzp@93random879";
+
+        $testData['request']['content']['password'] = $password;
+
+        $testData['request']['content']['password_confirmation'] = $password;
+
+        $testData['response']['content']['error']['description'] = 'Password must have combination of uppercase and lowercase characters';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
     public function testShortPassword()
     {
         $this->startTest();
@@ -191,7 +227,7 @@ class AuthPolicyTest extends TestCase
 
         $admin = $this->adminRepo->findOrFailPublic($admin->getId());
 
-        $this->assertTrue(Hash::check('@#12$%^&dfghq', $admin['password']));
+        $this->assertTrue(Hash::check('@#12$%^&Dfghq', $admin['password']));
         $this->assertFalse(
             in_array(
                 '$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW',

@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|max:255|email|unique:admins,email,NULL,deleted_at,deleted_at,NULL|custom',
         Entity::NAME                  => 'required|alpha_space|between:3,100',
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
-        Entity::PASSWORD              => 'sometimes|string|confirmed',
+        Entity::PASSWORD              => 'sometimes|string|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'sometimes',
         Entity::REMEMBER_TOKEN        => 'sometimes|string|max:255',
         Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:255',
@@ -46,7 +46,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|alpha_space|between:3,100',
-        Entity::PASSWORD              => 'sometimes|string|confirmed',
+        Entity::PASSWORD              => 'sometimes|string|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'sometimes',
         Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:255',
         Entity::OAUTH_PROVIDER_ID     => 'sometimes|string|max:255',
@@ -82,7 +82,7 @@ class Validator extends Base\Validator
 
     protected static $resetRules = [
         Entity::EMAIL                 => 'required|email|max:255',
-        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD              => 'required|string|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|string',
         self::TOKEN                   => 'required|string',
         Org\Entity::AUTH_TYPE         => 'required|string|in:password',
