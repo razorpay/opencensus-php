@@ -39,254 +39,260 @@ jobs:
     - name: validate_php_syntax
       run: ci-assets/validate_php_syntax.sh
   build-web:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
     needs: [cancel]
     continue-on-error: false
     name: Build Web Harbor
     steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
       - name: build
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: ${{ github.sha }}
-          dockerfile: Dockerfile.web
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182,OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
+          tags: c.rzp.io/razorpay/api:${{ github.sha }}
+          push: true
+          file: ./Dockerfile.web
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+            GIT_USERNAME=rzp
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
+            ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+            OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
+
   build-worker:
-    runs-on: [ self-hosted ]
-    needs: [ cancel ]
-    continue-on-error: false
-    name: Build Worker Harbor
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: worker-${{ github.sha }}
-          dockerfile: Dockerfile.worker
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-worker,ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182,OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+     runs-on: ubuntu-latest
+     needs: [ cancel ]
+     continue-on-error: false
+     name: Build Worker Harbor
+     steps:
+       - name: Login to Harbor
+         uses: docker/login-action@v1
+         with:
+           registry: c.rzp.io
+           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+       - name: Set up Docker Buildx
+         id: buildx
+         uses: docker/setup-buildx-action@v1
+       - name: build
+         uses: docker/build-push-action@v2
+         with:
+           tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
+           push: true
+           file: ./Dockerfile.worker
+           build-args: |
+             GIT_COMMIT_HASH=${{ github.sha }}
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_USERNAME=rzp
+             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
+             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+             OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+
   build-checkout:
-    runs-on: [self-hosted]
-    needs: [cancel]
-    continue-on-error: false
-    name: Build Checkout Harbor
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: checkout-${{ github.sha }}
-          dockerfile: Dockerfile.checkout
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
+     runs-on: ubuntu-latest
+     needs: [cancel]
+     continue-on-error: false
+     name: Build Checkout Harbor
+     steps:
+       - name: Login to Harbor
+         uses: docker/login-action@v1
+         with:
+           registry: c.rzp.io
+           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+       - name: Set up Docker Buildx
+         id: buildx
+         uses: docker/setup-buildx-action@v1
+       - name: build
+         uses: docker/build-push-action@v2
+         with:
+           tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
+           push: true
+           file: ./Dockerfile.checkout
+           build-args: |
+             GIT_COMMIT_HASH=${{ github.sha }}
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_USERNAME=rzp
+             NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
+
   build-openresty:
-    runs-on: [self-hosted]
-    needs: [cancel]
-    continue-on-error: false
-    name: Build Openresty Harbor
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: openresty-${{ github.sha }}
-          dockerfile: Dockerfile.openresty
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api,OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+     runs-on: ubuntu-latest
+     needs: [cancel]
+     continue-on-error: false
+     name: Build Openresty Harbor
+     steps:
+       - name: Login to Harbor
+         uses: docker/login-action@v1
+         with:
+           registry: c.rzp.io
+           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+       - name: Set up Docker Buildx
+         id: buildx
+         uses: docker/setup-buildx-action@v1
+       - name: build
+         uses: docker/build-push-action@v2
+         with:
+           tags: c.rzp.io/razorpay/api:openresty-${{ github.sha }}
+           push: true
+           file: ./Dockerfile.openresty
+           build-args: |
+             GIT_COMMIT_HASH=${{ github.sha }}
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_USERNAME=rzp
+             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
+             OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+
   build-dockerhub-web:
-    runs-on: [ self-hosted ]
-    needs: [ cancel ]
-    continue-on-error: false
-    name: Build Web Dockerhub
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: ${{ github.sha }}
-          dockerfile: Dockerfile.web
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+     runs-on: ubuntu-latest
+     needs: [ cancel ]
+     continue-on-error: false
+     name: Build Web Dockerhub
+     steps:
+       - name: Login to Dockerhub
+         uses: docker/login-action@v1
+         with:
+           username: ${{ secrets.DOCKER_USERNAME }}
+           password: ${{ secrets.DOCKER_PASSWORD }}
+       - name: Set up Docker Buildx
+         id: buildx
+         uses: docker/setup-buildx-action@v1
+       - name: build
+         uses: docker/build-push-action@v2
+         with:
+           tags: razorpay/api:${{ github.sha }}
+           push: true
+           file: ./Dockerfile.web
+           build-args: |
+             GIT_COMMIT_HASH=${{ github.sha }}
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_USERNAME=rzp
+
   build-dockerhub-worker:
-    runs-on: [ self-hosted ]
-    needs: [ cancel ]
-    continue-on-error: false
-    name: Build Worker Dockerhub
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: worker-${{ github.sha }}
-          dockerfile: Dockerfile.worker
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+     runs-on: ubuntu-latest
+     needs: [ cancel ]
+     continue-on-error: false
+     name: Build Worker Dockerhub
+     steps:
+       - name: Login to Dockerhub
+         uses: docker/login-action@v1
+         with:
+           username: ${{ secrets.DOCKER_USERNAME }}
+           password: ${{ secrets.DOCKER_PASSWORD }}
+       - name: Set up Docker Buildx
+         id: buildx
+         uses: docker/setup-buildx-action@v1
+       - name: build
+         uses: docker/build-push-action@v2
+         with:
+           tags: razorpay/api:worker-${{ github.sha }}
+           push: true
+           file: ./Dockerfile.worker
+           build-args: |
+             GIT_COMMIT_HASH=${{ github.sha }}
+             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_USERNAME=rzp
+
   build-dockerhub-checkout:
-    runs-on: [ self-hosted ]
+    runs-on: ubuntu-latest
     needs: [ cancel ]
     continue-on-error: false
     name: Build Checkout Dockerhub
     steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: build
-        uses: docker/build-push-action@v1
+      - name: Login to Dockerhub
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: checkout-${{ github.sha }}
-          dockerfile: Dockerfile.checkout
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: razorpay/api:checkout-${{ github.sha }}
+          push: true
+          file: ./Dockerfile.checkout
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+            GIT_USERNAME=rzp
+
   build-dockerhub-openresty:
-    runs-on: [ self-hosted ]
-    needs: [ cancel ]
-    continue-on-error: false
-    name: Build Openresty Dockerhub
-    steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@v2
-      - name: build
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: razorpay/api
-          tags: openresty-${{ github.sha }}
-          dockerfile: Dockerfile.openresty
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+   runs-on: ubuntu-latest
+   needs: [ cancel ]
+   continue-on-error: false
+   name: Build Openresty Dockerhub
+   steps:
+     - name: Login to Dockerhub
+       uses: docker/login-action@v1
+       with:
+         username: ${{ secrets.DOCKER_USERNAME }}
+         password: ${{ secrets.DOCKER_PASSWORD }}
+     - name: Set up Docker Buildx
+       id: buildx
+       uses: docker/setup-buildx-action@v1
+     - name: build
+       uses: docker/build-push-action@v2
+       with:
+         tags: razorpay/api:openresty-${{ github.sha }}
+         push: true
+         file: ./Dockerfile.openresty
+         build-args: |
+           GIT_COMMIT_HASH=${{ github.sha }}
+           GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+           GIT_USERNAME=rzp
+
   workflow_status:
-    runs-on: [self-hosted]
-    continue-on-error: false
-    name: Update Status Check
-    needs: [
-      validate_php_syntax,
-      build-web,
-      build-worker,
-      build-checkout,
-      build-openresty,
-      build-dockerhub-web,
-      build-dockerhub-worker,
-      build-dockerhub-checkout,
-      build-dockerhub-openresty
-      ]
-    if: always()
-    steps:
-    - name: Failed
-      id: failed
-      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-      run: |
-        echo 'Failing the workflow for github status check.'
-        curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
-        -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
-        https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
-        exit 1
-    - name: Success
-      if: steps.failed.conclusion == 'skipped'
-      run: |
-        echo 'Status check has passed!'
-        curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
-        -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
-        https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
-        exit 0
-  slack-notify:
-    runs-on : [self-hosted]
-    name: Notify build
-    needs: [workflow_status]
-    if: always()
-    steps:
-    - name: Sending build success notification to tech_builds (Slack)
-      if: github.ref != 'refs/heads/master' && needs.workflow_status.result == 'success'
-      env:
-        SLACK_MESSAGE: 'Build Success.'
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
-        SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
-        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
-    - name: Sending build failed notification to tech_builds (Slack)
-      if: github.ref != 'refs/heads/master' && needs.workflow_status.result != 'success'
-      env:
-        SLACK_MESSAGE: 'Build failed.'
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#8B0000'
-        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
-        SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
-        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
-    - name: Sending build failed notification to tech_backend (Slack)
-      if: github.ref == 'refs/heads/master' && needs.workflow_status.result != 'success'
-      env:
-        SLACK_MESSAGE: 'Master Build failed.'
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#8B0000'
-        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
-        SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
-        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@ca2febb266f78a54a245d815081549c522099b76
+   runs-on: [self-hosted]
+   continue-on-error: false
+   name: Update Status Check
+   needs: [
+     validate_php_syntax,
+     build-web,
+     build-worker,
+     build-checkout,
+     build-openresty,
+     build-dockerhub-web,
+     build-dockerhub-worker,
+     build-dockerhub-checkout,
+     build-dockerhub-openresty
+     ]
+   if: always()
+   steps:
+   - name: Failed
+     id: failed
+     if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+     run: |
+       echo 'Failing the workflow for github status check.'
+       curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+       -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
+       https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
+       exit 1
+   - name: Success
+     if: steps.failed.conclusion == 'skipped'
+     run: |
+       echo 'Status check has passed!'
+       curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+       -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
+       https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
+       exit 0
   trigger_regression_suite:
-    runs-on: [self-hosted]
-    name: Regression Suite
-    needs: [workflow_status]
-    if: github.ref == 'refs/heads/master'
-    steps:
-    - name: Webhook
-      run: |
-        curl -X POST -H "Content-Type: application/json" \
-        -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
-        https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
+   runs-on: [self-hosted]
+   name: Regression Suite
+   needs: [workflow_status]
+   if: github.ref == 'refs/heads/master'
+   steps:
+   - name: Webhook
+     run: |
+       curl -X POST -H "Content-Type: application/json" \
+       -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
+       https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
