@@ -5656,6 +5656,255 @@ class RefundTest extends TestCase
         $this->assertEquals('normal', $scroogeRetryInput['speed_processed']);
     }
 
+    public function testFtaOnNormalGatewayRefundWithTerminalVariantActiveSuccessful()
+    {
+        $upiPayment = $this->createUpiPayment();
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        s($paymentEntity);
+        $scroogeInput = [];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('initiateRefund')
+            ->will($this->returnCallback(
+                function ($input, $throwExceptionOnFailure) use (&$scroogeInput)
+                {
+                    $scroogeInput = $input;
+                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+            ->willReturn([
+                'mode' => 'IMPS',
+                'gateway_refund_support' => true,
+                'instant_refund_support' => true,
+                'payment_age_limit_for_gateway_refund' => null
+            ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === '100UPIMindgate_terminal_refunds_route_via_fta')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $vpaData = ['vpa' => ['address' => $paymentEntity->getVpa()]];
+
+        // Adding specific amount to refund - this is meant to test successful refunds on scrooge
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            4000,
+            [
+                'is_fta'   => true,
+                'fta_data' => $vpaData
+            ]
+        );
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $ftaEntity = $this->getDbLastEntity('fund_transfer_attempt');
+
+        // Fta data not being passed to Scrooge
+        $this->assertEquals($vpaData, $scroogeInput['fta_data']);
+
+        $this->assertEquals('normal', $scroogeInput['speed_requested']);
+        $this->assertEquals('normal', $scroogeInput['speed_processed']);
+
+        $this->assertEquals('processed', $refundEntity['status']);
+        $this->assertEquals('normal', $refundEntity['speed_requested']);
+        $this->assertEquals('normal', $refundEntity['speed_decisioned']);
+        $this->assertEquals('normal', $refundEntity['speed_processed']);
+
+        $this->assertEquals($refundEntity['id'], $ftaEntity['source_id']);
+    }
+
+    public function testFtaOnNormalGatewayRefundWithTerminalVariantInactive()
+    {
+        $upiPayment = $this->createUpiPayment();
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $scroogeInput = [];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('initiateRefund')
+            ->will($this->returnCallback(
+                function ($input, $throwExceptionOnFailure) use (&$scroogeInput)
+                {
+                    $scroogeInput = $input;
+                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+            ->willReturn([
+                'mode' => 'IMPS',
+                'gateway_refund_support' => true,
+                'instant_refund_support' => true,
+                'payment_age_limit_for_gateway_refund' => null
+            ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === '100UPIMindgate_terminal_refunds_route_via_fta')
+                    {
+                        return 'off';
+                    }
+
+                    return 'off';
+                }));
+
+        // Adding specific amount to refund - this is meant to test successful refunds on scrooge -
+        $refund = $this->refundPayment($upiPayment['id'], 4000);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $ftaEntity = $this->getDbLastEntity('fund_transfer_attempt');
+
+        // Fta data not being passed
+        $this->assertFalse(array_key_exists('fta_data', $scroogeInput));
+
+        $this->assertEquals('normal', $scroogeInput['speed_requested']);
+        $this->assertEquals('normal', $scroogeInput['speed_processed']);
+
+        $this->assertEquals('processed', $refundEntity['status']);
+        $this->assertEquals('normal', $refundEntity['speed_requested']);
+        $this->assertEquals('normal', $refundEntity['speed_decisioned']);
+        $this->assertEquals('normal', $refundEntity['speed_processed']);
+
+        $this->assertNull($ftaEntity);
+    }
+
+    public function testFtaOnNormalGatewayRefundWithTerminalVariantActiveRetryViaGateway()
+    {
+        $upiPayment = $this->createUpiPayment();
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $scroogeInput = [];
+
+        $scroogeRetryInput = [];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('initiateRefund')
+            ->will($this->returnCallback(
+                function ($input, $throwExceptionOnFailure) use (&$scroogeInput)
+                {
+                    $scroogeInput = $input;
+                }));
+
+        $this->app->scrooge->method('initiateRefundRetry')
+            ->will($this->returnCallback(
+                function ($input, $throwExceptionOnFailure) use (&$scroogeRetryInput)
+                {
+                    $scroogeRetryInput = $input;
+                }));
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+            ->willReturn([
+                'mode' => 'IMPS',
+                'gateway_refund_support' => true,
+                'instant_refund_support' => true,
+                'payment_age_limit_for_gateway_refund' => null
+            ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === '100UPIMindgate_terminal_refunds_route_via_fta')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $vpaData = ['vpa' => ['address' => $paymentEntity->getVpa()]];
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $upiPayment['id'],
+            3948,
+            [
+                'is_fta'   => true,
+                'fta_data' => $vpaData
+            ]
+        );
+
+        $this->assertEquals($vpaData, $scroogeInput['fta_data']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $ftaEntity = $this->getDbLastEntity('fund_transfer_attempt');
+
+        // Fta data not being passed to Scrooge
+        $this->assertEquals($vpaData, $scroogeInput['fta_data']);
+
+        $this->assertEquals('normal', $scroogeInput['speed_requested']);
+        $this->assertEquals('normal', $scroogeInput['speed_processed']);
+
+        // Not yet processed
+        $this->assertEquals('created', $refundEntity['status']);
+        $this->assertEquals('normal', $refundEntity['speed_requested']);
+        $this->assertEquals('normal', $refundEntity['speed_decisioned']);
+        $this->assertEquals('normal', $refundEntity['speed_processed']);
+
+        $this->assertEquals($refundEntity['id'], $ftaEntity['source_id']);
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        // Fta data not being passed in retry since fta has already been created once
+        $this->assertFalse(array_key_exists('fta_data', $scroogeRetryInput));
+
+        $this->assertEquals('normal', $scroogeRetryInput['speed_requested']);
+        $this->assertEquals('normal', $scroogeRetryInput['speed_processed']);
+    }
+
     public function testInstantDecisioningWhenGatewayRefundNotSupported()
     {
         $payment = $this->defaultAuthPayment();

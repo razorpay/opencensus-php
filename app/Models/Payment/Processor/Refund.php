@@ -3278,22 +3278,38 @@ trait Refund
             return $input;
         }
 
-        //
         // If gateway is not functioning or for any other reason product takes a call to route traffic
         // of a UPI gateway via FTA
         // This is applicable only for 1 automated FTA attempt only.
-        //
         if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, false) === true)
         {
+            // This supports routing on gateway, gateway and merchant level
             $featureFlag = $payment->getGateway() . '_' . RefundConstants::RAZORX_KEY_REFUND_ROUTE_VIA_FTA_SUFFIX;
 
-            $variant = $this->app->razorx->getTreatment(
+            $gatewayVariant = $this->app->razorx->getTreatment(
                 $payment->getMerchantId(),
                 $featureFlag,
                 $this->mode
             );
 
-            if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+            if (strtolower($gatewayVariant) === RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
+
+                return $input;
+            }
+
+            // This supports routing on terminal, terminal and merchant level
+            // one terminal is specific to one gateway
+            $featureFlag = $payment->getTerminalId() . '_' . RefundConstants::RAZORX_KEY_TERMINAL_REFUNDS_ROUTE_VIA_FTA_SUFFIX;
+
+            $terminalVariant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                $featureFlag,
+                $this->mode
+            );
+
+            if (strtolower($terminalVariant) === RefundConstants::RAZORX_VARIANT_ON)
             {
                 $input[RefundConstants::VPA_ADDRESS] = $payment->getVpa();
 
