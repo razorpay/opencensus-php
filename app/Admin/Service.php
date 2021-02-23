@@ -905,6 +905,8 @@ class Service extends Base\Service
         $input = \Input::all();
         $error = [];
 
+        $this->traceRawApiCall($input, $path);
+
         $validator = (new Admin\Validator);
         $validator->setStrictFalse();
         $error = $validator->validateInput('api_call', $input)->messages();
@@ -1518,5 +1520,19 @@ class Service extends Base\Service
     protected function getOrgDataCacheKey($domain)
     {
         return self::CACHE_KEY_ORG_DATA . $domain;
+    }
+
+    protected function traceRawApiCall($input, $path)
+    {
+        $traceData = [
+            'path'         => $path,
+            'mode'         => $input['mode'],
+            'method'       => $input['method'],
+            'auth'         => $input['auth'],
+            'content_type' => $input['content_type'] ?? '',
+            'merchant_id'  => $input['merchant_id'] ?? '',
+        ];
+
+        $this->trace->info(TraceCode::ADMIN_RAW_API_CALL, $traceData);
     }
 }

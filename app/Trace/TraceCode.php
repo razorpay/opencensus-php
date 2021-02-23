@@ -64,6 +64,8 @@ class TraceCode
 
     const PUSH_METRICS_FAILED                       = 'PUSH_METRICS_FAILED';
 
+    const ADMIN_RAW_API_CALL                        = 'ADMIN_RAW_API_CALL';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

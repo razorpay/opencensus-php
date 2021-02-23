@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     );
 
     protected static $apiCallRules = [
-        'auth'          =>  'required|in:proxy,admin,internal',
+        'auth'          =>  'required|in:proxy,admin',
         'mode'          =>  'required|in:test,live',
         'merchant_id'   =>  'sometimes|max:20',
         'content_type'  =>  'sometimes',
