@@ -59,23 +59,23 @@ jobs:
           LQEXT_TESTING_TXN_SKIP_COUNT: 3
     services:
       redis:
-        image: redis
         credentials:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/razorpay/onggi:redis
       mysql:
-        image: mysql:5.7
         credentials:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/razorpay/onggi:mysql-5.7
         env:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
       elasticsearch:
         credentials:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-        image: elasticsearch:5.2-alpine
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/razorpay/onggi:elasticsearch-5.2-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   workflow_status:
