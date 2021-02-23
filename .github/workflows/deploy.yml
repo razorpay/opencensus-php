@@ -1,5 +1,5 @@
 name: Run Unit Coverage
-on: deployment
+on: [deployment]
 jobs:
   Smart-collect:
     runs-on: [self-hosted]
@@ -53,13 +53,22 @@ jobs:
           SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest
     services:
       redis:
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         image: redis
       mysql:
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         image: mysql:5.7
         env:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
       elasticsearch:
+        credentials:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         image: elasticsearch:5.2-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m

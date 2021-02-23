@@ -137,7 +137,7 @@ jobs:
           repository: razorpay/api
           tags: openresty-${{ github.sha }}
           dockerfile: Dockerfile.openresty
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp,ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api,OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
   build-dockerhub-web:
     runs-on: [ self-hosted ]
     needs: [ cancel ]
