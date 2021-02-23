@@ -208,9 +208,9 @@ export default class ActivationWizard extends React.Component {
     if (props.data.merchant_avg_order_value) {
       const aovValue = props.data.merchant_avg_order_value;
       if (aovValue.max_aov === 0) {
-        this.state.selected_aov = 'More than 1,00,000₹';
+        this.state.selected_aov = 'More than ₹ 1,00,000';
       } else {
-        this.state.selected_aov = `${aovValue.min_aov}-${aovValue.max_aov}₹`;
+        this.state.selected_aov = `${aovValue.min_aov}-${aovValue.max_aov}`;
       }
     }
 
@@ -1448,21 +1448,21 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (fieldName === 'merchant_avg_order_value') {
-      if (fieldValue === 'More than 1,00,000₹') {
+      if (fieldValue === 'More than ₹ 1,00,000') {
         sideEffectFieldsToUpdate.merchant_avg_order_value = {
           min_aov: 100000,
           max_aov: 0,
         };
-        this.setState({ selected_aov: 'More than 1,00,000₹' });
+        this.setState({ selected_aov: 'More than ₹ 1,00,000' });
       } else {
         const value = fieldValue.split('-');
         const min = value[0];
-        const max = value[1].split('₹')[0];
+        const max = value[1];
         sideEffectFieldsToUpdate.merchant_avg_order_value = {
           min_aov: min,
           max_aov: max,
         };
-        this.setState({ selected_aov: `${min}-${max}₹` });
+        this.setState({ selected_aov: `${min}-${max}` });
       }
     }
 

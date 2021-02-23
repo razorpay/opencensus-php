@@ -269,7 +269,7 @@ const businessModel = [
     name: 'merchant_avg_order_value',
     extraChildren: (
       <div className="Input--aov-heading">
-        Any payment recieved by my business would usually lie in range
+        Any payment received by my business would usually lie in range
       </div>
     ),
     _autoRenderImpure: true,
@@ -280,13 +280,13 @@ const businessModel = [
           activation.props.aovRange.config.map((item) => {
             if (item.max === 0) {
               return {
-                name: 'More than 1,00,000₹',
-                label: 'More than 1,00,000₹',
+                name: 'More than ₹ 1,00,000',
+                label: 'More than ₹ 1,00,000',
               };
             }
             return {
-              name: `${item.min}-${item.max}₹`,
-              label: `${item.min}-${item.max}₹`,
+              name: `${item.min}-${item.max}`,
+              label: `₹ ${item.min} - ₹ ${item.max}`,
             };
           }),
         );
