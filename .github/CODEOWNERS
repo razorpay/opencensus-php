@@ -99,7 +99,7 @@ app/Models/Terminal/Category.php                       @razorpay/TechRulesRoutin
 app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
 app/Models/Transfer/                                   baljeet.kumar@razorpay.com
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Models/User/                                       pankaj.kumar@razorpay.com
+app/Models/User/                                       pankaj.kumar@razorpay.com                               vivek.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
 app/Models/Workflow/                                   praveen.patlola@razorpay.com
 
