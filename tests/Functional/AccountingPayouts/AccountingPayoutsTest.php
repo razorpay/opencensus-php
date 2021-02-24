@@ -181,4 +181,20 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('waitlist');
     }
 
+    public function testCallbackRequestCalledDirectly()
+    {
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts\Service')
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $apMock->shouldAllowMockingMethod('request')
+            ->shouldReceive('request')
+            ->andReturn([]);
+
+        $apMock->shouldAllowMockingMethod('makeRequest')
+            ->shouldReceive('makeRequest')
+            ->never();
+
+        $apMock->callback([]);
+    }
 }

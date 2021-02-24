@@ -5,6 +5,7 @@ namespace RZP\Services\AccountingPayouts;
 use http\Client\Response;
 use Requests;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
@@ -30,6 +31,7 @@ class Service
     const SYNC_STATUS_APP           = 'SyncStatusApp';
     const SYNC                      = 'Sync';
     const WAITLIST                  = 'Waitlist';
+    const X_APP_MODE                = 'X-App-Mode';
 
     protected $app;
 
@@ -120,7 +122,7 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, 'Callback');
 
-        $this->makeRequest(null, $url, $input);
+        $this->request($url, $input);
 
         $response = "<script>window.close()</script>";
 
@@ -221,7 +223,8 @@ class Service
                                    array $data = [],
                                    string $app = null,
                                    array $headers = [],
-                                   string $method = 'POST')
+                                   string $method = 'POST',
+                                   string $mode = null)
     {
         if ($merchant !== null) {
             $data = array_merge($data, ['merchant_id' => $merchant->getId()]);
@@ -230,6 +233,24 @@ class Service
         if ($data !== null) {
             $data["app"] = $app;
         }
+
+        if ($mode == null)
+        {
+            $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+        }
+        else
+        {
+            $headers[self::X_APP_MODE] = $mode;
+        }
+
+        return $this->request($url, $data, $headers, $method);
+    }
+
+    protected function request(string $url = "",
+                                   array $data = [],
+                                   array $headers = [],
+                                   string $method = 'POST')
+    {
 
         $headers['Content-Type'] = 'application/json';
 
