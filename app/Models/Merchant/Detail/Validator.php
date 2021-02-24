@@ -281,7 +281,7 @@ class Validator extends Base\Validator
 
     protected static $pennyTestingEventPayloadRules = [
         Constants::MERCHANT_ID              => 'required|string|max:14',
-        Constants::ACCOUNT_STATUS           => 'required|string',
+        Constants::ACCOUNT_STATUS           => 'sometimes|nullable|string',
         Constants::REGISTERED_NAME          => 'sometimes|string',
         Constants::PENNY_TESTING_REASON     => 'sometimes',
     ];
