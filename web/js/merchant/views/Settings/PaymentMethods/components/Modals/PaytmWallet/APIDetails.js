@@ -23,18 +23,6 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
       return 'Please add the valid merchant key';
     }
   }
-  function validateMerchantWebsite(val) {
-    const website = val.toLowerCase().split('.');
-    try {
-      new URL(website);
-      if (website.includes('webstaging')) {
-        return 'Please enter the live website details';
-      }
-      return;
-    } catch (e) {
-      return 'Please enter a valid URL';
-    }
-  }
 
   useEffect(() => {
     const { merchant_id, merchant_key, website_name, industry_type } = values;
@@ -99,11 +87,9 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
                 <Input
                   name="website_name"
                   label="Paytm Website Name"
-                  placeholder="https://www.example.com"
+                  placeholder="DEFAULT"
                   value={values.website_name}
                   onChange={onChange}
-                  validator={validateMerchantWebsite}
-                  type="url"
                 />
               </div>
               <div className="form-control-input">
