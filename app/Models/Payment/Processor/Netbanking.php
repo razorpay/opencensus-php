@@ -802,7 +802,6 @@ class Netbanking
     ];
 
     const DEFAULT_DISABLED_BANKS = [
-        IFSC::AUBL,
         IFSC::BBKM,
         IFSC::BKID,
         IFSC::COSB,
