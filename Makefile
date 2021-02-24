@@ -91,6 +91,11 @@ test:
 
 all: build
 
+error-module-clean:
+	@echo " + Removing fetched error-mapping-files\n"
+	@rm -rf $(ERROR_MODULE_ROOT)
+
+
 error-module-fetch: ## Fetch ERROR_MODULE files from remote repo
 	@echo "\n + Fetching ERROR_MODULE files from branch: $(ERROR_MODULE_BRANCH) \n"
 	@mkdir $(ERROR_MODULE_ROOT) && \
