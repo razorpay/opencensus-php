@@ -44,6 +44,8 @@ return array(
     */
     'inactivity_time' => 20,
 
+    'inactivity_time_admin_dashboard' => 20,
+
     'expire_on_close' => false,
 
     /*

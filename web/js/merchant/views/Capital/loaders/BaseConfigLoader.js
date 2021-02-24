@@ -11,7 +11,7 @@ export default class BaseConfigLoader {
     const sideNavigationStateGroups = this.getSideNavigationStateGroups();
 
     const stateTransitionMap = {};
-    
+
     // TODO: remove Object.entries over state groups and do not rely on order
     const stateGroups = Object.entries(sideNavigationStateGroups);
     stateGroups.forEach(([groupLabel, stateGroup]) => {

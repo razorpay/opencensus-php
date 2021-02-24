@@ -37,13 +37,12 @@ export default class ErrorBoundary extends Component {
   render() {
     const SDK = window.Sentry || window.Raven;
     const hasSDK = !!SDK;
-    const lastEventId =
-      this.state.eventId || (window.Raven && Raven.lastEventId());
+    const lastEventId = this.state.eventId || (window.Raven && Raven.lastEventId());
 
     if (this.state.error) {
       return (
         <div
-          ref={node => (this.node = node)}
+          ref={(node) => (this.node = node)}
           className={`rzp-error-boundary${hasSDK ? ' has-raven' : ''}`}
         >
           {hasSDK && (

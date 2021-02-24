@@ -64,6 +64,10 @@ class TraceCode
 
     const PUSH_METRICS_FAILED                       = 'PUSH_METRICS_FAILED';
 
+    const ORG_FEATURES_CACHE_MISS                   = 'ORG_FEATURES_CACHE_MISS';
+
+    const ADMIN_LOGOUT_ON_INACTIVITY                = 'ADMIN_LOGOUT_ON_INACTIVITY';
+
     const ADMIN_RAW_API_CALL                        = 'ADMIN_RAW_API_CALL';
 
     protected static $messages = array(
