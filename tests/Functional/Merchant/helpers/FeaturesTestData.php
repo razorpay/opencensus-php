@@ -1409,4 +1409,56 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testDisableTpvFlowFeature' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['disable_tpv_flow'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                    'name' => 'disable_tpv_flow',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEnableTpvFlowFeature' => [
+        'request'  => [
+            'content' => [
+                'names'       => ['enable_tpv_flow'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                [
+                    'name'        => 'enable_tpv_flow',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
