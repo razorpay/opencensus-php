@@ -26,6 +26,13 @@ configure(){
    # We're casting env.ephemeral.j2 only when APP_MODE is ephemeral, in other scenarios the flow will be as usual.
    # Doing this will avoid us from resolving the different environmental conditions existing in vault.j2.
    # env.vault.j2 will remain unresolved in case of APP_MODE = 'ephemeral'
+  elif [[ "${APP_MODE}" == "devserve" ]] ; then
+   # casting only env.php.j2 and apache conf for devserve env as the secrets are injected via kube secrets
+   # DEV_SERVE variable is to be passed as true
+   # creating /var/log/apache as we config in apache2 folder but using apache for logging which is mounted in kubernetes
+   mkdir -p /var/log/apache/
+   chown 0775 /var/log/apache/
+   alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   else
     alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2"
   fi

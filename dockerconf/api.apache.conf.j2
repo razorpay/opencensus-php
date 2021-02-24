@@ -9,6 +9,9 @@
   {% elif env == 'echo' %}
   ServerName {{ env }}-api.razorpay.in
   ServerAlias {{ env }}-invoices.razorpay.in
+  {% elif env == 'devserve' %}
+  ServerName api.dev.razorpay.in
+  ServerAlias invoices.dev.razorpay.in
   {% elif env != 'prod' %}
   ServerName {{ env }}-api.razorpay.com
   ServerAlias {{ env }}-invoices.razorpay.com
