@@ -191,11 +191,11 @@ class EnachNpciNetbanking extends Base
     public function fetchEntities(): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-            ->addHours(6)
+            ->addHours(9)
             ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-            ->addHours(6)
+            ->addHours(9)
             ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
