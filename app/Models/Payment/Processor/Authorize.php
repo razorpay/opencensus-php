@@ -8252,6 +8252,13 @@ trait Authorize
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
                 break;
 
+            case IFSC::RATN:
+                if (starts_with($accountNumber, '0'))
+                {
+                    $accountNumber = substr($accountNumber, 4);
+                }
+                break;
+
             default:
                 break;
         }
