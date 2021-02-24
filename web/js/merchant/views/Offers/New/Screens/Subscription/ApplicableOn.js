@@ -9,7 +9,7 @@ import {
   MAX_DISCOUNT,
   CREDIT_CARDS_OPTIONS,
   CREDIT_DEBIT_CARDS_OPTIONS,
-  CARD_TYPES
+  CARD_TYPES,
 } from 'merchant/views/Offers/constants';
 
 export default class ApplicableOn extends React.Component {
@@ -72,7 +72,9 @@ export default class ApplicableOn extends React.Component {
               placeholder="Select Bank"
               defaultValue={formData.issuer}
               disabled={props.isFormLocked}
-              options={ isDebitCard ? SUBSCRIPTION_OFFERS_PAYMENT_DC_ISSUERS_OPTIONS : PaymentIssuersOptions}
+              options={
+                isDebitCard ? SUBSCRIPTION_OFFERS_PAYMENT_DC_ISSUERS_OPTIONS : PaymentIssuersOptions
+              }
             />
 
             <Input.Select

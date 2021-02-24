@@ -1,5 +1,7 @@
 import React from 'react';
 import RTracking from 'react-tracking';
+import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) => {
   const handleClick = () => {
@@ -9,6 +11,15 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
         status: 'Merchant_support',
       }),
     );
+    analyticsService.track({
+      objectName: 'act.contact_support',
+      actionName: 'click',
+      screen: 'On contact support button click ',
+      properties: {
+        location: 'Contact Support Button',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     rzpTicketSystem.setPrefill('#request', [category, openSection]);
     rzpTicketSystem.openModal('#ticket');
     setTimeout(() => {

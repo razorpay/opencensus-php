@@ -71,6 +71,7 @@ import {
   validateCompanyPAN,
 } from 'common/utils/validators';
 import analyticsService from '@commander/services/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import L1FormFieldNames from './L1FormFieldNames';
 import * as activationUtils from './ActivationUtils';
@@ -328,6 +329,15 @@ export default class ActivationWizard extends React.Component {
                 name: filename,
               }),
             );
+            analyticsService.track({
+              objectName: 'kyc.upload_document',
+              actionName: 'click',
+              screen: 'User uploads KYC Document on Activation page',
+              properties: {
+                location: 'Activation page',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
             if (!this.isOnKYCTab()) {
               this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
             }
