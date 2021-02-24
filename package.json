@@ -9,7 +9,6 @@
     "glob": "^7.1.2",
     "jshint": "^2.10.2",
     "multi-glob": "^1.0.2",
-    "puppeteer": "^1.20.0",
     "query-string": "^6.8.3"
   },
   "scripts": {
@@ -18,7 +17,7 @@
     "serve": "REDIRECTOR=true npm run start",
     "serve:signup": "nodemon signup.js --watch public/js/merchant/",
     "build": "node signup.js; cd web && npm run production:build",
-    "test": "node test.js; cd web && npm run test",
+    "test": "cd web && npm run test",
     "test:jest": "cd web && npm run test:jest",
     "build:e2e": "cd web && npm run e2e:build",
     "test:e2e": "cd web && npm run test:e2e"
