@@ -3,8 +3,11 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 
 class PayInitData extends Base\Mock\Server
 {
@@ -83,6 +86,11 @@ class PayInitData extends Base\Mock\Server
 
     public function upi_juspay($entities)
     {
+        if ($this->isV2Mock($entities['payment']['description']) === true)
+        {
+            return $this->upiMozartV2($entities);
+        }
+
         $response = [
             'data' =>
                 [
@@ -93,6 +101,7 @@ class PayInitData extends Base\Mock\Server
                     'merchantChannelId' => 'MERCHANT',
                     'merchantId' => 'MERCHANT',
                     'merchantRequestId' => $entities['payment']['id'],
+                    'merchant_reference' => $entities['payment']['id'],
                     'responseCode' => 'SUCCESS',
                     'responseMessage' => 'SUCCESS',
                     'transactionTimestamp' => '2017-06-30T17:43:40+05:30',
@@ -800,5 +809,56 @@ class PayInitData extends Base\Mock\Server
         }
 
         return $response;
+    }
+
+    protected function upiMozartV2($entities)
+    {
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $case = str_replace('_v2', '', $entities['payment']['description']);
+
+        $response->mergeUpi([
+           UpiEntity::VPA                  =>  $entities['payment']['vpa'] ?? '',
+           UpiEntity::MERCHANT_REFERENCE   =>  $entities['payment']['id']
+        ]);
+
+        $response->setSuccess(true);
+
+        if ($entities['upi']['flow'] === 'intent')
+        {
+            $intent_url   = "upi://pay?am=%d&cu=INR&mc=5411&pa=%s&pn=%s&tn=PayViaRazorpay&tr=%s";
+            $merchantName = str_replace(' ', '', $entities['merchant']['name']);
+            $amount       = substr_replace(strval($entities['payment']['amount']), '.', '-2', 0);
+            $vpa          = $entities['terminal']['vpa'];
+
+
+            $intent_url = sprintf($intent_url, $amount, $vpa, $merchantName, $entities['payment']['id']);
+
+
+            $response->setNext([
+               'intent_url' => $intent_url
+            ]);
+        }
+        else {
+            $response->setNext([
+               'vpa' => $entities['terminal']['vpa']
+            ]);
+        }
+
+        switch ($case)
+        {
+            case 'collect_request_failed':
+            case 'intent_request_failed':
+                $response->setSuccess(false);
+                $response->setError([
+                   'internal_error_code'    => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,
+                   'gateway_error_code'     => '01',
+                   'gateway_error_desc'     => 'Payment failed at gateway'
+                ]);
+                return $response->toArray();
+
+        }
+
+        return $response->toArray();
     }
 }

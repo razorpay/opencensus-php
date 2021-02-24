@@ -208,6 +208,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::NPCI_TXN_ID, $value);
     }
 
+    public function setReceived(int $value)
+    {
+        $this->setAttribute(self::RECEIVED, $value);
+    }
+
     public function getRefundId()
     {
         return $this->getAttribute(self::REFUND_ID);

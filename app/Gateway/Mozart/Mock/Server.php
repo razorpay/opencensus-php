@@ -225,48 +225,10 @@ class Server extends Base\Mock\Server
                 break;
 
             case 'upi_juspay':
-                $content = [
-                    UpiJuspay\Fields::AMOUNT                    => $payment['amount'],
-                    UpiJuspay\Fields::CUSTOM_RESPONSE           => '{}',
-                    UpiJuspay\Fields::EXPIRY                    => '2016-11-25T00:10:00+05:30',
-                    UpiJuspay\Fields::GATEWAY_REFERENCE_ID      => '806115044725',
-                    UpiJuspay\Fields::GATEWAY_RESPONSE_CODE     => '00',
-                    UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE  => 'Transaction is approved',
-                    UpiJuspay\Fields::GATEWAY_TRANSACTION_ID    => 'XYZd0c077f39c454979...',
-                    UpiJuspay\Fields::MERCHANT_CHANNEL_ID       => 'DEMOUATAPP',
-                    UpiJuspay\Fields::MERCHANT_ID               => 'DEMOUAT01',
-                    UpiJuspay\Fields::MERCHANT_REQUEST_ID       => $payment['id'],
-                    UpiJuspay\Fields::PAYEE_VPA                 => 'merchant@abc',
-                    UpiJuspay\Fields::PAYER_NAME                => 'Customer Name',
-                    UpiJuspay\Fields::PAYER_VPA                 => 'customer@xyz',
-                    UpiJuspay\Fields::TRANSACTION_TIMESTAMP     => '2016-11-25T00:00:00+05:30',
-                    UpiJuspay\Fields::TYPE                      => 'MERCHANT_CREDITED_VIA_COLLECT',
-                    UpiJuspay\Fields::UDF_PARAMETERS            => '{}',
-                ];
+                $content = $this->makeCallbackForUpiJuspay($payment);
 
-                switch ($payment['description'])
-                {
-                    case 'failedCallback':
-                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
-                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
-                        break;
+                $server['HTTP_X-Merchant-Payload-Signature']  = 'signature';
 
-                    case 'intentPayment':
-                        $udfParameters = [
-                           'ref_id' => $payment['id'],
-                        ];
-
-                        $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
-                        $content[UpiJuspay\Fields::UDF_PARAMETERS]      = json_encode($udfParameters);
-                        unset($content[UpiJuspay\Fields::EXPIRY]);
-                        break;
-                    case 'intentWithRefIdAbsent':
-                        $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
-                        unset($content[UpiJuspay\Fields::EXPIRY]);
-                        break;
-                }
-                // TODO: Create proper signature
-                $server['HTTP_X-Merchant-Payload-Signature']                      = 'signature';
                 $raw = json_encode($content);
                 break;
         }
@@ -1144,6 +1106,52 @@ class Server extends Base\Mock\Server
         ];
 
         return $response;
+    }
+
+    protected function makeCallbackForUpiJuspay(array $payment)
+    {
+        $content = [
+            UpiJuspay\Fields::AMOUNT                    => $payment['amount'],
+            UpiJuspay\Fields::CUSTOM_RESPONSE           => '{}',
+            UpiJuspay\Fields::EXPIRY                    => '2016-11-25T00:10:00+05:30',
+            UpiJuspay\Fields::GATEWAY_REFERENCE_ID      => '806115044725',
+            UpiJuspay\Fields::GATEWAY_RESPONSE_CODE     => '00',
+            UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE  => 'Transaction is approved',
+            UpiJuspay\Fields::GATEWAY_TRANSACTION_ID    => 'XYZd0c077f39c454979...',
+            UpiJuspay\Fields::MERCHANT_CHANNEL_ID       => 'DEMOUATAPP',
+            UpiJuspay\Fields::MERCHANT_ID               => 'DEMOUAT01',
+            UpiJuspay\Fields::MERCHANT_REQUEST_ID       => $payment['id'],
+            UpiJuspay\Fields::PAYEE_VPA                 => 'merchant@abc',
+            UpiJuspay\Fields::PAYER_NAME                => 'Customer Name',
+            UpiJuspay\Fields::PAYER_VPA                 => 'customer@xyz',
+            UpiJuspay\Fields::TRANSACTION_TIMESTAMP     => '2016-11-25T00:00:00+05:30',
+            UpiJuspay\Fields::TYPE                      => 'MERCHANT_CREDITED_VIA_COLLECT',
+            UpiJuspay\Fields::UDF_PARAMETERS            => '{}',
+        ];
+
+        switch ($payment['description'])
+        {
+            case 'failedCallback':
+                $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
+                $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
+                break;
+
+            case 'intentPayment':
+                $udfParameters = [
+                    'ref_id' => $payment['id'],
+                ];
+
+                $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
+                $content[UpiJuspay\Fields::UDF_PARAMETERS]      = json_encode($udfParameters);
+                unset($content[UpiJuspay\Fields::EXPIRY]);
+                break;
+            case 'intentWithRefIdAbsent':
+                $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
+                unset($content[UpiJuspay\Fields::EXPIRY]);
+                break;
+        }
+
+        return $content;
     }
 
     protected function callbackResponseContent(array $payment)

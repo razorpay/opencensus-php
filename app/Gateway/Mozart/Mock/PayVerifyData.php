@@ -4,6 +4,9 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
+
 
 class PayVerifyData extends Base\Mock\Server
 {
@@ -126,35 +129,43 @@ class PayVerifyData extends Base\Mock\Server
 
     public function upi_juspay($entities)
     {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+
         $response = [
                 'data' =>
                     [
                         '_raw' => '{"amount":"100.00","customResponse":"{}","expiry":"2016-11-25T00:10:00+05:30","gatewayReferenceId":"806115044725","gatewayResponseCode":"00","gatewayResponseMessage":"Transaction is approved","gatewayTransactionId":"XYZd0c077f39c454979...","merchantChannelId":"DEMOUATAPP","merchantId":"DEMOUAT01","merchantRequestId":"TXN1234567","payeeVpa":"merchant@abc","payerName":"Customer Name","payerVpa":"customer@xyz","transactionTimestamp":"2016-11-25T00:00:00+05:30","type":"MERCHANT_CREDITED_VIA_COLLECT","udfParameters":"{}"}',
-                        'paymentId' => $entities['payment']['id'],
-                        'amount' => $entities['payment']['amount'],
-                        'customResponse' => '{}',
-                        'expiry' => '2016-11-25T00:10:00+05:30',
-                        'gatewayReferenceId' => '806115044725',
+                        'paymentId'              => $entities['payment']['id'],
+                        'amount'                 => $entities['payment']['amount'],
+                        'customResponse'         => '{}',
+                        'expiry'                 => '2016-11-25T00:10:00+05:30',
+                        'gatewayReferenceId'     => '806115044725',
                         'gatewayResponseMessage' => 'Transaction is approved',
-                        'gatewayResponseCode' => '00',
-                        'gatewayTransactionId' => 'XYZd0c077f39c454979...',
-                        'merchantChannelId' => 'DEMOUATAPP',
-                        'merchantId' => 'DEMOUAT01',
-                        'merchantRequestId' => $entities['payment']['id'],
-                        'payeeVpa' => 'merchant@abc',
-                        'payerName' => 'Customer Name',
-                        'payerVpa' => 'customer@xyz',
-                        'status' => 'collect_successful',
-                        'transactionTimestamp' => '2016-11-25T00:00:00+05:30',
-                        'vpa'    => 'customer@xyz',
-                        'type' => 'MERCHANT_CREDITED_VIA_COLLECT',
-                        'udfParameters' => '{}',
+                        'gatewayResponseCode'    => '00',
+                        'gatewayTransactionId'   => 'XYZd0c077f39c454979...',
+                        'merchantChannelId'      => 'DEMOUATAPP',
+                        'merchantId'             => 'DEMOUAT01',
+                        'merchantRequestId'      => $entities['payment']['id'],
+                        'payeeVpa'               => 'merchant@abc',
+                        'payerName'              => 'Customer Name',
+                        'payerVpa'               => 'customer@xyz',
+                        'status'                 => 'collect_successful',
+                        'transactionTimestamp'   => '2016-11-25T00:00:00+05:30',
+                        'vpa'                    => 'customer@xyz',
+                        'type'                   => 'MERCHANT_CREDITED_VIA_COLLECT',
+                        'udfParameters'          => '{}',
+                        'received'               => 1,
+                        'npci_txn_id'            => 'BJJ8fa34bf3f6c64fe0bd540060eb9bcc71',
+                        'npci_reference_id'      => '103800854910',
                     ],
-                'error' => NULL,
+                'error'             => NULL,
                 'external_trace_id' => 'DUMMY_REQUEST_ID',
-                'mozart_id' => 'DUMMY_MOZART_ID',
-                'next' => [],
-                'success' => true
+                'mozart_id'         => 'DUMMY_MOZART_ID',
+                'next'              => [],
+                'success'           => true
             ];
 
 
@@ -786,5 +797,36 @@ class PayVerifyData extends Base\Mock\Server
         ];
 
         return $response;
+    }
+
+    protected function upiMozartV2($entities)
+    {
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $case = str_replace('_v2', '', $entities['payment']['description']);
+
+        $response->mergeUpi([
+            UpiEntity::NPCI_REFERENCE_ID    =>  '123456789012',
+            UpiEntity::VPA                  =>  $entities['payment']['vpa'] ?? 'customer@vpa',
+            UpiEntity::MERCHANT_REFERENCE   =>  $entities['payment']['id']
+        ]);
+
+        $response->setPayment([
+           'amount_authorized'  => $entities['payment']['amount'],
+           'currency'           => 'INR',
+        ]);
+
+        // Add failure cases and scenarios here
+
+        switch ($case)
+        {
+            case 'callback_amount_mismatch':
+                $response->setPayment([
+                   'amount_authorized'  => $entities['payment']['amount'] + 10,
+                   'currency'           => 'INR',
+                ]);
+        }
+
+        return $response->toArray();
     }
 }

@@ -6,12 +6,29 @@ use Illuminate\Support\Collection;
 
 class Response extends Collection
 {
-    const MANDATE = 'mandate';
-    const UPI     = 'upi';
+    const MANDATE   = 'mandate';
+    const UPI       = 'upi';
+    const TERMINAL  = 'terminal';
+    const PAYMENT   = 'payment';
+    const META      = 'meta';
 
     const VERSION = 'version';
 
     const V2 = 'v2';
+
+    protected $allowedUpiKeys = [
+        Entity::VPA,
+        Entity::IFSC,
+        Entity::RECEIVED,
+        Entity::NPCI_TXN_ID,
+        Entity::GATEWAY_DATA,
+        Entity::STATUS_CODE,
+        Entity::ACCOUNT_NUMBER,
+        Entity::MERCHANT_REFERENCE,
+        Entity::GATEWAY_MERCHANT_ID,
+        Entity::GATEWAY_PAYMENT_ID,
+        Entity::NPCI_REFERENCE_ID,
+    ];
 
     public function isV2(): bool
     {
@@ -32,6 +49,33 @@ class Response extends Collection
         return $attributes;
     }
 
+    public function getTerminal(): array
+    {
+        if ($this->isV2() === true)
+        {
+            return $this->get(self::TERMINAL);
+        }
+
+        return $this->toArray();
+    }
+
+    public function getPayment(): array
+    {
+        if ($this->isV2() === true)
+        {
+            return $this->get(self::PAYMENT);
+        }
+
+        return $this->toArray();
+    }
+
+    public function getFilteredUpi()
+    {
+        $upi = $this->getUpi();
+
+        return array_only($upi, $this->allowedUpiKeys);
+    }
+
     public function getMandate(): array
     {
         if ($this->isV2() === true)
@@ -48,6 +92,10 @@ class Response extends Collection
 
     public function toArrayTrace(): array
     {
-       return $this->toArray();
+       $response = clone $this;
+
+       $response->forget(self::META);
+
+       return $response->toArray();
     }
 }

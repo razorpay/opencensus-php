@@ -10,12 +10,12 @@ class Flow
 
     const OMNICHANNEL = 'omnichannel';
 
-    public static function isFlowCollect(string $flow)
+    public static function isCollect(string $flow)
     {
         return ($flow === self::COLLECT);
     }
 
-    public static function isFlowIntent(string $flow)
+    public static function isIntent(string $flow)
     {
         return ($flow === self::INTENT);
     }

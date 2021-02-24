@@ -1669,6 +1669,19 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultUpiBlockIntentPaymentArray()
+    {
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['upi'] = [
+            'flow'  => 'intent'
+        ];
+
+        unset($payment['upi']['vpa']);
+
+        return $payment;
+    }
+
     protected function getDefaultUpiOtmPayment()
     {
         $payment = $this->getDefaultUpiBlockPaymentArray();

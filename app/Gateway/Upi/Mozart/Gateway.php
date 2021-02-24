@@ -3,12 +3,9 @@
 namespace RZP\Gateway\Upi\Mozart;
 
 use RZP\Gateway\Mozart;
-use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\UpiMetadata;
-use RZP\Gateway\Upi\Base\Repository as UpiRepository;
-
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 
 class Gateway extends Mozart\Gateway
 {
@@ -84,6 +81,11 @@ class Gateway extends Mozart\Gateway
     public function updateMozartEntity(Mozart\Entity $gatewayPayment, $attributes, bool $mapped, $action)
     {
         return $this->updateGatewayPaymentEntityWithAction($gatewayPayment, $attributes, $mapped, $action);
+    }
+
+    public function findEntityByPaymentIdAndActionOrFail(string $paymentId, string $action)
+    {
+        return $this->repo->findByPaymentIdAndActionOrFail($paymentId, $action);
     }
 
     protected function getUpiRepository()

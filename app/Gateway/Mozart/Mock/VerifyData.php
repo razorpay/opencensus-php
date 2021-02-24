@@ -476,6 +476,11 @@ class VerifyData extends Base\Mock\Server
                     'gatewayResponseCode' => '00',
                     'gatewayTransactionId' => 'XYZd0c077f39c454979...',
                     'merchantChannelId' => 'DEMOUATAPP',
+                    'upi' => [
+                        'gateway_payment_id'  => 'BJJ8fa34bf3f6c64fe0bd540060eb9bcc71',
+                        'npci_reference_id'   => '103800854910',
+                        'merchant_reference'  => $entities['payment']['id'],
+                    ],
                 ],
             'error' => NULL,
             'external_trace_id' => 'DUMMY_REQUEST_ID',

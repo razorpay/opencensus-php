@@ -75,9 +75,13 @@ class UpiJuspayGatewayTest extends TestCase
         $upi = $this->getDbLastUpi();
 
         $this->assertArraySubset([
-          UpiEntity::TYPE    => UpiBase\Type::COLLECT,
-          UpiEntity::ACTION  => 'authorize',
-          UpiEntity::GATEWAY => 'upi_juspay',
+          UpiEntity::TYPE                => UpiBase\Type::COLLECT,
+          UpiEntity::ACTION              => 'authorize',
+          UpiEntity::GATEWAY             => 'upi_juspay',
+          UpiEntity::RECEIVED            => 1,
+          UpiEntity::NPCI_TXN_ID         => 'BJJ8fa34bf3f6c64fe0bd540060eb9bcc71',
+          UpiEntity::NPCI_REFERENCE_ID   => '103800854910',
+          UpiEntity::MERCHANT_REFERENCE  => $payment->getId(),
         ], $upi->toArray());
 
         return $payment;
@@ -247,6 +251,94 @@ class UpiJuspayGatewayTest extends TestCase
         $payment->refresh();
 
         $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testPaymentForV2Contracts()
+    {
+        $this->createTestTerminal();
+
+        $this->payment['description'] = 'collect_request_failed_v2';
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->payment['description'] = 'collect_request_success_v2';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payment->refresh();
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testIntentPaymentForV2Contracts()
+    {
+        $this->enableIntentFlow();
+
+        $this->payment['description'] = 'intent_request_success_v2';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $this->assertEquals('intent', $response['type']);
+
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertSame(true, $response['success']);
+
+        $payment->reload();
+
+        $this->assertArraySubset([
+             Entity::STATUS      =>  'authorized',
+             Entity::REFERENCE16 =>  '123456789012',
+             Entity::VPA         =>  'customer@vpa',
+        ], $payment->toArray());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            'vpa'               => 'customer@vpa',
+            'npci_reference_id' => '123456789012',
+        ], $upi->toArray());
+    }
+
+    /**
+     * Tests the new amount assertion in callback flow.
+     */
+    public function testCallbackAmountMismatch()
+    {
+        $this->enableIntentFlow();
+
+        $this->payment['description'] = 'callback_amount_mismatch_v2';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payment->reload();
+
+        $this->assertSame('failed',$payment->getStatus());
+
+        $this->assertSame('SERVER_ERROR_AMOUNT_TAMPERED', $payment->getInternalErrorCode());
     }
 
     public function testCreateFailedPaymentAndVerifySuccess()

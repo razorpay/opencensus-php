@@ -79,20 +79,4 @@ trait MozartTrait
 
         return $gateway;
     }
-
-    /**
-     * Returns UPI Mozart gateway
-     * @return Upi\Mozart\Gateway
-     */
-    protected function getUpiMozartGatewayWithModeSet()
-    {
-        /**
-         * @var $gateway Upi\Mozart\Gateway
-         */
-        $gateway = $this->app['gateway']->gateway('upi_mozart');
-
-        $gateway->setMode($this->getMode());
-
-        return $gateway;
-    }
 }

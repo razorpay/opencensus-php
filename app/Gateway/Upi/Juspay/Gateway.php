@@ -3,15 +3,15 @@
 namespace RZP\Gateway\Upi\Juspay;
 
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Mozart\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\Payment\UpiMetadata\Flow;
 
 class Gateway extends Base\Gateway
 {
+
     use AuthorizeFailed;
+
+    use Base\CommonGatewayTrait;
 
     use Base\MozartTrait;
 
@@ -23,74 +23,27 @@ class Gateway extends Base\Gateway
     // TODO: Mark this as true or remove it , when we move the upi entity creation to this class.
     protected $shouldMapLateAuthorized = false;
 
+    protected $shouldUseMozartEntity = true;
+
     protected $map = [];
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        $attributes = [];
-
-        $flow = $input['upi']['flow'];
-
-        if (Flow::isFlowCollect($flow) === true)
-        {
-            $attributes[Base\Entity::TYPE] = Base\Type::COLLECT;
-        }
-        else if (Flow::isFlowIntent($flow) === true)
-        {
-            $attributes[Base\Entity::TYPE] = Base\Type::PAY;
-        }
-
-        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $this->action, false);
-
-        $mozart = $this->getUpiMozartGatewayWithModeSet();
-
-        // Note: We are doing this because currently upi juspay recon is dependent on mozart entity
-        $mozartEntity = $mozart->createMozartEntity([
-            'raw' => []
-        ], $input, Action::AUTHORIZE);
-
-        $response = $mozart->sendUpiMozartRequest(
-            $input,
-            TraceCode::GATEWAY_AUTHORIZE_REQUEST,
-            Action::PAY_INIT);
-
-        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
-
-        $mozart->updateMozartEntity($mozartEntity, $response, true, Action::AUTHORIZE);
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response['data']['upi'] ?? [], false);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-        // For intent
-        if (Flow::isFlowIntent($flow) === true)
-        {
-            $data = [
-                'intent_url' => $response['next']['redirect']['url'],
-            ];
-
-            return ['data' => $data];
-        }
-
-        return [
-            'data'   => [
-                Payment\Entity::VPA => $input['terminal']['vpa'],
-            ]
-        ];
-    }
-
-    public function preProcessServerCallback($input): array
-    {
-        return $input;
+        return $this->upiAuthorize($input);
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
 
-        return $this->callbackRequest($input);
+       return $this->upiCallback($input);
+    }
+
+    public function preProcessServerCallback($input): array
+    {
+        return $input;
     }
 
     public function refund(array $input)
@@ -116,7 +69,7 @@ class Gateway extends Base\Gateway
      * Function to postprocess the response of callback. In case of success, return true.
      * However in case of exception, suppress the error and return failure response.
      * @param  array  $input request array
-     * @param  exception  $exception exception object
+     * @param \Exception $exception exception object
      * @return array success/failure response
      */
     public function postProcessServerCallback($input, $exception = null)
@@ -131,5 +84,7 @@ class Gateway extends Base\Gateway
         return [
             'success' => false,
         ];
+
     }
+
 }

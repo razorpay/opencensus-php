@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
+use Illuminate\Support\Str;
+
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
@@ -385,5 +387,10 @@ class Server extends Base\Core
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
+    }
+
+    protected function isV2Mock(string $case)
+    {
+        return Str::contains($case, 'v2');
     }
 }
