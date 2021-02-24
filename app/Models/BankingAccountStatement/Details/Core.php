@@ -20,22 +20,6 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    // create function to be called from createOrUpdate function only or check if a record already exists.
-    protected function create(array $input)
-    {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_CREATE_REQUEST, $input);
-
-        $basDetailEntity = new Entity();
-
-        $basDetailEntity->build($input);
-
-        $this->repo->saveOrFail($basDetailEntity);
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_CREATE_RESPONSE, $basDetailEntity->toArray());
-
-        return $basDetailEntity;
-    }
-
     public function createOrUpdate(array $input)
     {
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_FETCH_RULES, $input);
@@ -54,42 +38,69 @@ class Core extends Base\Core
         {
             $retries = self::DEFAULT_MUTEX_LOCK_RETRIES;
 
-            do
+            try
             {
-                $mutexLockAcquired = true;
-                try
+                $this->mutex->acquireAndRelease(
+                    'banking_account_statement_details_' . $basDetailEntity->getId(),
+                    function() use ($basDetailEntity, $input) {
+
+                        // update gateway balance is called each time gateway balance is fetched by cron. We save the
+                        // value fetched by cron only if it is not equal to existing value.
+                        if ((array_key_exists(Entity::GATEWAY_BALANCE, $input) === true) and
+                            ($input[Entity::GATEWAY_BALANCE] !== $basDetailEntity->getGatewayBalance()))
+                        {
+                            $this->updateGatewayBalance($basDetailEntity, $input[Entity::GATEWAY_BALANCE]);
+                        }
+
+                        // update statement closing balance will be performed only when new records are fetched from bank
+                        // which means merchant has transacted since last statement closing balance updation. Hence we
+                        // don't check if the value is same as existing value.
+                        if (array_key_exists(Entity::STATEMENT_CLOSING_BALANCE, $input) === true)
+                        {
+                            $this->updateStatementClosingBalance($basDetailEntity, $input[Entity::STATEMENT_CLOSING_BALANCE]);
+                        }
+                    },
+                    30,
+                    ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS,
+                    $retries
+                );
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS)
                 {
-                    $this->mutex->acquireAndRelease(
-                        'banking_account_statement_details_' . $basDetailEntity->getId(),
-                        function () use ($basDetailEntity, $input) {
-
-                            if ((array_key_exists(Entity::GATEWAY_BALANCE, $input) === true) and
-                                ($input[Entity::GATEWAY_BALANCE] !== $basDetailEntity->getGatewayBalance()))
-                            {
-                                $this->updateGatewayBalance($basDetailEntity, $input[Entity::GATEWAY_BALANCE]);
-                            }
-
-                            if (array_key_exists(Entity::STATEMENT_CLOSING_BALANCE, $input) === true)
-                            {
-                                $this->updateStatementClosingBalance($basDetailEntity, $input[Entity::STATEMENT_CLOSING_BALANCE]);
-                            }
-                        },
-                        30,
-                        ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS
-                    );
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS,
+                        [
+                            'channel'        => $channel,
+                            'account_number' => $accountNumber,
+                            'message'        => $e->getMessage(),
+                        ]);
                 }
-                catch (Exception\BadRequestException $e)
+                else
                 {
-                    if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS)
-                    {
-                        $mutexLockAcquired = false;
-
-                        $retries--;
-                    }
+                    throw $e;
                 }
             }
-            while(($retries >= 0) and ($mutexLockAcquired === false));
         }
+    }
+
+    // create function to be called from createOrUpdate function only or check if a record already exists.
+    protected function create(array $input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_CREATE_REQUEST, $input);
+
+        $basDetailEntity = new Entity();
+
+        $basDetailEntity->build($input);
+
+        $this->repo->saveOrFail($basDetailEntity);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_CREATE_RESPONSE, $basDetailEntity->toArray());
+
+        return $basDetailEntity;
     }
 
     public function updateGatewayBalance(Entity $basDetail, int $gatewayBalance)

@@ -723,15 +723,14 @@ return [
         ],
     ],
 
-    'testLimitAndEightHourRuleForBASFetch' => [
+    'testStatementFetchDispatchUsingBASDetailsTable' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/banking_account_statement/process/rbl',
             'content' => [],
         ],
         'response' => [
-            'content' => ['accounts_processed' => ['2323230041626903', '2323230041626904', '2323230041626905',
-                '2323230041626906', '2323230041626907', '2323230041626908']]
+            'content' => ['accounts_processed' => ['2224440041626905', '2323230041626904', '2323230041626903']]
         ]
 
     ],

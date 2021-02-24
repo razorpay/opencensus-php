@@ -6158,6 +6158,9 @@ ALTER TABLE referrals
     DROP INDEX referrals_merchant_id_unique,
     ADD UNIQUE INDEX referrals_merchant_id_product_unique (merchant_id,product);
 
+ALTER TABLE banking_account_statement_details
+    ADD COLUMN last_statement_attempt_at INT DEFAULT NULL;
+
 ALTER TABLE payouts
     ADD COLUMN registered_name varchar(255) CHARACTER SET uft8mb4 COLLATE utf8mb4_bin DEFAULT NULL;
 

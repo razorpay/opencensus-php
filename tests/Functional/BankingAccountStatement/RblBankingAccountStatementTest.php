@@ -103,6 +103,19 @@ class RblBankingAccountStatementTest extends TestCase
             'status'                => 'activated'
         ]);
 
+        $this->fixtures->create('banking_account_statement_details',[
+            BasDetails\Entity::ID                                  => 'xba00000000001',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
+            BasDetails\Entity::BALANCE_ID                          => $balanceId,
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2224440041626905',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 100,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123400,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 0,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123400
+        ]);
+
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
         $this->fixtures->create('org:razorpay_org_live');
@@ -194,6 +207,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
 
         $this->setupForRblAccountStatement();
@@ -219,6 +236,10 @@ class RblBankingAccountStatementTest extends TestCase
         $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
 
         $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
@@ -4880,170 +4901,95 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals('failed', $payout['status']);
     }
 
-    protected function createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking(string $id, string $accountNumber, string $merchantId , int $lastAttemptedAt)
+    // Explanation for the test case:
+    //
+    // Criterion:
+    // 1. When GATEWAY_BALANCE != STATEMENT_CLOSING_BALANCE, merchant is clearly a transacting merchant
+    // 2. GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT > both STATEMENT_CLOSING_BALANCE_CHANGE_AT
+    //    and LAST_STATEMENT_ATTEMPT_AT merchant is still a transacting merchant as this means merchant did credit and
+    //    debit of equal amount after statement was fetched.
+    // 3. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is less than
+    //    STATEMENT_CLOSING_BALANCE_CHANGE_AT or LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement of the
+    //    merchant. Hence merchant is non-transacting.
+    // 4. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is greater than
+    //    STATEMENT_CLOSING_BALANCE_CHANGE_AT but less than LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement
+    //    of the merchant. This case arises when gateway balance cron gets delayed. Hence merchant is non-transacting.
+    //
+    // Step by step cron dispatch logic on this test scenario (explained by ID).
+    // 1. xba00000000001 is a transacting merchant and gets picked (Criterion point 1.)
+    // 2. xba00000000003 not a transacting merchant (Criterion point 3.)
+    // 3. xba00000000004 is a transacting merchant (Criterion point 2.)
+    // 4. xba00000000002 not a transacting merchant (Criterion point 3.)
+    // 5. xba00000000005 not a transacting merchant (Criterion point 4.)
+    // 6. Since we can dispatch 3 account numbers and there are only 2 transacting merchants xba00000000003 gets picked
+    //    up on the basis of oldest LAST_STATEMENT_ATTEMPT_AT.
+    public function testStatementFetchDispatchUsingBASDetailsTable()
     {
-        $balance = $this->getDbEntity('balance', ['merchant_id' => $merchantId]);
-        $balanceId = $balance->getId();
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 3]);
 
-        $this->fixtures->edit('balance', $balanceId, [
-            'account_type' => 'direct',
-            'type'         => 'banking'
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000002',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000012',
+            BasDetails\Entity::BALANCE_ID                          => 'xba00000000002',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626902',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 80,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 80,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123440,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123455,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 3
         ]);
 
-        $this->createBankingAccount([
-            'id'                    => $id,
-            'account_number'        => $accountNumber,
-            'account_type'          => 'current',
-            'merchant_id'           => $merchantId,
-            'channel'               => 'rbl',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-            'balance_id'            => $balanceId,
-            'status'                => 'activated'
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000003',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000013',
+            BasDetails\Entity::BALANCE_ID                          => 'xba00000000003',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626903',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 90,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 90,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123410,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123410,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 1
         ]);
 
-        $this->fixtures->edit('banking_account', $id, [
-            'last_statement_attempt_at'=> $lastAttemptedAt
-        ]);
-    }
-
-    protected function createRBLBankingDirectBalance(string $merchantId , string $accountNumber)
-    {
-        $this->fixtures->create(
-            'balance',
-            [
-                'type'             => 'banking',
-                'merchant_id'      => $merchantId,
-                'balance'          => 10000000,
-                'account_type'     => 'direct',
-                'channel'          => 'rbl',
-                'account_number'   => $accountNumber
-            ]);
-    }
-
-    protected function createPayoutForBalanceTypeDirectAndBanking(string $id, string $merchantId , int $payoutTime)
-    {
-        $balance = $this->getDbEntity('balance', ['merchant_id' => $merchantId]);
-        $balanceId = $balance->getId();
-
-        $this->fixtures->edit('balance', $balanceId, [
-            'account_type' => NULL,
-            'type'         => 'primary',
-            'balance'      => 10000
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000004',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000014',
+            BasDetails\Entity::BALANCE_ID                          => 'xba00000000004',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626904',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 100,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 100,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123456,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123399,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 2
         ]);
 
-        $this->fixtures->create(
-            'payout',
-            [
-                'id'                =>      $id ,
-                'merchant_id'       =>      $merchantId,
-                'balance_id'        =>      $balanceId,
-                'amount'            =>      0,
-                'currency'          =>      'inr',
-                'fees'              =>      0,
-                'tax'               =>      0,
-                'status'            =>      'processed',
-                'type'              =>      'default',
-                'created_at'        =>      $payoutTime,
-                'updated_at'        =>      $payoutTime,
-                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
-            ]);
-
-        $this->fixtures->edit('balance', $balanceId, [
-            'account_type' => 'direct',
-            'type'         => 'banking'
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000005',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000015',
+            BasDetails\Entity::BALANCE_ID                          => 'xba00000000005',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626905',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 100,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 100,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123456,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123399,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 123460,
         ]);
-    }
 
-    public function testLimitAndEightHourRuleForBASFetch()
-    {
-        $currentTime = Carbon::now()->getTimestamp();
-
-        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
-
-        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
-        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
-        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
-        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
-
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-13*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-12*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-11*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-10*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-9*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-8*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-7*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-7*60*60);
-
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
+        Queue::fake();
 
         $this->ba->appAuth();
 
         $this->startTest();
-    }
 
-    public function testLimitForEightHourRuleAndAccountsThatMadePayoutsForBASFetch()
-    {
-        $currentTime = Carbon::now()->getTimestamp();
-
-        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
-
-        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
-        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
-        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
-        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
-
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-13*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-12*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-8*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-7*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-1*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-3*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-2*60*60);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-1*60*60);
-
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '1ApiFeeAccount' , $currentTime-1);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '100AtomAccount' , $currentTime-100);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000003' , '10000000000014' , $currentTime-10);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000004' , '10000000000013' , $currentTime-10);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000005' , '10000000000012' , $currentTime-10);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testLimitForAccountsThatMadePayoutsAndOtherAccountsForBASFetch()
-    {
-        $currentTime = Carbon::now()->getTimestamp();
-
-        $this->fixtures->edit('banking_account','xba00000000001', ['account_number'=>'2323230041626901','last_statement_attempt_at'=> $currentTime-9]);
-
-        $this->createRBLBankingDirectBalance('10000000000011','2323230041626907');
-        $this->createRBLBankingDirectBalance('10000000000012','2323230041626908');
-        $this->createRBLBankingDirectBalance('10000000000013','2323230041626909');
-        $this->createRBLBankingDirectBalance('10000000000014','2323230041626910');
-
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000002','2323230041626902','1cXSLlUU8V9sXl',$currentTime-8);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000003','2323230041626903','100000Razorpay',$currentTime-7);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000004','2323230041626904','100AtomAccount',$currentTime-6);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000005','2323230041626905','10NodalAccount',$currentTime-5);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000006','2323230041626906','1ApiFeeAccount',$currentTime-4);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000007','2323230041626907','10000000000011',$currentTime-3);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000008','2323230041626908','10000000000012',$currentTime-2);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000009','2323230041626909','10000000000013',$currentTime-1);
-        $this->createBankingAccountSetLastAttemptedAtSetBalanceAsDirectBanking('xbacc000000010','2323230041626910','10000000000014',$currentTime-0);
-
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000001' , '10NodalAccount' , $currentTime-1);
-        $this->createPayoutForBalanceTypeDirectAndBanking('00000000000002' , '10000000000014' , $currentTime);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
+        Queue::assertPushed(BankingAccountStatementJob::class, 3);
     }
 
     /*
@@ -7871,7 +7817,7 @@ class RblBankingAccountStatementTest extends TestCase
 
     // whenever statement is fetched, BAS Details table is updated with statement closing balance and time of update.
     // Since time of update will differ, assertion of exact epoch value is not done.
-    public function testRblStatementClosingBalanceCreateInBASDetails()
+    public function testRblStatementClosingBalanceUpdateInBASDetails()
     {
         $mockedResponse = $this->getRblDataResponse();
 
@@ -7883,17 +7829,17 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
-        $this->ba->cronAuth();
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626905']);
 
-        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
-
-        $this->assertNull($basDetail);
+        $this->assertNotNull($basDetail);
 
         $this->testData[__FUNCTION__] =  $this->testData['testRblAccountStatementCase1'];
 
+        $this->ba->cronAuth();
+
         $this->startTest();
 
-        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626905']);
 
         $this->assertNotNull($basDetail);
 
@@ -7910,62 +7856,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotNull($basDetail[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
 
-        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE]);
-
-        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
-    }
-
-    public function testRblStatementClosingBalanceUpdateInBASDetails()
-    {
-        $this->testRblStatementClosingBalanceCreateInBASDetails();
-
-        $mockedResponse = $this->getRblDataResponse();
-
-        $txn = $mockedResponse['data' ]['PayGenRes']['Body']['transactionDetails'];
-
-        unset($txn[1]);
-
-        $txn[0]['txnId'] = '  S429264';
-        $txn[0]['txnBalance']['amountValue'] = '228.05';
-
-        $mockedResponse['data' ]['PayGenRes']['Body']['transactionDetails'] = $txn;
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
-
-        $this->assertNotNull($baBeforeTest);
-
-        $this->assertNotNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
-
-        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
-
-        $this->assertNotNull($basDetail);
-
-        $this->testData[__FUNCTION__] =  $this->testData['testRblAccountStatementCase1'];
-
-        $this->startTest();
-
-        $basDetail = $this->getDbLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS);
-
-        $this->assertNotNull($basDetail);
-
-        $detailsExpected = [
-            BasDetails\Entity::MERCHANT_ID               => $baBeforeTest[BasDetails\Entity::MERCHANT_ID],
-            BasDetails\Entity::BALANCE_ID                => $baBeforeTest[BasDetails\Entity::BALANCE_ID],
-            BasDetails\Entity::ACCOUNT_NUMBER            => $baBeforeTest[BasDetails\Entity::ACCOUNT_NUMBER],
-            BasDetails\Entity::CHANNEL                   => $baBeforeTest[BasDetails\Entity::CHANNEL],
-            BasDetails\Entity::STATUS                    => BasDetails\Status::ACTIVE,
-            BasDetails\Entity::STATEMENT_CLOSING_BALANCE => 22805,
-        ];
-
-        $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
-
-        $this->assertNotNull($basDetail[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
-
-        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE]);
-
-        $this->assertNull($basDetail[BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
+        $this->assertNotNull($basDetail[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     // whenever balance is fetched, BAS Details table is updated with fetched gateway balance and time of update.
@@ -7975,9 +7866,11 @@ class RblBankingAccountStatementTest extends TestCase
         /** @var BankingAccount\Entity $baBeforeTest */
         $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
 
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, 'xba00000000001', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626900']);
+
         $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
 
-        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626905']);
 
         $this->assertNull($basDetail);
 
@@ -7994,17 +7887,18 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
 
-        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626905']);
 
         $this->assertNotNull($basDetail);
 
         $detailsExpected = [
-            BankingAccount\Entity::MERCHANT_ID => $baBeforeTest[BankingAccount\Entity::MERCHANT_ID],
-            BankingAccount\Entity::BALANCE_ID => $baBeforeTest[BankingAccount\Entity::BALANCE_ID],
-            BankingAccount\Entity::ACCOUNT_NUMBER => $baBeforeTest[BankingAccount\Entity::ACCOUNT_NUMBER],
-            BankingAccount\Entity::CHANNEL => $baBeforeTest[BankingAccount\Entity::CHANNEL],
-            BankingAccount\Entity::STATUS => 'active',
-            BankingAccount\Entity::GATEWAY_BALANCE => 10000,
+            BankingAccount\Entity::MERCHANT_ID           => $baBeforeTest[BankingAccount\Entity::MERCHANT_ID],
+            BankingAccount\Entity::BALANCE_ID            => $baBeforeTest[BankingAccount\Entity::BALANCE_ID],
+            BankingAccount\Entity::ACCOUNT_NUMBER        => $baBeforeTest[BankingAccount\Entity::ACCOUNT_NUMBER],
+            BankingAccount\Entity::CHANNEL               => $baBeforeTest[BankingAccount\Entity::CHANNEL],
+            BankingAccount\Entity::STATUS                => 'active',
+            BankingAccount\Entity::GATEWAY_BALANCE       => 10000,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE => 0,
         ];
 
         $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
@@ -8032,10 +7926,12 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basDetail = $this->getDbEntities('banking_account_statement_details');
 
-        $this->assertCount(1, $basDetail);
+        $this->assertCount(2, $basDetail);
 
         $this->assertEquals(500, $basDetail[0][BasDetails\Entity::GATEWAY_BALANCE]);
 
         $this->assertNotNull($basDetail[0][BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
+
+        $this->assertEquals(0, $basDetail[0][BasDetails\Entity::STATEMENT_CLOSING_BALANCE]);
     }
 }

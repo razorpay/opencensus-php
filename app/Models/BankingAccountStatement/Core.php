@@ -42,11 +42,10 @@ class Core extends Base\Core
 
     const DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS = 8;
 
-    const RBL_STATEMENT_FETCH_FORCE_FETCH_RULE  = "force_fetch_rule";
+    // account numbers are selected for statement fetch based on these rules.
+    const RBL_STATEMENT_FETCH_BALANCE_CHANGED_RULE  = "balance_changed_rule";
 
-    const RBL_STATEMENT_FETCH_MADE_PAYOUTS_RULE = "made_payouts_rule";
-
-    const RBL_STATEMENT_FETCH_OTHERS_RULE       = "others";
+    const RBL_STATEMENT_FETCH_OTHERS_RULE           = "others";
 
     /**
      * Temporary hack. Should not set balance at a class level.
@@ -107,6 +106,12 @@ class Core extends Base\Core
                     $bankingAccount->setLastStatementAttemptAt($currentTime);
 
                     $this->repo->saveOrFail($bankingAccount);
+
+                    $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+                    $basDetailEntity->setLastStatementAttemptAt();
+
+                    $this->repo->saveOrFail($basDetailEntity);
 
                     $merchant = $bankingAccount->merchant;
 
@@ -1406,8 +1411,19 @@ class Core extends Base\Core
     //
     // 1. Fetch accountNumbers to process for that channel
     // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at and pass the details through
-    // a filter which would select primarily accounts whose statement was fetched more than certain hours ago and which
-    // made payouts.
+    // a filter which would select based on following criteria.
+    //
+    // Criterion:
+    // 1. When GATEWAY_BALANCE != STATEMENT_CLOSING_BALANCE, merchant is clearly a transacting merchant
+    // 2. GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT > both STATEMENT_CLOSING_BALANCE_CHANGE_AT
+    //    and LAST_STATEMENT_ATTEMPT_AT merchant is still a transacting merchant as this means merchant did credit and
+    //    debit of equal amount after statement was fetched.
+    // 3. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is less than
+    //    STATEMENT_CLOSING_BALANCE_CHANGE_AT or LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement of the
+    //    merchant. Hence merchant is non-transacting.
+    // 4. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is greater than
+    //    STATEMENT_CLOSING_BALANCE_CHANGE_AT but less than LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement
+    //    of the merchant. This case arises when gateway balance cron gets delayed. Hence merchant is non-transacting.
     //
     // Create and dispatch jobs to pull data for those MIDs
     // Return accountNumbers dispatched for processing for the route response
@@ -1415,16 +1431,10 @@ class Core extends Base\Core
     public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
-        $forcedFetchTime = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RX_BAS_FORCED_FETCH_TIME_IN_HOURS]);
 
         if (empty($limit) === true)
         {
             $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
-        }
-
-        if (empty($forcedFetchTime) === true)
-        {
-            $forcedFetchTime = self::DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS;
         }
 
         $this->trace->info(
@@ -1432,68 +1442,49 @@ class Core extends Base\Core
             [
                 'channel'                               => $channel,
                 'banking_account_statement_rate_limit'  => $limit,
-                'bas_force_fetch_time_hrs'              => $forcedFetchTime,
             ]);
 
-        $bankingAccountDetails = $this->repo->banking_account->fetchAccountNumbersByChannel($channel);
+        $bankingAccountDetails = $this->repo->banking_account_statement_details->fetchAccountNumbersByChannelOrderByLastStatementAttemptAt($channel);
 
         $accountNumbersToDispatch = [];
-        $accountsThatMadePayouts = [];
+
         $otherAccounts = [];
+
         $numberOfAccountsSelected = 0;
 
         $currentTime = Carbon::now()->getTimestamp();
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
         {
-            $forcedFetchTimeInSeconds = $forcedFetchTime * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+            $gatewayBalance = $bankingAccountDetail->getGatewayBalance();
 
-            if ($bankingAccountDetail->getLastStatementAttemptAt() <= $currentTime - $forcedFetchTimeInSeconds)
+            $statementClosingBalance = $bankingAccountDetail->getStatementClosingBalance();
+
+            $gatewayBalanceChangeAt = $bankingAccountDetail->getGatewayBalanceChangeAt();
+
+            $statementClosingBalanceChangeAt = $bankingAccountDetail->getStatementClosingBalanceChangeAt();
+
+            $lastStatementAttemptAt = $bankingAccountDetail->getLastStatementAttemptAt();
+
+            if (($gatewayBalance !== $statementClosingBalance) or
+                ($gatewayBalance === $statementClosingBalance and
+                 $gatewayBalanceChangeAt > $statementClosingBalanceChangeAt and
+                 $gatewayBalanceChangeAt > $lastStatementAttemptAt))
             {
                 $accountNumbersToDispatch[$numberOfAccountsSelected] = ['account_number' => $bankingAccountDetail->getAccountNumber(),
-                    'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_FORCE_FETCH_RULE];
+                    'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_BALANCE_CHANGED_RULE];
 
                 $numberOfAccountsSelected++;
             }
             else
             {
-                if (count($accountsThatMadePayouts) < $limit - $numberOfAccountsSelected)
-                {
-                    $count = $this->repo->payout->countOfPayoutsMadeForDirectAccountSinceLastStatementFetch(
-                        $bankingAccountDetail->getBalanceId(),
-                        $bankingAccountDetail->getLastStatementAttemptAt());
-
-                    if ($count > 0)
-                    {
-                        array_push($accountsThatMadePayouts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
-                            'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_MADE_PAYOUTS_RULE]);
-                    }
-                    else
-                    {
-                        array_push($otherAccounts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
+                array_push($otherAccounts, ['account_number' => $bankingAccountDetail->getAccountNumber(),
                             'balance_id' => $bankingAccountDetail->getBalanceId(), 'rule' => self::RBL_STATEMENT_FETCH_OTHERS_RULE]);
-                    }
-                }
             }
 
             if ($numberOfAccountsSelected >= $limit)
             {
                 break;
-            }
-        }
-
-        if ($numberOfAccountsSelected < $limit)
-        {
-            foreach ($accountsThatMadePayouts as $accountThatMadePayouts)
-            {
-                $accountNumbersToDispatch[$numberOfAccountsSelected] = $accountThatMadePayouts;
-
-                $numberOfAccountsSelected++;
-
-                if ($numberOfAccountsSelected >= $limit)
-                {
-                    break;
-                }
             }
         }
 

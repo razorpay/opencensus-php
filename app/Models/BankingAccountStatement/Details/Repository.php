@@ -23,4 +23,20 @@ class Repository extends Base\Repository
                     ->where($channelColumn, '=', $channel)
                     ->first();
     }
+
+    public function fetchAccountNumbersByChannelOrderByLastStatementAttemptAt(string $channel)
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $basDetailsAttr = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($basDetailsAttr)
+                    ->where($channelColumn, '=', $channel)
+                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                    ->get();
+    }
 }

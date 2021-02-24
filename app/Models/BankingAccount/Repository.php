@@ -94,29 +94,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAccountNumbersByChannel(string $channel)
-    {
-        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
-        $lastAttemptAtColumn           = $this->dbColumn(Entity::LAST_STATEMENT_ATTEMPT_AT);
-        $accountNumberColumn           = $this->dbColumn(Entity::ACCOUNT_NUMBER);
-        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
-        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
-        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
-
-        return $this->newQuery()
-                    ->select($bankingAccountBalanceIdColumn, $channelColumn, $accountNumberColumn, $merchantIdColumn, $lastAttemptAtColumn)
-                    ->where($channelColumn, '=', $channel)
-                    ->whereIn(Entity::STATUS, Status::getActivatedStatuses())
-                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
-                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
-                    ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
-                    ->get();
-    }
-
     public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);

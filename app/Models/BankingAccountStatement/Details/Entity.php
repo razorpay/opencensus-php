@@ -14,16 +14,17 @@ class Entity extends Base\PublicEntity
 
     protected $table = Table::BANKING_ACCOUNT_STATEMENT_DETAILS;
 
-    const ID                                        = 'id';
-    const MERCHANT_ID                               = 'merchant_id';
-    const CHANNEL                                   = 'channel';
-    const ACCOUNT_NUMBER                            = 'account_number';
-    const STATUS                                    = 'status';
-    const STATEMENT_CLOSING_BALANCE                 = 'statement_closing_balance';
-    const BALANCE_ID                                = 'balance_id';
-    const GATEWAY_BALANCE                           = 'gateway_balance';
-    const GATEWAY_BALANCE_CHANGE_AT                 = 'gateway_balance_change_at';
-    const STATEMENT_CLOSING_BALANCE_CHANGE_AT       = 'statement_closing_balance_change_at';
+    const ID                                  = 'id';
+    const MERCHANT_ID                         = 'merchant_id';
+    const CHANNEL                             = 'channel';
+    const ACCOUNT_NUMBER                      = 'account_number';
+    const STATUS                              = 'status';
+    const STATEMENT_CLOSING_BALANCE           = 'statement_closing_balance';
+    const BALANCE_ID                          = 'balance_id';
+    const GATEWAY_BALANCE                     = 'gateway_balance';
+    const GATEWAY_BALANCE_CHANGE_AT           = 'gateway_balance_change_at';
+    const STATEMENT_CLOSING_BALANCE_CHANGE_AT = 'statement_closing_balance_change_at';
+    const LAST_STATEMENT_ATTEMPT_AT           = 'last_statement_attempt_at';
 
     const ACCOUNT_NUMBER_LENGTH = 40;
 
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_BALANCE,
         self::GATEWAY_BALANCE_CHANGE_AT,
         self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
+        self::LAST_STATEMENT_ATTEMPT_AT,
     ];
 
     protected $visible = [
@@ -60,12 +62,15 @@ class Entity extends Base\PublicEntity
         self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
         self::GATEWAY_BALANCE,
         self::GATEWAY_BALANCE_CHANGE_AT,
+        self::LAST_STATEMENT_ATTEMPT_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $defaults = [
-        self::STATUS                    => Status::ACTIVE
+        self::STATUS                    => Status::ACTIVE,
+        self::STATEMENT_CLOSING_BALANCE => 0,
+        self::GATEWAY_BALANCE           => 0,
     ];
 
     // ============================= MUTATORS =============================
@@ -97,6 +102,36 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_BALANCE);
     }
 
+    public function getStatementClosingBalance()
+    {
+        return $this->getAttribute(self::STATEMENT_CLOSING_BALANCE);
+    }
+
+    public function getGatewayBalanceChangeAt()
+    {
+        return $this->getAttribute(self::GATEWAY_BALANCE_CHANGE_AT);
+    }
+
+    public function getStatementClosingBalanceChangeAt()
+    {
+        return $this->getAttribute(self::STATEMENT_CLOSING_BALANCE_CHANGE_AT);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function getLastStatementAttemptAt()
+    {
+        return $this->getAttribute(self::LAST_STATEMENT_ATTEMPT_AT);
+    }
+
     // ============================= END GETTERS ===========================
 
     // ============================= SETTERS ===========================
@@ -114,6 +149,13 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setLastStatementAttemptAt()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $currentTime);
     }
 
     // ============================= END SETTERS ===========================

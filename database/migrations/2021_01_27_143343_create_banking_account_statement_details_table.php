@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Details\Entity;
 
 class CreateBankingAccountStatementDetailsTable extends Migration
@@ -27,24 +26,27 @@ class CreateBankingAccountStatementDetailsTable extends Migration
             $table->string(Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_NUMBER_LENGTH);
 
             $table->char(Entity::BALANCE_ID, Entity::ID_LENGTH)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Entity::CHANNEL, 255);
 
             $table->string(Entity::STATUS, 255)
-                ->nullable();
+                  ->nullable();
 
             $table->bigInteger(Entity::STATEMENT_CLOSING_BALANCE)
-                ->nullable();
+                  ->nullable();
 
             $table->bigInteger(Entity::GATEWAY_BALANCE)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(Entity::GATEWAY_BALANCE_CHANGE_AT)
-                ->nullable();
+                  ->nullable();
+
+            $table->integer(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                  ->nullable();
 
             $table->integer(Entity::CREATED_AT);
 
