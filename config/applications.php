@@ -857,5 +857,9 @@ return [
     'merchant_risk_alerts' => [
         'maker_email' => env('MERCHANT_RISK_ALERT_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
         'secret'      => env('MERCHANT_RISK_ALERTS_SECRET')
-    ]
+    ],
+
+    'care'  => [
+        'secret'    => env('CARE_SERVICE_API_SECRET'),
+    ],
 ];

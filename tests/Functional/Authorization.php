@@ -136,6 +136,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function careAppAuth()
+    {
+        $config = \Config::get('applications.care');
+
+        $pwd = $config['secret'];
+
+        $this->appAuthLive($pwd);
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)

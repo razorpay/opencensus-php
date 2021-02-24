@@ -6306,7 +6306,11 @@ class Route
         'merchant_risk_alerts' => [
             'merchant_risk_alerts_foh_workflow',
             'merchant_risk_alerts_details',
-        ]
+        ],
+
+        'care' => [
+            'internal_merchant_fetch',
+        ],
     ];
 
     //
