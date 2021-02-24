@@ -93,7 +93,7 @@ trait CommonGatewayTrait
 
         $response = new Response($result['data'] ?? []);
 
-        $this->traceGatewayPaymentResponse($response->toArrayTrace(), $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+        $this->traceGatewayPaymentResponse($response->toArrayTrace(), $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $gatewayEntity->setReceived(1);
 
@@ -104,9 +104,9 @@ trait CommonGatewayTrait
             $mozart->updateMozartEntity($mozartEntity, $result, true, Action::AUTHORIZE);
         }
 
-        $this->upiRunCallbackValidations($response, $input);
-
         $this->upiCheckErrorsAndThrowExceptionFromResponse($result);
+
+        $this->upiRunCallbackValidations($response, $input);
 
         return $this->upiPrepareCallbackResponse($response, $input);
     }
