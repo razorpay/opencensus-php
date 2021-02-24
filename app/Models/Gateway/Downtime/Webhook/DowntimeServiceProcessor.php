@@ -184,13 +184,19 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
         if(is_null($downtime) === true)
         {
-            throw new Exception\LogicException(
-                'Downtime Service Trying to resolve a non-existent downtime',
-                null,
-                [
-                    'downtime' => $data,
-                ]
-            );
+            $this->trace->error(TraceCode::GATEWAY_DOWNTIME_SERVICE_INVALID_RESOLVE,
+            [
+                'downtime' => $data,
+            ]);
+
+            return null;
+//            throw new Exception\LogicException(
+//                'Downtime Service Trying to resolve a non-existent downtime',
+//                null,
+//                [
+//                    'downtime' => $data,
+//                ]
+//            );
         }
 
         $this->trace->info(
