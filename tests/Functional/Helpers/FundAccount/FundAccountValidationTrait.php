@@ -50,6 +50,7 @@ trait FundAccountValidationTrait
         return $response;
     }
 
+
     protected function createValidationWithFundAccountEntityFromAdmin(): array
     {
         $this->enableRazorXTreatmentForRazorX();
