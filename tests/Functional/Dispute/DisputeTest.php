@@ -212,6 +212,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateWithDeduct()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $testData = $this->updateCreateTestData();
 
         $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
@@ -239,6 +241,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateWithDeductWithoutEnoughBalance()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $payment = $this->fixtures->create('payment:captured');
 
         $this->fixtures->refund->createFromPayment(['payment' => $payment]);
@@ -334,6 +338,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $this->updateCreateTestData();
 
         $this->startTest();
@@ -384,6 +390,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditWonPostDeduct()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000]);
 
         $eventTestDataKey = 'testDisputeWonEventPostDeductData';
@@ -477,6 +485,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -531,6 +541,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalWinLogic()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -560,6 +572,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalLostLogic()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,

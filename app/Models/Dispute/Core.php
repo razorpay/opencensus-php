@@ -93,6 +93,8 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
+        unset($input[Entity::DEDUCT_AT_ONSET]);
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
             function() use ($payment, $reason, $input)

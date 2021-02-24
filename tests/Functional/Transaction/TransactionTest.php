@@ -212,6 +212,8 @@ class TransactionTest extends TestCase
 
     public function testCreateDisputeWithDeduct()
     {
+        $this->markTestSkipped('Skipped as deduct_at_set is ignored');
+
         $payment = $this->fixtures->create('payment:captured');
 
         $dispute = $this->disputePayment($payment, 1);
