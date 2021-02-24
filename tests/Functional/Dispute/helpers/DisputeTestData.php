@@ -1496,4 +1496,193 @@ return [
             ],
         ],
     ],
+
+    'testFreshdeskWebhookPaymentFailedCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookPaymentFailedCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookPaymentNotCapturedCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookPaymentNotCapturedCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookPaymentFullyRefundedCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookPaymentFullyRefundedCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookPaymentAlreadyDisputedCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookPaymentAlreadyDisputedCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookMerchantDisabledCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookMerchantDisabledCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookCreateDisputeCase' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookCreateDisputeCase@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookReportFraud' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookReportFraud@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookPaymentNotExists' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookPaymentNotExists@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testFreshdeskWebhookReasonCodeNotValidForSubcategory' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookReasonCodeNotValidForSubcategory@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ]
+        ],
+    ],
 ];

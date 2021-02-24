@@ -6,13 +6,16 @@ use Mail;
 use Cache;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Models\Payment;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Models\Dispute\Repository;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Models\Dispute\Reason\Entity as DisputeReasonEntity;
+use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
@@ -20,8 +23,11 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
+use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
+use RZP\Models\Dispute\Customer\FreshdeskTicket\Subcategory;
 use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
 use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
+use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 
 class DisputeTest extends TestCase
@@ -1245,7 +1251,256 @@ class DisputeTest extends TestCase
         $this->assertEquals($disputeReason->getId(), $content['id']);
     }
 
+    public function testFreshdeskWebhookPaymentFailedCase()
+    {
+        $payment = $this->fixtures->create('payment:failed');
+
+        $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply'], ['postTicketReply'], true, true, false, false, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookPaymentNotCapturedCase()
+    {
+        $payment = $this->fixtures->create('payment:authorized');
+
+        $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookPaymentFullyRefundedCase()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->refundPayment($payment->getPublicId());
+
+        $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookPaymentAlreadyDisputedCase()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->disputePayment($payment);
+
+        $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookMerchantDisabledCase()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        // reduce funds
+        $merchantBalance = $this->fetchBalance();
+        $this->fixtures->edit('balance', $merchantBalance['id'], ['balance' => $payment->getAmount() - 1]);
+
+        $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookCreateDisputeCase()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $automationAgentId = 234;
+        $changeTicketGroupToCsExtraArgs = [
+            'status'       => FreshdeskConstants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
+            'responder_id' => $automationAgentId,
+            'tags'         => [
+                FreshdeskConstants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+                FreshdeskConstants::FD_TAGS_DISPUTE_CREATED,
+                FreshdeskConstants::FD_TAGS_PENDING_WITH_DISPUTES
+            ],
+        ];
+
+        $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply', 'fetchTicketById'], [], true, true, false, true, true, Subcategory::DISPUTE_A_PAYMENT_FD, $payment, $changeTicketGroupToCsExtraArgs);
+
+        $reasonCode = 'goods_service_not_provided';
+        $dispute = $this->getLastEntity('dispute', true);
+        $this->assertEquals($payment->getPublicId(), $dispute['payment_id']);
+        $this->assertEquals($reasonCode, $dispute['reason_code']);
+        $this->assertEquals(ReasonCode::REASON_CODE_MAP[Subcategory::DISPUTE_A_PAYMENT][$reasonCode][Entity::PHASE], $dispute['phase']);
+    }
+
+    public function testFreshdeskWebhookReportFraud()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $automationAgentId = 234;
+        $changeTicketGroupToCsExtraArgs = [
+            'status'       => FreshdeskConstants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
+            'responder_id' => $automationAgentId,
+            'tags'         => [
+                FreshdeskConstants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+                FreshdeskConstants::FD_TAGS_DISPUTE_CREATED,
+                FreshdeskConstants::FD_TAGS_PENDING_WITH_DISPUTES
+            ],
+        ];
+
+        $reasonCode = 'potential_fraud';
+        $this->fixtures->create('dispute_reason', [
+            'network'      => 'RZP',
+            'code'         => $reasonCode,
+            'gateway_code' => 'RZP03',
+        ]);
+
+        $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply', 'fetchTicketById'], [], true, true, false, true, true, Subcategory::REPORT_FRAUD, $payment, $changeTicketGroupToCsExtraArgs, $reasonCode);
+
+        $reasonCode = 'potential_fraud';
+        $dispute = $this->getLastEntity('dispute', true);
+        $this->assertEquals($payment->getPublicId(), $dispute['payment_id']);
+        $this->assertEquals($reasonCode, $dispute['reason_code']);
+        $this->assertEquals(ReasonCode::REASON_CODE_MAP[Subcategory::REPORT_FRAUD][$reasonCode][Entity::PHASE], $dispute['phase']);
+    }
+
+    public function testFreshdeskWebhookPaymentNotExists()
+    {
+        $payment = new Payment\Entity();
+        $payment->setId('random10000000');
+
+        $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply'], ['postTicketReply'], true, true, false, false, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+    }
+
+    public function testFreshdeskWebhookReasonCodeNotValidForSubcategory()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->freshdeskFlow(false, false, ['updateTicketV2', 'postTicketReply'], ['updateTicketV2', 'postTicketReply'], false, false, false, false, false, Subcategory::REPORT_FRAUD_FD, $payment);
+    }
+
     // ---------------------------- helper methods-------------------------------
+
+    protected function freshdeskFlow(
+        bool $needAutomationGroupConst,
+        bool $needCustomerSupportGroupConst,
+        array $fdClientMockMethods,
+        array $expectNoFdCallList,
+        bool $needAssignAutomationAgentToTicketCall,
+        bool $needChangeTicketGroupToCustomerSupportCall,
+        bool $needCloseTicketCall,
+        bool $needReplyToTicketCall,
+        bool $needFetchTicketCall,
+        string $subcategory,
+        Payment\Entity $payment,
+        array $changeTicketGroupToCsExtraArgs = null,
+        string $reasonCode = null)
+    {
+        $ticketId = 123;
+        $automationAgentId = 234;
+        $automationGroupId = 345;
+        $customerSupportGroupId = 456;
+
+        if ($needAutomationGroupConst)
+        {
+            $this->app['config']->set('applications.freshdesk.customer.dispute.automation_agent_id', $automationAgentId);
+            $this->app['config']->set('applications.freshdesk.customer.dispute.automation_group_id', $automationGroupId);
+        }
+
+        if ($needCustomerSupportGroupConst)
+        {
+            $this->app['config']->set('applications.freshdesk.customer.dispute.customer_support_group_id', $customerSupportGroupId);
+        }
+
+        $this->enableRazorXTreatmentForFreshdeskWebhookDisputeAutomation();
+
+        $this->enableFreshdeskMock($fdClientMockMethods);
+
+        foreach ($expectNoFdCallList as $noCallMethod)
+        {
+            $this->expectNoFreshdeskCall($noCallMethod);
+        }
+
+        $updateTicketCallArgs = [];
+
+        $postReplyCallArgs = [];
+
+        $fetchTicketCallArgs = [];
+
+        if ($needAssignAutomationAgentToTicketCall)
+        {
+            $assignAutomationAgentToTicketCallArgs = [$ticketId, [
+                'group_id' => $automationGroupId,
+                'responder_id' => $automationAgentId
+            ]];
+
+            $updateTicketCallArgs []= $assignAutomationAgentToTicketCallArgs;
+        }
+
+        if ($needChangeTicketGroupToCustomerSupportCall)
+        {
+            $changeTicketGroupToCustomerSupportCallArgs = [$ticketId, [
+                'group_id' => $customerSupportGroupId,
+                'responder_id' => null
+            ]];
+
+            if (empty($changeTicketGroupToCsExtraArgs) === false)
+            {
+                $changeTicketGroupToCustomerSupportCallArgs[1] = array_merge($changeTicketGroupToCustomerSupportCallArgs[1], $changeTicketGroupToCsExtraArgs);
+            }
+
+            $updateTicketCallArgs []= $changeTicketGroupToCustomerSupportCallArgs;
+        }
+
+        if ($needCloseTicketCall)
+        {
+            // Mock closeTicket call
+            $closeTicketCallArgs = [$ticketId, [
+                'status'       => FreshdeskConstants::FD_TICKET_STATUS_CLOSED,
+                'group_id'     => $automationGroupId,
+                'responder_id' => $automationAgentId,
+            ]];
+
+            $updateTicketCallArgs []= $closeTicketCallArgs;
+        }
+
+        if ($needReplyToTicketCall)
+        {
+            $replyToTicketCallArgs = [$ticketId];
+
+            $postReplyCallArgs []= $replyToTicketCallArgs;
+        }
+
+        if ($needFetchTicketCall)
+        {
+            $fetchTicketCallArg = [$ticketId];
+
+            $fetchTicketCallArgs []= $fetchTicketCallArg;
+        }
+
+        if (count($updateTicketCallArgs) > 0)
+        {
+            $this->expectFreshdeskCall('updateTicketV2', $updateTicketCallArgs);
+        }
+
+        if (count($postReplyCallArgs) > 0)
+        {
+            $this->expectFreshdeskCall('postTicketReply', $postReplyCallArgs);
+        }
+
+        if (count($fetchTicketCallArgs) > 0)
+        {
+            $this->expectFreshdeskCall('fetchTicketById', $fetchTicketCallArgs);
+        }
+
+        if (isset($reasonCode) === false)
+        {
+            $reasonCode = 'goods_service_not_provided';
+            $this->fixtures->create('dispute_reason', [
+                'network'      => 'RZP',
+                'code'         => $reasonCode,
+                'gateway_code' => 'RZP01',
+            ]);
+        }
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+        $testData = &$this->testData[$name];
+
+        $testData['request']['content']['freshdesk_webhook']['ticket_cf_transaction_id'] = $payment->getPublicId();
+        $testData['request']['content']['freshdesk_webhook']['ticket_cf_razorpay_payment_id'] = $payment->getPublicId();
+        $testData['request']['content']['freshdesk_webhook']['ticket_cf_requestor_subcategory'] = $subcategory;
+        $testData['request']['content']['freshdesk_webhook']['ticket_cf_requester_item'] = $reasonCode;
+
+        $this->ba->freshdeskWebhookAuth();
+
+        $this->runRequestResponseFlow($testData);
+    }
 
     protected function updateCreateTestData(string $paymentId = null): array
     {
@@ -1490,5 +1745,51 @@ class DisputeTest extends TestCase
         $uploadedFile = $this->createUploadedFile($inputExcelFile);
 
         return $uploadedFile;
+    }
+
+    protected function enableRazorXTreatmentForFreshdeskWebhookDisputeAutomation()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('automate');
+    }
+
+    protected function enableFreshdeskMock(array $methods)
+    {
+        $freshdeskClientMock = $this->getMockBuilder(FreshdeskTicketClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods($methods)
+            ->getMock();
+
+        $this->app->instance('freshdesk_client', $freshdeskClientMock);
+    }
+
+
+    protected function expectFreshdeskCall(string $method, array $args)
+    {
+        /** @var \PHPUnit_Framework_MockObject_MockObject $fdClient */
+        $fdClient = $this->app['freshdesk_client'];
+
+        $fdClient
+            ->expects($this->exactly(count($args)))
+            ->method($method)
+            ->withConsecutive(...$args)
+            ->willReturn([]);
+    }
+
+    protected function expectNoFreshdeskCall(string $method)
+    {
+        /** @var \PHPUnit_Framework_MockObject_MockObject $fdClient */
+        $fdClient = $this->app['freshdesk_client'];
+
+        $fdClient
+            ->expects($this->never())
+            ->method($method);
     }
 }
