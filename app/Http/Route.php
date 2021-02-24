@@ -1109,7 +1109,8 @@ class Route
         'workflow_payout_amount_rules_edit'        => ['put',      'admin-workflows/rules/payout_amount',            'WorkflowController@editWorkflowPayoutAmountRules'                  ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
-
+        'workflow_observer_data_update'            => ['put',      'workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                             ],
+        'workflow_observer_data_fetch'             => ['get',      'workflows/{id}/observer_data',                   'WorkflowController@getWorkflowObserverData'                                 ],
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
@@ -3742,6 +3743,8 @@ class Route
         'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
+        'workflow_observer_data_update',
+        'workflow_observer_data_fetch',
         'action_diff_get',
         'action_request_execute',
         'action_comment_create',
@@ -4500,6 +4503,8 @@ class Route
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => '*',
+        'workflow_observer_data_update'            => Permission::EDIT_WORKFLOW,
+        'workflow_observer_data_fetch'             => Permission::EDIT_WORKFLOW,
         'action_diff_get'                          => '*',
         'action_request_execute'                   => '*',
         'action_comment_create'                    => '*',

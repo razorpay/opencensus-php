@@ -4093,6 +4093,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APPS_RISK_CHECK_QUEUE_COMPLETED                       = 'APPS_RISK_CHECK_QUEUE_COMPLETED';
     const APPS_RISK_CHECK_SQS_PUSH_INIT                         = 'APPS_RISK_CHECK_SQS_PUSH_INIT';
     const APPS_RISK_CHECK_SQS_PUSH_FAILED                       = 'APPS_RISK_CHECK_SQS_PUSH_FAILED';
+    const PERFORM_ACTION_OBSERVER_DATA                          = 'PERFORM_ACTION_OBSERVER_DATA';
+    const GET_OBSERVER_DATA                                     = 'GET_OBSERVER_DATA';
+    const UPDATE_OBSERVER_DATA                                  = 'UPDATE_OBSERVER_DATA';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
@@ -4255,7 +4258,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         self::SENSITIVE_BANKING_DETAILS_REDACTION_FAILURE_EXCEPTION => 'Exception occurred while scrubbing sensitive banking details',
-        self::KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION   => 'Exception occurred while scrubbing sensitive banking values based upon keys'
+        self::KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION   => 'Exception occurred while scrubbing sensitive banking values based upon keys',
+        self::PERFORM_ACTION_OBSERVER_DATA                          => 'Perform Action on Observer Data',
+        self::UPDATE_OBSERVER_DATA                                  => 'Update Observer Data',
+        self::GET_OBSERVER_DATA                                     => 'Get Observer Data',
         ];
 
     public static $fileBasedReconTraceCodes = [

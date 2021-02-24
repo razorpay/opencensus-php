@@ -309,4 +309,23 @@ class EsDao
 
         return $results;
     }
+
+    public function updateObserverDataInEs($indexName, $typeName, $documentId, array $observerData)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body'  => [
+                'script'    => [
+                    'inline'    =>  'ctx._source.workflow_observer_data= params.observer',
+                    'params'    => [
+                        'observer'  =>  $observerData
+                     ]
+                ]
+            ]
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
 }

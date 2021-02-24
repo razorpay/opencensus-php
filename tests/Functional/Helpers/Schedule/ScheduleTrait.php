@@ -59,7 +59,7 @@ trait ScheduleTrait
         return $response;
     }
 
-    private function createAndAssignSchedule($input = null)
+    private function createAndAssignScheduleAndAssertId($input = null)
     {
         $schedule = $this->createSchedule($input);
 
@@ -86,5 +86,15 @@ trait ScheduleTrait
             'delay'      => 1,
             'type'       => 'settlement',
         ];
+    }
+
+    protected function assignSchedule($scheduleId, $request)
+    {
+
+        $request['content']['schedule_id'] = $scheduleId;
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

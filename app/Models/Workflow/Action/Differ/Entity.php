@@ -44,30 +44,31 @@ use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
-    const ID            = 'id';
-    const ENTITY_NAME   = 'entity_name';
-    const ENTITY_ID     = 'entity_id';
-    const MAKER_ID      = 'maker_id';
-    const MAKER_TYPE    = 'maker_type';
-    const MAKER         = 'maker';
-    const TYPE          = 'type';
-    const URL           = 'url';
-    const ROUTE_PARAMS  = 'route_params';
-    const METHOD        = 'method';
-    const PAYLOAD       = 'payload';
-    const CONTROLLER    = 'controller';
-    const ROUTE         = 'route';
-    const DIFF          = 'diff';
-    const ACTION_ID     = 'action_id';
-    const STATE         = 'state';
-    const AUTH_DETAILS  = 'auth_details';
+    const ID                        = 'id';
+    const ENTITY_NAME               = 'entity_name';
+    const ENTITY_ID                 = 'entity_id';
+    const MAKER_ID                  = 'maker_id';
+    const MAKER_TYPE                = 'maker_type';
+    const MAKER                     = 'maker';
+    const TYPE                      = 'type';
+    const URL                       = 'url';
+    const ROUTE_PARAMS              = 'route_params';
+    const METHOD                    = 'method';
+    const PAYLOAD                   = 'payload';
+    const CONTROLLER                = 'controller';
+    const ROUTE                     = 'route';
+    const DIFF                      = 'diff';
+    const ACTION_ID                 = 'action_id';
+    const STATE                     = 'state';
+    const AUTH_DETAILS              = 'auth_details';
 
-    const CREATED_AT    = 'created_at';
+    const CREATED_AT                = 'created_at';
 
-    const FUNCTION_NAME = 'function_name';
-    const PERMISSION    = 'permission';
-    const OLD           = 'old';
-    const NEW           = 'new';
+    const FUNCTION_NAME             = 'function_name';
+    const PERMISSION                = 'permission';
+    const OLD                       = 'old';
+    const NEW                       = 'new';
+    const WORKFLOW_OBSERVER_DATA    = 'workflow_observer_data';
 
     protected $entity   = 'action';
 
@@ -90,6 +91,7 @@ class Entity extends Base\Entity
         self::STATE,
         self::PERMISSION,
         self::AUTH_DETAILS,
+        self::WORKFLOW_OBSERVER_DATA,
     ];
 
     protected $visible = [
@@ -112,6 +114,7 @@ class Entity extends Base\Entity
         self::STATE,
         self::PERMISSION,
         self::AUTH_DETAILS,
+        self::WORKFLOW_OBSERVER_DATA,
     ];
 
     protected $public = [
@@ -134,6 +137,11 @@ class Entity extends Base\Entity
         self::STATE,
         self::PERMISSION,
         self::AUTH_DETAILS,
+        self::WORKFLOW_OBSERVER_DATA,
+    ];
+
+    protected $casts = [
+        self::WORKFLOW_OBSERVER_DATA   => 'json',
     ];
 
     public function setDiff(array $diff)
@@ -154,6 +162,11 @@ class Entity extends Base\Entity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getWorkflowObserverData()
+    {
+        return $this->getAttribute(self::WORKFLOW_OBSERVER_DATA);
     }
 
     public function getRoute() : string

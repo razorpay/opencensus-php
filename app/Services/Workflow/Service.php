@@ -252,20 +252,21 @@ class Service
         $makerName = $maker->getName() ?? $maker->getEmail();
 
         $differEntity = [
-            Differ\Entity::ENTITY_NAME  => $entity,
-            Differ\Entity::ENTITY_ID    => $entityId,
-            Differ\Entity::MAKER        => $makerName,
-            Differ\Entity::MAKER_ID     => $maker->getId(),
-            Differ\Entity::MAKER_TYPE   => $this->getWorkflowMakerType(),
-            Differ\Entity::TYPE         => Differ\Type::MAKER,
-            Differ\Entity::URL          => $request->getUri(),
-            Differ\Entity::ROUTE_PARAMS => $routeParams,
-            Differ\Entity::METHOD       => $this->getMethod(),
-            Differ\Entity::PAYLOAD      => $input,
-            Differ\Entity::STATE        => State\Name::OPEN,
-            Differ\Entity::CONTROLLER   => $controller,
-            Differ\Entity::ROUTE        => $routeName,
-            Differ\Entity::PERMISSION   => $permission,
+            Differ\Entity::ENTITY_NAME              => $entity,
+            Differ\Entity::ENTITY_ID                => $entityId,
+            Differ\Entity::MAKER                    => $makerName,
+            Differ\Entity::MAKER_ID                 => $maker->getId(),
+            Differ\Entity::MAKER_TYPE               => $this->getWorkflowMakerType(),
+            Differ\Entity::TYPE                     => Differ\Type::MAKER,
+            Differ\Entity::URL                      => $request->getUri(),
+            Differ\Entity::ROUTE_PARAMS             => $routeParams,
+            Differ\Entity::METHOD                   => $this->getMethod(),
+            Differ\Entity::PAYLOAD                  => $input,
+            Differ\Entity::STATE                    => State\Name::OPEN,
+            Differ\Entity::CONTROLLER               => $controller,
+            Differ\Entity::ROUTE                    => $routeName,
+            Differ\Entity::PERMISSION               => $permission,
+            Differ\Entity::WORKFLOW_OBSERVER_DATA   => $input[Differ\Entity::WORKFLOW_OBSERVER_DATA] ?? [],
         ];
 
         $diff = $this->getDiff();
@@ -439,7 +440,6 @@ class Service
 
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
-
         // Fetch from getters if arguments are null
         if (($originalData === null) and ($dirtyData === null))
         {

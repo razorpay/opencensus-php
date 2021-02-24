@@ -356,6 +356,10 @@ return [
             ],
         ],
 
+        'instance_agent_id' => [
+            'rzp'       =>  env('FRESHDESK_RZP_AGENT_ID'),
+        ],
+
         'customer' => [
             'dispute' => [
                 'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),

@@ -153,4 +153,19 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($result);
     }
+
+    public function getWorkflowObserverData(string $id)
+    {
+        $data = $this->service()->getWorkflowObserverData($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateWorkflowObserverData(string $actionId)
+    {
+        $result = $this->service()->updateWorkflowObserverData($actionId, $this->input);
+
+        return ApiResponse::json($result);
+    }
+
 }

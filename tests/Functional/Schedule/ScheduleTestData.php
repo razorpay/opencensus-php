@@ -35,6 +35,13 @@ return [
         'content' => [],
     ],
 
+    'testCreateAssignScheduleWorkflowWithObserverData' => [
+        'method'  => 'POST',
+        'url'     => '/merchants/10000000000000/schedules',
+        'content' => [
+        ],
+    ],
+
     'testEditSchedule' => [
         'method'  => 'PUT',
         'url'     => '/schedules/',

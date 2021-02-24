@@ -1032,4 +1032,67 @@ class Service extends Base\Service
         return $input['group_id'];
     }
 
+    public function resolveTicket($fdInstance , $ticketId) : array
+    {
+        if (empty($ticketId) === true || empty($fdInstance) === true)
+        {
+            return [];
+        }
+
+        $content = [
+            'status'  => TicketStatus::getStatusMappingForStatusString(TicketStatus::RESOLVED)
+        ];
+
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, $url);
+    }
+
+    public function postTicketReplyOnAgentBehalf($freshdeskTicketId, $replyBody, $fdInstance, $merchantId)
+    {
+        $type = $this->getTypeFromFdInstance($fdInstance);
+
+        $agentIdToReply = $this->getAgentId($fdInstance);
+
+        if (empty($this->merchant) === true && empty($merchantId) === false)
+        {
+            $this->merchant = $this->repo->merchant->findByPublicId($merchantId);
+        }
+
+        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE                => $type,
+            Entity::TICKET_ID           => $freshdeskTicketId,
+        ],$this->merchant->getId())->firstOrFail();
+
+        $input = [
+            Constants::USER_ID     =>   $agentIdToReply,
+            Constants::BODY        =>   $replyBody
+        ];
+
+        $this->postTicketReply($ticketEntity->getId(), $input, $type);
+    }
+
+    protected function getAgentId ($fdInstance)
+    {
+        $agentIds = $this->app['config']->get('applications.freshdesk.instance_agent_id');
+
+        return $agentIds[$fdInstance];
+    }
+
+    protected function getTypeFromFdInstance ($fdInstance)
+    {
+        foreach (self::FRESHDESK_INSTANCES as $typeName => $fdInstanceArray)
+        {
+            if (array_key_exists($fdInstance, $fdInstanceArray) === true)
+            {
+                return $typeName;
+            }
+        }
+
+        throw new BadRequestValidationFailureException(ErrorCode::FRESHDESK_TICKET_INVALID_ID,
+            'FD Instance is Invalid ',
+            [Constants::FD_INSTANCE => $fdInstance]
+        );
+    }
+
 }

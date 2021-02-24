@@ -227,4 +227,6 @@ final class RazorxTreatment
     const API_SELECT_EMAILS_VIA_STORK = 'api_select_emails_via_stork';
   
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED  = 'system_based_needs_clarification_not_matched';
+
+    const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';
 }

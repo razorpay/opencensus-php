@@ -15,6 +15,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Helper;
+use \RZP\Models\Workflow\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -135,10 +136,10 @@ class Core extends Base\Core
         return $diff;
     }
 
-    public function fetchRequest(Action\Entity $action)
+    public function fetchRequest(string $actionId)
     {
         $esResponse = $this->esDao->searchByIndexTypeAndActionId(
-            strtolower($this->baseIndex), self::ES_TYPE, $action->getId());
+            strtolower($this->baseIndex), self::ES_TYPE, $actionId);
 
         if ($esResponse === null)
         {
@@ -153,11 +154,15 @@ class Core extends Base\Core
         $controllerSplit = explode('@', $controller);
 
         return [
-            Entity::ROUTE_PARAMS    => $esObject[Entity::ROUTE_PARAMS],
-            Entity::PAYLOAD         => $esObject[Entity::PAYLOAD],
-            Entity::CONTROLLER      => $controllerSplit[0],
-            Entity::FUNCTION_NAME   => $controllerSplit[1],
-            Entity::AUTH_DETAILS    => $esObject[Entity::AUTH_DETAILS] ?? [],
+            Entity::ROUTE_PARAMS            => $esObject[Entity::ROUTE_PARAMS],
+            Entity::PAYLOAD                 => $esObject[Entity::PAYLOAD],
+            Entity::CONTROLLER              => $controllerSplit[0],
+            Entity::FUNCTION_NAME           => $controllerSplit[1],
+            Entity::AUTH_DETAILS            => $esObject[Entity::AUTH_DETAILS] ?? [],
+            Entity::ROUTE                   => $esObject[Entity::ROUTE],
+            Entity::WORKFLOW_OBSERVER_DATA  => $esObject[Entity::WORKFLOW_OBSERVER_DATA] ?? [],
+            Entity::ENTITY_ID               => $esObject[Entity::ENTITY_ID] ?? '',
+            Entity::ENTITY_NAME             => $esObject[Entity::ENTITY_NAME] ?? '',
         ];
     }
 
@@ -435,7 +440,6 @@ class Core extends Base\Core
 
     public function updateStateInEs(string $actionId, string $state)
     {
-
         $documents = $this->getDocumentsFromEs($actionId);
 
         if (empty($documents) === true)
@@ -448,8 +452,30 @@ class Core extends Base\Core
 
         $documentId = $document['_id'];
 
+        (new Service())->performActionOnObserver($actionId,$state);
+
         $esResponse = $this->esDao->updateActionState(
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
+
+        return $esResponse;
+    }
+
+    public function updateObserverDataForActionId(string $actionId, array $observerData)
+    {
+        $documents = $this->getDocumentsFromEs($actionId);
+
+        if (empty($documents) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $document = current($documents);
+
+        $documentId = $document['_id'];
+
+        $esResponse = $this->esDao->updateObserverDataInEs(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $observerData);
 
         return $esResponse;
     }

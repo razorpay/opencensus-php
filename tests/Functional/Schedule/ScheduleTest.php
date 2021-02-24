@@ -2,19 +2,43 @@
 
 namespace RZP\Tests\Functional\Schedule;
 
+use DB;
 use Carbon\Carbon;
+use RZP\Models\Base\EsDao;
 use RZP\Models\Schedule\Anchor;
 use RZP\Constants\Timezone;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Workflow\Action\Differ\Entity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
+use RZP\Models\Workflow\Observer\ScheduleSettlementObserver;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
 
 class ScheduleTest extends TestCase
 {
+    protected $esDao;
+
+    protected $esClient;
+
     use ScheduleTrait;
     use SubscriptionTrait;
     use PaymentTrait;
+    use WorkflowTrait;
+    use HeimdallTrait;
+    use DbEntityFetchTrait;
+    use FreshdeskTrait;
+
+    const EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE  = 'EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE';
+
+    const EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER               = 'EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER';
 
     public function setUp()
     {
@@ -23,6 +47,19 @@ class ScheduleTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+
+        $this->esDao = new EsDao();
+
+        $this->esClient =  $this->esDao->getEsClient()->getClient();
+
+        $this->setUpFreshdeskClientMock();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
     }
 
     public function testFetchSettlementSchedules()
@@ -135,7 +172,7 @@ class ScheduleTest extends TestCase
         $input = $this->testData['timedScheduleBody'];
 
         // Create and assign timed schedule having hour set to 5
-        $response = $this->createAndAssignSchedule($input);
+        $response = $this->createAndAssignScheduleAndAssertId($input);
 
         $data = ['amount' => 100];
 
@@ -171,7 +208,7 @@ class ScheduleTest extends TestCase
 
     public function testDeleteScheduleInUse()
     {
-        $schedule = $this->createAndAssignSchedule();
+        $schedule = $this->createAndAssignScheduleAndAssertId();
 
         $data = $this->testData[__FUNCTION__];
 
@@ -182,14 +219,104 @@ class ScheduleTest extends TestCase
         });
 
         // Assign a new schedule so the original one becomes unused
-        $this->createAndAssignSchedule();
+        $this->createAndAssignScheduleAndAssertId();
 
         $this->deleteSchedule($schedule['id']);
     }
 
     public function testAssignScheduleById()
     {
-        $this->createAndAssignSchedule();
+        $this->createAndAssignScheduleAndAssertId();
+    }
+
+    public function testCreateAssignScheduleWorkflowWithObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+
+                }) );
+
+        $scheduleArray = $this->getDefaultScheduleArray();
+
+        $schedule     = $this->fixtures->create('schedule', $scheduleArray);
+
+        $this->setupWorkflow("Assign Schedule", "schedule_assign");
+
+        $response = $this->assignSchedule($schedule["id"], $this->testData['testCreateAssignScheduleWorkflowWithObserverData']);
+
+        $expectedWorkflow  = $this->getExpectedDataArray(self::EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE);
+
+        $this->assertArrayHasKey("id", $response );
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => 123,
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->esClient->indices()->refresh();
+
+        $workflowData = $this->getWorkflowData();
+
+        $expectedWorkFlowData  = $this->getExpectedDataArray(self::EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $this->assertArraySelectiveEquals($expectedWorkFlowData, $workflowData);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new ScheduleSettlementObserver([
+                                                Entity::ENTITY_ID => '10000000000000',
+                                                Entity::PAYLOAD=>[
+                                                    "schedule_id" => $schedule["id"]
+
+                    ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+            ],
+            [
+
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $request = [
+            'url' => '/settlements/schedules',
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $isScheduleAssigned = false;
+
+        foreach ($res['items'] as $schedule1)
+        {
+            if ($schedule1["id"] === $schedule['id'])
+            {
+                $isScheduleAssigned = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($isScheduleAssigned);
     }
 
     public function testUpdateNextRunAt()
@@ -574,4 +701,45 @@ class ScheduleTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected function getExpectedDataArray($arrayType) : array
+    {
+        if ($arrayType === self::EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE)
+        {
+            return [
+                "entity_id" =>  "10000000000000",
+                "entity_name" =>  "schedule_task",
+                "workflow" =>  [
+                    "name" => "Assign Schedule",
+                    "merchant_id" => "10000000000000"
+                ],
+                "permission" => [
+                    "name" => "schedule_assign",
+                ],
+                "state" => "open",
+                "maker_type" => "admin",
+                "maker" => [
+                    "email" => "superadmin@razorpay.com",
+                    "name" => "test admin",
+                ],
+                "org_id" => "org_100000razorpay",
+                "approved" =>  FALSE,
+            ];
+        }
+
+        if ($arrayType === self::EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000000/schedules",
+                'method' => "POST",
+                'workflow_observer_data' =>  [
+                    'ticket_id' => '123',
+                    'fd_instance' => "rzp"
+                ],
+                'state' => "open",
+                'route' => "schedule_assign"
+            ];
+        }
+    }
+
 }

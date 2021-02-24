@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Helpers\Workflow;
 
+use DB;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Entity;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Permission;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
 
 trait WorkflowTrait
 {
@@ -126,5 +128,64 @@ trait WorkflowTrait
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function updateObserverData($workflowActionId, array $observerData)
+    {
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'method' => 'PUT',
+            'url' => '/workflows/' . $workflowActionId . '/observer_data',
+            'content' => $observerData,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getWorkflowData()
+    {
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        return $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+    }
+
+    protected function setupWorkflow(string $workflowName, string $permissionName): void
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id' => Org::RZP_ORG,
+                'entity_type' => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $this->createWorkflow([
+            'org_id' => '100000razorpay',
+            'name' => $workflowName,
+            'permissions' => [$permissionName],
+            'levels' => [
+                [
+                    'level' => 1,
+                    'op_type' => 'or',
+                    'steps' => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id' => Org::ADMIN_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 }

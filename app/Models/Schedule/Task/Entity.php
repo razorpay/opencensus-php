@@ -177,6 +177,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULE_ID);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getNextRunAt()
     {
         return $this->getAttribute(self::NEXT_RUN_AT);

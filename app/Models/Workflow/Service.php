@@ -4,11 +4,20 @@ namespace RZP\Models\Workflow;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\State\Name;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\RazorxTreatment;
+use \RZP\Models\Workflow\Observer as Observer;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Workflow\Action\Differ\Service as DifferService;
+use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskService;
 
 class Service extends Base\Service
 {
@@ -162,5 +171,140 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
             }
         }
+    }
+
+    public function performActionOnObserver(string $actionId, string $state)
+    {
+
+        $variant  = $this->app['razorx']->getTreatment(
+            $actionId,
+            RazorxTreatment::PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA,
+            $this->app['rzp.mode'] ?? Mode::LIVE);
+
+        if ($variant === 'control')
+        {
+            return;
+        }
+
+        $diff = (new DifferService)->fetchRequest($actionId);
+
+        $routeName = $diff[DifferEntity::ROUTE];
+
+        $observerClass = $this->getWorkflowObserverClassName($routeName);
+
+        if (empty($observerClass) === true)
+        {
+            return;
+        }
+
+        $observerData = $diff[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
+
+        $observerClassInstance = new $observerClass($diff);
+
+        if (empty($observerData) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
+            DifferEntity::WORKFLOW_OBSERVER_DATA    => $observerData,
+            DifferEntity::ACTION_ID                 => $actionId,
+            'observer_class'                        => $observerClass
+        ]);
+
+        if ($state === Name::REJECTED)
+        {
+            $observerClassInstance->onReject($observerData);
+        }
+        else if ($state === Name::APPROVED)
+        {
+            $observerClassInstance->onApprove($observerData);
+        }
+        else if ($state === Name::CLOSED)
+        {
+            $observerClassInstance->onClose($observerData);
+        }
+    }
+
+    protected function getWorkflowObserverClassName($routeName)
+    {
+        if (empty(Observer\Constants::WORKFLOW_VS_OBSERVER[$routeName]) === false)
+        {
+            return Observer\Constants::WORKFLOW_VS_OBSERVER[$routeName];
+        }
+
+        return "";
+    }
+
+    public function getWorkflowObserverData(string $actionId)
+    {
+        $orgId = $this->app['workflow']->getWorkflowMaker()->getOrgId();
+
+        Action\Entity::verifyIdAndStripSign($actionId);
+
+        // findByIdAndOrgId returns a collection so extracting the first element.
+        // Cannot use firstorfailPublic here because findByIdAndOrgId returns collection.
+        $action = $this->repo
+            ->workflow_action
+            ->getActionDetails($actionId, $orgId)
+            ->first();
+
+        // $action can be null because we don't validate the result after fetching from the collection.
+        if (empty($action) === false)
+        {
+            $differService = new DifferService();
+
+            $differEntity = $differService->fetchRequest($actionId);
+
+            $this->trace->info(TraceCode::GET_OBSERVER_DATA, [
+                DifferEntity::WORKFLOW_OBSERVER_DATA    => $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
+                DifferEntity::ACTION_ID                 => $actionId,
+            ]);
+
+            return ($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? new \stdClass());
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $actionId);
+        }
+    }
+
+    public function updateWorkflowObserverData($actionId, $input)
+    {
+        $core = new Action\Differ\Core();
+
+        $this->trace->info(TraceCode::UPDATE_OBSERVER_DATA, [
+            DifferEntity::WORKFLOW_OBSERVER_DATA    => $input,
+            DifferEntity::ACTION_ID                 => $actionId,
+        ]);
+
+        (new Action\Differ\Validator)->validateInput('updateObserverData', $input);
+
+        $orgId = $this->app['workflow']->getWorkflowMaker()->getOrgId();
+
+        $actionId = Action\Entity::verifyIdAndStripSign($actionId);
+
+        // findByIdAndOrgId returns a collection so extracting the first element.
+        // Cannot use firstorfailPublic here because findByIdAndOrgId returns collection.
+        $action = $this->repo
+            ->workflow_action
+            ->getActionDetails($actionId, $orgId)
+            ->first();
+
+        // $action can be null because we don't validate the result after fetching from the collection.
+        if (empty($action) === false)
+        {
+            $core->updateObserverDataForActionId($actionId, $input);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $actionId);
+        }
+
+        return [
+            DifferEntity::WORKFLOW_OBSERVER_DATA    => $input,
+        ];
     }
 }

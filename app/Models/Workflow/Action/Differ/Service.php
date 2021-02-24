@@ -20,8 +20,6 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndSilentlyStripSign($actionId);
 
-        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
-
-        return $this->core()->fetchRequest($action);
+        return $this->core()->fetchRequest($actionId);
     }
 }

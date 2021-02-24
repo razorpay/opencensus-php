@@ -1,0 +1,99 @@
+<?php
+
+namespace RZP\Tests\Functional\Helpers\Freshdesk;
+
+use Mockery;
+use RZP\Models;
+
+trait FreshdeskTrait
+{
+    protected $freshdeskClientMock;
+
+    protected function expectFreshdeskRequestAndRespondWith($expectedPath, $expectedMethod, $expectedContent, $respondWith = [], $times = 1)
+    {
+        $expectedUrl1 = $this->app['config']->get('applications.freshdesk.url') . '/' . $expectedPath;
+        $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
+
+        $expectedUrls = [$expectedUrl1, $expectedUrl2];
+
+        $this->freshdeskClientMock
+            ->shouldReceive('getResponse')
+            ->times($times)
+            ->with(Mockery::on(function ($request)  use ($expectedUrls, $expectedMethod, $expectedContent ) {
+                if (in_array($request['url'], $expectedUrls) === false)
+                {
+                    return false;
+                }
+
+                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent);
+            }))
+            ->andReturnUsing(function () use ($respondWith) {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode($respondWith);
+
+                return $response;
+            });
+
+    }
+
+    protected function setUpFreshdeskClientMock(): void
+    {
+        $this->app['config']->set('applications.freshdesk.sandbox', false);
+
+        $this->app['config']->set('applications.freshdesk.token', 'random token');
+
+        $this->app['config']->set('applications.freshdesk.token2', 'random token 2');
+
+        $this->app['config']->set('applications.freshdesk.tokenx', 'random token x');
+
+        $this->freshdeskClientMock = Mockery::mock('RZP\Services\FreshdeskTicketClient', [$this->app])->makePartial();
+
+        $this->freshdeskClientMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['freshdesk_client'] = $this->freshdeskClientMock;
+    }
+
+    protected function validateMethodAndContent($request, $expectedMethod, $expectedContent) : bool
+    {
+        if (strtolower($request['method']) !== strtolower($expectedMethod))
+        {
+            return false;
+        }
+
+        if (is_string($request['content']) === true)
+        {
+            $actualContent = json_decode($request['content'], true);
+        }
+
+        foreach ($expectedContent as $key => $value)
+        {
+            if (isset($actualContent[$key]) === false)
+            {
+                return false;
+            }
+
+            if ($expectedContent[$key] !== $actualContent[$key])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function getDefaultFreshdeskArray()
+        {
+            $ticketDetails["fd_instance"] = "rzp";
+
+            return [
+            'id'             => 'razorpayid0012',
+            'ticket_id'      => '123',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+            'created_at'     => '1600000000',
+            'updated_at'     => '1600000000',
+            ];
+        }
+}
