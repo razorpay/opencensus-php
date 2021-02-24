@@ -7,6 +7,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
 const UPDATE_USER = 'UPDATE_USER';
+const UPDATE_USER_FEATURES = 'UPDATE_USER_FEATURES';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
@@ -28,20 +29,14 @@ export const fetchUser = () => {
   };
 };
 
-export const updateUserFeatures = (FEATURE, enable) => {
-  updateUser({
-    ...this.props.user,
-    features: this.props.user.features.map((featureData) => {
-      if (featureData.feature === FEATURE) {
-        return {
-          ...featureData,
-          value: enable,
-        };
-      }
-
-      return featureData;
-    }),
-  });
+export const updateUserFeatures = (FEATURE, isEnabled) => {
+  return {
+    type: UPDATE_USER_FEATURES,
+    data: {
+      FEATURE,
+      isEnabled,
+    },
+  };
 };
 
 export const updateUser = (data) => {
@@ -117,6 +112,9 @@ export default function (state = initialState, action) {
     case UPDATE_USER:
       return onUpdateUser(state, action.data);
 
+    case UPDATE_USER_FEATURES:
+      return onUpdateUserFeatures(state, action.data);
+
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);
 
@@ -140,6 +138,24 @@ function onUpdateUser(state, data) {
         ...state.user.user,
         ...data,
       },
+    }),
+  });
+}
+
+function onUpdateUserFeatures(state, data) {
+  return merge(state, {
+    user: new User({
+      ...state.user,
+      features: state.user.features.map((featureData) => {
+        if (featureData.feature === data.FEATURE) {
+          return {
+            ...featureData,
+            value: data.isEnabled,
+          };
+        }
+
+        return featureData;
+      }),
     }),
   });
 }

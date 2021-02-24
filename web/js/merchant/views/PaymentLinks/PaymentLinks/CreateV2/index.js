@@ -41,6 +41,7 @@ const PAYMENT_LINK_FORMS = {
     showNotification,
     saveOnboarding,
     updateFeatures,
+    updateUserFeatures,
     fetchReminders,
     fetchRemindersMerchantConfigs,
   },
@@ -144,7 +145,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
           this.props.user.current,
         )
         .then(() => {
-          updateUserFeatures(FEATURE, true);
+          this.props.updateUserFeatures(FEATURE, true);
         });
     }
 
@@ -153,7 +154,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         business_model: this.props.user.business_model,
       })
       .then(() => {
-        updateUserFeatures(FEATURE, true);
+        this.props.updateUserFeatures(FEATURE, true);
       });
   };
 
