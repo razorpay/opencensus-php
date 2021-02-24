@@ -87,7 +87,7 @@ class Razorflow
      * @throws Exception\RuntimeException
      * @throws \Requests_Exception
      */
-    public function postSlashCommand(array $input, array $inputHeaders, bool $throwExceptionOnFailure = false): array
+    public function postSlashCommand(array $input, array $inputHeaders, string $customEndpoint = null, bool $throwExceptionOnFailure = false): array
     {
         $this->trace->info(
             TraceCode::RAZORFLOW_SLACK_REQUEST,
@@ -115,6 +115,8 @@ class Razorflow
         }
 
         $input = array_merge($input, $inputHeaders);
+
+        $input['custom_endpoint'] = $customEndpoint;
 
         $response = $this->invokeSlashCommand($input);
 

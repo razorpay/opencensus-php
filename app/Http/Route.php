@@ -1534,6 +1534,8 @@ class Route
 
         // Razorflow routes
         'razorflow_post_slash_command'             => ['post',     'razorflow',                                      'RazorflowController@postSlashCommand'                              ],
+        'razorflow_post_slash_command_custom_endpoint'             => ['post',     'razorflow/{customEndpoint}',                                      'RazorflowController@postSlashCommand'                              ],
+
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -5603,6 +5605,7 @@ class Route
 
         // Razorflow
         'razorflow_post_slash_command',
+        'razorflow_post_slash_command_custom_endpoint',
 
         // Freshdesk
         'freshdesk_create_ticket',

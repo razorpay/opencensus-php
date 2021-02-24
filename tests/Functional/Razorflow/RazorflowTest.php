@@ -138,4 +138,27 @@ class RazorflowTest extends TestCase
         $this->assertEquals('"Invalid request"', $response->getContent());
         $this->assertEquals(400, $response->getStatusCode());
     }
+
+    public function testPostSlashCommandSuccessCustomEndpoint()
+    {
+        $this->ba->directAuth();
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $slackSignature = $this->getSlackSignature(
+            $this->testData[__FUNCTION__]['request']['content'],
+            $currentTimestamp,
+            'randomsigningsecret'
+        );
+
+        $this->testData[__FUNCTION__]['request']['headers'] = [
+            'X-Slack-Request-Timestamp' => $currentTimestamp,
+            'X-Slack-Signature' => $slackSignature
+        ];
+
+        $response = $this->sendRequest($this->testData[__FUNCTION__]['request']);
+
+        $this->assertEquals('"Hello. Request accepted"', $response->getContent());
+        $this->assertEquals(200, $response->getStatusCode());
+    }
 }
