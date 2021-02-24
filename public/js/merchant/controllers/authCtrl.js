@@ -224,7 +224,7 @@ app
       };
 
       if (window.location.hash.includes('/access/signup')) {
-        window.analytics && window.analytics.init(['hubspot']);
+        window.razorpayAnalytics && window.razorpayAnalytics.init(['hubspot']);
       }
 
       $scope.handleWhatsAppOpIn = function () {

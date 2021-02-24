@@ -88,11 +88,11 @@ import { fetchTlsVersion } from 'merchant/reducers/profile';
     if (query.merchant) {
       source = query.merchant;
     }
-    if (typeof window.analytics !== 'undefined') {
-      utm = analytics.utils.getLandingParams();
-      gclid = analytics.utils.getCookie('gclid');
-      if (typeof analytics.utils.getBrowserDetails !== 'undefined') {
-        browser_details = analytics.utils.getBrowserDetails();
+    if (typeof window.razorpayAnalytics !== 'undefined') {
+      utm = razorpayAnalytics.utils.getLandingParams();
+      gclid = razorpayAnalytics.utils.getCookie('gclid');
+      if (typeof razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+        browser_details = razorpayAnalytics.utils.getBrowserDetails();
       }
     }
     return window.rzpQ.component('Home', {
