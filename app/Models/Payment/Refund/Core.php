@@ -104,7 +104,7 @@ class Core extends Base\Core
                         Entity::STATUS                     => Status::FAILED,
                         Entity::REFERENCE2                 => $refund->getReference2(),
                         Constants::FTA_UPDATE              => true,
-                        Attempt\Entity::BANK_RESPONSE_CODE => $ftaData[Attempt\Entity::BANK_RESPONSE_CODE],
+                        Attempt\Entity::BANK_RESPONSE_CODE => $ftaData[Attempt\Entity::BANK_RESPONSE_CODE] ?? null,
                     ];
 
                     $event = Refund\ScroogeEvents::FILE_INIT_EVENT;

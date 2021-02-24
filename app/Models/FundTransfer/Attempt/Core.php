@@ -658,6 +658,7 @@ class Core extends Base\Core
             'fta_status'               => $fta->getStatus(),
             'is_fts'                   => $fta->getIsFTS(),
             'bank_status_code'         => $fta->getBankStatusCode(),
+            'bank_response_code'       => $fta->getBankResponseCode(),
             'failure_reason'           => $fta->getFailureReason(),
             'channel'                  => $fta->getChannel(),
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
