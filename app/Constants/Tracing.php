@@ -25,24 +25,38 @@ class Tracing
         $routesToInclude = array_merge(Route::$public, Route::$direct);
 
         return array_merge($routesToInclude, [
-                // used by capital-cards service
-                'user_fetch',
-                'capital_cards_service',
-                'capital_cards_admin',
+            // used by capital-cards service
+            'user_fetch',
+            'capital_cards_service',
+            'capital_cards_admin',
 
-                // used by fts service
-                'update_fts_fund_transfer',
-                'fts_channel_notification',
+            // used by fts service
+            'update_fts_fund_transfer',
+            'fts_channel_notification',
 
-                // used by capital-collections service
-                'merchant_balance_create',
-                'internal_balance_fetch',
-                'credit_repayment_transaction_create',
-                'capital_transaction_create',
-                'internal_balance_fetch_by_id',
-                'capital_collections_service',
-                'capital_collections_admin',
-            ]);
+            // used by capital-collections service
+            'merchant_balance_create',
+            'internal_balance_fetch',
+            'credit_repayment_transaction_create',
+            'capital_transaction_create',
+            'internal_balance_fetch_by_id',
+            'capital_collections_service',
+            'capital_collections_admin',
+
+            // used by payout-links service
+            'payout_create_internal',
+            'payout_fetch_multiple_internal',
+            'payout_purpose_validate_internal',
+            'contact_get_internal',
+            'contact_create_internal',
+            'fund_account_get_internal',
+            'fund_account_list_internal',
+            'fund_account_create_internal',
+            'merchant_fetch_internal',
+            'banking_accounts_list_internal',
+            'payout_links_send_email',
+            'app_merchant_mapping_create'
+        ]);
     }
 
     public static function getServiceName($app): string
