@@ -6,9 +6,26 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   createMerchantInstrumentRequest,
   cancelMerchantInstrumentRequest,
+  fetchMerchantInstruments,
+  fetchRequestedInstruments,
+  setIntrument,
 } from 'merchant/reducers/instrumentRequests';
 
 import { getIcon } from './InstrumentIcons';
+import PaytmWalletIntegration from './Modals/PaytmWallet/PaytmWalletIntegration';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { DetailsDrawer } from './Modals/PaytmWallet/DetailsDrawer';
+import { bindActionCreators } from 'redux';
+import {
+  ACTION_REQUIRED,
+  REQUEST,
+  PENDING,
+  ACTIVATED,
+  ACCOUNT_LINKABLE,
+  REJECTED,
+  REQUESTABLE,
+  CANCELLED,
+} from '../constants';
 
 class LeafListItem extends React.Component {
   constructor(props) {
@@ -20,6 +37,43 @@ class LeafListItem extends React.Component {
   state = {
     loading: false,
     isImageLoaded: false,
+  };
+
+  handleDrawerModal = (type) => {
+    if (type === 'open') {
+      return this.props.openModal({
+        component: <DetailsDrawer />,
+      });
+    } else {
+      return this.props.closeModal({
+        component: <DetailsDrawer />,
+      });
+    }
+  };
+
+  handlePaytmWalletIntegration = (step, status) => {
+    return this.props.openModal({
+      component: (
+        <PaytmWalletIntegration
+          fetchInstrumentStatus={async () => {
+            try {
+              return window.location.reload();
+            } catch (err) {
+              showNotification({
+                type: 'error',
+                message: errors[0],
+              });
+            }
+          }}
+          step={step}
+          status={status}
+          openDrawer={() => this.handleDrawerModal('open')}
+          closeDrawer={() => this.handleDrawerModal('close')}
+          closeModal={() => this.props.closeModal()}
+        />
+      ),
+      className: 'checkout-modal',
+    });
   };
 
   handleCreateRequest = () => {
@@ -112,6 +166,7 @@ class LeafListItem extends React.Component {
     } = this.props;
     let ctaClass = {
       Request: 'btn btn-primary',
+      account_linkable: 'btn btn-primary',
       requestable: 'btn btn-primary',
       activated: 'activated status',
       requested: 'requested status',
@@ -121,6 +176,14 @@ class LeafListItem extends React.Component {
     };
 
     let customHeight = instrument.description ? { minHeight: '70px' } : {};
+
+    let getListClass = (status, path) => {
+      if ([ACTION_REQUIRED, REJECTED].includes(status)) {
+        return 'action-required-list-item';
+      } else if (status === ACTIVATED && path === 'pg.wallet.paytm') {
+        return 'activated-paytm-list-item';
+      }
+    };
 
     let statusPopoverText = {
       activated: 'Payment method active on your checkout',
@@ -147,14 +210,7 @@ class LeafListItem extends React.Component {
       }
     };
     return (
-      <li
-        class={`${
-          ['action_required', 'rejected'].includes(instrument.status)
-            ? 'action-required-list-item'
-            : ''
-        }`}
-        style={customHeight}
-      >
+      <li class={getListClass(instrument.status, instrument.path)} style={customHeight}>
         <div>
           {instrument.icon && (
             <div class="icon">
@@ -192,21 +248,64 @@ class LeafListItem extends React.Component {
               ) : null}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
-            {['rejected', 'action_required'].includes(instrument.status) && (
+            {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
               <button class="btn btn-link" onClick={this.handleRaiseRequest}>
                 Raise Request
               </button>
             )}
-            {!['pending', 'activated', 'rejected', 'action_required'].includes(
-              instrument.status,
-            ) && (
+            {![
+              PENDING,
+              ACTIVATED,
+              REJECTED,
+              ACTION_REQUIRED,
+              REQUESTABLE,
+              ACCOUNT_LINKABLE,
+            ].includes(instrument.status) && (
               <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                 Cancel
               </button>
             )}
           </div>
           <div>
-            {['Request', 'requestable', 'cancelled'].includes(instrument.status) && (
+            {instrument.status === ACTIVATED && instrument.path === 'pg.wallet.paytm' && (
+              <div className="flex-end instrument__paytm-wallet">
+                <div className="container">
+                  <div className="detail">
+                    <strong>Live Mode</strong>
+                    <div class="activated status" style={{ marginRight: '0' }}>
+                      {instrument.status.replace('_', ' ')}
+                      <Popover align="bottom" theme="dark">
+                        <PopoverBody>
+                          <div style={{ textAlign: 'left', textTransform: 'none' }}>
+                            {statusPopoverText[instrument.status]}
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </div>
+                  </div>
+                  <p id="status">
+                    Paytm Wallet is enabled on Live Mode, customers can transact with Paytm wallet.
+                    To view/edit your Paytm Production API Credentials,{' '}
+                    <a onClick={() => this.handlePaytmWalletIntegration(2, instrument.status)}>
+                      click here
+                    </a>{' '}
+                    .
+                  </p>
+                </div>
+              </div>
+            )}
+            {[ACCOUNT_LINKABLE].includes(instrument.status) && (
+              <div className="flex-end">
+                <button
+                  class="btn btn-primary mr-25 ml-5"
+                  disabled={this.state.loading}
+                  onClick={() => this.handlePaytmWalletIntegration(1, instrument.status)}
+                >
+                  {this.state.loading ? 'Loading..' : 'Link Account'}
+                </button>
+              </div>
+            )}
+            {[REQUEST, REQUESTABLE, CANCELLED].includes(instrument.status) && (
               <div
                 style={{
                   display: 'flex',
@@ -223,31 +322,32 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {!['Request', 'requestable', 'cancelled'].includes(instrument.status) && (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-              >
-                <div class={ctaClass[instrument.status]}>
-                  <>
-                    {instrument.status.replace('_', ' ')}
-                    <Popover align="bottom" theme="dark">
-                      <PopoverBody>
-                        <div style={{ textAlign: 'left', textTransform: 'none' }}>
-                          {statusPopoverText[instrument.status]}
-                        </div>
-                      </PopoverBody>
-                    </Popover>
-                  </>
+            {![REQUEST, REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
+              instrument.path !== 'pg.wallet.paytm' && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div class={ctaClass[instrument.status]}>
+                    <>
+                      {instrument.status.replace('_', ' ')}
+                      <Popover align="bottom" theme="dark">
+                        <PopoverBody>
+                          <div style={{ textAlign: 'left', textTransform: 'none' }}>
+                            {statusPopoverText[instrument.status]}
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
-        {['action_required', 'rejected'].includes(instrument.status) && (
+        {[ACTION_REQUIRED, REJECTED].includes(instrument.status) && (
           <>
             <div class="comment" title={instrument.comment}>
               <i class="i i-info-outline" />
@@ -278,8 +378,20 @@ const mapStateToProps = (state) => ({
   instrumentsTat: state.instrumentRequests.instrumentsTat,
 });
 
-export default connect(mapStateToProps, {
-  createMerchantInstrumentRequest,
-  cancelMerchantInstrumentRequest,
-  showNotification,
-})(LeafListItem);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      createMerchantInstrumentRequest,
+      cancelMerchantInstrumentRequest,
+      showNotification,
+      openModal,
+      closeModal,
+      fetchMerchantInstruments,
+      fetchRequestedInstruments,
+      setIntrument,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LeafListItem);

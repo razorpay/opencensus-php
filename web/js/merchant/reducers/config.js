@@ -99,6 +99,47 @@ export const onboardTerminal = (gateway) => {
   return merchantFetch(params);
 };
 
+export const onboardPaytmTerminal = (
+  gateway,
+  merchant_provided_paytm_key,
+  merchant_provided_id,
+  industry,
+  website,
+  mode,
+) => {
+  let params = {
+    url: `terminals/onboard`,
+    method: 'post',
+    mode: mode,
+    data: {
+      gateway: gateway,
+      secrets: {
+        gateway_secure_secret: merchant_provided_paytm_key,
+      },
+      identifiers: {
+        gateway_merchant_id: merchant_provided_id,
+        gateway_terminal_id: industry,
+        gateway_access_code: website,
+      },
+    },
+  };
+
+  return merchantFetch(params);
+};
+
+export const getPaytmCredentials = (mid) => {
+  let params = {
+    url: `terminals/credentials`,
+    method: 'POST',
+    data: {
+      gateway: 'paytm',
+      merchant_ids: [mid],
+      procurer: 'merchant',
+    },
+  };
+  return merchantFetch(params);
+};
+
 export const fetchConfig = () => {
   return {
     type: CONFIG_FETCH,

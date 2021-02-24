@@ -1,3 +1,10 @@
+$checkout-modal-width = 400px
+
+.flex-end
+  display: flex
+  justify-content: flex-end
+  align-items: center
+
 #settings-payment-methods
   .mr-25
     margin-right: 25px
@@ -215,6 +222,20 @@
             line-height: 17px
             color: #7B8199
 
+        .instrument__paytm-wallet
+          padding: 15px
+          .container
+            background: rgba(232, 235, 239, 0.32)
+            padding: 10px
+            width: auto
+            .detail
+              display: flex
+              justify-content: space-between
+              align-items: center
+              width: auto
+              #status
+                margin-top: 14px
+
       li.action-required-list-item
         height: auto
         padding: 12px 0px
@@ -230,7 +251,12 @@
             font-size: 20px
           p
             margin: 5px 20px
-
+      li.activated-paytm-list-item 
+        height: 200px
+        > div
+          flex-wrap: wrap
+        .detail
+          padding: 0
 
 
       
@@ -315,5 +341,243 @@
       color: #828282
       padding-left: 10px
       align-items: center
-    
 
+.checkout-modal 
+  width: $checkout-modal-width
+  .wizard-header
+    z-index: 1;
+    position: absolute;
+    top: -40px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center
+    justify-content: space-between
+    width: 100%
+    .close
+      display: flex
+      flex-direction: column
+      justify-content: space-between
+      opacity: 1
+      span:nth-of-type(1)
+        display: block;
+        height: 2px;
+        width: 15px;
+        background: white;
+        transform: rotate(45deg);
+      span:nth-of-type(2)
+        display: block;
+        height: 2px;
+        width: 15px;
+        margin-top: -2px
+        background: white;
+        transform: rotate(-45deg);
+
+
+.paytm-wallet-integration
+  $side-width = 240px
+  position: relative
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+  #white-background
+    background: #fff
+    margin-top: 60px
+
+  .details-drawer
+    padding: 10px 20px
+    background: #F3F6F8;
+    border: 1px solid #528FF0;
+    border-radius: 2px;
+    display: flex
+    align-items: center
+    justify-content: space-between
+
+  .details-side-drawer
+    position: absolute;
+    width: 300px
+    left: $checkout-modal-width
+    background: #ffffff
+    top: 30px
+    bottom: 30px
+    padding: 15px
+    z-index: -1
+    img 
+      height: 177px;
+      width: 222px;
+      margin: 10px 20px;
+    .ellipse
+      position: absolute;
+      width: 116.79px;
+      height: 116.79px;
+      border: 1.5px solid #528FF0;
+      box-sizing: border-box;
+      border-radius: 50%
+    .drawer-header
+      font-size: 14px
+      font-weight: 700
+      margin: 26px 0px
+    .drawer-list-item
+      color: #7B8199
+      font-size: 14px
+    .drawer-list
+      color: #515978
+      font-size: 14px
+      font-weight: 400
+
+
+  .wizard
+    min-height: 527px
+    background: #ffffff
+    .register-account
+      display: flex
+      justify-content: space-between
+      align-items: center
+      margin: 20px
+      padding: 10px
+      background: #F3F6F8;
+      border-radius: 2px;
+      .blue-bar
+        width: 5px;
+        height: 36px;
+        background: #528FF0;
+        opacity: 0.9;
+        border-radius: 2px;
+        margin-right: 15px
+    .form-container
+      padding: 20px 
+    .form-title
+      padding: 24px
+      font-weight: 600
+      font-size: 16px
+      position: absolute
+      top: 0
+      left: 0
+      background: white
+      width: 100%
+    .form-subtitle
+      margin-top: 50px
+      font-size: 14px
+      i
+        color: black
+    .form-radio > div.form-control-radio:nth-of-type(1)
+      border-bottom: 1px solid #ADBCC9
+    .form-description
+      background: #fafafa
+      padding: 0px 12px 0px
+      border: 1px solid rgba(173, 188, 201, 0.47)
+      margin-top: 10px
+      .form-control-input
+        margin: 10px 0px
+      .form-control-radio
+        padding: 26px 0px
+      label
+        display: flex
+        justify-content: flex-start
+
+        span 
+          color: #7B8199
+          font-weight: 400
+          font-size: 12px  
+      input[type="radio"]
+        margin-right: 10px    
+    .Input
+      margin: 0
+      .Input-content
+        margin-top: 12px
+      ul
+        margin: 30px 0
+        padding: 0
+      li
+        cursor: pointer
+        list-style: none
+        padding: 10px 24px
+        margin: 4px 0
+        color: #57666d
+        position: relative
+
+        .li--broad
+          padding: 2px 0
+          font-weight: 600
+          display: block
+          pointer-events: none
+
+        .description
+          color: inherit
+          opacity: 0.8
+          font-weight: 400
+          pointer-events: none
+
+          &.small
+            font-size: 12px
+
+          &.large
+            font-size: 14px
+            line-height: 20px
+            margin-top: 8px
+
+        .i-check
+          margin-right: 6px
+          line-height: initial
+          vertical-align: middle
+
+
+        i.i-chevron-right
+          color: #fff
+          position: absolute
+          right: 8px
+          font-family: merchant-icons
+          opacity: 0
+          top: 50%
+          transform: translate(-4px, -50%)
+          transition: 0.35s
+
+        &:hover
+          background: #fafbfc
+        &.text-success
+          color: #27c24c
+        &.active
+          background: #528FF0
+          color: #fff
+
+          .i-check::before
+            color: #fff
+
+          i.i-chevron-right
+            opacity: 1
+
+        &.disabled
+          cursor: not-allowed
+          color: #b6c0c4
+
+      & ~ main, & ~ footer
+        left: $side-width
+
+      & ~ footer .help-text
+          width: 320px
+  .footer
+    border-top: 1px solid rgba(173, 188, 201, 0.47);
+    padding: 22px 24px
+    background: #EBEFF0
+    .stepper
+      position: relative
+      width: 50px
+      display: flex
+      align-items: center
+      justify-content: space-around
+      .inactive
+        width: 6px;
+        height: 6px;
+        border-radius: 50%
+        background: #C4C4C4;
+      .active
+        display: block
+        width: 6px;
+        height: 6px;
+        border-radius: 50%
+        background: #528FF0;
+    .action-buttons
+      display: flex
+      gap: 1.5rem
+      .btn-link
+        color: #2B83EA
+        font-weight: 700

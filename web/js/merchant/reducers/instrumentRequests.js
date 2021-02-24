@@ -636,6 +636,13 @@ let initialState = {
           header: 'Wallets',
           list: [
             {
+              name: 'Paytm',
+              description: '',
+              status: 'account_linkable',
+              slug: 'paytm',
+              icon: 'paytm',
+            },
+            {
               name: 'Phonepe',
               description: '',
               status: 'Request',
