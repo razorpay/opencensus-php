@@ -2389,6 +2389,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BEAM_PUSH_FAILED                                      = 'BEAM_PUSH_FAILED';
 
     // Partners trace codes
+    const PARTNER_CREATION_SUCCESSFUL                           = 'PARTNER_CREATION_SUCCESSFUL';
     const PARTNER_REQUEST_SUBMITTED                             = 'PARTNER_REQUEST_SUBMITTED';
     const PARTNER_ACCESS_MAPS_DELETE                            = 'PARTNER_ACCESS_MAPS_DELETE';
     const PARTNER_DELETE_APPLICATION                            = 'PARTNER_DELETE_APPLICATION';

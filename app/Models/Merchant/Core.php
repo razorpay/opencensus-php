@@ -1690,6 +1690,14 @@ class Core extends Base\Core
 
             if ($merchant->isPurePlatformPartner() === false)
             {
+                // create new partner config for aggregator/reseller partners
+                if ($merchant->isFullyManagedPartner() === false)
+                {
+                    $application = (new OAuthApp\Repository())->findOrFail($app[OAuthApp\Entity::ID]);
+
+                    $this->createPartnerConfig($application, $merchant);
+                }
+
                 $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
 
                 $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
@@ -1737,17 +1745,10 @@ class Core extends Base\Core
 
         $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], MerchantApplications\Entity::REFERRED);
 
-        $config = [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
-            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
-            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
-            PartnerConfig\Constants::PARTNER_ID         => $merchant->getId(),
-        ];
-
         $referredApp = (new OAuthApp\Repository)->findOrFail($app[OAuthApp\Entity::ID]);
 
-        // create new partner config for referred app for aggregator/full_managed partners
-        (new PartnerConfig\Core)->create($referredApp, $config);
+        // create new partner config for referred app for aggregator/fully_managed partners
+        $this->createPartnerConfig($referredApp, $merchant);
     }
 
     protected function setDefaultFeatureForPartner(Entity $partner)
@@ -1813,6 +1814,7 @@ class Core extends Base\Core
      * @param String $partnerType
      *
      * @return array
+     * @throws \Throwable
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
@@ -1820,28 +1822,49 @@ class Core extends Base\Core
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
-            $application = $this->fetchPartnerApplication($merchant);
-
-            $config = [
-                PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
-                PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
-                PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
-                PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
-            ];
-
-            (new PartnerConfig\Core)->create($application, $config);
-
             return $partner;
         });
+
+        $eventData = [
+            'status'        => 'success',
+            'partner_id'    => $partner->getId(),
+            'partner_type'  => $partnerType,
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_PARTNER_SIGNUP, $partner, null, $eventData);
+
+        $hasCommissionConfigs = ($partnerType === Constants::PURE_PLATFORM) ? false : true;
 
         $this->sendPartnerOnBoardedEmail($partner);
 
         $this->sendPartnerInfoToSalesforce($partner);
 
+        $this->trace->info(
+          TraceCode::PARTNER_CREATION_SUCCESSFUL,
+          [
+              Entity::PARTNER_ID    => $partner->getId(),
+              Entity::PARTNER_TYPE  => $partnerType,
+          ]
+        );
+
         return [
             'partner_type'              => $partnerType,
-            'has_commission_configs'    => true,
+            'has_commission_configs'    => $hasCommissionConfigs,
         ];
+    }
+
+    public function createPartnerConfig(OAuthApp\Entity $application, Entity $partner, array $config = [])
+    {
+        $defaultConfig = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
+            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+            PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+        ];
+
+        $config = array_merge($defaultConfig, $config);
+
+        (new PartnerConfig\Core)->create($application, $config);
     }
 
     public function backFillMerchantApplications(array $merchantIds = null, $limit = null, $afterId = null)

@@ -560,6 +560,11 @@ class EventCode
         'name'  => 'merchant_onboarding.login.success'
     ];
 
+    const PARTNERSHIP_PARTNER_SIGNUP = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.partner.signup'
+    ];
+
     const PARTNERSHIP_SUBMERCHANT_SIGNUP = [
         'group' => 'onboarding',
         'name'  => 'partnerships.submerchant.signup'

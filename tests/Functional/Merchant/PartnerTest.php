@@ -159,7 +159,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $merchantRequest->merchant;
 
-        $app = ['id'=>'FoFp09FkqO5tqc'];
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
         $this->mockAuthServiceCreateApplication($merchant, $app);
 
@@ -204,7 +206,9 @@ class PartnerTest extends OAuthTestCase
 
         $merchant->reload();
 
-        $app = ['id'=>'FoFp09FkqO5tqc'];
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
         $this->mockAuthServiceCreateApplication($merchant, $app);
 
@@ -892,7 +896,7 @@ class PartnerTest extends OAuthTestCase
     {
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $app = ['id'=>'FoFp09FkqO5tqc'];
+        $app = ['id'=>'8ckeirnw84ifke'];
 
         $this->mockAuthServiceCreateApplication($merchant, $app);
 
@@ -1755,7 +1759,7 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
-        $app = ['id'=>'FoFp09FkqO5tqc'];
+        $app = ['id'=>'8ckeirnw84ifke'];
 
         $this->mockAuthServiceCreateApplication($merchant, $app);
 
@@ -1832,6 +1836,25 @@ class PartnerTest extends OAuthTestCase
         $this->assertArraySelectiveEqualsWithCount($expectedAppTypes, $applicationTypes);
 
         $this->assertTrue($expectedPartner->isAggregatorPartner());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    public function testUpdatePartnerTypeAsPurePlatformUsingProxyAuth()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isPurePlatformPartner());
+
+        $merchantApplication = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $this->assertEmpty($merchantApplication);
 
         Mail::assertQueued(PartnerOnBoarded::class);
     }

@@ -1389,6 +1389,22 @@ return [
         ],
     ],
 
+    'testUpdatePartnerTypeAsPurePlatformUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'pure_platform',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'pure_platform',
+                'has_commission_configs'    => false,
+            ],
+        ],
+    ],
+
     'testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType' => [
         'request'       => [
             'url'       => '/merchant/partner_type',

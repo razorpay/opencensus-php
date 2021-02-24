@@ -1746,6 +1746,7 @@ class Validator extends Base\Validator
         $allowedPartnerTypes = [
             Constants::RESELLER,
             Constants::AGGREGATOR,
+            Constants::PURE_PLATFORM,
         ];
 
         if (in_array($value, $allowedPartnerTypes, true) === false)
