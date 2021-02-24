@@ -49,9 +49,13 @@ class UpdateSyncedOrderPgRouter extends Job
     {
         parent::handle();
 
+        $traceRequest = $this->data;
+
+        unset($traceRequest['account_number']);
+
         $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER,
             [
-                'data' => $this->data
+                'data' => $traceRequest
             ]
         );
 
@@ -63,7 +67,7 @@ class UpdateSyncedOrderPgRouter extends Job
 
             $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
                 [
-                    'data' => $this->data
+                    'id' => $this->data['id']
                 ]
             );
 

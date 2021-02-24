@@ -429,9 +429,13 @@ class Core extends Base\Core
 
     public function dispatchUpdatedOrderToPGRouter($data)
     {
+        $traceData = $data;
+
+        unset($traceData['order_sync_request']['account_number'], $traceData['order_sync_request']['payer_name']);
+
         $this->trace->info(
             TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
-            $data
+            $traceData
         );
 
         UpdateSyncedOrderPgRouter::dispatch($data);

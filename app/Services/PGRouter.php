@@ -189,6 +189,8 @@ class PGRouter
 
         unset($traceRequest['options']['auth']);
 
+        unset($traceRequest['content']['order_sync_request']['account_number']);
+
         $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
     }
 
