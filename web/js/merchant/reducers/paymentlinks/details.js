@@ -49,6 +49,11 @@ export const fetchPaymentLinkDetails = (paymentLinkId) => {
   const user = store.getState().session.user;
 
   if (user.isPaymentlinksV2Enabled) {
+    // TODO: remove once proper fix in backend, api should give proper response for IDs with inv_ as well
+    if (paymentLinkId.startsWith('inv_')) {
+      paymentLinkId = paymentLinkId.replace('inv', 'plink');
+    }
+
     const reqPayload = {
       url: `payment_links/${paymentLinkId}`,
       params: { expand: ['payments', 'user', 'reminder_status'] },
