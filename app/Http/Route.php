@@ -5328,6 +5328,7 @@ class Route
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
         'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_merchant_summary'                => Permission::VIEW_PAYOUT_LINKS,
+        'payout_links_batch_summary'                   => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_settings_post'                   => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_settings_get'                    => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_merchant_settings_get'           => Permission::DASHBOARD_PAYOUT_LINKS,
