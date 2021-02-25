@@ -400,6 +400,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerHyperVerge();
 
+        $this->registerCareServiceClient();
+
         $this->registerFreshchatClient();
 
         $this->registerFreshdeskTicketService();
@@ -1049,6 +1051,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('freshchat_client', function($app)
         {
             return new FreshchatClient($app);
+        });
+    }
+
+    protected function registerCareServiceClient()
+    {
+        $this->app->singleton('care_service', function($app)
+        {
+            return new CareServiceClient($app);
         });
     }
 

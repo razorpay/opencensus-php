@@ -864,6 +864,8 @@ return [
     ],
 
     'care'  => [
-        'secret'    => env('CARE_SERVICE_API_SECRET'),
+        'secret'       => env('CARE_SERVICE_API_SECRET'),
+        'host'         => env('CARE_SERVICE_HOST'),
+        'password'     => env('CARE_SERVICE_PASSWORD'),
     ],
 ];

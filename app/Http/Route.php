@@ -2286,6 +2286,8 @@ class Route
         'merchant_fetch_tpvs'                     => ['get',     'merchant/tpvs',                                           'BankingAccountTpvController@fetchMerchantTpvs'                ],
         'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'         ],
         'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
+
+        'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
     ];
 
     public static $public = [
@@ -3626,6 +3628,8 @@ class Route
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs',
+
+        'care_service_dashboard_proxy',
     ];
 
     //
