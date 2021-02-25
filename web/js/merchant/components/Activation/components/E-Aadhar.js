@@ -442,7 +442,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                   {!hasMobileLinked && (
                     <Description
                       className="Input-content e-aadhar__not-linked-text"
-                      text="You can continue without verification. However, your KYC review might take a little longer"
+                      text="Your KYC review will be delayed by two weeks if you don't verify your aadhar. It usually takes just 2-3 days with verified aadhar"
                     />
                   )}
                 </>
