@@ -179,7 +179,7 @@ class Repository extends Base\Repository
                     ->where(
                         Entity::PROCESSED_AT,
                         '<',
-                        Carbon::yesterday(Timezone::IST)->getTimestamp()
+                        Carbon::today(Timezone::IST)->getTimestamp()
                     )
                     ->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
                     ->limit($count)

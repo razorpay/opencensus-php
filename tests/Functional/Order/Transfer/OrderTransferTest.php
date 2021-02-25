@@ -238,15 +238,15 @@ class OrderTransferTest extends TestCase
 
         $this->capturePaymentProcessOrderTransfers($order);
 
-        $transfer = $this->getLastEntity('transfer', true);
+        $transfer = $this->getDbLastEntity('transfer');
 
         $this->assertEquals('failed', $transfer['status']);
 
         $this->fixtures->merchant->editBalance(100000);
 
-        $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $todayTimestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
-        $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+        $this->fixtures->transfer->editProcessedAt($todayTimestamp - 10, $transfer['id']);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -254,11 +254,46 @@ class OrderTransferTest extends TestCase
 
         $orderIds = $this->runRequestResponseFlow($data);
 
-        $transfer = $this->getLastEntity('transfer', true);
+        $transfer = $this->getDbLastEntity('transfer');
 
         $this->assertEquals('processed', $transfer['status']);
 
+        $this->assertEquals(2, $transfer['attempts']);
+
         $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
+    }
+
+    public function testCronProcessFailedOrderTransfersSameDay()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->fixtures->merchant->editBalance(100000);
+
+        $todayTimestamp = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->transfer->editProcessedAt($todayTimestamp + 10, $transfer['id']);
+
+        $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals(1, $transfer['attempts']);
+
+        $this->assertEmpty($orderIds);
     }
 
     public function testTransferFailedWebhook()
