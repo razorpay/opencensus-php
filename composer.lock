@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93f02b431bc2757b7493555ca9e81245",
+    "content-hash": "69bf815712ef22bf2c5a1ea12ccf01b1",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4947,16 +4947,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.5",
+            "version": "v0.7.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "007f1905d0b986fad303f6a1f81b8a050ea08e64"
+                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/007f1905d0b986fad303f6a1f81b8a050ea08e64",
-                "reference": "007f1905d0b986fad303f6a1f81b8a050ea08e64",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
+                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
                 "shasum": ""
             },
             "archive": {
@@ -5018,10 +5018,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.1",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-02-04T06:23:39+00:00"
+            "time": "2021-02-24T14:53:41+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -6880,7 +6880,7 @@
             ],
             "description": "Passport SDK. To be used by upstream services to consume passport sent by edge service.",
             "support": {
-                "source": "https://github.com/razorpay/edge-passport-php/tree/master",
+                "source": "https://github.com/razorpay/edge-passport-php/tree/v1.0.1",
                 "issues": "https://github.com/razorpay/edge-passport-php/issues"
             },
             "time": "2021-02-23T03:33:57+00:00"
