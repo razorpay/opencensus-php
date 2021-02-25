@@ -6,10 +6,29 @@ on:
 
 jobs:
   pull_request_approved:
+    if: github.event.review.state == 'approved'
     runs-on: [self-hosted]
     steps:
     - name: checkout
-      uses: razorpay/checkout-action@v2
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: rebase-branch
+      id: rebase
+      uses: cirrus-actions/rebase@1.4
+      env:
+        GITHUB_TOKEN:  ${{ secrets.GIT_ACTION_TOKEN }}
+    # If Rebase failed, then comment in PR to resolve manually    
+    - name: Comments
+      if: ${{failure()}}
+      uses: mshick/add-pr-comment@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        message: |
+          **Conflict Error Please resolve manually**
+        allow-repeats: true
     - name: Validate skipRoast Flag for PR
       uses: actions/github-script@0.9.0
       id: skip-roast
@@ -19,13 +38,3 @@ jobs:
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
           return Boolean(skipFlag)
-    - name: Run bvt suite if PR submitted as approved
-      if : github.event.review.state == 'approved'
-      env:
-        SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : bvt-api-approval
-        GITHUB_TOKEN:  ${{ github.token }}
-        SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
-        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
-      run: |
-        sh ./.github/actions/triggerBvtSuite.sh
