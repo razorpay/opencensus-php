@@ -13,6 +13,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Encryption\PGPEncryption;
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Gateway\Netbanking\Pnb\ReconFields;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -313,7 +314,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         file_put_contents($filePath, $decryptedText);
 
-        $claimSheet = Excel::load($filePath)->all()->toArray();
+        $claimSheet = (new ExcelImport)->toArray($filePath, null, \Maatwebsite\Excel\Excel::XLSX)[0];
 
         foreach ($claimSheet as $claim)
         {

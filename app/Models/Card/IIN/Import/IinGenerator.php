@@ -4,6 +4,7 @@ namespace RZP\Models\Card\IIN\Import;
 
 use Excel;
 use RZP\Exception;
+use RZP\Excel\Export;
 
 /**
  * This class generates the testing xml file from the input array.
@@ -49,13 +50,10 @@ class IinGenerator
     protected function createExcelFile($input)
     {
         $data = $input['data'];
-        $file = Excel::create('IINTest', function($excel) use($data) {
+        $filePath =   storage_path('exports') . '/IINTest.xls';
 
-            $excel->sheet('Sheet1', function($sheet) use($data) {
-                $sheet->fromArray($data);
-            });
-        })->store('xls', false, true);
+        (new Export($data, [], array('Sheet1')))->generateAutoHeading(true)->store($filePath, 'local_storage');
 
-        return $file['full'];
+        return $filePath;
     }
 }

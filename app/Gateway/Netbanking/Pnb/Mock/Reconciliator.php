@@ -46,7 +46,7 @@ class Reconciliator extends Mock\Reconciliator
 
         foreach ($input as $row)
         {
-            $date = \PHPExcel_Shared_Date::PHPToExcel(Carbon::createFromTimestamp(
+            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::dateTimeToExcel(Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
                 Timezone::IST));
 

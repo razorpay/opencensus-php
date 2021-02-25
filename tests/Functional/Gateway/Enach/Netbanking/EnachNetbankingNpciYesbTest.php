@@ -11,6 +11,8 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
 
 class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
@@ -417,22 +419,17 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $name = 'RAZORPAYPVTLTD_OutwardMandateMISReport' . Carbon::now(Timezone::IST)->format('dmY');
 
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
-                foreach ($sheets as $sheetName => $data)
-                {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
-                }
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+            $sheetsInfo = [];
+            foreach ($sheets as $sheetName => $data)
+            {
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
             }
-        );
 
-        $data = $excel->string('xlsx');
+            return $sheetsInfo;
+        });
+
+        $data = $excel->raw('Xlsx');
 
         $handle = tmpfile();
         fwrite($handle, $data);

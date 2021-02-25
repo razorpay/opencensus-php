@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Refund;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
@@ -125,10 +126,10 @@ class NbplusNetbankingIobCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         $this->assertTrue(file_exists($filePath));
 
+        $row = (new ExcelImport)->toArray($filePath)[0];
+
         for ($i = 0; $i < 3; $i++)
         {
-            $row = Excel::load($filePath)->toArray();
-
             $this->assertEquals((int)number_format($row[$i]['refund_amount_rs_ps'] * 100, 0, '.', ''), $refundEntities[$i]['amount']);
             $this->assertEquals($row[$i]['pgi_reference_no'], $refundEntities[$i]['payment_id']);
             $this->assertEquals($row[$i]['refund_id'], $refundEntities[$i]['id']);

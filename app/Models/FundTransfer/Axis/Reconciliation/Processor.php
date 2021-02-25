@@ -35,7 +35,7 @@ class Processor extends BaseProcessor
     protected function setDate($data)
     {
         // Date in the excel file are formatted to get the proper date from the integer value use the below method
-        $date = \PHPExcel_Style_NumberFormat::toFormattedString($data[0][Headings::SETTLEMENT_DATE], 'DD-MM-YYYY');
+        $date = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($data[0][Headings::SETTLEMENT_DATE], 'DD-MM-YYYY');
 
         //update the format so that recon mail is appended to settlement mail
         $this->date = $date;

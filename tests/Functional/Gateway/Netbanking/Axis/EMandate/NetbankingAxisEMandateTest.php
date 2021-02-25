@@ -13,10 +13,12 @@ use RZP\Models\Gateway\File;
 use RZP\Models\FileStore\Type;
 use RZP\Models\FileStore\Format;
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Export as ExcelExport;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use RZP\Models\Customer\Token\RecurringStatus;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
@@ -665,22 +667,17 @@ class NetbankingAxisEMandateTest extends TestCase
 
     protected function getExcelString($name, $sheets)
     {
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
-                foreach ($sheets as $sheetName => $data)
-                {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
-                }
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+            $sheetsInfo = [];
+            foreach ($sheets as $sheetName => $data)
+            {
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
             }
-        );
 
-        return $excel->string('xls');
+            return $sheetsInfo;
+        });
+
+        return $excel->raw('Xlsx');
     }
 
     protected function makeBatchRequest($content, $file)

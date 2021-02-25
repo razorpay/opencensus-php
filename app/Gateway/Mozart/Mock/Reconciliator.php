@@ -43,7 +43,10 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         for ($i = 0; $i < 4; $i++)
         {
-            $data[] = [];
+            // Adding array inside array as laravel excel collapse()
+            // removes all the empty array as array_merge() cannot
+            // merge empty array
+            $data[] = [[]];
         }
 
         $data[] = NetbankingYesb\ReconFields::RECON_FIELDS;

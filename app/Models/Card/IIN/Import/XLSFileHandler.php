@@ -6,6 +6,7 @@ use Excel;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Excel\Import as ExcelImport;
 
 /**
  * This class extracts the data from the file and return the column names
@@ -136,24 +137,35 @@ class XLSFileHandler
 
         // The Laravel Excel Reader crashed due to some unknown reason
         // So, using the internal PHPExecl object
-        $excelReader = Excel::load($filePath)->excel;
+        $excelReader = (new ExcelImport(1))->toArray($filePath);
 
-        $sheet = $excelReader->getSheet(0);
-        $highestRow = $sheet->getHighestRow();
-        $highestColumn = $sheet->getHighestDataColumn();
+        $sheet = $excelReader[0];
+        $highestRow = count($sheet);
+        $highestColumn = count($sheet[0]);
 
-        $data = $sheet->rangeToArray('A1' . ':' . $highestColumn . $highestRow,
-                                    null,
-                                    true,
-                                    false);
+        $columnIndex = $this->getColumnHeaderIndex($sheet, $highestRow);
+        $sheet = $this->getParsedSheet($sheet, $columnIndex);
+        $columnNames = $sheet[$columnIndex];
 
-        $columnIndex = $this->getColumnHeaderIndex($data, $highestRow);
-        $columnNames = $data[$columnIndex];
+        $rowIndex = $this->skipBlankColumns($sheet, $columnIndex + 1, $highestRow);
 
-        $rowIndex = $this->skipBlankColumns($data, $columnIndex + 1, $highestRow);
+        $rows = array_slice($sheet, $rowIndex);
 
-        $rows = array_slice($data, $rowIndex);
         return ['columns' => $columnNames, 'data' => $rows];
+    }
+
+    protected function getParsedSheet($sheet, $columnIndex)
+    {
+        $parsedSheet = [];
+        foreach ($sheet as $row => $rowValues) {
+            $columns = [];
+            foreach ($rowValues as $key => $value) {
+                $columns[] = $value;
+            }
+            $parsedSheet[] = $columns;
+
+        }
+        return $parsedSheet;
     }
 
     protected function getColumnHeaderIndex($rows, $highestRow)
@@ -164,9 +176,9 @@ class XLSFileHandler
         // They are mostly page/file title
         for ($row = 0; $row < $highestRow; $row++)
         {
-            for ($i = 0; $i < $len; $i++)
+            foreach ($rows[$row] as $key => $value)
             {
-                if ($rows[$row][$i] === null )
+                if ($value === null )
                 {
                     continue 2;
                 }
@@ -183,9 +195,9 @@ class XLSFileHandler
         // Skipping if the following row contains all cells null
         for ($row = $startIndex; $row < $highestRow; $row++)
         {
-            for ($i = 1; $i < $len; $i++)
+            foreach ($rows[$row] as $key => $value)
             {
-                if ($rows[$row][$i] != null )
+                if ($value != null )
                     return $row;
             }
         }

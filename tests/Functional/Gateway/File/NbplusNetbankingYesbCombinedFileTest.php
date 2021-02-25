@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
@@ -149,7 +150,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
     protected function checkRefundsFile(array $refundFileData, $payment1, $payment2, $fullRefund, $partialRefund)
     {
-        $refundsFileContents = Excel::load($refundFileData['url'])->all()->toArray();
+        $refundsFileContents = (new ExcelImport)->toArray($refundFileData['url'])[0];
 
         $this->assertCount(2, $refundsFileContents);
 
@@ -176,7 +177,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
     protected function checkClaimFile(array $claimData, $payment1, $payment2)
     {
-        $claimFileContents = Excel::load($claimData['url'])->all()->toArray();
+        $claimFileContents = (new ExcelImport)->toArray($claimData['url'])[0];
 
         $this->assertCount(2, $claimFileContents);
 

@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -454,7 +455,7 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals($data['netbanking_icici']['count'], 3);
         $this->assertTrue(file_exists($filePath));
 
-        $sheet = Excel::load($filePath)->all()->toArray();
+        $sheet = (new ExcelImport)->toArray($filePath)[0];
 
         $this->assertEquals(count($sheet[0]), 10);
 
