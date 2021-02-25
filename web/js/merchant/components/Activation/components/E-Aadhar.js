@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import RTracking from 'react-tracking';
 import Input, { Description } from 'common/new-ui/Input';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { classList } from 'common/utils/rzp-utils';
 import CopyOtpInput from './OtpInput';
@@ -98,10 +98,14 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
   };
 
   const generateCaptcha = () => {
+    if (inputValue.aadhar_number && inputValue.aadhar_number.length !== 12) {
+      setError('invalid_aadhar_length');
+      return;
+    }
     setError('');
     setIsOtpGenerated(false);
     setWrongOtp(false);
-    merchantFetch({
+    return merchantFetch({
       url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarGetCaptcha',
       method: 'POST',
       data: JSON.stringify({}),
@@ -153,7 +157,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
       aadhaar_number: inputValue.aadhar_number,
       captcha: inputValue.captcha,
     };
-    merchantFetch({
+    return merchantFetch({
       url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
       method: 'POST',
       data: body,
@@ -178,6 +182,11 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           }
           if (res.data.error_code === 'NO_PROVIDER_ERROR') {
             mobileLinkedOnChange(false);
+          }
+          if (res.data.error_code === 'INTERNAL_SERVER_ERROR') {
+            setInputValue({ ...inputValue, captcha: '' });
+            setCaptcha({});
+            setPin('');
           }
         }
         if (res.data.code) {
@@ -210,6 +219,10 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
         if (!err.success) {
           setError(err.errors[0]);
           setCaptcha({});
+          if (err.errors[0] === 'INVALID_SESSION_ID') {
+            setInputValue({ ...inputValue, captcha: '' });
+            setPin('');
+          }
         }
         trackEvent(
           window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
@@ -226,7 +239,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
       captcha: inputValue.captcha,
       file_password: pin,
     };
-    merchantFetch({
+    return merchantFetch({
       url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
       method: 'POST',
       data: body,
@@ -241,7 +254,11 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           if (res.data.error_code === 'INCORRECT_OTP') {
             setWrongOtp(true);
           }
-          if (res.data.error_code === 'OTP_LIMIT_EXCEEDED') {
+          if (
+            res.data.error_code === 'OTP_LIMIT_EXCEEDED' ||
+            res.data.error_code === 'INTERNAL_SERVER_ERROR'
+          ) {
+            setInputValue({ ...inputValue, captcha: '' });
             setIsOtpGenerated(false);
             setCaptcha({});
             setPin('');
@@ -283,6 +300,11 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
           setError(err.errors[0]);
           setIsOtpGenerated(false);
           setCaptcha({});
+          if (err.errors[0] === 'INVALID_SESSION_ID') {
+            setInputValue({ ...inputValue, captcha: '' });
+            setPin('');
+            setOtp('');
+          }
         }
         trackEvent(
           window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
@@ -327,16 +349,13 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                 label="Aadhar Verification"
                 placeholder="Enter 12 digit Aadhar Number"
                 onChange={handleOnChange}
-                validator={(value) => {
-                  if (value && value.length < 12) {
-                    return 'Aadhar number should be of 12 digits';
-                  }
-                }}
                 propagatedError={
                   error === 'MOBILE_NOT_LINKED'
                     ? 'Aadhar is not linked to any mobile number'
                     : error === 'INVALID_AADHAAR_NUMBER'
                     ? 'Aadhar number is invalid'
+                    : error === 'invalid_aadhar_length'
+                    ? 'Aadhar number should be of 12 digits'
                     : ''
                 }
                 disabled={!hasMobileLinked}
@@ -360,29 +379,22 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                 error === 'MOBILE_NOT_LINKED') && (
                 <>
                   <div className="Input-content">
-                    <Button.Secondary
+                    <AsyncBtn.Secondary
                       type="button"
-                      className={
-                        inputValue.aadhar_number
-                          ? inputValue.aadhar_number.length > 11 && error !== 'MOBILE_NOT_LINKED'
-                            ? 'e-aadhar__btn'
-                            : ''
-                          : ''
-                      }
+                      className={hasMobileLinked ? 'e-aadhar__btn' : ''}
                       children="Verify With OTP >"
                       onClick={generateCaptcha}
-                      disabled={
-                        inputValue.aadhar_number
-                          ? inputValue.aadhar_number.length < 12 || error === 'MOBILE_NOT_LINKED'
-                          : true
-                      }
+                      disabled={!hasMobileLinked}
                       style={{ boxShadow: 'none' }}
+                      pendingState="Verify With OTP"
                     />
                     {error === 'INVALID_SESSION_ID' ? (
                       <Error text="The session has been timed out. Please start again" />
                     ) : error === 'OTP_LIMIT_EXCEEDED' ? (
                       <Error text="You have exceeded the maximum attempts to submit OTP. Please try again" />
-                    ) : error.includes('Internal Server Error') || error === 'invalid_argument' ? (
+                    ) : error.includes('Internal Server Error') ||
+                      error === 'invalid_argument' ||
+                      error === 'INTERNAL_SERVER_ERROR' ? (
                       <Error text="Something went wrong. Please try again" />
                     ) : null}
                     <Description
@@ -493,13 +505,20 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                         <div className="btn__back" onClick={handleBackAction}>
                           Back
                         </div>
-                        <Button.Secondary
+                        <AsyncBtn.Secondary
                           type="button"
-                          className={inputValue.captcha && pin.length === 4 ? 'e-aadhar__btn' : ''}
+                          className={
+                            inputValue.captcha && pin.length === 4 && inputValue.aadhar_number
+                              ? 'e-aadhar__btn'
+                              : ''
+                          }
                           children="Send OTP"
                           onClick={generateOTP}
-                          disabled={!inputValue.captcha || pin.length !== 4}
+                          disabled={
+                            !inputValue.captcha || pin.length !== 4 || !inputValue.aadhar_number
+                          }
                           style={{ boxShadow: 'none' }}
+                          pendingState="Sending OTP"
                         />
                       </div>
                     </div>
@@ -534,13 +553,16 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
 
                   <div className="Input-content">
                     <div className="e-aadhar__seprator" />
-                    <Button.Secondary
+                    <AsyncBtn.Secondary
                       type="button"
-                      className={otp.length === 6 ? 'e-aadhar__btn' : ''}
+                      className={
+                        otp.length === 6 && inputValue.aadhar_number ? 'e-aadhar__btn' : ''
+                      }
                       children="Submit"
                       onClick={verifyOTP}
-                      disabled={otp.length !== 6}
+                      disabled={otp.length !== 6 || !inputValue.aadhar_number}
                       style={{ boxShadow: 'none' }}
+                      pendingState="Submitting"
                     />
                   </div>
                 </div>
