@@ -593,10 +593,14 @@ class Service extends Base\Service
             $payment = $this->repo->payment->getCapturedPaymentForOrder($order->getId());
 
             if ($payment === null) {
+                $this->core->fetchTransfersAndIncrementAttempts($order);
+
                 continue;
             }
 
             if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false) {
+                $this->core->fetchTransfersAndIncrementAttempts($order);
+
                 continue;
             }
 

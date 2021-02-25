@@ -39,7 +39,7 @@ class Repository extends Base\Repository
      * @param string          $sourceType
      * @param string          $sourceId
      * @param Merchant\Entity $merchant
-     * @param $status         $status
+     * @param array           $status
      */
     public function fetchBySourceTypeAndIdAndMerchant(string $sourceType, string $sourceId, Merchant\Entity $merchant, array $status = [])
     {

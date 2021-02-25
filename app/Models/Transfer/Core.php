@@ -751,4 +751,22 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function fetchTransfersAndIncrementAttempts(Order\Entity $order)
+    {
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constant::ORDER,  $order->getId(), $order->merchant , [Status::FAILED]);
+
+        if (empty($transfers) === true)
+        {
+            return;
+        }
+
+        $transfers = $transfers->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+
+        $transfers->callOnEveryItem('incrementAttempts');
+
+        $this->repo->saveOrFailCollection($transfers);
+    }
 }

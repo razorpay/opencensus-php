@@ -366,6 +366,39 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($attempts, $transfer['attempts']);
     }
 
+    public function testAttemptsIncrementedWhenFailedOrderTransferRetriedWithPaymentRefunded()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->fixtures->merchant->editBalance(100000);
+
+        $this->refundPayment($payment['id']);
+
+        $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->transfer->editProcessedAt($yesterdayTimestamp, $transfer['id']);
+
+        $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals(2, $transfer['attempts']);
+    }
+
     protected function capturePaymentProcessOrderTransfers($order, $paymentAmount = null)
     {
         $payment = $this->getDefaultPaymentArray();
