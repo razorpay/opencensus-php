@@ -63,6 +63,10 @@ class OAuthApplicationController extends Controller
         if (array_key_exists(App::ID, $data) === true)
         {
             (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], MerchantApplications\Entity::OAUTH);
+
+            $oauthApplication = (new Application\Repository())->findOrFail($data[App::ID]);
+
+            (new MerchantCore)->createPartnerConfig($oauthApplication, $merchant);
         }
 
         return ApiResponse::json($data);

@@ -37,22 +37,34 @@ class OAuthApplicationTest extends TestCase
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
         $createParams = [
-                       'name'     => 'fdsfsd',
-                       'website'  => 'https://www.example.com',
-                       'logo_url' => '/logo/app_logo.png',
-                    ];
+           'name'     => 'fdsfsd',
+           'website'  => 'https://www.example.com',
+           'logo_url' => '/logo/app_logo.png',
+        ];
 
         $requestParams = array_merge($requestParams, $createParams);
 
-        $this->setAuthServiceMockDetail(
-                                    'applications',
-                                    'POST',
-                                    $requestParams);
+        $res = $this->setAuthServiceMockDetail(
+                                        'applications',
+                                        'POST',
+                                        $requestParams,
+                                        1,
+                                        ['id' => '8ckeirnw84ifke']);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'pure_platform']);
 
         // TODO: Enable post migrations
         //$this->markPartner();
 
         $this->startTest();
+
+        $partnerConfig = $this->getDbEntities('partner_config');
+
+        $partnerConfig->toArray();
+
+        $this->assertEquals($partnerConfig[0]['entity_id'], '8ckeirnw84ifke');
+
+        $this->assertEquals($partnerConfig[0]['entity_type'], 'application');
     }
 
     public function testCreatePartnerApplication()
