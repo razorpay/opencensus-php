@@ -234,7 +234,7 @@ class Core extends Base\Core
 
         $customerDetails[Customer\Entity::CONTACT] = $customer->getContact();
 
-        (new Validator)->validateCustomerDetailsForAuthLink($customerDetails);
+        (new Validator)->validateCustomerDetailsForAuthLink($customerDetails, $this->merchant);
     }
 
     protected function generateFormIfApplicable(Entity &$tokenRegistration, array $input = [])
@@ -438,7 +438,7 @@ class Core extends Base\Core
     {
         $details = array_pull($input, Constants\Entity::CUSTOMER) ?? [];
 
-        (new Validator)->validateCustomerDetailsForAuthLink($details);
+        (new Validator)->validateCustomerDetailsForAuthLink($details, $this->merchant);
 
         $customer = (new Customer\Core)->createLocalCustomer($details, $merchant, false);
 

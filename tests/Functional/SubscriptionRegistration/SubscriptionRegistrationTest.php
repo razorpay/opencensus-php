@@ -814,6 +814,13 @@ class SubscriptionRegistrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAuthLinkBlankContactIgnoreFeatureFlag()
+    {
+        $this->fixtures->merchant->addFeatures(['caw_ignore_customer_check']);
+
+        $this->startTest();
+    }
+
     public function testCreateAuthLinkBlankEmail()
     {
         $this->startTest();

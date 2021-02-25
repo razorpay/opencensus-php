@@ -220,6 +220,9 @@ class Constants
     // to get nach form direct download url
     const NACH_FORM_DIRECT_DOWNLOAD = 'nach_form_direct_download';
 
+    // ignore customer contact details check for CAW Auth Link
+    const CAW_IGNORE_CUSTOMER_CHECK = 'caw_ignore_customer_check';
+
     /**
      * Only partners having this feature will be able to onboard the submerchants using the account apis
      */
@@ -858,6 +861,7 @@ class Constants
         self::EARLY_MANDATE_PRESENTMENT       => true,
         self::DISABLE_TPV_FLOW                => true,
         self::ENABLE_TPV_FLOW                 => true,
+        self::CAW_IGNORE_CUSTOMER_CHECK       => true,
     ];
 
     // Entity type constants

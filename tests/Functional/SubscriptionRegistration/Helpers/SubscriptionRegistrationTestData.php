@@ -927,6 +927,43 @@ return [
         ],
     ],
 
+    'testCreateAuthLinkBlankContactIgnoreFeatureFlag' => [
+        'request'   => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '0',
+                'receipt'                   => '00000000000001',
+                'customer'                  => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+                'subscription_registration' => [
+                    'method'       => 'emandate',
+                    'expire_at'    => '1484512480',
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC',
+                        'ifsc_code'          => 'HDFC0001233',
+                        'account_number'     => '123312563456',
+                        'account_type'       => 'savings',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateAuthLinkBlankEmail' => [
         'request'   => [
             'url'     => '/subscription_registration/auth_links',

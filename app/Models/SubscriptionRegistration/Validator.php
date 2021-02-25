@@ -7,8 +7,10 @@ use App;
 use RZP\Base;
 use RZP\Constants;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
@@ -205,8 +207,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCustomerDetailsForAuthLink(array $input)
+    public function validateCustomerDetailsForAuthLink(array $input, Merchant\Entity $merchant = null)
     {
+        if ($merchant !== null and
+            $merchant->isFeatureEnabled(Feature\Constants::CAW_IGNORE_CUSTOMER_CHECK) === true)
+        {
+            // This is for backward compatibility
+            return;
+        }
+
         if (empty($input[CustomerEntity::CONTACT]) === true)
         {
             throw new BadRequestValidationFailureException(
