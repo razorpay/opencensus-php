@@ -179,7 +179,7 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function createPaymentEntities(int $count = 5, $merchantId = null, $dt = null)
+    protected function createPaymentEntities(int $count = 5, $merchantId = null, $dt = null, $amount = 1000000)
     {
         if ($dt === null)
         {
@@ -192,6 +192,7 @@ trait SettlementTrait
         $attrs = [
             'captured_at' => $capturedAt,
             'method'      => 'card',
+            'amount'      => $amount,
             'created_at'  => $createdAt,
             'updated_at'  => $createdAt + 10
         ];

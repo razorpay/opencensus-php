@@ -10,9 +10,11 @@ use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Preferences;
 use RZP\Mail\Settlement\CriticalFailure;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
@@ -844,5 +846,50 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals(true, $merchant['hold_funds']);
         $this->assertEquals('bank account/transaction was rejected from bank', $merchant['hold_funds_reason']);
+    }
+
+    // It will verify weather the fund transfer attempt has
+    // transfer mode as NEFT once we add MID in ONLY_NEFT_MIDs array
+    public function testFundTransferInitiateForNEFTOnlyMIDs()
+    {
+        // have previous time for creating payments so as to consider these in settlements creation
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $merchantId = Preferences::MID_BHARTI_AIRTEL;
+
+        $this->fixtures->merchant->createAccount($merchantId);
+
+        // this is to make sure full fill all the conditions to get the settlement
+        $this->fixtures->merchant->edit(
+            $merchantId,
+            [
+                'channel'      => Channel::AXIS2,
+                'suspended_at' => null,
+                'activated'    => true
+            ]);
+
+        $payments = $this->createPaymentEntities(2, $merchantId, $now, 100000000);
+
+        $this->createRefundFromPayments($payments);
+
+        // setting the time stamp later so as to consider the previous dated transactions into the settlements
+        $now = Carbon::create(2018, 8, 20, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->initiateSettlements(Channel::AXIS2, null, true, [$merchantId] );
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // validate the amount of settlement should be grater than 2lakh
+        // which should set the mode as RTGS if MID is not part od ONLY_NEFT_MID array
+        $this->assertGreaterThan(20000000, $settlement['amount']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // validate the mode set as NEFT for the given MID
+        $this->assertEquals(Mode::NEFT, $fta['mode']);
     }
 }

@@ -182,6 +182,7 @@ class Preferences
     const MID_OAKSTER_MEDIA_TECH       = 'G2hWoiPFTdsBbC';
     const MID_MILLIONSTRO              = 'G7loPlVW2DIxdv';
     const MID_AMAZING_KART             = 'G7mPROV5i51GJt';
+    const MID_BHARTI_AIRTEL            = 'Fwwnzcx3FaqF4X';
 
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
@@ -353,6 +354,8 @@ class Preferences
         self::MID_MSRIT_EXAM_FEES_VFH,
         self::MID_INST_ENG_AND_TECH_LKO,
         self::MID_VOCATIONAL_EDU,
+        // slack thread for ref: https://razorpay.slack.com/archives/C15277TQB/p1614088830075000?thread_ts=1612939005.084100&cid=C15277TQB
+        self::MID_BHARTI_AIRTEL,
     ];
 
     const TRANSFER_SETTLED_WEBHOOK_MIDS = [
