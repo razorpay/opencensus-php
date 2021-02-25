@@ -2018,6 +2018,10 @@ export default class ActivationWizard extends React.Component {
   // returns validity
   tabValidity(i) {
     //Special handling for NDC tab
+    if (this.props.data.activation_status === 'needs_clarification' && i !== NEEDS_CLARIFICATION_STEP) {
+      return true;
+    }
+
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
