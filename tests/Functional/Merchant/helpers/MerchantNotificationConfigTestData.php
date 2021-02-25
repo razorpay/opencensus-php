@@ -336,7 +336,7 @@ return [
             'url'     => '/merchant_notification_configs',
             'method'  => 'PATCH',
             'content' => [
-                'notification_mobile_numbers' => ['9876543012', '9876767121'],
+                'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
             ],
             'server'  => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
@@ -347,7 +347,7 @@ return [
                 'upper_threshold'             => 120,
                 'lower_threshold'             => 12,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9876543012', '9876767121'],
+                'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
                 'config_status'               => 'enabled',
                 'mode'                        => 'IMPS',
                 'notify_after'                => 900,
@@ -360,7 +360,7 @@ return [
             'url'     => '/merchant_notification_configs',
             'method'  => 'PATCH',
             'content' => [
-                'notification_mobile_numbers' => ['9876543012', '9876767121'],
+                'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
             ],
             'server'  => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
@@ -371,7 +371,7 @@ return [
                 'upper_threshold'             => 120,
                 'lower_threshold'             => 12,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9876543012', '9876767121'],
+                'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
                 'config_status'               => 'enabled',
                 'mode'                        => 'IMPS',
                 'notify_after'                => 900,

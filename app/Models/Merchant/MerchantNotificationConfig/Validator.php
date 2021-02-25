@@ -56,9 +56,14 @@ class Validator extends Base\Validator
         {
             $num = $lib->parse($number, 'IN');
 
-            // Check if number is valid in India, and if the number is a mobile number
-            if(($lib->isValidNumberForRegion($num, 'IN') === false) or
-               ($lib->getNumberType($num) !== PhoneNumberType::MOBILE))
+            // - Check if number is valid in India, and if the number is a mobile number
+            // - Since libphonenumber returns type FIXED_OR_MOBILE for 6xx, 7xx or 8xx mobile numbers
+            //   we need to check for both the aforementioned types.
+            if (($lib->isValidNumberForRegion($num, 'IN') === false) or
+                (($lib->getNumberType($num) !== PhoneNumberType::MOBILE) and
+                    ($lib->getNumberType($num) !== PhoneNumberType::FIXED_LINE_OR_MOBILE)
+                )
+            )
             {
                 $invalidMobileNumbers[] = $number;
             }
