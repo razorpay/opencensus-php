@@ -11,8 +11,9 @@ pipeline:
       - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
     when:
       event: push
-  build-js:
-    group: build
+
+  npm-ci:
+    group: ci
     # TODO: Get the source for this image and push it
     # to razorpay
     image: node:12.19.0
@@ -25,13 +26,99 @@ pipeline:
       - npm config set cache npm_cache
       # Root directory
       - npm ci
-      - node signup.js
+
+  build-js-signup:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
       # Web directory
-      - cd web && npm run production:build
+      - node signup.js
     when:
       event: push
+
+  build-js-merchant:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
+      # Web directory
+      - cd web && STAGE=production npm run build:merchant
+    when:
+      event: push
+
+  build-js-merchantLA:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
+      # Web directory
+      - cd web && STAGE=production npm run build:merchantLA
+    when:
+      event: push
+
+  build-js-razorx:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
+      # Web directory
+      - cd web && STAGE=production npm run build:razorx
+    when:
+      event: push
+
+  build-js-pokedex:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
+      # Web directory
+      - cd web && STAGE=production npm run build:pokedex
+    when:
+      event: push
+
+  build-js-newAuth:
+    group: build-and-test
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: node:12.19.0
+    pull: false
+    environment:
+      VERSION: ${DRONE_COMMIT_SHA}
+    secrets: [npm_razorpay_token]
+    commands:
+      # Web directory
+      - cd web && STAGE=production npm run build:newAuth
+    when:
+      event: push
+
   test-js:
-    group: test
+    group: build-and-test
     image: node:12.19.0
     pull: false
     secrets: [npm_razorpay_token]
@@ -40,10 +127,12 @@ pipeline:
       - npm run test:jest
     when:
       event: push
+
   validate-js:
-    group: test
+    group: build-and-test
     image: node:12.19.0
     pull: false
+    secrets: [npm_razorpay_token]
     commands:
       - npx eslint web/v2 --ext .js,.jsx,.ts,.tsx
       - npx stylelint web/v2/**/*.{js,jsx,ts,tsx}
@@ -52,6 +141,7 @@ pipeline:
       event: push
   # Uploaded to a build artifact
   # This is not a deployment
+
   upload-javascript-to-s3:
     image: razorpay/containers:drone-s3-cache
     endpoint: https://rzp-drone-cache.s3-ap-south-1.amazonaws.com
