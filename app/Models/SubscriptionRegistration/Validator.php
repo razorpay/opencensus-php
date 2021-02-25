@@ -12,7 +12,9 @@ use RZP\Models\Payment;
 use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\UpiMandate\Entity as UPI_MANDATE;
+use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -199,6 +201,25 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'order method doesn\'t match with token method',
                 Entity::METHOD
+            );
+        }
+    }
+
+    public function validateCustomerDetailsForAuthLink(array $input)
+    {
+        if (empty($input[CustomerEntity::CONTACT]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_AUTH_LINK_CONTACT_EMPTY,
+                CustomerEntity::CONTACT
+            );
+        }
+
+        if (empty($input[CustomerEntity::EMAIL]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY,
+                CustomerEntity::EMAIL
             );
         }
     }

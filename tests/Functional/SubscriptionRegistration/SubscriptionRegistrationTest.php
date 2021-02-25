@@ -808,4 +808,14 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals(1, sizeof($response['items']));
         $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
     }
+
+    public function testCreateAuthLinkBlankContact()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateAuthLinkBlankEmail()
+    {
+        $this->startTest();
+    }
 }

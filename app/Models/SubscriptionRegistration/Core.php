@@ -202,6 +202,7 @@ class Core extends Base\Core
     {
         $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
         $this->populateInvoiceParamsFromOrderAndCustomer($tokenRegistrationInput, $order, $customer);
+        $this->validateCustomerForAuthLink($customer);
 
         $invoice = $this->repo->transaction(
             function() use ($tokenRegistrationInput, $order, $customer)
@@ -223,6 +224,17 @@ class Core extends Base\Core
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    protected function validateCustomerForAuthLink(Customer\Entity $customer)
+    {
+        $customerDetails = [];
+
+        $customerDetails[Customer\Entity::EMAIL] = $customer->getEmail();
+
+        $customerDetails[Customer\Entity::CONTACT] = $customer->getContact();
+
+        (new Validator)->validateCustomerDetailsForAuthLink($customerDetails);
     }
 
     protected function generateFormIfApplicable(Entity &$tokenRegistration, array $input = [])
@@ -425,6 +437,8 @@ class Core extends Base\Core
     public function createCustomer(array & $input, Merchant\Entity $merchant): Customer\Entity
     {
         $details = array_pull($input, Constants\Entity::CUSTOMER) ?? [];
+
+        (new Validator)->validateCustomerDetailsForAuthLink($details);
 
         $customer = (new Customer\Core)->createLocalCustomer($details, $merchant, false);
 

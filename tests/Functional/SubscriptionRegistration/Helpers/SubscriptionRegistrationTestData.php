@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\SubscriptionRegistration;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
 
@@ -881,6 +882,90 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testCreateAuthLinkBlankContact' => [
+        'request'   => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '0',
+                'receipt'                   => '00000000000001',
+                'customer'                  => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+                'subscription_registration' => [
+                    'method'       => 'emandate',
+                    'expire_at'    => '1484512480',
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC',
+                        'ifsc_code'          => 'HDFC0001233',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTH_LINK_CONTACT_EMPTY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAuthLinkBlankEmail' => [
+        'request'   => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '0',
+                'receipt'                   => '00000000000001',
+                'customer'                  => [
+                    'email'   => '',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+                'subscription_registration' => [
+                    'method'       => 'emandate',
+                    'expire_at'    => '1484512480',
+                    'bank_account' => [
+                        'bank_name'          => 'HDFC',
+                        'ifsc_code'          => 'HDFC0001233',
+                        'beneficiary_name'   => 'test',
+                        'beneficiary_email'  => 'test@razorpay.com',
+                        'beneficiary_mobile' => '9999999999'
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

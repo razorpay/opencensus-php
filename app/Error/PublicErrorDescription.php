@@ -514,6 +514,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
     const BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED                            = 'User is not registered for NetBanking payments.';
 
+    const BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY                                     = 'The email field is required for recurring links';
+    const BAD_REQUEST_AUTH_LINK_CONTACT_EMPTY                                   = 'The contact field is required for recurring links';
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
     const BAD_REQUEST_NACH_REGISTRATION_FAILED                                  = 'Nach registration failed';
