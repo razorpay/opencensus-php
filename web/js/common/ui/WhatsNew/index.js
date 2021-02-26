@@ -350,6 +350,7 @@ export default class WhatsNew extends Component {
       'JAN21-PG-GTM1-V2',
       'FEB21-INT-WEB',
       'Feb20-ES1-PILOT',
+      'Feb20-ES1-PILOT_V2',
     ];
     const hasUnread = !!this.state.totalUnread;
 

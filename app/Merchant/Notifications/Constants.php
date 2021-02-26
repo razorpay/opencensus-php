@@ -584,6 +584,30 @@ class Constants
                 'experiments_with_variant' => ['es_ondeman_restricted_cohorts' => 'cohort-1'],
             ]
         ],
+        [
+            'title'       => 'Instant Settlements from Day 1',
+            'description' => 'Settle your customer payments instantly 24x7',
+            'start_ts'    => 1613932200,
+            'end_ts'      => 1617258600,//do check for end ts, currently set till 1st march 2021
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
+            'track_event' => true,
+            'id'          => 'Feb20-ES1-PILOT_V2',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Settle now',
+                    'url'   => '/instantsettlements',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/capital/instant-settlements/',
+                ]
+            ],
+            'filters'     => [
+                'experiments_with_variant' => ['es_ondeman_restricted_cohorts' => 'cohort-2'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
