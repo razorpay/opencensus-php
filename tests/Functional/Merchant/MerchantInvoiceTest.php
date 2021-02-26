@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 
+use Mockery;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
@@ -21,6 +23,8 @@ class MerchantInvoiceTest extends TestCase
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
 
+    protected $eInvoiceClientMock;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantInvoiceTestData.php';
@@ -29,7 +33,20 @@ class MerchantInvoiceTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
+        $this->setUpEInvoiceClientMock();
+
         $this->ba->publicAuth();
+    }
+
+    public function setUpEInvoiceClientMock()
+    {
+        $this->app['rzp.mode']= 'test';
+
+        $this->eInvoiceClientMock = Mockery::mock('RZP\Services\EInvoice', [$this->app])->makePartial();
+
+        $this->eInvoiceClientMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['einvoice_client'] = $this->eInvoiceClientMock;
     }
 
     public function testBulkCreate()
@@ -756,6 +773,10 @@ class MerchantInvoiceTest extends TestCase
             [
                 'merchant_id' => '10000000000000',
                 'gstin' => '29kjsngjk213922',
+                'business_registered_pin' => '123456',
+                'business_registered_address'   => 'abc street',
+                'business_registered_city'      => 'abcdef',
+                'business_name'                 => 'abcd',
             ]);
 
         $this->fixtures->create(
@@ -861,4 +882,177 @@ class MerchantInvoiceTest extends TestCase
 
        return  $this->makeRequestAndGetContent($request);
     }
+
+    public function testPgInvoiceEntityCreateWithEInvoice()
+    {
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData();
+
+        $this->createCreditNoteDataForEinvoice();
+
+        $this->createDebitNoteDataForEinvoice();
+
+        $this->setupEInvoiceClientResponse(3, $this->testData[__FUNCTION__]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(7, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $eInvoiceEntities = $this->getEntities('merchant_e_invoice', [], true);
+
+        foreach ($eInvoiceEntities['items'] as $eInvoiceEntity)
+        {
+            $this->assertDocumentTypeEinvoiceSuccess($eInvoiceEntity);
+        }
+
+        Carbon::setTestNow();
+    }
+
+    protected function assertDocumentTypeEinvoiceSuccess($eInvoiceEntity)
+    {
+        $this->assertEquals('10000000000000', $eInvoiceEntity['merchant_id']);
+        $this->assertEquals(7, $eInvoiceEntity['month']);
+        $this->assertEquals(2021, $eInvoiceEntity['year']);
+        $this->assertEquals('PG', $eInvoiceEntity['type']);
+        $this->assertEquals('generated', $eInvoiceEntity['status']);
+        $this->assertEquals('randomirn', $eInvoiceEntity['gsp_irn']);
+        $this->assertEquals('randominvoice', $eInvoiceEntity['gsp_signed_invoice']);
+        $this->assertEquals('randomcode', $eInvoiceEntity['gsp_signed_qr_code']);
+        $this->assertEquals('randomurl', $eInvoiceEntity['gsp_qr_code_url']);
+        $this->assertEquals('randompdf', $eInvoiceEntity['gsp_e_invoice_pdf']);
+    }
+
+    protected function createCreditNoteDataForEinvoice()
+    {
+        $adjustmentData =[
+            'merchant_id'   => '10000000000000',
+            'fees'          => 1300,
+            'tax'           => 124,
+            'currency'      => 'INR',
+            'description'   => 'Fee adjustment',
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->addAdminAuthHeaders(null, null);
+
+        $data = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($content, $data);
+    }
+
+    protected function createDebitNoteDataForEinvoice()
+    {
+        $adjustmentData =[
+            'merchant_id'   => '10000000000000',
+            'fees'          => -1300,
+            'tax'           => 124,
+            'currency'      => 'INR',
+            'description'   => 'Fee adjustment',
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->addAdminAuthHeaders(null, null);
+
+        $data = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($content, $data);
+    }
+
+    public function setupEInvoiceClientResponse(int $documentCount, $expectedContent)
+    {
+        $this->eInvoiceClientMock
+            ->shouldReceive('getEInvoice')
+            ->times($documentCount)
+            ->with(Mockery::on(function (string $mode)  use ($expectedContent)
+            {
+                if($mode !== Mode::TEST)
+                {
+                    return false;
+                }
+
+                return true;
+
+            }), Mockery::on(function(array $input) use ($expectedContent)
+                {
+                    $documentType = $input['document_details']['document_type'];
+
+                    $this->assertArraySelectiveEquals($input, $expectedContent[$documentType]);
+
+                    return true;
+                }))
+            ->andReturnUsing(function () {
+                return [
+                    'status'            => '200',
+                    'body'   => [
+                        'results' => [
+                            'message'   => [
+                                'Status'        => 'generated',
+                                'Irn'           => 'randomirn',
+                                'SignedInvoice' => 'randominvoice',
+                                'SignedQRCode'  => 'randomcode',
+                                'QRCodeUrl'     => 'randomurl',
+                                'EinvoicePdf'   => 'randompdf',
+                            ],
+                            'status'    => 'Success',
+                        ],
+                    ],
+                ];
+            });
+    }
+
 }

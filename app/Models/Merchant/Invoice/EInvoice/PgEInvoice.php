@@ -67,31 +67,37 @@ class PgEInvoice extends Core
             $totalCgstValue += $cgstAmount;
 
             $items[] = [
+                Constants::PRODUCT_DESCRIPTION => $invoiceItem[InvoiceReport::DESCRIPTION],
                 Constants::ITEM_SERIAL_NUMBER => ++$itemSerialNumber,
                 Constants::IS_SERVICE => 'Y',
                 Constants::HSN_CODE => $invoiceItem[InvoiceReport::GST_SAC_CODE],
                 Constants::UNIT => 'OTH',
                 Constants::QUANTITY => 1,
-                Constants::UNIT_PRICE => $amount,
-                Constants::TOTAL_AMOUNT => $amount,
-                Constants::ASSESSABLE_VALUE => $amount,
+                Constants::UNIT_PRICE => $this->getAmountInRupees($amount),
+                Constants::TOTAL_AMOUNT => $this->getAmountInRupees($amount),
+                Constants::ASSESSABLE_VALUE => $this->getAmountInRupees($amount),
                 Constants::GST_RATE => $gstRate,
-                Constants::IGST_AMOUNT => $igstAmount,
-                Constants::SGST_AMOUNT => $sgstAmount,
-                Constants::CGST_AMOUNT => $cgstAmount,
-                Constants::TOTAL_ITEM_VALUE => $totalItemValue,
+                Constants::IGST_AMOUNT => $this->getAmountInRupees($igstAmount),
+                Constants::SGST_AMOUNT => $this->getAmountInRupees($sgstAmount),
+                Constants::CGST_AMOUNT => $this->getAmountInRupees($cgstAmount),
+                Constants::TOTAL_ITEM_VALUE => $this->getAmountInRupees($totalItemValue),
             ];
         }
 
         $valueDetails = [
-            Constants::TOTAL_ASSESSABLE_VALUE => $totalAssessableValue,
-            Constants::TOTAL_INVOICE_VALUE => $totalInvoiceValue,
-            Constants::TOTAL_IGST_VALUE => $totalIgstValue,
-            Constants::TOTAL_SGST_VALUE => $totalSgstValue,
-            Constants::TOTAL_CGST_VALUE => $totalCgstValue,
+            Constants::TOTAL_ASSESSABLE_VALUE => $this->getAmountInRupees($totalAssessableValue),
+            Constants::TOTAL_INVOICE_VALUE => $this->getAmountInRupees($totalInvoiceValue),
+            Constants::TOTAL_IGST_VALUE => $this->getAmountInRupees($totalIgstValue),
+            Constants::TOTAL_SGST_VALUE => $this->getAmountInRupees($totalSgstValue),
+            Constants::TOTAL_CGST_VALUE => $this->getAmountInRupees($totalCgstValue),
         ];
 
         return [$items, $valueDetails];
+    }
+
+    public function getAmountInRupees($amount)
+    {
+        return number_format((abs($amount) /100), '2', '.', '');
     }
 
     public function shouldIgnoreLineItem($documentType, $item) : bool
@@ -106,6 +112,16 @@ class PgEInvoice extends Core
             return false;
         }
 
+        if(($item[InvoiceReport::IGST] === 0) and ($item[InvoiceReport::SGST] === 0) and ($item[InvoiceReport::CGST] === 0))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isZeroTaxLineItem($item) : bool
+    {
         if(($item[InvoiceReport::IGST] === 0) and ($item[InvoiceReport::SGST] === 0) and ($item[InvoiceReport::CGST] === 0))
         {
             return true;

@@ -38,6 +38,7 @@ final class Constants
 
     const ITEM_LIST = 'item_list';
     const ITEM_SERIAL_NUMBER = 'item_serial_number';
+    const PRODUCT_DESCRIPTION   = 'product_description';
     const IS_SERVICE = 'is_service';
     const HSN_CODE = 'hsn_code';
     const UNIT = 'unit';
