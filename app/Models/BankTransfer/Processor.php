@@ -30,6 +30,7 @@ use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
@@ -49,6 +50,10 @@ class Processor extends VirtualAccount\Processor
     const RAZORX_RETRY_COUNT = 2;
 
     const TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING = 'TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING';
+
+    const ACCOUNT_NUMBER = 'account_number';
+
+    const IFSC_CODE = 'ifsc_code';
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -130,6 +135,15 @@ class Processor extends VirtualAccount\Processor
             $this->verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer($bankTransfer);
 
             $balanceType = $this->virtualAccount->getBalanceType();
+
+            // Logs to get the bank transfer id as well
+            $this->trace->info(TraceCode::BANK_TRANSFER_CREATED,
+                               [
+                                   'balance_type'       => $balanceType,
+                                   'virtual_account_id' => $this->virtualAccount->getId(),
+                                   'bank_transfer_id'   => $bankTransfer->getId(),
+                               ]
+            );
 
             switch ($balanceType)
             {
@@ -629,15 +643,35 @@ class Processor extends VirtualAccount\Processor
     {
         $balanceType = $this->virtualAccount->getBalanceType();
 
-        $this->trace->info(TraceCode::FUND_LOADING_BANK_TRANSFER_PROCESSING,
+        $this->trace->info(TraceCode::BANK_TRANSFER_BEFORE_SAVE_DETAILS,
                            [
-                               'balance_type' => $balanceType,
+                               'balance_type'       => $balanceType,
                                'virtual_account_id' => $this->virtualAccount->getId(),
                            ]
         );
 
         if ($balanceType === Balance\Type::BANKING)
         {
+            /*
+             * If the payer account is globally whitelisted, we don't have to check the tpv flow at all. We also don't
+             * need to do the network calls to razorx in this scenario and hence returning directly from here.
+             */
+            if($this->isGloballyWhitelistedPayerAccount($bankTransfer) === true)
+            {
+                $this->repo->saveOrFail($bankTransfer);
+
+                // Logs to get the bank transfer id as well
+                $this->trace->info(
+                    TraceCode::GLOBAL_WHITELISTED_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED,
+                    [
+                        'balance_type'       => $balanceType,
+                        'virtual_account_id' => $this->virtualAccount->getId(),
+                        'bank_transfer_id'   => $bankTransfer->getId(),
+                    ]);
+
+                return;
+            }
+
             $merchantId = $this->virtualAccount->getMerchantId();
 
             // This provides a granular or global support to disable fund loading for merchants.
@@ -738,6 +772,17 @@ class Processor extends VirtualAccount\Processor
                     // SaveOrFail needs to be done before the send mail, because id is created when entity is saved.
                     $this->repo->saveOrFail($bankTransfer);
 
+                    // Logs to get the bank transfer id as well
+                    $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED,
+                                       [
+                                           'variant'             => $variant,
+                                           'disable_tpv_feature' => $disableTpvFeature,
+                                           'merchant_id'         => $merchantId,
+                                           'balance_id'          => $balanceId,
+                                           'bank_transfer_id'    => $bankTransfer->getId(),
+                                       ]
+                    );
+
                     $this->sendFundLoadingFailedEmail($bankTransfer->getId(), $actualMerchantId);
 
                     return;
@@ -746,6 +791,66 @@ class Processor extends VirtualAccount\Processor
         }
 
         $this->repo->saveOrFail($bankTransfer);
+    }
+
+    /*
+     * This method is used to check whether the payer account is from a globally supported list present saved on redis,
+     * if yes, we don't check for tpv flow at all as this is always enabled for everyone. This is done because we need
+     * to whitelist account details of Razorpay as these are used for settling PG funds to X VA (via settlement or
+     * settlement on-demand).
+     */
+    protected function isGloballyWhitelistedPayerAccount(Entity $bankTransfer)
+    {
+        /*
+         * The value for the key will be an array of arrays with the following structure
+         * config:rx_globally_whitelisted_payer_accounts_for_fund_loading => [
+         *  [
+         *      'account_number' => {{account_number}}
+         *      'ifsc_code'      => {{ifsc_code}}
+         *  ]
+         *  [
+         *      'account_number' => {{account_number}}
+         *      'ifsc_code'      => {{ifsc_code}}
+         *  ]
+         *  .
+         *  .
+         *  .
+         * ]
+         */
+        $globalWhitelistedPayerAccounts = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING
+            ]
+        );
+
+        $payerAccountNumber = $bankTransfer->getPayerAccount();
+
+        $firstFourDigitsOfIfsc = substr($bankTransfer->getPayerIfsc(), 0, 4);
+
+        $isGloballyWhitelistedPayerAccount = false;
+
+        foreach ($globalWhitelistedPayerAccounts as $globalWhitelistedPayerAccount)
+        {
+            if ((isset($globalWhitelistedPayerAccount[self::ACCOUNT_NUMBER]) === true) and
+                (isset($globalWhitelistedPayerAccount[self::IFSC_CODE]) === true))
+            {
+                $globalWhitelistedPayerAccountAccountNumber = $globalWhitelistedPayerAccount[self::ACCOUNT_NUMBER];
+
+                $globalWhitelistedPayerAccountIfscCode = $globalWhitelistedPayerAccount[self::IFSC_CODE];
+
+                $firstFourDigitsOfIfscOfWhitelistedAccount = substr($globalWhitelistedPayerAccountIfscCode, 0, 4);
+
+                if (($globalWhitelistedPayerAccountAccountNumber === $payerAccountNumber) and
+                    ($firstFourDigitsOfIfscOfWhitelistedAccount === $firstFourDigitsOfIfsc))
+                {
+                    $isGloballyWhitelistedPayerAccount = true;
+
+                    break;
+                }
+            }
+        }
+
+        return $isGloballyWhitelistedPayerAccount;
     }
 
     protected function dissociateExpectedRelationsForBankTransfer(Entity & $bankTransfer)

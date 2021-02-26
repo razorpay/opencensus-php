@@ -10298,7 +10298,7 @@ class PayoutTest extends OAuthTestCase
             'off','on','on','off',
             'on','on','off',
             'on','on','off',
-            'control','control','on');
+            'control','on');
 
         $this->testCreatePayout();
 

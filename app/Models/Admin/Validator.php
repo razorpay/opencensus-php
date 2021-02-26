@@ -133,6 +133,7 @@ class Validator extends Base\Validator
         ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP   => 'filled|integer',
         ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT     => 'filled|integer',
         ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS => 'filled|array',
+        ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

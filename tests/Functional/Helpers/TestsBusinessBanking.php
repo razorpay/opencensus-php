@@ -321,7 +321,6 @@ trait TestsBusinessBanking
                                            string $oldToNewIfscForMergedBank = 'on',
                                            string $rejectCommentInWebhook = 'off',
                                            string $allowVAToVAPayouts = 'control',
-                                           string $disableTpvFlowForBankingAccountFundLoading = 'control',
                                            string $registeredNameInPayoutsResponse = 'control')
     {
         // Mock Razorx
@@ -349,7 +348,6 @@ trait TestsBusinessBanking
                     $oldToNewIfscForMergedBank,
                     $rejectCommentInWebhook,
                     $allowVAToVAPayouts,
-                    $disableTpvFlowForBankingAccountFundLoading,
                     $registeredNameInPayoutsResponse
                 )
                 {

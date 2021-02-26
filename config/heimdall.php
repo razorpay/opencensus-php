@@ -1055,6 +1055,10 @@ return [
                 'description'   => 'Allows to set shared account channels',
                 'assignable'    => true,
             ],
+            Permission::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS => [
+                'description'   => 'Allows to set globally whitelisted payer accounts for fund loading for RazorpayX',
+                'assignable'    => true,
+            ]
         ],
 
         PermissionCategory::UPI => [

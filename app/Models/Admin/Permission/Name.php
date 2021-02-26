@@ -557,6 +557,9 @@ class Name
     const EDIT_BANKING_ACCOUNT_TPV                     = 'edit_banking_account_tpv';
     const VIEW_BANKING_ACCOUNT_TPV                     = 'view_banking_account_tpv';
 
+    // Set globally whitelisted payer accounts for rx fund loading
+    const SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS = 'set_rx_globally_whitelisted_payer_accounts';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

@@ -1631,26 +1631,6 @@ class VirtualAccountTest extends TestCase
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
         $this->fixtures->merchant->disableMethod('10000000000000', 'bank_transfer');
 
-        // Doing this because we are using setUpMerchantForBusinessBanking and hence it is business banking flow.
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on'// just set this on, leave everything as default
-        );
-
         // Does /ecollect/validate (i.e. payment) api call.
         $this->ba->appAuth();
         $this->startTest();

@@ -2537,26 +2537,6 @@ class BankTransferTest extends TestCase
     {
         Mail::fake();
 
-        // Since this test also uses banking balance, we need to disable tpv flow for it.
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on'// just set this on, leave everything as default
-        );
-
         $balance = $this->getDbEntity('balance',
                                       [
                                           'merchant_id'  => '10000000000000',
@@ -4047,30 +4027,10 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // Razorx returns 'on' and flow is disabled for the merchants. This can be used to disable tpv flow for all
-    // merchants instantly at global level.
+    // This test will be used for enable feature flag afterwards.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvDisabledViaRazorx()
     {
         Mail::fake();
-
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control',
-            'on'// just set this on, leave everything as default
-        );
 
         $this->setupForXFundLoading();
 
@@ -4149,8 +4109,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferIciciIMPSForRazorpayXWithTpvDisabledViaFeatureFlag()
     {
         Mail::fake();
-
-        $this->mockRazorxTreatment();
 
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::DISABLE_TPV_FLOW,
@@ -4231,6 +4189,303 @@ class BankTransferTest extends TestCase
         Mail::assertNotQueued(FundLoadingFailed::class);
     }
 
+    // We test that fund loading is successful if it is from a globally whitelisted account number and ifsc code even
+    // if tpv is enabled for the merchant and it is not added as tpv account
+    public function testBankTransferIciciIMPSForRazorpayXViaGloballyWhitelistedPayerAccountWhenTpvIsEnabled()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $whitelistedAccounts = [
+            [
+                'account_number' => $request['content']['payer_account'],
+                'ifsc_code'      => $request['content']['payer_ifsc']
+            ]];
+
+        $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since this was a global whitelisted account, we shall not send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
+    // We test that fund loading is successful if it is from a globally whitelisted account number and ifsc code if tpv
+    // is not enabled for the merchant. This just checks that the code doesn't hamper the  existing flow.
+    public function testBankTransferIciciIMPSForRazorpayXViaGloballyWhitelistedPayerAccountWhenTpvIsNotEnabled()
+    {
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $whitelistedAccounts = [
+            [
+                'account_number' => $request['content']['payer_account'],
+                'ifsc_code'      => $request['content']['payer_ifsc']
+            ]];
+
+        $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since this was a global whitelisted account, we shall not send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
+    // We test that fund loading is not successful if it is from a globally whitelisted account number but ifsc code is
+    // from different bank. In this case it works like tpv enabled but not tpv account found, payment is created here.
+    public function testBankTransferIciciIMPSForRazorpayXViaGloballyWhitelistedPayerAccountWithWrongIfscTpvEnabled()
+    {
+        $this->markTestSkipped('skipping till tpv is enabled again');
+
+        Mail::fake();
+
+        $this->setupForXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'is_active'  => 0,
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $whitelistedAccounts = [
+            [
+                'account_number' => $request['content']['payer_account'],
+                'ifsc_code'      => 'HDFC0000104'
+            ]];
+
+        $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID],
+                                                   'live');
+
+        // Assertions on payment entity created
+        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
+        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($expectedAmount, $payment->getAmount());
+        $this->assertNotNull($payment->getRefundAt());
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING', $bankTransfer->getUnexpectedReason());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found nor was the account number and ifsc code combination a
+        // part of global whitelist, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+    }
+
     protected function enableRazorXTreatmentForRblBankTransferProcess()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -4285,5 +4540,94 @@ class BankTransferTest extends TestCase
         $countOfBankTransfers = count($this->getDbEntities('bank_transfer', [], $mode));
 
         return [$countOfPayments, $countOfTransactions, $countOfBankTransfers];
+    }
+
+    /*
+     * This method sets global whitelist of payer accounts in redis key via admin auth where admin has the correct
+     * permission assigned to them. Also, it asserts the response of the redis key update to check whether the update
+     * was successful or not.
+     *
+     * The $whitelistedAccounts should be an array of arrays of the format
+     * $whitelistedAccounts = [
+     *  [
+     *      'account_number' => {{account_number}}
+     *      'ifsc_code'      => {{ifsc_code}}
+     *  ],
+     *  [
+     *      'account_number' => {{account_number}}
+     *      'ifsc_code'      => {{ifsc_code}}
+     *  ],
+     *  .
+     *  .
+     *  .
+     * ]
+     */
+    protected function setupGlobalWhitelistPayerAccounts(array $whitelistedAccounts = [])
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_globally_whitelisted_payer_accounts_for_fund_loading' => [
+                ],
+            ],
+        ];
+
+        foreach ($whitelistedAccounts as $whitelistedAccount)
+        {
+            if ((isset($whitelistedAccount['account_number'])) and
+                (isset($whitelistedAccount['ifsc_code'])))
+            {
+                $payerAccountsToBeWhitelisted =
+                    & $request['content']['config:rx_globally_whitelisted_payer_accounts_for_fund_loading'];
+
+                $whiteListedAccountDetails = [
+                    'account_number' => $whitelistedAccount['account_number'],
+                    'ifsc_code'      => $whitelistedAccount['ifsc_code']
+                ];
+
+                array_push($payerAccountsToBeWhitelisted, $whiteListedAccountDetails);
+            }
+        }
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayKeysExist($response[0], ['key', 'old_value', 'new_value']);
+
+        $responseForGlobalWhitelistKey = $response[0];
+
+        // Since we only updated one key, one array should come in response
+        $this->assertEquals(1, count($response));
+
+        // Check whether the correct key was updated
+        $this->assertEquals('config:rx_globally_whitelisted_payer_accounts_for_fund_loading',
+                            $responseForGlobalWhitelistKey['key']);
+
+        $whitelistedAccounts = $responseForGlobalWhitelistKey['new_value'];
+
+        $expectedWhitelistedAccounts = ['new_values' => $payerAccountsToBeWhitelisted];
+
+        $actualWhitelistedAccounts = ['new_values' => $whitelistedAccounts];
+
+        // Check if all the accounts were updated correctly in redis
+        $this->assertArraySelectiveEquals($expectedWhitelistedAccounts, $actualWhitelistedAccounts);
+    }
+
+    public function testMultipleWhitelistAccountAdditionByAdmin()
+    {
+        $whitelistedAccounts = [
+            [
+                'account_number' => 9876543210123456790,
+                'ifsc_code'      => 'YESB0000022'
+            ],
+            [
+                'account_number' => 9876543210123456789,
+                'ifsc_code'      => 'ICIC0000022'
+            ],
+        ];
+
+        $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
     }
 }
