@@ -1371,7 +1371,9 @@ class MerchantController extends Controller
      */
     public function getConnectedApplications(string $merchantId)
     {
-        $response = (new AccessMap\Service)->getConnectedApplications($merchantId);
+        $input = Request::all();
+
+        $response = (new AccessMap\Service)->getConnectedApplications($merchantId, $input);
 
         return ApiResponse::json($response);
     }

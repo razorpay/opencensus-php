@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\OAuthScopes;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Application;
@@ -348,5 +349,55 @@ class Core extends Base\Core
         $mappings = $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchant->getId(), $appIds, Entity::APPLICATION);
 
         return ($mappings->isEmpty() === false);
+    }
+
+    public function getConnectedApplications(string $merchantId, array $input)
+    {
+        (new Validator)->validateInput('connected_applications', $input);
+
+        $accessMaps =  $this->repo->merchant_access_map->fetchMerchantAccessMapsOnEntityType($merchantId, 'application');
+
+        $service = $input['service'] ?? null;
+
+        if (empty($service) === true)
+        {
+            return $accessMaps;
+        }
+
+        $appIds = $accessMaps->pluck(Entity::ENTITY_ID);
+        $scopes = OAuthScopes::getOauthScopesByServiceOwner($service);
+        $finalAppIds = [];
+
+        foreach ($appIds as $appId)
+        {
+            $tokens = (new Token\Repository)->fetchAccessTokensByAppAndMerchant($appId, $merchantId);
+
+            // if tokens are empty, the merchant is connected to a non-pure platform partner
+            if ($tokens->isEmpty() === true)
+            {
+                $finalAppIds[] = $appId;
+                continue;
+            }
+
+            // filter token for revoked and having scopes as per the service owner
+            $tokens = $tokens->filter(function (Token\Entity $token) use ($scopes) {
+                $isRevoked = $token->isRevoked();
+                $requiredScopes = array_intersect($scopes, $token->getScopes());
+
+                return (($isRevoked === false) and (empty($requiredScopes) === false));
+            });
+
+            if ($tokens->isEmpty() === false)
+            {
+                $finalAppIds[] = $appId;
+            }
+        }
+
+        if (empty($finalAppIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
+        return $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchantId, $finalAppIds, 'application');
     }
 }

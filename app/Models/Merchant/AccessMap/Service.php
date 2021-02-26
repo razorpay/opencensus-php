@@ -12,17 +12,17 @@ class Service extends Base\Service
     /**
      * @see MerchantController's getConnectedApplications()
      *
-     * @param  string $merchantId
+     * @param string $merchantId
+     * @param array $input
      * @return array
      */
-    public function getConnectedApplications(string $merchantId): array
+    public function getConnectedApplications(string $merchantId, array $input): array
     {
-        $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['merchant_id' => $merchantId]);
+        $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['merchant_id' => $merchantId, 'input' => $input]);
 
-        return $this->repo
-                    ->merchant_access_map
-                    ->fetchMerchantAccessMapsOnEntityType($merchantId, 'application')
-                    ->toArrayPublic();
+        $accessMaps = $this->core()->getConnectedApplications($merchantId, $input);
+
+        return $accessMaps->toArrayPublic();
     }
 
     /**

@@ -148,4 +148,83 @@ return [
             ],
         ],
     ],
+
+    'testGetConnectedApplicationsWithServiceOwner' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/applications',
+            'content' => [
+                'service' => 'api-live',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'merchant_id'     => '10000000000000',
+                        'entity_id'       => '10000000000App',
+                        'entity_type'     => 'application',
+                        'entity_owner_id' => '10000000000000',
+                        // 'created_at'      => 1559036401,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetConnectedApplicationsWithServiceOwnerAsApi' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/applications',
+            'content' => [
+                'service' => 'api-live',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'merchant_id'     => '10000000000000',
+                        'entity_id'       => '10000000000App',
+                        'entity_type'     => 'application',
+                        'entity_owner_id' => '10000000000000',
+                        // 'created_at'      => 1559036401,
+                    ],
+                    [
+                        'merchant_id'     => '10000000000000',
+                        'entity_type'     => 'application',
+                        'entity_owner_id' => '10000000000000',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetConnectedApplicationsWithServiceOwnerAsRx' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/applications',
+            'content' => [
+                'service' => 'rx-live',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'merchant_id'     => '10000000000000',
+                        'entity_id'       => '10000000000App',
+                        'entity_type'     => 'application',
+                        'entity_owner_id' => '10000000000000',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

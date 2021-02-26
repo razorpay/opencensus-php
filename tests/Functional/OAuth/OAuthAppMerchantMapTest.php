@@ -130,6 +130,28 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
 
         $this->startTest();
+
+        $testData = $this->testData['testGetConnectedApplicationsWithServiceOwner'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $application = $this->createOAuthApplication();
+
+        $clients = $application->clients->all();
+
+        $this->generateOAuthAccessTokenForClient([], $clients[0]);
+
+        $this->generateOAuthAccessTokenForClient([], $clients[1]);
+
+        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvY', 'entity_id' => $application->getId()]);
+
+        $testData = $this->testData['testGetConnectedApplicationsWithServiceOwnerAsApi'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testGetConnectedApplicationsWithServiceOwnerAsRx'];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     protected function getMapping(string $mode)

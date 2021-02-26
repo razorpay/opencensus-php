@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use RZP\Trace\TraceCode;
+
 class OAuthScopes
 {
     //
@@ -11,14 +13,64 @@ class OAuthScopes
     const READ_ONLY  = 'read_only';
     const READ_WRITE = 'read_write';
 
+    const RX_READ_ONLY = 'rx_read_only';
+    const RX_READ_WRITE = 'rx_read_write';
+
     /**
      * Map of additional scopes for a route (identified by the route name alias)
+     * If the token has any one of the scopes for that route, then request is allowed
+     *
+     * Add each route in the section of corresponding auth routes
+     * i.e public routes to public section, private routes to private section etc..
      *
      * @var array
      */
     protected static $scopes = [
         // Just a dummy route, gets used in tests
-        'feature_dummy' => ['dummy.read']
+        'feature_dummy' => ['dummy.read'],
+
+        // public routes
+        'contact_get_public'                      => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_links_generate_end_user_otp'      => [self::RX_READ_WRITE],
+        'payout_links_verify_customer_otp'        => [self::RX_READ_WRITE],
+        'payout_links_customer_hosted_page'       => [self::RX_READ_WRITE],
+        'payout_links_added_fund_accounts'        => [self::RX_READ_WRITE],
+        'payout_links_initiate'                   => [self::RX_READ_WRITE],
+        'payout_links_generate_end_user_otp_cors' => [self::RX_READ_WRITE],
+        'payout_links_verify_customer_otp_cors'   => [self::RX_READ_WRITE],
+        'payout_links_initiate_cors'              => [self::RX_READ_WRITE],
+        'payout_links_added_fund_accounts_cors'   => [self::RX_READ_WRITE],
+        'payout_links_status'                     => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_links_status_cors'                => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_links_create_batch'               => [self::RX_READ_WRITE],
+
+        // private routes
+        'payout_links_fetch_multiple'                    => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_links_fetch_by_id'                       => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_links_create'                            => [self::RX_READ_WRITE],
+        'payout_links_cancel'                            => [self::RX_READ_WRITE],
+        'payout_purpose_get'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_purpose_post'                            => [self::RX_READ_WRITE],
+        'payout_fetch_by_id'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_create'                                  => [self::RX_READ_WRITE],
+        'payout_cancel'                                  => [self::RX_READ_WRITE],
+        'virtual_account_create_for_banking'             => [self::RX_READ_WRITE],
+        'contact_types_get'                              => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'contact_types_post'                             => [self::RX_READ_WRITE],
+        'contact_get'                                    => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'contact_list'                                   => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'contact_create'                                 => [self::RX_READ_WRITE],
+        'contact_update'                                 => [self::RX_READ_WRITE],
+        'fund_account_validate'                          => [self::READ_WRITE, self::RX_READ_WRITE],
+        'fund_account_validate_fetch'                    => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'fund_account_validate_fetch_by_id'              => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'fund_account_get'                               => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'fund_account_list'                              => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'fund_account_create'                            => [self::READ_WRITE, self::RX_READ_WRITE],
+        'fund_account_update'                            => [self::READ_WRITE, self::RX_READ_WRITE],
+        'merchant_activation_update_partner'             => [],
+        'merchant_activation_status_partner'             => [],
     ];
 
     /**
@@ -32,23 +84,26 @@ class OAuthScopes
      */
     public static function getScopesForRoute(string $route)
     {
-        $scopes = self::$scopes[$route] ?? [];
+        if (isset(self::$scopes[$route]) === true)
+        {
+            return self::$scopes[$route];
+        }
+
+        $scopes = [];
 
         self::addDefaultScopesForRoute($scopes, $route);
 
         return $scopes;
     }
 
-    /**
-     * If no scope is defined for a route, we assign
-     * a default set of scopes to the route
-     *
-     * @param array  $scopes
-     * @param string $route
-     */
     protected static function addDefaultScopesForRoute(array & $scopes, string $route)
     {
         $routeParams = Route::getApiRoute($route);
+
+        if (empty($scopes) === false)
+        {
+            return;
+        }
 
         //
         // Adds the default scopes for the current route to existing $scopes
@@ -58,6 +113,29 @@ class OAuthScopes
         if ($routeParams[0] === 'get')
         {
             $scopes[] = self::READ_ONLY;
+        }
+    }
+
+    public static function getScopes()
+    {
+        return self::$scopes;
+    }
+
+    public static function getOauthScopesByServiceOwner(string $serviceOwner)
+    {
+        switch ($serviceOwner)
+        {
+            case 'api-live':
+            case 'api-test':
+            case 'beta-api-live':
+            case 'beta-api-test':
+            case 'omega-api-live':
+            case 'omega-api-test':
+                return [self::READ_ONLY, self::READ_WRITE];
+
+            default:
+                return [self::RX_READ_ONLY, self::RX_READ_WRITE];
+
         }
     }
 }
