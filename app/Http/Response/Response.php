@@ -446,6 +446,7 @@ class Response
             'freshdesk_raise_grievance',
             'splitz_preflight',
             'splitz_evaluate',
+            'virtual_account_order_create',
         ];
 
         if (in_array($route, $routes, true) === true)
