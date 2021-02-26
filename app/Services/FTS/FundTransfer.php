@@ -320,7 +320,7 @@ class FundTransfer extends Base
         //
         if ($sourceType === Entity::REFUND)
         {
-            $request[Constants::AMOUNT] = $this->source->getBaseAmount();
+            $request[Constants::TRANSFER][Constants::AMOUNT] = $this->source->getBaseAmount();
         }
 
         $source = $this->fta->source;
