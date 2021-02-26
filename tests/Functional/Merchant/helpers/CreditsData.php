@@ -606,5 +606,25 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testCreditRowsWithNegativeBalance' => [
+        'request' => [
+            'url' => '/merchants/credits/balance/banking',
+            'method' => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'product' => 'banking',
+                    'merchant_id' => '10000000000000',
+                    'balance' => 5000,
+                    'type' =>  'reward_fee',
+                    'expired_at' => NULL
+                ],
+            ]
+        ]
     ]
+
 ];

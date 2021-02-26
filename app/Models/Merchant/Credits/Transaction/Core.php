@@ -529,13 +529,17 @@ class Core extends Base\Core
                 break;
             }
 
-            $creditsUsed = $this->getCreditsUsed($credit, $amount);
+            //check to only consume credits from rows having positive balance not from rows created as a part of data fix.
+            if ($credit->getValue() - $credit->getUsed() > 0)
+            {
+                $creditsUsed = $this->getCreditsUsed($credit, $amount);
 
-            $creditsConsumed += $creditsUsed;
+                $creditsConsumed += $creditsUsed;
 
-            $amount -= $creditsUsed;
+                $amount -= $creditsUsed;
 
-            $this->createTransactionForSource($credit, $source, $creditsUsed);
+                $this->createTransactionForSource($credit, $source, $creditsUsed);
+            }
         }
 
         $this->trace->info(TraceCode::CREDITS_CONSUMED,

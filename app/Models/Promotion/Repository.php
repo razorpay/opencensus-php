@@ -69,11 +69,16 @@ class Repository extends Base\Repository
     {
         $timestamp = Carbon::now()->getTimestamp();
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->where(Entity::EVENT_ID, $event->getId())
                     ->where(Entity::PRODUCT, $product)
                     ->where(Entity::START_AT, '<=', $timestamp)
                     ->where(Entity::STATUS, Entity::ACTIVATED)
-                    ->get();
+                    ->where(function($query) use ($timestamp){
+                        $query->whereNull(Entity::END_AT)
+                              ->orWhere(Entity::END_AT,'>=',$timestamp);
+                    });
+
+        return $query->get();
     }
 }

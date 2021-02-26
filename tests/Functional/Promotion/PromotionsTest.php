@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Promotion;
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Services\HubspotClient;
 use RZP\Models\Promotion\Event;
 use RZP\Tests\Functional\TestCase;
@@ -149,11 +152,16 @@ class PromotionsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateBankingPromotion()
+    public function testCreateBankingPromotion($input = null)
     {
         $this->ba->adminAuth('live');
 
         $response = $this->makeEventForPromotion();
+
+        if ($input !== null)
+        {
+            $this->testData[__FUNCTION__]['request']['content'] += $input;
+        }
 
         $this->testData[__FUNCTION__]['request']['content']['event_id']  = $response['id'];
 
@@ -161,11 +169,18 @@ class PromotionsTest extends TestCase
 
         $promotion = $this->getDbLastEntity('promotion', 'live');
 
+        $event = $this->getDbLastEntity('promotion_event', 'live');
+
+        $this->assertEquals($event['id'], $response['id']);
+
         $this->assertEquals('activated', $promotion['status']);
 
         $this->assertEquals('reward_fee', $promotion['credit_type']);
 
-        $this->assertNull($promotion['end_at']);
+        if ($input !== null)
+        {
+            $this->assertEquals($input['end_at'], $promotion['end_at']);
+        }
     }
 
     public function testCreateBankingPromotionOverlap()
@@ -194,7 +209,7 @@ class PromotionsTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantSignUpWithBankingPromotion()
+    public function testMerchantSignUpWithBankingPromotionWithEndAtNull()
     {
         $this->testCreateBankingPromotion();
 
@@ -232,11 +247,96 @@ class PromotionsTest extends TestCase
         $this->assertEquals('reward_fee', $response[0]['type']);
     }
 
+    public function testMerchantSignUpWithBankingPromotionWithEndAtInFuture()
+    {
+        $timestamp = Carbon::createFromDate(2021, 12, 01, Timezone::IST)->getTimestamp();
+
+        $input = [
+          'end_at' => $timestamp,
+        ];
+
+        $this->testCreateBankingPromotion($input);
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->assertEquals($timestamp, $promotion['end_at']);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $this->startTest();
+
+        $credit = $this->getDbLastEntity('credits', 'live');
+
+        // test merchant dashboard API call to fetch credit balances of merchant
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $request = [
+            'url' => '/merchants/credits/balance/banking',
+            'method' => 'GET',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('reward_fee', $response[0]['type']);
+
+        $this->assertEquals(100, $response[0]['balance']);
+    }
+
+    public function testMerchantSignUpWithBankingPromotionWithEndAtInPast()
+    {
+        $timestamp = Carbon::createFromDate(2020, 12, 01, Timezone::IST)->getTimestamp();
+
+        $this->testCreateBankingPromotion();
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->fixtures->edit('promotion',$promotion['id'],['end_at' => $timestamp,]);
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->assertEquals($timestamp, $promotion['end_at']);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $this->startTest();
+
+        $credit = $this->getDbLastEntity('credits', 'live');
+        
+        $this->assertNull($credit);
+
+        // test merchant dashboard API call to fetch credit balances of merchant
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $request = [
+            'url' => '/merchants/credits/balance/banking',
+            'method' => 'GET',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEmpty($response);
+    }
+
     protected function makeEventForPromotion()
     {
         $data = [
             Event\Entity::NAME           => 'sign up',
-            Event\Entity::DESCRIPTION    => 'sign up related credits'
+            Event\Entity::DESCRIPTION    => 'sign up related credits',
+
         ];
 
         $request = [
@@ -262,6 +362,4 @@ class PromotionsTest extends TestCase
         $hubSpotMock->expects($this->exactly(1))
             ->method($methodName);
     }
-
-
 }

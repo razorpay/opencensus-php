@@ -265,7 +265,6 @@ class Repository extends Base\Repository
                         ->selectRaw(
                             Entity::TYPE . ', ' .
                             'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
-                        ->where(Entity::VALUE, '>', 0)
                         ->where(Entity::PRODUCT, $product)
                         ->merchantId($merchantId)
                         ->where(function ($query)
@@ -327,7 +326,6 @@ class Repository extends Base\Repository
                                     ->where(Entity::MERCHANT_ID, $merchantId)
                                     ->where(Entity::PRODUCT, $product)
                                     ->where(Entity::TYPE, $type)
-                                    ->whereRaw(Entity::VALUE. '-' . Entity::USED . '> 0')
                                     ->where(function ($query)
                                     {
                                         $query->where(Entity::EXPIRED_AT, '>', time())

@@ -339,6 +339,32 @@ class CreditLogsTest extends TestCase
         });
     }
 
+    public function testCreditRowsWithNegativeBalance()
+    {
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => -2000000 , 'campaign' => 'test rewards 1', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'used' => 2000000, 'campaign' => 'test rewards 2', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'used' => 1000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => 1000000 , 'used' => 2000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->on('live')->create('credits', ['merchant_id' => '10000000000000', 'value' => 5000 , 'used' => 0, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail',['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $credit = $this->getDbLastEntity('credits', 'live');
+
+        // test merchant dashboard API call to fetch credit balances of merchant
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
     protected function makeBatchRequest($content, $file)
     {
         $request = [

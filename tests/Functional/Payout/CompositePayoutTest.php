@@ -118,6 +118,16 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutWithNewCreditsFlowMerchantWithNoCredits()
     {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => -2000000 , 'campaign' => 'test rewards 1', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'used' => 2000000, 'campaign' => 'test rewards 2', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'used' => 1000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1000000 , 'used' => 2000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
         $response = $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
