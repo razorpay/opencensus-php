@@ -6,7 +6,8 @@ on:
 
 jobs:
   pull_request_approved:
-    if: github.event.review.state == 'approved'
+    # skip Rebase if PR isn't approved && branch isn't hotfix
+    if: github.event.review.state == 'approved' && !contains(github.event.pull_request.head.ref, 'hotfix')
     runs-on: [self-hosted]
     steps:
     - name: checkout
