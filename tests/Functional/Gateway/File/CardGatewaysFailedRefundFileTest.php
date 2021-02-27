@@ -140,9 +140,9 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $attachment = $mail->attachments[0]['file'];
 
-            $sheets = $this->parseExcelFile($attachment);
+            $attachment = $this->parseExcelFile($attachment);
 
-            $fileContentCount = count($sheets[0]);
+            $fileContentCount = count($attachment);
 
             $this->assertEquals($fileContentCount, 3);
 

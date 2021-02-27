@@ -126,9 +126,9 @@ class UpiSbi extends Base
 
     public function createFile($data)
     {
-        $defaultExcelEnclosure = $this->config->get('excel.exports.csv.enclosure');
+        $defaultExcelEnclosure = $this->config->get('excel.csv.enclosure');
 
-        $this->config->set('excel.exports.csv.enclosure', '');
+        $this->config->set('excel.csv.enclosure', '');
 
         if ($this->isFileGenerated() === true)
         {
@@ -171,7 +171,7 @@ class UpiSbi extends Base
                 $e);
         }
 
-        $this->config->set('excel.exports.csv.enclosure', $defaultExcelEnclosure);
+        $this->config->set('excel.csv.enclosure', $defaultExcelEnclosure);
     }
 
     public function sendFile($data)

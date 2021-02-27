@@ -11,10 +11,8 @@ use Box\Spout\Reader\ReaderFactory;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Excel\ChunkImport;
 use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\Base\InfoCode;
-use RZP\Excel\ReconKeyColumnChunkImport;
 
 class Converter extends Base\Core
 {
@@ -148,15 +146,31 @@ class Converter extends Base\Core
                 'gateway' => get_called_class(),
         ]);
 
-        if (empty($sheetNames) === false)
+        if (empty($keyColumnNames) === false)
         {
-            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetNames(
-                                                            $fileDetails, $sheetNames, $keyColumnNames, $startRow);
+            // here we want to read raw data rows, don't make first row as header
+            $this->setConfigOptions($startRow, false);
         }
         else
         {
-            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails, $keyColumnNames, $startRow);
+            $this->setConfigOptions($startRow);
         }
+
+        if (empty($sheetNames) === false)
+        {
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetNames(
+                                                            $fileDetails, $sheetNames, $keyColumnNames);
+        }
+        else
+        {
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails, $keyColumnNames);
+        }
+
+        //
+        // Needs to be reset so that the custom `startRow` and `heading`
+        // configs don't affect the other messages in the queue
+        //
+        $this->setConfigOptions(1);
 
         $this->trace->debug(
             TraceCode::RECON_INFO,
@@ -178,8 +192,6 @@ class Converter extends Base\Core
      * @param int $startRow
      * @param array $keyColumnNames
      * @return array excel sheet content of mentioned file
-     * @throws \Box\Spout\Common\Exception\IOException
-     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      */
     public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [], int $startRow = 1, $keyColumnNames)
     {
@@ -317,10 +329,9 @@ class Converter extends Base\Core
      *
      * @param array $fileDetails
      * @param $keyColumnNames
-     * @param $startRow
      * @return array
      */
-    protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails, $keyColumnNames, $startRow)
+    protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails, $keyColumnNames)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -348,17 +359,9 @@ class Converter extends Base\Core
                         'gateway'       => get_called_class()
                     ]);
 
-            // In excel 2.1, startRow is actually the heading Row. To maintain the same behaviour
-            // In excel 3.1, we will set startRow as $startRow + 1 and heading Row  s $startRow
-            $import = new ChunkImport($startRow);
-
-            if (empty($keyColumnNames) === false)
-            {
-                $import = new ReconKeyColumnChunkImport($startRow);
-            }
-
-            $import->setSheets($index)
-                ->setChunk(self::ROW_CHUNK_SIZE, function($results) use ($randomSheetName, & $sheetContent, $keyColumnNames) {
+            Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
+                self::ROW_CHUNK_SIZE,
+                function ($results) use ($randomSheetName, & $sheetContent, $keyColumnNames) {
                     if (empty($keyColumnNames) === false)
                     {
                         $this->setExcelSheetContentWithKeyColumnNames($results, $randomSheetName, $sheetContent);
@@ -367,8 +370,9 @@ class Converter extends Base\Core
                     {
                         $this->setExcelSheetContent($results, $randomSheetName, $sheetContent);
                     }
-                })
-                ->import($filePath);
+                },
+                false
+            );
 
             $this->trace->debug(
                 TraceCode::RECON_INFO,
@@ -387,8 +391,7 @@ class Converter extends Base\Core
     protected function getRowsFromExcelSheetsOptimizedWithSheetNames(
         array $fileDetails,
         array $sheetNames,
-        array $keyColumnNames,
-        int $startRow = 1)
+        array $keyColumnNames)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -425,26 +428,21 @@ class Converter extends Base\Core
 
             try
             {
-                $import = new ChunkImport($startRow);
-
-                if (empty($keyColumnNames) === false)
-                {
-                    $import = new ReconKeyColumnChunkImport($startRow);
-                }
-
-                $import
-                    ->setSheets($sheetName)
-                    ->setChunk(self::ROW_CHUNK_SIZE, function($results) use ($sheetName, & $sheetContent, $keyColumnNames) {
-                       if (empty($keyColumnNames) === false)
-                       {
-                           $this->setExcelSheetContentWithKeyColumnNames($results, $sheetName, $sheetContent);
-                       }
-                       else
-                       {
-                           $this->setExcelSheetContent($results, $sheetName, $sheetContent);
-                       }
-                   })
-                    ->import($filePath);
+                Excel::filter('chunk')->selectSheets($sheetName)->load($filePath)->chunk(
+                    self::ROW_CHUNK_SIZE,
+                    function ($results) use ($sheetName, & $sheetContent, $keyColumnNames)
+                    {
+                        if (empty($keyColumnNames) === false)
+                        {
+                            $this->setExcelSheetContentWithKeyColumnNames($results, $sheetName, $sheetContent);
+                        }
+                        else
+                        {
+                            $this->setExcelSheetContent($results, $sheetName, $sheetContent);
+                        }
+                    },
+                    false
+                );
             }
             catch (\Exception $ex)
             {
@@ -685,9 +683,7 @@ class Converter extends Base\Core
 
     protected function setExcelSheetContentWithKeyColumnNames($results, string $sheetName, array & $sheetContent)
     {
-        // We get a collection consisting of collections
-        // in results now, so using all() to get it's items.
-        foreach ($results->all() as $row)
+        foreach ($results as $index => $row)
         {
             // this deals with the empty rows
             if (count(array_filter($row->all())) === 0)
@@ -696,7 +692,7 @@ class Converter extends Base\Core
             }
 
             // for each row, check if it is a recon row or header
-            if ($this->setColumnHeaderIfApplicable(array_values($row->all()), $sheetContent) === true)
+            if ($this->setColumnHeaderIfApplicable($row->all(), $sheetContent) === true)
             {
                 // Header encountered
                 $sheetContent['column_headers_count'] = count($sheetContent['column_headers']);
@@ -869,5 +865,47 @@ class Converter extends Base\Core
         }
 
         return $normalized;
+    }
+
+    /**
+     * Sets the config for Maatwebsite Excel reader
+     * @param int $startRow
+     * @param string $heading when heading is set to 'false' , it should not treat the first row as heading
+     */
+    protected function setConfigOptions(int $startRow, $heading = 'slugged')
+    {
+        //
+        // For the current implementation to work the way it is expected to,
+        // force_sheets_collection MUST be set to false. We are loading sheet
+        // by sheet in this particular implementation and hence would want
+        // an array of rows to be returned rather than an array of sheets.
+        //
+        Config::set('excel.import.force_sheets_collection', false);
+
+        //
+        // Default setting of headers in Excel.php is `slugged` but that is being
+        // overridden in FileHandlerTrait to `original` while parsing other batch files.
+        // In recon files, we strictly require slugged headers.
+        // Because of the old config values (if not reset), subsequent parsing of recon excel files fails
+        // with the error of unable to find expected headers in the file.
+        // This is temporary fix. TODO : Fix the same with refactored code (https://razorpay.atlassian.net/browse/PP-36)
+        //
+        Config::set('excel.import.heading', $heading);
+
+        Config::set('excel.import.startRow', $startRow);
+
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        // Causes issue if Axis file get parses first as it sets the sheet name to `Maestro Refund` and then
+        // reader tries to search index for `Maestro Refund` at the time of next recon's file parsing too.
+        // Throws exception of `Your requested sheet index: -1 is out of bounds` in such case.
+        // Its Maatwebsite issue, that's why calling in this function only.
+        //
+        $this->app['excel.reader']->setSelectedSheets([]);
+
+        $this->app['excel.reader']->setSelectedSheetIndices([]);
     }
 }

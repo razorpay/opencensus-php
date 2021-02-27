@@ -10434,6 +10434,7 @@ class MerchantTest extends TestCase
                 $testCase[self::CREATE_MERCHANT_DETAILS]);
         }
         else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
+            s($this->fixtures->merchant);
             $this->fixtures->merchant->activate();
         }
     }

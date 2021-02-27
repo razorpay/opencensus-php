@@ -134,7 +134,7 @@ class EnachNpciNetbanking extends Base
 
     public function createFile($data)
     {
-        Config::set('excel.exports.csv.enclosure', '');
+        Config::set('excel.csv.enclosure', '');
 
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -185,7 +185,7 @@ class EnachNpciNetbanking extends Base
                 $e);
         }
 
-        Config::set('excel.exports.csv.enclosure', '"');
+        Config::set('excel.csv.enclosure', '"');
     }
 
     public function fetchEntities(): PublicCollection

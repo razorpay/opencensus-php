@@ -8,11 +8,7 @@ use Excel;
 use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Excel\Import as ExcelImport;
-use RZP\Excel\Export as ExcelExport;
-use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use RZP\Excel\MultipleSheetsImport as ExcelMultipleSheetsImport;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -20,7 +16,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
-use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder as PhpSpreadsheetDefaultValueBinder;
+
 
 trait FileHandlerTrait
 {
@@ -28,9 +24,9 @@ trait FileHandlerTrait
 
     protected $excel = null;
 
-    private $_zipCommand = 'zip --junk-paths --move';
+    private $_zipCommand = "zip --junk-paths --move";
 
-    public function writeToTextFile($name, $txt, $mime = 'text/plain')
+    public function writeToTextFile($name, $txt, $mime='text/plain')
     {
         $fullpath = $this->createTxtFile($name, $txt);
 
@@ -100,15 +96,15 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function createExcelFile($data, $name, $directory, $sheetNames = ['Sheet 1'], $extension = 'xlsx')
+    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'], $extension = 'xlsx')
     {
+        \Config::set('excel::export.calculate', true);
+
         $columnFormat = $this->getColumnFormatForExcel();
 
-        $directory = storage_path($directory);
+        $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetNames);
 
-        $fileMetadata = $this->createExcelObject($data, $directory, $name, $extension, $columnFormat, $sheetNames);
-
-        // $fileMetadata = $excel->store($extension, storage_path($dir), true);
+        $fileMetadata = $excel->store($extension, storage_path($dir), true);
 
         $fullpath = $fileMetadata['full'];
 
@@ -242,37 +238,33 @@ trait FileHandlerTrait
         return $row;
     }
 
-    protected function createExcelObject($data, $dir, $filename, $extension, $columnFormat = [], $sheetNames = ['Sheet 1'])
+    protected function createExcelObject($data, $name, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
-        $path = $dir . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
+        $sheetNames = (is_array($sheetNames) === false) ? [$sheetNames] : $sheetNames;
 
-        (new ExcelExport)->setSheets(function() use ($data, $sheetNames, $columnFormat) {
-                $sheetsInfo = [];
-                foreach ((array) $sheetNames as $sheetName)
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetNames)
+        {
+            foreach ($sheetNames as $sheetName)
+            {
+                $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat, $sheetName)
                 {
-                    $sheetsInfo[$sheetName] = (new ExcelSheetExport($data[$sheetName] ?? $data))
-                                                    ->setTitle($sheetName)
-                                                    ->setColumnFormat($columnFormat)
-                                                    ->generateAutoHeading(true)
-                                                    ->setStyle(function($sheet) {
-                                                        $sheet->getParent()
-                                                             ->getDefaultStyle()
-                                                             ->getFont()
-                                                             ->setName('Ubuntu Mono')
-                                                             ->setSize(14);
-                                                    });
-                }
+                    // If a columnFormat variable is specified.
+                    // Use it.
+                    if (empty($columnFormat) === false)
+                    {
+                        $sheet->setColumnFormat($columnFormat);
+                    }
 
-                return $sheetsInfo;
-            })->store($path, 'local_storage');
+                    $sheet->fromArray(($data[$sheetName] ?? $data), null, 'A1', true, true);
+                });
+            }
+        });
 
-        return [
-            'full'  => $path,
-            'path'  => $dir,
-            'file'  => $filename . '.' . $extension,
-            'title' => $filename,
-            'ext'   => $extension
-        ];
+        $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
+
+        $this->excel = $excel;
+
+        return $excel;
     }
 
     protected function getColumnFormatForExcel()
@@ -714,10 +706,10 @@ trait FileHandlerTrait
 
         if (isset($password))
         {
-            $zipCommand .= ' --password ' . $password;
+            $zipCommand .= " --password " . $password;
         }
 
-        exec(escapeshellcmd($zipCommand) . ' ' . escapeshellarg($zipPath) . ' ' . escapeshellarg($filePath));
+        exec(escapeshellcmd($zipCommand) . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
     }
 
     protected function getFileToWriteNameWithoutExt()
@@ -805,41 +797,41 @@ trait FileHandlerTrait
             ]);
     }
 
-    protected function parseExcelFile(string $filePath, array $sheetNames = [], $startRow = 1, $heading = 'slug')
+    protected function parseExcelFile(string $filePath, array $sheetNames = [])
     {
-        // In excel 2.1, startRow is actually the heading Row. To maintain the same behaviour
-        // in excel 3.1, we will set startRow as $startRow + 1 and heading Row  s $startRow
-        $import = new ExcelImport($startRow);
+        $excel = Excel::getFacadeRoot();
 
         if (empty($sheetNames) === false)
         {
-            $import = (new ExcelMultipleSheetsImport($startRow))->setSheets($sheetNames);
+            $excel = $excel->selectSheets($sheetNames);
         }
 
-        return $import->setHeadingType($heading)->toArray($filePath);
+        return $excel->load($filePath)
+                     ->formatDates(false)
+                     ->toArray();
     }
 
     protected function parseExcelSheets($filePath, $startRow = 1)
     {
-        // $app = App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
-        // Config::set('excel.import.force_sheets_collection', true);
-        // Config::set('excel.import.heading', 'original');
-        // Config::set('excel.import.startRow', $startRow);
+        Config::set('excel.import.force_sheets_collection', true);
+        Config::set('excel.import.heading', 'original');
+        Config::set('excel.import.startRow', $startRow);
 
-        // //
-        // // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
-        // // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
-        // // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
-        // // until it is replaced with new sheet name.
-        // //
-        // $app['excel.reader']->setSelectedSheets([]);
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        //
+        $app['excel.reader']->setSelectedSheets([]);
 
-        // $app['excel.reader']->setSelectedSheetIndices([]);
+        $app['excel.reader']->setSelectedSheetIndices([]);
 
-        // $this->traceExcelReaderConfig();
+        $this->traceExcelReaderConfig();
 
-        $sheets = $this->parseExcelFile($filePath, [], $startRow, 'none');
+        $sheets = $this->parseExcelFile($filePath);
 
         $hasSingleSheet  = (count($sheets) === 1);
         $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
@@ -875,8 +867,6 @@ trait FileHandlerTrait
         $fileType = SpreadsheetIOFactory::identify($filePath);
 
         $reader = SpreadsheetIOFactory::createReader($fileType);
-
-        \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder(new PhpSpreadsheetDefaultValueBinder);
 
         $reader->setReadDataOnly(true);
 

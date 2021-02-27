@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -99,10 +98,9 @@ class NetbankingYesbCombinedFileTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $claimSheet = (new ExcelImport)->toArray($mail->attachments[0]['file'])[0];
+            $claimSheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
 
-            $refundSheet = (new ExcelImport)->toArray($mail->attachments[1]['file'])[0];
-
+            $refundSheet = Excel::load($mail->attachments[1]['file'])->all()->toArray();
 
             $this->checkRefundsFile($refundSheet[0], $payment1, $fullRefund);
 

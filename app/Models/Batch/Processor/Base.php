@@ -1019,7 +1019,8 @@ class Base extends BaseModel\Core
 
             case FileStore\Format::XLSX:
             case FileStore\Format::XLS:
-                $fileMeta = $this->createExcelObject($entries, $dir, $this->batch->getId(), $ext, [], $this->batch->getType());
+                $fileMeta = $this->createExcelObject($entries, $this->batch->getId(), [], $this->batch->getType())
+                                 ->store($ext, $dir, true);
 
                 return $fileMeta['full'];
 

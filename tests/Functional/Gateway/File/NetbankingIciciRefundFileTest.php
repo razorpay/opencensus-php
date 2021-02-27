@@ -9,7 +9,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Excel\Import as ExcelImport;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -89,7 +88,7 @@ class NetbankingIciciRefundFileTest extends TestCase
 
             $this->assertNotEmpty($mail->attachments);
 
-            $sheet = (new ExcelImport)->toArray($mail->attachments[0]['file'])[0];
+            $sheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
 
             $this->assertCount(10, $sheet[0]);
             $this->assertEquals($sheet[0]['refund_amount'], 500);
@@ -179,7 +178,7 @@ class NetbankingIciciRefundFileTest extends TestCase
 
                 $this->assertNotEmpty($mail->attachments);
 
-                $sheet = (new ExcelImport)->toArray($mail->attachments[0]['file'])[0];
+                $sheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
 
                 $this->assertCount(10, $sheet[0]);
                 $this->assertEquals($sheet[0]['refund_amount'], 500);
