@@ -1,7 +1,7 @@
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { setItem } from 'common/utils/localStorage';
 import { useState, useEffect, useCallback } from 'react';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const RewardsAnnouncment = ({ userId }) => {
@@ -14,7 +14,7 @@ const RewardsAnnouncment = ({ userId }) => {
   }, [bannerID]);
 
   const interestClicked = useCallback(() => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'Rewards Interest Banner',
       actionName: 'clicked',
       screen: 'Checkout Rewards',
@@ -27,7 +27,7 @@ const RewardsAnnouncment = ({ userId }) => {
   }, [closeAnnoucement]);
 
   useEffect(() => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'Rewards Interest Banner',
       actionName: 'appear',
       screen: 'Checkout Rewards',

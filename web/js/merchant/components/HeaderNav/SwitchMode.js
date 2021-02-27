@@ -2,7 +2,7 @@ import React from 'react';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) => {
@@ -12,7 +12,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) =>
       <DropdownTrigger class="dropdown-toggle switch-modes-toggle">
         <div
           onClick={() => {
-            analyticsService.track({
+            analyticsTrack({
               objectName: 'modes dropdown',
               actionName: 'clicked',
               screen: 'home page',

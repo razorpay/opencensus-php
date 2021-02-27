@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { Fragment } from 'react';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { statuses, MAX_PAGE_SIZE } from './data.js';
 import Field from 'common/new-ui/Input/index.js';
@@ -74,7 +74,7 @@ export default class Tickets extends React.Component {
           eventLabel: `Tickets | Status:Success`,
         });
 
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'show all tickets',
           actionName: 'rendered',
           screen: 'support tickets',

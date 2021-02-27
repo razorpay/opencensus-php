@@ -9,7 +9,7 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import EnableInstantRefundsModal from '../Payments/components/EnableInstantRefundsModal';
 import { withRouter } from 'react-router-dom';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
@@ -50,7 +50,7 @@ export default class RefundsListContainer extends ListContainer {
           form="refundListFilter"
           count={this.state.count}
           onSubmit={(args) => {
-            analyticsService.track({
+            analyticsTrack({
               objectName: 'refunds search',
               actionName: 'clicked',
               screen: 'transactions',
@@ -62,20 +62,24 @@ export default class RefundsListContainer extends ListContainer {
             });
             this.search(args)
               .then(() => {
-                analyticsService.track({
+                analyticsTrack({
                   objectName: 'refunds search',
                   actionName: 'status',
                   screen: 'transactions',
                   properties: {
-                    ...args,
-                    requestStatus: 'success',
+                    id: args.id,
+                    refundStatus: args.status,
+                    emailFilled: Boolean(args.email),
+                    notesFilled: Boolean(args.notes),
+                    count: args.count,
+                    status: 'success',
                     location: 'refunds',
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
               })
               .catch((e) => {
-                analyticsService.track({
+                analyticsTrack({
                   objectName: 'refunds search',
                   actionName: 'status',
                   screen: 'transactions',

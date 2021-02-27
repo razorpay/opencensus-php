@@ -11,7 +11,7 @@ import { trackLoad, trackExpand, trackAnnouncement } from './ga';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import RazorpayXAnnouncement from './RazorpayXAnnouncement';
 
@@ -132,7 +132,7 @@ export default class NotificationsDropdown extends Component {
   };
 
   onShow = () => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'announcements drop down',
       actionName: 'clicked',
       screen: 'home page',
@@ -319,7 +319,7 @@ export default class NotificationsDropdown extends Component {
             <React.Fragment>
               <i
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'top nav',
                     actionName: 'clicked',
                     screen: 'home page',
@@ -345,7 +345,7 @@ export default class NotificationsDropdown extends Component {
             <React.Fragment>
               <span
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'top nav',
                     actionName: 'clicked',
                     screen: 'home page',
@@ -501,7 +501,7 @@ const NotificationCard = ({
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'announcements',
                     actionName: 'clicked',
                     screen: 'home page',

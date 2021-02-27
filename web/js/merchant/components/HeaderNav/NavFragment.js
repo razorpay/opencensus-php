@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import storage from 'common/utils/localStorage';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -89,7 +89,7 @@ class NavFragment extends Component {
               target="_blank"
               href="https://razorpay.com/docs?utm-source=dashboard-navbar"
               onClick={() => {
-                analyticsService.track({
+                analyticsTrack({
                   objectName: 'top nav',
                   actionName: 'clicked',
                   screen: 'home page',
@@ -99,7 +99,7 @@ class NavFragment extends Component {
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
-                analyticsService.track({
+                analyticsTrack({
                   objectName: 'documentation',
                   actionName: 'clicked',
                   screen: 'home page',

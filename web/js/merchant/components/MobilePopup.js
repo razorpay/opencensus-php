@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import Button from 'common/new-ui/Button';
 import LocalStorageService from 'common/utils/localStorage';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import '../../../css/merchant/mobile-popup.styl';
 
 const analytics = (screen, action) => {
-  analyticsService.track({
+  analyticsTrack({
     objectName: 'M-web popup',
     actionName: 'clicked',
     screen: `${screen}`,
@@ -20,7 +20,7 @@ const analytics = (screen, action) => {
 
 export function MobilePopup({ title, subtitle, screen, url, notNowClicked, closeModal }) {
   useEffect(() => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'M-web popup',
       actionName: 'displayed',
       screen: `${screen}`,

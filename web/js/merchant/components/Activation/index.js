@@ -70,7 +70,7 @@ import {
   validateCompanyAB,
   validateCompanyPAN,
 } from 'common/utils/validators';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import L1FormFieldNames from './L1FormFieldNames';
@@ -1051,7 +1051,7 @@ export default class ActivationWizard extends React.Component {
 
       handleInstantActivationSuccess(props);
       this.saveCurrentTab();
-      analyticsService.track({
+      analyticsTrack({
         objectName: 'SignUp',
         actionName: 'Submit L1 CTA Clicked',
         screen: 'L1 form',
@@ -2018,7 +2018,10 @@ export default class ActivationWizard extends React.Component {
   // returns validity
   tabValidity(i) {
     //Special handling for NDC tab
-    if (this.props.data.activation_status === 'needs_clarification' && i !== NEEDS_CLARIFICATION_STEP) {
+    if (
+      this.props.data.activation_status === 'needs_clarification' &&
+      i !== NEEDS_CLARIFICATION_STEP
+    ) {
       return true;
     }
 

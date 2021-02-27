@@ -42,7 +42,7 @@ import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
 import { merchantFetch } from 'merchant/utils/ajax';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 @withRouter
 @connect(
@@ -83,7 +83,7 @@ class AnalyticsDesktop extends Component {
   }
 
   componentDidMount() {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'home page',
       actionName: 'displayed',
       screen: 'home page',
@@ -167,7 +167,7 @@ class AnalyticsDesktop extends Component {
           Receive account-related notifications on WhatsApp. &nbsp;
           <Link
             onClick={() => {
-              analyticsService.track({
+              analyticsTrack({
                 objectName: 'banner',
                 actionName: 'clicked',
                 screen: 'home page',
@@ -190,7 +190,7 @@ class AnalyticsDesktop extends Component {
           You will now receive account-related notifications on WhatsApp. &nbsp;
           <Link
             onClick={() => {
-              analyticsService.track({
+              analyticsTrack({
                 objectName: 'banner',
                 actionName: 'clicked',
                 screen: 'home page',
@@ -322,7 +322,7 @@ class AnalyticsDesktop extends Component {
               Currently all payments with order id are being captured by default, click{' '}
               <Link
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'banner',
                     actionName: 'clicked',
                     screen: 'home page',
@@ -363,7 +363,7 @@ class AnalyticsDesktop extends Component {
               Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
               <Link
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'banner',
                     actionName: 'clicked',
                     screen: 'home page',
@@ -389,7 +389,7 @@ class AnalyticsDesktop extends Component {
               to fail now. Please add funds to avoid transaction failures.{' '}
               <Link
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'banner',
                     actionName: 'clicked',
                     screen: 'home page',
@@ -415,7 +415,7 @@ class AnalyticsDesktop extends Component {
               </span>
               <Link
                 onClick={() => {
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'banner',
                     actionName: 'clicked',
                     screen: 'home page',

@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect((state) => state.config, { showNotification })
@@ -25,7 +25,7 @@ export default class EmailNotifications extends Component {
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Email Notifications Addresses',
     });
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'documentation',
       actionName: 'clicked',
       screen: 'home page',
