@@ -2332,7 +2332,8 @@ class Entity extends Base\PublicEntity
 
         $dateAndTime = Carbon::createFromTimestamp($scheduledAt, Timezone::IST);
 
-        $month = $dateAndTime->englishMonth;
+        // englishMonth is not supported
+        $month = $dateAndTime->format('F');
 
         $year = $dateAndTime->year;
 

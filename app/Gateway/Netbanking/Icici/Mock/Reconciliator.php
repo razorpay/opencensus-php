@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\ICICI\Mock;
+namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\EMandate\Register;
+namespace RZP\Models\Gateway\File\Processor\Emandate\Register;
 
 use Carbon\Carbon;
 
@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Gateway\File\Processor\EMandate\Base;
+use RZP\Models\Gateway\File\Processor\Emandate\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
 use RZP\Gateway\Netbanking\Hdfc\Fields;
 

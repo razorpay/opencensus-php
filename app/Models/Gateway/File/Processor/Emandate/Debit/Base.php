@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
+namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
@@ -10,7 +10,7 @@ use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Gateway\File\Processor\EMandate;
+use RZP\Models\Gateway\File\Processor\Emandate;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base as ModelBase;

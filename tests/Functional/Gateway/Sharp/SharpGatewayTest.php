@@ -536,7 +536,7 @@ class SharpGatewayTest extends TestCase
 
         $response = $this->checkPaymentStatus($paymentId, null);
 
-        $this->assertNotNull('razorpay_payment_id', $response);
+        $this->assertNotNull($response['razorpay_payment_id']);
 
         $this->assertEquals($response['razorpay_payment_id'], $payment['id']);
     }

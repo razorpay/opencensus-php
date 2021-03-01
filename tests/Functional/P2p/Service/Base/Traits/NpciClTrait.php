@@ -46,7 +46,7 @@ trait NpciClTrait
             $expected['callback'] = $callback;
         }
 
-        $this->assertArraySubset($expected, $input, true, $this->npciClAssertionMessage);
+        $this->assertArraySubset($expected, $input, true, $this->npciClAssertionMessage ?? '');
         $this->assertCount(3, $input['request']);
         $this->assertCount(2, $input['request']['content']);
         $this->assertSame($input['request']['content']['count'], count($input['request']['content']['vector']));

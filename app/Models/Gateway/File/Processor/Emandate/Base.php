@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\EMandate;
+namespace RZP\Models\Gateway\File\Processor\Emandate;
 
 use Mail;
 use Carbon\Carbon;

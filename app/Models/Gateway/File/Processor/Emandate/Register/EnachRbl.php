@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\EMandate\Register;
+namespace RZP\Models\Gateway\File\Processor\Emandate\Register;
 
 use Mail;
 use ZipArchive;
@@ -22,7 +22,7 @@ use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
-use RZP\Models\Gateway\File\Processor\EMandate\Base;
+use RZP\Models\Gateway\File\Processor\Emandate\Base;
 
 class EnachRbl extends Base
 {

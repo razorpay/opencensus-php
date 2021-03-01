@@ -207,11 +207,10 @@ class NbplusNetbankingJsbGatewayTest extends NbPlusPaymentServiceNetbankingTest
 
         $this->assertEquals($paymentId, $PaymentRowData1['MerRefNo']);
 
-        $payment1Amount = number_format(($paymentAmts[0]) / 100);
+        $payment1Amount = number_format($paymentAmts[0] / 100, 2, '.', '');
         $this->assertEquals($payment1Amount, $PaymentRowData1[ClaimFields::PAYMENT_AMOUNT]);
 
-        $payment2Amount = number_format(($paymentAmts[1]) / 100);
+        $payment2Amount = number_format($paymentAmts[1] / 100, 2, '.', '');
         $this->assertEquals($payment2Amount, $PaymentRowData2[ClaimFields::PAYMENT_AMOUNT]);
-
     }
 }
