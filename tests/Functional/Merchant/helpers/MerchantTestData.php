@@ -7464,14 +7464,14 @@ return [
                 'preferred_methods' => [
                     '+919955555555' => [
                         'instruments' => [
-                            [],
-                            [],
                             [
                                 'method'   => 'card',
-                                'issuer'   => 'SBIN',
+                                'issuer'   => null,
                                 'type'     => 'credit',
                                 'network'  => 'Mastercard',
                             ],
+                            [],
+                            [],
                         ],
                     ],
                 ],
@@ -7495,14 +7495,23 @@ return [
                     '1234567890' => [
                         'instruments' =>[
                             [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => 'icici_bank',
+                                'method'     => 'netbanking',
+                            ],
+                            [
                                 'instrument' => 'abcd@okhdfc',
                                 'method'     => 'upi',
-                                'score'      =>  0.54,
                             ],
                             [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
-                                'score'      =>  0.54,
                             ],
                         ],
                         "is_customer_identified"    => true,
@@ -7527,42 +7536,155 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => 'icici_bank',
+                                'method'     => 'netbanking',
+                            ],
+                            [
                                 'instrument' => 'abcd@okhdfc',
                                 'method'     => 'upi',
-                                'score'      =>  0.54,
                             ],
                             [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
-                                'score'      =>  0.54,
                             ],
                         ],
-                        "is_customer_identified"    => true,
+                        'is_customer_identified'   => true,
                         "user_aggregates_available" => false
                     ],
                 ]
             ],
         ],
     ],
+
     'testGetCheckoutPersonalisationForNonLoggedInUser' => [
         'request' => [
             'url'     => '/personalisation',
             'method'  => 'get',
             'content' => [
                 'order_id'  => 'null',
-                'app_token' => 'test_app_token'
             ],
         ],
         'response' => [
             'content' => [
+                "preferred_methods" => [
+                    'default' => [
+                        'instruments' => [
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'upi',
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'    => 'wallet',
+                            ],
+                        ],
+                    ],
+                ]
             ],
-            'status_code' => 400,
         ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
-        ],
+
     ],
+
+    'testGetCheckoutPersonalisationForNonLoggedInUserUpiIntent' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'upi_intent' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "preferred_methods" => [
+                    'default' => [
+                        'instruments' => [
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => '@ybl',
+                                'method'     => 'upi',
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'    => 'wallet',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+
+    ],
+
+    'testGetCheckoutPersonalisationForNonLoggedInUserWithContact' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact' => '+918888888888',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+918888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'upi',
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+
+    ],
+
     'testGetCheckoutPersonalisationForContact' => [
         'request' => [
             'url'     => '/personalisation',
@@ -7612,14 +7734,23 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => 'icici_bank',
+                                'method'     => 'netbanking',
+                            ],
+                            [
                                 'instrument' => 'abcd@okhdfc',
                                 'method'     => 'upi',
-                                'score'      =>  0.54,
                             ],
                             [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
-                                'score'      =>  0.54,
                             ],
                         ],
                         "is_customer_identified"    => true,

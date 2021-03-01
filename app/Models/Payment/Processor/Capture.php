@@ -1032,7 +1032,7 @@ trait Capture
             $order = $this->repo->order->fetchForPayment($payment);
 
             $this->repo->reload($order);
-            
+
             if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AMOUNT_CHECK) === true)
             {
                 return;
