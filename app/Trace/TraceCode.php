@@ -4107,6 +4107,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_OBSERVER_DATA                                     = 'GET_OBSERVER_DATA';
     const UPDATE_OBSERVER_DATA                                  = 'UPDATE_OBSERVER_DATA';
 
+    //Auto Capture Trace Codes
+    const AUTO_CAPTURE_PAYMENT_ID_MUTEX_TIME_TAKEN              = 'AUTO_CAPTURE_PAYMENT_ID_MUTEX_TIME_TAKEN';
+    const AUTO_CAPTURE_ORDER_ID_MUTEX_TIME_TAKEN                = 'AUTO_CAPTURE_ORDER_ID_MUTEX_TIME_TAKEN';
+    const AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN               = 'AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN';
+    const MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN               = 'MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

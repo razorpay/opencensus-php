@@ -126,14 +126,21 @@ abstract class Base extends BaseCore
 
         if ($this->shouldUpdateBalance() === true)
         {
-            $startTime = microtime(true);
-
             try
             {
                 $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
 
+                $lockStartTime = microtime(true);
                 // update merchant credits an balances
                 $this->setMerchantBalanceLockForUpdate();
+
+                $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN,
+                    [
+                        'lock_start_time'   => (microtime(true) - $lockStartTime) * 1000
+                    ]
+                );
+
+                $startTime = microtime(true);
 
                 $this->updateCredits($negativeLimit);
 

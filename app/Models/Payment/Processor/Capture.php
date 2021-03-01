@@ -146,7 +146,9 @@ trait Capture
         $payment->setAutoCapturedTrue();
 
         $this->trace->info(
-            TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
+            TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId(),
+            'order_id'                => $payment->getApiOrderId(),
+            'merchant_id'             => $payment->getMerchantId(),]);
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
 
@@ -369,14 +371,22 @@ trait Capture
     {
         try
         {
+            $autoCaptureStartTime = microtime(true);
+
             $autoCaptured = $payment->getAutoCaptured();
 
             $data = $this->getCaptureData($payment, $captureAmount, $currency);
 
             $this->mutex->acquireAndRelease(
                 $this->payment->getId(),
-                function() use ($data, $autoCaptured)
+                function() use ($data, $autoCaptured, $autoCaptureStartTime)
                 {
+                    $this->trace->info(TraceCode::AUTO_CAPTURE_PAYMENT_ID_MUTEX_TIME_TAKEN,
+                        [
+                            'mutex_time_taken'   => (microtime(true) - $autoCaptureStartTime) * 1000
+                        ]
+                    );
+
                     $this->captureOnGateway($data, $autoCaptured);
                 });
 
@@ -493,10 +503,17 @@ trait Capture
         //mutex for order id to avoid multiple capture for same order at the same time.
         if ($this->payment->hasOrder())
         {
+            $captureGatewayStartTime = microtime(true);
+
             $this->mutex->acquireAndRelease(
                 $this->payment->getApiOrderId(),
-                function() use ($data, $autoCaptured)
+                function() use ($data, $autoCaptured, $captureGatewayStartTime)
                 {
+                    $this->trace->info(TraceCode::AUTO_CAPTURE_ORDER_ID_MUTEX_TIME_TAKEN,
+                        [
+                            'mutex_time_taken'   => (microtime(true) - $captureGatewayStartTime) * 1000
+                        ]
+                    );
                     $this->verifyOrderUnpaid($this->payment);
 
                     $this->repo->reload($this->payment);
@@ -537,6 +554,8 @@ trait Capture
     {
         try
         {
+            $callToGatewayStartTime = microtime(true);
+
             if ($this->payment->isGatewayCaptured() === false)
             {
                 if (($this->merchant->isFeatureEnabled(Feature\Constants::ASYNC_CAPTURE) === true) or
@@ -555,6 +574,11 @@ trait Capture
                     $this->repo->saveOrFail($this->payment);
                 }
             }
+            $this->trace->info(TraceCode::AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN,
+                [
+                    'gateway_time_taken'   => (microtime(true) - $callToGatewayStartTime) * 1000
+                ]
+            );
         }
         catch (\Throwable $ex)
         {
