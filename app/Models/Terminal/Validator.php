@@ -782,6 +782,9 @@ class Validator extends Base\Validator
 
     protected static $walletFreechargeEditTerminalRules = [
         Entity::NETWORK_CATEGORY           => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
     ];
 
     protected static $netbankingIciciTerminalRules = [
