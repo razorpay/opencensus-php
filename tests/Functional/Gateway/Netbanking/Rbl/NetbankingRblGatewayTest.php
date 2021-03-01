@@ -83,6 +83,36 @@ class NetbankingRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
+    public function testTpvPaymentForAccountNumPreseedingWith0()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_rbl_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest($data);
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals($this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals('0403040304', $gatewayEntity['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+    }
 
     public function testAuthorizeFailed()
     {

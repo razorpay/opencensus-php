@@ -2238,7 +2238,7 @@ trait Authorize
 
         // modify account number in gateway input for some banks
         // to be called only in case of upi tpv transactions
-        if (($payment->getMethod() == Method::UPI) and
+        if ((($payment->getMethod() == Method::UPI) or ($payment->isNetbanking() == true)) and
             ($payment->merchant->isTPVRequired() === true))
         {
             $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);

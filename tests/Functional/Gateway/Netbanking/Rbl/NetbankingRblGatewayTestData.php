@@ -42,6 +42,28 @@ return [
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
                 'bank'           => 'RATN',
+                'account_number' => '4030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 10000012,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testTpvPaymentForAccountNumPreseedingWith0' => [
+        'request' => [
+            'content' => [
+                'amount'         => 10000012,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'RATN',
                 'account_number' => '04030403040304',
             ],
             'method'    => 'POST',
