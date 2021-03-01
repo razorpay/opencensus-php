@@ -122,6 +122,8 @@ class UserRolePermissionsMap
                  Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
                  Permission::ACCOUNTING_PAYOUTS_SYNC,
                  Permission::ACCOUNTING_PAYOUTS_WAITLIST,
+
+                 Permission::CREATE_BANKING_ACCOUNT_TPV,
              ],
 
              BankingRole::ADMIN => [

@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\BankingAccountTpv;
 
+use RZP\Models\User\Role;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountTpv\Type;
 use RZP\Models\BankingAccountTpv\Entity;
 use RZP\Models\BankingAccountTpv\Status;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
@@ -122,7 +125,11 @@ class BankingAccountTpvTest extends TestCase
     {
         $attributes = $this->getTpvInput();
 
-        $this->fixtures->create('banking_account_tpv', $attributes);
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = $request['url'] . $tpv->getId();
 
         $this->ba->adminAuth();
 
@@ -144,11 +151,49 @@ class BankingAccountTpvTest extends TestCase
     {
         $attributes = $this->getTpvInput();
 
-        $this->fixtures->create('banking_account_tpv', $attributes);
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = $request['url'] . $tpv->getId();
 
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::REJECTED,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNull($tpv);
+    }
+
+    public function testAdminEditTpvStatusUpdate()
+    {
+        $attributes = $this->getTpvInput();
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = $request['url'] . $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'id'     => $tpv->getId(),
+                                      'status' => Status::REJECTED,
+                                  ]);
+
+        $this->assertNotNull($tpv);
     }
 
     public function testFetchMerchantTpvsWithFavInfo()
@@ -329,6 +374,88 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($tpv);
     }
 
+    public function testCreateTpvFromXDashboard()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $ownerRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $this->assertEquals($response[Entity::CREATED_BY], $merchant['name']);
+
+        $this->assertFalse(isset($response[Entity::FUND_ACCOUNT_VALIDATION_ID]));
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'status'               => Status::PENDING,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+                                  [
+                                      'id' => $tpv->fund_account_validation_id,
+                                  ]);
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+    }
+
+    public function testCreateTpvFromXDashboardAdminUser()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::ADMIN);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->enableRazorXTreatmentForFeature(
+            RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED, 'on');
+
+        $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'status'               => Status::PENDING,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+                                  [
+                                      'merchant_id' => '100000Razorpay',
+                                  ]);
+
+        $this->assertNull($fav);
+    }
 
     public function getFundAccountValidationInput()
     {
@@ -360,4 +487,21 @@ class BankingAccountTpvTest extends TestCase
         return array_merge($default, $input);
     }
 
+    public function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+                     ->setConstructorArgs([$this->app])
+                     ->setMethods(['getTreatment'])
+                     ->getMock();
+
+        $mock->method('getTreatment')
+             ->will(
+                 $this->returnCallback(
+                     function(string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                     {
+                         return $feature === $featureUnderTest ? $value : 'control';
+                     }));
+
+        $this->app->instance('razorx', $mock);
+    }
 }

@@ -20,11 +20,11 @@ class BankingAccountTpvController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function adminEditTpv()
+    public function adminEditTpv(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service()->adminEditTpv($input);
+        $data = $this->service()->adminEditTpv($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -50,6 +50,15 @@ class BankingAccountTpvController extends Controller
         $input = Request::all();
 
         $data = $this->service()->manualAutoApproveTpv($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createTpvFromXDashboard()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTpvFromXDashboard($input);
 
         return ApiResponse::json($data);
     }

@@ -88,6 +88,7 @@ class ApiTraceProcessor
         'beneficiaryContact',
         'password',
         'client_secret',
+        'payer_account_number',
     ];
 
     public function __construct($app)

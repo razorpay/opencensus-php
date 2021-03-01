@@ -22,11 +22,11 @@ class Service extends Base\Service
         return $this->core()->create($input);
     }
 
-    public function adminEditTpv(array $input)
+    public function adminEditTpv(string $id, array $input)
     {
         $this->validator->validateInput('admin_edit', $input);
 
-        return $this->core()->edit($input);
+        return $this->core()->edit($id, $input);
     }
 
     public function fetchMerchantTpvs(): array
@@ -44,4 +44,10 @@ class Service extends Base\Service
         return $this->core()->manualAutoApproveTpv($input);
     }
 
+    public function createTpvFromXDashboard($input)
+    {
+        $this->validator->validateInput('merchant_dashboard_create', $input);
+
+        return $this->core()->createTpvFromXDashboard($input);
+    }
 }

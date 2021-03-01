@@ -185,6 +185,9 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyAuth() === true)
         {
             $attributes[self::BANK_NAME] = IFSC::getBankName($attributes[Entity::PAYER_IFSC]);
+
+            //Fund account validation id is not required to expose at X dashboard
+            unset($attributes[self::FUND_ACCOUNT_VALIDATION_ID]);
         }
     }
 

@@ -10,9 +10,12 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 class Core extends Base\Core
@@ -21,6 +24,8 @@ class Core extends Base\Core
 
     const BANKING_ACCOUNT_TPV_CREATE = 'banking_account_tpv_create_';
 
+    const RZP_MERCHANT_ID            = '100000Razorpay';
+
     public function __construct()
     {
         parent::__construct();
@@ -28,9 +33,9 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input)
+    public function create(array $input, string $message = TraceCode::ADMIN_CREATE_TPV)
     {
-        $this->trace->info(TraceCode::ADMIN_CREATE_TPV, $input);
+        $this->trace->info($message, $input);
 
         $this->duplicateTpvCheckAndPullFavId($input);
 
@@ -46,16 +51,13 @@ class Core extends Base\Core
         return $tpv->toArrayPublic();
     }
 
-    public function edit(array $input)
+    public function edit(string $id, array $input)
     {
+        $tpvId = Entity::verifyIdAndSilentlyStripSign($id);
+
+        $tpv = $this->repo->banking_account_tpv->findOrFail($tpvId);
+
         $this->trace->info(TraceCode::ADMIN_EDIT_TPV, $input);
-
-        $tpv = $this->repo->banking_account_tpv->fetchTpvOnMerchantBalanceAccountNumberIfsc($input);
-
-        if (empty($tpv) === true)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TPV_NOT_EXISTS);
-        }
 
         $tpv->edit($input, 'admin_edit');
 
@@ -240,6 +242,65 @@ class Core extends Base\Core
             'total_count'   => $totalCount,
             'failed_count'  => $failedCount,
             'success_count' => $successCount,
+        ];
+    }
+
+    public function createTpvFromXDashboard(array $input)
+    {
+        //create fav request
+        $fav = $this->initiatePennyTesting($input);
+
+        if($fav !== null)
+        {
+            $input[Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav->getId();
+        }
+
+        //populate fields required for creating a tpv and status will be pending since ops has to validate.
+        $input[Entity::MERCHANT_ID] = $this->merchant->getId();
+        $input[Entity::STATUS]      = Status::PENDING;
+        $input[Entity::CREATED_BY]  = $this->merchant->getName();
+
+        //re using create tpv function
+        return $this->create($input, TraceCode::CREATE_TPV_X_DASHBOARD);
+    }
+
+    public function initiatePennyTesting(array $input)
+    {
+        try
+        {
+            $favInput = $this->generateFavInput($input);
+
+            //using rzp merchant instead of actual merchant to avoid fund account validation charges
+            $rzpMerchant = $this->repo->merchant->findOrFail(self::RZP_MERCHANT_ID);
+
+            return (new FundAccount\Validation\Core())->create($favInput, $rzpMerchant);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::TPV_FUND_ACCOUNT_VALIDATION_FAILURE,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                ]);
+        }
+    }
+
+    public function generateFavInput(array $input)
+    {
+        return [
+            FundAccountValidation::FUND_ACCOUNT => [
+                FundAccountEntity::ACCOUNT_TYPE => 'bank_account',
+                FundAccountEntity::DETAILS      => [
+                    BankAccountEntity::ACCOUNT_NUMBER => $input[Entity::PAYER_ACCOUNT_NUMBER],
+                    BankAccountEntity::NAME           => $input[Entity::PAYER_NAME],
+                    BankAccountEntity::IFSC           => $input[Entity::PAYER_IFSC],
+                ],
+            ],
+            FundAccountValidation::AMOUNT       => '100',
+            FundAccountValidation::CURRENCY     => 'INR',
+            FundAccountValidation::NOTES        => []
         ];
     }
 }

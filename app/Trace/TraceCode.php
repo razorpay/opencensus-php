@@ -3774,6 +3774,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_APPROVED_TPV_MERCHANTS_BULK                    = 'AUTO_APPROVED_TPV_MERCHANTS_BULK';
     const AUTO_APPROVE_TPV_MERCHANT_REQUEST                   = 'AUTO_APPROVE_TPV_MERCHANT_REQUEST';
     const AUTO_APPROVE_TPV_MERCHANT_FAILURE                   = 'AUTO_APPROVE_TPV_MERCHANT_FAILURE';
+    const CREATE_TPV_X_DASHBOARD                              = 'CREATE_TPV_X_DASHBOARD';
+    const TPV_FUND_ACCOUNT_VALIDATION_FAILURE                 = 'TPV_FUND_ACCOUNT_VALIDATION_FAILURE';
 
     // Merchant Attribute
     const MERCHANT_ATTRIBUTE_EVENT                            = 'MERCHANT_ATTRIBUTE_EVENT';

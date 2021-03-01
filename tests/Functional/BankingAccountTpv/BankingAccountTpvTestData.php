@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankingAccountTpv;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -119,7 +120,7 @@ return [
 
     'testAdminEditTpv' => [
         'request'  => [
-            'url'     => '/admin/tpv/edit',
+            'url'     => '/admin/tpv/edit/',
             'method'  => 'patch',
             'content' => [
                 'merchant_id'          => '10000000000000',
@@ -147,12 +148,12 @@ return [
 
     'testAdminEditTpvInvalidAccountNumber' => [
         'request'   => [
-            'url'     => '/admin/tpv/edit',
+            'url'     => '/admin/tpv/edit/',
             'method'  => 'patch',
             'content' => [
                 'merchant_id'          => '10000000000000',
                 'balance_id'           => '10000000000000',
-                'payer_account_number' => '98711120003',
+                'payer_account_number' => '9871',
                 'status'               => Status::REJECTED,
                 'remarks'              => 'Morphed docs',
                 'payer_ifsc'           => 'CITI0000006',
@@ -162,14 +163,36 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_NOT_EXISTS,
+                    'description' => 'The payer account number must be between 5 and 40 characters.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_NOT_EXISTS,
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdminEditTpvStatusUpdate' => [
+        'request'  => [
+            'url'     => '/admin/tpv/edit/',
+            'method'  => 'patch',
+            'content' => [
+                'status'               => Status::REJECTED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::REJECTED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
         ],
     ],
 
@@ -210,4 +233,50 @@ return [
         ],
     ],
 
+    'testCreateTpvFromXDashboard' => [
+        'request'  => [
+            'url'     => '/merchant/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::PENDING,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
+
+    'testCreateTpvFromXDashboardAdminUser' => [
+        'request'  => [
+            'url'     => '/merchant/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

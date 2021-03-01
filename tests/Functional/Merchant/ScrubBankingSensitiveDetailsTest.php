@@ -5,6 +5,7 @@ namespace Functional\Merchant;
 use Illuminate\Routing\Router;
 use RZP\Trace\ApiTraceProcessor;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\BankingAccountTpv\Status;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -222,6 +223,42 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
         $expectedResponse = [
             'context' => [
                 'account_number' => "4012888888881881"
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testSensitiveDataTpvCreate()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('admin_tpv_create');
+
+        $record = [
+            'context' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ]
+        ];
+
+        $updatedRecord = $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'SCRUBBED(8)',
+                'payer_account_number' => 'SCRUBBED(14)',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
             ]
         ];
 

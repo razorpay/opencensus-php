@@ -2283,11 +2283,11 @@ class Route
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
-        'admin_tpv_edit'                          => ['patch',   'admin/tpv/edit',                                          'BankingAccountTpvController@adminEditTpv'                     ],
+        'admin_tpv_edit'                          => ['patch',   'admin/tpv/edit/{id}',                                     'BankingAccountTpvController@adminEditTpv'                     ],
         'merchant_fetch_tpvs'                     => ['get',     'merchant/tpvs',                                           'BankingAccountTpvController@fetchMerchantTpvs'                ],
         'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'         ],
         'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
-
+        'merchant_tpv_create'                     => ['post',    'merchant/tpv/create',                                     'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
     ];
 
@@ -3630,6 +3630,7 @@ class Route
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs',
+        'merchant_tpv_create',
 
         'care_service_dashboard_proxy',
     ];
@@ -5506,6 +5507,7 @@ class Route
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs'                          => '*',
+        'merchant_tpv_create'                          => Permission::CREATE_BANKING_ACCOUNT_TPV,
     ];
 
     public static $direct = [
@@ -6850,6 +6852,7 @@ class Route
         'admin_tpv_edit',
         'admin_fetch_tpvs',
         'merchant_fetch_tpvs',
+        'merchant_tpv_create',
         'admin_merchants_tpvs_create',
     ];
 
