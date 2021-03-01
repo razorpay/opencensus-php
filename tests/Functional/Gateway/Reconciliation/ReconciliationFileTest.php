@@ -12,6 +12,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Services\Mock\Scrooge;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Refund;
+use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Http\UploadedFile;
@@ -2952,6 +2953,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment2['gateway_captured']);
 
         $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $payment['reference2']);
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 

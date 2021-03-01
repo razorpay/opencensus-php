@@ -394,6 +394,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             [
                 'info_code'  => Base\InfoCode::RECON_CPS_JOB_DISPATCH,
                 'payment_id' => $this->payment->getId(),
+                'data'       => $data
             ]
         );
     }

@@ -394,7 +394,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::COLUMN_ARN];
     }
 
-    protected function getReconRrn($row)
+    protected function getReferenceNumber($row)
     {
         return $row[self::COLUMN_RRN] ?? null;
     }
@@ -494,7 +494,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getInputForForceAuthorize($row)
     {
         return [
-            Hitachi\Entity::RRN                 => $this->getReconRrn($row),
+            Hitachi\Entity::RRN                 => $this->getReferenceNumber($row),
             Hitachi\Entity::AUTH_ID             => $this->getAuthCode($row),
             Hitachi\Entity::MERCHANT_REFERENCE  => $this->payment->getId(),
         ];
