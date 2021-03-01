@@ -14,6 +14,7 @@ use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -129,7 +130,22 @@ class EnachNpciNetbanking extends Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'target'        => 'enach_npci_netbanking',
+                ]
+            );
+        }
     }
 
     public function createFile($data)

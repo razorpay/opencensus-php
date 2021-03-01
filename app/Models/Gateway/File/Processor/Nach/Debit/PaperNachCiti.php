@@ -17,6 +17,7 @@ use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Enach\Citi\FieldsLength;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Enach\Citi\HeadingsLength;
 use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Gateway\Enach\Citi\Fields as Fields;
@@ -246,13 +247,6 @@ class PaperNachCiti extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
-        $mailData = $this->formatDataForMail($files);
-
-        $type = static::GATEWAY . '_' . static::STEP;
-        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
-
-        Mail::queue($mailable);
-
         $data = [
             BeamService::BEAM_PUSH_FILES   => $fileInfo,
             BeamService::BEAM_PUSH_JOBNAME => BeamConstants::CITIBANK_NACH_FILE_JOB_NAME
@@ -269,8 +263,28 @@ class PaperNachCiti extends Debit\Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NACH]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null)) {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'gateway_file' => $this->gatewayFile->getId(),
+                    'target' => 'paper_nach_citi',
+                ]
+            );
+        }
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
     }
 
     protected function getFileToWriteNameWithoutExt(array $data)

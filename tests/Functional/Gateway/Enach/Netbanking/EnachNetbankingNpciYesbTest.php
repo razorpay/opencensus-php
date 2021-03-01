@@ -68,10 +68,6 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
             ],
             $enach
         );
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationMultipleUtilityCode()
@@ -125,10 +121,6 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminal, $directTerminalFile);
         $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminal, $sharedTerminalFile);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationMultipleSponsorBanks()
@@ -173,10 +165,6 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
 
         $this->fixtures->terminal->disableTerminal($this->sharedCitiTerminal['id']);
 

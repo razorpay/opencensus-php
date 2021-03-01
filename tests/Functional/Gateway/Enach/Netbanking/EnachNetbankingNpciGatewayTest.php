@@ -17,6 +17,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\Mock\BeamService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Order\Entity as Order;
@@ -412,6 +413,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
+        $this->mockBeam();
+
         $content = $this->startTest();
 
         $content = $content['items'][0];
@@ -479,10 +482,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationInvalidUMRN()
@@ -580,10 +579,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationMultipleUtilityCode()
@@ -597,6 +592,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->ba->adminAuth();
 
         Queue::fake();
+
+        $this->mockBeam();
 
         $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
 
@@ -646,10 +643,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminalSummary, $directTerminalSummaryFile);
         $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminalDebit, $sharedTerminalDebitFile);
         $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminalSummary, $sharedTerminalSummaryFile);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationOnNonWorkingDay()
@@ -691,6 +684,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
+        $this->mockBeam();
+
         $content = $this->startTest($this->testData['testDebitFileGeneration']);
 
         $content = $content['items'][0];
@@ -724,10 +719,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotFalse(strpos($fileContent, $citiTerminalPaymentResponse['razorpay_payment_id']));
 
         $this->assertFalse(strpos($fileContent, $yesbTerminalPaymentResponse['razorpay_payment_id']));
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
 
         $this->fixtures->terminal->disableTerminal($yesbTerminal['id']);
 
@@ -1129,5 +1120,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->runRequestResponseFlow($testData, function() use ($orderInput) {
             $this->createOrder($orderInput);
         });
+    }
+
+    public function mockBeam()
+    {
+        $beamServiceMock = $this->getMockBuilder(BeamService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['beamPush'])
+            ->getMock();
+
+        $beamServiceMock->method('beamPush')
+            ->will($this->returnCallback(
+                function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+                {
+//                    $this->assertEquals('firstdata_pares_data_push', $pushData['job_name']);
+//
+//                    $this->assertEquals(2, count($pushData['files']));
+
+                    return [
+                        'failed' => null,
+                        'success' => $pushData['files'],
+                    ];
+                }));
+
+        $this->app['beam']->setMockService($beamServiceMock);
+
     }
 }
