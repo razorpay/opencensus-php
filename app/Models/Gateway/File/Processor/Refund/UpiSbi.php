@@ -101,7 +101,12 @@ class UpiSbi extends Base
                 $paymentId = $row['gateway']['merchant_reference'];
             }
 
-            $gatewayAmt = $row['refund']['gateway_amount'];
+            $gatewayAmt = null;
+
+            if (isset($row['refund']['gateway_amount']) === true)
+            {
+                $gatewayAmt = $row['refund']['gateway_amount'];
+            }
 
             // skipping this row if gatewayAmount is 0
             // as we are marking such refund as processed
