@@ -1715,16 +1715,26 @@ class Gateway extends Base\Gateway
 
         $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
 
+        // icici will send merchant_tran_id in format vpa|tr e.g. rzp.payto00001111222|ref1234
+        $vpaAndMerchantTranId = explode('|', $input[Fields::MERCHANT_TRAN_ID]);
+
+        $transactionReference = $vpaAndMerchantTranId[1] ?? null;
+
+        $vpa = explode('.', $vpaAndMerchantTranId[0]);
+        
+        $vpa = sizeof($vpa) > 1 ? $vpa[1] : $vpa[0];
+
         $upiTransferData = [
             UpiTransfer\GatewayResponseParams::AMOUNT                => $amount,
             UpiTransfer\GatewayResponseParams::GATEWAY               => $this->gateway,
             UpiTransfer\GatewayResponseParams::PAYER_VPA             => $input[Fields::PAYER_VA],
-            UpiTransfer\GatewayResponseParams::PAYEE_VPA             => $this->terminal->getVirtualUpiRoot() . $input[Fields::MERCHANT_TRAN_ID] . '@' . $this->terminal->getVirtualUpiHandle(),
+            UpiTransfer\GatewayResponseParams::PAYEE_VPA             => $this->terminal->getVirtualUpiRoot() . $vpa . '@' . $this->terminal->getVirtualUpiHandle(),
             UpiTransfer\GatewayResponseParams::TRANSACTION_TIME      => $input[Fields::TXN_COMPLETION_DATE],
             UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
             UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[Fields::BANK_RRN],
             UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[Fields::BANK_RRN],
             UpiTransfer\GatewayResponseParams::PAYER_IFSC            => '',
+            UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $transactionReference,
         ];
 
         return [

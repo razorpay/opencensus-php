@@ -191,6 +191,27 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testProcessIciciUpiTransferPaymentWithTr()
+    {
+        $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
+        $this->assertEquals('xyz1234567', $upiTransfer['transaction_reference']);
+
+        $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+    }
+
     public function testProcessIciciUpiTransferPaymentIgnoreCase()
     {
         $this->processUpiTransferIgnoreCase();
