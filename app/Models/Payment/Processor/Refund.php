@@ -2408,6 +2408,17 @@ trait Refund
 
         if ($payment->isUpiAndAmountMismatched() === true )
         {
+            $this->trace->info(
+                TraceCode::RECON_AMOUNT_MISMATCH_PAYMENT,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'payment_amount'    => $payment->getAmount(),
+                    'gateway_amount'    => $payment->paymentMeta->getGatewayAmount(),
+                    'mismatch_amount'   => $payment->paymentMeta->getMismatchAmount(),
+                    'mismatch_reason'   => $payment->paymentMeta->getMismatchAmountReason(),
+                    'gateway'           => $payment->getGateway()
+                ]);
+
             $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
         }
 

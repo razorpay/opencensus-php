@@ -321,6 +321,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_FILE_GENERATE_REQUEST                          = 'REFUND_FILE_GENERATE_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS_REQUEST              = 'RECONCILE_CANCELLED_TRANSACTIONS_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE             = 'RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE';
+    const RECON_AMOUNT_MISMATCH_PAYMENT                         = 'RECON_AMOUNT_MISMATCH_PAYMENT';
     const ORDER_REFUNDED                                        = 'ORDER_REFUNDED';
     const REFUND_AUTHORIZE_BULK                                 = 'REFUND_AUTHORIZE_BULK';
     const REFUND_PROCESSED                                      = 'REFUND_PROCESSED';
