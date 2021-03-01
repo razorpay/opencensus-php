@@ -164,11 +164,13 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        $redactedInput = $this->getRedactedInput($input);
+
         $this->trace->info(
             TraceCode::INITIATE_TERMINAL_ONBOARDING_REQUEST,
             [
                 'merchant_id'    => $merchant->getId(),
-                'input'          => $input,
+                'input'          => $redactedInput,
             ]);
 
         (new Validator)->validateInput(self::ONBOARDING_INPUT, $input);
@@ -235,4 +237,15 @@ class Service extends Base\Service
         return $input;
     }
 
+    protected function getRedactedInput(array $input):array
+    {
+        $redactedInput = $input;
+
+        if(isset($redactedInput["secrets"]) === true)
+        {
+            unset($redactedInput["secrets"]);
+        }
+
+        return $redactedInput;
+    }
 }
