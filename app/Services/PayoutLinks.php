@@ -504,9 +504,23 @@ class PayoutLinks
     {
         $this->rzpModeCheck();
 
+        $jsonInput = array_pull($input, 'json_data', null);
+
+        if ($jsonInput === null )
+        {
+            return ['message' => 'empty data'];
+        }
+
+        $parsedData = json_decode($jsonInput, true);
+
+        if ($parsedData == null)
+        {
+            return ['message' => 'json could not be decoded'];
+        }
+
         $url = $this->getConstructedUrl(self::ADMIN_ACTIONS);
 
-        return $this->makeRequest($url, $input);
+        return $this->makeRequest($url, $parsedData);
     }
 
     public function createBatch(array $input, string $batchId, string $merchantId)

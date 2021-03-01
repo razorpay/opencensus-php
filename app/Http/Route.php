@@ -5215,7 +5215,7 @@ class Route
 
         'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
-        'payout_links_admin_auth_api'                 => Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
+        'payout_links_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'salesforce_event'                            => '*',
         'salesforce_opportunity_details'              => '*',
 

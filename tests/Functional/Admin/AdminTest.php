@@ -18,6 +18,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
@@ -1254,7 +1255,7 @@ class AdminTest extends TestCase
     public function testPayoutLinkAdminRouteHitsServiceMethod()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
-            'payout_link_admin_auth_execute'
+            Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE
         ]);
 
         $this->ba->adminAuth('test', $token);
@@ -1273,7 +1274,7 @@ class AdminTest extends TestCase
     public function testPayoutLinkPullStatusRouteReachesServiceWithPermission()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
-            'payout_link_admin_auth_execute'
+            Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE
         ]);
 
         $this->ba->adminAuth('test', $token);
