@@ -5662,7 +5662,6 @@ class RefundTest extends TestCase
 
         $paymentEntity = $this->getDbLastEntity('payment');
 
-        s($paymentEntity);
         $scroogeInput = [];
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
