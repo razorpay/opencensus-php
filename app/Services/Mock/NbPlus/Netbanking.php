@@ -6,10 +6,13 @@ use App;
 use Requests_Response;
 
 use RZP\Models\Payment;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Services\NbPlus\Netbanking as NetbankingBase;
 
 class Netbanking extends NetbankingBase
 {
+    use DbEntityFetchTrait;
+
     static $staticCallbackRouteMap = [
         Payment\Gateway::NETBANKING_KVB    => 'gateway_payment_static_callback_post',
         Payment\Gateway::NETBANKING_CANARA => 'gateway_payment_callback_canara_post',
@@ -49,20 +52,44 @@ class Netbanking extends NetbankingBase
           'items'  => []
         ];
 
-        foreach ($request['payment_ids'] as $paymentId)
+        if(array_key_exists('payment_ids', $request))
         {
-            $response['items'][$paymentId] = [
-                'gateway_transaction_id' => str_random(),
-                'bank_transaction_id'    => str_random(),
-                'bank_account_number'    => str_random(),
-                'additional_data'        => [
-                'customer_id'            => str_random(),
-                'credit_account_number'  => str_random()
-                ],
-                'gateway_status'         => 'SUC'
-            ];
+            foreach ($request['payment_ids'] as $paymentId)
+            {
+                $response['items'][$paymentId] = [
+                    'gateway_transaction_id' => str_random(),
+                    'bank_transaction_id'    => str_random(),
+                    'bank_account_number'    => str_random(),
+                    'additional_data'        => [
+                        'customer_id'            => str_random(),
+                        'credit_account_number'  => str_random()
+                    ],
+                    'gateway_status'         => 'SUC',
+                    'verification_id'        => str_random(),
+                    'payment_id'             => $paymentId,
+                ];
+            }
         }
+        else
+        {
+            foreach ($request['verification_ids'] as $verificationId)
+            {
+                $paymentEntity = $this->getDbLastPayment();
 
+                $response['items'][$verificationId] = [
+                    'gateway_transaction_id' => str_random(),
+                    'bank_transaction_id'    => str_random(),
+                    'bank_account_number'    => str_random(),
+                    'additional_data'        => [
+                        'customer_id'            => str_random(),
+                        'credit_account_number'  => str_random()
+                    ],
+                    'gateway_status'         => 'SUC',
+                    'verification_id'        => $verificationId,
+                    'payment_id'             => $paymentEntity['id'],
+                ];
+            }
+        }
         return $response;
     }
 

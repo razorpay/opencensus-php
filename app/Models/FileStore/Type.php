@@ -135,6 +135,8 @@ class Type
 
     const UBI_NETBANKING_REFUND             = 'ubi_netbanking_refund';
 
+    const KOTAK_CORP_NETBANKING_REFUND      = 'kotak_corp_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -340,6 +342,7 @@ class Type
             self::AUBL_NETBANKING_CLAIM,
             self::AUBL_NETBANKING_REFUND,
             self::AUBL_NETBANKING_COMBINED,
+            self::KOTAK_CORP_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -492,6 +495,7 @@ class Type
         self::AUBL_NETBANKING_CLAIM,
         self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
+        self::KOTAK_CORP_NETBANKING_REFUND,
     ];
 
     /**

@@ -56,6 +56,7 @@ class Constants
     const DCB              = 'dcb';
     const UBI              = 'ubi';
     const AUBL             = 'aubl';
+    const KOTAK_CORP       = 'kotak_corp';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
@@ -133,6 +134,7 @@ class Constants
             self::UBI,
             self::IBK,
             self::AUBL,
+            self::KOTAK_CORP,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -232,6 +234,7 @@ class Constants
             self::UBI         => ['ubi-netbanking-refunds@razorpay.com'],
             self::IBK         => ['ibk-netbanking-refunds@razorpay.com'],
             self::AUBL        => ['ausf-netbanking-refunds@razorpay.com'],
+            self::KOTAK_CORP  => ['kotak-corp-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

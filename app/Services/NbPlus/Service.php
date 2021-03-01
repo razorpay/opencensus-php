@@ -238,6 +238,7 @@ class Service
             'gateway.callback_url'          => 'content.input.callbackUrl',
             'gateway.static_callback_data'  => 'content.input.gateway_data',
             'callback_type.s2s'             => 'content.input.s2s',
+            'verification_id'               => 'content.input.verification_id'
         ];
 
         $requestTrace = [];

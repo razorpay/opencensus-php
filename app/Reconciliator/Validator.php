@@ -157,6 +157,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_JUSPAY              => ["/We have done the settlement for BAJAJ FINANCE/"],
         RequestProcessor\Base::NETBANKING_JSB          => ["/Dear Sir, Please find the details of payments made by our customers./"],
         RequestProcessor\Base::NETBANKING_IOB          => ["/This is a End Of Day Report email/"],
+        RequestProcessor\Base::NETBANKING_KOTAK_V2     => ["/GBM CORPPG RECON REPORT FOR ENTITYCODE/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -181,6 +182,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_FSB           => 1,
         RequestProcessor\Base::NETBANKING_IOB           => 1,
         RequestProcessor\Base::NETBANKING_JKB           => 1,
+        RequestProcessor\Base::NETBANKING_KOTAK_V2      => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -726,6 +728,19 @@ class Validator extends Base\Core
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_IOB);
+
+        return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateNetbankingKotakV2Email(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_KOTAK_V2);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_KOTAK_V2);
 
         return ($validSubject and $validAttachmentCount);
     }

@@ -82,6 +82,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::CRED,
         RequestProcessor\Base::NETBANKING_UBI,
         RequestProcessor\Base::NETBANKING_AUSF,
+        RequestProcessor\Base::NETBANKING_KOTAK_V2,
     ];
 
     /**
@@ -949,6 +950,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewayUtr = $this->getGatewayUtr($row);
 
+        $gatewayUniqueId = $this->getGatewayUniqueId($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID             => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
@@ -962,6 +965,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             BaseReconciliate::AUTH_CODE              => trim($authCode),
             BaseReconciliate::ARN                    => trim($arn),
             BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
+            BaseReconciliate::GATEWAY_UNIQUE_ID      => $gatewayUniqueId,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.

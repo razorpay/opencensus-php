@@ -641,6 +641,19 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * This is a uniqueId generated for gateway. It is similar to paymentId. This is used in netbanking kotak gateway.
+     * This created as bank wants uniqueId to be numeric with randoms.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayUniqueId(array $row)
+    {
+        return null;
+    }
+
+
+    /**
      * Method check if FORCE_UPDATE for argument fields
      * is passed in MANUAL_DETAILS.
      *

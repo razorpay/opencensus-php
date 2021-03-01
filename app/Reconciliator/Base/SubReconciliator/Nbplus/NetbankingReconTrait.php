@@ -17,6 +17,7 @@ trait NetbankingReconTrait
         $customerId          = null;
         $debitAccountNumber  = null;
         $creditAccountNumber = null;
+        $verificationId      = null;
 
         if (isset($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true)
         {
@@ -29,11 +30,17 @@ trait NetbankingReconTrait
             $customerId = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS][Base\Reconciliate::CUSTOMER_ID] ?? null;
         }
 
+        if (isset($rowDetails[BaseReconciliate::GATEWAY_UNIQUE_ID]) === true)
+        {
+            $verificationId = $rowDetails[BaseReconciliate::GATEWAY_UNIQUE_ID];
+        }
+
         $data = [
             'payment_id' => $this->payment->getId(),
             NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
             NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
             NetbankingService::BANK_ACCOUNT_NUMBER    => $debitAccountNumber,
+            NetbankingService::VERIFICATION_ID        => $verificationId,
             NetbankingService::ADDITIONAL_DATA        => [
                 NetbankingService::CREDIT_ACCOUNT_NUMBER  => $creditAccountNumber,
                 NetbankingService::CUSTOMER_ID            => $customerId,

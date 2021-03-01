@@ -46,6 +46,7 @@ class Base extends BaseProcessor
         Constants::UBI,
         Constants::IBK,
         Constants::AUBL,
+        Constants::KOTAK_CORP,
     ];
 
     public function fetchEntities(): PublicCollection

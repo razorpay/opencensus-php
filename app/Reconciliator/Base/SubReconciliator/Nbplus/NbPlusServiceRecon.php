@@ -33,7 +33,8 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
         NetbankingService::BANK_TRANSACTION_ID,
         NetbankingService::BANK_ACCOUNT_NUMBER,
         NetbankingService::CREDIT_ACCOUNT_NUMBER,
-        NetbankingService::CUSTOMER_ID
+        NetbankingService::CUSTOMER_ID,
+        NetbankingService::VERIFICATION_ID,
     ];
 
     protected function updateAndFetchGatewayPayment()

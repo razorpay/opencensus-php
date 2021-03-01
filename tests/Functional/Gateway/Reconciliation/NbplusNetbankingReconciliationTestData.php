@@ -107,4 +107,22 @@ return [
         'MERCHANT_ACCT_NO'              => '\'2121201131751367',
         'MERCHANT_URL'                  => 'https://www.razorpay.com',
     ],
+
+    'testKotakV2SuccessRecon' => [
+        'Entity Code'               => '123456',
+        'Merchant Code'             => '123456',
+        'MCC Code'                  => '6211',
+        'Party Name'                => 'RAZORPAY',
+        'Party CRN'                 => 'INR',
+        'FROM APAC'                 => '123456',
+        'Transaction Amount'        => '500.00',
+        'Charges'                   => '0',
+        'GST'                       => '0',
+        'Net Settlement Amount'     => '500.00',
+        'Request Date'              => Carbon::today()->format("dmY"),
+        'Entity Reference No'       => '',
+        'Bank Reference No'         => '1234',
+        'Payment Date'              => Carbon::today()->format("dmY"),
+        'fc_process_date'           => Carbon::today()->format("dmY")
+    ],
 ];
