@@ -44,6 +44,14 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    // This is used to fetch Order based on ID without validating MID. Will return all entities since it is for admin route
+    public function fetchOrderDetailByIdAdmin($id)
+    {
+        $data = $this->service()->fetchByIdForAdmin($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchPayments($id)
     {
         $input = Request::all();

@@ -757,7 +757,8 @@ class Route
         'order_create'                             => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
         'order_fetch'                              => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                        => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
-        'order_fetch_by_id_internal'               => ['get',      'orders_internal/{id}',                           'OrderController@fetchOrderDetailById'                            ],
+        'order_fetch_by_id_internal'               => ['get',      'orders_internal/{id}',                           'OrderController@fetchOrderDetailById'                              ],
+        'order_fetch_by_id_internal_admin'         => ['get',      'orders_internal_admin/{id}',                     'OrderController@fetchOrderDetailByIdAdmin'                         ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
@@ -3026,6 +3027,7 @@ class Route
         'payment_meta_fetch_by_payment_id_action',
         'payment_fetch_by_id_internal',
         'order_fetch_by_id_internal',
+        'order_fetch_by_id_internal_admin',
         'user_details',
 
         'reward_expire_cron',
