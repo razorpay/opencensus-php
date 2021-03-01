@@ -138,6 +138,7 @@ class SupportBody extends Component {
     const { notifyCount, isOpened, onToggle, isCallEnabled } = this.props;
     const { handleClick, openDashboardGuide } = this;
     let shouldDisable = !isWorkingDay();
+    let shouldChatDisable = !isChatAvailable();
 
     return (
       <div class={classList('support-body', isOpened && 'active')}>
@@ -191,11 +192,11 @@ class SupportBody extends Component {
             ) > -1 && this.props.supportFlags.show_chat ? (
               <li
                 class={`support-item p-all chat ${
-                  shouldDisable && notifyCount < 1 ? 'disabled' : ''
+                  shouldChatDisable && notifyCount < 1 ? 'disabled' : ''
                 }`}
                 onClick={() => handleClick('chat')}
               >
-                Chat with us <small class="help-content">(9am-6pm, working days)</small>
+                Chat with us <small class="help-content">(9am-8pm, working days)</small>
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
                   {shouldDisable && notifyCount < 1
@@ -239,6 +240,10 @@ class SupportBody extends Component {
 
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isWorkingDay;
+};
+
+const isChatAvailable = () => {
+  return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
 };
 
 export default SupportBody;
