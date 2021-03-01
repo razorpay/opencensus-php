@@ -57,6 +57,7 @@ return [
         'Amount'                                => '500.00',
         'Trasanction Date (MM/DD/YY)'           => Carbon::today()->format("m/d/y"),
         'RazorPay(Hardcoded Value)'             => '',
+        'Payment Id'                            => '',
         'Account Number'                        => '123456789',
     ],
     'testCbiSuccessRecon' => [

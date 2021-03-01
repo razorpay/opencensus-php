@@ -13,12 +13,14 @@ class Reconciliate extends Base\Reconciliate
     const PAYMENT_ID                = 'RazorPay(Hardcoded Value)';
     const ACCOUNT_NUMBER            = 'Account Number';
     const AMOUNT                    = 'Amount';
+    const PAYMENT_ID2               = 'Payment Id';
 
     public static $columnHeaders = [
         self::BANK_REFERENCE_NUMBER,
         self::AMOUNT,
         self::PAYMENT_DATE,
         self::PAYMENT_ID,
+        self::PAYMENT_ID2,
         self::ACCOUNT_NUMBER,
     ];
 
@@ -29,7 +31,7 @@ class Reconciliate extends Base\Reconciliate
 
     public function getDelimiter()
     {
-        return '|';
+        return '^';
     }
 
     protected function getTypeName($fileName)
@@ -45,19 +47,18 @@ class Reconciliate extends Base\Reconciliate
 
         $encryptedText = file_get_contents($filePath);
 
+        $encryptedTextArray = explode("\n", trim($encryptedText));
+
         $aes = new AES(AES::MODE_ECB);
 
-        $aes->setKey($config['recon_key']);
+        $aes->setKey(substr($config['recon_key'], 0, 16));
 
-        $decryptedText = $aes->decrypt(base64_decode($encryptedText));
+        foreach ($encryptedTextArray as $encrypt){
+            $decryptedText[] = $aes->decrypt(base64_decode($encrypt));
+        }
 
-        if ($decryptedText !== false || $decryptedText !== "")
-        {
-            file_put_contents($filePath, $decryptedText);
-        }
-        else
-        {
-            file_put_contents($filePath, $encryptedText);
-        }
+        $decryptedTextArray = implode("\n", $decryptedText);
+
+        file_put_contents($filePath, $decryptedTextArray);
     }
 }
