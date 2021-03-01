@@ -120,7 +120,7 @@ return [
 
     'testAdminEditTpv' => [
         'request'  => [
-            'url'     => '/admin/tpv/edit/',
+            'url'     => '/admin/tpv/',
             'method'  => 'patch',
             'content' => [
                 'merchant_id'          => '10000000000000',
@@ -148,7 +148,7 @@ return [
 
     'testAdminEditTpvInvalidAccountNumber' => [
         'request'   => [
-            'url'     => '/admin/tpv/edit/',
+            'url'     => '/admin/tpv/',
             'method'  => 'patch',
             'content' => [
                 'merchant_id'          => '10000000000000',
@@ -176,7 +176,7 @@ return [
 
     'testAdminEditTpvStatusUpdate' => [
         'request'  => [
-            'url'     => '/admin/tpv/edit/',
+            'url'     => '/admin/tpv/',
             'method'  => 'patch',
             'content' => [
                 'status'               => Status::REJECTED,
@@ -235,7 +235,7 @@ return [
 
     'testCreateTpvFromXDashboard' => [
         'request'  => [
-            'url'     => '/merchant/tpv/create',
+            'url'     => '/merchant/tpv',
             'method'  => 'post',
             'content' => [
                 'balance_id'           => '10000000000000',
@@ -260,7 +260,7 @@ return [
 
     'testCreateTpvFromXDashboardAdminUser' => [
         'request'  => [
-            'url'     => '/merchant/tpv/create',
+            'url'     => '/merchant/tpv',
             'method'  => 'post',
             'content' => [
                 'balance_id'           => '10000000000000',
