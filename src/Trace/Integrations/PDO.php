@@ -31,16 +31,18 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
+    static $db_host = "";
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load()
+    public static function load($db_host="")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
 
+        PDO::$db_host = $db_host;
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
 
@@ -92,6 +94,7 @@ class PDO implements IntegrationInterface
     {
         // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
         // example $dsn: mysql:host=localhost;dbname=testdb
+        // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
 
         $db_system = '';
         $connection_params = [];
@@ -116,8 +119,12 @@ class PDO implements IntegrationInterface
         if (array_key_exists('port', $connection_params)){
             $attributes['net.peer.port'] =  $connection_params['port'];
         }
+
         if (array_key_exists('host', $connection_params)){
             $attributes['net.peer.name'] =  $connection_params['host'];
+        }
+        else if (array_key_exists('unix_socket', $connection_params)){
+            $attributes['net.peer.name'] = PDO::$db_host;
         }
 
         $attributes += [
