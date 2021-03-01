@@ -104,7 +104,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::VALID_ENROLL_NUMBER,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -249,7 +249,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::VALID_NOT_ENROLL_NUMBER,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -298,7 +298,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_VISA_ENROLLED,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -347,7 +347,7 @@ class HitachiGatewayTest extends TestCase
         $payment['card'] = [
             'number'       => '4012010000000007',
             'expiry_month' => '02',
-            'expiry_year'  => '21',
+            'expiry_year'  => '35',
             'cvv'          => 123,
             'name'         => 'Test Card'
         ];
@@ -390,7 +390,7 @@ class HitachiGatewayTest extends TestCase
         $payment['card'] = [
             'number'       => CardNumber::INTERNATIONAL_VISA_NE,
             'expiry_month' => '02',
-            'expiry_year'  => '21',
+            'expiry_year'  => '35',
             'cvv'          => 123,
             'name'         => 'Test Card'
         ];
@@ -428,7 +428,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_VISA,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -475,7 +475,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_MASTER,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -522,7 +522,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_MAESTRO,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
             ]
@@ -565,7 +565,7 @@ class HitachiGatewayTest extends TestCase
         $payment['card'] = [
                 'number'       => CardNumber::INVALID_ECI,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card'
         ];
@@ -829,7 +829,7 @@ class HitachiGatewayTest extends TestCase
                     'card' => [
                         'number'       => CardNumber::VALID_ENROLL_NUMBER,
                         'expiry_month' => '02',
-                        'expiry_year'  => '21',
+                        'expiry_year'  => '35',
                         'cvv'          => 123,
                         'name'         => 'Test Card'
                     ]
@@ -1047,7 +1047,7 @@ class HitachiGatewayTest extends TestCase
                     'card' => [
                         'number'       => CardNumber::VALID_ENROLL_NUMBER,
                         'expiry_month' => '02',
-                        'expiry_year'  => '21',
+                        'expiry_year'  => '35',
                         'cvv'          => 123,
                         'name'         => 'Test Card'
                     ]
@@ -1354,7 +1354,7 @@ class HitachiGatewayTest extends TestCase
             'card' => [
                 'number'       => CardNumber::UNKNOWN_ENROLLED,
                 'expiry_month' => '02',
-                'expiry_year'  => '21',
+                'expiry_year'  => '35',
                 'cvv'          => 123,
                 'name'         => 'Test Card',
                 'international' => true
