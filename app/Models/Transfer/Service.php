@@ -12,6 +12,7 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\ConnectionType;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
@@ -172,7 +173,7 @@ class Service extends Base\Service
 
         $input[Entity::STATUS] = Constant::FETCH_STATUS;
 
-        $transfers = $this->repo->transfer->fetch($input, $merchantId);
+        $transfers = $this->repo->transfer->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
 
         return $transfers->toArrayPublic();
     }

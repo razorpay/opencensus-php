@@ -7,7 +7,7 @@ use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
-
+use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -211,7 +211,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey());
+        $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey(), ConnectionType::DATA_WAREHOUSE);
 
         return $settlements->toArrayPublic();
     }
