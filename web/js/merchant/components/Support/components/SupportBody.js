@@ -58,7 +58,7 @@ class SupportBody extends Component {
           },
         });
         // if notifications pending, then enable chat
-        if (!isWorkingDay() && notifyCount < 1) {
+        if (!isChatAvailable() && notifyCount < 1) {
           return;
         }
 
@@ -199,7 +199,7 @@ class SupportBody extends Component {
                 Chat with us <small class="help-content">(9am-8pm, working days)</small>
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
-                  {shouldDisable && notifyCount < 1
+                  {shouldChatDisable && notifyCount < 1
                     ? 'Currently unavailable'
                     : 'For quick questions or help on dashboard'}
                 </small>
