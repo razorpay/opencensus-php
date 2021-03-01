@@ -6,7 +6,7 @@ import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
@@ -18,7 +18,7 @@ import WriteToUsPopup from './WriteToUsPopup';
 })
 class SupportBody extends Component {
   openDashboardGuide = (_) => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'help and support',
       actionName: 'clicked',
       screen: 'home page',
@@ -47,7 +47,7 @@ class SupportBody extends Component {
       }
 
       if (id === 'chat') {
-        analyticsTrack({
+        analyticsService.track({
           objectName: 'help and support',
           actionName: 'clicked',
           screen: 'home page',
@@ -66,7 +66,7 @@ class SupportBody extends Component {
         onChat();
         return;
       }
-      analyticsTrack({
+      analyticsService.track({
         objectName: 'help and support',
         actionName: 'clicked',
         screen: 'home page',
@@ -98,7 +98,7 @@ class SupportBody extends Component {
 
   handleFeedback = () => {
     const { onToggle } = this.props;
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'help and support',
       actionName: 'clicked',
       screen: 'home page',
@@ -120,7 +120,7 @@ class SupportBody extends Component {
   };
 
   handleFaqs = () => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'help and support',
       actionName: 'clicked',
       screen: 'home page',

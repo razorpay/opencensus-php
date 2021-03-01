@@ -22,7 +22,7 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const isPartialPayment = (props) => {
@@ -159,7 +159,7 @@ export default class RefundModal extends Component {
 
   componentDidMount() {
     if (this.props.payment && this.props.payment.id) {
-      analyticsTrack({
+      analyticsService.track({
         objectName: 'refund amount popup',
         actionName: 'rendered',
         screen: 'home page',
@@ -231,7 +231,7 @@ export default class RefundModal extends Component {
         this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
       } `,
     });
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'issue refund',
       actionName: 'clicked',
       screen: 'transactions',

@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DocsLink from 'merchant/components/DocsLink';
 import Button from 'common/new-ui/Button';
@@ -13,7 +13,7 @@ const Banner = (props) => {
   );
 
   const interestClicked = useCallback(() => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: `${props.product} Coming Soon Screen`,
       actionName: 'clicked',
       screen: 'Coming Soon',

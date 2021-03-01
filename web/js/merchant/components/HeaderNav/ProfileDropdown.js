@@ -21,7 +21,7 @@ import SwitchMerchant, {
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
@@ -54,7 +54,7 @@ export default class ProfileDropdown extends Component {
   };
 
   logout = () => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'logout',
       actionName: 'clicked',
       screen: 'home page',
@@ -68,7 +68,7 @@ export default class ProfileDropdown extends Component {
     return this.props
       .logout()
       .catch((e) => {
-        analyticsTrack({
+        analyticsService.track({
           objectName: 'logout',
           actionName: 'result',
           screen: 'home page',
@@ -82,7 +82,7 @@ export default class ProfileDropdown extends Component {
         console.error(e);
       })
       .then(() => {
-        analyticsTrack({
+        analyticsService.track({
           objectName: 'logout',
           actionName: 'result',
           screen: 'home page',
@@ -166,7 +166,7 @@ export default class ProfileDropdown extends Component {
                       <CustomClipboard
                         value={merchant.id}
                         onCopy={() => {
-                          analyticsTrack({
+                          analyticsService.track({
                             objectName: 'user dropdown',
                             actionName: 'clicked',
                             screen: 'home page',
@@ -211,7 +211,7 @@ export default class ProfileDropdown extends Component {
                       <a
                         target="_blank"
                         onClick={() => {
-                          analyticsTrack({
+                          analyticsService.track({
                             objectName: 'documentation',
                             actionName: 'clicked',
                             screen: 'home page',
@@ -266,7 +266,7 @@ export default class ProfileDropdown extends Component {
                 <button
                   class="btn btn-primary logout-btn"
                   onClick={() => {
-                    analyticsTrack({
+                    analyticsService.track({
                       objectName: 'user dropdown',
                       actionName: 'clicked',
                       screen: 'home page',

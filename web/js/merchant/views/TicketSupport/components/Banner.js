@@ -1,6 +1,6 @@
 import React from 'react';
 import { getEscalationType, getResponseArrivalType } from '../utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { statuses } from './data';
 
@@ -10,7 +10,7 @@ const Banner = ({ ticket }) => {
   const expectedResponseBy = moment(ticket.fr_due_by).format('HH:mm, DD MMM');
 
   const openGrievanceFlow = () => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'raise grievance',
       actionName: 'clicked',
       screen: 'support tickets',
@@ -37,7 +37,7 @@ const Banner = ({ ticket }) => {
   }
 
   if (ESCALATION_TYPE === 'able-to-escalate') {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'raise grievance',
       actionName: 'rendered',
       screen: 'support tickets',

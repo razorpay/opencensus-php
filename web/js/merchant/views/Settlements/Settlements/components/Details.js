@@ -9,12 +9,12 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import ShowWhen from 'merchant/components/ShowWhen';
 import React, { useEffect, useState } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 
 export default (props) => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
   useEffect(() => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'settlement details',
       actionName: 'fetched',
       screen: 'transactions',

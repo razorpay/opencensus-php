@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION, MIN_TIME_TO_REFRESH } from './data.js';
 import { getExpiryTime, getEscalationType } from '../utils';
@@ -83,7 +83,7 @@ export default class Conversations extends React.Component {
 
   trackRenderTicket = () => {
     const ticket = this.state.ticket;
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'show ticket details',
       actionName: 'rendered',
       screen: 'support tickets',

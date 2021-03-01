@@ -2,7 +2,7 @@ import React from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
 import { FOOTER_BUTTONS } from '../Constants';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
@@ -31,7 +31,7 @@ const SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer }) => (
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
       toggleSubmitLayer();
-      analyticsTrack({
+      analyticsService.track({
         objectName: 'SignUp',
         actionName: 'Submit L2 CTA Clicked',
         screen: 'home page',

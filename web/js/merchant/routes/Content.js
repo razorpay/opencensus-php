@@ -2,7 +2,7 @@ import React, { Component, Suspense } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
@@ -225,10 +225,8 @@ export default class Content extends Component {
   listenTrackEvents = () => {
     if (window.rzpTicketSystem) {
       window.rzpTicketSystem.addEventListener('track-event', function (data) {
-        analyticsTrack({
+        analyticsService.track({
           ...data.event,
-          objectName: data.event.objectName,
-          actionName: data.event.actionName,
           properties: {
             ...data.properties,
             ...getCommonAnalyticsProperties(window.rzp_user),

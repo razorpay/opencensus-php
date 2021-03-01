@@ -18,7 +18,7 @@ import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @withRouter
@@ -176,29 +176,26 @@ export default class PaymentDetailsContainer extends Component {
             eventAction: 'Capture - Payment',
             eventLabel: `payment_id=${payment.id}`,
           });
-          analyticsTrack({
+          analyticsService.track({
             objectName: 'capture payment confirmation popup',
             actionName: 'clicked',
             screen: 'home page',
             properties: {
               ...payment.analyticsPayload(),
               action: 'yes',
-              location: 'payments',
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           return this.props
             .capturePayment(payment)
             .then(() => {
-              analyticsTrack({
+              analyticsService.track({
                 objectName: 'capture payment',
                 actionName: 'status',
                 screen: 'home page',
                 properties: {
                   ...payment.analyticsPayload(),
-                  paymentStatus: payment.status,
-                  status: 'success',
-                  location: 'payments',
+                  requestStatus: 'success',
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
@@ -209,7 +206,7 @@ export default class PaymentDetailsContainer extends Component {
               });
             })
             .catch(({ errors }) => {
-              analyticsTrack({
+              analyticsService.track({
                 objectName: 'capture payment',
                 actionName: 'status',
                 screen: 'home page',
@@ -217,7 +214,6 @@ export default class PaymentDetailsContainer extends Component {
                   ...payment.analyticsPayload(),
                   status: 'failure',
                   failureReason: errors[0],
-                  location: 'payments',
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });

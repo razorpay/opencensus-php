@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import debounce from 'common/utils/debounce';
 import takeScreenshot from 'common/utils/screenshot';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
@@ -211,7 +211,7 @@ class Traffic extends Component {
   }
 
   handleImageExportClick(e) {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'download chart',
       actionName: 'clicked',
       screen: 'home page',

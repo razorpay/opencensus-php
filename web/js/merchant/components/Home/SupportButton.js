@@ -1,6 +1,6 @@
 import React from 'react';
 import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) => {
@@ -11,7 +11,7 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
         status: 'Merchant_support',
       }),
     );
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'act.contact_support',
       actionName: 'click',
       screen: 'On contact support button click ',

@@ -5,7 +5,7 @@ import BatchList from './components/BatchList';
 import { validateRefundBatch, createRefundBatch } from 'merchant/reducers/batches';
 import { fetchRefundBatches as fetchAll } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
@@ -31,7 +31,7 @@ export default class BatchListContainer extends ListContainer {
         gaEvents={gaEvents}
         paginate={this.paginate}
         onSubmit={(args) => {
-          analyticsTrack({
+          analyticsService.track({
             objectName: 'batch refunds search',
             actionName: 'clicked',
             screen: 'transactions',

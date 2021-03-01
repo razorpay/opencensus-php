@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
   const handleActivationClick = () => {
     onActivate();
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'SignUp',
       actionName: 'Activate Account CTA Clicked',
       screen: 'home page',
@@ -35,7 +35,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
 
   const handleTryOutClick = () => {
     onClose();
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'SignUp',
       actionName: 'Try Dashboard CTA Clicked',
       screen: 'home page',

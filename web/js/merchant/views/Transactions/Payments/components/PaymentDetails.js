@@ -19,7 +19,7 @@ import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import React, { useEffect } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default (props) => {
@@ -45,7 +45,7 @@ export default (props) => {
 
   useEffect(() => {
     if (payment.id) {
-      analyticsTrack({
+      analyticsService.track({
         objectName: 'payment details',
         actionName: 'fetched',
         screen: 'transactions',
@@ -54,7 +54,7 @@ export default (props) => {
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
-      analyticsTrack({
+      analyticsService.track({
         objectName: 'payment details sidebar',
         actionName: 'rendered',
         screen: 'transactions',
@@ -88,7 +88,7 @@ export default (props) => {
               <div class="payments-manual-actions">
                 <button
                   onClick={() => {
-                    analyticsTrack({
+                    analyticsService.track({
                       objectName: 'capture payment',
                       actionName: 'clicked',
                       screen: 'home page',
@@ -97,7 +97,7 @@ export default (props) => {
                         ...getCommonAnalyticsProperties(window.rzp_user),
                       },
                     });
-                    analyticsTrack({
+                    analyticsService.track({
                       objectName: 'action items on sidebar',
                       actionName: 'clicked',
                       screen: 'home page',

@@ -5,7 +5,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import OrdersListFilter from 'merchant/views/Transactions/Orders/components/OrdersListFilter';
 import { fetchOrders as fetchAll } from 'merchant/reducers/collection';
 import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui/item/pair';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
@@ -43,7 +43,7 @@ export default class OrdersListContainer extends ListContainer {
           form="orderListFilter"
           count={this.state.count}
           onSubmit={(args) => {
-            analyticsTrack({
+            analyticsService.track({
               objectName: 'orders search',
               actionName: 'clicked',
               screen: 'transactions',
@@ -55,25 +55,21 @@ export default class OrdersListContainer extends ListContainer {
             });
             this.search(args)
               .then(() => {
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'orders search',
                   actionName: 'result',
                   screen: 'transactions',
                   properties: {
-                    id: args.id,
-                    orderStatus: args.status,
-                    emailFilled: Boolean(args.email),
-                    notesFilled: Boolean(args.notes),
-                    count: args.count,
+                    ...args,
                     resultsReturned: true,
-                    status: 'success',
+                    requestStatus: 'success',
                     location: 'orders',
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
               })
               .catch((er) => {
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'orders search',
                   actionName: 'result',
                   screen: 'transactions',

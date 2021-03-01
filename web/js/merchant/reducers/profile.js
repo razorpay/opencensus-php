@@ -1,7 +1,7 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import store from 'merchant/store';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
@@ -33,7 +33,7 @@ export const fetchTlsVersion = () => {
     }).then((d) => {
       const result = d.data.replace('TLSv', '');
       if (result === '1.0' || result === '1.1') {
-        analyticsTrack({
+        analyticsService.track({
           objectName: 'TLS-banner',
           actionName: 'displayed',
           screen: 'home page',

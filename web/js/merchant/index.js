@@ -7,7 +7,7 @@ import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import LocalStorageService from 'common/utils/localStorage';
 import 'common/utils/polyfills';
 import store from './store';
@@ -23,12 +23,12 @@ import '../../dashboard.font';
   }
 })();
 
-// analyticsTrack.init({
-//   lumberjackAppName: 'pg-dashboard',
-//   lumberjackApiKey: window.LUMBERJACK_API_KEY,
-//   lumberjackApiUrl: window.LUMBERJACK_API_URL,
-//   segmentApiKey: window.SEGMENT_API_KEY,
-// });
+analyticsService.init({
+  lumberjackAppName: 'pg-dashboard',
+  lumberjackApiKey: window.LUMBERJACK_API_KEY,
+  lumberjackApiUrl: window.LUMBERJACK_API_URL,
+  segmentApiKey: window.SEGMENT_API_KEY,
+});
 
 render(
   <Provider store={store}>

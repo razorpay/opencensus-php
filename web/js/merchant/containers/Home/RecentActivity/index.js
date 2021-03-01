@@ -6,7 +6,7 @@ import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/comp
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -89,7 +89,7 @@ export default class RecentActivity extends Component {
     e.preventDefault();
 
     const tabName = e.target.getAttribute('name');
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'recent activity',
       actionName: 'viewed',
       screen: 'home page',
@@ -133,7 +133,7 @@ export default class RecentActivity extends Component {
       eventAction: 'Enable Now',
       eventLabel: `Recent Activity | Enable Now`,
     });
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'instant refund',
       actionName: 'clicked',
       screen: 'home page',
@@ -240,7 +240,7 @@ export default class RecentActivity extends Component {
                 target="_blank"
                 to={`/${selectedTab}`}
                 onClick={() => {
-                  analyticsTrack({
+                  analyticsService.track({
                     objectName: selectedTab,
                     actionName: 'clicked',
                     screen: 'home page',

@@ -8,7 +8,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import * as RewardsListActions from 'merchant/reducers/checkoutRewards';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import QueueConfirm from './QueueConfirm';
@@ -102,7 +102,7 @@ export default class Rewards extends Component {
   }
 
   analytics = (action, id) => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: `Reward ${action}`,
       actionName: 'clicked',
       screen: 'Checkout Rewards',
@@ -200,7 +200,7 @@ export default class Rewards extends Component {
             }
 
             if (response.status === 'queue') {
-              analyticsTrack({
+              analyticsService.track({
                 objectName: 'Reward',
                 actionName: 'moved to queue',
                 screen: 'Checkout Rewards',
@@ -212,7 +212,7 @@ export default class Rewards extends Component {
               });
               message = 'Reward added into queue successfully.';
             } else if (response.status === 'live') {
-              analyticsTrack({
+              analyticsService.track({
                 objectName: 'Reward',
                 actionName: 'moved to live',
                 screen: 'Checkout Rewards',
@@ -339,7 +339,7 @@ export default class Rewards extends Component {
               <div>Your customers will get below coupons after payment.</div>
               <span
                 onClick={() => {
-                  analyticsTrack({
+                  analyticsService.track({
                     objectName: 'Preview Checkout',
                     actionName: 'clicked',
                     screen: 'Checkout Rewards',

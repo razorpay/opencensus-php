@@ -8,7 +8,7 @@ import LoaderDots from 'common/ui/LoaderDots';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { refundId, amount, createdAt, refundSpeed, refundStatus } from 'common/ui/item/pair';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 /*
@@ -125,7 +125,7 @@ export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} })
             <button
               class="btn btn-default"
               onClick={() => {
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'action items on sidebar',
                   actionName: 'clicked',
                   screen: 'home page',

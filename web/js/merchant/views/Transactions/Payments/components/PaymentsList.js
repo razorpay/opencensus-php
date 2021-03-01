@@ -6,7 +6,7 @@ import EmptyList from 'merchant/components/EmptyList';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -44,15 +44,12 @@ export default class PaymentsListContainer extends ListContainer {
           eventAction: 'Search - Payments',
           eventLabel: label,
         });
-        analyticsTrack({
+        analyticsService.track({
           objectName: 'payments search',
           actionName: 'clicked',
           screen: 'transactions',
           properties: {
-            paymentId: params.id,
-            paymentStatus: params.status,
-            emailFilled: Boolean(params.email),
-            notesFilled: Boolean(params.notes),
+            ...params,
             location: 'payments',
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
@@ -91,33 +88,26 @@ export default class PaymentsListContainer extends ListContainer {
           onSubmit={(args) => {
             this.search(args)
               .then(() => {
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'payments search',
                   actionName: 'result',
                   screen: 'transactions',
                   properties: {
-                    paymentId: args.id,
-                    paymentStatus: args.status,
-                    emailFilled: Boolean(args.email),
-                    notesFilled: Boolean(args.notes),
-                    count: args.count,
+                    ...args,
                     resultsReturned: true,
-                    status: 'success',
+                    requestStatus: 'success',
                     location: 'payments',
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
               })
               .catch((er) => {
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'payments search',
                   actionName: 'result',
                   screen: 'transactions',
                   properties: {
-                    paymentId: args.id,
-                    paymentStatus: args.status,
-                    emailFilled: Boolean(args.email),
-                    notesFilled: Boolean(args.notes),
+                    ...args,
                     resultsReturned: false,
                     status: 'failure',
                     location: 'payments',

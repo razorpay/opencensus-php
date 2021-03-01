@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { activationDuration } from 'merchant/helpers/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { trackGoToActivationFromError } from '../../ga';
@@ -77,7 +77,7 @@ export default class ActivationCard extends Component {
                     clickSource: 'Dashboard_CTA',
                   }),
                 );
-                analyticsTrack({
+                analyticsService.track({
                   objectName: 'SignUp',
                   actionName: 'Activate Account_Progress Bar CTA Clicked',
                   screen: 'home page',

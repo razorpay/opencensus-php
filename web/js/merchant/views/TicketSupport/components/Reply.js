@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { Fragment } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -48,7 +48,7 @@ export default class Reply extends React.Component {
       eventLabel: label,
     });
 
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'ticket reply',
       actionName: 'clicked',
       screen: 'support tickets',

@@ -10,21 +10,17 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'common/ui/item/pair';
 import Definition from 'common/ui/Definition';
 import React, { useEffect, useState } from 'react';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 export default (props) => {
   let { order, payments, isLoading, statusMsg } = props;
   useEffect(() => {
-    analyticsTrack({
+    analyticsService.track({
       objectName: 'order details',
       actionName: 'fetched',
       screen: 'transactions',
       properties: {
-        orderId: order.id,
-        orderAmount: order.amount,
-        orderCurrency: order.currency,
-        orderStatus: order.status,
-        createdAt: order.created_at,
+        order: order,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
