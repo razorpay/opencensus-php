@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Batch\Processor\Nach\Register;
 
-use Symfony\Component\DomCrawler\Crawler;
-
 use RZP\Gateway\Netbanking;
 use RZP\Models\Customer\Token;
 use RZP\Models\FileStore\Type;
@@ -19,17 +17,17 @@ class NachIcici extends Base
     {
         $filePath = $entry['xml'];
 
-        $crawler = new Crawler();
+        $xmlObject = simplexml_load_file($filePath);
 
-        $crawler->addXmlContent(file_get_contents($filePath));
+        $acceptDetails = $xmlObject->MndtAccptncRpt->UndrlygAccptncDtls;
 
-        $paymentId = (($crawler->filter('OrgnlMsgInf > MsgId'))->text());
+        $paymentId = (string)$acceptDetails->OrgnlMsgInf->MsgId;
 
-        $umrn = ($crawler->filter('OrgnlMndtId'))->text();
+        $umrn = (string)$acceptDetails->OrgnlMndt->OrgnlMndtId;
 
-        $accepted = ($crawler->filter('Accptd'))->text();
+        $accepted = (string)$acceptDetails->AccptncRslt->Accptd;
 
-        $gatewayErrorCode = ($crawler->filter('RjctRsn > Prtry'))->text();
+        $gatewayErrorCode = (string)$acceptDetails->AccptncRslt->RjctRsn->Prtry;
 
         return [
             self::GATEWAY_TOKEN         => $umrn,
