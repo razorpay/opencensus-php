@@ -323,6 +323,8 @@ const App = () => {
                       appName="dashboard"
                       header={showBanner && <MobileBanner />}
                       onRouteChange={handleRouteChange}
+                      authClientId={window.OAUTH_CLIENT_ID}
+                      isOneTapExpOn={window.isOneTapExpOn}
                     />
                   </AbsoluteView>
                   <DesktopOnlyView>

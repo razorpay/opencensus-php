@@ -11,6 +11,11 @@ function NewAuthEntry() {
     script.defer = true;
     document.documentElement.appendChild(script);
 
+    const gAuthOneTapscript = document.createElement('script');
+    gAuthOneTapscript.src = 'https://accounts.google.com/gsi/client';
+    gAuthOneTapscript.async = true;
+    document.documentElement.appendChild(gAuthOneTapscript);
+
     window.loadHubspot = true;
   }
   return `${executeJS.toString()} executeJS()`;
