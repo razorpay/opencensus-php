@@ -3,7 +3,7 @@
 </p>
 
 <p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978; margin: 20px 0;">
-    As we are a Payment Gateway facilitating payments, the authority to refund lies with the bank. You would need to reach out to your bank to file a dispute.
+    As we are only a Payment Gateway facilitating payments, please reach out to the merchant directly or your bank to file a dispute.
 </p>
 
 <p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978; margin: 20px 0;">

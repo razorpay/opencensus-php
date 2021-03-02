@@ -1267,25 +1267,43 @@ class DisputeTest extends TestCase
 
     public function testFreshdeskWebhookPaymentFailedCase()
     {
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
         $payment = $this->fixtures->create('payment:failed');
 
         $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply'], ['postTicketReply'], true, true, false, false, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
     public function testFreshdeskWebhookPaymentNotCapturedCase()
     {
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
         $payment = $this->fixtures->create('payment:authorized');
 
         $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
     public function testFreshdeskWebhookPaymentFullyRefundedCase()
     {
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
         $payment = $this->fixtures->create('payment:captured');
 
         $this->refundPayment($payment->getPublicId());
 
         $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
     public function testFreshdeskWebhookPaymentAlreadyDisputedCase()
@@ -1294,18 +1312,32 @@ class DisputeTest extends TestCase
 
         $this->disputePayment($payment);
 
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
         $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
     public function testFreshdeskWebhookMerchantDisabledCase()
     {
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
         $payment = $this->fixtures->create('payment:captured');
 
-        // reduce funds
-        $merchantBalance = $this->fetchBalance();
-        $this->fixtures->edit('balance', $merchantBalance['id'], ['balance' => $payment->getAmount() - 1]);
+        $merchantActivated = $payment->merchant->isActivated();
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => false]);
 
         $this->freshdeskFlow(true, false, ['updateTicketV2', 'postTicketReply'], [], true, false, true, true, false, Subcategory::DISPUTE_A_PAYMENT_FD, $payment);
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => $merchantActivated]);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
     public function testFreshdeskWebhookCreateDisputeCase()
@@ -1323,7 +1355,13 @@ class DisputeTest extends TestCase
             ],
         ];
 
+        $merchantActivated = $payment->merchant->isActivated();
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => true]);
+
         $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply', 'fetchTicketById'], [], true, true, false, true, true, Subcategory::DISPUTE_A_PAYMENT_FD, $payment, $changeTicketGroupToCsExtraArgs);
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => $merchantActivated]);
 
         $reasonCode = 'goods_service_not_provided';
         $dispute = $this->getLastEntity('dispute', true);
@@ -1354,7 +1392,13 @@ class DisputeTest extends TestCase
             'gateway_code' => 'RZP03',
         ]);
 
+        $merchantActivated = $payment->merchant->isActivated();
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => true]);
+
         $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply', 'fetchTicketById'], [], true, true, false, true, true, Subcategory::REPORT_FRAUD, $payment, $changeTicketGroupToCsExtraArgs, $reasonCode);
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => $merchantActivated]);
 
         $reasonCode = 'potential_fraud';
         $dispute = $this->getLastEntity('dispute', true);
@@ -1783,7 +1827,6 @@ class DisputeTest extends TestCase
 
         $this->app->instance('freshdesk_client', $freshdeskClientMock);
     }
-
 
     protected function expectFreshdeskCall(string $method, array $args)
     {

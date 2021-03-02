@@ -93,10 +93,7 @@ class Processor
 
                 $this->handlePaymentAlreadyDisputed();
             }
-            else if (
-                ($this->merchant->isFundsOnHold() === true || $this->merchant->isActivated() === false) &&
-                ($this->payment->getAmount() > $this->merchant->primaryBalance->getBalance())
-            )
+            else if ($this->merchant->isFundsOnHold() === true || $this->merchant->isActivated() === false)
             {
                 $this->trace->info(TraceCode::FRESHDESK_DISPUTE_TICKET_ACTION, ['action' => Constants::ACTION_MERCHANT_DISABLED]);
 
