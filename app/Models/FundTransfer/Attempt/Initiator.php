@@ -396,7 +396,7 @@ class Initiator extends Base\Core
 
         try
         {
-            AttemptsReconJob::dispatch($this->mode, $attempt->getId());
+            AttemptsReconJob::dispatch($this->mode, $attempt->getId())->delay(180);
 
             $this->trace->info(
                 TraceCode::FTA_RECON_JOB_DISPATCHED,
