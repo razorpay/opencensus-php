@@ -1,4 +1,4 @@
-name: Trigger Roast On PR Approval
+name: Backmerge Master and Trigger Roast On PR Approval
 
 on:
   pull_request_review:
@@ -6,36 +6,41 @@ on:
 
 jobs:
   pull_request_approved:
-    # skip Rebase if PR isn't approved && branch isn't hotfix
+    # Trigger back-merge master when PR is approved and feature branch isn't hotfix branch
     if: github.event.review.state == 'approved' && !contains(github.event.pull_request.head.ref, 'hotfix')
     runs-on: [self-hosted]
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: razorpay/checkout-action@v2
+     # Applying label approved here to use the same in other workflow - pr_workflow to run the back-merge action when 
+     # any commits pushed post PR approval
+    - name: Apply approved label
+      uses: actions/github-script@v3
       with:
-        fetch-depth: 0
-        persist-credentials: false
-    - name: rebase-branch
-      id: rebase
-      uses: cirrus-actions/rebase@1.4
-      env:
-        GITHUB_TOKEN:  ${{ secrets.GIT_ACTION_TOKEN }}
+        github_token: ${{ github.token }}
+        script: |
+          github.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.payload.repository.owner.login,
+            repo: context.payload.repository.name,
+            labels: ['approved']
+          })
+    # Back-merge master branch into feature post PR approval
+    - name: backmerge-master
+      id: backmerge
+      uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
+      with:
+        type: now
+        from_branch: master
+        target_branch: ${{ github.event.pull_request.head.ref }}
+        github_token: ${{ secrets.CI_BOT_TOKEN }}
     # If Rebase failed, then comment in PR to resolve manually    
     - name: Comments
       if: ${{failure()}}
       uses: mshick/add-pr-comment@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       with:
         message: |
-          **Conflict Error Please resolve manually**
+          **Conflict Error Please back-merge manually**
         allow-repeats: true
-    - name: Validate skipRoast Flag for PR
-      uses: actions/github-script@0.9.0
-      id: skip-roast
-      with:
-        result-encoding: string
-        script: |
-          const regex = /skiproast.*true/i;
-          skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
-          return Boolean(skipFlag)

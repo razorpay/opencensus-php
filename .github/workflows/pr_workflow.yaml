@@ -10,6 +10,17 @@ jobs:
     steps:
     - name: checkout
       uses: razorpay/checkout-action@v2
+    # Trigger back-merge master if any commit pushed in an approved PR and branch isn't hotfix  
+    - name: backmerge-master
+    # Get the Label from label list and check if approved label applied on the PR
+      if: contains(github.event.pull_request.labels.*.name, 'approved') && !contains(github.event.pull_request.head.ref, 'hotfix')
+      id: backmerge
+      uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
+      with:
+        type: now
+        from_branch: master
+        target_branch: ${{ github.event.pull_request.head.ref }}
+        github_token: ${{ secrets.CI_BOT_TOKEN }}  
     - name: Validate skipRoast Flag for PR
       uses: actions/github-script@0.9.0
       id: skip-roast
