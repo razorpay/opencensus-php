@@ -223,6 +223,10 @@ class Constants
     // ignore customer contact details check for CAW Auth Link
     const CAW_IGNORE_CUSTOMER_CHECK = 'caw_ignore_customer_check';
 
+    // feature flag for the CAW and Subscriptions UPI for FrontEnd
+    const CAW_UPI                         = 'caw_upi';
+    const SUBSCRIPTION_UPI                = 'subscription_upi';
+
     /**
      * Only partners having this feature will be able to onboard the submerchants using the account apis
      */
@@ -868,6 +872,8 @@ class Constants
         self::DISABLE_TPV_FLOW                => true,
         self::ENABLE_TPV_FLOW                 => true,
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
+        self::CAW_UPI                         => true,
+        self::SUBSCRIPTION_UPI                => true,
     ];
 
     // Entity type constants
