@@ -65,6 +65,7 @@ class Kernel extends HttpKernel {
         'jwt'           => 'App\Http\Middleware\JWTValidate',
         'auth.oauth'    => 'App\Http\Middleware\OAuth',
         'guest.generic' => 'App\Http\Middleware\GuestGeneric',
+        'set_x_frame'   => 'App\Http\Middleware\SetXFrameOptionsHeader',
     ];
 
 }

@@ -56,7 +56,7 @@ Route::group(['middleware' => ['web']], function () {
     // Org
     Route::get('/org', 'AdminController@getOrg');
 
-    Route::group(['prefix' => 'admin'], function () {
+    Route::group(['prefix' => 'admin', 'middleware'  =>  ['set_x_frame']], function () {
         Route::post('/signin', 'AdminController@postSignin');
         Route::get('/', 'AdminController@getIndex');
     });
@@ -153,7 +153,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/user/verify_contact', 'UserController@verifyContact');
     });
 
-    Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
+    Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame']], function()
     {
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin');
