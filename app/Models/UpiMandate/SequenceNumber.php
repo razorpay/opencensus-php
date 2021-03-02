@@ -4,6 +4,13 @@ namespace RZP\Models\UpiMandate;
 
 use Carbon\Carbon;
 
+/**
+ * Class SequenceNumber
+ *
+ * This class contains logic to calculate sequence number between any two dates for a given frequency.
+ * It is currently used to calculate cycle number for recurring transactions.
+ * For more details and test scenarios, refer https://docs.google.com/document/d/1CVPl4tY7qsnlS6K7l0GM-jYTY4DmKHzR8ZBLdPdfLW8
+ */
 class SequenceNumber
 {
     /**
@@ -44,8 +51,6 @@ class SequenceNumber
 
     /**
      * Calculates sequence number.
-     * For details, refer https://docs.google.com/document/d/1CVPl4tY7qsnlS6K7l0GM-jYTY4DmKHzR8ZBLdPdfLW8
-     *
      * @param string $frequency frequency of the mandate
      * @return int|null
      */
@@ -91,8 +96,22 @@ class SequenceNumber
             case Frequency::MONTHLY:
                 return $this->monthly();
 
-            //Currently Sequence Number Algorithm is implemented ONLY for frequencies Daily and Monthly.
-            //For others : Current Implementation always returns diff as 0 and sequence number as One
+            case Frequency::WEEKLY:
+                return $this->weekly();
+
+            case Frequency::BIMONTHLY:
+                return $this->bimonthly();
+
+            case Frequency::QUARTERLY:
+                return $this->quarterly();
+
+            case Frequency::HALF_YEARLY:
+                return $this->halfYearly();
+
+            case Frequency::YEARLY:
+                return $this->yearly();
+
+             //For all other freq : Return diff as 0 and sequence number as 1
             default:
                 return 0;
         }
@@ -102,22 +121,46 @@ class SequenceNumber
 
     protected function daily(): int
     {
-        return ($this->toDate)->diffInDays($this->fromDate);
+        return ($this->toDate->endOfDay())->diffInDays($this->fromDate->startOfDay());
     }
 
-    /*Carbon takes absolute day to day cycle difference for a month.
-                        startDate:       CurrDate        Carbon::diffInMonths     Expected
-         Happy case :  5-2-2019          6-3-2019            1                      1
-         Edge case :   5-2-2019          4-3-2019            0                      1
-    */
     protected function monthly(): int
     {
-        if (($this->fromDate->day) > ($this->toDate->day))
-        {
-            return ($this->toDate)->diffInMonths($this->fromDate) + 1;
-        }
+        return ($this->toDate->endOfMonth())->diffInMonths($this->fromDate->startOfMonth());
+    }
 
-        return ($this->toDate)->diffInMonths($this->fromDate);
+    protected function weekly(): int
+    {
+        return ($this->toDate->endOfWeek())->diffInWeeks($this->fromDate->startOfWeek());
+    }
+
+    protected function bimonthly(): int
+    {
+        $diff = $this->monthly();
+
+        return floor($diff/2);
+    }
+
+    protected function quarterly(): int
+    {
+        $diff = $this->monthly();
+
+        return floor($diff/3);
+    }
+
+
+    protected function halfYearly(): int
+    {
+        $diff = $this->monthly();
+
+        return floor($diff/6);
+    }
+
+    protected function yearly(): int
+    {
+        $diff = $this->monthly();
+
+        return floor($diff/12);
     }
 
     private function validateInput(): bool
