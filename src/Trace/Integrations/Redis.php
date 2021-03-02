@@ -61,7 +61,6 @@ class Redis implements IntegrationInterface
                     'db.type' => 'redis',
                     'db.system' => 'redis',
                     'db.connection_string' =>  $connection_str,
-                    'redis.connection' => $connection_str,
                     'span.kind' => Span::KIND_CLIENT
                 ],
                 'kind' => Span::KIND_CLIENT,
