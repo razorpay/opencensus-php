@@ -8,6 +8,8 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Metric extends Base\Core
 {
@@ -22,15 +24,21 @@ class Metric extends Base\Core
     const FUND_ACCOUNT_VALIDATION_CREATED                = 'fund_account_validation_created';
     const FUND_ACCOUNT_VALIDATION_FAILED                 = 'fund_account_validation_failed';
 
-    const FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS               = 'fund_account_validation_created_to_completed_duration_seconds.histogram';
-    const FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS                  = 'fund_account_validation_created_to_failed_duration_seconds.histogram';
+    const FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS  = 'fund_account_validation_created_to_completed_duration_seconds.histogram';
+    const FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS     = 'fund_account_validation_created_to_failed_duration_seconds.histogram';
 
     public function pushCreatedMetrics(string $fundAccountType)
     {
-        try {
+        try
+        {
             $dimensions = [
                 "fund_account_type" => $fundAccountType,
             ];
+
+           $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_CREATE_METRIC_PUSHED,
+                $dimensions
+            );
 
             $this->trace->count(self::FUND_ACCOUNT_VALIDATION_CREATED, $dimensions);
         }
@@ -42,7 +50,6 @@ class Metric extends Base\Core
                 TraceCode::FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION,
                 [
                     'fundAccountType' => $fundAccountType,
-
                 ]);
         }
     }
