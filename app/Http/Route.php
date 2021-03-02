@@ -2289,6 +2289,7 @@ class Route
         'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
+        'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
     ];
 
     public static $public = [
@@ -3062,6 +3063,8 @@ class Route
         'nach_batch_process',
 
         'loc_cron',
+
+        'care_service_cron_proxy',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -5948,6 +5951,7 @@ class Route
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
             'loc_cron',
+            'care_service_cron_proxy'
         ],
 
         'subscriptions' => [

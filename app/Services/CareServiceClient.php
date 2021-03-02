@@ -35,6 +35,11 @@ class CareServiceClient
         return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
     }
 
+    public function cronProxyRequest($path, $input)
+    {
+        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+    }
+
     protected function sendRequestAndProcessResponse($path, $method, $content)
     {
         $this->app['trace']->info(TraceCode::CARE_SERVICE_REQUEST, [
@@ -57,7 +62,7 @@ class CareServiceClient
 
         $headers = array_merge($headers, $this->getHeaders());
 
-        $content = json_encode($content);
+        $content = json_encode($content, JSON_FORCE_OBJECT);
 
         return Requests::request($url, $headers, $content, $method, $options);
     }

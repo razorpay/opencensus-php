@@ -4,13 +4,13 @@
 namespace Functional\Care;
 
 use Mockery;
+use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\ServerErrorException;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CareServiceTest extends TestCase
 {
+    const AUTH                                = 'auth';
     const API_ROUTE                           = 'api_route';
     const EXPECTED_CARE_SERVICE_ROUTE         = 'expected_care_service_route';
     const EXPECTED_CARE_SERVICE_REQUEST       = 'expected_care_service_request';
@@ -74,12 +74,12 @@ class CareServiceTest extends TestCase
             });
     }
 
-    public function testDashboardProxy()
-    {
-        $this->ba->proxyAuth();
 
+    public function testProxy()
+    {
         $testCases = [
             [
+                self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
@@ -93,32 +93,56 @@ class CareServiceTest extends TestCase
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
-                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
-                self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                    'merchant' => [
-                        'id' => '10000000000000',
-                    ],
-                ],
+                self::AUTH                                => 'cron',
+                self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/InitSlots',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/InitSlots',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
-                    'code' => 'internal',
-                    'msg'  => 'api service returned 400 Bad Request',
+                    'key' => 'value',
                 ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 400,
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
-                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/GetSlots',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/GetSlots',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
-                    'code' => 'internal',
-                    'msg'  => 'api service returned 500 Server Error',
+                    'key' => 'value',
                 ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 500,
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/GetCallback',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/GetCallback',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
         ];
 
@@ -131,20 +155,22 @@ class CareServiceTest extends TestCase
                 $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS]
             );
 
+            $this->testData[__FUNCTION__]['request']['url'] = $testCase[self::API_ROUTE];
+
             $this->testData[__FUNCTION__]['response']['content']     = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_BODY];
             $this->testData[__FUNCTION__]['response']['status_code'] = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS];
 
-            if ($testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS] >= 400)
+            switch ($testCase[self::AUTH])
             {
-                if ($testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS] >= 500)
-                {
-                    $this->expectException(ServerErrorException::class);
-                }
-                else if ($testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS] >= 400)
-                {
-                    $this->expectException(BadRequestException::class);
-                }
+                case 'proxy':
+                    $this->ba->proxyAuth();
+                    break;
+                case 'cron':
+                    $this->ba->cronAuth();
+                    break;
             }
+
+            $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, $this->testData[__FUNCTION__]);
 
             $this->startTest();
         }
@@ -153,6 +179,48 @@ class CareServiceTest extends TestCase
     public function testDashboardProxyInvalidRoute()
     {
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxy400Exception()
+    {
+        $this->ba->proxyAuth();
+
+        $this->expectCareServiceRequestAndRespondWith(
+            'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+            [
+                'merchant' => [
+                    'id' => '10000000000000',
+                    ],
+            ],
+            [
+                'code' => 'internal',
+                'msg'  => 'error message',
+            ],
+            400
+        );
+
+        $this->startTest();
+    }
+
+    public function testProxy500Exception()
+    {
+        $this->ba->proxyAuth();
+
+        $this->expectCareServiceRequestAndRespondWith(
+            'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+            [
+                'merchant' => [
+                    'id' => '10000000000000',
+                ],
+            ],
+            [
+                'code' => 'internal',
+                'msg'  => 'error message',
+            ],
+            500
+        );
 
         $this->startTest();
     }

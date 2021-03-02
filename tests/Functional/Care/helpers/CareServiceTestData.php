@@ -19,10 +19,9 @@ return [
         ],
     ],
 
-    'testDashboardProxy' => [
+    'testProxy' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
         ],
         'response' => [
             'content' => [
@@ -49,6 +48,45 @@ return [
             'class'               => \RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
         ],
+    ],
 
+    'testProxy400Exception' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'error message',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testProxy500Exception' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'SERVER_ERROR',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\IntegrationException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
     ],
 ];
