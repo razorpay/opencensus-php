@@ -24,7 +24,9 @@ class MerchantRiskAlertClient
     // Request timeout parameter applies after connection is established.
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
-    const NOTIFY_NON_RISKY_MERCHANT_URL = "/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/NotifyNonRiskyMerchant";
+    const NOTIFY_NON_RISKY_MERCHANT_URL = '/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/NotifyNonRiskyMerchant';
+
+    const CREATE_MERCHANT_ALERT_URL = '/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/Create';
 
     /**
      * @var Requests_Session
@@ -111,7 +113,7 @@ class MerchantRiskAlertClient
     {
         $this->init();
 
-        $requestPayload = ["merchant_id" => $merchantId];
+        $requestPayload = ['merchant_id' => $merchantId];
 
         try {
             $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
@@ -130,6 +132,56 @@ class MerchantRiskAlertClient
                     'path'      => self::NOTIFY_NON_RISKY_MERCHANT_URL,
                 ]
             );
+        }
+    }
+
+    public function createMerchantAlert(
+        string $merchantId, string $entityType, string $entityId,
+        string $category, string $source, string $eventType,
+        int $eventTimestamp, array $data)
+    {
+        $this->init();
+
+        $requestPayload = [
+            'merchant_id'     => $merchantId,
+            'entity_type'     => $entityType,
+            'entity_id'       => $entityId,
+            'category'        => $category,
+            'source'          => $source,
+            'event_type'      => $eventType,
+            'event_timestamp' => $eventTimestamp,
+            'data'            => $data,
+        ];
+
+        try {
+            $data = $requestPayload['data'];
+
+            $requestPayload['data'] = [];
+
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+                'payload'   => $requestPayload,
+                'service'   => 'merchant_risk_alerts',
+            ]);
+
+            $requestPayload['data'] = $data;
+
+            return $this->requestAndGetParsedBody(self::CREATE_MERCHANT_ALERT_URL, $requestPayload);
+        }
+        catch (\Throwable $e) {
+            $data = $requestPayload['data'];
+
+            $requestPayload['data'] = [];
+
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                [
+                    'payload'   => $requestPayload,
+                    'service'   => 'merchant_risk_alerts',
+                    'path'      => self::CREATE_MERCHANT_ALERT_URL,
+                ]
+            );
+
+            $requestPayload['data'] = $data;
         }
     }
 
@@ -206,7 +258,7 @@ class MerchantRiskAlertClient
         if ($exception !== null)
         {
             throw new ServerErrorException(
-                "Failed to complete request",
+                'Failed to complete request',
                 ErrorCode::SERVER_ERROR_MERCHANT_RISK_ALERTS_FAILURE,
                 ['path' => $path],
                 $exception
