@@ -2385,15 +2385,16 @@ trait Refund
         }
 
         $extraData = [
-            'method'                    => $payment->getMethod(),
             'bank'                      => $payment->getBank(),
+            'method'                    => $payment->getMethod(),
+            'terminal_id'               => $payment->getTerminalId(),
             'payment_amount'            => $payment->getAmount(),
-            'payment_base_amount'       => $payment->getBaseAmount(),
-            'payment_created_at'        => $payment->getCreatedAt(),
-            'payment_gateway_captured'  => $payment->getGatewayCaptured(),
             'gateway_acquirer'          => $gatewayAcquirer,
+            'payment_created_at'        => $payment->getCreatedAt(),
+            'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
+            'payment_gateway_captured'  => $payment->getGatewayCaptured(),
         ];
 
         //
