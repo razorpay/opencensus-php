@@ -28,7 +28,7 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
+    const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount V2';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
     const DISPUTE_BULK_EMAIL_MUTEX     = 'DISPUTE_BULK_EMAIL_MUTEX';
@@ -184,6 +184,8 @@ class Core extends Base\Core
                     $this->handleDisputeClosure($dispute, $input);
 
                     $this->fireDisputeStatusChangeWebhookEvent($dispute);
+
+                    $this->repo->saveOrFail($dispute->payment);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -457,6 +459,8 @@ class Core extends Base\Core
         if ($dispute->isBackfill() === false)
         {
             (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+
+            $this->updatePaymentRefundedAmount($dispute);
         }
 
         $dispute->setAmountDeducted($amount);
@@ -892,5 +896,27 @@ class Core extends Base\Core
         ];
 
         $this->app['freshdesk_client']->updateTicketV2($customerSupportTicketID, $updateTicketContent);
+    }
+
+    private function updatePaymentRefundedAmount(Entity $dispute)
+    {
+        /* If gateway_amount is not set, then
+           - base_amount wont be set
+           - amount will be logically same as base_amount (if it were to be set)
+           - payment_currency and dispute_currency will be in INR
+
+           else
+            - base_amount would be set and will be in INR
+            - amount will be the set in payment currency
+        */
+
+        $refundAmount = $refundBaseAmount = $dispute->getAmount();
+
+        if (is_null($dispute->getGatewayAmount()) === false)
+        {
+            $refundBaseAmount = $dispute->getBaseAmount();
+        }
+
+        $dispute->payment->refundAmount($refundAmount, $refundBaseAmount);
     }
 }

@@ -232,9 +232,9 @@ class Entity extends Base\PublicEntity
         }
 
         if (($this->payment->getCurrency() === Currency\Currency::INR) and
-            ($baseAmount > $this->payment->getAmount()))
+            ($baseAmount > $this->payment->getBaseAmountUnrefunded()))
         {
-            $baseAmount = $this->payment->getAmount();
+            $baseAmount = $this->payment->getBaseAmountUnrefunded();
         }
 
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
@@ -268,9 +268,9 @@ class Entity extends Base\PublicEntity
             $disputeAmount = $disputeAmount * (1.01);
         }
 
-        if ($disputeAmount > $this->payment->getAmount())
+        if ($disputeAmount > $this->payment->getAmountUnrefunded())
         {
-            $disputeAmount = $this->payment->getAmount();
+            $disputeAmount = $this->payment->getAmountUnrefunded();
         }
 
         $this->setAttribute(self::AMOUNT, $disputeAmount);

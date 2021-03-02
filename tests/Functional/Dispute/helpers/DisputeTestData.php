@@ -210,7 +210,7 @@ return [
                     'entity'     => 'payment',
                     'amount'     => 1000000,
                     'currency'   => 'INR',
-                    'status'     => 'captured',
+                    'status'     => 'refunded',
                     'captured'   => true,
                 ],
             ],
