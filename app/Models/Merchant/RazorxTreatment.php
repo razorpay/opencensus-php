@@ -220,12 +220,9 @@ final class RazorxTreatment
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
-    // Disable tpv flow in fund loading for business banking merchants (Razorpay X) if required.
-    const DISABLE_TPV_FLOW_FOR_BANKING_ACCOUNT_FUND_LOADING = 'disable_tpv_flow_for_banking_account_fund_loading';
-
     // select emails will be sent via stork. this flag will control the percentage of the traffic for those select emails.
     const API_SELECT_EMAILS_VIA_STORK = 'api_select_emails_via_stork';
-  
+
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED  = 'system_based_needs_clarification_not_matched';
 
     const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';

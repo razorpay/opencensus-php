@@ -3614,14 +3614,18 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
-    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound()
     {
-        $this->markTestSkipped('skipping it for hotfix');
-
         Mail::fake();
 
         $this->setupForXFundLoading();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -3718,7 +3722,7 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButApprovedActiveTpvAccountFound()
     {
         Mail::fake();
@@ -3731,6 +3735,12 @@ class BankTransferTest extends TestCase
                                                 'status'     => 'approved',
                                                 'payer_ifsc' => 'YESB0000022',
                                             ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -3802,7 +3812,7 @@ class BankTransferTest extends TestCase
         Mail::assertNotQueued(FundLoadingFailed::class);
     }
 
-    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButPendingTpvAccountFound()
     {
         $this->markTestSkipped('skipping for hotfix');
@@ -3817,6 +3827,12 @@ class BankTransferTest extends TestCase
                                                 'status'     => 'pending',
                                             ]);
 
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -3914,11 +3930,9 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // No razorx experiment and no feature flag added -- it means tpv is enabled.
+    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButInActiveTpvAccountFound()
     {
-        $this->markTestSkipped('skipping for hotfix');
-
         Mail::fake();
 
         $this->setupForXFundLoading();
@@ -3930,6 +3944,12 @@ class BankTransferTest extends TestCase
                                                 'is_active'  => 0,
                                             ]);
 
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -4027,8 +4047,10 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // This test will be used for enable feature flag afterwards.
-    public function testBankTransferIciciIMPSForRazorpayXWithTpvDisabledViaRazorx()
+    // This test checks the condition if both flags are enabled for the merchant (though this case will never happen as
+    // ops will not use disable tpv flow during gradual rollout. But if this happens, disable feature flag will take
+    // priority and will disable tpv flow.
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledViaFeatureFlagAndDisabledViaFeatureFlag()
     {
         Mail::fake();
 
@@ -4196,6 +4218,12 @@ class BankTransferTest extends TestCase
         Mail::fake();
 
         $this->setupForXFundLoading();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -4367,8 +4395,6 @@ class BankTransferTest extends TestCase
     // from different bank. In this case it works like tpv enabled but not tpv account found, payment is created here.
     public function testBankTransferIciciIMPSForRazorpayXViaGloballyWhitelistedPayerAccountWithWrongIfscTpvEnabled()
     {
-        $this->markTestSkipped('skipping till tpv is enabled again');
-
         Mail::fake();
 
         $this->setupForXFundLoading();
@@ -4379,6 +4405,12 @@ class BankTransferTest extends TestCase
                                                 'status'     => 'approved',
                                                 'is_active'  => 0,
                                             ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
