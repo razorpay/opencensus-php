@@ -1,6 +1,7 @@
 import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import moment from 'moment';
 
 import Loader from 'common/ui/Loader';
 
@@ -413,6 +414,10 @@ export default class App extends Component {
           name: 'identify',
           id: user.id,
           email: user.user.email,
+        });
+
+        window.hj('identify', user.merchant.id, {
+          'Signed up date': moment(user.user.created_at, 'X').toISOString(),
         });
       }
 
