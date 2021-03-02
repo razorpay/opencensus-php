@@ -5507,7 +5507,7 @@ class Route
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs'                          => '*',
-        'merchant_tpv_create'                          => Permission::CREATE_BANKING_ACCOUNT_TPV,
+        'merchant_tpv_create'                          => '*',
     ];
 
     public static $direct = [

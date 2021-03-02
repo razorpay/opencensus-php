@@ -271,12 +271,15 @@ return [
         ],
         'response' => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Authentication failed',
-                ],
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::PENDING,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
             ],
-            'status_code' => 400,
         ],
     ],
 ];

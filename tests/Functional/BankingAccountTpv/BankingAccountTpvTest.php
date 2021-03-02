@@ -418,6 +418,7 @@ class BankingAccountTpvTest extends TestCase
         $this->assertEquals('100000Razorpay', $fav->getMerchantId());
     }
 
+    //all users should be able to create TPV at X dashboard
     public function testCreateTpvFromXDashboardAdminUser()
     {
         $attribute =
@@ -435,9 +436,6 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $this->enableRazorXTreatmentForFeature(
-            RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED, 'on');
-
         $this->startTest();
 
         $tpv = $this->getDbEntity('banking_account_tpv',
@@ -447,14 +445,14 @@ class BankingAccountTpvTest extends TestCase
                                       'payer_account_number' => '98711120003344',
                                   ]);
 
-        $this->assertNull($tpv);
+        $this->assertNotNull($tpv);
 
         $fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'merchant_id' => '100000Razorpay',
                                   ]);
 
-        $this->assertNull($fav);
+        $this->assertNotNull($fav);
     }
 
     public function getFundAccountValidationInput()
@@ -485,23 +483,5 @@ class BankingAccountTpvTest extends TestCase
         ];
 
         return array_merge($default, $input);
-    }
-
-    public function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
-    {
-        $mock = $this->getMockBuilder(RazorXClient::class)
-                     ->setConstructorArgs([$this->app])
-                     ->setMethods(['getTreatment'])
-                     ->getMock();
-
-        $mock->method('getTreatment')
-             ->will(
-                 $this->returnCallback(
-                     function(string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
-                     {
-                         return $feature === $featureUnderTest ? $value : 'control';
-                     }));
-
-        $this->app->instance('razorx', $mock);
     }
 }
