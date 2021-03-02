@@ -93,7 +93,7 @@ class Processor extends Base\Processor
             return $vpa;
         });
 
-        $this->app['events']->fire(new P2p\VpaCreated($this->context(), $vpa));
+        $this->app['events']->dispatch(new P2p\VpaCreated($this->context(), $vpa));
 
         return $vpa->toArrayPublic();
     }
@@ -238,7 +238,7 @@ class Processor extends Base\Processor
             $this->core->delete($vpa);
         });
 
-        $this->app['events']->fire(new P2p\VpaDeleted($this->context(), $vpa));
+        $this->app['events']->dispatch(new P2p\VpaDeleted($this->context(), $vpa));
 
         return [
             Entity::SUCCESS     => true,

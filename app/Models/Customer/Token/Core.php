@@ -1037,7 +1037,7 @@ class Core extends Base\Core
                 ApiEventSubscriber::MAIN => $token,
             ];
 
-            $this->app['events']->fire($event, $eventPayload);
+            $this->app['events']->dispatch($event, $eventPayload);
         }
     }
 

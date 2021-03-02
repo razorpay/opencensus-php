@@ -120,7 +120,7 @@ class FundAccountPayout extends Base
     {
         if ($payout->isStatusQueued() === true)
         {
-            $this->app->events->fire('api.payout.queued', [$payout]);
+            $this->app->events->dispatch('api.payout.queued', [$payout]);
         }
         else
         {
@@ -131,10 +131,10 @@ class FundAccountPayout extends Base
                 // TODO: Remove this after a week or two. JIRA: https://razorpay.atlassian.net/browse/RX-853
                 if ($shouldFirePayoutCreatedWebhook === true)
                 {
-                    $this->app->events->fire('api.payout.created', [$payout]);
+                    $this->app->events->dispatch('api.payout.created', [$payout]);
                 }
 
-                $this->app->events->fire('api.payout.initiated', [$payout]);
+                $this->app->events->dispatch('api.payout.initiated', [$payout]);
             }
         }
     }

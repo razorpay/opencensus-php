@@ -317,7 +317,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $settlement
         ];
 
-        $this->app['events']->fire('api.settlement.processed', $eventPayload);
+        $this->app['events']->dispatch('api.settlement.processed', $eventPayload);
 
     }
 

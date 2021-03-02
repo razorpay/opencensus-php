@@ -19,7 +19,7 @@ class CustomerWalletPayout extends Base
     {
         // TODO: Should deprecate api.payout.created webhook soon!
         // https://razorpay.atlassian.net/browse/RX-854
-        $this->app->events->fire('api.payout.created', [$payout]);
-        $this->app->events->fire('api.payout.initiated', [$payout]);
+        $this->app->events->dispatch('api.payout.created', [$payout]);
+        $this->app->events->dispatch('api.payout.initiated', [$payout]);
     }
 }

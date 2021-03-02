@@ -910,7 +910,7 @@ trait Capture
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->app['events']->fire('api.order.paid', $eventPayload);
+        $this->app['events']->dispatch('api.order.paid', $eventPayload);
     }
 
     protected function eventInvoicePaid()
@@ -934,7 +934,7 @@ trait Capture
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->app['events']->fire($event, $eventPayload);
+        $this->app['events']->dispatch($event, $eventPayload);
     }
 
     protected function eventVirtualAccountCredited()
@@ -959,7 +959,7 @@ trait Capture
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->app['events']->fire('api.payment.captured', $eventPayload);
+        $this->app['events']->dispatch('api.payment.captured', $eventPayload);
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

@@ -498,7 +498,7 @@ class Core extends Base\Core
             if (($sourceEntity->getEntityName() === Constants\Entity::REVERSAL) and
                 ($isSourceAlreadyCreated === false))
             {
-                $this->app->events->fire('api.payout.reversed', $sourceEntity->entity);
+                $this->app->events->dispatch('api.payout.reversed', $sourceEntity->entity);
             }
 
             (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification(

@@ -496,11 +496,11 @@ class Service extends Base\Service
                 {
                     if ($input['attributes'][Entity::STATUS] === Status::FAILED)
                     {
-                        $app['events']->fire('api.terminal.failed', ['main' => $terminal]);
+                        $app['events']->dispatch('api.terminal.failed', ['main' => $terminal]);
                     }
                     else if ($input['attributes'][Entity::STATUS] === Status::ACTIVATED)
                     {
-                        $app['events']->fire('api.terminal.activated', ['main' => $terminal]);
+                        $app['events']->dispatch('api.terminal.activated', ['main' => $terminal]);
                     }
                 }
 

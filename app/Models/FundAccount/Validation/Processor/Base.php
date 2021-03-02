@@ -123,7 +123,7 @@ abstract class Base extends Core
             ApiEventSubscriber::MAIN => $this->validation
         ];
 
-        $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
+        $this->app['events']->dispatch('api.fund_account.validation.completed', $eventPayload);
     }
 
     protected function triggerValidationFailedWebhook()
@@ -132,7 +132,7 @@ abstract class Base extends Core
             ApiEventSubscriber::MAIN => $this->validation
         ];
 
-        $this->app['events']->fire('api.fund_account.validation.failed', $eventPayload);
+        $this->app['events']->dispatch('api.fund_account.validation.failed', $eventPayload);
     }
 
     /**

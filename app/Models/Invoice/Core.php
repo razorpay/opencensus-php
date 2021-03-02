@@ -739,7 +739,7 @@ class Core extends Base\Core
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 
         // Sends expiration mails to customer asynchronously
-        $this->eventService->fire('api.invoice.expired', [$invoice]);
+        $this->eventService->dispatch('api.invoice.expired', [$invoice]);
     }
 
     public function fetchStatus(Entity $invoice): array

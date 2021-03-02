@@ -390,7 +390,7 @@ class Base extends BaseCore
         // We have already sent the initiated mail/webhook when we marked the payout as batch_submitted
         if ($payout->getStatus() === Status::FAILED)
         {
-            $this->app->events->fire('api.payout.failed', [$payout]);
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
 
         //
@@ -497,7 +497,7 @@ class Base extends BaseCore
         // We only have to send mail/webhook if the payout fails.
         if ($payout->getStatus() === Status::FAILED)
         {
-            $this->app->events->fire('api.payout.failed', [$payout]);
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
         else
         {
@@ -1327,7 +1327,7 @@ class Base extends BaseCore
 
         $this->repo->saveOrFail($payout);
 
-        $this->app->events->fire('api.payout.pending', [$payout]);
+        $this->app->events->dispatch('api.payout.pending', [$payout]);
 
         $this->workflowActivated = true;
     }

@@ -29,7 +29,7 @@ class TerminalCreatedWebhookReminderProcessor extends ReminderProcessor
             
             $terminal = $this->repo->$entity->findOrFail($id);
 
-            $this->app['events']->fire('api.terminal.created', ['main' => $terminal]);
+            $this->app['events']->dispatch('api.terminal.created', ['main' => $terminal]);
         }
         catch(\Throwable $e)
         {

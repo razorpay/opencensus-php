@@ -2763,7 +2763,7 @@ class Entity extends Base\PublicEntity
 
         $app = App::getFacadeRoot();
 
-        $app['events']->fire($event, $eventPayload);
+        $app['events']->dispatch($event, $eventPayload);
     }
 
     public function isInternationalEnabledForProduct(string $product)

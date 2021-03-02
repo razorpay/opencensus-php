@@ -2673,7 +2673,7 @@ trait Refund
             ApiEventSubscriber::MAIN => $refund,
         ];
 
-        $this->app['events']->fire('api.refund.processed', $eventPayload);
+        $this->app['events']->dispatch('api.refund.processed', $eventPayload);
     }
 
     public function eventRefundCreated(RefundEntity $refund)
@@ -2682,7 +2682,7 @@ trait Refund
             ApiEventSubscriber::MAIN => $refund,
         ];
 
-        $this->app['events']->fire('api.refund.created', $eventPayload);
+        $this->app['events']->dispatch('api.refund.created', $eventPayload);
     }
 
     public function eventRefundFailed(RefundEntity $refund)
@@ -2691,7 +2691,7 @@ trait Refund
             ApiEventSubscriber::MAIN => $refund,
         ];
 
-        $this->app['events']->fire('api.refund.failed', $eventPayload);
+        $this->app['events']->dispatch('api.refund.failed', $eventPayload);
     }
 
     public function eventRefundSpeedChanged(RefundEntity $refund)
@@ -2700,7 +2700,7 @@ trait Refund
             ApiEventSubscriber::MAIN => $refund,
         ];
 
-        $this->app['events']->fire('api.refund.speed_changed', $eventPayload);
+        $this->app['events']->dispatch('api.refund.speed_changed', $eventPayload);
     }
 
     public function eventRefundArnUpdated(RefundEntity $refund)
@@ -2720,7 +2720,7 @@ trait Refund
             ApiEventSubscriber::MAIN => $refund,
         ];
 
-        $this->app['events']->fire('api.refund.arn_updated', $eventPayload);
+        $this->app['events']->dispatch('api.refund.arn_updated', $eventPayload);
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array

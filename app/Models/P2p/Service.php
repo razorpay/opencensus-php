@@ -142,7 +142,7 @@ class Service extends Base\Service
             ApiEventSubscriber::MAIN => $p2p
         ];
 
-        $this->app['events']->fire('api.p2p.created', $eventPayload);
+        $this->app['events']->dispatch('api.p2p.created', $eventPayload);
     }
 
     protected function eventP2pRejected($p2p)
@@ -151,7 +151,7 @@ class Service extends Base\Service
             ApiEventSubscriber::MAIN => $p2p
         ];
 
-        $this->app['events']->fire('api.p2p.rejected', $eventPayload);
+        $this->app['events']->dispatch('api.p2p.rejected', $eventPayload);
     }
 
     protected function eventP2pTransferred($p2p)
@@ -160,7 +160,7 @@ class Service extends Base\Service
             ApiEventSubscriber::MAIN => $p2p
         ];
 
-        $this->app['events']->fire('api.p2p.transferred', $eventPayload);
+        $this->app['events']->dispatch('api.p2p.transferred', $eventPayload);
     }
 
     public function completeAuthorization(string $id, array $input)

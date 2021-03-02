@@ -790,7 +790,7 @@ class Core extends Base\Core
 
         $eventName = 'api.' . $event;
 
-        $this->app['events']->fire($eventName, $eventPayload);
+        $this->app['events']->dispatch($eventName, $eventPayload);
     }
 
     public function initiateMerchantEmails()

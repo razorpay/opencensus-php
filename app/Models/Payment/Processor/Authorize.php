@@ -6005,7 +6005,7 @@ trait Authorize
             ApiEventSubscriber::MAIN => $this->payment,
         ];
 
-        $this->app['events']->fire('api.payment.authorized', $eventPayload);
+        $this->app['events']->dispatch('api.payment.authorized', $eventPayload);
     }
 
     /**
@@ -6036,7 +6036,7 @@ trait Authorize
                 ApiEventSubscriber::MAIN => $token,
             ];
 
-            $this->app['events']->fire($event, $eventPayload);
+            $this->app['events']->dispatch($event, $eventPayload);
         }
     }
 

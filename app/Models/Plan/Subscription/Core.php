@@ -337,7 +337,7 @@ class Core extends Base\Core
             $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
         }
 
-        $this->app['events']->fire('api.' . $event, $eventPayload);
+        $this->app['events']->dispatch('api.' . $event, $eventPayload);
     }
 
     public function eventSubscriptionCharged(Entity $subscription, Payment\Entity $payment)
@@ -349,7 +349,7 @@ class Core extends Base\Core
             ]
         ];
 
-        $this->app['events']->fire('api.subscription.charged', $eventPayload);
+        $this->app['events']->dispatch('api.subscription.charged', $eventPayload);
     }
 
     /**

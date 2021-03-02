@@ -444,7 +444,7 @@ class Processor
                 ApiEventSubscriber::MAIN => $this->payment,
             ];
 
-            $this->app['events']->fire('api.payment.created', $eventPayload);
+            $this->app['events']->dispatch('api.payment.created', $eventPayload);
 
             $this->cache->put($cacheKey, true, 1200);
         }
@@ -2346,7 +2346,7 @@ class Processor
             ApiEventSubscriber::MAIN => $this->payment
         ];
 
-        $this->app['events']->fire('api.payment.failed', $eventPayload);
+        $this->app['events']->dispatch('api.payment.failed', $eventPayload);
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }

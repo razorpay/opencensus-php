@@ -152,7 +152,7 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-                $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
+                $this->app->events->dispatch(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
                                          [$payoutLink]);
 
                 return $payoutLink;
@@ -266,7 +266,7 @@ class Core extends Base\Core
 
                         $payoutLink->setPayout();
 
-                        $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
+                        $this->app->events->dispatch(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
                                                  [$payoutLink]);
 
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
@@ -339,7 +339,7 @@ class Core extends Base\Core
 
                 if ($isDirty === true)
                 {
-                    $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
+                    $this->app->events->dispatch(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
                                              [$payoutLink]);
 
                     $this->pushStatusUpdateNotification($payoutLink);
@@ -440,7 +440,7 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-                $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
+                $this->app['events']->dispatch(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
                                             [$payoutLink]);
 
                 $this->sendLinkToCustomers($payoutLink);

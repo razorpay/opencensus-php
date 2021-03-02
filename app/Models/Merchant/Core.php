@@ -4506,7 +4506,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $merchant,
         ];
 
-        return $this->app['events']->fire('api.banking_accounts.issued', $eventPayload);
+        return $this->app['events']->dispatch('api.banking_accounts.issued', $eventPayload);
     }
 
 

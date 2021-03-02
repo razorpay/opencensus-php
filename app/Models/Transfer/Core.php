@@ -725,7 +725,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $transfer
         ];
 
-        $this->app['events']->fire('api.transfer.processed', $eventPayload);
+        $this->app['events']->dispatch('api.transfer.processed', $eventPayload);
     }
 
     public function eventTransferFailed(Entity $transfer)
@@ -734,7 +734,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $transfer
         ];
 
-        $this->app['events']->fire('api.transfer.failed', $eventPayload);
+        $this->app['events']->dispatch('api.transfer.failed', $eventPayload);
     }
 
     protected function checkForDirectTransferFeature(Merchant\Entity $merchant)

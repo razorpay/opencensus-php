@@ -135,7 +135,7 @@ class Service extends Base\Service
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
                 ];
 
-                $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
+                $this->app['events']->dispatch('api.payment.downtime.started', $eventPayload);
             }
         }
         catch (\Exception $e)
@@ -163,7 +163,7 @@ class Service extends Base\Service
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
                 ];
 
-                $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
+                $this->app['events']->dispatch('api.payment.downtime.resolved', $eventPayload);
             }
         }
         catch (\Exception $e)

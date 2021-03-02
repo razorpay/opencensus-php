@@ -1741,7 +1741,7 @@ class Core extends Base\Core
 
                 $event = 'api.account.' . $status;
 
-                $this->app['events']->fire($event, $eventPayload);
+                $this->app['events']->dispatch($event, $eventPayload);
             }
         });
 

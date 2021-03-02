@@ -1288,7 +1288,7 @@ class ScheduledPayoutTest extends TestCase
 
         $payout = $this->testScheduledPayoutProcessingLowBalance();
 
-        $this->app->events->fire('api.payout.failed', [$payout]);
+        $this->app->events->dispatch('api.payout.failed', [$payout]);
 
         $this->validateStorkWebhookFireEvent('payout.failed', $payoutFailedEventData, $payloadFailed);
     }

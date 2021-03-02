@@ -696,6 +696,6 @@ class Service extends Base\Service
             ApiEventSubscriber::WITH => $settlement,
         ];
 
-        $this->app['events']->fire('api.transfer.settled', $eventPayload);
+        $this->app['events']->dispatch('api.transfer.settled', $eventPayload);
     }
 }

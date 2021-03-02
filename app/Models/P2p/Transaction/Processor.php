@@ -466,7 +466,7 @@ class Processor extends Base\Processor
     {
         if ($actions->hasEvent() === true)
         {
-            $this->app['events']->fire($actions->getEvent());
+            $this->app['events']->dispatch($actions->getEvent());
         }
     }
 }

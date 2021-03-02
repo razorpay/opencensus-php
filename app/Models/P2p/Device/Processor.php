@@ -138,7 +138,7 @@ class Processor extends Base\Processor
         $this->context()->setDevice($device, true);
 
         // Now we can fire the event of device verification completed
-        $this->app['events']->fire(new P2p\DeviceVerificationCompleted($this->context(), $device));
+        $this->app['events']->dispatch(new P2p\DeviceVerificationCompleted($this->context(), $device));
 
         // Now we will create the deviceToken, which will have gateway and CL data
         $deviceTokenInput = array_only($deviceData, [
@@ -207,7 +207,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::DEVICE_COOLDOWN_COMPLETED, $input);
 
-        $this->app['events']->fire(
+        $this->app['events']->dispatch(
             new P2p\DeviceCooldownCompleted($this->context(), $this->context()->getDevice())
         );
 
@@ -231,7 +231,7 @@ class Processor extends Base\Processor
 
         $device = $this->context()->getDevice();
 
-        $this->app['events']->fire(new P2p\DeviceDeregistrationCompleted($this->context(), $device));
+        $this->app['events']->dispatch(new P2p\DeviceDeregistrationCompleted($this->context(), $device));
 
         return [
             Entity::SUCCESS => true,

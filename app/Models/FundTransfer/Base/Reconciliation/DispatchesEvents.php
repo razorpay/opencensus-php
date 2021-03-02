@@ -27,7 +27,7 @@ trait DispatchesEvents
             // Public event suffix for 'failed' case is 'reversed'.
             $event = $payout->isStatusProcessed() ? 'api.payout.processed' : 'api.payout.reversed';
 
-            $this->app->events->fire($event, [$payout]);
+            $this->app->events->dispatch($event, [$payout]);
         }
     }
 }

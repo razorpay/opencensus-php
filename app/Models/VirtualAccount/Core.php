@@ -663,7 +663,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
+        $this->app['events']->dispatch('api.virtual_account.credited', $eventPayload);
     }
 
     public function eventVirtualAccountCreated(Entity $virtualAccount)
@@ -672,7 +672,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $virtualAccount
         ];
 
-        $this->app['events']->fire('api.virtual_account.created', $eventPayload);
+        $this->app['events']->dispatch('api.virtual_account.created', $eventPayload);
     }
 
     /**
@@ -697,7 +697,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $virtualAccount
         ];
 
-        $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
+        $this->app['events']->dispatch('api.virtual_account.closed', $eventPayload);
     }
 
     public function addReceivers(Entity $virtualAccount, array $input)

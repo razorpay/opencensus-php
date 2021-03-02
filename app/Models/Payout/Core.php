@@ -526,7 +526,7 @@ class Core extends Base\Core
         if (($initialUtr === null) and
             ($payout->getUtr() !== null))
         {
-            $this->app->events->fire('api.payout.updated', [$payout]);
+            $this->app->events->dispatch('api.payout.updated', [$payout]);
         }
     }
 
@@ -1470,7 +1470,7 @@ class Core extends Base\Core
                 }
             });
 
-        $this->app->events->fire('api.payout.processed', [$payout]);
+        $this->app->events->dispatch('api.payout.processed', [$payout]);
     }
 
     /**
@@ -1894,7 +1894,7 @@ class Core extends Base\Core
 
         $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
 
-        $this->app->events->fire('api.payout.reversed', [$payout]);
+        $this->app->events->dispatch('api.payout.reversed', [$payout]);
     }
 
     protected function handlePayoutFailed(Entity $payout,
@@ -1965,7 +1965,7 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 
-        $this->app->events->fire('api.payout.failed', [$payout]);
+        $this->app->events->dispatch('api.payout.failed', [$payout]);
     }
 
     protected function verifyPayoutFailedTransaction(Entity $payout, string $ftaFailureReason = null)
@@ -2381,7 +2381,7 @@ class Core extends Base\Core
 
                 $payout = $this->rejectPendingPayout($payout);
 
-                $this->app->events->fire('api.payout.rejected', [$payout]);
+                $this->app->events->dispatch('api.payout.rejected', [$payout]);
 
                 return $payout;
             },
