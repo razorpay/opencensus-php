@@ -13,7 +13,7 @@ import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import RazorpayXAnnouncement from './RazorpayXAnnouncement';
+import RazorpayXNitroAnnouncement from './RazorpayXNitroAnnouncement';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -216,8 +216,13 @@ export default class NotificationsDropdown extends Component {
     });
   };
 
-  toggleRazorpayXAnnouncement = () => {
-    this.setState({ showRazorpayXAnnouncement: !this.state.showRazorpayXAnnouncement });
+  showRazorpayXNitroAnnouncement = () => {
+    const { closeModal, openModal } = this.props;
+
+    openModal({
+      component: <RazorpayXNitroAnnouncement hideModal={closeModal} fromWhere="announcement" />,
+      size: 'xlarge',
+    });
   };
 
   handleContentScroll = debounce(::this.onScrollContent, 20);
@@ -245,7 +250,7 @@ export default class NotificationsDropdown extends Component {
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
-        this.toggleRazorpayXAnnouncement();
+        this.showRazorpayXNitroAnnouncement();
 
         break;
 
@@ -271,7 +276,6 @@ export default class NotificationsDropdown extends Component {
 
   render() {
     let { user, showMobileNav } = this.props;
-    const { showRazorpayXAnnouncement } = this.state;
     const hasUnread = !!this.state.totalUnread;
     const eventTrackingRequired = [
       'Payments-Mobile-App',
@@ -396,11 +400,6 @@ export default class NotificationsDropdown extends Component {
             </div>
           </div>
         </DropdownContent>
-        <RazorpayXAnnouncement
-          shouldShowModal={showRazorpayXAnnouncement}
-          hideModal={this.toggleRazorpayXAnnouncement}
-          fromWhere="announcement"
-        />
       </Dropdown>
     );
   }

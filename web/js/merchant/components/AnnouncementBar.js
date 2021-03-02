@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import RazorpayXAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXAnnouncement';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
+@connect(null, {
+  openModal,
+  closeModal,
+})
 @RTracking(() => window.rzpQ.component('ScheduledNitroBanner'))
 export default class AnnouncementBar extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      showRazorpayXAnnouncement: false,
-    };
   }
 
   componentDidMount() {
@@ -26,13 +29,7 @@ export default class AnnouncementBar extends Component {
     );
   };
 
-  hideRazorpayXAnnouncement = () => {
-    this.setState({ showRazorpayXAnnouncement: false });
-  };
-
   render() {
-    const { showRazorpayXAnnouncement } = this.state;
-
     return (
       <div class="announcement-sidebar">
         <div class="wrapper">
@@ -43,17 +40,22 @@ export default class AnnouncementBar extends Component {
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"
           onClick={(e) => {
-            this.setState({ showRazorpayXAnnouncement: true });
+            const { closeModal, openModal } = this.props;
+
+            openModal({
+              component: (
+                <RazorpayXNitroAnnouncement
+                  hideModal={closeModal}
+                  fromWhere={this.props.fromWhere}
+                />
+              ),
+              size: 'xlarge',
+            });
             this.trackEvents(this.props.fromWhere);
           }}
         >
           Learn More
         </a>
-        <RazorpayXAnnouncement
-          shouldShowModal={showRazorpayXAnnouncement}
-          hideModal={this.hideRazorpayXAnnouncement}
-          fromWhere={this.props.fromWhere}
-        />
       </div>
     );
   }

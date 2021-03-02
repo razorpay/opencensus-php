@@ -6,7 +6,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
-import RazorpayXAnnouncement from '../NotificationsDropdown/RazorpayXAnnouncement';
+import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
@@ -134,10 +134,6 @@ export default class WhatsNew extends Component {
     }
   }
 
-  toggleRazorpayXAnnouncement = () => {
-    this.setState({ showRazorpayXAnnouncement: !this.state.showRazorpayXAnnouncement });
-  };
-
   showOpfinAnnouncementV2 = (id) => {
     const { closeModal, openModal } = this.props;
 
@@ -158,10 +154,19 @@ export default class WhatsNew extends Component {
     });
   };
 
+  showRazorpayXNitroAnnouncement = () => {
+    const { closeModal, openModal } = this.props;
+
+    openModal({
+      component: <RazorpayXNitroAnnouncement hideModal={closeModal} fromWhere="whatsnew" />,
+      size: 'xlarge',
+    });
+  };
+
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
-        this.toggleRazorpayXAnnouncement();
+        this.showRazorpayXNitroAnnouncement();
         break;
       case 'announcement-Nov20-Opfin-NitroV3-cta1':
         this.showOpfinAnnouncementV2(id);
@@ -328,7 +333,6 @@ export default class WhatsNew extends Component {
   render() {
     const { lastReadTS, isOpenSlider1, totalUnread, showTooltip } = this.state;
     const { user, history } = this.props;
-    const { showRazorpayXAnnouncement } = this.state;
 
     const eventTrackingRequired = [
       'Payments-Mobile-App',
@@ -420,11 +424,6 @@ export default class WhatsNew extends Component {
                   </div>
                 </div>
               </div>
-              <RazorpayXAnnouncement
-                shouldShowModal={showRazorpayXAnnouncement}
-                hideModal={this.toggleRazorpayXAnnouncement}
-                fromWhere="announcement"
-              />
             </ErrorBoundary>
           </Slider>
         ) : null}

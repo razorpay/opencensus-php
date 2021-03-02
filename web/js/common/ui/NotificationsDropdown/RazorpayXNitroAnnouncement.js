@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
-import Modal from 'react-modal';
 import axios from 'axios';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
@@ -173,7 +172,7 @@ class InfoForm extends React.Component {
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: 'Recorded your data',
+          message: 'You’ve successfully applied for this offer',
           hidePrevious: true,
         });
         onSubmissionSuccess();
@@ -373,7 +372,7 @@ class InfoForm extends React.Component {
   }
 }
 
-const RazorpayXAnnouncement = ({ shouldShowModal, hideModal, fromWhere, tracking }) => {
+const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
   const [activeView, setActiveView] = useState('detail-view');
 
   const onOfferAccept = () => {
@@ -390,12 +389,7 @@ const RazorpayXAnnouncement = ({ shouldShowModal, hideModal, fromWhere, tracking
   };
 
   return (
-    <Modal
-      isOpen={shouldShowModal}
-      onRequestClose={hideModal}
-      ariaHideApp={false}
-      id="hubspot-ca-form-modal"
-    >
+    <div ariaHideApp={false} id="hubspot-ca-form-modal">
       <button type="button" class="close" onClick={handleClose}>
         <i class="i i-close" />
       </button>
@@ -410,10 +404,10 @@ const RazorpayXAnnouncement = ({ shouldShowModal, hideModal, fromWhere, tracking
         )}
         {activeView === 'submission-success-view' && <SubmissionSuccessfull />}
       </div>
-    </Modal>
+    </div>
   );
 };
 
 export default RTracking({
   page: 'ScheduledNitroBanner',
-})(RazorpayXAnnouncement);
+})(RazorpayXNitroAnnouncement);
