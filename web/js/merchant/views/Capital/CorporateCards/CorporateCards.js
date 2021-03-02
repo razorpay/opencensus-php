@@ -1,0 +1,127 @@
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
+
+import LoanEntity from 'merchant/models/Capital/BaseOrigination';
+
+const CorporateCards = ({ user }) => {
+  if (!user.isCardsLOSEnabled) return <Redirect to="/" />;
+  const [loading, setLoading] = useState(true);
+  const [ctaText, setCTAText] = useState('Apply Now');
+  const currentCtaText = loading ? 'Loading...' : ctaText;
+
+  useEffect(() => {
+    async function init() {
+      if (user.isCardsEnabled) {
+        setCTAText('Go to Cards Dashboard');
+      } else {
+        try {
+          const entity = new LoanEntity();
+          const {
+            data: { products = [] },
+          } = await entity.fetchProducts();
+          const cardProduct = products.find((d) => d.name === 'CARDS');
+          const {
+            data: { applications = [] },
+          } = await entity.getApplications({
+            product_id: cardProduct.id,
+            owner_type: 'MERCHANT',
+            owner_id: user.current,
+            limit: 1,
+          });
+          const { status } = applications ? applications[0] : {};
+          let response = '';
+
+          if (!status || status === 'RZP_REJECTED' || status === 'RZP_CLOSED') {
+            response = 'Apply Now';
+          } else if (status === 'RZP_APPROVED') {
+            response = 'Go to Cards Dashboard';
+          } else {
+            response = 'Continue Applying';
+          }
+
+          setCTAText(response);
+        } catch (err) {}
+      }
+
+      setLoading(false);
+    }
+
+    init();
+  }, []);
+
+  return (
+    <div className="corporate-cards-wrapper">
+      <div className="corporate-cards__left">
+        <div className="left__header">
+          <div>
+            <h3>RazorpayX</h3>
+            <h1>Corporate Cards</h1>
+          </div>
+          <h4 className="subtext">Simplify your business payments</h4>
+        </div>
+        <div className="left__body">
+          <ul>
+            <li>
+              <div>
+                <p>Get Started for FREE</p>
+                <p>Joining fee of ₹1499 will be waived off for Razorpay users if they apply now</p>
+              </div>
+              <img src="/dist/css/assets/capital/cc-get-started.png" />
+            </li>
+            <li>
+              <div>
+                <p>2x Credit Limit</p>
+                <p>Your credit limit will increase faster to stay twice your spends</p>
+              </div>
+              <img src="/dist/css/assets/capital/cc-credit-limit.png" />
+            </li>
+            <li>
+              <div>
+                <p>0 security deposits</p>
+                <p>We require no personal guarantees or security deposits to get you started</p>
+              </div>
+              <img src="/dist/css/assets/capital/cc-deposits.png" />
+            </li>
+          </ul>
+          <a className="cta secondary" href="https://x.razorpay.com/cards/apply">
+            {currentCtaText}
+          </a>
+        </div>
+      </div>
+      <div className="corporate-cards__right">
+        <div
+          className="right__content"
+          style={{ backgroundImage: "url('/dist/css/assets/capital/cc-preview.png')" }}
+        >
+          <img src="/dist/css/assets/capital/x-logo.png" />
+          <h1>Corporate Cards</h1>
+          <div>
+            <p>A real credit card for your business to make all the digital spends including:</p>
+            <ul>
+              <li>Online marketing and ad spends</li>
+              <li>Recurring charges for SaaS & cloud</li>
+              <li>International & other digital expenses</li>
+            </ul>
+            <a className="cta primary" href="https://x.razorpay.com/cards/apply">
+              {currentCtaText}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const mapStateToProps = (state, ownProps) => {
+  const {
+    session: { user },
+  } = state;
+
+  return {
+    user,
+    ...ownProps,
+  };
+};
+
+export default connect(mapStateToProps)(CorporateCards);

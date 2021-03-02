@@ -101,6 +101,11 @@ const FlashCreditLandingPage = lazy(() =>
 const CashAdvance = lazy(() =>
   import(/* webpackChunkName: "CashAdvance" */ 'merchant/views/Capital/CashAdvance/CashAdvance'),
 );
+const CorporateCards = lazy(() =>
+  import(
+    /* webpackChunkName: "CorporateCards" */ 'merchant/views/Capital/CorporateCards/CorporateCards'
+  ),
+);
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
@@ -526,6 +531,7 @@ export default class Content extends Component {
           />
           <ShowWhenRoute path="/capital/cash-advance/:section" component={CashAdvance} />
           <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
+          <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
           <Route exact path="/" component={HandleIndex} />
         </Switch>
       </Suspense>

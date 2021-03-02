@@ -723,6 +723,14 @@ export default class User {
     return true;
   }
 
+  get isCardsLOSEnabled() {
+    return this.isFeatureEnabled('capital_cards_eligible');
+  }
+
+  get isCardsEnabled() {
+    return this.isFeatureEnabled('capital_cards');
+  }
+
   get isUnregisteredBusiness() {
     const userBusinessType = Number(this.business_type);
     const UNREGISTERED_BUSINESS_TYPES = [2, 11];

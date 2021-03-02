@@ -1,0 +1,201 @@
+.corporate-cards-wrapper
+  display: flex;
+  min-height: 100vh;
+
+  .corporate-cards__left,
+  .corporate-cards__right
+    min-height: 100vh;
+    padding: 110px 100px;
+
+    .cta
+      display: inline-block;
+      box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12);
+      padding: 9px 16px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 2px;
+
+  .corporate-cards__left
+    width: 48%;
+    background: white;
+    padding-right: 0;
+
+    @media(max-width: 1500px) {
+      padding: 60px;
+      padding-right: 0px;
+    }
+
+    .left__header
+      padding-bottom: 28px;
+      border-bottom: 3px solid #ebebeb91;
+      position: relative;
+
+      > div
+        padding-left: 40px;
+
+        &:before,
+        &:after
+          content: '';
+          position: absolute;
+          left: 5px;
+          width: 18px;
+          height: 70px;
+
+        &:before
+          transform: skew(15deg);
+          background: rgba(252, 109, 11, 1);
+
+        &:after
+          top: 0;
+          background: rgba(252, 109, 11, 0.7);
+
+      h1, h3, h4
+        margin: 0;
+        padding: 0;
+
+      h3
+        color: rgba(22, 47, 86, 0.76);
+
+      h1
+        color: rgba(22, 47, 86, 0.87);
+        font-weight: bold;
+        font-size: 40px;
+        margin-top: 3px;
+
+      h4
+        color: rgba(22, 47, 86, 0.36);
+        margin-top: 6px;
+        margin-left: 42px;
+
+    .left__body
+      ul
+        list-style: none;
+        padding-left: 42px;
+
+      li
+        padding-top: 30px;
+        display: flex;
+        width: 65%;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        @media(max-width: 1500px) {
+          width: 75%;
+        }
+
+        &:first-child
+          padding-top: 40px;
+
+        > div
+          width: 80%;
+          padding-bottom: 30px;
+          border-bottom: 1px solid #ebebeb91;
+
+          p
+            margin: 0;
+            padding: 0;
+
+            &:nth-of-type(1)
+              font-size: 16px;
+              font-weight: bold;
+              color: rgba(22, 47, 86, 0.76);
+
+            &:nth-of-type(2)
+              font-size: 14px;
+              margin-top: 3px;
+              color: rgba(22, 47, 86, 0.5);
+
+        &:last-child
+          > div
+            border-bottom: none;
+
+      a.secondary
+        background: rgba(11, 112, 231, 0.1);
+        color: #0B70E7;
+        margin-top: 15px;
+        margin-left: 40px;
+
+  .corporate-cards__right
+    flex: 1;
+    display: flex;
+    justify-content: center;
+
+    @media(max-width: 1500px) {
+      padding: 55px;
+    }
+
+    .right__content
+      width: 85%;
+      height: 85%;
+      background-color: #171B2F;
+      background-position: bottom right;
+      background-repeat: no-repeat;
+      border-radius: 10px;
+      padding: 85px 45px;
+      position: relative;
+      overflow: hidden;
+
+      @media(max-width: 1500px) {
+        height: 100%;
+        width: 100%;
+        max-height: 650px;
+      }
+
+      img {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+      }
+
+      &:after
+        content: "";
+        position: absolute;
+        bottom: 0px;
+        right: -90%;
+        background: rgb(38, 43, 76);
+        opacity: 0.56;
+        transform: skew(-30deg);
+        width: 110%;
+        height: 90%;
+
+      h1, p, ul
+        margin: 0;
+        padding: 0;
+
+      h1
+        color: rgba(255, 255, 255, 0.87);
+        font-weight: bold;
+        margin-bottom: 20px;
+
+      > div
+        width: 60%;
+
+        ul, p
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.76);
+
+        ul
+          margin-top: 20px;
+          list-style: none;
+
+          li
+            position relative;
+            padding-left: 20px;
+            margin-bottom: 15px;
+
+            /* Overwriting default list-style for custom color & styling */
+            &:before
+              content: '';
+              position: absolute;
+              left: 5px;
+              top: 4px;
+              width: 4px;
+              height: 12px;
+              transform: skew(15deg);
+              background: #3A4E76;
+
+        a.primary
+          background: #0B70E7;
+          color: #fff;
+          margin-top: 30px;

@@ -150,6 +150,14 @@ export default function MerchantNavLinks(props) {
         }
       />
 
+      <MainNavLink
+        label="Corporate Cards"
+        icon="i fa fa-credit-card text-warm"
+        to="/capital/corporate-cards/"
+        isNew={true}
+        additionalCondition={(user) => user.isCardsLOSEnabled}
+      />
+
       <div class="divider" />
 
       <MainNavLink
