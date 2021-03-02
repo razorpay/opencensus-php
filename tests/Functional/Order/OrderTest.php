@@ -363,6 +363,25 @@ class OrderTest extends TestCase
 
     }
 
+    public function testCreateUpiRecurringTPVOrder()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+        $order =  $this->getDbLastEntity('order');
+
+        $bankAccountRequest = $testData['request']['content']['bank_account'];
+
+        // Bank account entity should have ifsc equal as the order create request
+        $this->assertEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc']);
+
+        // Order->getBank equal to first 4 chars of bankAccount entity's ifsc
+        $bankCodeFromIfsc = strtoupper(substr($bankAccount->getIfscCode(), 0, 4));
+        $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
+        $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
+    }
+
     public function testCreateTPVOrderEmptyMethod()
     {
         $order = $this->startTest();

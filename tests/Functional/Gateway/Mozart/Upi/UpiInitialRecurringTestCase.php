@@ -36,9 +36,18 @@ class UpiInitialRecurringTestCase extends TestCase
      */
     protected $terminal;
 
-    public function testRecurringMandateCreate($encrypted=false)
+    public function testRecurringMandateCreate($encrypted=false, $tpv=false, $bankAccount=[])
     {
-        $orderId = $this->createUpiRecurringOrder();
+        // If $tpv flag set to true then create order for TPV with bank_account details
+        if ($tpv === true) {
+            $orderId = $this->createUpiRecurringTpvOrder([
+                'bank_account' => $bankAccount
+            ]);
+        }
+        else
+        {
+            $orderId = $this->createUpiRecurringOrder();
+        }
 
         $upiMandate = $this->getDbLastEntity('upi_mandate');
         $this->assertArraySubset([

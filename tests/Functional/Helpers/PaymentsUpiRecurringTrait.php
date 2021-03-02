@@ -76,6 +76,44 @@ trait PaymentsUpiRecurringTrait
         return $order['id'];
     }
 
+    protected function createUpiRecurringTpvOrder(array $override = [])
+    {
+        $this->ba->privateAuth();
+
+        $content =  [
+            'amount'          => 50000,
+            'currency'        => 'INR',
+            'method'          => 'upi',
+            'bank_account'    => [
+                'name'            => 'Test Recurring TPV',
+                'account_number'  => '12345678921',
+                'ifsc'            => 'ICIC0001183'
+            ],
+            'customer_id'     => 'cust_100000customer',
+            'payment_capture' => 1,
+            'token'           => [
+                'max_amount'      => 150000,
+                'frequency'       => 'monthly',
+                'recurring_type'  => 'before',
+                'recurring_value' => 30,
+                'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
+                'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
+            ]
+        ];
+
+        $content = array_merge($content, $override);
+
+        $request = [
+            'method'  => 'POST',
+            'content' => $content,
+            'url' => '/orders',
+        ];
+
+        $order = $this->makeRequestAndGetContent($request);
+
+        return $order['id'];
+    }
+
     protected function createUpiOrder(array $override = [])
     {
         $this->ba->privateAuth();

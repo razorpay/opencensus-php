@@ -2530,11 +2530,20 @@ class Gateway extends Base\Gateway
 
     protected function checkTpvAndModifyOrder(& $content, $input)
     {
-        // We do not need to add TPV support on UPI Recurring Debit calls
+
+        // Initialize entities.merchant for UPI Recurring
+        // based on merchant.feature.tpv flag mozart will execute preConfig rule and
+        // select config for UPI Recurring TPV
         if ((isset($input['payment']['method']) === true) and
             ($this->isUpiRecurringPayment($input['payment']) === true))
         {
-            return;
+            $content['entities']['merchant'] = [
+                'feature' => [
+                    'tpv' => $input['merchant']->isTPVRequired()
+                ]
+            ];
+
+            return ;
         }
 
         if ($this->action === Action::PAY_INIT and $this->getGateway($input) !== Payment\Gateway::GOOGLE_PAY)

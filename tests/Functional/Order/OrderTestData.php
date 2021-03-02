@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -447,6 +448,42 @@ return [
             'method'    => 'POST',
             'url'       => '/orders',
         ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateUpiRecurringTPVOrder' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank_account'   => [
+                    'account_number'    => '040304030403040',
+                    'ifsc'              => 'ICIC0001183',
+                    'name'              => 'UpiRecurringTPVOrder',
+                ],
+                'customer_id' => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token' => [
+                    'max_amount'        => 150000,
+                    'frequency'         => 'monthly',
+                    'recurring_type'    => 'before',
+                    'recurring_value'   => 30,
+                    'start_at'          => Carbon::now()->addDay(1)->getTimestamp(),
+                    'expire_at'         => Carbon::now()->addDay(60)->getTimestamp(),
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+
         'response' => [
             'content' => [
                 'amount'         => 50000,

@@ -786,6 +786,7 @@ class Terminal extends Base
                 Type::RECURRING_3DS     => '1',
                 Type::RECURRING_NON_3DS => '1',
             ],
+            'tpv' => 2
         ];
 
         $attributes = array_merge($default, $attributes);
