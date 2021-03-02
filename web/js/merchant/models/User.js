@@ -755,6 +755,22 @@ export default class User {
     return this.isFeatureEnabled('automated_loc_eligible');
   }
 
+  get isNPSAnnouncementPG1m() {
+    return this.isFeatureEnabled('nps_survey_pg_1m');
+  }
+
+  get isNPSAnnouncementPG6m() {
+    return this.isFeatureEnabled('nps_survey_pg_6m');
+  }
+
+  get isNPSAnnouncementPL() {
+    return this.isFeatureEnabled('nps_survey_payment_links');
+  }
+
+  get isNPSAnnouncementPP() {
+    return this.isFeatureEnabled('nps_survey_payment_pages');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
