@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
 use Cache;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Models\Dispute\Repository;
@@ -1190,6 +1192,17 @@ class DisputeTest extends TestCase
 
         Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail)
         {
+            $merchantId = $mail->viewData['merchant']['id'];
+
+            $merchantName = $mail->viewData['merchant']['name'];
+
+            $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
+
+            $expectedMailSubject = sprintf('Razorpay | Chargeback Alert - %s [%s] | %s',
+                $merchantName, $merchantId, $currentDate);
+
+            $this->assertEquals($expectedMailSubject, $mail->subject);
+
             $this->assertNotEmpty($mail->rawAttachments);
 
             $this->assertArrayHasKey('data', $mail->rawAttachments[0]);
@@ -1420,6 +1433,54 @@ class DisputeTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
 
         $this->freshdeskFlow(false, false, ['updateTicketV2', 'postTicketReply'], ['updateTicketV2', 'postTicketReply'], false, false, false, false, false, Subcategory::REPORT_FRAUD_FD, $payment);
+    }
+
+    public function testBulkDisputeCreateMailSubject()
+    {
+        Mail::fake();
+
+        $this->ba->cronAuth();
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $disputePhases = [
+            Phase::CHARGEBACK,
+            Phase::PRE_ARBITRATION,
+            Phase::ARBITRATION,
+            Phase::RETRIEVAL,
+            Phase::FRAUD,
+        ];
+
+        foreach ($disputePhases as $disputePhase)
+        {
+            $attributes = [
+                'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+                'gateway_dispute_id'        => 'Dispute100001',
+                'gateway_dispute_status'    => 'open',
+                'reason_id'                 => $reason['id'],
+                'phase'                     => $disputePhase,
+                'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+                'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+                'amount'                    => 10000,
+                'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            ];
+
+            $this->fixtures->create('dispute', $attributes);
+
+            $testData = &$this->testData[__FUNCTION__];
+
+            $this->startTest($testData);
+
+            Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail)
+            {
+                $this->assertEquals($this->getBulkDisputeMailExpectedSubject($mail), $mail->subject);
+
+                return true;
+            });
+        }
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -1848,5 +1909,30 @@ class DisputeTest extends TestCase
         $fdClient
             ->expects($this->never())
             ->method($method);
+    }
+
+    private function getBulkDisputeMailExpectedSubject($mail)
+    {
+        $phase = $mail->viewData['phase'];
+
+        $merchantId = $mail->viewData['merchant']['id'];
+
+        $merchantName = $mail->viewData['merchant']['name'];
+
+        $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
+
+        switch($phase)
+        {
+            case Phase::CHARGEBACK:
+                return sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+            case Phase::RETRIEVAL:
+                return sprintf('Razorpay | Retrieval Request Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+            case Phase::PRE_ARBITRATION:
+                return sprintf('Razorpay | Pre-Arbitration Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+            case Phase::ARBITRATION:
+                return sprintf('Razorpay | Arbritration Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+            case Phase::FRAUD:
+                return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+        }
     }
 }

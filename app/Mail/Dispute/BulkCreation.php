@@ -112,18 +112,20 @@ class BulkCreation extends Base
 
         $merchantName = $this->data['merchant']['name'];
 
+        $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
+
         switch($phase)
         {
             case Phase::CHARGEBACK:
-                return sprintf('Razorpay | Chargeback Alert - %s [%s]', $merchantName, $merchantId);
+                return sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::RETRIEVAL:
-                return sprintf('Razorpay | Retrieval Request Alert - %s [%s]', $merchantName, $merchantId);
+                return sprintf('Razorpay | Retrieval Request Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::PRE_ARBITRATION:
-                return sprintf('Razorpay | Pre-Arbitration Chargeback Alert - %s [%s]', $merchantName, $merchantId);
+                return sprintf('Razorpay | Pre-Arbitration Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::ARBITRATION:
-                return sprintf('Razorpay | Arbritration Alert - %s [%s]', $merchantName, $merchantId);
+                return sprintf('Razorpay | Arbritration Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::FRAUD:
-                return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s]', $merchantName, $merchantId);
+                return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
         }
     }
 }
