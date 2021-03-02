@@ -796,6 +796,8 @@ class Repository extends Base\Repository
 
                 $content['api_type'] = [Type::RECURRING_3DS, Type::RECURRING_NON_3DS];
 
+                $content['methods'] = [Entity::EMANDATE];
+
                 $path = "v1/merchants/terminals";
 
                 $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
