@@ -600,7 +600,7 @@ export default class User {
   }
 
   get isUPISubscriptionEnabled() {
-    return (this.isFeatureEnabled('subscription_upi') || this.getExpStatus('upi_subscription'));
+    return this.isFeatureEnabled('subscription_upi') || this.getExpStatus('upi_subscription');
   }
 
   get isSubscriptionOffersEnabled() {
@@ -663,7 +663,7 @@ export default class User {
   }
 
   get isUPICAWEnabled() {
-    return (this.isFeatureEnabled('caw_upi') || this.getExpStatus('upi_caw'));
+    return this.isFeatureEnabled('caw_upi') || this.getExpStatus('upi_caw');
   }
 
   get isEsignAadharEnabled() {
