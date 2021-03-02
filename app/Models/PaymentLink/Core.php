@@ -1583,6 +1583,11 @@ class Core extends Base\Core
     {
         try
         {
+            if ($this->mode !== Mode::LIVE)
+            {
+                return;
+            }
+
             $variant = $this->app->razorx->getTreatment(
                 $merchant->getId(),
                 Merchant\RazorxTreatment::APPS_RISK_CHECK,
