@@ -45,6 +45,40 @@ return [
         ],
     ],
 
+    'testCreateAuthLinkNullMandate' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '10000',
+                'currency'                  => 'INR',
+                'receipt'                   => '00000000000001',
+                'customer'                  => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'amount'       => 10000,
+                'currency'     => 'INR',
+                'type'         => 'link',
+            ],
+        ],
+    ],
+
     'testCreateAuthLinkWithCardMandate' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',

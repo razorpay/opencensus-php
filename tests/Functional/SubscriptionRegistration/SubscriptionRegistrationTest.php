@@ -39,6 +39,11 @@ class SubscriptionRegistrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAuthLinkNullMandate()
+    {
+        $this->startTest();
+    }
+
     public function testCreateAuthLinkWithCardMandate()
     {
         $this->startTest();

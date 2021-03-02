@@ -375,9 +375,9 @@ class Core extends Base\Core
         return $subscriptionRegistration;
     }
 
-    protected function handleBankMerger(array & $subrInput)
+    protected function handleBankMerger(array & $subrInput = null)
     {
-        if (array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput))
+        if ($subrInput !== null and array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput) === true)
         {
             array_walk($subrInput[Constants\Entity::BANK_ACCOUNT], function (&$value, $key) {
                 if ($key === BankAccount\Entity::IFSC_CODE)
