@@ -5272,6 +5272,8 @@ class Route
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
+        'otp_create'                                   => '*',
+        'los_service'                                  => '*',
         'capital_cards_admin'                          => '*',
         'capital_collections_service'                  => '*',
         'capital_collections_admin'                    => '*',

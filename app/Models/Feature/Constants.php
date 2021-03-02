@@ -361,6 +361,11 @@ class Constants
     const LOC = 'loc';
 
     /**
+     * Gives access to apply for capital card
+     */
+    const CAPITAL_CARDS_ELIGIBLE = 'capital_cards_eligible';
+
+    /**
      * Gives access to los service
      */
     const LOS = 'los';
@@ -814,6 +819,7 @@ class Constants
         self::LOAN                            => true,
         self::LOC                             => true,
         self::LOS                             => true,
+        self::CAPITAL_CARDS_ELIGIBLE          => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::SHOW_ON_DEMAND_DEDUCTION        => true,
         self::ALLOW_NETBANKING_FETCH          => true,
@@ -975,6 +981,11 @@ class Constants
         self::LOS                      => [
             'feature'       => self::LOS,
             'display_name'  => 'Los',
+            'documentation' => '',
+        ],
+        self::CAPITAL_CARDS_ELIGIBLE   => [
+            'feature'       => self::CAPITAL_CARDS_ELIGIBLE,
+            'display_name'  => 'Capital cards eligible',
             'documentation' => '',
         ],
         self::WITHDRAW_LOC              => [

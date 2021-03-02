@@ -779,6 +779,11 @@ return [
                         'display_name' => 'Los'
                     ],
                     [
+                        'feature'      => 'capital_cards_eligible',
+                        'value'        => false,
+                        'display_name' => 'Capital cards eligible'
+                    ],
+                    [
                         'feature'      => 'withdraw_loc',
                         'value'        => false,
                         'display_name' => 'Withdraw Loc'
