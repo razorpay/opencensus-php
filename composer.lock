@@ -4697,12 +4697,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e"
+                "reference": "f9daba413397b7357e3096fe94abcc8caab99cc4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
-                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/f9daba413397b7357e3096fe94abcc8caab99cc4",
+                "reference": "f9daba413397b7357e3096fe94abcc8caab99cc4",
                 "shasum": ""
             },
             "archive": {
@@ -6622,7 +6622,7 @@
             ],
             "description": "Passport SDK. To be used by upstream services to consume passport sent by edge service.",
             "support": {
-                "source": "https://github.com/razorpay/edge-passport-php/tree/master",
+                "source": "https://github.com/razorpay/edge-passport-php/tree/v1.0.1",
                 "issues": "https://github.com/razorpay/edge-passport-php/issues"
             },
             "time": "2021-02-23T03:33:57+00:00"

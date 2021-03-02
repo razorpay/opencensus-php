@@ -6,6 +6,7 @@
 namespace RZP\Providers;
 
 use RZP\Constants\Tracing;
+use RZP\Constants\Mode;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -45,7 +46,10 @@ class OpenCensusProvider extends ServiceProvider
                 return;
             }
 
-            PDO::load();
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+            $db_host = $this->app['config']->get('applications.jaeger.db_host')[$mode];
+
+            PDO::load($db_host);
             Redis::load();
             Curl::load();
 
@@ -58,8 +62,7 @@ class OpenCensusProvider extends ServiceProvider
             $serviceName = Tracing::getServiceName($this->app);
 
             $jaegerExporterOptions = ['host' =>  $this->app['config']->get('applications.jaeger.host'),
-                             'port' =>  $this->app['config']->get('applications.jaeger.port'),
-                             'prefixServiceNameMap' => ['PDO' => 'api_mysql', 'Predis' => 'api_redis']
+                             'port' =>  $this->app['config']->get('applications.jaeger.port')
                             ];
 
             $exporter = new JaegerExporter($serviceName, $jaegerExporterOptions);
