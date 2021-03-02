@@ -18,6 +18,7 @@
 namespace OpenCensus\Trace\Integrations;
 
 use OpenCensus\Trace\Span;
+use OpenCensus\Trace\Tracer;
 
 /**
  * This class handles instrumenting curl requests using the opencensus extension.
@@ -57,6 +58,11 @@ class Curl implements IntegrationInterface
     {
         $info = curl_getinfo($resource);
         $attrs = self::getSpanAttrsFromCurlInfo($info);
+
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
 
         return [
             'attributes' => $attrs,

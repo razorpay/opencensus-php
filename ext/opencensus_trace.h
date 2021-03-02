@@ -28,12 +28,14 @@
 PHP_FUNCTION(opencensus_trace_function);
 PHP_FUNCTION(opencensus_trace_method);
 PHP_FUNCTION(opencensus_trace_list);
+PHP_FUNCTION(opencensus_trace_count);
 PHP_FUNCTION(opencensus_trace_begin);
 PHP_FUNCTION(opencensus_trace_finish);
 PHP_FUNCTION(opencensus_trace_clear);
 PHP_FUNCTION(opencensus_trace_set_context);
 PHP_FUNCTION(opencensus_trace_context);
 PHP_FUNCTION(opencensus_trace_add_attribute);
+PHP_FUNCTION(opencensus_trace_remove_span);
 PHP_FUNCTION(opencensus_trace_add_annotation);
 PHP_FUNCTION(opencensus_trace_add_link);
 PHP_FUNCTION(opencensus_trace_add_message_event);

@@ -18,6 +18,7 @@
 namespace OpenCensus\Trace\Integrations;
 
 use OpenCensus\Trace\Span;
+use OpenCensus\Trace\Tracer;
 
 /**
  * This class handles instrumenting PDO requests using the opencensus extension.
@@ -72,6 +73,11 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         return [
             'attributes' => [
                 'db.statement' => $query,
@@ -96,34 +102,39 @@ class PDO implements IntegrationInterface
         // example $dsn: mysql:host=localhost;dbname=testdb
         // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
 
+
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         $db_system = '';
         $connection_params = [];
         $attributes = [];
 
         $dbtype_connection = explode(":", $dsn);
-        if (count($dbtype_connection) >= 2){
+        if (count($dbtype_connection) >= 2) {
             $db_system = $dbtype_connection[0];
             $connection = $dbtype_connection[1];
-            foreach (explode(";", $connection) as $kv){
+            foreach (explode(";", $connection) as $kv) {
                 $params = explode("=", $kv);
                 $connection_params[$params[0]] = $params[1];
             }
         }
 
-        if ($db_system){
+        if ($db_system) {
             $attributes['db.system'] = $db_system;
         }
-        if (array_key_exists('dbname', $connection_params)){
+        if (array_key_exists('dbname', $connection_params)) {
             $attributes['db.name'] = $connection_params['dbname'];
         }
-        if (array_key_exists('port', $connection_params)){
+        if (array_key_exists('port', $connection_params)) {
             $attributes['net.peer.port'] =  $connection_params['port'];
         }
 
-        if (array_key_exists('host', $connection_params)){
+        if (array_key_exists('host', $connection_params)) {
             $attributes['net.peer.name'] =  $connection_params['host'];
-        }
-        else if (array_key_exists('unix_socket', $connection_params)){
+        } elseif (array_key_exists('unix_socket', $connection_params)) {
             $attributes['net.peer.name'] = PDO::$db_host;
         }
 
@@ -155,6 +166,11 @@ class PDO implements IntegrationInterface
             refer following for SQL return codes
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
+
+        // checks if span limit has reached and if yes flushes the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
 
         $rowCount = $statement->rowCount();
         $errorCode = $statement->errorCode();

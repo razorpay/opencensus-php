@@ -102,6 +102,12 @@ class Tracer
     private static $instance;
 
     /**
+     * @var RequestHandler Singleton instance
+     */
+    public static $tracer;
+
+
+    /**
      * Start a new trace session for this request. You should call this as early as
      * possible for the most accurate results.
      *
@@ -129,7 +135,11 @@ class Tracer
             : new HttpHeaderPropagator();
         unset($options['propagator']);
 
-        return self::$instance = new RequestHandler($reporter, $sampler, $propagator, $options);
+        self::$instance = new RequestHandler($reporter, $sampler, $propagator, $options);
+
+        self::$tracer = self::$instance->tracer();
+
+        return self::$instance;
     }
 
     /**

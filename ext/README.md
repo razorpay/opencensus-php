@@ -317,6 +317,26 @@ You can retrieve the version of this extension at runtime.
 function opencensus_trace_version();
 ```
 
+```php
+/**
+ * Retrieve the count of collected trace spans, currently in memory
+ *
+ * @return int
+ */
+function opencensus_trace_count();
+}
+```
+
+```php
+/**
+ * Removes a span from the list.
+ *
+ * @param string $key
+ *
+ */
+function opencensus_trace_remove_span($key);
+```
+
 This library follows [Semantic Versioning](http://semver.org/).
 
 Please note it is currently under active development. Any release versioned
@@ -343,6 +363,10 @@ See [CONTRIBUTING](../CONTRIBUTING.md) for more information on how to get starte
 
 Apache 2.0 - See [LICENSE](LICENSE) for more information.
 
-## Limiting spans in traces
-SPAN_LIMIT variable in `opencensus_trace.c` defines max number of spans in any trace. This is to
-contain memory bloat that's caused by holiding the spans till the request-response cycle is finished.
+## Exporting span once limit is reached to stop memory from bloating
+
+Have added $spanBufferLimit variable in ExtensionTracer.php to control the maximun number
+of spans that can be hold in memory at any time, when the limit is reached the tracer itself
+export all the closed spans.
+
+
