@@ -577,6 +577,7 @@ export default class CreateVirtualAccount extends React.Component {
                     >
                       {showVPADescriptor && (
                         <Input
+                          autoRender
                           name="descriptorVPA"
                           size="vpa_custom"
                           disabled={false}
