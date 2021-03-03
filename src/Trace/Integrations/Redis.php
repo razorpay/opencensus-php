@@ -94,7 +94,7 @@ class Redis implements IntegrationInterface
                         'service.name' => 'redis',
                         'redis.raw_command' => $query,
                         'redis.args_length' => count($arguments),
-                        'span.kind' => Span::KIND_CLIENT
+                        'span.kind' => 'client'
                     ],
                     'kind' => Span::KIND_CLIENT,
                     'name' => 'Predis ' . $command->getId(),
