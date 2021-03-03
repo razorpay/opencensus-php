@@ -614,8 +614,6 @@ class UpiIciciGatewayReconTest extends TestCase
 
     public function testAllowedAmountMismatch()
     {
-        config()->set('app.recon.allow_mismatch', true);
-
         $createdAt  = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
         $diff       = 100;
         $amount     = $this->payment['amount'];

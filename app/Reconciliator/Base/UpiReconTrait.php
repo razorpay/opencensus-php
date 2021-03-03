@@ -198,11 +198,6 @@ trait UpiReconTrait
                 'payment_meta_id' => $metaId,
             ]);
 
-        if (config('app.recon.allow_mismatch') === true)
-        {
-            return $allowed;
-        }
-
-        return false;
+        return $allowed;
     }
 }
