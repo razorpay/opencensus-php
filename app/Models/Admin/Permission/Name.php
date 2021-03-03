@@ -552,10 +552,13 @@ class Name
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';
 
-    //TPV
+    // TPV for fund loading into X
     const CREATE_BANKING_ACCOUNT_TPV                   = 'create_banking_account_tpv';
     const EDIT_BANKING_ACCOUNT_TPV                     = 'edit_banking_account_tpv';
     const VIEW_BANKING_ACCOUNT_TPV                     = 'view_banking_account_tpv';
+
+    // Whitelist VA to VA payouts based on destination MID
+    const EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS = 'edit_destination_mids_to_whitelist_va_to_va_payouts';
 
     // Set globally whitelisted payer accounts for rx fund loading
     const SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS = 'set_rx_globally_whitelisted_payer_accounts';

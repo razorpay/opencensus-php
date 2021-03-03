@@ -1055,10 +1055,14 @@ return [
                 'description'   => 'Allows to set shared account channels',
                 'assignable'    => true,
             ],
+            Permission::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS => [
+                'description'   => 'Allows to edit whitelisted destination MIDs for VA to VA payouts',
+                'assignable'    => true,
+            ],
             Permission::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS => [
                 'description'   => 'Allows to set globally whitelisted payer accounts for fund loading for RazorpayX',
                 'assignable'    => true,
-            ]
+            ],
         ],
 
         PermissionCategory::UPI => [

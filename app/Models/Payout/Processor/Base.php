@@ -1497,12 +1497,18 @@ class Base extends BaseCore
                 {
                     // We are maintaining a list of destination bank accounts on redis that we shall allow
                     // the merchant to create payouts to.
-                    $destinationAccountsToWhitelist = (new AdminService)->getConfigKey(
+                    $destinationMIDsToWhitelist = (new AdminService)->getConfigKey(
                         [
-                            'key' => ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS
+                            'key' => ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS
                         ]);
 
-                    if (in_array($bankAccount->getAccountNumber(), $destinationAccountsToWhitelist, true) === true)
+                    $doesDestinationAccountBelongToWhitelistedMerchants
+                        = $this->repo
+                               ->bank_account
+                               ->checkIfBankAccountBelongsToWhitelistedMerchant($bankAccount,
+                                                                                $destinationMIDsToWhitelist);
+
+                    if ($doesDestinationAccountBelongToWhitelistedMerchants === true)
                     {
                         $blockVAToVAPayouts = false;
 

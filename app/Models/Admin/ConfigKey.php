@@ -157,7 +157,7 @@ class ConfigKey
     // This will be the cutoff based on which we shall decide which flow to show for bulk payouts.
     const BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP = self::PREFIX . 'bulk_payouts_new_merchant_cutoff_timestamp';
 
-    const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_accounts';
+    const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
@@ -234,7 +234,7 @@ class ConfigKey
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
-        self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS,
+        self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
     ];
 
@@ -253,6 +253,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_WALLET => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_PAYMENT_DOWNTIMES => [Name::CREATE_GATEWAY_DOWNTIME],
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => [Name::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS],
+        self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => [Name::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS],
     ];
 
     /**

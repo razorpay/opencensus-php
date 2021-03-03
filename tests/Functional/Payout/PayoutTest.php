@@ -10143,28 +10143,59 @@ class PayoutTest extends OAuthTestCase
     }
 
     // Since this is a VA to VA payout and razorx returns control, we should fail this payout.
-    // But in this case, we have whitelisted the destination account number, hence the payout should go through.
+    // But in this case, we have whitelisted the destination MID, hence the payout should go through.
     public function testAllowVAtoVAPayoutsWhenSourceDestinationIsWhitelisted()
     {
         $fundAccountResponse = $this->createFundAccountOfYesbankVA();
 
+        //
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        // Using MID 100000Razorpay so that we can white-list it and the payout goes through
+        //
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccountResponse['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccountResponse['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+
         $fundAccountId = $fundAccountResponse['id'];
 
-        $fundAccount = $this->getDbEntityById('fund_account', $fundAccountId);
+        $this->ba->adminAuth();
 
-        $destinationBankAccountNumber = $fundAccount->account->getAccountNumber();
-
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_ACCOUNTS => [$destinationBankAccountNumber]
-            ]
-        );
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
         $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
 
         $this->startTest($testData);
     }

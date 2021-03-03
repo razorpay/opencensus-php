@@ -509,4 +509,27 @@ class Repository extends Base\Repository
             ->limit($limit)
             ->get();
     }
+
+    public function checkIfBankAccountBelongsToWhitelistedMerchant(Entity $bankAccount,
+                                                                   array $destinationMIDsToWhitelist): bool
+    {
+        $typeColumn          = $this->repo->bank_account->dbColumn(Entity::TYPE);
+        $entityIdColumn      = $this->repo->bank_account->dbColumn(Entity::ENTITY_ID);
+        $ifscCodeColumn      = $this->repo->bank_account->dbColumn(Entity::IFSC_CODE);
+        $merchantIdColumn    = $this->repo->bank_account->dbColumn(Entity::MERCHANT_ID);
+        $accountNumberColumn = $this->repo->bank_account->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        $virtualAccountTable             = $this->repo->virtual_account->getTableName();
+        $virtualAccountIdColumn          = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+        $virtualAccountTableStatusColumn = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::STATUS);
+
+        return $this->newQuery()
+                    ->join($virtualAccountTable, $entityIdColumn, '=', $virtualAccountIdColumn)
+                    ->where($accountNumberColumn, '=', $bankAccount->getAccountNumber())
+                    ->where($ifscCodeColumn, '=', $bankAccount->getIfscCode())
+                    ->where($typeColumn, '=', Type::VIRTUAL_ACCOUNT)
+                    ->where($virtualAccountTableStatusColumn, '=', VirtualAccount\Status::ACTIVE)
+                    ->whereIn($merchantIdColumn, $destinationMIDsToWhitelist)
+                    ->exists();
+    }
 }
