@@ -1594,6 +1594,7 @@ class Core extends Base\Core
                 $this->mode
             );
 
+
             if ($variant === 'on')
             {
                 $riskCheckInput = $this->getRiskCheckInput($paymentLink);
@@ -1619,8 +1620,10 @@ class Core extends Base\Core
     protected function getRiskCheckInput(Entity $paymentLink)
     {
         $riskInput = [
+            'entity_type'   => 'payment_pages',
             'client_type'   => 'payment_pages',
-            'entity_id'     => $paymentLink->getMerchantId(),
+            'entity_id'     => $paymentLink->getId(),
+            'merchant_id'   => $paymentLink->getMerchantId(),
             'fields'        => [
                 [
                     'key'        => 'description',
