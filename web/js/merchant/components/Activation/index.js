@@ -1845,7 +1845,14 @@ export default class ActivationWizard extends React.Component {
               {FORM_TABS[activeTab]}
             </span>
 
-            <span className="device--desktop">{FORM_TABS[activeTab]}</span>
+            <span className="device--desktop">
+              {FORM_TABS[activeTab]}
+              {FORM_TABS[activeTab] === 'Documents Upload' && (
+                <div className="file-limit-label">
+                  You can upload JPG/PNG of max. size 4MB or PDF of max. size 2 MB
+                </div>
+              )}
+            </span>
           </main-title>
           {FORM_TABS[activeTab] === 'Needs Clarification' && (
             <span className="sub-text-nc">
