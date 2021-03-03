@@ -828,6 +828,7 @@ class Netbanking
         IFSC::ZCBL,
         IFSC::UTIB,
         IFSC::CIUB,
+        IFSC::FDRL,
         self::LAVB_C,
         self::UTIB_C,
         self::IBKL_C,
