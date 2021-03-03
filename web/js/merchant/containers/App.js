@@ -415,11 +415,6 @@ export default class App extends Component {
           id: user.id,
           email: user.user.email,
         });
-
-        window.hj &&
-          window.hj('identify', user.merchant.id, {
-            'Signed up date': moment(user.user.created_at, 'X').toISOString(),
-          });
       }
 
       return Promise.resolve({ data: user });
