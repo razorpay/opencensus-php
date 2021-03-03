@@ -49,7 +49,7 @@ class CaptureVerify extends Verify
             switch ($action)
             {
                 case Action::BLOCK:
-                    $this->blockGatewayForVerify($payment->getGateway());
+                    $this->blockGatewayForVerify($payment);
                     $this->updateVerifyBucket($payment, $filter, self::CURR);
                     break;
 

@@ -1704,8 +1704,18 @@ class Gateway
     // TODO: Revisit this once for correct numbers, high number can create issue by clogging cron
     public static $verifyBlockThresholdGateways = [
         self::UPI_AXIS       => 50,
-        self::UPI_ICICI      => 700,
+        self::UPI_ICICI      => 300,
         self::UPI_MINDGATE   => 100,
+    ];
+
+    // This is to configure the time interval in which we count errors to block gateways if we get timeout errors in verify.
+    public static $verifyBlockBucketIntervalGateways = [
+        self::UPI_ICICI      => 180,  // 3 minutes
+    ];
+
+    // This is to configure the block time for a gateway if we timeout errors cross the threshold in verify.
+    public static $verifyBlockTimeGateways = [
+        self::UPI_ICICI      => 300,  // 5 minutes
     ];
 
     /**

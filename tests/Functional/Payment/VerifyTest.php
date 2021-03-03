@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentVerifyTrait;
@@ -15,6 +16,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentVerifyTrait;
 class VerifyTest extends TestCase
 {
     use PaymentTrait;
+    use MocksRedisTrait;
     use DbEntityFetchTrait;
     use PaymentVerifyTrait;
 
@@ -1270,6 +1272,66 @@ class VerifyTest extends TestCase
         ];
 
         $this->assertContent($content, $resultData);
+
+        Carbon::setTestNow();
+    }
+
+    public function testTimeoutUpiPaymentIciciVerifyAndBlockGateway()
+    {
+        $redisMock = $this->setupRedisMockWithOptions();
+
+        // set the terminal to upi icici and enable upi for the merchant
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $this->gateway = 'upi_icici';
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        // do payment transaction and fail it so that it can be picked during verify.
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('92', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+        $this->assertSame('92', $upi->status_code);
+
+        $this->resetMockServer();
+
+        $this->getTimeoutInVerify();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+        // redis increment should be done once for upi icici
+        $redisMock->expects($this->once())
+                  ->method('incr');
+
+        // should block upi icici for exactly 5 minutes
+        $redisMock->expects($this->once())
+                  ->method('hSet')
+                  ->with("verify:gateway_block_cache", "upi_icici", $now->getTimestamp() + 300);
+        
+        $this->makeRequestAndGetContent($request);
 
         Carbon::setTestNow();
     }

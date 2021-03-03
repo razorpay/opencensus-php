@@ -1212,7 +1212,7 @@ class Verify extends Base\Core
             switch ($action)
             {
                 case Action::BLOCK:
-                    $this->blockGatewayForVerify($payment->getGateway());
+                    $this->blockGatewayForVerify($payment);
                     $this->updateVerifyBucket($payment, $filter, self::CURR);
 
                     break;
@@ -1374,7 +1374,7 @@ class Verify extends Base\Core
         switch ($action)
         {
             case Action::BLOCK:
-                $this->blockGatewayForVerify($payment->getGateway());
+                $this->blockGatewayForVerify($payment);
                 $this->updateVerifyBucket($payment, $filter, self::CURR);
 
                 break;
@@ -1477,11 +1477,41 @@ class Verify extends Base\Core
         return $threshold;
     }
 
+    protected function getBucketIntervalForBlock(Payment\Entity $payment)
+    {
+        $bucketInterval = self::GATEWAY_TIMEOUT_BUCKET_INTERVAL;
+
+        // We are doing this at a gateway level, as we dont want to change the bucket time for all upi payments.
+        if (isset(Payment\Gateway::$verifyBlockBucketIntervalGateways[$payment->getGateway()]) === true)
+        {
+            $bucketInterval = Payment\Gateway::$verifyBlockBucketIntervalGateways[$payment->getGateway()];
+        }
+
+        return $bucketInterval;
+    }
+
+    protected function getTimeForBlock(Payment\Entity $payment)
+    {
+        $gatewayBlockTime = self::GATEWAY_BLOCK_TIME;
+
+        // We are doing this at a gateway level, as we dont want to increase the threshold for all upi payments.
+        // That might put unnecessary load on cron when gateway is down. If some other gateway has timeout issues
+        // then we can add that gateway in the list.
+        if (isset(Payment\Gateway::$verifyBlockTimeGateways[$payment->getGateway()]) === true)
+        {
+            $gatewayBlockTime = Payment\Gateway::$verifyBlockTimeGateways[$payment->getGateway()];
+        }
+
+        return $gatewayBlockTime;
+    }
+
     protected function checkForPreviousRequestErrorAndBlockGatewayIfApplicable(Payment\Entity $payment, int $threshold, string $key)
     {
         $currentTimestamp = Carbon::now()->getTimestamp();
 
-        $currentTimestampBucket = (int)($currentTimestamp / self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
+        $timeoutBucketInterval = $this->getBucketIntervalForBlock($payment);
+
+        $currentTimestampBucket = (int)($currentTimestamp / $timeoutBucketInterval);
 
         $gateway = $payment->getGateway();
 
@@ -1489,24 +1519,32 @@ class Verify extends Base\Core
 
         $requestErrorPaymentsCount = (int) $this->redis->incr($key);
 
-        $this->redis->expire($key, self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
+        $this->redis->expire($key, $timeoutBucketInterval);
 
         if ($requestErrorPaymentsCount >= $threshold)
         {
-            $this->blockGatewayForVerify($gateway);
+            $this->blockGatewayForVerify($payment);
         }
     }
 
-    protected function blockGatewayForVerify(string $gateway)
+    protected function blockGatewayForVerify(Payment\Entity $payment)
     {
+        $expireTime = Carbon::now()->getTimestamp() + $this->getTimeForBlock($payment);
+
         $this->trace->info(
             TraceCode::VERIFY_GATEWAY_BLOCK,
-            ['gateway' => $gateway]
-        );
+            [
+                'gateway'               => $payment->getGateway(),
+                'expire_time'           => $expireTime,
+                'timeout_threshold'     => $this->getTimeoutThresholdForBlock($payment),
+                'bucket_interval'       => $this->getBucketIntervalForBlock($payment),
+                'block_time'            => $this->getTimeForBlock($payment),
+            ]);
+
         $this->redis->hSet(
             self::GATEWAY_BLOCK_CACHE_KEY,
-            $gateway,
-            Carbon::now()->getTimestamp() + self::GATEWAY_BLOCK_TIME
+            $payment->getGateway(),
+            $expireTime
         );
     }
 
