@@ -55,7 +55,9 @@ class CardProcessor extends BaseProcessor
 
         foreach ($unavailableNetworks as $network)
         {
-            $this->createPaymentDowntime($network, $gatewayDowntimes);
+            $downtimes = $gatewayDowntimes->where(GatewayDowntime::NETWORK, '=', $network);
+
+            $this->createPaymentDowntime($network, $downtimes->count() != 0 ? $downtimes : $gatewayDowntimes);
         }
 
         foreach ($unavailableIssuer as $issuer)
