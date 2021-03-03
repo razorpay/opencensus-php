@@ -23,7 +23,7 @@ class TerminalCreation extends Base
         {
             parent::__construct($batch);
         }
-        
+
         $this->terminalService = new Terminal\Service;
     }
 
@@ -126,7 +126,9 @@ class TerminalCreation extends Base
         ];
 
         // Unsetting empty or null values
-        $createTerminalParams = array_filter($createTerminalParams);
+        $createTerminalParams = array_filter($createTerminalParams, function($v) {
+            return ($v !== null) && ($v !== '');
+        });
 
         $terminal = $this->terminalService->createTerminal($merchantId, $createTerminalParams);
 
@@ -140,14 +142,14 @@ class TerminalCreation extends Base
     {
         foreach(Batch\Header::HEADER_MAP[Batch\Type::TERMINAL_CREATION][Batch\Header::SENSITIVE_HEADERS] as $sensitiveHeader)
         {
-            if( (isset($entry[$sensitiveHeader]) === true) and 
+            if( (isset($entry[$sensitiveHeader]) === true) and
                 (empty($entry[$sensitiveHeader]) === false) )
             {
                 $aesCrypto =  new AESCrypto();
 
                 $entry[$sensitiveHeader] = $aesCrypto->decryptString($entry[$sensitiveHeader]);
-            }   
-        }   
+            }
+        }
     }
 
     public function getTerminalTypeParam($typeString)

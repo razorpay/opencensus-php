@@ -145,7 +145,7 @@ class TerminalCreationBulkTest extends TestCase
             ->andReturnUsing(function (array $input, $merchant, $ufhFile) use ($expectedOutputData)
             {
                 $rows = $this->parseCsvFile($ufhFile->getFullFilePath());
-                // assert that sensitive headers(gateway secure secret,  account number) are actually encrypted 
+                // assert that sensitive headers(gateway secure secret,  account number) are actually encrypted
                 $this->assertArraySelectiveEquals($rows, $expectedOutputData);
 
                 return [
@@ -211,7 +211,24 @@ class TerminalCreationBulkTest extends TestCase
         $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
     }
 
-    // to test terminal_password, terminal_password2, gateway_secure_secret, gateway_secure_secret2 fields    
+    // to test paytm bulk creation
+    public function testBulkTerminalPaytm()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, count($response['items']));
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
+
+        $this->assertEquals(0, $response['items'][0]['Card']);
+        $this->assertEquals(1, $response['items'][0]['Netbanking']);
+    }
+
+    // to test terminal_password, terminal_password2, gateway_secure_secret, gateway_secure_secret2 fields
     public function testBulkTerminalAtom()
     {
         $this->ba->appAuth();
@@ -225,7 +242,7 @@ class TerminalCreationBulkTest extends TestCase
         $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
     }
 
-    // to test mc_mpan, visa_mpan, rupay_mpan and type[bhsrat_qr] fields  
+    // to test mc_mpan, visa_mpan, rupay_mpan and type[bhsrat_qr] fields
     public function testBulkTerminalWorldline()
     {
         $this->ba->appAuth();
@@ -236,10 +253,10 @@ class TerminalCreationBulkTest extends TestCase
 
         $terminal = $this->getLastEntity('terminal', true);
 
-        $this->assertEquals(base64_encode('4343123412341234'), $terminal['mc_mpan']); // mpan stored would be tokenized 
+        $this->assertEquals(base64_encode('4343123412341234'), $terminal['mc_mpan']); // mpan stored would be tokenized
 
         $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
-    }    
+    }
 
     public function testBulkTerminalCreationInvalidInput()
     {

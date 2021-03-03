@@ -252,7 +252,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -266,7 +266,7 @@ return [
                         'Gateway'               =>  'BILLDESK',
                         'Gateway Secure Secret' =>  'redacted', // would be written in output file
                     ]
-    
+
                 ]
             ]
         ],
@@ -326,7 +326,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -339,7 +339,7 @@ return [
                         'Merchant Id'           =>  '10000000000000',
                         'Gateway'               =>  'upi_axis',
                     ]
-    
+
                 ]
             ]
         ],
@@ -400,7 +400,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -452,11 +452,124 @@ return [
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    ]   
+                    ]
                 ]
             ]
         ],
     ],
+
+    'testBulkTerminalPaytm' => [
+        'request'  => [
+            'url'     => '/terminals/bulk',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'idempotency_key'                              => 'randomIdempotencyKey',
+                    Header::TERMINAL_CREATION_MERCHANT_ID          => '10000000000000',
+                    Header::TERMINAL_CREATION_GATEWAY              => 'paytm',
+                    Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID  => 'RPAY00000907',
+                    Header::TERMINAL_CREATION_GATEWAY_TERMINAL_ID  => 'test',
+                    Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2 => null,
+                    Header::TERMINAL_CREATION_GATEWAY_ACCESS_CODE  => 'PAYGATE986',
+                    Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD   =>  null,
+                    Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2  =>  null,
+                    Header::TERMINAL_CREATION_GATEWAY_SECURE_SECRET       =>  'e9e1795303fdf0483c823a34a5972331',
+                    Header::TERMINAL_CREATION_GATEWAY_SECURE_SECRET2      =>  null,
+                    Header::TERMINAL_CREATION_GATEWAY_RECON_PASSWORD      =>  null,
+                    Header::TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE  =>  null,
+                    Header::TERMINAL_CREATION_MC_MPAN              => null,
+                    Header::TERMINAL_CREATION_VISA_MPAN            => null,
+                    Header::TERMINAL_CREATION_RUPAY_MPAN           => null,
+                    Header::TERMINAL_CREATION_VPA                  => null,
+                    Header::TERMINAL_CREATION_CATEGORY             => '8211',
+                    Header::TERMINAL_CREATION_CARD                 => 0,
+                    Header::TERMINAL_CREATION_NETBANKING           => 1,
+                    Header::TERMINAL_CREATION_EMANDATE             => null,
+                    Header::TERMINAL_CREATION_EMI                  => null,
+                    Header::TERMINAL_CREATION_UPI                  => null,
+                    Header::TERMINAL_CREATION_OMNICHANNEL          => null,
+                    Header::TERMINAL_CREATION_BANK_TRANSFER        => null,
+                    Header::TERMINAL_CREATION_AEPS                 => null,
+                    Header::TERMINAL_CREATION_EMI_DURATION         => null,
+                    Header::TERMINAL_CREATION_TYPE                 => null,
+                    Header::TERMINAL_CREATION_MODE                 => null,
+                    Header::TERMINAL_CREATION_TPV                  => null,
+                    Header::TERMINAL_CREATION_INTERNATIONAL        => null,
+                    Header::TERMINAL_CREATION_CORPORATE            => null,
+                    Header::TERMINAL_CREATION_EXPECTED             => null,
+                    Header::TERMINAL_CREATION_EMI_SUBVENTION       => null,
+                    Header::TERMINAL_CREATION_GATEWAY_ACQUIRER     => null,
+                    Header::TERMINAL_CREATION_NETWORK_CATEGORY     => 'corporate',
+                    Header::TERMINAL_CREATION_CURRENCY             => null,
+                    Header::TERMINAL_CREATION_ACCOUNT_NUMBER       => null,
+                    Header::TERMINAL_CREATION_IFSC_CODE            => null,
+                    Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
+                    Header::TERMINAL_CREATION_PAYLATER             => null,
+                    Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_CAPABILITY           => null,
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'items' =>
+                    [
+                        '0' => [
+                            'idempotency_key'    => 'randomIdempotencyKey',
+                            'success'           => true,
+                            'http_status_code'  => 201,
+                            'error'             =>  [
+                                'code'        =>  '',
+                                'description' =>  ''
+                            ],
+                            Header::TERMINAL_CREATION_MERCHANT_ID          => '10000000000000',
+                            Header::TERMINAL_CREATION_GATEWAY              => 'paytm',
+                            Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID  => 'RPAY00000907',
+                            Header::TERMINAL_CREATION_GATEWAY_TERMINAL_ID  => 'test',
+                            Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2 => null,
+                            Header::TERMINAL_CREATION_GATEWAY_ACCESS_CODE  => 'PAYGATE986',
+                            Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD   =>  null,
+                            Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2  =>  null,
+                            Header::TERMINAL_CREATION_GATEWAY_SECURE_SECRET       =>  'redacted',
+                            Header::TERMINAL_CREATION_GATEWAY_SECURE_SECRET2      =>  null,
+                            Header::TERMINAL_CREATION_GATEWAY_RECON_PASSWORD      =>  null,
+                            Header::TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE  =>  null,
+                            Header::TERMINAL_CREATION_MC_MPAN              => null,
+                            Header::TERMINAL_CREATION_VISA_MPAN            => null,
+                            Header::TERMINAL_CREATION_RUPAY_MPAN           => null,
+                            Header::TERMINAL_CREATION_VPA                  => null,
+                            Header::TERMINAL_CREATION_CATEGORY             => '8211',
+                            Header::TERMINAL_CREATION_CARD                 => 0,
+                            Header::TERMINAL_CREATION_NETBANKING           => 1,
+                            Header::TERMINAL_CREATION_EMANDATE             => null,
+                            Header::TERMINAL_CREATION_EMI                  => null,
+                            Header::TERMINAL_CREATION_UPI                  => null,
+                            Header::TERMINAL_CREATION_OMNICHANNEL          => null,
+                            Header::TERMINAL_CREATION_BANK_TRANSFER        => null,
+                            Header::TERMINAL_CREATION_AEPS                 => null,
+                            Header::TERMINAL_CREATION_EMI_DURATION         => null,
+                            Header::TERMINAL_CREATION_TYPE                 => null,
+                            Header::TERMINAL_CREATION_MODE                 => null,
+                            Header::TERMINAL_CREATION_TPV                  => null,
+                            Header::TERMINAL_CREATION_INTERNATIONAL        => null,
+                            Header::TERMINAL_CREATION_CORPORATE            => null,
+                            Header::TERMINAL_CREATION_EXPECTED             => null,
+                            Header::TERMINAL_CREATION_EMI_SUBVENTION       => null,
+                            Header::TERMINAL_CREATION_GATEWAY_ACQUIRER     => null,
+                            Header::TERMINAL_CREATION_NETWORK_CATEGORY     => 'corporate',
+                            Header::TERMINAL_CREATION_CURRENCY             => null,
+                            Header::TERMINAL_CREATION_ACCOUNT_NUMBER       => null,
+                            Header::TERMINAL_CREATION_IFSC_CODE            => null,
+                            Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
+                            Header::TERMINAL_CREATION_PAYLATER             => null,
+                            Header::TERMINAL_CREATION_ENABLED              => null,
+                            Header::TERMINAL_CREATION_CAPABILITY           => null,
+                        ]
+                    ]
+            ]
+        ],
+    ],
+
 
     'testBulkTerminalAtom' => [
         'request'  => [
@@ -512,7 +625,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -564,7 +677,7 @@ return [
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    ]   
+                    ]
                 ]
             ]
         ],
@@ -624,7 +737,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -676,7 +789,7 @@ return [
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
-                    ]   
+                    ]
                 ]
             ]
         ],
@@ -782,7 +895,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'   =>  'randomIdempotencyKey2',
@@ -803,7 +916,7 @@ return [
                             'code' =>  null,
                             'description' =>  'A terminal with the same field exists - 100UPIAXISTmnl'
                         ],
-                    ]    
+                    ]
                 ]
             ]
         ],
