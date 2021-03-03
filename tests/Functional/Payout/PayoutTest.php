@@ -8845,6 +8845,31 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    /**
+     * Keeping this test here because although we are testing for fund account dedup, it's happening via
+     * composite API which requires certain setups which already exist in payoutTest
+     */
+    public function testDuplicateFundAccountInCaseOfCompositePayoutCreatedBySettlements()
+    {
+        $fundAccountCountBefore = count($this->getDbEntities('fund_account'));
+
+        $this->testSourceCreationInCaseOfCompositePayoutCreatedBySettlements();
+
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
+
+        $response = $this->startTest();
+
+        $this->getDbLastEntity('payout');
+
+        $fundAccountCountAfter = count($this->getDbEntities('fund_account'));
+
+        $this->assertEquals(1, ($fundAccountCountAfter - $fundAccountCountBefore));
+    }
+
     public function testPayoutSetStatusQueuePushSkippedWhenSourceDetailsAbsent()
     {
         $this->app->instance('rzp.mode', "live");

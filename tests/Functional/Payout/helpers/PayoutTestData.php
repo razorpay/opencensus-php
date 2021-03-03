@@ -10305,6 +10305,78 @@ return [
         ],
     ],
 
+    'testDuplicateFundAccountInCaseOfCompositePayoutCreatedBySettlements' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Mehul Kaushik',
+                        'ifsc'           => 'ICIC0000104',
+                        'account_number' => '1111000011110000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'settlements',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'settlements',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutViaUpi' => [
         'request'  => [
             'method'  => 'POST',

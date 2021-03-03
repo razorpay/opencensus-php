@@ -294,7 +294,8 @@ class Service extends Base\Service
 
     protected function isAllowedInternalAppForDeDuplicateFA(): bool
     {
-        return $this->auth->isPayoutLinkApp();
+        return ($this->auth->isPayoutLinkApp() or
+                $this->auth->isSettlementsApp());
     }
 
     protected function handleFundAccountCreationForCustomer(array $input)
