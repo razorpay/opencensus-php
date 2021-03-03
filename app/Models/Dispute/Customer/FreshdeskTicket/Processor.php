@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute\Customer\FreshdeskTicket;
 use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Models\Dispute\Reason\Network;
@@ -101,9 +102,20 @@ class Processor
             }
             else
             {
-                $this->trace->info(TraceCode::FRESHDESK_DISPUTE_TICKET_ACTION, ['action' => Constants::ACTION_CREATE_DISPUTE]);
+                $paymentCreatedElapsedInSecs = Carbon::now(Timezone::IST)->getTimestamp() - $this->payment->getCreatedAt();
 
-                $this->handleCreateDispute();
+                if ($paymentCreatedElapsedInSecs > Constants::MAX_ALLOWED_DISPUTE_CREATION_WINDOW_IN_SECS)
+                {
+                    $this->trace->info(TraceCode::FRESHDESK_DISPUTE_TICKET_ACTION, ['action' => Constants::ACTION_DISPUTE_CREATION_EXPIRY]);
+
+                    $this->handleDisputeCreationExpiry();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::FRESHDESK_DISPUTE_TICKET_ACTION, ['action' => Constants::ACTION_CREATE_DISPUTE]);
+
+                    $this->handleCreateDispute();
+                }
             }
         }
         catch (\Throwable $e)
@@ -163,6 +175,19 @@ class Processor
         $this->closeTicket();
     }
 
+    private function handleDisputeCreationExpiry()
+    {
+        $ticketStatus = Constants::FD_TICKET_STATUS_PENDING;
+
+        $ticketTags = [
+            Constants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+            Constants::FD_TAGS_PENDING_WITH_DISPUTES,
+            Constants::FD_TAGS_PAYMENT_OLDER_THAN_SIX_MONTHS,
+        ];
+
+        $this->changeTicketGroupToCspWithRelevantTags($ticketStatus, $ticketTags);
+    }
+
     private function handleCreateDispute()
     {
         $reasonDetail = ReasonCode::REASON_CODE_MAP[$this->freshdeskTicket->getSubcategory()][$this->freshdeskTicket->getReasonCode()];
@@ -186,6 +211,14 @@ class Processor
 
         $this->replyToTicket($renderedBody);
 
-        $this->changeTicketGroupToCspWithRelevantTags();
+        $ticketStatus = Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY;
+
+        $ticketTags = [
+            Constants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+            Constants::FD_TAGS_DISPUTE_CREATED,
+            Constants::FD_TAGS_PENDING_WITH_DISPUTES,
+        ];
+
+        $this->changeTicketGroupToCspWithRelevantTags($ticketStatus, $ticketTags);
     }
 }

@@ -20,7 +20,7 @@ trait Ticket
         return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
     }
 
-	private function changeTicketGroupToCspWithRelevantTags() : array
+    private function changeTicketGroupToCspWithRelevantTags(int $status, array $tags) : array
     {
         $agentId = (int) $this->freshdeskCustomerDisputeConfig['automation_agent_id'];
 
@@ -28,16 +28,13 @@ trait Ticket
 
         $response = $this->app['freshdesk_client']->fetchTicketById($this->freshdeskTicket->getTicketId());
 
-        $ticketTags = $response['tags'] ?? [];
+        $existingTicketTags = $response['tags'] ?? [];
 
-        array_push($ticketTags,
-            Constants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
-            Constants::FD_TAGS_DISPUTE_CREATED,
-            Constants::FD_TAGS_PENDING_WITH_DISPUTES);
+        $ticketTags = array_merge($existingTicketTags, $tags);
 
         $content = [
             'group_id'     => $groupId,
-            'status'       => Constants::FD_TICKET_STATUS_PENDING_WITH_THIRD_PARTY,
+            'status'       => $status,
             'responder_id' => $agentId,
             'tags'         => $ticketTags,
         ];

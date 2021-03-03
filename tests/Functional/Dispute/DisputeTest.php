@@ -1353,6 +1353,38 @@ class DisputeTest extends TestCase
         $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
     }
 
+    public function testFreshdeskWebhookDisputeCreationForPaymentsOlderThanSixMonths()
+    {
+        $existingDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $payment->getCreatedAt() - FreshdeskConstants::MAX_ALLOWED_DISPUTE_CREATION_WINDOW_IN_SECS - 1]);
+
+        $automationAgentId = 234;
+        $changeTicketGroupToCsExtraArgs = [
+            'status'       => FreshdeskConstants::FD_TICKET_STATUS_PENDING,
+            'responder_id' => $automationAgentId,
+            'tags'         => [
+                FreshdeskConstants::FD_TAGS_AUTOMATED_DISPUTE_FLOW,
+                FreshdeskConstants::FD_TAGS_PENDING_WITH_DISPUTES,
+                FreshdeskConstants::FD_TAGS_PAYMENT_OLDER_THAN_SIX_MONTHS,
+            ],
+        ];
+
+        $merchantActivated = $payment->merchant->isActivated();
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => true]);
+
+        $this->freshdeskFlow(true, true, ['updateTicketV2', 'postTicketReply', 'fetchTicketById'], ['postTicketReply'], true, true, false, false, true, Subcategory::DISPUTE_A_PAYMENT_FD, $payment, $changeTicketGroupToCsExtraArgs);
+
+        $this->fixtures->edit('merchant', $payment['merchant_id'], ['activated' => $merchantActivated]);
+
+        $updatedDisputeCount = $this->getEntities('dispute', [], true)['count'];
+
+        $this->assertEquals($existingDisputeCount, $updatedDisputeCount);
+    }
+
     public function testFreshdeskWebhookCreateDisputeCase()
     {
         $payment = $this->fixtures->create('payment:captured');

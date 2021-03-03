@@ -1686,6 +1686,27 @@ return [
         ],
     ],
 
+    'testFreshdeskWebhookDisputeCreationForPaymentsOlderThanSixMonths' => [
+        'request' => [
+            'url'       => '/fd/disputes',
+            'method'    => 'post',
+            'content'   => [
+                "freshdesk_webhook" => [
+                    "ticket_id" => 123,
+                    "ticket_cf_requestor_category" => "Customer",
+                    "ticket_contact_name" => "ahshasd",
+                    "ticket_contact_email" => "testFreshdeskWebhookDisputeCreationSixMonthsOld@gmail.com",
+                    "ticket_contact_phone" => "9999999999"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
     'testBulkDisputeCreateMailSubject' => [
         'request' => [
             'url' => '/disputes/merchant_emails/initiate',
