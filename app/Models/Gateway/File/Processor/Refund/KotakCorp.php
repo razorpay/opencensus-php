@@ -22,6 +22,7 @@ class KotakCorp extends Base
     const TXN_DATE            = 'TXN_DATE';
     const TXN_AMT             = 'TXN_AMT';
     const VERIFICATION_ID     = 'CANC_TXN_ID';
+    const AGGREGATOR_ID       = 'ENTITY_CODE';
 
     const FILE_NAME                  = 'KOTAK_CORP_REFUND';
     const EXTENSION                  = FileStore\Format::TXT;
@@ -46,6 +47,7 @@ class KotakCorp extends Base
                 self::TXN_DATE             => $date,
                 self::TXN_AMT              => $this->getFormattedAmount($row[Entity::PAYMENT][Payment\Entity::AMOUNT]),
                 self::VERIFICATION_ID      => $row['gateway'][Netbanking::VERIFICATION_ID],
+                self::AGGREGATOR_ID        => $row['terminal']['gateway_merchant_id2'],
             ];
         }
          $content = $this->getTextData($content, '', '|');

@@ -2144,6 +2144,7 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
+            'gateway_merchant_id2'      => 'RAZORPAY',
             'netbanking'                => 1,
         ];
 

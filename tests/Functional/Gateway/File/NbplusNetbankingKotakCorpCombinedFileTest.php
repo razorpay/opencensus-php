@@ -151,7 +151,7 @@ class NbplusNetbankingKotakCorpCombinedFileTest extends StaticCallbackNbplusGate
 
         $refundsFileRow2 = explode('|', $refundsFileContents[1]);
 
-        $this->assertCount(7, $refundsFileRow1);
+        $this->assertCount(8, $refundsFileRow1);
 
         $this->assertEquals($refundsFileRow1[0], $fullRefund['id']);
 
@@ -163,7 +163,7 @@ class NbplusNetbankingKotakCorpCombinedFileTest extends StaticCallbackNbplusGate
 
         $this->assertEquals($refundsFileRow1[5], floatval($actualAmount));
 
-        $this->assertCount(7, $refundsFileRow2);
+        $this->assertCount(8, $refundsFileRow2);
 
         $this->assertEquals($refundsFileRow2[0], $partialRefund['id']);
 

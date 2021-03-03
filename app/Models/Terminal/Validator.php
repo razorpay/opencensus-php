@@ -1231,6 +1231,7 @@ class Validator extends Base\Validator
     protected static $netbankingKotakTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_kotak',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::CORPORATE               => 'sometimes|in:0,1,2',
