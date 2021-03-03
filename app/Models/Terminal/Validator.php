@@ -1346,6 +1346,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes',
         Entity::TYPE                       => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NETBANKING                 => 'sometimes|boolean',
+        Entity::CARD                       => 'sometimes|boolean',
     ];
 
     protected static $enachRblTerminalRules = [

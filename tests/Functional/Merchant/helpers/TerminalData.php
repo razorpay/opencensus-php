@@ -1061,7 +1061,9 @@ return [
                 'gateway_access_code'      => '12344',
                 'gateway_merchant_id'      => '12344',
                 'gateway_secure_secret'    => '12345',
-                'procurer'                 => 'merchant'
+                'procurer'                 => 'merchant',
+                'netbanking'               => '0',
+                'card'                     => '0'
             ],
             'method' => 'POST'
         ],
@@ -1070,6 +1072,8 @@ return [
                 'type'  => [
                     'direct_settlement_with_refund'
                 ],
+                'netbanking' => false,
+                'card'       => false,
             ]
         ],
     ],
