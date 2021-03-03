@@ -9,6 +9,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
 use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -341,11 +342,11 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertSame('SERVER_ERROR_AMOUNT_TAMPERED', $payment->getInternalErrorCode());
     }
 
-    public function testCreateFailedPaymentAndVerifySuccess()
+    public function testLateAuthorizedPayment()
     {
         $this->createTestTerminal();
 
-        $this->payment['description'] = 'paymentCreateFailed';
+        $this->payment['description'] = 'late_authorized_v2';
 
         $this->makeRequestAndCatchException(function () {
             $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -367,6 +368,26 @@ class UpiJuspayGatewayTest extends TestCase
         $payment->reload();
 
         $this->assertSame('authorized', $payment->getStatus());
+        $this->assertTrue($payment->isLateAuthorized());
+    }
+
+    public function testVerifyPaymentAmountMismatch()
+    {
+        $this->createTestTerminal();
+
+        $this->payment['description'] = 'verify_amount_mismatch_v2';
+
+        $this->makeRequestAndCatchException(function () {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
+
+        $payment = $this->getDbLastPayment();
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        }, RuntimeException::class, 'Payment amount verification failed.');
     }
 
     protected function enableIntentFlow($description = 'intentPayment')

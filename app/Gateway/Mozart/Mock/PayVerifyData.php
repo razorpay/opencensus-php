@@ -825,6 +825,7 @@ class PayVerifyData extends Base\Mock\Server
                    'amount_authorized'  => $entities['payment']['amount'] + 10,
                    'currency'           => 'INR',
                 ]);
+                break;
         }
 
         return $response->toArray();

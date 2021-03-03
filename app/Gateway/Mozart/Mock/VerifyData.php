@@ -3,8 +3,11 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 
 class VerifyData extends Base\Mock\Server
 {
@@ -463,6 +466,11 @@ class VerifyData extends Base\Mock\Server
 
     public function upi_juspay($entities)
     {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+
         $response = [
             'data' =>
                 [
@@ -647,5 +655,46 @@ class VerifyData extends Base\Mock\Server
         ];
 
         return $response;
+    }
+
+    protected function upiMozartV2($entities)
+    {
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $case = str_replace('_v2', '', $entities['payment']['description']);
+
+        $response->mergeUpi([
+            UpiEntity::VPA                  =>  $entities['payment']['vpa'] ?? '',
+            UpiEntity::MERCHANT_REFERENCE   =>  $entities['payment']['id']
+        ]);
+
+        $response->setSuccess(true);
+
+        $response->setPayment([
+           'amount_authorized'  => $entities['payment']['amount'],
+           'currency'           => 'INR',
+        ]);
+
+        switch ($case)
+        {
+            case 'verify_failed':
+                $response->setSuccess(false);
+                $response->setError([
+                    'internal_error_code'    => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,
+                    'gateway_error_code'     => '01',
+                    'gateway_error_desc'     => 'Payment failed at gateway'
+                ]);
+                break;
+
+            case 'verify_amount_mismatch':
+                $response->setSuccess(true);
+                $response->setPayment([
+                    'amount_authorized' => $entities['payment']['amount'] + 100,
+                    'currency' => 'INR'
+                ]);
+                break;
+        }
+
+        return $response->toArray();
     }
 }

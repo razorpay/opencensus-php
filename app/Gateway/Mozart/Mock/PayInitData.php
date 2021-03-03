@@ -849,6 +849,8 @@ class PayInitData extends Base\Mock\Server
         {
             case 'collect_request_failed':
             case 'intent_request_failed':
+            case 'late_authorized':
+            case 'verify_amount_mismatch':
                 $response->setSuccess(false);
                 $response->setError([
                    'internal_error_code'    => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,

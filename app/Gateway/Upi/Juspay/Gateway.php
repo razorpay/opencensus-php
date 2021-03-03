@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Juspay;
 
 use RZP\Models\Payment;
 use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
@@ -57,7 +58,19 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        return $this->verifyMozart($input);
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        return $this->upiSendPaymentVerifyRequest($verify);
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        return $this->upiVerifyPayment($verify);
     }
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)

@@ -66,6 +66,11 @@ class Verify
         $this->verifyResponseContent = $content;
     }
 
+    public function setVerifyResponseBody($body)
+    {
+        $this->verifyResponseBody = $body;
+    }
+
     public function setStatus($status)
     {
         $this->status = $status;
@@ -74,6 +79,11 @@ class Verify
     public function setApiAndGatewaySuccess($apiSuccess, $gatewaySuccess)
     {
         ;
+    }
+
+    public function setAmountMismatch(bool $amountMismatch)
+    {
+        $this->amountMismatch = $amountMismatch;
     }
 
     public function setCurrencyAndAmountAuthorized(string $currency, int $amountAuthorized)

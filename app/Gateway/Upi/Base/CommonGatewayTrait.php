@@ -7,6 +7,8 @@ use RZP\Gateway\Upi;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
 
 /**
@@ -61,7 +63,7 @@ trait CommonGatewayTrait
             $mozart->updateMozartEntity($mozartEntity, $result, true, Action::AUTHORIZE);
         }
 
-        $this->traceGatewayPaymentResponse($response->toArrayTrace(), $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+        $this->upiTraceGatewayResponse($response, $result, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $this->upiCheckErrorsAndThrowExceptionFromResponse($result);
 
@@ -93,7 +95,7 @@ trait CommonGatewayTrait
 
         $response = new Response($result['data'] ?? []);
 
-        $this->traceGatewayPaymentResponse($response->toArrayTrace(), $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
+        $this->upiTraceGatewayResponse($response, $result, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $gatewayEntity->setReceived(1);
 
@@ -111,6 +113,76 @@ trait CommonGatewayTrait
         return $this->upiPrepareCallbackResponse($response, $input);
     }
 
+    public function upiSendPaymentVerifyRequest(Verify $verify)
+    {
+        /**
+         * @var $gatewayPayment Entity
+         */
+        $gatewayPayment       = $verify->payment;
+
+        $input                = $verify->input;
+
+        // Merging UPI
+        $input[Entity::UPI]   = $this->upiMergeData($gatewayPayment, $input);
+
+        $result               = $this->upiSendGatewayRequest(
+                                    $input,
+                                    TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                                    'verify'
+                                );
+
+        $response             = new Response($result['data'] ?? []);
+
+        $verify->setVerifyResponseBody($result);
+
+        // Attaching the upi entity, for authorize failed flow.
+        $verify->setVerifyResponseContent($response->getFilteredUpi());
+
+        return $result;
+    }
+
+    public function upiVerifyPayment(Verify $verify)
+    {
+        $input = $verify->input;
+
+        /**
+         * @var $gatewayPayment Entity
+         */
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseBody;
+
+        $response = new Response($content['data'] ?? []);
+
+        $this->checkApiSuccess($verify);
+
+        $verify->gatewaySuccess = $content['success'];
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $payment = $response->getPayment();
+
+            $verify->setAmountMismatch(
+                $payment[Payment\Entity::AMOUNT_AUTHORIZED] !== $input['payment'][Payment\Entity::AMOUNT]
+            );
+
+            $verify->setCurrencyAndAmountAuthorized(
+                $payment[Payment\Entity::CURRENCY],
+                $payment[Payment\Entity::AMOUNT_AUTHORIZED]
+            );
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $this->upiUpdateGatewayEntity($gatewayPayment, $response->getFilteredUpi());
+    }
 
     /****************** Helper **************************
      * @param array $input
@@ -357,6 +429,26 @@ trait CommonGatewayTrait
     }
 
     /**
+     * UPI common function to trace gateway response
+     * @param Response $response
+     * @param $result
+     * @param $traceCode
+     */
+    protected function upiTraceGatewayResponse(Response $response, $result, $traceCode)
+    {
+        $result['data'] = $response->toArrayTrace();
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'response' => $result,
+                'gateway'  => $this->gateway,
+                'action'   => $this->action,
+            ]
+        );
+    }
+
+    /**
      * Returns UPI Mozart gateway
      * @return Upi\Mozart\Gateway
      */
@@ -370,5 +462,32 @@ trait CommonGatewayTrait
         $gateway->setMode($this->getMode());
 
         return $gateway;
+    }
+
+    /**
+     * This functions safely attaches upi entity in the input
+     * Case 1: upi block is set then we have to merge the upi entities.
+     * Case 2: upi block is not set then we can directly send upi entity to gateway.
+     * @param Entity $gatewayPayment
+     * @param array $input Input has upi block with currently being set with two values
+     * flow and expiry time, we will preserving the value and attaching all other upi data to it.
+     * @return array
+     */
+    protected function upiMergeData(Entity $gatewayPayment, array $input)
+    {
+        if (isset($input['upi']) === true)
+        {
+           // Currently flow and type are conflicting between upi and upi_metadata
+           // We will keep the flow of upi_metadata which is getting attached.
+           $data = array_except($gatewayPayment->toArray(), [
+                Entity::TYPE,
+           ]);
+
+           $data = array_merge($data, $input['upi']);
+
+           return $data;
+        }
+
+        return $gatewayPayment->toArray();
     }
 }
