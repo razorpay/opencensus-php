@@ -538,7 +538,7 @@ class PaymentLinkTest extends TestCase
 
         $this->assertArrayKeysExist($content, ['data', 'udf_schema']);
 
-        $this->assertArrayKeysExist($content['data'], ['base_url', 'payment_link', 'merchant', 'key_id', 'is_test_mode', 'environment', 'org']);
+        $this->assertArrayKeysExist($content['data'], ['base_url', 'payment_link', 'merchant', 'key_id', 'is_test_mode', 'environment', 'org', 'view_preferences']);
 
         $this->assertEquals($content['data']['payment_link']['id'], $entity->getPublicId());
     }

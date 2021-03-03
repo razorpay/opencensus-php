@@ -148,7 +148,30 @@ class PaymentLinkService
         }
     }
 
-    protected function setRequestParamsAndSendRequest(Merchant\Entity $merchant, array $data, string $url, string $method)
+    public function getById(string $id)
+    {
+        try
+        {
+            $response = $this->setRequestParamsAndSendRequest(
+                null,
+                ['action' => 'FetchById', 'id' => $id],
+                'v1/payment_links_admin',
+                Request::METHOD_POST);
+
+            if (($response !== null) and ($response['status_code'] === 200))
+            {
+                return $response['response'];
+            }
+
+            return null;
+        }
+        catch (\Exception $e)
+        {
+            return null;
+        }
+    }
+
+    protected function setRequestParamsAndSendRequest($merchant, array $data, string $url, string $method)
     {
         if ($this->mock === true)
         {
@@ -187,7 +210,7 @@ class PaymentLinkService
         $this->trace->info(
             TraceCode::ORDER_NOTIFY_REQUEST_PARAMS_FOR_PAYMENT_V2,
             [
-                'params'    => $params,
+                'params'    => $data,
             ]);
 
         $response = \Requests::request(
@@ -202,6 +225,8 @@ class PaymentLinkService
             [
                 'response'    => $this->parseAndReturnResponse($response),
             ]);
+
+        return $this->parseAndReturnResponse($response);
     }
 
     protected function parseAndReturnResponse($res)

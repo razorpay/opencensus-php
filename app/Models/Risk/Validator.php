@@ -22,6 +22,20 @@ class Validator extends Base\Validator
         Entity::REASON        => 'required|string|max:150',
     ];
 
+    protected static $grievanceFetchInputRules = [
+        Entity::ID  => 'required|public_id',
+    ];
+
+    protected static $grievancePostInputRules = [
+        'email_id'   => 'required|email',
+        'contact_no' => 'sometimes|nullable|contact_syntax',
+        'name'       => 'sometimes|string|max:50|nullable',
+        'comments'   => 'sometimes|string|max:2048',
+        'entity_id'  => 'required|public_id',
+        'captcha_id' => 'required|string',
+        'source'     => 'required|in:customer_email,hosted',
+    ];
+
     protected function validateFraudType(string $attribute, string $value)
     {
         if (Type::isValidType($value) === false)

@@ -22,6 +22,7 @@ use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
+use RZP\Mail\Invoice\Issued;
 use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
@@ -1541,5 +1542,88 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function getGrievanceEntityDetails(string $id)
+    {
+        $merchant = null;
+
+        $response = $this->app['paymentlinkservice']->getById($id);
+
+        return $this->getFromattedDataForGrievance($id, $response);
+    }
+
+    protected function getFromattedDataForGrievance(string $id, $response)
+    {
+        if ($response !== null)
+        {
+           return $this->getFormattedDataForPlServiceGrievance($response);
+        }
+
+        $id = Entity::stripDefaultSign($id);
+
+        $invoice = $this->repo->invoice->findOrFailPublic($id);
+
+        $merchant = $invoice->merchant;
+
+        $currency = $invoice->getCurrency();
+
+        $formattedAmount = $invoice->getFormattedAmount();
+
+        $type = $invoice->getType();
+
+        return [
+            'entity'         => $invoice->isTypeLink() ? 'payment_link' : 'invoice',
+            'entity_id'      => $invoice->getPublicId(),
+            'merchant_id'    => $merchant->getId(),
+            'merchant_label' => $merchant->getBillingLabel(),
+            'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'subject'        => $this->getMailSubjectForGrievance($type, $merchant, $currency, $formattedAmount),
+        ];
+    }
+
+    protected function getFormattedDataForPlServiceGrievance(array $response)
+    {
+        $merchantId = $response['merchant_id'];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $currency = $response['currency'];
+
+        $amount = $response['amount'];
+
+        $formattedAmount = number_format($amount / 100, 2);
+
+        $type = Type::LINK;
+
+        return [
+            'entity'         => 'payment_link',
+            'entity_id'      => $response['id'],
+            'merchant_id'    => $merchant->getId(),
+            'merchant_label' => $merchant->getBillingLabel(),
+            'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'subject'        => $this->getMailSubjectForGrievance($type, $merchant, $currency, $formattedAmount),
+        ];
+    }
+
+    protected function getMailSubjectForGrievance(string $type, Merchant\Entity $merchant, string $currency, string $formattedAmount)
+    {
+        $subjectTemplate  = Issued::SUBJECT_TEMPLATES[$type];
+
+        if ($type === Type::INVOICE)
+        {
+            $args = [
+                $merchant->getBillingLabel(),
+            ];
+        }
+        else
+        {
+            $args = [
+                $currency,
+                $formattedAmount,
+            ];
+        }
+
+        return sprintf($subjectTemplate, ...$args);
     }
 }

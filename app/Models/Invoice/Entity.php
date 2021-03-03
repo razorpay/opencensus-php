@@ -226,6 +226,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign         = 'inv';
 
+    protected static $v2Sign       = 'plink';
+
     protected $entity              = 'invoice';
 
     protected $generateIdOnCreate  = true;
@@ -613,6 +615,11 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- End Mutators -----------
 
     // -------------------------------------- Getters ----------------
+
+    public static function getV2Sign()
+    {
+        return self::$v2Sign;
+    }
 
     public function getEmailStatus()
     {

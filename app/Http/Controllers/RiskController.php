@@ -22,4 +22,25 @@ class RiskController extends Controller
 
         return ApiResponse::json($entities);
     }
+
+    public function getEntityDetails(string $id)
+    {
+        $details = $this->service()->getGrievanceEntityDetails($id);
+
+        return ApiResponse::json($details);
+    }
+
+    public function postCustomerGrievance()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postCustomerGrievance($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function allowCors()
+    {
+        return ApiResponse::json([]);
+    }
 }

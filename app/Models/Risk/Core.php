@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Risk;
 
-use Razorpay\Trace\Logger as Trace;
-
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Services\MerchantRiskClient;
 
 class Core extends Base\Core
 {
@@ -88,5 +89,43 @@ class Core extends Base\Core
 
             return null;
         }
+    }
+
+    public function postCustomerFlaggingToRiskService(array $input, array $entityDetails)
+    {
+        $merchantRiskService = new MerchantRiskClient();
+
+        try
+        {
+            $customerFlaggingInput = $this->getCustomerFlaggingInput($input, $entityDetails);
+
+            $merchantRiskService->createAlertRequest($customerFlaggingInput);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, null, ['input' => $input, 'entity_details' => $entityDetails]);
+        }
+
+        return ['status' => 'done'];
+    }
+
+    protected function getCustomerFlaggingInput(array $input, array $entityDetails)
+    {
+        return [
+            'merchant_id'     => $entityDetails['merchant_id'],
+            'entity_type'     => $entityDetails['entity'],
+            'entity_id'       => Entity::stripDefaultSign($entityDetails['entity_id']),
+            'category'        => 'customer_flag',
+            'source'          => $input['source'],
+            'data'            => [
+                'email_id'   => $input['email_id'],
+                'contact_no' => $input['contact_no'] ?? "",
+                'name'       => $input['name'] ?? "",
+                'comments'   => $input['comments'] ?? "",
+            ],
+            'event_timestamp' => (string) Carbon::now()->getTimestamp(),
+            'event_type'      => 'report_fraud',
+        ];
     }
 }

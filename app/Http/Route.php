@@ -1420,6 +1420,9 @@ class Route
         // Risk Routes
         'risk_fetch_multiple'                      => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                 => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
+        'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
+        'customer_flagging_post_grievance'         => ['post',     'customer_flagging/post_customer_grievance',      'RiskController@postCustomerGrievance'                              ],
+        'customer_flagging_post_grievance_options' => ['options',  'customer_flagging/post_customer_grievance',      'RiskController@allowCors'                                          ],
 
         // Shield routes
         'shield_rules_get_multiple' => [
@@ -5516,6 +5519,9 @@ class Route
     ];
 
     public static $direct = [
+        'customer_flagging_entity_details',
+        'customer_flagging_post_grievance',
+        'customer_flagging_post_grievance_options',
         'capital_collections_webhook',
         'download_papernach_form',
         'splitz_evaluate',

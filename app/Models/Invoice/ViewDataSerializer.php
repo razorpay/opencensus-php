@@ -107,6 +107,7 @@ class ViewDataSerializer extends Base\Core
             'merchant'         => $this->serializeMerchantForHosted(),
             'invoice'          => $this->serializeInvoiceForHosted(),
             'options'          => $this->getOptions(),
+            'view_preferences' => $this->getViewPreferences(),
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
         ];
     }
@@ -156,7 +157,9 @@ class ViewDataSerializer extends Base\Core
     {
         $hideIssuedTo = $this->merchant->isFeatureEnabled(Feature\Constants::PL_HIDE_ISSUED_TO);
 
-        $viewPreferences = ['hide_issued_to' => $hideIssuedTo];
+        $exemptCustomerFlagging = $this->merchant->isFeatureEnabled(Feature\Constants::APPS_EXEMPT_CUSTOMER_FLAGGING);
+
+        $viewPreferences = ['hide_issued_to' => $hideIssuedTo, 'exempt_customer_flagging' => $exemptCustomerFlagging];
 
         return $viewPreferences;
     }

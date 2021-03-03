@@ -53,13 +53,14 @@ class ViewSerializer extends Base\Core
     public function serializeForHosted(): array
     {
         return [
-            'key_id'         => $this->getMerchantKeyId(),
-            'is_test_mode'   => ($this->mode === Mode::TEST),
-            'environment'    => $this->app->environment(),
-            E::MERCHANT      => $this->serializeMerchantForHosted(),
-            E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
-            'base_url'       => $this->config['app']['url'],
-            E::ORG           => $this->serializeOrgPropertiesForHosted(),
+            'key_id'           => $this->getMerchantKeyId(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'environment'      => $this->app->environment(),
+            E::MERCHANT        => $this->serializeMerchantForHosted(),
+            E::PAYMENT_LINK    => $this->serializePaymentLinkForHosted(),
+            'base_url'         => $this->config['app']['url'],
+            E::ORG             => $this->serializeOrgPropertiesForHosted(),
+            'view_preferences' => $this->getViewPreferences(),
         ];
     }
 
@@ -304,5 +305,14 @@ class ViewSerializer extends Base\Core
                 ],
             ],
         ];
+    }
+
+    protected function getViewPreferences(): array
+    {
+        $exemptCustomerFlagging = $this->merchant->isFeatureEnabled(Feature\Constants::APPS_EXEMPT_CUSTOMER_FLAGGING);
+
+        $viewPreferences = ['exempt_customer_flagging' => $exemptCustomerFlagging];
+
+        return $viewPreferences;
     }
 }

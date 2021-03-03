@@ -693,6 +693,8 @@ class Service extends Base\Service
 
     protected function serializeMerchantForHostedForPaymentLinkService(Merchant\Entity $merchant): array
     {
+        $exemptCustomerFlagging = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXEMPT_CUSTOMER_FLAGGING);
+
         return [
             'id'                               => $merchant->getId(),
             'name'                             => $merchant->getLabelForInvoice(),
@@ -701,6 +703,7 @@ class Service extends Base\Service
             'business_registered_address_text' => $merchant->getBusinessRegisteredAddressAsText(', '),
             'image'                            => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'business_registered_address'      => optional($merchant->merchantDetail)->getBusinessRegisteredAddress(),
+            'apps_exempt_customer_flagging'    => $exemptCustomerFlagging,
         ];
     }
 

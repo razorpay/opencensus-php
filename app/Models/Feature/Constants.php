@@ -579,6 +579,11 @@ class Constants
      */
     const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
 
+    /**
+     * Skips customer flagging link in email and hosted page
+     */
+    const APPS_EXEMPT_CUSTOMER_FLAGGING ='apps_exempt_customer_flagging';
+
     // Used to disable tpv flow for merchants for business banking (Razorpay X) fund loading.
     const DISABLE_TPV_FLOW = 'disable_tpv_flow';
 
@@ -868,6 +873,7 @@ class Constants
         self::GSTIN_SELF_SERVE                => true,
         self::DIRECT_TRANSFER                 => true,
         self::APPS_EXTEMPT_RISK_CHECK         => true,
+        self::APPS_EXEMPT_CUSTOMER_FLAGGING   => true,
         self::EARLY_MANDATE_PRESENTMENT       => true,
         self::DISABLE_TPV_FLOW                => true,
         self::ENABLE_TPV_FLOW                 => true,
@@ -1271,6 +1277,11 @@ class Constants
         self::APPS_EXTEMPT_RISK_CHECK => [
             'feature'       => self::APPS_EXTEMPT_RISK_CHECK,
             'display_name'  => 'Exempts merchant from risk check for Apps products',
+            'documentation' => '',
+        ],
+        self::APPS_EXEMPT_CUSTOMER_FLAGGING => [
+            'feature'       => self::APPS_EXEMPT_CUSTOMER_FLAGGING,
+            'display_name'  => 'Exempts merchant from customer flagging link in email and hosted pages',
             'documentation' => '',
         ],
     ];

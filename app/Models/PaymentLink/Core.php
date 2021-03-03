@@ -1731,4 +1731,22 @@ class Core extends Base\Core
             'event_type'      => 'captured',
         ];
     }
+
+    public function getGrievanceEntityDetails(string $id)
+    {
+        $id = Entity::stripDefaultSign($id);
+
+        $paymentPage = $this->repo->payment_link->findOrFailPublic($id);
+
+        $merchant = $paymentPage->merchant;
+
+        return [
+            'entity'         => 'payment_page',
+            'entity_id'      => $paymentPage->getPublicId(),
+            'merchant_id'    => $paymentPage->merchant->getId(),
+            'merchant_label' => $merchant->getBillingLabel(),
+            'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'subject'        => $paymentPage->getTitle(),
+        ];
+    }
 }

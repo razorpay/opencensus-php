@@ -446,6 +446,9 @@ class Response
             'freshdesk_raise_grievance',
             'splitz_preflight',
             'splitz_evaluate',
+            'customer_flagging_post_grievance',
+            'customer_flagging_post_grievance_options',
+            'customer_flagging_entity_details',
             'virtual_account_order_create',
         ];
 
