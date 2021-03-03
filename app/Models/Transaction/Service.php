@@ -48,9 +48,9 @@ class Service extends Base\Service
      */
     public function createCreditRepaymentTransaction($input)
     {
-        $span = Tracer::startSpan(['name' => 'transaction.service.createCreditRepaymentTransaction']);
-        Tracer::addAttributes($input);
-        $scope = Tracer::withSpan($span);
+        // $span = Tracer::startSpan(['name' => 'transaction.service.createCreditRepaymentTransaction']);
+        // Tracer::addAttributes($input);
+        // $scope = Tracer::withSpan($span);
 
         $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST);
         $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST, $input);
@@ -74,7 +74,7 @@ class Service extends Base\Service
 
             $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED);
             $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED, $input);
-            $scope->close();
+            // $scope->close();
 
             return $txn->toArrayPublic();
         }
@@ -84,9 +84,9 @@ class Service extends Base\Service
         }
 
         return $this->mutex->acquireAndRelease('credit_repayment_transaction_' . $input[\RZP\Models\CreditRepayment\Entity::ID],
-            function() use ($creditRepayment, $input, $scope)
+            function() use ($creditRepayment, $input)
             {
-                return $this->repo->transaction(function () use ($creditRepayment, $input, $scope)
+                return $this->repo->transaction(function () use ($creditRepayment, $input)
                 {
                     [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction();
 
@@ -94,7 +94,7 @@ class Service extends Base\Service
 
                     $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATED);
                     $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
-                    $scope->close();
+                    // $scope->close();
 
                     return $txn->toArrayPublic();
                 });
