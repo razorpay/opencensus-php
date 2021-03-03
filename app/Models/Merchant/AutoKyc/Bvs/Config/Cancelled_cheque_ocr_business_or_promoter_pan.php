@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Cancelled_cheque_ocr_reg extends BaseConfig
+class Cancelled_cheque_ocr_business_or_promoter_pan extends BaseConfig
 {
     protected $enrichment = [
         'ocr' => [

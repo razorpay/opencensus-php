@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Cancelled_cheque_ocr_unreg extends BaseConfig
+class Cancelled_cheque_ocr_business_pan extends BaseConfig
 {
     protected $enrichment = [
         'ocr' => [
@@ -51,7 +51,7 @@ class Cancelled_cheque_ocr_unreg extends BaseConfig
                             'var' => 'enrichments.ocr.details.1.account_holder_names',
                         ],
                         [
-                            'fuzzy_suzzy' => [
+                            'fuzzy_wuzzy' => [
                                 [
                                     'var' => "each_array_element.value",
                                 ],
@@ -59,10 +59,17 @@ class Cancelled_cheque_ocr_unreg extends BaseConfig
                                     'var' => 'artefact.details.account_holder_names.0.value'
                                 ],
                                 81,
+                                [
+                                    "private limited",
+                                    "limited liability partnership",
+                                    "pvt",
+                                    "ltd",
+                                    "."
+                                ],
                             ],
                         ]
                     ]
-                ],
+                ]
             ]
         ],
     ];

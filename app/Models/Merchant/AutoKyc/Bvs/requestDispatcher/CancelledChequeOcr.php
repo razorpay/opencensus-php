@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -36,13 +37,9 @@ class CancelledChequeOcr extends Base
 
         $accountHolderNames = array_values($accountHolderNames);
 
-        $configName = $this->merchantDetails->isUnregisteredBusiness() ?
-            Constant::CANCELLED_CHEQUE_OCR_UNREG :
-            Constant::CANCELLED_CHEQUE_OCR_REG;
-
         $payload = [
             Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
-            Constant::CONFIG_NAME     => $configName,
+            Constant::CONFIG_NAME     => $this->getConfigName(),
             Constant::VALIDATION_UNIT => BvsValidationConstants::PROOF,
             Constant::DETAILS         => [
                 Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
@@ -57,6 +54,26 @@ class CancelledChequeOcr extends Base
         ];
 
         return $payload;
+    }
+
+    protected function getConfigName()
+    {
+        if($this->merchantDetails->isUnregisteredBusiness())
+        {
+            return Constant::CANCELLED_CHEQUE_OCR_PERSONAL_PAN;
+        }
+
+        switch ($this->merchantDetails->getBusinessType())
+        {
+            case BusinessType::PRIVATE_LIMITED:
+            case BusinessType::PUBLIC_LIMITED:
+            case BusinessType::LLP:
+            case BusinessType::PARTNERSHIP:
+                return Constant::CANCELLED_CHEQUE_OCR_BUSINESS_PAN;
+
+            default:
+                return Constant::CANCELLED_CHEQUE_OCR_BUSINESS_OR_PROMOTER_PAN;
+        }
     }
 
     public function performPostProcessOperation(): void

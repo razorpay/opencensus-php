@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
+use Illuminate\Support\Facades\Bus;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
@@ -27,13 +29,9 @@ class BankAccount extends Base
 
         $accountHolderNames = array_values($accountHolderNames);
 
-        $configName = $this->merchantDetails->isUnregisteredBusiness() ?
-            Constant::BANK_ACCOUNT_UNREG :
-            Constant::BANK_ACCOUNT_REG;
-
         return [
             Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
-            Constant::CONFIG_NAME     => $configName,
+            Constant::CONFIG_NAME     => $this->getConfigName(),
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
             Constant::DETAILS         => [
                 Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
@@ -42,6 +40,27 @@ class BankAccount extends Base
                 Constant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
             ],
         ];
+    }
+
+    protected function getConfigName()
+    {
+        if($this->merchantDetails->isUnregisteredBusiness() === true)
+        {
+            return Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN;
+        }
+
+        switch ($this->merchantDetails->getBusinessType())
+        {
+            case BusinessType::PRIVATE_LIMITED:
+            case BusinessType::PUBLIC_LIMITED:
+            case BusinessType::LLP:
+            case BusinessType::PARTNERSHIP:
+
+                return Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN;
+
+            default:
+                return Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN;
+        }
     }
 
     public function performPostProcessOperation(): void

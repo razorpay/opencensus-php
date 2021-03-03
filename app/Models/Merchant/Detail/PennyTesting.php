@@ -687,6 +687,15 @@ class PennyTesting extends Base\Core
                     Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
                 ];
 
+            case BusinessType::PRIVATE_LIMITED:
+            case BusinessType::PUBLIC_LIMITED:
+            case BusinessType::PARTNERSHIP:
+            case BusinessType::LLP:
+
+                return [
+                    Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
+                ];
+
             default :
 
                 return [

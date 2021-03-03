@@ -2215,7 +2215,7 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetailAttribute = [
             'business_type'     => 1,
-            'promoter_pan_name' => 'pankaj kumar',
+            'business_name' => 'pankaj kumar',
             'bank_account_name' => 'pankaj k',
         ];
 
@@ -2226,11 +2226,11 @@ class ActivationTest extends OAuthTestCase
         $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
-    public function testSuccessBankDetailsVerificationForRegistered()
+    public function testSuccessBankDetailsVerificationForLLP()
     {
         $merchantDetailAttribute = [
-            'business_type'     => 4,
-            'business_name'     => 'pankaj kumar',
+            'business_type'     => 6,
+            'business_name' => 'pankaj kumar',
             'bank_account_name' => 'pankaj k',
         ];
 
@@ -2241,13 +2241,27 @@ class ActivationTest extends OAuthTestCase
         $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
-    public function testSuccessBankDetailsVerificationForRegisteredWithPromoterPan()
+    public function testSuccessBankDetailsVerificationForPrivateLtd()
     {
         $merchantDetailAttribute = [
             'business_type'     => 4,
-            'business_name'     => 'mr subramaniam laxmi vijay',
             'bank_account_name' => 'pankaj k',
-            'promoter_pan_name' => 'pankaj kumar',
+            'business_name' => 'pankaj kumar',
+        ];
+
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
+
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+    }
+
+    public function testSuccessBankDetailsVerificationForPublicLtd()
+    {
+        $merchantDetailAttribute = [
+            'business_type'     => 5,
+            'bank_account_name' => 'pankaj k',
+            'business_name' => 'pankaj kumar',
         ];
 
         $favAttribute = [

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Bank_account_unreg extends BaseConfig
+class Bank_account_with_personal_pan extends BaseConfig
 {
     protected $enrichment = [
         'online_provider' => [

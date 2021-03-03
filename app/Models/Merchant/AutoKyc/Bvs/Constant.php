@@ -50,11 +50,17 @@ class Constant
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
     const BUSINESS_PAN_OCR           = 'business_pan_ocr';
-    const CANCELLED_CHEQUE_OCR_REG   = 'cancelled_cheque_ocr_reg';
-    const CANCELLED_CHEQUE_OCR_UNREG = 'cancelled_cheque_ocr_unreg';
+
+    const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
+    const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
+    const CANCELLED_CHEQUE_OCR_BUSINESS_OR_PROMOTER_PAN = 'cancelled_cheque_ocr_business_or_promoter_pan';
+
     const SHOP_ESTABLISHMENT_AUTH    = 'shop_establishment_auth';
-    const BANK_ACCOUNT_REG           = 'bank_account_reg';
-    const BANK_ACCOUNT_UNREG         = 'bank_account_unreg';
+
+    const BANK_ACCOUNT_WITH_PERSONAL_PAN             = "bank_account_with_personal_pan";
+    const BANK_ACCOUNT_WITH_BUSINESS_PAN             = "bank_account_with_business_pan";
+    const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN = "bank_account_with_business_or_promoter_pan";
+
     const AADHAAR_WITH_PAN           = 'aadhaar_with_pan';
     //
     // Response fields
