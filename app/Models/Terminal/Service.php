@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
@@ -454,6 +455,8 @@ class Service extends Base\Service
             TraceCode::TERMINAL_BULK_UPDATE_REQUEST,
             $input
         );
+
+        $this->increaseAllowedSystemLimits();
 
         $validator = (new Validator());
 
@@ -1073,6 +1076,11 @@ class Service extends Base\Service
         ];
 
         return $arrayPublic;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(300);
     }
 
 }
