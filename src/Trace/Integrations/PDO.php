@@ -217,7 +217,7 @@ class PDO implements IntegrationInterface
 
         return [
             'attributes' => $tags + $errorTags,
-            'kind' => Span::KIND_CLIENT,
+            'kind' => 'client',
             'sameProcessAsParentSpan' => false,
             'name' => sprintf("PDO %s %s", $operation, $tableName)
         ];
