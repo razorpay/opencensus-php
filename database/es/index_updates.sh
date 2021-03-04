@@ -241,3 +241,25 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_map
         }
     }
 }'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_test/_mapping/api_virtual_account_test" -d '{
+    "properties": {
+        "vpa": {
+            "type": "keyword"
+        },
+        "account_number": {
+            "type": "keyword"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_mapping/api_virtual_account_live" -d '{
+    "properties": {
+        "vpa": {
+            "type": "keyword"
+        },
+        "account_number": {
+            "type": "keyword"
+        }
+    }
+}'

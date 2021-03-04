@@ -38,6 +38,7 @@ final class Es
     const SHOULD               = 'should';
     const LENIENT              = 'lenient';
     const _SOURCE              = '_source';
+    const WILDCARD             = 'wildcard';
     const MUST_NOT             = 'must_not';
     const SCROLL_ID            = 'scroll_id';
     const _SCROLL_ID           = '_scroll_id';

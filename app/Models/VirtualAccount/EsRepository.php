@@ -2,8 +2,10 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 
 class EsRepository extends Base\EsRepository
 {
@@ -20,9 +22,11 @@ class EsRepository extends Base\EsRepository
         Customer\Entity::EMAIL,
         Customer\Entity::NAME,
         Customer\Entity::CONTACT,
+        BankAccount\Entity::ACCOUNT_NUMBER,
+        Entity::VPA,
     ];
 
-    public function buildQueryForReceiverType(array & $query, $value)
+    public function buildQueryForReceiverType(array &$query, $value)
     {
         $receiverTypes = explode(',', $value);
 
@@ -30,7 +34,7 @@ class EsRepository extends Base\EsRepository
 
         foreach ($receiverTypes as $receiverType)
         {
-            array_push($exists, $this->getExistsQueryForField($receiverType.'_id'));
+            array_push($exists, $this->getExistsQueryForField($receiverType . '_id'));
         }
 
         $innerShouldQuery = [];
@@ -38,5 +42,29 @@ class EsRepository extends Base\EsRepository
         $this->addShould($innerShouldQuery, $exists);
 
         $this->addFilter($query, $innerShouldQuery);
+    }
+
+    public function buildQueryForPayeeAccount(array &$query, $value)
+    {
+        $termFilter = [];
+
+        $innerShouldQuery = [];
+
+        $value = $this->modifySearchValue($value);
+
+        array_push($termFilter, $this->getQueryForWildcard(BankAccount\Entity::ACCOUNT_NUMBER, $value));
+
+        array_push($termFilter, $this->getQueryForWildcard(Entity::VPA, $value));
+
+        $this->addShould($innerShouldQuery, $termFilter);
+
+        $this->addFilter($query, $innerShouldQuery);
+    }
+
+    private function modifySearchValue($string)
+    {
+        $string = preg_replace('/[^A-Za-z0-9]/', '*', $string); // Removes special chars.
+
+        return '*' . $string . '*';
     }
 }

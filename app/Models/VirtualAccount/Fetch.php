@@ -18,6 +18,7 @@ class Fetch extends BaseFetch
             Entity::NOTES                        => 'sometimes|notes_fetch',
             Entity::BALANCE_ID                   => 'sometimes|unsigned_id',
             Entity::DESCRIPTION                  => 'sometimes|string',
+            Entity::PAYEE_ACCOUNT                => 'sometimes|string',
             Customer\Entity::EMAIL               => 'sometimes|string',
             Customer\Entity::NAME                => 'sometimes|string',
             Customer\Entity::CONTACT             => 'sometimes|string',
@@ -40,6 +41,7 @@ class Fetch extends BaseFetch
             Customer\Entity::EMAIL,
             Customer\Entity::NAME,
             Customer\Entity::CONTACT,
+            Entity::PAYEE_ACCOUNT,
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE,
@@ -53,6 +55,7 @@ class Fetch extends BaseFetch
     const ES_FIELDS = [
         Entity::NOTES,
         Entity::DESCRIPTION,
+        Entity::PAYEE_ACCOUNT,
         Customer\Entity::EMAIL,
         Customer\Entity::NAME,
         Customer\Entity::CONTACT,

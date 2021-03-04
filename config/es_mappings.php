@@ -310,6 +310,12 @@ return [
             ],
             'qr_code_id'=> [
                 'type'=> 'keyword'
+            ],
+            'vpa' => [
+                'type'=> 'keyword'
+            ],
+            'account_number' => [
+                'type'=> 'keyword'
             ]
         ],
     ],

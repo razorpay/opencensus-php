@@ -72,6 +72,8 @@ class Entity extends Base\PublicEntity
 
     const SOURCE               = 'source';
 
+    const PAYEE_ACCOUNT        = 'payee_account';
+
     protected $fillable = [
         self::NAME,
         self::STATUS,

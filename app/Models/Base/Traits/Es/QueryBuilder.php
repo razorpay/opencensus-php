@@ -107,6 +107,19 @@ trait QueryBuilder
         $this->addMust($query, $clause);
     }
 
+    public function getQueryForWildcard(string $field, string $value)
+    {
+        $clause = [
+            Es::WILDCARD => [
+                $field => [
+                    Es::VALUE => $value,
+                ],
+            ],
+        ];
+
+        return $clause;
+    }
+
     public function buildQueryForNotes(array & $query, string $value)
     {
         // Refer- config/es_mappings.php on how notes is indexed.

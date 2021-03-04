@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Base\BuilderEx;
@@ -21,7 +22,7 @@ class Repository extends Base\Repository
     {
         $receiverTypes = explode(',', $params[Entity::RECEIVER_TYPE]);
 
-        $query->where(function ($query) use ($receiverTypes)
+        $query->where(function($query) use ($receiverTypes)
         {
             foreach ($receiverTypes as $receiverType)
             {
@@ -32,8 +33,10 @@ class Repository extends Base\Repository
 
     /**
      * Return virtual accounts linked to this balanceId
+     *
      * @param string $balanceId
      * @param string $seriesPrefix this is the gateway_merchant_id in terminals table
+     *
      * @return Entity|null
      */
     public function getActiveVirtualAccountsFromBalanceId(string $balanceId)
@@ -79,8 +82,8 @@ class Repository extends Base\Repository
     public function getVirtualAccountFromQrCodeId(string $qrCodeId)
     {
         return $this->newQuery()
-            ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
-            ->first();
+                    ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
+                    ->first();
     }
 
     public function serializeForIndexing(PublicEntity $entity): array
@@ -96,7 +99,22 @@ class Repository extends Base\Repository
             $serialized[Customer\Entity::EMAIL] = $entity->customer->getEmail();
         }
 
+        if ($entity->bankAccount !== null)
+        {
+            $serialized[BankAccount\Entity::ACCOUNT_NUMBER] = $entity->bankAccount->getAccountNumber();
+        }
+
+        if ($entity->vpa !== null)
+        {
+            $serialized[Entity::VPA] = $this->cleanSpecialCharacter($entity->vpa->getAddress());
+        }
+
         return $serialized;
+    }
+
+    function cleanSpecialCharacter($string)
+    {
+        return preg_replace('/[^A-Za-z0-9]/', '', $string); // Removes special chars.
     }
 
     public function findByPublicIdAndMerchantWithRelations(string $id, Merchant $merchant, array $relations = [])
