@@ -151,7 +151,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::CSBK,
-//        IFSC::ALLA,     // due to bank merger, will be routed through Atom IDIB tpv integration
+        IFSC::ALLA,
         IFSC::IDFB,
         IFSC::SIBL,
         IFSC::YESB,
@@ -664,7 +664,8 @@ class Netbanking
                 IFSC::ALLA,
             ],
             'tpv' => [
-                IFSC::IDIB
+                IFSC::IDIB,
+                IFSC::ALLA,
             ],
         ],
         Gateway::NETBANKING_IDBI => [
