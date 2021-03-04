@@ -1,0 +1,42 @@
+on: [push]
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    name: Cancel Previous Runs
+    if: always()
+    steps:
+      - uses: styfle/cancel-workflow-action@d57d93c3a8110b00c3a2c0b64b8516013c9fd4c9
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          workflow_id: "build_images.yml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+  build-web:
+    name: Extension Build
+    runs-on: ubuntu-latest
+    needs: [cancel]
+    continue-on-error: false
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Login to Dockerhub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.PUBLIC_DOCKER_USERNAME }}
+          password: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
+      - name: Push To Dockerhub
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.PUBLIC_DOCKER_USERNAME }}
+          password: ${{ secrets.PUBLIC_DOCKER_PASSWORD }}
+          repository: ${{ github.repository }}
+          tags: ${{ github.sha }}
+          dockerfile: Dockerfile.rzp
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+
