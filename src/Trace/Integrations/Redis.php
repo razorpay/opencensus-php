@@ -66,9 +66,9 @@ class Redis implements IntegrationInterface
                     'db.type' => 'redis',
                     'db.system' => 'redis',
                     'db.connection_string' =>  $connection_str,
-                    'span.kind' => Span::KIND_CLIENT
+                    'span.kind' => 'client'
                 ],
-                'kind' => Span::KIND_CLIENT,
+                'kind' => 'client',
                 'name' => 'Predis connect',
                 'sameProcessAsParentSpan' => false
             ];
@@ -96,7 +96,7 @@ class Redis implements IntegrationInterface
                         'redis.args_length' => count($arguments),
                         'span.kind' => 'client'
                     ],
-                    'kind' => Span::KIND_CLIENT,
+                    'kind' => 'client',
                     'name' => 'Predis ' . $command->getId(),
                     'sameProcessAsParentSpan' => false
                 ];

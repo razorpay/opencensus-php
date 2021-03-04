@@ -81,9 +81,9 @@ class PDO implements IntegrationInterface
         return [
             'attributes' => [
                 'db.statement' => $query,
-                'span.kind' => Span::KIND_CLIENT
+                'span.kind' => 'client'
             ],
-            'kind' => Span::KIND_CLIENT,
+            'kind' => 'client',
             'sameProcessAsParentSpan' => false
         ];
     }
@@ -142,12 +142,12 @@ class PDO implements IntegrationInterface
                         'dsn' => $dsn,
                         'db.type' => 'sql',
                         'db.connection_string' => $dsn,
-                        'span.kind' => Span::KIND_CLIENT
+                        'span.kind' => 'client'
                     ];
 
         return [
             'attributes' => $attributes,
-            'kind' => Span::KIND_CLIENT,
+            'kind' => 'client',
             'sameProcessAsParentSpan' => false,
             'name' => 'PDO connect'
         ];
@@ -228,7 +228,7 @@ class PDO implements IntegrationInterface
             'db.operation' => $operation,
             'db.table' => $tableName,
             'db.sql.table' => $tableName,
-            'span.kind' => Span::KIND_CLIENT
+            'span.kind' => 'client'
         ];
 
         return [
