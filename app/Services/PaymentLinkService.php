@@ -92,6 +92,7 @@ class PaymentLinkService
     {
         try
         {
+
             $data = [
                 Entity::ORDER     => $order->toArray(),
                 Entity::PAYMENT   => $payment->toArray(),
@@ -129,12 +130,12 @@ class PaymentLinkService
             ];
 
             $this->trace->info(
-                TraceCode::MERCHANT_SUSPEND_REQUEST_FOR_PAYMENT_LINK_V2,
+                TraceCode::MERCHANT_CACHE_EVICTION_REQUEST_FOR_PAYMENT_LINK_V2,
                 [
                     'data'    => $data,
                 ]);
 
-            $this->setRequestParamsAndSendRequest($merchant, $data,  $this->plUrls['suspend_merchant'], Request::METHOD_POST);
+            $this->setRequestParamsAndSendRequest($merchant, $data,  $this->plUrls['evict_merchant_cache'], Request::METHOD_POST);
         }
         catch(\Throwable $e)
         {

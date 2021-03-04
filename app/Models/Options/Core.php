@@ -138,6 +138,14 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::OPTIONS_UPDATED, $option->toArrayPublic());
 
+        // send cache eviction request to PL service on successful update
+        $plService = $this->app['paymentlinkservice'];
+
+        $merchant = $this->repo->merchant->find($option->getMerchantId());
+
+        // this func call will log the trace on error internally, so no need to add try/catch here
+        $plService->notifyMerchantStatusAction($merchant);
+
         return $option;
     }
 
