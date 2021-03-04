@@ -22,6 +22,5 @@ class Validator extends BaseValidator
         Entity::TYPE                                              => 'required|custom',
         Entity::TICKET_DETAILS                                    => 'required|array',
         Entity::TICKET_DETAILS . '.' . Constants::FD_INSTANCE     => 'required|custom:fd_instance',
-        Entity::TICKET_DETAILS . '.' . Constants::FR_DUE_BY       => 'required',
     ];
 }
