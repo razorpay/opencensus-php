@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
 class ErrorCodeMapping
@@ -167,11 +168,27 @@ class ErrorCodeMapping
         'FTS_ATTEMPT_CREATE_FAILED'             => 'Payout failed due to technical failure. Please retry after 30 min.'
     ];
 
+    public static $alternateFailureReasonMapping = [
+        'INVALID_VPA'                           => 'PSP failed to validate the UPI address. If the UPI address is valid, please retry after some time.',
+    ];
+
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help';
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
     {
-        $errorMessage = self::$failureReasonMapping[$bankStatusCode] ?? null;
+        $alternate = $payout->merchant->isFeatureEnabled(Feature\Constants::ALTERNATE_PAYOUT_FR);
+
+        $errorMessage = null;
+
+        if ($alternate === true)
+        {
+            $errorMessage = self::$alternateFailureReasonMapping[$bankStatusCode] ?? null;
+        }
+
+        if (is_null($errorMessage) === true)
+        {
+            $errorMessage = self::$failureReasonMapping[$bankStatusCode] ?? null;
+        }
 
         if (is_null($errorMessage) === true)
         {

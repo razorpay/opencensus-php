@@ -590,6 +590,9 @@ class Constants
     // Used to enable tpv flow for merchants for business banking (Razorpay X) fund loading.
     const ENABLE_TPV_FLOW = 'enable_tpv_flow';
 
+    // Used to enable alternate failure reason in payout for status code.
+    const ALTERNATE_PAYOUT_FR = 'alternate_payout_fr';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -880,6 +883,7 @@ class Constants
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
         self::CAW_UPI                         => true,
         self::SUBSCRIPTION_UPI                => true,
+        self::ALTERNATE_PAYOUT_FR             => true,
     ];
 
     // Entity type constants

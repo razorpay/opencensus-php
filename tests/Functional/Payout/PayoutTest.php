@@ -41,6 +41,7 @@ use RZP\Services\Mock\WorkflowService;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
+use RZP\Models\Payout\ErrorCodeMapping;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -10439,4 +10440,53 @@ class PayoutTest extends OAuthTestCase
         $this->testBulkPayoutWithThrottling();
     }
 
+    public function testAlternateFailureReason()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALTERNATE_PAYOUT_FR]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout[Payout\Entity::FAILURE_REASON]);
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'INVALID_VPA'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
+
+    public function testWithoutAlternateFailureReason()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout[Payout\Entity::FAILURE_REASON]);
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'INVALID_VPA'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$failureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
 }
