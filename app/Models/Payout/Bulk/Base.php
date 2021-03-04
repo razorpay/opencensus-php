@@ -123,12 +123,6 @@ class Base
 
     public function createExcelObject($data, $name, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
-        // The extra space in the end is being added so that the number doesn't get converted to scientific notation
-        foreach ($data as &$rows)
-        {
-            $rows[Header::RAZORPAYX_ACCOUNT_NUMBER] = $rows[Header::RAZORPAYX_ACCOUNT_NUMBER] . ' ';
-        }
-
         // Forcing all columns to store data as text.
         for ($columnNumber = 'A'; $columnNumber <= 'T'; $columnNumber++)
         {

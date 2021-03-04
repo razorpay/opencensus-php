@@ -9298,7 +9298,7 @@ class PayoutTest extends OAuthTestCase
             ],
             [
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
-                '2224440041626905 ',
+                '2224440041626905',
                 10,
                 'INR',
                 'NEFT',
@@ -9393,7 +9393,7 @@ class PayoutTest extends OAuthTestCase
             ],
             [
                 // NOTE : Account number is set as a sample account number account number : 7878780021057150
-                '7878780021057150 ',
+                '7878780021057150',
                 10,
                 'INR',
                 'NEFT',
