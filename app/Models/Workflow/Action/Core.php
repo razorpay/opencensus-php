@@ -789,7 +789,7 @@ class Core extends Base\Core
 
     private function fetchPermissionListId(array $permissionList, $orgId)
     {
-        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
+        $orgId = ($orgId ?: $this->app['basicauth']->getOrgId()) ?: $this->app['basicauth']->getMerchant()->getOrgId();
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
