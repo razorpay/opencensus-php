@@ -55,7 +55,20 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNotNull($upiMandate[UpiMandate\Entity::RECURRING_TYPE]);
     }
 
-    public function testCreateOrderWithInvalidAmount()
+    public function testCreateOrderWithMaxAmountLesserThanMinLimit()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNull($upiMandate);
+
+        $this->assertNull($order);
+    }
+
+    public function testCreateOrderWithMaxAmountGreaterThanMaxLimit()
     {
         $this->startTest();
 

@@ -10,7 +10,9 @@ use RZP\Models\Card\IIN\Category;
 
 class Validator extends Base\Validator
 {
-    const MAX_AMOUNT_LIMIT = 200000;
+    const MAX_AMOUNT_LIMIT = 500000;
+
+    const MIN_AMOUNT_LIMIT = 100;
 
     protected static $createRules = [
         Entity::FREQUENCY              => 'required|string|custom',
@@ -72,18 +74,18 @@ class Validator extends Base\Validator
     {
         $amount = $input[Entity::MAX_AMOUNT];
 
-        if ($amount > 200000)
+        if ($amount > self::MAX_AMOUNT_LIMIT)
         {
             throw new BadRequestValidationFailureException(
-                'Max amount for UPI recurring payment cannot be greater than Rs. 2000.00',
+                'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00',
                 Entity::MAX_AMOUNT
             );
         }
 
-        if ($amount < 100)
+        if ($amount < self::MIN_AMOUNT_LIMIT)
         {
             throw new BadRequestValidationFailureException(
-                'Max amount for UPI recurring payment cannot be less than Re. 1.00',
+                'Max amount for UPI recurring payment cannot be less than Rs. 1.00',
                 Entity::MAX_AMOUNT
             );
         }

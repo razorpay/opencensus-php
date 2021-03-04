@@ -32,7 +32,41 @@ return [
             ],
         ],
     ],
-    'testCreateOrderWithInvalidAmount' => [
+
+    'testCreateOrderWithMaxAmountLesserThanMinLimit' => [
+    'request' => [
+        'content' => [
+            'amount'          => 99,
+            'currency'        => 'INR',
+            'method'          => 'upi',
+            'customer_id'     => 'cust_100000customer',
+            'payment_capture' => 1,
+            'token'           => [
+                'max_amount'      => 99,
+                'frequency'       => 'monthly',
+                'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
+                'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
+            ]
+        ],
+        'method'    => 'POST',
+        'url'       => '/orders',
+    ],
+    'response' => [
+        'content' => [
+            'error' => [
+                'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                'description' => 'Max amount for UPI recurring payment cannot be less than Rs. 1.00',
+                'field' => 'max_amount'
+            ],
+        ],
+        'status_code' => 400,
+    ],
+    'exception' => [
+        'class' => 'RZP\Exception\BadRequestValidationFailureException',
+        'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+    ],
+],
+    'testCreateOrderWithMaxAmountGreaterThanMaxLimit' => [
         'request' => [
             'content' => [
                 'amount'          => 50000,
@@ -41,7 +75,7 @@ return [
                 'customer_id'     => 'cust_100000customer',
                 'payment_capture' => 1,
                 'token'           => [
-                    'max_amount'      => 250000,
+                    'max_amount'      => 510000,
                     'frequency'       => 'monthly',
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
@@ -54,7 +88,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 2000.00',
+                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00',
                     'field' => 'max_amount'
                 ],
             ],
@@ -65,6 +99,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
     'testCreateOrderWithIncorrectFrequency' => [
         'request' => [
             'content' => [
