@@ -805,6 +805,7 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
+                    'razorx_value'        => $variantFlag,
                     'payment'             => $tracePayment,
                     'mode'                => $this->mode,
                     'merchant'            => $data['merchant'],
