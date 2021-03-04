@@ -43,6 +43,8 @@ class PaperNachIcici extends Base
     const GATEWAY       = Payment\Gateway::NACH_ICICI;
     const ZIP_FILE_SIZE = 50;
 
+    const IMAGE_SIZE_LIMIT = 99000;
+
     const UNTIL_CANCELLED = 'Until cancelled';
 
     protected $fileStore;
@@ -318,12 +320,22 @@ class PaperNachIcici extends Base
 
             $image->setCompression(Imagick::COMPRESSION_JPEG);
 
-            $image->setCompressionQuality(75);
+            $compressionValue = 75;
+
+            $image->setCompressionQuality($compressionValue);
 
             $image->setImageFormat('tiff');
 
             $tiffFileContents = $image->getImageBlob();
 
+            while ((strlen($tiffFileContents) > self::IMAGE_SIZE_LIMIT) and ($compressionValue > 50))
+            {
+                $compressionValue -= 5;
+
+                $image->setCompressionQuality($compressionValue);
+
+                $tiffFileContents = $image->getImageBlob();
+            }
         }
         catch (\Exception $e)
         {
