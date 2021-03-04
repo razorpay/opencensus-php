@@ -6,6 +6,8 @@ on:
 
 jobs:
   pull_request_approved:
+    env:
+      commit_id: ${{ github.event.pull_request.head.sha }}
     # Trigger back-merge master when PR is approved and feature branch isn't hotfix branch
     if: github.event.review.state == 'approved' && !contains(github.event.pull_request.head.ref, 'hotfix')
     runs-on: [self-hosted]
@@ -34,7 +36,7 @@ jobs:
         from_branch: master
         target_branch: ${{ github.event.pull_request.head.ref }}
         github_token: ${{ secrets.CI_BOT_TOKEN }}
-    # If Rebase failed, then comment in PR to resolve manually    
+    # If Backmerge failed, then comment in PR to resolve manually    
     - name: Comments
       if: ${{failure()}}
       uses: mshick/add-pr-comment@v1
@@ -44,3 +46,31 @@ jobs:
         message: |
           **Conflict Error Please back-merge manually**
         allow-repeats: true
+    # checkout the festure branch post back-merge of master
+    - uses: razorpay/checkout-action@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+    # set the new commit id in Github env
+    - name: Set New commit Id in Github env post backmerge
+      id: new_commit
+      run: echo "GIT_NEW_COMMIT_AFTER_MERGE=$(git rev-parse --verify HEAD)" >> $GITHUB_ENV
+    - name: Validate skipRoast Flag for PR
+      uses: actions/github-script@0.9.0
+      id: skip-roast
+      with:
+        result-encoding: string
+        script: |
+          const regex = /skiproast.*true/i;
+          skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
+          return Boolean(skipFlag)
+    - name: Run bvt suite if PR submitted as approved
+      # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
+      if : env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id
+      env:
+        SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
+        WEBHOOK_TRIGGER : bvt-api-approval
+        GITHUB_TOKEN:  ${{ github.token }}
+        SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
+        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
+      run: |
+        sh ./.github/actions/triggerBvtSuite.sh
